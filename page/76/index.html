@@ -18,7 +18,7 @@
 
   
   
-  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+  <link rel="stylesheet" href="https://shell909090.org/css/hugo-octopress.css">
 
   
   
@@ -27,13 +27,13 @@
   <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
 
   
-  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+  <link href="https://shell909090.org/favicon.png" rel="icon">
 
   
   
   
 
-  <link href="https://shell909090.github.io/index.xml" rel="alternate" type="application/rss+xml" title="Shell&#39;s Home" />
+  <link href="https://shell909090.org/index.xml" rel="alternate" type="application/rss+xml" title="Shell&#39;s Home" />
 
   <meta name="description" content="">
   <meta name="keywords" content="">
@@ -52,7 +52,7 @@
 
 <header role="banner"><hgroup>
   
-  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+  <h1><a href="https://shell909090.org/">Shell&#39;s Home</a></h1>
     <h2></h2>
 </hgroup></header>
 
@@ -89,11 +89,42 @@
 
 <header>
     <h1 class="entry-title">
-        <a href="https://shell909090.github.io/blog/archives/315/">上海有线通，不爽</a>
+        <a href="https://shell909090.org/blog/archives/316/">音乐文件转换技巧和脚本</a>
+    </h1>
+    <p class="meta">Sep 8, 2006
+         - 1 minute read 
+         - <a href="https://shell909090.org/blog/archives/316/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>好久没动手写啥东西了，最近在准备LPIC1考试。Will everyone keep finger cross 4 me?嘿嘿—— 这个题目是个大家伙，反正每天写一点，也不忙在一时。大家有啥需要了解的，也可以问在下面。我会更新的。 copyright: 本文所提到各种软件版权归各个软件开发者所有。文章内容及所有附属脚本为独创，按照GPL发布。 keyword: 音乐 格式 转换 脚本 标签 bash shell script mp3 midi ape flac cue toc directory: 1.文件格式解说 1.1.mp3/ogg 1.2.midi 1.3.ape 1.4.flac 1.5.cue/toc 1.6.wav 1.7.iso 2.文件转换 2.1.wav/mp3 2.2.wav/ape 2.3.wav/flac 2.4.midi2wav 2.5.iso/wav 3.转换细节问题 3.1.按照cue切割 content: 1.1.mp3/ogg 这两个是非常有名的音乐压缩文件，其中MP3是mepg II layer 3。不要以为是mpeg III。一般来说，MP3都被认为是一种小巧但是音质比较差的格式。不过事实上，要指摘MP3的音质前，你先自己找找是否满足了一定条件。周围是否安静，没有噪音。音源是否高清晰（拿MP3还原出来的CD是没意义的）。声音设备是否足够好（至少也要是高质量的音响或者高档耳机，耳塞或者200－300的所谓音箱根本不用说）。如果没有上述条件，那么MP3的音质也算过的去的。MP3格式的压缩比值大约是10：1，和wav相比。另外，如果有CD的话，最好使用lame进行适当压缩。而不要为了方便随便使用一个压缩工具。压缩最好使用VBR格式。这种格式本质上没有什么变化，只是在信息流高的地方使用高的编码格式，以获得最高的质量/空间比值。ogg具体情况没有研究，不过使用上和MP3没有区别。 1.2.midi midi是所有格式中唯一不记录音频数据的音乐格式。midi记录的实质上是发声事件，简单来说就是什么时候鼓响了一下，什么时候钢琴的哪个键被按下了。因此midi也是没有立体声效果的。除非你使用特殊的软件指定某个乐器演奏时候的位置，然后根据环境生成出相应的音乐文件。midi文件在当前主要是两个用途。一个是midi记录了乐手演奏时候的指法细节，也记录了曲子的曲谱。midi本质上就是谱子。另外一个是midi的超小体积使得在某些嵌入系统（例如手机）上面可以作为背景音乐。 1.3.ape ape是一种无损压缩格式，你可以把ape看成是一种只能对wav作用的zip文件。压缩比一般是2:1。 1.4.flac flac和ape基本差不多。 1.5.cue/toc cue/toc不是音乐文件，他们是用于flac/ape等光盘的音轨定义。一个CD可以有多个音轨，iso会记录下音轨的切分方式。但是ape就不行了。于是eac等抓轨软件生成cue来切分音乐文件。往往看到ape的发行方式是一个ape和一个cue，直接打开ape往往是一首非常长的歌曲。其实切分信息在cue里面。虚拟光驱使用的bin文件也是一样，会有配套的cue文件。两者可以用cuetools和mkcue互相转换。 1.6.wav wav文件又叫做PCM编码格式。这是一切音乐的基础。无论你是哪种格式，最后都会被还原成wav的某种格式或者变形，才能够从声卡中播放出去。当然，midi的情况特殊，不在此列。 1.7.iso iso也不是音乐文件，但是和音乐的关系非常密切。大家都知道iso是光盘的镜像，其实说的还不确切。iso本身就是光盘内容严格1字节比1字节复制的结果。至于有的为什么有其他格式。那就涉及光驱设备工作和数据流／加解密的问题了。 另外说一个iso的问题，大家知道linux下面挂载iso的指令是 #mount -t iso9660 -o loop file /mnt 这其实是两个步骤，一个是</p>
+
+          
+              <footer>
+                  <a href="https://shell909090.org/blog/archives/316/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.org/blog/archives/315/">上海有线通，不爽</a>
     </h1>
     <p class="meta">Sep 5, 2006
          - 1 minute read 
-         - <a href="https://shell909090.github.io/blog/archives/315/#disqus_thread">Comments</a>
+         - <a href="https://shell909090.org/blog/archives/315/#disqus_thread">Comments</a>
 
         
     </p>
@@ -116,11 +147,11 @@
 
 <header>
     <h1 class="entry-title">
-        <a href="https://shell909090.github.io/blog/archives/314/">Helix关键提示</a>
+        <a href="https://shell909090.org/blog/archives/314/">Helix关键提示</a>
     </h1>
     <p class="meta">Aug 7, 2006
          - 1 minute read 
-         - <a href="https://shell909090.github.io/blog/archives/314/#disqus_thread">Comments</a>
+         - <a href="https://shell909090.org/blog/archives/314/#disqus_thread">Comments</a>
 
         
     </p>
@@ -143,11 +174,11 @@
 
 <header>
     <h1 class="entry-title">
-        <a href="https://shell909090.github.io/blog/archives/313/">testren</a>
+        <a href="https://shell909090.org/blog/archives/313/">testren</a>
     </h1>
     <p class="meta">Aug 3, 2006
          - 1 minute read 
-         - <a href="https://shell909090.github.io/blog/archives/313/#disqus_thread">Comments</a>
+         - <a href="https://shell909090.org/blog/archives/313/#disqus_thread">Comments</a>
 
         
     </p>
@@ -159,7 +190,7 @@
 
           
               <footer>
-                  <a href="https://shell909090.github.io/blog/archives/313/" rel="full-article">Read On &rarr;</a>
+                  <a href="https://shell909090.org/blog/archives/313/" rel="full-article">Read On &rarr;</a>
               </footer>
           
 
@@ -174,11 +205,11 @@
 
 <header>
     <h1 class="entry-title">
-        <a href="https://shell909090.github.io/blog/archives/312/">新版MSN试用报告</a>
+        <a href="https://shell909090.org/blog/archives/312/">新版MSN试用报告</a>
     </h1>
     <p class="meta">Jul 30, 2006
          - 1 minute read 
-         - <a href="https://shell909090.github.io/blog/archives/312/#disqus_thread">Comments</a>
+         - <a href="https://shell909090.org/blog/archives/312/#disqus_thread">Comments</a>
 
         
     </p>
@@ -201,11 +232,11 @@
 
 <header>
     <h1 class="entry-title">
-        <a href="https://shell909090.github.io/blog/archives/311/">BOINC分布式计算</a>
+        <a href="https://shell909090.org/blog/archives/311/">BOINC分布式计算</a>
     </h1>
     <p class="meta">Jul 27, 2006
          - 1 minute read 
-         - <a href="https://shell909090.github.io/blog/archives/311/#disqus_thread">Comments</a>
+         - <a href="https://shell909090.org/blog/archives/311/#disqus_thread">Comments</a>
 
         
     </p>
@@ -228,11 +259,11 @@
 
 <header>
     <h1 class="entry-title">
-        <a href="https://shell909090.github.io/blog/archives/310/">祝自己生日快乐</a>
+        <a href="https://shell909090.org/blog/archives/310/">祝自己生日快乐</a>
     </h1>
     <p class="meta">Jul 16, 2006
          - 1 minute read 
-         - <a href="https://shell909090.github.io/blog/archives/310/#disqus_thread">Comments</a>
+         - <a href="https://shell909090.org/blog/archives/310/#disqus_thread">Comments</a>
 
         
     </p>
@@ -255,11 +286,11 @@
 
 <header>
     <h1 class="entry-title">
-        <a href="https://shell909090.github.io/blog/archives/309/">删除无赖</a>
+        <a href="https://shell909090.org/blog/archives/309/">删除无赖</a>
     </h1>
     <p class="meta">Jul 14, 2006
          - 1 minute read 
-         - <a href="https://shell909090.github.io/blog/archives/309/#disqus_thread">Comments</a>
+         - <a href="https://shell909090.org/blog/archives/309/#disqus_thread">Comments</a>
 
         
     </p>
@@ -282,11 +313,11 @@
 
 <header>
     <h1 class="entry-title">
-        <a href="https://shell909090.github.io/blog/archives/308/">论linux引导过程</a>
+        <a href="https://shell909090.org/blog/archives/308/">论linux引导过程</a>
     </h1>
     <p class="meta">Jul 13, 2006
          - 1 minute read 
-         - <a href="https://shell909090.github.io/blog/archives/308/#disqus_thread">Comments</a>
+         - <a href="https://shell909090.org/blog/archives/308/#disqus_thread">Comments</a>
 
         
     </p>
@@ -309,11 +340,11 @@
 
 <header>
     <h1 class="entry-title">
-        <a href="https://shell909090.github.io/blog/archives/307/">debian live</a>
+        <a href="https://shell909090.org/blog/archives/307/">debian live</a>
     </h1>
     <p class="meta">Jul 11, 2006
          - 2 minute read 
-         - <a href="https://shell909090.github.io/blog/archives/307/#disqus_thread">Comments</a>
+         - <a href="https://shell909090.org/blog/archives/307/#disqus_thread">Comments</a>
 
         
     </p>
@@ -325,35 +356,8 @@
 
           
               <footer>
-                  <a href="https://shell909090.github.io/blog/archives/307/" rel="full-article">Read On &rarr;</a>
+                  <a href="https://shell909090.org/blog/archives/307/" rel="full-article">Read On &rarr;</a>
               </footer>
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="https://shell909090.github.io/blog/archives/306/">linux中文说</a>
-    </h1>
-    <p class="meta">Jul 2, 2006
-         - 1 minute read 
-         - <a href="https://shell909090.github.io/blog/archives/306/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>linux号称可以支持全部语言，其实细节上还是有不少问题的。具体情况大致是这样的，linux的中文支持分三部分，locales，字体，设置。 首先是locale的部分，这个最简单不过，用root运行dpkg-reconfigure locales，然后选择你需要的解码方式，最后再设定系统默认语言（这个是可以修改的），就OK了。 然后是字体，字体的设定比较复杂，不过在debian中安装所有中文桌面的字体就可以了。不用自己去绞尽脑汁。 最后是设定，这个比较复杂。因为可定制性非常好的系统，无法避免要用大量的脚本来定制。如果可定制性差，相信你也不会用了。和中文相关的设置大致有一下几个，针对debian系统。 /etc/default/gdm:LANG=zh_CN.GBK #gdm登录时候的locales /etc/default/locale:LANG=zh_CN.GBK #这个是系统默认登录的locals，如果你使用命令行登录就是使用这个的 /etc/environment:LANGUAGE=&quot;zh_CN:zh:en_US:en&quot; /etc/environment:LANG=zh_CN #这个是登录进入X后的设置，你运行的所有程序基本都是使用这个 dpkg-reconfigure locales的默认语言设定修改的是/etc/default/locale，所以对X登录进去后的程序不一定起作用。一般情况下这zh_CN的设定就通吃了，不过有的时候有点小BUG，例如term下面vi后退出，就变成看不懂的乱马了。这个时候要重设屏幕才可以恢复。而且在输入的时候没有——的，很多东西也看不到。所以我改成了zh_CN.GBK，然后出现了两个问题。 一个是gvim不运行了，这个看了看别人，这么解决。 ----------------------~/.gvimrc----------------------- set encoding=gb2312 set langmenu=zh_CN.GB2312 set imcmdline source $VIMRUNTIME/delmenu.vim source $VIMRUNTIME/menu.vim --------------------------------------------------------- 保证这个文件里面有这些内容就可以了。 然后是gtk1.X的程序都不正常了，主要是xmms和audacity。这个看了人家忽悠半天，最后这么解决的。 -----------------/usr/bin/env_zh_CN--------------- #!/bin/bash LANG=zh_CN exec $@ ---------------------------------------------------------- 然后chmod a+x /usr/bin/env_zh_CN 再修改所有运行语句成env_zh_CN xmms 我修改了两处。 世界基本就清静了。</p>
-
           
 
         
@@ -673,7 +677,7 @@
 </div>
 
 <footer role="contentinfo">
-  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.org/license/">License</a> -
   <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
 </p>
 
