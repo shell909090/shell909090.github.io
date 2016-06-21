@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>debian testing下的ibus安装</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         debian testing下的ibus安装 
+    </h1>
+    <p class="meta">Apr 8, 2009
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/62/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          
+
+<p>贝壳经过N个人的宣传，决定试用一下传说中的Ibus，下面是试用安装手记。文章参考了后面的参考1，特此鸣谢。
+apt-get install git-core python-gtk2-dev cvs libtool automake python-enchant libgtk2.0-dev libdbus-1-dev libdbus-glib-1-dev python-xdg
+在安装以上依赖后，运行。</p>
+
+<h1 id="安装ibus">安装ibus</h1>
+
+<p>git clone git://<a href="http://github.com/phuang/ibus.git">github.com/phuang/ibus.git</a> ibus
+cd ibus
+./autogen.sh
+chmod +x debian/rules
+dpkg-buildpackage</p>
+
+<h1 id="安装ibus-pinyin">安装ibus-pinyin</h1>
+
+<p>git clone git://<a href="http://github.com/phuang/ibus-pinyin.git">github.com/phuang/ibus-pinyin.git</a> ibus-pinyin
+cd ibus-pinyin
+./autogen.sh
+chmod +x debian/rules
+dpkg-buildpackage</p>
+
+<p>而后，在根目录会生成两个文件。贝壳的是ibus_0.1.1.20080908-1_amd64.deb ibus-pinyin_0.1.1.20080901-1<em>amd64.deb。名字比较旧，但是查看git log的话，是2009年4月8日的版本。先安装前者，再安装后者(顺序不要弄错)。而后就是设定部分。
+设定的话，请不要按照参考文去设定。这是贝壳血的教训，足足弄了4个小时。正确的做法是用root用户im-switch -c。而后选择ibus作为输入法。
+而后，稍等，先不要着急重启。在两个包里面还有个bug？？
+在ibus包中，有这么一个文件。
+/usr/etc/xdg/autostart/ibus.desktop
+在debian testing中，这个位置的自启动是无效的！
+正确的做法是，cp /usr/etc/xdg/autostart/ibus.desktop /etc/xdg/autostart/ibus.desktop
+如果不按照上文修正，结果就是ibus会正确启动，但是没有托盘区和输入条，全凭感觉选字(汗-</em>-|||)。
+其实这应当是一个bug，scim可以在/etc/X11/xinit/xinput.d/scim中设定好守护进程，而后在系统界面出现后自动出现(这 也是为什么每次启动的时候scim总是先看到的原因)。而ibus尚不支持界面出现后再去注册托盘区，因此必须试用autostart来启动守护进程。
+总体感觉而言，ibus比scim更加漂亮干净，据说对kde的支持也更好。不过试用过程中还是有点问题，主要是以下几个(2009年04月08日列表)：
+1.�字没有！我相信，其实是很多字没有！
+2.firefox就在贝壳写这篇文章的时候，崩溃了一次。以前贝壳的firefox很稳定的，从来没有崩溃过——
+参考：
+[1].debian 5.0 安装 ibus中文输入法.<a href="http://hi.baidu.com/cvwolf/blog/item/3d812b4e8c4fe201b3de0591.html">http://hi.baidu.com/cvwolf/blog/item/3d812b4e8c4fe201b3de0591.html</a></p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Apr 8, 2009</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/ibus">ibus</a>  <a class="category" href="https://shell909090.github.io/tags/linux">linux</a>  <a class="category" href="https://shell909090.github.io/tags/scim">scim</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/61/" title="移动时代的一个应用预测">移动时代的一个应用预测</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/63/" title="Linux的环境">Linux的环境</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

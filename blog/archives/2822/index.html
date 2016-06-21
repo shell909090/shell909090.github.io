@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>一个有趣的问题</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         一个有趣的问题 
+    </h1>
+    <p class="meta">Feb 25, 2016
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2822/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>
+ 前面给公司出了一个有趣的问题，似乎没采用。所以现在放出来大家看着玩玩。
+</p>
+<p>
+ 以下代码在python2中适用。python3请看尾部注释。
+</p>
+<pre><code>import os, time
+data = range(10000000)
+pid = os.fork()
+if pid &lt; 0:
+    print 'error:', pid
+    os.exit(pid)
+if pid &gt; 0:
+    os.wait()
+    os.exit(0)
+sum(data)
+</code></pre>
+<p>
+ 在第2行执行的前后，使用ps和free观察内存使用情况，可以看到进程使用了320M内存，系统被占用了320M内存。在3行执行后再观察，有两个进程分别占用320M内存，系统总计被占用了320M内存。 问1，为什么两个进程分别占用320M左右内存，系统总计占用数并没有翻倍？这种现象叫做什么？
+</p>
+<p>
+ 在10行执行后再观察，有两个进程分别占用320M内存，系统总计被占用了560M内存。 问2，为什么sum增加了系统内存占用，解释其开销。
+</p>
+<p>
+ 问3，推测出python整数对象长度和当前CPU字长。（python自身的内存开销忽略）
+</p>
+<p>
+ 答1. 这种现象叫做COW，copy on write。在fork后，两个进程会共享内存表项，一致的部分会仅使用一个页面。
+</p>
+<p>
+ 答2. 每个进程的内存占用都没有上升，但总内存占用量上升了，这必然是发生了页面写时复制的结果。页面写时复制必须写入内存，因此推测python使用引用计数 手段控制对象生命周期。当sum时，每个对象都要被读取。在读取前，系统会增加其引用计数。在这个过程中会发生页面写时复制，导致系统内存占用上升。
+</p>
+<p>
+ 注：内存复制必须发生在写时刻，说读取导致内存复制的统统不得分。答出引用计数四个字即可得全分。
+</p>
+<p>
+ 答3. 在写时复制时，数字对象会增加引用计数，而数组对象不会（准确的说，数组对象本身引用计数会增加，但只有一页会发生复制）。发生复制增加的内存有 240M，因此整数对象长度24字节。未倍增内存有80M。对象有10M个。因此推断指针长度为8字节，当前CPU字长64位。
+</p>
+<p>
+ 注：python3里有几个不同。首先，range返回了一个生成器，所以需要改为data = list(range(10000000))。其次，python3中，int长度为28，pointer长度为9。因此下面的数据会需要调整，而且并不很容易解释。
+</p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Feb 25, 2016</time>
+    <span class="categories">
+      Tags:
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/2820/" title="一次升级故障的排查">一次升级故障的排查</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/2829/" title="潜水的一些简单解说">潜水的一些简单解说</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

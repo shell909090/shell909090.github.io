@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>windows系统四、五</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         windows系统四、五 
+    </h1>
+    <p class="meta">Jul 15, 2005
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/195/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>四，内核对象和句柄
+调用API的过程中，有必要区分调用的目的和对象。说的通俗点，就是为什么调用和对谁调用。例如打开哪个文件，或者终止什么进程。调用的目的是根据不同的API和状态或者属性参数而变化的，而调用的对象则是根据句柄而选择的。
+句柄大致分为内核句柄和对象句柄两种。一般来说，申请打开句柄时需要你传入安全令牌的就是内核句柄，内核句柄具有可继承性（inherit）。而像窗口等等东西就是对象句柄。SDK编程中，程序根据句柄的不同而操作不同对象，实现程序的种种目的。可以说，句柄和API组成了程序对下层的接口。
+而在系统实现中，句柄则是某个内核对象，这个对象在系统中有个编号。句柄实际返回的多数是这个编号。大家可以申请两个句柄出来玩玩看，一般都是09XX之类的数字。从大小上看还属于NULL地址段（具体请看jefferey的windows核心编程），所以多数就是内核对象表项编号。这种一般以非内核句柄居多，因为这种句柄的特性可以从一个进程直接传递到另外一个进程。而有的则是某个在进程地址空间（这里插句，windows中进程和线程的区别可以理解成为，进程拥有独立空间和句柄，线程拥有独立CPU调度）内的某个数据块。这个块指向了某个确定的内核对象，这种句柄数字上一般大于4M。一般以内核句柄居多，进程间不可以传递只能继承。（其实也可以传递的，不过要用API主动复制，而不是Copy句柄过去了事）
+五，通讯方法
+通讯方法，通俗的讲，任何程序必定涉及和其他程序的通讯。windows中的通讯肯定是要通过API实现的。具体方法最简单的是消息通讯。需要对方的线程ID（进程ID没用的），或者进程创立的windows句柄。如果使用sendmseeage发送消息，接收方又是本线程创立的窗口，则将窗口处理函数作为子例调用（因为sendmessage是阻塞调用，本线程阻塞了来调用本线程的派生，当然，也只能，直接调用）。否则将消息挂到对方的接收区域去，然后要么阻塞，要么直接返回。（注意到为何sendmessage给本线程要直接调用了吧。阻塞的线程是无法通过messageloop的。）
+如果不高兴使用消息，那么可以使用文件映射。这个方法本来是自虚拟内存中引入的，后来渐渐用来做文件的系统缓冲处理，也用来处理系统通讯。将一个文件同时映射到两个进程空间，则任何空间的变化会引发另外一个空间的变化。注意所谓文件的变化和虚拟内存一样，是未必写入磁盘的。使用这个方法需要注意同步问题。</p>
+
+<p>另外，这个方法有个变形。可执行文件是PE格式时，文件载入内存时会自动做文件内存映射。此时设定属性，让某个section自动的作为同步映射，这样所有的自这个文件派生的进程在此section上是内存共享的。具体还是可以看jefferey的windows核心编程。
+再差就是使用管道了，管道是用来套接标准输入输出的。去找找CUI界面重定向的问题就知道管道的用途了。除了定向到网络上，管道还可以定向到text框中。例如VC编译的时候……
+再傻点？你两个程序各申请一个winsock通讯好咯，OLE，COM，都随便你用的阿。不过拿电脑间互相通讯的东西做进程通讯，你一定是头壳坏去了。</p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Jul 15, 2005</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/windows">windows</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/194/" title="windows系统二、三">windows系统二、三</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/196/" title="If">If</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

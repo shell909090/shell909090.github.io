@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>kvm虚拟化的性能对比</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         kvm虚拟化的性能对比 
+    </h1>
+    <p class="meta">Mar 19, 2012
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2118/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>废话不多说，4G的机器，debian testing，amd64内核32位环境。用kvm切出一个768m的机器，debian testing，64位内核64位环境。对比起来有点不公平，不过基本说明问题。 <div>    用lmbench对比两者的性能，报告我就不贴了。基本结论如下：</div><div>1.纯计算: kvm内比真机还快，或者至少性能相当。估计是32位环境的关系。</div><div>2.syscall, read, write, select: 都是kvm快。</div><div>3.Protection fault, AF_UNIX sock stream latency, fork+exit, fork+execve: 真机比kvm快至少4倍，最多可达6倍。</div></p>
+
+<p><div>4.文件读写api: 真机比kvm快3倍以上。</div><div>5.socket性能: pipe是kvm快，unix file是真机快。</div><div>6.iozone: 两者吞吐性能几乎一致，有时kvm比真机还快。可能和真机的ext3上面堆满碎片结构有关。</div><div>    基本结论，kvm在计算和io上都没什么太大问题，主要问题在于各种涉及ring0指令的内核调用方面（好像这也是虚拟化的通病）。在虚拟化系统中，尽量避免大量的内核调用，尽量减少碎片调用，增大IO块。</div></p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Mar 19, 2012</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/kvm">kvm</a>  <a class="category" href="https://shell909090.github.io/tags/linux">linux</a>  <a class="category" href="https://shell909090.github.io/tags/vm">vm</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/2116/" title="答一封读者来信——同机构内不同组织合作的分析">答一封读者来信——同机构内不同组织合作的分析</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/2120/" title="被警告了">被警告了</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

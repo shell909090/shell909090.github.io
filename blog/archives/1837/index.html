@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>openwrt配置——QoS配置</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         openwrt配置——QoS配置 
+    </h1>
+    <p class="meta">Jun 20, 2011
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1837/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>说到openwrt，就不能不提一下QoS。尤其是如果你需要用P2P软件（目前对迅雷的支持还不大好），基本就不能不开QoS。QoS的全称是Quality of Service，意即服务质量。是专门用于解决拥堵网络上的信号质量一视同仁的问题。例如，我们有一根宽带，两人共用。一个人视频聊天，一个人bt下载（我还不提迅雷个傻X呢）。玩bt的那个一开软件，视频聊天那个立刻没法用了。bt和视频聊天稍微好一点的是，视频聊天消耗的带宽是恒定的。你可以逐步限速，只要给视频聊天留了足够的带宽，两个就都能一起用了。但是，如果另一个人不是视频聊天，而是网络浏览怎么办？网络浏览，视频聊天，p2p下载一起来怎么办？实际上这是很多朋友家中常常碰到的情况。更不说有合租公寓里面你很难监控对方一定限速，软件无法限速甚至恶意抢占带宽（迅雷）。另一个更加技术的问题是，由于上传带宽不足，ACK包回应过慢，导致你的下载速度也不能达到峰值。玩p2p的常常会给上传限速到真实带宽差一点的位置，下载带宽立刻上去，就是这个道理。<br /></p>
+
+<p>    怎么办？用QoS，解决你多年老便秘。QoS的底层是tc，其目的就是决定先发送哪些包。openwrt默认的规则是hfsc，设计了四个优先级。Priority最优先，处理22,53,icmp，以及小于128字节的syn,ack包中，不属于bulk类别的。我们可以看到，DNS，syn/ack的优先响应，保证了你的上传不会影响下载。其次是Express，处理5190和小于500字节的UDP包。这个我也不明白是为什么，好像是视频什么的。然后是Normal，包括20,21,25,80,110,443,993,995这些常见端口。涵盖http/https，ftp，邮件系统。最后是Bulk，包括其他包，尤其是ed和bt。<br /></p>
+
+<p>    当你启用QoS后，你的p2p软件速度应当不会上升，反而会下降。下载速度不好说，有可能是上升，也有可能下降。因为原来p2p软件抢占了所有带宽，目前他们只能使用普通应用用剩下的带宽，速度当然慢了。然而，当你使用浏览器，收发邮件的时候，速度应当和不使用p2p的时候一样流畅。这才是使用QoS最大的意义。<br />    方法很简单，安装QoS包，然后修改/etc/config/qos，注意修改你的带宽。不修改的话，流量会被无意义的限制死。<br /></p>
+
+<p>    另外，打开QoS后，千万记得把你的p2p软件改为不限速。否则不能达到最高性能。<br /></p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Jun 20, 2011</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/computer">computer</a>  <a class="category" href="https://shell909090.github.io/tags/openwrt">openwrt</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/1836/" title="openwrt配置——防火墙规则">openwrt配置——防火墙规则</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/1838/" title="bitcoin垮了">bitcoin垮了</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

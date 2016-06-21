@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>语言的效率差异1</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         语言的效率差异1 
+    </h1>
+    <p class="meta">May 14, 2012
+         - 2 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2172/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <div># 问题 #</div><div>为了测试语言的效率，做一个正则解析。</div><div>预先说好，正则解析的问题是老板正在做的一个实际问题，我把其他和效率无关的部分去了。因此我接受“用法不正确”这样的反驳理由，但是不接受“这不是典型用例”的理由。我欢迎你指正我的用法错误，或者对语言不了解导致的效率低下，但是别来和我吵吵这种例子太特殊。另外，在调整代码和评估速度的时候，顺便注意一下代码行数。我知道用汇编逐行写和优化会很优秀，但是这对实际工作基本没有帮助。</div>
+
+<div>问题是这样的：</div><div><br /></div><div>&gt; 有一个文本文件，每行两个数，要求解析出来这两个数。</div><div><br /></div><div>我用python生成了数据，代码是这样的</div><div><br /></div><div>    with open(sys.argv[1], &#39;w&#39;) as fo:</div><div>        for i in xrange(500000):</div>
+
+<div>            fo.write(&#39;%d %dn&#39; % (i, random.randint(0, 10000)))</div><div><br /></div><div>正则分析速率，是个典型的CPU密集操作。对于非编译型语言而言(这里的编译是指正则表达式的解析预编译，实际上除了lisp还真没有编译型的，即使是go也是现场拿到正则进行解析的)，这主要是看正则库的实现效率。很多时候，语言的效率问题并不取决于语言本身，还取决于语言的库的实现。大部分情况下我们都不可能砍掉系统的库重新来一个，那还不如换一门语言。</div>
+
+<div><br /></div><div># python #</div><div>我首先贴出python语言的解答。</div><div><br /></div><div><span class="Apple-tab-span" style="white-space:pre">   </span>reline = re.compile(&#39;(d+) (d+)&#39;)</div><div><span class="Apple-tab-span" style="white-space:pre"> </span>def main():</div>
+
+<div><span class="Apple-tab-span" style="white-space:pre">      </span>with open(sys.argv[1], &#39;r&#39;) as fi:</div><div><span class="Apple-tab-span" style="white-space:pre">           </span>for line in fi: reline.match(line).groups()</div>
+
+<div><br /></div><div>这是性能</div><div><br /></div><div>&gt; real    0m0.466s</div><div>&gt; user    0m0.436s</div><div>&gt; sys     0m0.012s</div><div><br /></div><div># common lisp #</div><div>我找了N个正则包，实际能用的只有ppcre。有些包号称很快，实际测试下来还不如ppcre。</div>
+
+<div><br /></div><div><span class="Apple-tab-span" style="white-space:pre"> </span>(require :cl-ppcre)</div><div><span class="Apple-tab-span" style="white-space:pre">  </span>(defun grepfile (filename)</div><div><span class="Apple-tab-span" style="white-space:pre">   </span>  (let* ((cl-ppcre:*use-bmh-matchers* t)</div>
+
+<div><span class="Apple-tab-span" style="white-space:pre">      </span> (cl-ppcre:*regex-char-code-limit* 256)</div><div><span class="Apple-tab-span" style="white-space:pre">      </span> (scanner (cl-ppcre:create-scanner &quot;d+ d+&quot;)))</div>
+
+<div><span class="Apple-tab-span" style="white-space:pre">  </span>    (with-open-file (in filename)</div><div><span class="Apple-tab-span" style="white-space:pre">    </span>      (loop for line = (read-line in nil) while line do</div>
+
+<div><span class="Apple-tab-span" style="white-space:pre">      </span>   (cl-ppcre:split scanner line)))</div><div><span class="Apple-tab-span" style="white-space:pre">   </span>  ))</div><div><br /></div><div>代码在slime里面测试(time (grepfile &quot;data.dat&quot;))，下面是结果</div>
+
+<div><br /></div><div><span class="Apple-tab-span" style="white-space:pre"> </span>CL-USER&gt; (time (main))</div><div><span class="Apple-tab-span" style="white-space:pre">    </span>Evaluation took:</div><div><span class="Apple-tab-span" style="white-space:pre"> </span>  0.398 seconds of real time</div>
+
+<div><span class="Apple-tab-span" style="white-space:pre">  </span>  0.392025 seconds of total run time (0.384024 user, 0.008001 system)</div><div><span class="Apple-tab-span" style="white-space:pre">    </span>  [ Run times consist of 0.016 seconds GC time, and 0.377 seconds non-GC time. ]</div>
+
+<div><span class="Apple-tab-span" style="white-space:pre">  </span>  98.49% CPU</div><div><span class="Apple-tab-span" style="white-space:pre"> </span>  1,188,481,425 processor cycles</div><div><span class="Apple-tab-span" style="white-space:pre"> </span>  72,242,256 bytes consed</div>
+
+<div><br /></div><div># go #</div><div>go的代码是现学现卖的，不知道是不是哪里写出问题了。</div><div><br /></div><div><span class="Apple-tab-span" style="white-space:pre">  </span>func main() {</div><div><span class="Apple-tab-span" style="white-space:pre">        </span>f, _ := os.Open(&quot;data.txt&quot;)</div>
+
+<div><span class="Apple-tab-span" style="white-space:pre">      </span>r := bufio.NewReader(f)</div><div><span class="Apple-tab-span" style="white-space:pre">  </span></div><div><span class="Apple-tab-span" style="white-space:pre">     </span>rex, _ := regexp.Compile(&quot;(d+) (d+)&quot;)</div>
+
+<div><span class="Apple-tab-span" style="white-space:pre">  </span></div><div><span class="Apple-tab-span" style="white-space:pre">     </span>for line, isPrefix, err := r.ReadLine();</div><div><span class="Apple-tab-span" style="white-space:pre">     </span>    err == nil &amp;&amp; !isPrefix;</div>
+
+<div><span class="Apple-tab-span" style="white-space:pre">      </span>    line, isPrefix, err = r.ReadLine() {</div><div><span class="Apple-tab-span" style="white-space:pre">         </span>rex.FindSubmatch(line)</div><div><span class="Apple-tab-span" style="white-space:pre">       </span>}</div>
+
+<div><span class="Apple-tab-span" style="white-space:pre">  </span>}</div><div><br /></div><div>结果居然要差一个数量级！</div><div><br /></div><div>&gt; real<span class="Apple-tab-span" style="white-space:pre">  </span>0m8.699s</div><div> &gt; user<span class="Apple-tab-span" style="white-space:pre">   </span>0m8.593s</div> <div>&gt; sys<span class="Apple-tab-span" style="white-space:pre">    </span>0m0.036s</div><div><br /></div><div>这太出乎我的意料了。google的v8引擎赫赫有名，我猜想也应当用到了go上面才是，怎么会性能差成这样？gary说过正则在他那里很快，我希望是我用错了。</div><div><br /></div><div># lua #</div>
+
+<div>lua没有使用正则包，更准确的说，lua内置的字符串处理函数可以处理这个情况。以下是我的代码：</div><div><br /></div><div><span class="Apple-tab-span" style="white-space:pre">   </span>for line in io.lines(&quot;data.txt&quot;) do</div><div><span class="Apple-tab-span" style="white-space:pre">    </span>   for w in string.gmatch(line, &quot;%d+&quot;) do</div>
+
+<div><span class="Apple-tab-span" style="white-space:pre">  </span>      -- print(w)</div><div><span class="Apple-tab-span" style="white-space:pre">    </span>   end</div><div><span class="Apple-tab-span" style="white-space:pre">   </span>end</div>
+
+<div><br /></div><div>以下是执行结果：</div><div><br /></div><div>&gt; real<span class="Apple-tab-span" style="white-space:pre">    </span>0m0.796s</div><div>&gt; user<span class="Apple-tab-span" style="white-space:pre">    </span>0m0.792s</div>
+
+<div>&gt; sys<span class="Apple-tab-span" style="white-space:pre">  </span>0m0.000s</div><div><br /></div><div>lua的代码的却很好看，但是效率上却不见得高。这是当然的，gmatch可是每工作一次就要解析一次阿。</div><div><br /></div><div># lua-rex-pcre #</div><div>装一个支持pcre的正则包，lua-rex-pcre。</div>
+
+<div><br /></div><div><span class="Apple-tab-span" style="white-space:pre"> </span>r = require &quot;rex_pcre&quot;.new(&quot;(d+) (d+)&quot;, 0)</div><div><span class="Apple-tab-span" style="white-space:pre">   </span>for line in io.lines(&quot;data.txt&quot;) do</div>
+
+<div><span class="Apple-tab-span" style="white-space:pre">  </span>   r.match(r, line)</div><div><span class="Apple-tab-span" style="white-space:pre">  </span>end</div><div><br /></div><div>OK，速度一下就快了不少：</div><div><br /></div> <div> &gt; real<span class="Apple-tab-span" style="white-space:pre"> </span>0m0.643s</div><div>&gt; user<span class="Apple-tab-span" style="white-space:pre">    </span>0m0.632s</div><div>&gt; sys<span class="Apple-tab-span" style="white-space:pre"> </span>0m0.008s</div>
+
+<div><br /></div>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>May 14, 2012</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/go">go</a>  <a class="category" href="https://shell909090.github.io/tags/lisp">lisp</a>  <a class="category" href="https://shell909090.github.io/tags/lua">lua</a>  <a class="category" href="https://shell909090.github.io/tags/program">program</a>  <a class="category" href="https://shell909090.github.io/tags/python">python</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/2170/" title="新闻和八卦和概率聚集">新闻和八卦和概率聚集</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/2174/" title="语言的效率差异2">语言的效率差异2</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

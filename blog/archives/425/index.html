@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>弄死MSN的共享文件夹</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         弄死MSN的共享文件夹 
+    </h1>
+    <p class="meta">Jan 26, 2008
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/425/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>MSN8的共享文件夹功能根本就是一个废物功能，速度慢，不习惯，而且用处不大。最恶心的是，没有卸载选项不说，手工卸载后一开MSN一重起还会回来。NND，看我怎么弄死他。MSN虽然是微软自己的产品，但是也需要遵守微软的API行为。改变资源管理器的行为是用COM组件注入到exlporer中实现的，没有使用驱动层的东西。那么我们就设法阻断DLL文件的注入加载。<br />    首先，regsvr32 /u是不行的。因为MSN一启动又会注册上，除非你不用MSN。删除文件也不行，因为会再生成一个。那么，我放着文件不动，把内容清空，然后再删除NTFS权限怎么样呢？即使是微软的产品，也不会强制说我的更改无效，然后自己胡来一套吧。<br />    首先，关闭所有MSN有关软件，在运行中输入cmd开一个命令行窗口。然后，用process explorer(现在这东西也是微软的产品)终止explorer进程(系统自带那个应该也行，不过我没有测试过)。这步顺序非常重要，因为我们要先阻断COM组件的加载，否则无法对文件实行更改。所以我们要先打开一个CMD，然后再关闭explorer。否则一旦关闭explorer，开CMD就难了。而没有CMD，要去删除文件就要多费一些手续了。<br />    我们现在在CMD中切换到MSN所在目录，删除fsshext.8.1.0178.00.dll啥的文件。这个文件名会根据你安装的版本而变化。而后启动explorer(在CMD里面敲explorer就好)，这个时候COM组件已经没有加载了。于是我们建立一个文本文件，改名叫fsshext.8.1.0178.00.dll，放到MSN的目录里面，再删除所有人的访问权限。删除的方法是文件上右击，点属性，安全，高级，取消&quot;从父目录继承权限&quot;的勾选，然后点删除。如果看不到安全选项卡，检查以下项目。工具，文件夹选项，察看，使用简单文件共享(推荐)，取消他的勾选。微软的东西，最好表随便勾。<br />    根据我的测试，这时候你随便重起电脑，MSN的组件说加载不上就加载不上。同理也可以应用到3721之类的流氓组件上，只要抢先建立了同名的文件，并且阻断了权限，这些组件就会无法使用。如果你进一步做了分离权限(日常不使用管理员账户)，即使安装程序作者知道这种方法都无法应对。如果可以的话，就说明微软存在漏洞了。
+<div></div></p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Jan 26, 2008</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/msn-2">msn-2</a>  <a class="category" href="https://shell909090.github.io/tags/windows">windows</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/424/" title="财务数据库">财务数据库</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/426/" title="Process Explorer的潜在内存泄漏">Process Explorer的潜在内存泄漏</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

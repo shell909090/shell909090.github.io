@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>合用两个路由器的几种方案</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         合用两个路由器的几种方案 
+    </h1>
+    <p class="meta">Sep 26, 2011
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1917/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <div>    为什么用两个路由器？最常见的理由是延长信号。在超级大的场地中，中间放一个路由器，用四根线连接到周围的几个路由器上面，信号覆盖整个场地。这是最常见的理由。也有可能是因为你的主路由器LAN接口不足了。当然，也可能是因为蛋疼，或者其他原因。不论如何，为了在多个路由器上达到同时上网的目的，你有以下几个选项。桥接模式，路由模式，双层NAT模式。</div><div>    我先解说一下一些基础的环境。我假定你有一个互联网线，有一个路由器的WAN口接到了互联网上面，这个路由器称为M。其他路由器分别称为S1,S2...。直接连接到M的LAN口的电脑称为ML1,ML2...，通过无线连接的就称为MW1,MW1...。同样，连接到路由器S1的LAN和无线的分别叫做S1L1,S1W1，类推。</div>
+
+<p><div><br /></div>1.桥接模式<div>    这是你第一个应当尝试的模式，连接方法是路由器S1的LAN口直接连接路由器M的LAN口。这个模式不一定能够配通，原因是因为要求路由器S必须支持桥接模式。基于某些理由，很多路由器并不支持桥接。一般来说，有可能LAN口支持桥接而WIFI不支持。因此S1L1支持桥接成功的概率比S1W1支持桥接成功的概率高。如果你需要一台支持桥接的路由器，TP-LINK的TL-WR*系列路由器好像大多支持。希望大家补充哪款路由器支持桥接或者不支持。</div></p>
+
+<div>    桥接是将路由器S完全的作为一个交换机使用，所以你的ML1和S1L1在同一个网段，两者可以互相ping通，发送各种包，也可以看到对方的广播。这种模式一旦连接成功，连接模式是透明的。因此，应当关闭DHCP，只启用一台路由器的DHCP功能。或者最好手工分配IP。</div> <div>    严格来说，只有S是一个无线路由的时候，这个模式才叫做桥接。如果只做有线连接，这个模式应当叫做交换模式。</div><div><br /> <div>2.路由模式</div><div>    路由模式，是一个比桥接复杂，效果好，但是用途相对比较窄的方案。接法是路由器S1的WAN口连接路由器M的LAN口，并且为S手工指定IP，再关闭S的NAT功能。M的网段和S的网段必须不为同一个网段，例如M配置为<a href="http://192.168.0.0/24" target="_blank">192.168.0.0/24</a>网段，S配置为<a href="http://192.168.1.0/24" target="_blank">192.168.1.0/24</a>网段。S的WAN口手工指定为192.168.0.2。然后在M1上配置人工路由，将192.168.1.0的所有包交由路由器192.168.0.2处理。并在S1上配置默认路由为192.168.0.1(M的地址)。</div>
+
+<p><div>    这个模式是将路由器S和M作为路由器使用。当S1L1发送包时，会被S1转发到M去处理。而M收到要发送给S1L1的包时，会交由S1处理。这一模式能够工作的基础是你能够控制M的路由表，并且S可以关闭NAT。通常情况下，这个S最好是OpenWRT/DDWRT。这也是为什么用途比较窄的原因，毕竟支持桥接的路由器好找，OpenWRT/DDWRT就相对小众了。</div><div>    当这个模式连接完成后，ML1和S1L1在不同网段，但是两者可以互相ping通，发送各种包，却无法看到对方的广播。因此这种模式的效果比桥接好一些，因为地址范围更大，而且很容易隔离广播风暴。这种模式一旦连接成功，连接模式是透明的。</div></p>
+
+<p><div><br /></div><div>3.双层NAT模式</div></div><div>    如果上两种模式都不工作，你就必须使用双层NAT模式。这种模式保证一定工作，但是在使用上比较麻烦，需要用户自行计算访问规则。</div><div>    接法是路由器S1的WAN口连接路由器M的LAN口，并且将S配置为DHCP。M的网段和S的网段必须不为同一个网段，例如M配置为<a href="http://192.168.0.0/24" target="_blank">192.168.0.0/24</a>网段，S配置为<a href="http://192.168.1.0/24" target="_blank">192.168.1.0/24</a>网段。</div></p>
+
+<p><div>    S的数据包会被NAT两次再发到互联网上，要进行端口转发也必须配置两次。性能相对比较差，而且无法做NAT穿透。</div><div>    当这个模式连接完成后，ML1和S1L1在不同网段，S1L1可以ping通ML1，但是反过来不行。因此，S1L1可以主动连接上ML1，而反过来不行。这种模式不是透明的，两者进行连接时必须考虑网络转换和端口转发。</div></p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Sep 26, 2011</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/computer">computer</a>  <a class="category" href="https://shell909090.github.io/tags/network">network</a>  <a class="category" href="https://shell909090.github.io/tags/openwrt">openwrt</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/1915/" title="密码管理规范">密码管理规范</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/1919/" title="uwsgi under debian">uwsgi under debian</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

@@ -1,0 +1,829 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Python on Shell&#39;s Home</title>
+    <link>https://shell909090.github.io/tags/python/</link>
+    <description>Recent content in Python on Shell&#39;s Home</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 19 Jul 2013 14:33:14 +0800</lastBuildDate>
+    <atom:link href="https://shell909090.github.io/tags/python/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>一种新的python局部调试手法</title>
+      <link>https://shell909090.github.io/blog/archives/2450/</link>
+      <pubDate>Fri, 19 Jul 2013 14:33:14 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2450/</guid>
+      <description>&lt;p&gt;我们都知道，python里面可以用pdb来调试代码。但是pdb往往不大好用。有时候调试代码往往在多重条件里面，直接用pdb需要下条件断点，设定复杂的条件。&lt;/p&gt;
+
+&lt;p&gt;一个简单的办法就是这么干。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;    __import__(&#39;pdb&#39;).set_trace()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;但是有的时候，连这个出现的条件都不满足。例如，代码必须在一个受限环境中运行，很难拿到console，或者其他林林总总的毛病。这时候，我们还有一招秘技。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;    import pdb, socket
+    s = socket.socket()
+    s.connect((&#39;127.0.0.1&#39;, 8888))
+    f = s.makefile()
+    pdb.Pdb(stdin=f, stdout=f).set_trace()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;在连接到的目标端口上，提前用nc做好监听，就可以在触发断点的时候直接连接上来调试。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>python插件技巧</title>
+      <link>https://shell909090.github.io/blog/archives/2344/</link>
+      <pubDate>Wed, 20 Mar 2013 11:18:03 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2344/</guid>
+      <description>&lt;h1&gt;简述和通则&lt;/h1&gt;
+
+&lt;p&gt;何谓插件。&lt;/p&gt;
+
+&lt;p&gt;在实现某个功能时，经常需要对一个功能提供多种实现。例如短信网关接口各异，但是对系统而言，发送代码是一样的。
+通过一套特定的机制，在成型的产品中，增加一个独立的文件，即可实现定制化实现。这套机制被称为插件机制。插件必须满足下面几个要求。&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;对于已经发出去的产品，插件机制可以通过增加文件，并少量修改（一般1-3行）产品源码，即可为产品添加新的功能。&lt;/li&gt;
+&lt;li&gt;对于产品主分支，带有插件不会影响主分支的正常工作。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;插件机制的以上两个特性对产品定制非常有帮助。因为使用插件进行定制开发的项目，不需要独立建立分支。只需要在主分支上添加几个文件即可。分发补丁时也格外容易。&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;禁止在python主目录下直接放置插件，所有插件必须在python下级目录下存放。&lt;/li&gt;
+&lt;li&gt;插件的命名必须使用前缀师命名规则，所有同类型插件，要么在一个目录下独立存放（目录下没有其他代码），要么在一个目录下拥有同样的前缀（其他代码不得使用这个前缀）。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h1&gt;替换型插件&lt;/h1&gt;
+
+&lt;p&gt;最简单的插件手法，就是某个文件提供提供某些函数，在变更功能时用另一个同样实现这些函数的文件替换掉原始文件。这甚至称不上一个插件手法，只能算打补丁。&lt;/p&gt;
+
+&lt;p&gt;替换型插件的提升，就是在文件中不直接提供函数，而是从某个其他文件载入这些函数。例如以下代码：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;from abc import *
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;原始是从abc文件中取得所有符号。当有新的文件abc2提供时，将原始文件替换为abc2，补上去，即可改变代码。注意这行代码一般不在一个大的文件中的某一行，而一般存放于一个独立文件。因为大文件相对容易修改，不能用新的代码替换。而独立文件相对固定，在打补丁时可以用新的代码直接替换。&lt;/p&gt;
+
+&lt;p&gt;替换型插件适用于，对于某个客户而言，只需要在多组实现中静态的选择一组的情况。替换型插件的优点是工作原理简单直观，排查容易。缺点是对于一个功能不能提供复数组实现。&lt;/p&gt;
+
+&lt;h1&gt;配置型插件&lt;/h1&gt;
+
+&lt;p&gt;另一种插件手法基于文件或配置。在某个目录中，放置某个功能的多个实现。在加载时，载入全部插件。在使用时，根据配置动态选择。这种手法被称为配置型插件。&lt;/p&gt;
+
+&lt;p&gt;配置型插件是一种非常重要的编程技巧，他为程序提供了非常优良的可扩展性。&lt;/p&gt;
+
+&lt;p&gt;例如下面的例子，简述了一种配置型插件的实现：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;funcmap = {}
+
+def register_func(name):
+    def _inner(func):
+        funcmap[name] = func
+        return func
+    return _inner
+
+在具体实现中
+
+@register_func(name)
+def func1(....):
+    pass
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;在__init__.py中，import一下新的文件。在原本的funcmap中，即可出现新的name和func的对应。&lt;/p&gt;
+
+&lt;p&gt;配置型插件适用于大多数场景，其优点是工作原理简单，可以为一个功能提供复数组实现。缺点是使用上限制比较大，必须和逻辑结合，思考困难。&lt;/p&gt;
+
+&lt;h1&gt;动态加载&lt;/h1&gt;
+
+&lt;p&gt;动态加载插件是一种插件技巧，并不特定用于替换型或配置型插件。&lt;/p&gt;
+
+&lt;p&gt;当需要加载插件时，通过python代码访问文件系统，枚举出特定文件并加载的技巧，称为动态加载。以下代码是配合上面的配置型插件的例子，实现动态加载的例子。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;def load_plugins():
+    for filename in os.listdir(&#39;plugins&#39;):
+        if filename.endswith(&#39;py&#39;): __import__(filename[:-3])
+        if filename.endswith(&#39;pyc&#39;): __import__(filename[:-4])
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;动态加载的优点是，可以通过放置文件来增加/修改功能，而不需要修改代码。缺点是，由于需要访问文件系统，因此效率并不高。如果每次加载都需要动态查询，那么系统效率会大幅下降。&lt;/p&gt;
+
+&lt;h1&gt;热加载插件&lt;/h1&gt;
+
+&lt;p&gt;热加载是一种比较高级的技巧。在程序执行中，不退出进程而动态的将最新的组件加载进来的能力，被称为热加载。&lt;/p&gt;
+
+&lt;p&gt;简单的热加载就是在每次执行功能的时候，检查是否有新的组件。由于这样会带来很高的系统负载，因此除非必要，否则不要滥用热加载。&lt;/p&gt;
+
+&lt;p&gt;更复杂一些的热加载，需要用新的实现替换原有实现。这涉及几个编程上的限制。&lt;/p&gt;
+
+&lt;p&gt;热加载有几个限制，必须严格遵循：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;在所有访问前，必须检查文件。&lt;/li&gt;
+&lt;li&gt;如果要进行热替换，不得将原有文件的导出符号作为值使用。即，无论是文件的导出数据，导出函数，都不得作为其他对象的赋值内容。&lt;/li&gt;
+&lt;li&gt;热替换内，不得保存私有数据。所有数据必须在上下文中，或者全局中存放。&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>python环境部署</title>
+      <link>https://shell909090.github.io/blog/archives/2278/</link>
+      <pubDate>Thu, 22 Nov 2012 14:19:46 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2278/</guid>
+      <description>&lt;p&gt;&lt;h2&gt;abstract&lt;/h2&gt;
+本文的目的，在于教授使用virtualenv创立python环境，对环境的管理和使用，以及代码和部署的用法范例。在阅读完本文后，你应当可以。
+&lt;ul&gt;
+    &lt;li&gt;创立，部署，管理virtualenv环境&lt;/li&gt;
+    &lt;li&gt;使用virtualenv环境进行编码&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;virtualenv环境建立&lt;/h2&gt;
+virtualenv是python的虚环境管理包，他的主要目的是为了隔离环境。其中包含以下两个范畴。
+&lt;ul&gt;
+    &lt;li&gt;在虚环境中安装包，不需要对系统进行修改，不会对系统造成污染。&lt;/li&gt;
+    &lt;li&gt;在系统中安装的包，不会对虚环境造成污染。这主要是出于版本安全考虑。&lt;/li&gt;
+&lt;/ul&gt;
+因此，virtualenv默认会阻止你使用系统中安装的包。要解决这个问题，需要在建立虚拟环境时指定参数&amp;ndash;system-site-packages。&lt;/p&gt;
+
+&lt;p&gt;virtualenv的环境可以通过执行virtualenv path加以建立。当建立完成后&lt;strong&gt;不可移动&lt;/strong&gt;，需要一些特殊调整，使用参数&amp;ndash;relocatable对此没有帮助。
+&lt;h2&gt;virtualenv环境的激活和反激活&lt;/h2&gt;
+virtualenv环境是通过替换系统环境变量工作的。在激活后会替换系统的提示符，提示你进入环境。一般我们使用source $VIRTUALENVPATH/bin/activate来激活。激活后直接执行deactivate反激活。&lt;/p&gt;
+
+&lt;p&gt;virtualenv替换系统环境变量的方式是在path前加入virtualenv的bin路径，使自己的python优于系统python执行。同时替换pythonhome，变更lib查找路径。因此，对于某些可以指定pythonhome的应用（例如网络部署），直接指定pythonpath为virtualenv路径即可。&lt;/p&gt;
+
+&lt;p&gt;注意，由于virtualenv的工作方式，因此当你执行su/sudo bash后，virtualenv环境都有可能消失，但是提示符仍旧生效。建议通过sudo执行脚本，脚本内进行source比较安全。或者直接sudo目标程序也可以，&lt;strong&gt;不要新建上下文&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;如果需要保持持续的环境激活，可以将source $VIRTUALENVPATH/bin/activate加入~/.bashrc。&lt;/p&gt;
+
+&lt;p&gt;当virtualenv激活后，后续的pip安装和python使用都会使用virtualenv内的版本。因此下文未经特殊说明，都是指在激活环境后进行操作。
+&lt;h2&gt;virtualenv环境的管理&lt;/h2&gt;
+主要包括两种手段，安装和删除。一般使用pip install package name进行安装。pip uninstall package name进行删除。
+&lt;h2&gt;virtualenv环境的保存和恢复&lt;/h2&gt;
+virtualenv环境可以保存和恢复。所谓保存和恢复，是指在安装过包的环境中保存包列表（和具体版本），在未安装（或版本错误）的环境中启用。&lt;/p&gt;
+
+&lt;p&gt;一般通过pip freeze &amp;gt; filename进行保存。在目标机器上执行pip install -r filename进行恢复。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>python入门指引</title>
+      <link>https://shell909090.github.io/blog/archives/2272/</link>
+      <pubDate>Mon, 19 Nov 2012 10:11:49 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2272/</guid>
+      <description>&lt;h1&gt;前言&lt;/h1&gt;
+
+&lt;p&gt;其实我也不知道python怎么入门，由我来写这个真的不是很合适。我学python是直接找了dive into python来看。然后照着写了几个例子。大概两天后，就能磕磕绊绊的上路了。就好像拿筷子，都不记得怎么学会的拿筷子，怎么来教人呢？&lt;/p&gt;
+
+&lt;p&gt;不过最近在python-cn的列表里面，我大概连续数周都持续看到“python入门看哪本教程比较好”，实在是不堪其扰。干脆就写个简单的guide，有心的人自己看。没心的——那我也没办法了。&lt;/p&gt;
+
+&lt;h1&gt;基本知识&lt;/h1&gt;
+
+&lt;p&gt;首先，你要了解一个事情。很多你不会的东西并不属于python。例如你不知道网络通讯的流程，你不知道文件的权限和打开标志用法，你不知道fork和stdin/stdout的关系。这些python教不会你。如果你缺乏这些和语言/库无关的相关知识，请自行补课。如果你缺乏计算机基础理论，请自行补课。&lt;/p&gt;
+
+&lt;p&gt;因此不要随便给我发邮件/留言/咨询，为什么这个问题在python里无法解决。为什么python无法所见即所得，为什么python无法热部署，为什么python无法用于嵌入式开发。在问这个问题之前，请先确认“这是一个python的问题”。例如GIL，或者脑残lambda。如果你不确定，请自己搜索一下相关的文章，确认一下。在提问前，看看“提问的智慧”。如果你确实搜过了，找不到，那就问吧，没办法。&lt;/p&gt;
+
+&lt;h1&gt;入门&lt;/h1&gt;
+
+&lt;p&gt;在网络上，python入门的两大基础书籍分别是(后面有朋友补充了一本，我也加上)：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.swaroopch.com/notes/python/&#34;&gt;A Byte of Python&lt;/a&gt; &lt;a href=&#34;http://woodpecker.org.cn/abyteofpython_cn/chinese/&#34;&gt;中文版&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.diveintopython.net/&#34;&gt;Dive Into Python&lt;/a&gt; &lt;a href=&#34;http://woodpecker.org.cn/diveintopython/&#34;&gt;中文版&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://learnpythonthehardway.org/book/&#34;&gt;Learn Python The Hard Way, 2nd Edition&lt;/a&gt; &lt;a href=&#34;https://learn-python-the-hard-way-zh_cn-translation.readthedocs.org/en/latest/&#34;&gt;中文版&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;后面基本就是看&lt;a href=&#34;http://www.python.org/doc/&#34;&gt;python-doc&lt;/a&gt;，我推荐你跳过一堆有的没的，直接看&lt;a href=&#34;http://docs.python.org/2/library/&#34;&gt;Library Reference&lt;/a&gt;。python本身就是易读性极强的代码，文档又相当漂亮，内置库又全。大部分情况下，python-doc都应当能解决你的问题。&lt;/p&gt;
+
+&lt;h2&gt;web&lt;/h2&gt;
+
+&lt;p&gt;web是程序员的一大去向。python程序员入门必须要过的一个框架就是django。不要纠结了，django在python社区中名气太大，用的人太多。因此入门材料是最多的，社区最大，门槛最低。如果你要入门web，必然从django开始。在不熟悉python的情况下，我不推荐你贸然从其他框架开始入门。&lt;/p&gt;
+
+&lt;p&gt;当然，如果你已经熟悉python了，考虑入门web框架，可以参考专精一节。&lt;/p&gt;
+
+&lt;h2&gt;爬虫&lt;/h2&gt;
+
+&lt;p&gt;python下说到爬虫开发，入门首选Scrapy。原因和上面一样，社区最大，用的人最多。好不好用就见仁见智了。反正我的所有爬虫框架都是用自己基于gevent写的库。&lt;/p&gt;
+
+&lt;h2&gt;ui&lt;/h2&gt;
+
+&lt;p&gt;python的ui框架也很多，很复杂。同样，如果是入门，我建议从qt的两个框架，pyqt和pyside开始入门。关于这两家的恩怨我就不多废话了。&lt;/p&gt;
+
+&lt;h1&gt;专精&lt;/h1&gt;
+
+&lt;p&gt;所谓专精，是指使用python在特定工作上。我们基本分为几个领域。&lt;/p&gt;
+
+&lt;h2&gt;系统和部署&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;virtualenv：基本凡是在商用环境中部署的，建议都用这个。可以将python自带在源码里面，避免迁移/集成问题。&lt;/li&gt;
+&lt;li&gt;python-daemon：写daemon的时候比较方便。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;网络&lt;/h2&gt;
+
+&lt;p&gt;说到网络，基本就是除web外。&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;twisted：非常强大的网络库，各种协议支持全面，不过reactor模式真是纠结。&lt;/li&gt;
+&lt;li&gt;gevent：异步协程模式的网络库。&lt;/li&gt;
+&lt;li&gt;Scapy：强大的网络库，基本啥都能干。&lt;/li&gt;
+&lt;li&gt;pyzmq：我一直不觉得zeromq是一个mq。我觉得他是一个抽象网络层。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;web容器&lt;/h2&gt;
+
+&lt;p&gt;python web框架的一大特点，是容器/框架/ORM/template可以分开自己玩。&lt;/p&gt;
+
+&lt;p&gt;注意，容器和框架是两码事情。容器是python web运行的环境，框架是解析环境的玩意。两者间一般都使用&lt;a href=&#34;http://www.python.org/dev/peps/pep-0333&#34;&gt;wsgi接口&lt;/a&gt;进行连接。这是python的标准做法，fastcgi/scgi也会被转换为wsgi进行连接。但是也不是没有其他选择。一般我们有以下模式：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;cgi：python-doc中自带了cgi模块。&lt;/li&gt;
+&lt;li&gt;mod_python：embed in apache。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;下面是wsgi接口的容器。wsgi的优点在于我们可以在这些容器上运行任意一款支持wsgi的框架。&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;flup：支持提供fastcgi, scgi, AJP接口，web server可以用这三种协议进行连接。&lt;/li&gt;
+&lt;li&gt;Google App Engine：PaaS服务。&lt;/li&gt;
+&lt;li&gt;Gunicorn：直接提供http服务。&lt;/li&gt;
+&lt;li&gt;mod_wsgi：使用内部协议和apache集成。&lt;/li&gt;
+&lt;li&gt;twisted：直接提供http服务。&lt;/li&gt;
+&lt;li&gt;tornado：直接提供http服务。&lt;/li&gt;
+&lt;li&gt;uWSGI：使用内部协议和nginx集成。&lt;/li&gt;
+&lt;li&gt;werkzeug：直接提供http服务。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;建议的部署模式是，用apache的，去mode_wsgi。用nginx的，去uwsgi。用GAE的，直接可用。其他，通通转发。&lt;/p&gt;
+
+&lt;h2&gt;web&lt;/h2&gt;
+
+&lt;p&gt;你可以参考飞龙的&lt;a href=&#34;http://feilong.me/2011/01/talk-about-python-web-framework&#34;&gt;这篇文章&lt;/a&gt;，里面介绍了数种框架。你可以通通玩一下，反正也不麻烦，然后选择一种最适合自己的玩意。&lt;/p&gt;
+
+&lt;p&gt;python中有一种不得不提的玩意就是Zope。这个东西我不知道该如何评价，有兴趣的自己看吧。&lt;/p&gt;
+
+&lt;h2&gt;ORM&lt;/h2&gt;
+
+&lt;p&gt;ORM：python的ORM系统比较单一，一般都是sqlalchemy。这个框架非常强大，但是很消耗资源。有兴趣的可以去&lt;a href=&#34;http://www.sqlalchemy.org/&#34;&gt;官网&lt;/a&gt;上自己了解。偶尔也见用SQLObject的，不多。&lt;/p&gt;
+
+&lt;p&gt;ORM的另一大选择是ZODB，不过用的比较少。希望了解的自己去咨询老潘。&lt;/p&gt;
+
+&lt;h2&gt;template&lt;/h2&gt;
+
+&lt;p&gt;python wiki上&lt;a href=&#34;http://wiki.python.org/moin/Templating&#34;&gt;有篇文章&lt;/a&gt;提到了python template engine的分类和列表。作为专精，我建议你至少玩一下string.Template，webhelpers，mako，jinja2，Genshi这几个玩意。&lt;/p&gt;
+
+&lt;h2&gt;爬虫&lt;/h2&gt;
+
+&lt;p&gt;关于python爬虫的进阶，就比较不好说。我正在写一篇长篇blog，介绍python爬虫的种种。不过至少来说，你需要了解以下几个东西：celery，beautifulsoap，lxml，selenium，phantomjs，pyquery。&lt;/p&gt;
+
+&lt;h2&gt;ui&lt;/h2&gt;
+
+&lt;p&gt;gui库的列表可以看&lt;a href=&#34;http://wiki.python.org/moin/GuiProgramming&#34;&gt;这里&lt;/a&gt;，其中我推荐你看一下玩玩的有：PyGtk，TkInter，WxPython，Glade，pygame。&lt;/p&gt;
+
+&lt;h2&gt;科学计算&lt;/h2&gt;
+
+&lt;p&gt;不用废话，你可以看这篇文档&lt;a href=&#34;http://hyry.dip.jp:8000/pydoc/index.html&#34;&gt;用Python做科学计算&lt;/a&gt;。作者出书了，你可以支持一下。&lt;/p&gt;
+
+&lt;h2&gt;图形处理&lt;/h2&gt;
+
+&lt;p&gt;那必然要提到的就是pil，python imaging library。另一样要介绍的是pydot，pygraph或者pygraphviz。这不是图形库，准确的说，应当是图论库。他可以使用graphviz将图论结构转换为图像。&lt;/p&gt;
+
+&lt;h2&gt;文档&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;pygments：格式化代码的库，可以将文本代码格式化为不同格式的，带颜色的代码。&lt;/li&gt;
+&lt;li&gt;markdown：格式化markdown文档为html的库。不过我觉得实现的和标准不一致，没用。&lt;/li&gt;
+&lt;li&gt;reStructured：docutils工具组，可以转换为多种格式。&lt;/li&gt;
+&lt;li&gt;sphinx：同样是rst的工具，可以生成多种格式。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1&gt;进阶&lt;/h1&gt;
+
+&lt;p&gt;首先，你应当去看沈游侠在某次cpug聚会上的讲话&lt;a href=&#34;http://www.slideshare.net/wilhelmshen/py-art&#34;&gt;Python 编程艺术&lt;/a&gt;，这是python程序员进阶的必读。不过很可惜，slide是高桥流的，本身不是为了让你看内容而出的。而当时的演讲又没有录像（如果有的话，请给我一份拷贝，我会问沈游侠能不能放出，找空间，搞定相关问题，感谢），因此理解上相当困难。不过这里的每一句话都相当有道理，是数十年程序经验的总结。&lt;/p&gt;
+
+&lt;p&gt;另外，作为进阶，你可以适当的看python3的一些内容。&lt;a href=&#34;http://getpython3.com/diveintopython3/&#34;&gt;Dive Into Python 3&lt;/a&gt; &lt;a href=&#34;http://woodpecker.org.cn/diveintopython3/&#34;&gt;中文版&lt;/a&gt;。还有&lt;a href=&#34;http://pypy.org/&#34;&gt;pypy&lt;/a&gt;和&lt;a href=&#34;http://cython.org/&#34;&gt;cython&lt;/a&gt;。&lt;/p&gt;
+
+&lt;p&gt;作为python进阶人士，你一定要在手头备一份常用发行的&lt;a href=&#34;http://www.python.org/download/&#34;&gt;源码&lt;/a&gt;，不要求小版本一致，至少大版本一致（2.7.x，最后一位可以不对齐）。适当的阅读源码，尤其是Objects目录。经常重新阅读python-doc。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>cython编译细节</title>
+      <link>https://shell909090.github.io/blog/archives/2259/</link>
+      <pubDate>Thu, 25 Oct 2012 11:12:09 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2259/</guid>
+      <description>&lt;p&gt;两点简述：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;可以使用cython &amp;ndash;embed来编译一个pyx，生成带main的代码，然后用gcc直接编译过去。大概样例是这样的：&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;cython &amp;ndash;embed $^&lt;/p&gt;
+
+&lt;p&gt;gcc $(shell python-config &amp;ndash;includes) $(shell python-config &amp;ndash;libs) -O2 -o $@ $^&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;pyx的文件名会被转换为变量，所以所有在变量中不应当出现的符号也别出现，例如-。&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>pycon2012</title>
+      <link>https://shell909090.github.io/blog/archives/2257/</link>
+      <pubDate>Tue, 23 Oct 2012 14:27:34 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2257/</guid>
+      <description>&lt;p&gt;今天第一天在大型会议上演讲，其实挺紧张的。不过还不错，虽然临场反应并不热烈，但是至少不冷场。下面是我今天看到内容的回忆，有些印象不神，记得不清楚了。&lt;/p&gt;
+
+&lt;h1&gt;第一天上午&lt;/h1&gt;
+
+&lt;h2&gt;视频播放&lt;/h2&gt;
+
+&lt;p&gt;上来先是sting先给我们放了一堆视频，我基本啥都没记住。就记住一个在日本的pythoner说教孩子编程时大家的评语了——python穷三代，编程毁一生。我后面接的是，用scheme子子孙孙都完了。&lt;/p&gt;
+
+&lt;h2&gt;python产品构建和发布指南&lt;/h2&gt;
+
+&lt;p&gt;沈游侠的主题，彻底干货。基本要点就是利用cython和pypy来编译类python语言，变成C语言代码。这样不但速度快，而且C代码都是可以跨平台的。后面又列举了如何用cython和pypy来编译库。这样基本可以完成python到多数平台的移植。&lt;/p&gt;
+
+&lt;p&gt;我做了一下简单测试。cython对速度的增加主要是静态类型编译，如果保持代码不动，速度反而会略微下降。因此在速度提升上，作用并不如想像中那么明显。但是在跨平台上，效果就非常好。rpython则完全相反，经过rpython编译的代码，在基本不修改的情况下（当然，前提是你需要符合rpython），执行比C还快。&lt;/p&gt;
+
+&lt;p&gt;不过游侠在后面的答疑中也说了，pypy的rpython编译把握难度比较高，不建议在产品中使用。&lt;/p&gt;
+
+&lt;p&gt;另外，他后面也提了溜宝的例子，在python和js之间可以远过程调用，还可以回调。熟悉http的应该可以听出来，这个在现在浏览器中必然是要用到long pull技术的。因此底层框架不肖说，必然是Eurasia。&lt;/p&gt;
+
+&lt;h2&gt;让程序运行更快&lt;/h2&gt;
+
+&lt;p&gt;我们几个都在说，土豆的一贯风格是分享内容是和技术有关的干货，但是都和python不搭边。最多在最后说一句，这个技术在我们这里是利用python做的。上次黄东的演讲就是，讲如何算流量带宽费，最后来一句，这个是python实现的。这次李小红的分享也是，很技术，但是和python没啥关系。讲到一半还来了一句，“我对python不熟悉，前几天特意看了一下，dict是利用开放地址法实现而不是开链实现的，这让我对python顿时有了信心”。微薄上无数吐槽高级黑啊。&lt;/p&gt;
+
+&lt;p&gt;土豆的分享其实很简单，核心就是如何通过代理让网站的响应速度更快。干货是干货，但是不是非常熟悉http协议，能够将http本身优化到相当程度的，听了等于白听。因为上面讲的大部分，都是内存命中和交换，磁盘写出，cpu调度，poll和epoll内核模式差异之类的话题。在python下面，poll和epoll基本都看不出差别，大部分优化都围绕着模式打转。研究这种命中技巧不是南辕北辙么？&lt;/p&gt;
+
+&lt;p&gt;但是这不表示这个主题没用，只是如果你不把其他方面的问题解决的很彻底，先没头没脑在CPU和内存缓存命中上下功夫，多半是做不过别人的。&lt;/p&gt;
+
+&lt;h1&gt;第一天下午&lt;/h1&gt;
+
+&lt;h2&gt;OpenERP 即将推出的第 7 版的功能和新的编程框架介绍&lt;/h2&gt;
+
+&lt;p&gt;演讲者是个法国人，中文相当不错。不过和Thomas比起来还是差点。旁边的老外哥们说，那是因为Thomas有个好中国老婆。&lt;/p&gt;
+
+&lt;p&gt;基本是广告。除了让我们体验了一把openerp的风格外，啥都没看着。不过openerp看起来确实够屌的，直接去下一个插件，应用，然后就直接换掉了语言。这基本和php差不多。还有一堆的良好的交互特性，看起来非常像应用。此外，啥技术都没有。&lt;/p&gt;
+
+&lt;h2&gt;元编程在 Redis ORM 中的应用&lt;/h2&gt;
+
+&lt;p&gt;我自己的题目，会场反应并不很热烈。总共两个选项，我问认为是1的举手，几个。认为2的举手，几个。剩下的是啥？&lt;/p&gt;
+
+&lt;p&gt;其实元编程本身就不好讲，这个题目我写完文档算了一下，大概1个小时到一个半小时。问题是我问sting多要点时间，没有。好容易给我加到45分钟。我对着文档左砍右砍，还是紧紧张张的25分钟讲完。要在30分钟出头讲完整个题目，也难怪听众反应不良。&lt;/p&gt;
+
+&lt;p&gt;具体我也就不展开了，希望看到的可以看我的slide。另外我说一下，这个slide也是我用python做的。&lt;/p&gt;
+
+&lt;h2&gt;用 Tornado 开发 RESTful API 应用&lt;/h2&gt;
+
+&lt;p&gt;其实以这个应用而言，是适合GAE的项目。不过飞龙只是借这个题目讲Tornado而已。&lt;/p&gt;
+
+&lt;h2&gt;阿里云之移动开发者上云&lt;/h2&gt;
+
+&lt;p&gt;纯粹广告。不过既然是lighting topic，也不算太难受。我也顺便看了一下阿里云的架构。不过主讲完全没讲到要点，他们到底是卖IaaS业务，还是卖PaaS业务，还是云存储，还是三者都有？另外，用IaaS来做PaaS的可伸缩？我还真不觉得这是个好主意。。。&lt;/p&gt;
+
+&lt;h2&gt;Python如何帮助「逆转三国」获得成功&lt;/h2&gt;
+
+&lt;p&gt;广告中的广告。今天唯一一个妹纸上场的主题，我还在想，终于有妹纸上去做分享了，还是个美女。结果介绍完了心里就凉了半截——市场总监，这姐们是个非技术的角色。演讲的主要内容是，python很好，python没出过乱子。完了，总共15分钟不到，我连拍第二张照片的机会都没有。其余时间全在说游戏是如何成功，左右还有海报助阵。最后还出来一个美女发传单。&lt;/p&gt;
+
+&lt;p&gt;最后主办方出来道歉，他们也以为这个topic是正规演讲，没想到讲成了lighting topic。&lt;/p&gt;
+
+&lt;h2&gt;网页游戏的跨界开发&lt;/h2&gt;
+
+&lt;p&gt;董诣的题目，主要讲他如何训练公司的策划使用python。他用的方法基本就是元编程的路数。&lt;/p&gt;
+
+&lt;p&gt;策划将配置写入excel，然后他们的程序读取excel，写出一个python的文件，再由服务器加载。这是典型的字符处理型元编程的例子。早知道他们这么用，我满可以顺手拿来举例的。&lt;/p&gt;
+
+&lt;p&gt;最后他的例子倒是让我们吐槽了一把。print后面可以不加空格，这是他们公司美工教的。&lt;/p&gt;
+
+&lt;h2&gt;实战游戏客户端&lt;/h2&gt;
+
+&lt;p&gt;林伟每年来都是带来大量干货。今年他是特别从北京飞过来，在演讲前刚刚到场。&lt;/p&gt;
+
+&lt;p&gt;他的题目是用python做客户端，并不是很好讲。因为python做游戏客户端不是很多。他举了一个pygame的例子，超级玛丽的企鹅复刻版，玩的挺欢乐的。&lt;/p&gt;
+
+&lt;p&gt;后面他大概讲解了一下游戏界面编程的几代模式变化。不过我印象最深的还是说到flash在苹果上。后面他运行flash的那个模拟的时候，我彻底吓一跳。我偷偷和沈游侠说，林伟说的完全没错，乔帮主抹黑flash完全是为了抢app的地位。&lt;/p&gt;
+
+&lt;p&gt;大家可以想象一下，如果flash拿到了硬件驱动加速会如何？Apple Store上的程序还有谁会花钱？都直接用网页跑一个Flash游戏就直接玩了。PC上能跑的，在苹果上自然也能跑，效果还不差。那还用Objective C做什么？只有性能要求特别高的才会用到。如果不需要Objective C，那Apple Store还怎么赚钱？从Flash能够做到这点，还有Adobe的战略布局，以及Apple Store目前的情况。我们多半可以得出这么个结论，苹果抹黑Flash的主要目地是将Flash踢出移动平台。而只有将Flash踢出了移动平台，才能保护移动设备开发市场的封闭性，从而从中牟利。&lt;/p&gt;
+
+&lt;p&gt;另外，他讲到的FlashCC也很有意思。在一个语言内调用其他语言，这非常有利于Flash的开发。不过后面林伟的一句口误让全场都笑了。他说：“我今天来就是告诉大家，从今以后，大家可以用Flash开发python程序了。”得，又是一堆高级黑评价。&lt;/p&gt;
+
+&lt;h1&gt;第二天上午&lt;/h1&gt;
+
+&lt;h2&gt;网游开发中的 Python 组件&lt;/h2&gt;
+
+&lt;p&gt;赖总的topic，基本讲的其实是模式。&lt;/p&gt;
+
+&lt;p&gt;对我来说其实也挺有用的，尤其是关于对象可调用方法的那个idea。写程序到了一定程度，实现已经不是问题。只要有明确的实现方法，你给足够的时间干，肯定是干的出的。问题是思路，也就是idea。一个好的思路往往是经过很久的总结，在实践中不停摔倒，才能真正用上去。&lt;/p&gt;
+
+&lt;p&gt;另外，最后的吐槽，其实是自行实现语法，或者至少是语法糖。我和赖总说，scheme其实很容易嵌入，而且很容易实现这样的要求——lisp类语言的宏天下闻名。赖总在研究的是基于python自己的Parser的方案，我回头有空也看一下。&lt;/p&gt;
+
+&lt;h2&gt;Python in Gentoo Linux&lt;/h2&gt;
+
+&lt;p&gt;Patrick Lauer的主题，主要是讲了Gentoo下面如何使用python，每个版本的python在gentoo下面的支持情况如何。按照数据来看，python3的支持接近完成了。而pypy大概只有2/3的支持比例。&lt;/p&gt;
+
+&lt;h2&gt;其余大部分人的topic&lt;/h2&gt;
+
+&lt;p&gt;我都没印象了，或者在睡觉。&lt;/p&gt;
+
+&lt;h1&gt;问题节录&lt;/h1&gt;
+
+&lt;h2&gt;元编程的情况下，如何使用sphinx处理文档&lt;/h2&gt;
+
+&lt;p&gt;其实我不写文档，我可以拿代码当文档读。python讲的就是可读性，好的代码应该能做到这点。不过要用sphinx来处理文档，他获得的是对象的__doc__。既然在元编程中可以操作主体，也当然可以操作文档。但是元编程操作文档毕竟太蛋疼了点，如果不是必要我是不干的。&lt;/p&gt;
+
+&lt;p&gt;另外，sphinx的多半是代码文档，也就是你写的代码是给程序员看的。你完全可以在整个目录下面写一个markdown来讲解要点。那些不够要点的就让他去吧。&lt;/p&gt;
+
+&lt;h2&gt;入门推荐哪些书&lt;/h2&gt;
+
+&lt;p&gt;我的推荐是看任何一本入门指引，然后直接看python-doc。python的文档写的很好，你完全可以直接看。在熟悉python后，再去看一些比较深的专门讲解。&lt;/p&gt;
+
+&lt;h1&gt;组织问题&lt;/h1&gt;
+
+&lt;p&gt;回顾完了，我们得数数活动中的问题。今年北京的会议上来就被人吐槽。李小红的topic还没结束，我就看到微薄里面有吐槽说北京这里已经上了两个广告了。上午过去，cpug和weibo上看到无数吐槽。基本都是集中在一点。花了100多参加活动，为什么看到的全是广告？&lt;/p&gt;
+
+&lt;p&gt;首先说明一点，100多的活动费用真的不贵。我们公司里面有人买票了（我们是金牌赞助商，有票的），大家听到100多，都估计不会带午饭的。我按照去年的经验估计有午饭还被怀疑了。按照官网报价，30的午餐。北京有人吐槽说不够吃，上海这里我基本看到都是够吃了。连续两天的必胜客，我觉得自己出去30绝对吃不到。茶歇饮料10元也是很实诚的价格。40的礼品和衣服绝对属于成本价，您要是下次能操作到比这个还低的执行成本，我们明年就找您了。这样100里面已经去掉80了。&lt;/p&gt;
+
+&lt;p&gt;前200人是99的票，等于只有20的其他费用。后面200人是118的票，等于40的其他费用。我问过sting，报名只有250人（我们场地是14人的宽度，250人要坐17排以上，我看到坐了15排多了）。即使全是付费客户，也只有6000的其他费用。我们的工作人员都是志愿者，不付费的（去年我就是志愿者）。主要的费用是场地费。6000租那么个场地，两天，你开玩笑呢吧。还有外地演讲者来回的差旅费，也是肯定要报销的。一趟北京/广州飞机来回加上住宿就是2000，你自己算算总数多少？&lt;/p&gt;
+
+&lt;p&gt;所以大会非找赞助商不可，我们公司就是金牌赞助商。但是赞助商和赞助商不一样。去年的赞助商和我们差不多，都是为了在圈子里面打知名度的，或者说基本就是做贡献了。今年我们公司可是又出赞助又出干货。但是有些公司就需要一些更直观的东西——赞助商不是都有演讲时间么？给丫广告。广告还和广告不一样。oneclick的topic虽然是个纯粹的广告，可是大家都不反感——至少我不反感。他们可是又派妹纸，又不废话，上去讲了10多分钟。我照相还没来得及拍第二张，讲完了。反观淘宝的那个广告我就很有意见了。您讲半天，我都还没听明白您广告的到底是个啥。您那slide大家心里都有数，纯粹是骗外行老板的。下回来技术广告，直接点，专业点。上去说，我们是卖IaaS的，俗称虚拟机。我们的虚拟机有几个技术点。我们还有存储产品，类似S3。我们的存储有几个技术点。大部分来技术会议的都不是做决策的，讲那么花哨纯属浪费时间。&lt;/p&gt;
+
+&lt;p&gt;应该说，主办方在和厂商打交道的手腕和组织能力在这里就看出分别来了。怎么看赞助商是不是广告（他们可没法提前拿到slide，而题目——去，题目有啥用），如果是广告，怎么控制广告时间和数量。怎么把广告分散在干货里面，让大家在给干货打的晕头转向的时候可以缓一缓。这是很看水平的。我甚至看到一条weibo，说感谢openerp的广告，我睡了一会，在元编程的时候还能精神奕奕的跟进。。。&lt;/p&gt;
+
+&lt;p&gt;不得不说，ZQ在这方面和sting还是有很大差异的，sting毕竟基本是职业的活动主办方了。&lt;/p&gt;
+
+&lt;p&gt;当然，另一个方案是放弃其他费用。按照sting的经验，去掉午饭绝对不行，出去吃时间不够，还零零散散。去掉茶歇和饮料也不行，听那会议不停下来歇一下会疯的。能去的只有礼品和衣服。可是去掉礼品和衣服，来的人就会没留念感。再说，每个人省下40，250人省下10000，还是凑不出场地费。&lt;/p&gt;
+
+&lt;p&gt;这么数数看，其实办社区活动很苦逼的。大牛比例太少，赞助商和听众都不来，那事情就办不成。大牛比例太高，听众是高兴了，可是赞助商不足，没经费。没经费怎么请大牛？难道让赖总在广州开个视频给我们讲么？人家又写slide，又搭两天来参加，再要自费差旅——这得算赞助商吧。要真这么搞，我一点也不会奇怪赖总的题目会变成游戏推介会。&lt;/p&gt;
+
+&lt;p&gt;这么看起来，100来参加，听到广告就不是件很奇怪的事情了，听不到才奇怪。但是控制广告的数量和时间，怎么总体把控，还需要组织者多多上心。毕竟来的人花钱都是看大牛的，要是满眼看过去全是广告，那也没人来了。&lt;/p&gt;
+
+&lt;p&gt;另外一点批评。我去年整的wifi不好用，好歹还是能上去的。今年连上都上不去了，全靠自己的流量顶。也幸好是这个会议室，手机还有信号。同事说隔壁会议室手机一点信号都没有，要再没有wifi绝对会疯的。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>snappy的性能测定</title>
+      <link>https://shell909090.github.io/blog/archives/2206/</link>
+      <pubDate>Mon, 23 Jul 2012 08:03:45 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2206/</guid>
+      <description>&lt;div&gt;    要去马尔代夫渡蜜月了，闪人前最后一贴。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;    方法是用python准备数据，然后用timeit进行测试。虽然因为python框架的干扰，具体时值不是很准。但是用来做数量级对比和计算足够了。原生数据是一个屏幕截图，4M的数据块。&lt;div&gt;&lt;br /&gt;&lt;div&gt;&lt;div&gt;zlib.compress: 0.054105230093&lt;/div&gt;&lt;div&gt;snappy.compress: 0.00374100804329&lt;/div&gt;
+
+&lt;div&gt;zlib.decompress: 0.0157685602903&lt;/div&gt;&lt;div&gt;snappy.decompress: 0.0051297039032&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;    从结果分析，zlib是典型的非对称压缩算法，压缩/解压速度比大约是3.5:1。而snappy的压缩和解压速度在同一个数量级上，甚至在具体的数值上，压缩比解压还要快那么一点。以解压速度为基础的对比，snappy大概比zlib快了3倍。而压缩速度上，则是快了14.5倍。&lt;/div&gt;
+
+&lt;div&gt;    由于python的干扰是在每个的时间上面增加了一定开销，通常会使得速度比更接近1。也就是说，实际上snappy和zlib的速度比比这个还要大。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;    另外说一句题外话。按照我们测试下来的数值计算，snappy和zlib的压缩比大概在1:2之间。zlib压缩图形资料时的典型比例是0.05，而snappy则是0.1左右。对于熵比较高的数据，zlib大约是0.33左右的时候，snappy是0.5。都是比2倍大小略小。&lt;/div&gt;
+
+&lt;p&gt;&lt;/div&gt;&lt;/div&gt;&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>debian wheezy下以uwsgi安装graphite</title>
+      <link>https://shell909090.github.io/blog/archives/2200/</link>
+      <pubDate>Mon, 09 Jul 2012 08:45:28 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2200/</guid>
+      <description>&lt;div&gt;# abstract #&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;graphite是一个python写的性能监控系统。这个系统是由多个分离的部分组成的。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;* graphite-web: 由django写的web界面系统。&lt;/div&gt;&lt;div&gt;* carbon: 数据收集的守护进程。&lt;/div&gt;&lt;div&gt;* whisper: 一种python写的数据库，类似rrd，便于大量的性能日志数据收集和处理。上两个组件会调用这个库。&lt;/div&gt;
+
+&lt;div&gt;* collectd: 数据收集守护进程，向carbon中喂数据的数据源。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;另外，有一点黑色幽默的就是，graphite的意思是石墨，是炭(carbon)的一种同素异形体。因此在graphite项目中，多次出现carbon这个名字。当然，另两个同素异形体是钻石(diamond)和足球烯(footballene)，你就暂时别指望看到他们的身影了。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;
+
+&lt;div&gt;另一个用python写的，以元素命名的著名软件是mercurial。化学元素中的汞，俗称水银，符号hg。因此mercurial的命令行简写才是hg。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;以上几个的结构大概是这样的：&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;collectd(source) -network-&amp;gt; carbon -writing-&amp;gt; whisper database -reading-&amp;gt; graphite-web&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;下文描述了在debian wheezy下，以nginx+uwsgi模式安装graphite的过程。之所以用这个模式，是因为我的大部分系统都是python写的，同样安装在uwsgi下面。一事不烦二主。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;# carbon #&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;carbon有对应的debian包，可以很简单的安装。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;
+
+&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;sudo aptitude install graphite-carbon&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;默认的数据端口是2003，默认的数据路径是/var/lib/graphite/，这个在下文需要用到。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;# graphite #&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;## virtual ##&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;graphite有部分需要安装到系统中，因此最好用virtualenv进行安装。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;cd /var/web/&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;sudo aptitude install python-virtualenv&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;virtualenv --system-site-packages graphite&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;我假定你的安装路径是/var/web/graphite，这个在下面要反复用到。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;## install ##&lt;/div&gt;&lt;div&gt;
+
+&lt;br /&gt;&lt;/div&gt;&lt;div&gt;在安装路径下，执行以下内容&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;source bin/activite&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;pip install graphite-web --install-option=&amp;quot;--prefix=/var/web/graphite&amp;quot; --install-option=&amp;quot;--install-lib=/var/web/graphite/webapp&amp;quot;&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;注意，/var/web/graphite需要根据上面的设定自行修改，webapp是你的django基础路径。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;## configure ##&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;在/var/web/graphite/webapp/graphite下面，执行以下内容&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;cp local_settings.py.example local_settings.py&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;然后编辑local_settings.py&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;GRAPHITE_ROOT = &amp;#39;/var/web/graphite&amp;#39;&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;WHISPER_DIR = &amp;#39;/var/lib/graphite/whisper&amp;#39;&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;DATABASES = ...&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;注意databases，不要在settings.py里面修改，要改这里的才有效。我用的是sqlite，如果你高兴，可以改为postgres/mysql。WHISPER_DIR是上文carbon中设定的目录。&lt;/div&gt;&lt;div&gt;
+
+&lt;br /&gt;&lt;/div&gt;&lt;div&gt;最后，执行以下指令，完成数据库初始化。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;python manage.py syncdb&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;## uwsgi ##&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;编辑/etc/uwsgi/apps-enabled/graphite.ini，包含以下内容。&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;[uwsgi]&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;plugins         = python&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;workers         = 1&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;chdir           = /var/web/graphite/webapp&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;pythonpath      = /var/web/graphite&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;env             = DJANGO_SETTINGS_MODULE=graphite.settings&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;module          = django.core.handlers.wsgi:WSGIHandler()&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;注意，这里的chdir，是你的webapp基础路径。而pythonpath则是virtualenv的路径。两者在上文都有说明的。env里面那个graphite是webapp/graphite这个app(不详细说明，自己学一下django就懂了)。module是django的固定写法。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;## nginx ##&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt; &lt;div&gt; 最后，在nginx中包含以下内容，将部分url转发到uwsgi上。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;location ~ ^/(graphite|content|metrics|dashboard|render|browser|composer)/ {&lt;/div&gt;&lt;div&gt;    &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;include        uwsgi_params;&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;      &lt;/span&gt;uwsgi_param    UWSGI_SCHEME $scheme;&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;     &lt;/span&gt;uwsgi_pass     unix:/run/uwsgi/app/graphite/socket;&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;}&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;# collectd #&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;## install ##&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;collectd的安装很简答，有包，直接安装就好。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;
+
+&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;sudo aptitude install collectd&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;## configure ##&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;在/etc/collectd/这个路径，能够看到collectd.conf这个文件。反注释掉以下内容：&lt;/div&gt;&lt;div&gt; &lt;br /&gt; &lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;&amp;lt;LoadPlugin python&amp;gt;&lt;/div&gt;&lt;div&gt;    &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;Globals true&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;&amp;lt;/LoadPlugin&amp;gt;&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;然后，再编辑以下内容。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;&amp;lt;Plugin python&amp;gt;&lt;/div&gt;&lt;div&gt;    &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;ModulePath &amp;quot;/etc/collectd/carbon&amp;quot;&lt;/div&gt;
+
+&lt;div&gt;    &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;Import “carbon_writer”&lt;/div&gt;&lt;div&gt;    &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;&amp;lt;Module “carbon_writer”&amp;gt;&lt;/div&gt;&lt;div&gt;    &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;       &lt;/span&gt;LineReceiverHost “localhost″&lt;/div&gt;
+
+&lt;div&gt;    &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;      &lt;/span&gt;LineReceiverPort 2003&lt;/div&gt;&lt;div&gt;    &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;        &lt;/span&gt;DifferentiateCountersOverTime true&lt;/div&gt;&lt;div&gt;    &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;       &lt;/span&gt;LowercaseMetricNames true&lt;/div&gt;
+
+&lt;div&gt;    &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;      &lt;/span&gt;TypesDB &amp;quot;/usr/share/collectd/types.db&amp;quot;&lt;/div&gt;&lt;div&gt;    &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;&amp;lt;/Module&amp;gt;&lt;/div&gt;&lt;div&gt;
+
+    &amp;lt;/Plugin&amp;gt;&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;上文中假定你把python插件放在了/etc/collectd/carbon下面，所以下文需要按照这个路径安装carbon。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;## collectd-carbon ##&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;在/etc/collectd下面，执行&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt; &lt;div&gt; &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;sudo git clone &lt;a href=&#34;https://github.com/indygreg/collectd-carbon.git&#34;&gt;https://github.com/indygreg/collectd-carbon.git&lt;/a&gt; carbon&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;注意，sudo其实是不安全的。不过目前就这样吧，问题不明显。&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;## restart whole system ##&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;执行以下指令重启服务&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;sudo /etc/init.d/nginx restart&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;sudo /etc/init.d/uwsgi restart&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;sudo /etc/init.d/carbon-cache restart&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;sudo /etc/init.d/collectd restart&lt;/div&gt;&lt;div&gt;&lt;br /&gt;
+
+&lt;/div&gt;&lt;div&gt;完成这步后，可以在/var/log/syslog中看到collectd的输出，数据确实的被灌入了carbon。而/var/log/uwsgi/app/graphite.log中可以看到uwsgi的输出。如果一切正常的话，你可以去[&lt;a href=&#34;http://localhost/graphite/%5D%28http://localhost/graphite/)%E4%B8%8B%E9%9D%A2%E7%9C%8B%E4%BD%A0%E8%A6%81%E7%9A%84%E4%B8%9C%E8%A5%BF%E4%BA%86&#34;&gt;http://localhost/graphite/](http://localhost/graphite/)下面看你要的东西了&lt;/a&gt;。&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;# 评价 #&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;数据收集的挺完整的。既然是基于collectd，那么应当没什么问题的，openwrt也可以支持的。问题是拿到数据后展现的一方面。由于默认配置太差，因此需要很长时间调教。我没那个功夫，搞定测试后就直接删除了。&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>快速深入一门语言的几个问题</title>
+      <link>https://shell909090.github.io/blog/archives/2194/</link>
+      <pubDate>Fri, 15 Jun 2012 07:19:45 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2194/</guid>
+      <description>&lt;div&gt;劳资明天要结婚了，今天婚前最后一个blog。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;1.hello, world&lt;br /&gt;目标：屏幕上打印出hello, world。&lt;br /&gt;原因：不解释。&lt;div&gt;进阶：当命令行给与不同参数的时候，打印hello, 名字。给与开关的时候，打印hello, 123。&lt;br /&gt;&lt;br /&gt;&lt;div&gt;2.正则提取&lt;br /&gt;目标：写一个正则表达式(或者类似的东西)，从一段网页源码中找到某个标签的内容，去掉前后空格，显示。&lt;br /&gt;
+
+原因：测试字符串处理能力。&lt;br /&gt;进阶：支持正则扩展&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt;3.扫描排重&lt;br /&gt; 目标：将某个目录和子目录下的所有文件扫描，排除重复的文件。&lt;br /&gt; 原因：测试文件系统操作能力。&lt;/div&gt;&lt;div&gt;进阶：多线程处理，注意吞吐颠簸。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;4.做24点自动计算程序&lt;br /&gt;目标：写一个程序，能够计算24点。要求能够自定义扩展算符。&lt;br /&gt;原因：检查深度优先搜索，栈，结构设计，抽象处理能力等等。&lt;/div&gt;&lt;div&gt;进阶：做并发处理。有数种语言可能无法实现并发，或并发实现难度大，不美观，例如python。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;5.做一个计算器&lt;br /&gt;
+
+ 目标：做一个计算器，要求能计算1+2*3=7，并支持()。&lt;br /&gt;原因：表达式解析和处理需要用到程序的方方面面，字符串处理等等。&lt;/div&gt;&lt;div&gt;进阶：做一个本语言的eval函数出来。&lt;/div&gt;&lt;div&gt;&lt;br /&gt; &lt;/div&gt;&lt;div&gt;7.抓网页&lt;br /&gt;目标：实现一个服务，定期下载符合规则的一批网页，解析，获得格式化的数据，并存入数据库。&lt;/div&gt;&lt;div&gt;原因：测试系统开发能力，基础网络库，字符串处理能力。&lt;/div&gt;&lt;div&gt;进阶：分布化抓取。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;8.留言板&lt;br /&gt;目标：设计一个留言板，将所有人提交的话保存起来，能一并展示。提交不需验证，展示不需分页。&lt;br /&gt;原因：测试网络服务能力，数据库支持和多国语言支持。&lt;br /&gt;
+
+ &lt;/div&gt;&lt;/div&gt;&lt;div&gt;进阶：防止XSS攻击。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;9.异步大并发服务器&lt;/div&gt;&lt;div&gt;目标：设计一个异步http服务器，能对请求做出响应，添加，删除，修改数据库中的数据。不得使用现有的http框架和容器。&lt;/div&gt;&lt;div&gt;原因：集成性测试&lt;/div&gt;&lt;div&gt;进阶：不使用现有数据库，自己写一个。。。&lt;/div&gt; &lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>一个超微模板系统</title>
+      <link>https://shell909090.github.io/blog/archives/2188/</link>
+      <pubDate>Wed, 06 Jun 2012 03:29:57 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2188/</guid>
+      <description>&lt;div&gt;re_tmpl = re.compile(&amp;#39;&amp;lt;%(.*?)%&amp;gt;&amp;#39;)&lt;/div&gt;&lt;div&gt;def template(s, d):&lt;/div&gt;&lt;div&gt;    return re_tmpl.sub(lambda m: str(eval(m.group(1), globals(), d)), s)&lt;/div&gt;&lt;div&gt;template(&amp;#39;&amp;lt;%&amp;quot;ddd&amp;quot; if abc else &amp;quot;eee&amp;quot;%&amp;gt;&amp;#39;, {&amp;#39;abc&amp;#39;: 1})&lt;/div&gt;
+
+&lt;div&gt;    限制挺多，只能在&amp;lt;%%&amp;gt;中写一行代码，不能多行。不能用跨区块的if for等控制结构。但是对于功能需求不复杂，需要可变性强，又不希望引入额外库的地方还是非常实用的。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>语言的效率差异3</title>
+      <link>https://shell909090.github.io/blog/archives/2182/</link>
+      <pubDate>Mon, 28 May 2012 02:13:32 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2182/</guid>
+      <description>&lt;div&gt;在总结前，我们首先搞明白三个问题的差异“效率的决定因素”，“语言效率差异”和“日常使用中造成运行效率差异的因素”。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;代码的效率最根本因素绝对不是语言的效率，我一直这么确信。代码效率的决定因素必然是算法的正确选择和实现的优秀程度。这里面包括了正确评估问题，选择合适的数据结构，使用合适的算法等。例如对给定数据的高速查询，用红黑树去跑查询肯定跑不过预编译的哈希算法和哈希表。即使前者使用汇编实现，而后者只是python实现。(对于这点，我对比过一个大规模数据的查询，数据是固定的。数据库效率最差，C++用红黑树的map次之，效率最好的是python的dict，底层是hashtable。当然，为了防止某些人补充，我自己先说了——我最后用了stlport的hash_map)&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;语言效率的差异，有很多因素。例如编译型/解释型语言，动态语言和静态语言，是否带jit优化等，都会造成很大的性能差异。甚至同样是C，不同的编译和优化参数也会造成很大规模的差异，做优化的朋友一定心里有数。然而大多数情况下，决定语言效率的关键因素都不在语言自身的效率上，而是在于底层库实现的效率上。当然，如果底层库使用该种语言直接写成(我也比较喜欢这种风格)，那么归根结底还是考验语言本身的效率问题的。以正则测试为例，实际上python是一种性能很差的语言，但是在测试上并不很低。因为python的库实现是直接引用了C库，其效率仅仅是C加上一个不高的值。而lua得分不足只能说是库的实现比python差。&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;最后一个问题相信大家最关心，即日常使用中造成运行效率差异的关键。到底是什么，决定了我们每天写的代码的效率？&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;可能要出乎大家的意料，从实际测试来看，实际上是测试能力和可变性。我们能够大致预料某些性能特别差的情况，然而对于性能在50%-200%以内变化的细节，实际上是很难提前预测的。也许我们会“猜测”某种情况性能比较优秀，但是实现下来情况可能完全不是这么回事。例如我曾经就一个C代码进行优化，预期应当能提高4倍性能，当时测试的结果是性能提高3-5倍，但是实际生产环境跑下来觉得没区别。后来发现，我自己测试用的是-O0，而生产系统是-O2。我的优化实际上在-O2的时候就全部被自动优化掉了。如果你觉得你的经验够丰富，能够预测-O2会优化你的哪些代码。那么你可以考虑一下，CPU的指令流水优化呢？系统上所安装版本的libc的实现细节和内核细节呢？如果都能精通，您可以忽略我这篇文章。但是对于我自己而言，我只能预计某个做法可能优化，而不能确定。&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;这时候，对于这个优化的实现难易程度，和实现完成后进行测量的难度就成为了关键。尤其是精确测量耗费时间的代码，执行时的瓶颈，这些能力才是优化代码的关键所在。我曾经写过为什么python效率不比C低，有人不服。我说了，并且反复强调了，这个仅限于“两者的生产速度一致”这个前提下。实际上如果真满足这个前提，大部分情况下C这边都输的没法测试的。因为完成同样任务，python的编码时间大约只有C的一半到1/4。即使算上优化，python完成项目的时间，C都不一定能写的完代码。更不提后面还要进行泄漏测试，复查，复杂的调试。等全部通过，开始关注效率问题，生产时间早超了。&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;作为日常生产，我想大部分程序员都有这么个经验。决定代码质量的实际上是项目的时间是否充裕，程序员是否用心严谨，生产流程管理是否到位。除非程序员太差劲，否则技术性代码质量差异并不特别多——一般都是远远小于赶代码造成的严重问题的。如果您那里不是这样，我建议您更换一批靠谱的程序员。同样，在真实的日常生产中，大部分项目都没有那个机会对代码进行多次的复查，深层次优化所有问题。基本是写，写完了查，没有什么表面问题。然后检查一下，用户体验效率是不是很差，找最差的地方优化一下，然后直接交货。很少有像理论代码那样，反复优化和测试，甚至受到来自不同程序员的交叉检测和沟通。如果有这种级别的反复优化，毫无疑问的，C会是常用语言中的效率之王。在[shootout](&lt;a href=&#34;http://shootout.alioth.debian.org/u64q/which-programming-languages-are-fastest.php)&#34;&gt;http://shootout.alioth.debian.org/u64q/which-programming-languages-are-fastest.php)&lt;/a&gt;给出的速度评测上，仅有Intel自己实现的fortran超越了C。当然，我相信汇编会更加优秀。&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;然而杯具的是，日常生产中恰恰相反，至少我是没什么时间去优化每行代码的。大部分时候，为了处理一个排序问题，我不会去网络上找一个vector库，而是直接开一个100的数组，然后qsort。前方报错了，改1000的数组。在写python的时候，也不会精细的考虑每个地方是否都用了合适的方法，某点是生成器好还是list好。大不了觉得某个程序慢了，cProfile一把，然后对着花时间最长的几个点看看是否有问题。自我感觉而言，python项目在做完之余，我还能泡个茶聊会天，自然也有功夫去看两眼代码，是否有哪里写的太难看了。而C代码就是不停的debug，即使我好容易喘口气，也绝对不会想去再看了。&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;最后说一下sbcl，在自身性能测试中，是当之无愧的语言之王。速度是python的一倍不到，代码量是python的一半。常规来说，出错概率，维护难度，都是和代码行数直接相关。一半的代码量基本就意味着维护成本削减一半，而一倍的速度基本和java持平，在C后面紧追不舍。但是，以上常理对lisp均不适用。lisp的学习难度惊人不说，维护难度和代码行数没有直接关系，而是取决于写作者的水平。水平越好的写作者，代码越容易维护，反之，初心者写出来的玩意那是看都看不懂的。冰河在博客上说他找了个职业lisp程序员的工作，人家视若珍宝。我不知道是哪年的blog，但是从老板的角度来说，这才是程序员的悲哀。老板喜欢什么语言？最好有个点子，跑去人才市场插个牌子，上书“我要人”。然后就会有一堆人云集过来，脖子上面都套着“五行一元”，“精通XXX”的草标。抓一只大个的，给个项目经理的头衔，让他管着别人。每个月扔一麻袋饲料下去，过两个月就能收程序了。&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;看起来和农场有点像，不是么？遗憾的是，lisp看来是达不到这个要求了。全国能用的python程序员不会超过5000，lisp程序员大概连500都不到。如果哪个老板不幸脑残，用了lisp来做项目，那么在招人这个问题上会比python更难执行。从这个意义上说，这才是lisp程序员不流行的关键——不好找工作。即使运行效率再高，语言本身再好，也没法过老板那关。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>python中调用C的几种方法</title>
+      <link>https://shell909090.github.io/blog/archives/2176/</link>
+      <pubDate>Tue, 22 May 2012 03:12:44 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2176/</guid>
+      <description>&lt;div&gt;# 引言 #&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;别废话了，我觉得这都应当是常识的。除去最后几种包装框架，剩下都是基本知识问题。即使不知道怎么做，也应该知道有这种方法。所谓经验，很多时候不是把知识装脑子里，而是把索引装内存，数据丢硬盘。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;# C模块 #&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;最基本的方法，直接写个C模块。具体很长，你去找python-doc，看“Extending and Embedding”这章，全看完就差不多了。如果没空，看几个例子就上也可以。&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;优点：基本没有，写起来很麻烦，要维护额外的C代码，还有交叉版本固定，跟随C升级等等麻烦。唯一的优点，就是这是唯一一个“绝对没有问题”的方法，而且没有额外依赖。如果下面几个路子全出了问题，就用C模块吧。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;# ctypes #&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;去看python-doc的ctypes模块。本质上是提供一个C模块，去载入和使用其他模块。&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;优点：写起来很方便，修改便捷，而且跨各个python实现。&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;缺点：只能调用动态库，对静态库没啥办法。某些复杂数据类型的转换很麻烦，据说有时还有效率问题。&lt;/div&gt;&lt;div&gt;
+
+&lt;br /&gt;&lt;/div&gt;&lt;div&gt;# swig #&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;自己找，一个叫做swig的项目，目标是制作C语言的各种平台包装。实现上看，会生成一个动态库和一个py。&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;优点：跨平台多。如果你的C代码不仅是python需要调用，还有其他语言（例如php），那么swig用起来很舒服。&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;缺点：编译时引入额外依赖，而且调用范式也是受限的。不过别担心，一般你也用不到范围以外的范式。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;# boost.python #&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;boost的自带库，只能用于C++。&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;优点：对C++的支持是极好的。&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;缺点：要依赖boost这么个坑爹玩意，摔。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;# Pyrex #&lt;/div&gt;&lt;div&gt; &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;我知道douban的python-libmemcached是使用这个来包装的，不过没用过，不是很清楚。&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>语言的效率差异2</title>
+      <link>https://shell909090.github.io/blog/archives/2174/</link>
+      <pubDate>Fri, 18 May 2012 07:14:24 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2174/</guid>
+      <description>&lt;div&gt;# 问题 #&lt;/div&gt;&lt;div&gt;为了更深入的测试语言，我做了一个经典问题——24点。&lt;/div&gt;&lt;div&gt;这个问题主要是测试递归，循环效率，还有数组和树的复制性能。&lt;/div&gt;&lt;div&gt;为了简化问题，方便测试，我的问题是这样描述的：&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&amp;gt; 有一个数组，里面有多个正整数。有一个操作数组，其中每个都是双目操作符。找出以两者构成算式，其值等于给定值的所有表达式组合。&lt;/div&gt;&lt;div&gt;
+
+&amp;gt; 要求不得遗漏，可以有少量重复。例如可交换算符的交换同构暂不做排重。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;实际运行的时候，取+-*/和3 4 6 8，运行100次，查看时间消耗。正确的单次输出结果应当是这样的。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&amp;gt; (((8 + 4) / 3) * 6) = 24&lt;/div&gt;&lt;div&gt;&amp;gt; (6 / (3 / (8 + 4))) = 24&lt;/div&gt;&lt;div&gt;
+
+&amp;gt; (((8 + 4) * 6) / 3) = 24&lt;/div&gt;&lt;div&gt;&amp;gt; (((8 / 4) + 6) * 3) = 24&lt;/div&gt;&lt;div&gt;&amp;gt; (((8 - 6) * 3) * 4) = 24&lt;/div&gt;&lt;div&gt;&amp;gt; (((8 - 6) * 4) * 3) = 24&lt;/div&gt;&lt;div&gt;&amp;gt; (((3 * 4) - 8) * 6) = 24&lt;/div&gt;&lt;div&gt;&amp;gt; ((8 - (6 / 3)) * 4) = 24&lt;/div&gt;
+
+&lt;div&gt;&amp;gt; (((4 + 8) / 3) * 6) = 24&lt;/div&gt;&lt;div&gt;&amp;gt; (6 / (3 / (4 + 8))) = 24&lt;/div&gt;&lt;div&gt;&amp;gt; (((4 + 8) * 6) / 3) = 24&lt;/div&gt;&lt;div&gt;&amp;gt; (((8 / 4) + 6) * 3) = 24&lt;/div&gt;&lt;div&gt;&amp;gt; (((4 * 3) - 8) * 6) = 24&lt;/div&gt;&lt;div&gt;&amp;gt; (((8 - 6) * 3) * 4) = 24&lt;/div&gt;
+
+&lt;div&gt;&amp;gt; (((8 - 6) * 4) * 3) = 24&lt;/div&gt;&lt;div&gt;&amp;gt; ((8 - (6 / 3)) * 4) = 24&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;# python #&lt;/div&gt;&lt;div&gt;python的解很复杂，长达31行，以下是我写的解。当然，还有更简单的版本，我可以用eval来干这个事情，代码只有24行，但是确实给人很evil的感觉。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;
+
+&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;from itertools import combinations&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;class opt(object):&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;    def __init__(self, name, func, ex=True):&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;        &lt;a href=&#34;http://self.name&#34;&gt;self.name&lt;/a&gt;, self.func, self.exchangable = name, func, ex&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;    def __str__(self): return &lt;a href=&#34;http://self.name&#34;&gt;self.name&lt;/a&gt;&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;    def __call__(self, l, r): return self.func(l, r)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;    def fmt(self, l, r):&lt;/div&gt; &lt;div&gt; &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;        return &amp;#39;(%s %s %s)&amp;#39; % (fmt_exp(l), str(self), fmt_exp(r))&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;def eval_exp(e):&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;    if not isinstance(e, tuple): return e&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;    try: return e[0](eval_exp(e[1]), eval_exp(e[2]))&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;    except: return None&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;def fmt_exp(e): return e[0].fmt(e[1], e[2]) if isinstance(e, tuple) else str(e)&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;def print_exp(e): print fmt_exp(e), eval_exp(e)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;def chkexp(target):&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;    def do_exp(e):&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;        if abs(eval_exp(e) - target) &amp;lt; 0.001: print fmt_exp(e), &amp;#39;=&amp;#39;, target&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;    return do_exp&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;def iter_all_exp(f, ops, ns, e=None):&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;    if not ns: return f(e)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;    for r in set(ns):&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;        ns.remove(r)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;        if e is None: iter_all_exp(f, ops, ns, r)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;        else:&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;            for op in ops:&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;                iter_all_exp(f, ops, ns, (op, e, r))&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;                if not op.exchangable:&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;                    iter_all_exp(f, ops, ns, (op, r, e))&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;        ns.append(r)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;opts = [&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;    opt(&amp;#39;+&amp;#39;, lambda x, y: x+y),&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;    opt(&amp;#39;-&amp;#39;, lambda x, y: x-y, False),&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;    opt(&amp;#39;*&amp;#39;, lambda x, y: x*y),&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;    opt(&amp;#39;/&amp;#39;, lambda x, y: float(x)/y, False),]&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;if __name__ == &amp;#39;__main__&amp;#39;:&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;    for i in xrange(100): iter_all_exp(chkexp(24), opts, [3, 4, 6, 8])&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;以下是100次的时间：&lt;/div&gt;&lt;div&gt;&amp;gt; real&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;0m2.259s&lt;/div&gt;
+
+&lt;div&gt;&amp;gt; user&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;0m2.248s&lt;/div&gt;&lt;div&gt;&amp;gt; sys&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;0m0.004s&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;# common lisp #&lt;/div&gt;&lt;div&gt;
+
+lisp来解这个问题简直是作弊，难怪被叫做人工智能语言。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;(defun chkexp (target)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;  (lambda (e)&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;    (if (equal (ignore-errors (eval e)) target) (print e))))&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;(defun exchangeable (op)&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;  (not (member op &amp;#39;(- /))))&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;(defun iter-all-exp (f ops ns &amp;amp;optional e)&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;  (cond&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;    ((not ns) (funcall f e))&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;    ((not e) (dolist (r (remove-duplicates ns))&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;      &lt;/span&gt;       (iter-all-exp f ops (remove r ns :count 1) r)))&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;    (t (dolist (r (remove-duplicates ns))&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;      &lt;/span&gt; (let ((nss (remove r ns :count 1)))&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;     &lt;/span&gt;   (dolist (op ops)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;      &lt;/span&gt;     (iter-all-exp f ops nss `(,op ,e ,r))&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;      &lt;/span&gt;     (if (not (exchangeable op))&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;         &lt;/span&gt; (iter-all-exp f ops nss `(,op ,r ,e)))))))))&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;(iter-all-exp (chkexp 24) `(+ - * /) `(3 4 6 8))&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;只有短短17行。原因在于，lisp本身的ast即是用数据结构表示的，因此根本不需要我做eval函数，也不需要画蛇添足的弄自定义算符，直接用系统算符上。显示，打印，都是现成的。需要写的只有主体逻辑。结果也很特别：&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&amp;gt; (* (- (* 3 4) 8) 6) &lt;/div&gt;&lt;div&gt;&amp;gt; (* (- 8 (/ 6 3)) 4) &lt;/div&gt;&lt;div&gt;&amp;gt; (* (- (* 4 3) 8) 6) &lt;/div&gt;&lt;div&gt;&amp;gt; (* (/ (+ 4 8) 3) 6) &lt;/div&gt;&lt;div&gt;&amp;gt; (/ 6 (/ 3 (+ 4 8))) &lt;/div&gt;&lt;div&gt;&amp;gt; (/ (* (+ 4 8) 6) 3) &lt;/div&gt;
+
+&lt;div&gt;&amp;gt; (* (+ (/ 8 4) 6) 3) &lt;/div&gt;&lt;div&gt;&amp;gt; (* (- 8 (/ 6 3)) 4) &lt;/div&gt;&lt;div&gt;&amp;gt; (* (* (- 8 6) 3) 4) &lt;/div&gt;&lt;div&gt;&amp;gt; (* (* (- 8 6) 4) 3) &lt;/div&gt;&lt;div&gt;&amp;gt; (* (/ (+ 8 4) 3) 6) &lt;/div&gt;&lt;div&gt;&amp;gt; (/ 6 (/ 3 (+ 8 4))) &lt;/div&gt;&lt;div&gt;
+
+&amp;gt; (/ (* (+ 8 4) 6) 3) &lt;/div&gt;&lt;div&gt;&amp;gt; (* (+ (/ 8 4) 6) 3) &lt;/div&gt;&lt;div&gt;&amp;gt; (* (* (- 8 6) 3) 4) &lt;/div&gt;&lt;div&gt;&amp;gt; (* (* (- 8 6) 4) 3) &lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;不但行数只有一半，速度也很让人吐血，比python快了近一倍，这是100次的结果。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;Evaluation took:&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;  1.379 seconds of real time&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;  1.372086 seconds of total run time (1.372086 user, 0.000000 system)&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;  [ Run times consist of 0.012 seconds GC time, and 1.361 seconds non-GC time. ]&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;  99.49% CPU&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;  3,628,800 forms interpreted&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;  4,127,047,350 processor cycles&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;  102,577,080 bytes consed&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;# go #&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;# lua #&lt;/div&gt;&lt;div&gt;lua的代码是所有语言中最罗嗦的，足足长达60行，超过python许多。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;function find_item(tbl, obj)&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;   for i, v in pairs(tbl) do&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;      if v == obj then return i end&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;   end&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;   return nil&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;end&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;function remove_duplicates (tbl)&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;   local newtbl = {}&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;   for i, v in pairs(tbl) do&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;      if find_item(newtbl, v) == nil then&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;      &lt;/span&gt; table.insert(newtbl, v)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;      end&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;   end&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;   return newtbl&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;end&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;function fmt_exp (e)&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;   if type(e) ~= &amp;#39;table&amp;#39; then&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;      return tostring(e)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;   else&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;      return &amp;#39;(&amp;#39; .. fmt_exp(e[3]) .. e[1] .. fmt_exp(e[4]) .. &amp;#39;)&amp;#39;&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;   end&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;end&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;function eval_exp (e)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;   if type(e) ~= &amp;#39;table&amp;#39; then&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;      return tonumber(e)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;   else&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;      return e[2](eval_exp(e[3]), eval_exp(e[4]))&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;   end&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;end&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;function chkexp (target)&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;   return function (e)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;       &lt;/span&gt;     if eval_exp(e) == target then&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;           &lt;/span&gt;print(fmt_exp(e))&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;      &lt;/span&gt;     end&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;     &lt;/span&gt;  end&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;end&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;function iter_all_exp (f, ops, ns, e)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;   if table.maxn(ns) == 0 then return f(e) end&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;   for i, r in pairs(remove_duplicates(ns)) do&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;      table.remove(ns, find_item(ns, r))&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;      if e == nil then&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;       &lt;/span&gt; iter_all_exp(f, ops, ns, r)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;      else&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;      &lt;/span&gt; for op, fp in pairs(ops) do&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;     &lt;/span&gt;    iter_all_exp(f, ops, ns, {op, fp, e, r})&lt;/div&gt;&lt;div&gt;
+
+&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;       &lt;/span&gt;    if find_item(exchangable, op) == nil then&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;        &lt;/span&gt;       iter_all_exp(f, ops, ns, {op, fp, r, e})&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;      &lt;/span&gt;    end&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;      &lt;/span&gt; end&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;      end&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;      table.insert(ns, r)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;   end&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;end&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;exchangable = {&amp;#39;+&amp;#39;, &amp;#39;*&amp;#39;}&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;opts = {&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;   [&amp;#39;+&amp;#39;] = function (a, b) return a + b end,&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;   [&amp;#39;-&amp;#39;] = function (a, b) return a - b end,&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;   [&amp;#39;*&amp;#39;] = function (a, b) return a * b end,&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;   [&amp;#39;/&amp;#39;] = function (a, b) return a / b end,&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;}&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;iter_all_exp(chkexp(24), opts, {3, 4, 6, 8})&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;其实lua的代码很好看，自然语言风格，语言写出来后都能看懂。然而lua秉持了最小化内核的方针，死活不提供一些很常用的函数。我上来近15行全在写常用函数，查找某个值在表中的位置，还有除去表中的重复元素。实现下来，效率也不是特别高，基本和python相当。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&amp;gt; real&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;0m2.222s&lt;/div&gt;
+
+&lt;div&gt;&amp;gt; user&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;0m2.184s&lt;/div&gt;&lt;div&gt;&amp;gt; sys&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;0m0.000s&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>语言的效率差异1</title>
+      <link>https://shell909090.github.io/blog/archives/2172/</link>
+      <pubDate>Mon, 14 May 2012 02:52:27 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2172/</guid>
+      <description>&lt;div&gt;# 问题 #&lt;/div&gt;&lt;div&gt;为了测试语言的效率，做一个正则解析。&lt;/div&gt;&lt;div&gt;预先说好，正则解析的问题是老板正在做的一个实际问题，我把其他和效率无关的部分去了。因此我接受“用法不正确”这样的反驳理由，但是不接受“这不是典型用例”的理由。我欢迎你指正我的用法错误，或者对语言不了解导致的效率低下，但是别来和我吵吵这种例子太特殊。另外，在调整代码和评估速度的时候，顺便注意一下代码行数。我知道用汇编逐行写和优化会很优秀，但是这对实际工作基本没有帮助。&lt;/div&gt;
+
+&lt;div&gt;问题是这样的：&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&amp;gt; 有一个文本文件，每行两个数，要求解析出来这两个数。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;我用python生成了数据，代码是这样的&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;    with open(sys.argv[1], &amp;#39;w&amp;#39;) as fo:&lt;/div&gt;&lt;div&gt;        for i in xrange(500000):&lt;/div&gt;
+
+&lt;div&gt;            fo.write(&amp;#39;%d %dn&amp;#39; % (i, random.randint(0, 10000)))&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;正则分析速率，是个典型的CPU密集操作。对于非编译型语言而言(这里的编译是指正则表达式的解析预编译，实际上除了lisp还真没有编译型的，即使是go也是现场拿到正则进行解析的)，这主要是看正则库的实现效率。很多时候，语言的效率问题并不取决于语言本身，还取决于语言的库的实现。大部分情况下我们都不可能砍掉系统的库重新来一个，那还不如换一门语言。&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;# python #&lt;/div&gt;&lt;div&gt;我首先贴出python语言的解答。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;reline = re.compile(&amp;#39;(d+) (d+)&amp;#39;)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;def main():&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;      &lt;/span&gt;with open(sys.argv[1], &amp;#39;r&amp;#39;) as fi:&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;           &lt;/span&gt;for line in fi: reline.match(line).groups()&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;这是性能&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&amp;gt; real    0m0.466s&lt;/div&gt;&lt;div&gt;&amp;gt; user    0m0.436s&lt;/div&gt;&lt;div&gt;&amp;gt; sys     0m0.012s&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;# common lisp #&lt;/div&gt;&lt;div&gt;我找了N个正则包，实际能用的只有ppcre。有些包号称很快，实际测试下来还不如ppcre。&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;(require :cl-ppcre)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;(defun grepfile (filename)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;  (let* ((cl-ppcre:*use-bmh-matchers* t)&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;      &lt;/span&gt; (cl-ppcre:*regex-char-code-limit* 256)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;      &lt;/span&gt; (scanner (cl-ppcre:create-scanner &amp;quot;d+ d+&amp;quot;)))&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;    (with-open-file (in filename)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;      (loop for line = (read-line in nil) while line do&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;      &lt;/span&gt;   (cl-ppcre:split scanner line)))&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;  ))&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;代码在slime里面测试(time (grepfile &amp;quot;data.dat&amp;quot;))，下面是结果&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;CL-USER&amp;gt; (time (main))&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;Evaluation took:&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;  0.398 seconds of real time&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;  0.392025 seconds of total run time (0.384024 user, 0.008001 system)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;  [ Run times consist of 0.016 seconds GC time, and 0.377 seconds non-GC time. ]&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;  98.49% CPU&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;  1,188,481,425 processor cycles&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;  72,242,256 bytes consed&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;# go #&lt;/div&gt;&lt;div&gt;go的代码是现学现卖的，不知道是不是哪里写出问题了。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;func main() {&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;        &lt;/span&gt;f, _ := os.Open(&amp;quot;data.txt&amp;quot;)&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;      &lt;/span&gt;r := bufio.NewReader(f)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;     &lt;/span&gt;rex, _ := regexp.Compile(&amp;quot;(d+) (d+)&amp;quot;)&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;     &lt;/span&gt;for line, isPrefix, err := r.ReadLine();&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;     &lt;/span&gt;    err == nil &amp;amp;&amp;amp; !isPrefix;&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;      &lt;/span&gt;    line, isPrefix, err = r.ReadLine() {&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;         &lt;/span&gt;rex.FindSubmatch(line)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;       &lt;/span&gt;}&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;}&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;结果居然要差一个数量级！&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&amp;gt; real&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;0m8.699s&lt;/div&gt;&lt;div&gt; &amp;gt; user&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;0m8.593s&lt;/div&gt; &lt;div&gt;&amp;gt; sys&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;0m0.036s&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;这太出乎我的意料了。google的v8引擎赫赫有名，我猜想也应当用到了go上面才是，怎么会性能差成这样？gary说过正则在他那里很快，我希望是我用错了。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;# lua #&lt;/div&gt;
+
+&lt;div&gt;lua没有使用正则包，更准确的说，lua内置的字符串处理函数可以处理这个情况。以下是我的代码：&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;for line in io.lines(&amp;quot;data.txt&amp;quot;) do&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;   for w in string.gmatch(line, &amp;quot;%d+&amp;quot;) do&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;      -- print(w)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;   end&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;end&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;以下是执行结果：&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&amp;gt; real&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;0m0.796s&lt;/div&gt;&lt;div&gt;&amp;gt; user&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;0m0.792s&lt;/div&gt;
+
+&lt;div&gt;&amp;gt; sys&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;0m0.000s&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;lua的代码的却很好看，但是效率上却不见得高。这是当然的，gmatch可是每工作一次就要解析一次阿。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;# lua-rex-pcre #&lt;/div&gt;&lt;div&gt;装一个支持pcre的正则包，lua-rex-pcre。&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;r = require &amp;quot;rex_pcre&amp;quot;.new(&amp;quot;(d+) (d+)&amp;quot;, 0)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;for line in io.lines(&amp;quot;data.txt&amp;quot;) do&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;   r.match(r, line)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;end&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;OK，速度一下就快了不少：&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt; &lt;div&gt; &amp;gt; real&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;0m0.643s&lt;/div&gt;&lt;div&gt;&amp;gt; user&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;0m0.632s&lt;/div&gt;&lt;div&gt;&amp;gt; sys&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;0m0.008s&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>全部和谐音程表（泛音表）</title>
+      <link>https://shell909090.github.io/blog/archives/2168/</link>
+      <pubDate>Thu, 10 May 2012 02:14:04 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2168/</guid>
+      <description>&lt;p&gt;&amp;gt;&amp;gt;&amp;gt; for i in [(i, j, 12 * math.log(float(j)/i, 2)) for i, j in itertools.permutations([1,2,3,4,5,6], 2) if i &amp;lt; j]: print i&lt;br /&gt;&amp;hellip; &lt;br /&gt;(1, 2, 12.0)&lt;br /&gt;(1, 3, 19.019550008653876) &lt;br /&gt;(1, 4, 24.0)&lt;br /&gt;(1, 5, 27.863137138648348)&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;(1, 6, 31.019550008653873)&lt;br /&gt;(2, 3, 7.019550008653875)&lt;br /&gt;(2, 4, 12.0)&lt;br /&gt;(2, 5, 15.863137138648348)&lt;br /&gt;(2, 6, 19.019550008653876)&lt;br /&gt;(3, 4, 4.980449991346124)&lt;br /&gt;(3, 5, 8.843587129994475)&lt;br /&gt;(3, 6, 12.0)&lt;br /&gt;(4, 5, 3.863137138648348)&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;(4, 6, 7.019550008653875)&lt;br /&gt;(5, 6, 3.1564128700055254)&lt;br /&gt;&lt;br /&gt;&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

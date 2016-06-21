@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>dvc和vc简评</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         dvc和vc简评 
+    </h1>
+    <p class="meta">May 3, 2012
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2160/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <div># 我有必要换git么 #</div><div>实话说，这得分干吗。目前的推荐是，如果是企业级项目，对权限要求比较严格，你必须用svn。如果是普通项目，你可以尝试使用git，但是这并不表示git是最适合你项目的。有的时候svn比git合用的多。</div><div><br /></div><div># svn是什么模式 #</div><div>svn的核心思路是，取出，修改，提交，合并。即，你从核心库中取得数据，修改，然后提交上去。如果有两个一样的修改，那么要求你进行合并。当然，svn工具会首先尝试自动合并，然后再让你手工干。但即使如此，合并的时候还是很费力。</div>
+
+<div>svn的模式很容易理解，然而在使用中却有两个实际缺陷。</div><div><br /></div><div>1. 保存数据的唯一方式就是提交，而提交是不可撤销的。</div><div>2. 必须连接核心库使用。</div><div><br /></div><div>第一点问题，就是说，如果你希望暂时保存一下当前的修改状态，然后进行某个测试性修改。如果失败，退回当前。抱歉，做不到。你的提交一定会进入svn库。虽然你可以退回到你提交前的版本，但是很麻烦，而且版本记录不会消失。而第二个问题更加致命。如果在网络不稳定/没网络的时候，还干不干活了？</div>
+
+<div>因此，svn的设计模式并不鼓励你提交。当你有修改的时候，你必须保持修改的状态，直到某个稳定的状态。你需要检查代码是基本可用的，然后才应当提交。svn提交有个基础原则，不能塞住head，讲的就是这个。</div><div><br /></div><div># 所以有了hg #</div><div>hg正是为了解决上述问题而出现的。hg实际上是用python实现的，解决上两个问题的svn。</div><div>hg拥有本地版本库，这解决了离线模式。至于暂存性提交，你可以在本地随便提交。只要不提交到核心库上，就不会导致塞住。如果你觉得本地库不行，可以直接重新co，而不进行push。</div>
+
+<div><br /></div><div># git和hg哪个好 #</div><div>锤子和扳手哪个好？我永远无法回答你这个问题，因为这两个的目标根本不同，因此根本没有可比性。同样，git和hg的工作流程和模式完全是两回事，因此不要问这个问题，没意义。</div><div><br /></div><div># 哦，那么git是 #</div><div>git的设计核心思路，是取出，分支，修改，提交，合并分支。git的分支是处理工作的利器。</div>
+
+<div>要彻底理解git，你必须接受平行世界假定。假设世界并不是顺序发展的，由于你的选择不同，而会变成不同的几个分支。git可以让你在分支间自由穿越，并且让世界变成某个分支上的某个点的状态。你可以重新选择，产生一个不同的分支。当你需要时，可以对两个分支进行合并。如果两个分支从源头分开后，对世界的影响各自不同，那么合并就是自动的。</div><div>git的同步就是在同步这颗世界树。树扩展成什么样子和你在树的什么位置没有关系，因此fetch后如果不chechout，那么就不会应用最新的修改。</div>
+
+<div><br /></div><div># 我没看出多大区别 #</div><div>实际是非常大的。有了平行世界假定，我可以正交的对一个源码做两件以上不同的事情。而在hg中，虽然也可以做两个不同的分支，然而却很难在两个分支间切换，从而使得切换到做另一件事情非常困难。这也导致了一个人实际上只能做一件事情，否则就无法将过程同时纳入vc管理，又满足正交。</div><div><br /></div>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>May 3, 2012</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/program">program</a>  <a class="category" href="https://shell909090.github.io/tags/versioncontrol">versioncontrol</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/2158/" title="首次bsp日记">首次bsp日记</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/2162/" title="关于翻墙服务几句">关于翻墙服务几句</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

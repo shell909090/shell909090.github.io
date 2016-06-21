@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>debian under box</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         debian under box 
+    </h1>
+    <p class="meta">Mar 7, 2011
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1719/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>&nbsp;&nbsp; &nbsp;This is linux tech blog, so&hellip;猫咪和六牙四皂小姐退散。&nbsp;<div><div>&nbsp;&nbsp; &nbsp;下面简介一下小型系统组装NAS和服务器的完整攻略。实话说这篇文章写的异常艰难，题目本来叫debian squeeze under EPIA。结果一晃过了一个春节，debian升级了，EPIA挂了。下面前一部分的文章是开始写的，后来发现M10000系列主板只要上sata to ide就会死机，部分IDE硬盘也会死机。所以&hellip;</div>    <div>&nbsp;&nbsp; &nbsp;首先是物理硬件的组成办法。推荐购买VIA EPIA M10000，价格大约在150上下。附带了VIA C3 Eden，只要一条内存就可以工作，非常便宜。不过USB引导有些问题，所以后面用的是其他机器装的Linux，并且给折腾了个半死。贝壳还买了一个小机箱，能够放置3.5&#39;硬盘，并且买了1T的硬盘来组装NAS。由于1T的硬盘只有Sata接口，因此还得买一块Sata to IDE，大概是30-40。全部的硬件就是这样，组装起来就可以工作。主板的右下角是主板控制跳线，从左（以CPU和电源所在边为上）到右顺序，引脚如下定义：上排2-3，power sw。上排4-5，reset sw。上排6-7，power led。</div>      <div>&nbsp;&nbsp; &nbsp;首先借助一台大型机，使用USB开始debian系统的安装。另外补充说明一下USB安装debian一文中的一个情况，在boot.img.gz解压开的U盘内复制入netinst也是可以工作的，不一定是businesscard。按照这个估计，复制入完整ISO也是可以的。在分区的时候，贝壳选择了full disk with LVM。/boot分配了228M，最后用了17M。root用LVM中的ext3卷，分配了7G，用了不到1G。全部装好大约有2G吧，安全起见。swap用了2.5G，其实不用这么大，不过我懒得换了。剩下908M，因为1T有一定损耗，还有JS的1000进制算法。。。好吧，全部用ext3放到/home下放数据用。</div>      <div>&nbsp;&nbsp; &nbsp;之所以没用btrfs的原因，一方面是这个是硬盘，不是ssd，也没有高等数据管理要求。另一方面也要求一定的稳定性，btrfs还没有fsck呢。</div><div>&nbsp;&nbsp; &nbsp;系统安装并没有什么太大困难，对于熟悉linux系统安装的人，很快就可以完成安装。不过由于是在其他机器上安装，因此注意在迁移后需要修改/etc/udev，把网卡修改为eth0。</div><div>&nbsp;&nbsp; &nbsp;下面就是大头了，系统使用grub2引导，但是在booting kernel这里直接挂掉，完全起不来。问过gary后，基本肯定要么是主板坏了，要么是内核坏了。后来我猛然想起，C3是个老CPU了，我用的内核是686内核。改为486内核？顺利引导。</div>      <div>&nbsp;&nbsp; &nbsp;EPIA edin C3 just support i486&nbsp;<span style="font-family: arial,sans-serif; line-height: 15px;">Instruction Set, so don&#39;t use linux-image-.*-686。</span></div><div><span style="font-family: arial,sans-serif; line-height: 15px;">&nbsp;&nbsp; &nbsp;系统启动后，发现速度并不很快。我用samba和windows共享文件，大约只有7M/s的读写速度，消耗了60%的CPU。我使用的是TP-504G+路由器，后面是一个100M的交换机。EPIA是VT6102，10/100M自适应网卡。主机是1G的网卡&mdash;&mdash;不过没任何用。理论上，最高读写速度应该有12M/s的。实际上根据我的测试，瓶颈居然可能在windows上。我在windows复制文件的时候从box上读取数据，居然对复制没有影响的情况下达到了2M的速度。这样的速度远远低于硬盘30M/s的持续读写速率，所以硬盘效率不用顾虑太多，包括碎片问题。</span></div>    <div><font face="arial, sans-serif"><span style="line-height: 15px;"><br /></span></font></div><div><font face="arial, sans-serif"><span style="line-height: 15px;">&nbsp;&nbsp; &nbsp;当我发现sata的问题后，使用iozone确认了问题在udma层面上。杯具的是，这问题无解。所以，退了主板换了一块新的。新主板上去后，性能有所升高。硬盘的吞吐到了97M/s，网络共享的读写速度大约是10M/s。其余都很顺利，就不废话了。</span></font></div>      </div></p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Mar 7, 2011</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/box">box</a>  <a class="category" href="https://shell909090.github.io/tags/linux">linux</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/1716/" title="版权和道德的讨论">版权和道德的讨论</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/1721/" title="个人文件管理的几个经验">个人文件管理的几个经验</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

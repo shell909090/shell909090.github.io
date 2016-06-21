@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>python插件技巧</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         python插件技巧 
+    </h1>
+    <p class="meta">Mar 20, 2013
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2344/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <h1>简述和通则</h1>
+
+<p>何谓插件。</p>
+
+<p>在实现某个功能时，经常需要对一个功能提供多种实现。例如短信网关接口各异，但是对系统而言，发送代码是一样的。
+通过一套特定的机制，在成型的产品中，增加一个独立的文件，即可实现定制化实现。这套机制被称为插件机制。插件必须满足下面几个要求。</p>
+
+<ol>
+<li>对于已经发出去的产品，插件机制可以通过增加文件，并少量修改（一般1-3行）产品源码，即可为产品添加新的功能。</li>
+<li>对于产品主分支，带有插件不会影响主分支的正常工作。</li>
+</ol>
+
+<p>插件机制的以上两个特性对产品定制非常有帮助。因为使用插件进行定制开发的项目，不需要独立建立分支。只需要在主分支上添加几个文件即可。分发补丁时也格外容易。</p>
+
+<ol>
+<li>禁止在python主目录下直接放置插件，所有插件必须在python下级目录下存放。</li>
+<li>插件的命名必须使用前缀师命名规则，所有同类型插件，要么在一个目录下独立存放（目录下没有其他代码），要么在一个目录下拥有同样的前缀（其他代码不得使用这个前缀）。</li>
+</ol>
+
+<h1>替换型插件</h1>
+
+<p>最简单的插件手法，就是某个文件提供提供某些函数，在变更功能时用另一个同样实现这些函数的文件替换掉原始文件。这甚至称不上一个插件手法，只能算打补丁。</p>
+
+<p>替换型插件的提升，就是在文件中不直接提供函数，而是从某个其他文件载入这些函数。例如以下代码：</p>
+
+<pre><code>from abc import *
+</code></pre>
+
+<p>原始是从abc文件中取得所有符号。当有新的文件abc2提供时，将原始文件替换为abc2，补上去，即可改变代码。注意这行代码一般不在一个大的文件中的某一行，而一般存放于一个独立文件。因为大文件相对容易修改，不能用新的代码替换。而独立文件相对固定，在打补丁时可以用新的代码直接替换。</p>
+
+<p>替换型插件适用于，对于某个客户而言，只需要在多组实现中静态的选择一组的情况。替换型插件的优点是工作原理简单直观，排查容易。缺点是对于一个功能不能提供复数组实现。</p>
+
+<h1>配置型插件</h1>
+
+<p>另一种插件手法基于文件或配置。在某个目录中，放置某个功能的多个实现。在加载时，载入全部插件。在使用时，根据配置动态选择。这种手法被称为配置型插件。</p>
+
+<p>配置型插件是一种非常重要的编程技巧，他为程序提供了非常优良的可扩展性。</p>
+
+<p>例如下面的例子，简述了一种配置型插件的实现：</p>
+
+<pre><code>funcmap = {}
+
+def register_func(name):
+    def _inner(func):
+        funcmap[name] = func
+        return func
+    return _inner
+
+在具体实现中
+
+@register_func(name)
+def func1(....):
+    pass
+</code></pre>
+
+<p>在__init__.py中，import一下新的文件。在原本的funcmap中，即可出现新的name和func的对应。</p>
+
+<p>配置型插件适用于大多数场景，其优点是工作原理简单，可以为一个功能提供复数组实现。缺点是使用上限制比较大，必须和逻辑结合，思考困难。</p>
+
+<h1>动态加载</h1>
+
+<p>动态加载插件是一种插件技巧，并不特定用于替换型或配置型插件。</p>
+
+<p>当需要加载插件时，通过python代码访问文件系统，枚举出特定文件并加载的技巧，称为动态加载。以下代码是配合上面的配置型插件的例子，实现动态加载的例子。</p>
+
+<pre><code>def load_plugins():
+    for filename in os.listdir('plugins'):
+        if filename.endswith('py'): __import__(filename[:-3])
+        if filename.endswith('pyc'): __import__(filename[:-4])
+</code></pre>
+
+<p>动态加载的优点是，可以通过放置文件来增加/修改功能，而不需要修改代码。缺点是，由于需要访问文件系统，因此效率并不高。如果每次加载都需要动态查询，那么系统效率会大幅下降。</p>
+
+<h1>热加载插件</h1>
+
+<p>热加载是一种比较高级的技巧。在程序执行中，不退出进程而动态的将最新的组件加载进来的能力，被称为热加载。</p>
+
+<p>简单的热加载就是在每次执行功能的时候，检查是否有新的组件。由于这样会带来很高的系统负载，因此除非必要，否则不要滥用热加载。</p>
+
+<p>更复杂一些的热加载，需要用新的实现替换原有实现。这涉及几个编程上的限制。</p>
+
+<p>热加载有几个限制，必须严格遵循：</p>
+
+<ol>
+<li>在所有访问前，必须检查文件。</li>
+<li>如果要进行热替换，不得将原有文件的导出符号作为值使用。即，无论是文件的导出数据，导出函数，都不得作为其他对象的赋值内容。</li>
+<li>热替换内，不得保存私有数据。所有数据必须在上下文中，或者全局中存放。</li>
+</ol>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Mar 20, 2013</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/program">program</a>  <a class="category" href="https://shell909090.github.io/tags/python">python</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/2339/" title="vpn转代理">vpn转代理</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/2353/" title="四川行 - 成都-磨西">四川行 - 成都-磨西</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

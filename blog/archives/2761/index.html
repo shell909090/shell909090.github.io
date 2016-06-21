@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>一个有趣的python问题</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         一个有趣的python问题 
+    </h1>
+    <p class="meta">Jun 24, 2015
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2761/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p><h1>
+ quiz
+</h1>
+<p>
+ 今天在
+ <a href="https://twitter.com/linuxtoy/status/611020430749495296/photo/1">
+  twitter
+ </a>
+ 上看到一个有趣的问题。
+</p>
+<pre><code>t = (1, 2, [30, 40])
+t[2] += [50, 60]
+</code></pre>
+<p>
+ 结果是什么？
+</p>
+<ol>
+ <li>
+  t = (1, 2, [30, 40, 50, 60])
+ </li>
+ <li>
+  TypeError
+ </li>
+ <li>
+  都不是
+ </li>
+ <li>
+  1,2都发生
+ </li>
+</ol>
+<p>
+ 出乎意料的，结果是4。
+</p>
+<p>
+ 为什么，我们来分析一下。
+</p>
+<h1>
+ disassemble
+</h1>
+<pre><code>&gt;&gt;&gt; t = (1, 2, [30, 40])
+&gt;&gt;&gt; def f(): t[2] += [50, 60]
+&gt;&gt;&gt; import dis
+&gt;&gt;&gt; dis.dis(f)
+</code></pre>
+<p>
+ 以下是结果。
+</p>
+<pre><code> LOAD_GLOBAL              0 (t)
+ LOAD_CONST               1 (2)
+ DUP_TOPX                 2
+ BINARY_SUBSCR
+ LOAD_CONST               2 (50)
+ LOAD_CONST               3 (60)
+ BUILD_LIST               2
+ INPLACE_ADD
+ ROT_THREE
+ STORE_SUBSCR
+ LOAD_CONST               0 (None)
+ RETURN_VALUE
+</code></pre>
+<p>
+ 我们来解读一下。dis的指令集可以看
+ <a href="https://docs.python.org/2/library/dis.html">
+  这里
+ </a>
+ 。
+</p>
+<ol>
+ <li>
+  先载入全局变量t（因为写法问题，t是全局）。
+ </li>
+ <li>
+  载入常数2。现在栈是t|2。
+ </li>
+ <li>
+  复制头两项。现在栈应当是t|2|t|2。
+ </li>
+ <li>
+  BINARY_SUBSCR，取t[2]。现在是t|2|t[2]。
+ </li>
+ <li>
+  载入50和60，然后build_list。现在是t|2|t[2]|[50,60]。
+ </li>
+ <li>
+  INPLACE_ADD，注意这里。现在是t|2|[30,40,50,60]。同时t[2]的list成为了[30,40,50,60]。
+ </li>
+ <li>
+  ROT_THREE，结果是[30,40,50,60]|t|2。
+ </li>
+ <li>
+  STORE_SUBSCR，实际是在操作t[2] = [30,40,50,60]。当然，这里出错了。
+ </li>
+ <li>
+  最后是return None，这步并未发生。
+ </li>
+</ol>
+<h1>
+ compare with add
+</h1>
+<p>
+ 整个最诡异的地方，就在于INPLACE_ADD。从字面上，这要求inplace的做加法。我们换个写法，然后再看看。
+</p>
+<pre><code>&gt;&gt;&gt; def f(): t[2] = t[2] + [50, 60]
+&gt;&gt;&gt; f()
+Traceback (most recent call last):
+  File &ldquo;&lt;stdin&gt;&rdquo;, line 1, in &lt;module&gt;
+  File &ldquo;&lt;stdin&gt;&rdquo;, line 1, in f
+TypeError: &lsquo;tuple&rsquo; object does not support item assignment
+&gt;&gt;&gt; t
+(1, 2, [30, 40])
+&gt;&gt;&gt; dis.dis(f)
+</code></pre>
+<p>
+ 以下为结果。
+</p>
+<pre><code> LOAD_GLOBAL              0 (t)
+ LOAD_CONST               1 (2)
+ BINARY_SUBSCR
+ LOAD_CONST               2 (50)
+ LOAD_CONST               3 (60)
+ BUILD_LIST               2
+ BINARY_ADD
+ LOAD_GLOBAL              0 (t)
+ LOAD_CONST               1 (2)
+ STORE_SUBSCR
+ LOAD_CONST               0 (None)
+ RETURN_VALUE
+</code></pre>
+<p>
+ 看到没，结果就不一样了。
+</p>
+<h1>
+ why
+</h1>
+<p>
+ 没有为什么，因为+=对应的指令就是INPLACE_ADD。
+</p>
+<p>
+ 只是INPLACE_ADD了，理论上就不需要赋值了。我没想明白的是，在什么情况下INPLACE_ADD了又不赋值可能导致错误呢？(我觉得可能有这种情况)
+</p></p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Jun 24, 2015</time>
+    <span class="categories">
+      Tags:
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/2759/" title="list.append的性能分析">list.append的性能分析</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/2764/" title="婚姻平权——写在美高等法院裁定全美同性婚姻合法边上">婚姻平权——写在美高等法院裁定全美同性婚姻合法边上</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

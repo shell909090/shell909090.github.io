@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>mongo无法利用多核？</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         mongo无法利用多核？ 
+    </h1>
+    <p class="meta">Nov 16, 2011
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1984/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>太伤心了，本来以为mongo的速度很快呢。测试插入数据，结果当场被泼了冷水。 <div><div>conn = pymongo.Connection(&#39;localhost&#39;, 27017)</div><div>db = conn[&#39;perform&#39;]</div><div>coll = db[&#39;test&#39;]</div><div><br /></div><div>testdata = []</div><div>def init_testdata():</div><div>    for i in xrange(1000):</div></p>
+
+<p><div>        s1 = &#39;&#39;.join([random.choice(string.hexdigits) for j in xrange(16)])</div><div>        s2 = &#39;&#39;.join([random.choice(string.letters) for j in xrange(200)])</div><div>        testdata.append((s1, s2))</div></p>
+
+<p><div>init_testdata()</div><div><br /></div><div>def insert_mongo():</div><div>    for s1, s2 in testdata: coll.insert({&#39;_id&#39;: s1, &#39;content&#39;: s2})</div><div><br /></div><div><div>def find_mongo():</div><div>    for s1, s2 in testdata:</div></p>
+
+<p><div>        s = coll.find_one({&#39;_id&#39;: s1})</div></div><div><br /></div><div>def testfunc(funcname, times = 1000):</div><div>    from timeit import Timer</div><div>    t = Timer(&quot;%s()&quot; % funcname, &quot;from <strong>main</strong> import *&quot;)</div></p>
+
+<p><div>    print &#39;funcname: %s used %f&#39; % (funcname, t.timeit(times) / times)</div><div><br /></div><div>if <strong>name</strong> == &#39;<strong>main</strong>&#39;:</div><div>    # os.fork()</div><div>    # os.fork()</div><div>    init_testdata()</div></p>
+
+<p><div>    testfunc(&#39;insert_mongo&#39;, times = 100)</div></div><div>    testfunc(&#39;find_mongo&#39;, times = 100)</div><div><br /></div><div>    这个代码，在直接执行的情况下，获得结果是这样的。</div><div>funcname: insert_mongo used 0.179303</div></p>
+
+<p><div>    折合成iops，也就是5500req/s的样子。打开os.fork后，结果变成了这样。</div><div><div>funcname: insert_mongo used 0.516131</div><div>funcname: insert_mongo used 0.526213</div></div><div>    只有3850req/s左右，我靠，比单进程慢那么多？打开四个进程试试？</div><div><div></p>
+
+<p>funcname: insert_mongo used 1.039754</div><div>funcname: insert_mongo used 1.058093</div><div>funcname: insert_mongo used 1.058598</div><div>funcname: insert_mongo used 1.059101</div></div><div>    基本稳定下来了，差不多4000req/s的样子。而且，通过top发现，最关键的问题不在于io和内存，而是mongodb这货只有一个进程，最高吃到100%的CPU——也就是——无法利用多核。</div></p>
+
+<p><div><br /></div><div>    幸好，在读取测试中，情况不是那么糟糕。在单进程下是下面这样子</div><div><div>funcname: find_mongo used 0.350096</div></div><div>    2850req/s，双进程就变成了这样子。</div><div><div>funcname: find_mongo used 0.220384</div><div>funcname: find_mongo used 0.221446</div></p>
+
+<p></div><div>    9000req/s！不但性能有所上升，而且更为惊喜的是，在top中检测发现，主要CPU消耗都放到了python这端。而分布系统的常识告诉我们，客户端的压力（就是应用服务器的压力）是可以很容易的通过添加服务器来解决的。在贝壳当前这台双核的机器上是无法进行进一步测试了，不过按照目前的状况预估，查询时即使只能使用单核，也可以支持10000req/s以上的性能。</div><div><br /></div><div>    又是一个典型的高读低写数据库呐。也罢也罢，nosql中也就mongo的各种特性比较接近sql数据库，用来跳过ORM层直接做系统比较合适。如果使用memcache或者redis，性能倒是上去了，用起来就未免太蛋疼了一点。不过偷偷的透露一点，贝壳估计，使用redis后，性能还能上去5倍。</div></p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Nov 16, 2011</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/%e5%85%b6%e4%bb%96">%e5%85%b6%e4%bb%96</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/1982/" title="语言的易读性">语言的易读性</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/1986/" title="openwrt特性——2.4g和5g频段的冲突">openwrt特性——2.4g和5g频段的冲突</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

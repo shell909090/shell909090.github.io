@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>纯C和纯C&#43;&#43;都不是好选择</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         纯C和纯C&#43;&#43;都不是好选择 
+    </h1>
+    <p class="meta">Jun 8, 2011
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1824/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>其实严格说来，纯C是门好语言，我很欣赏纯C。但是作为程序设计，C用起来让人觉得很不方便。 <ul><li>在标准C规范中，变量必须在块的头部声明。当然，在近代C编译器中已经取消了这个限制。</li><li>我提到过的，C中缺乏高级数据结构支持，导致一些简单问题的实现变得异常复杂。例如我需要解析表达式，生成lisp样子的前缀表达式。这在很多高级语言中是个很简答的事情，但是C中，你不得不自行管理内存和结构，虽然这并不算复杂。</li></ul><div>    还有一些缺点不能尽述，但是经过时间的考验，C无疑是强大而具有生命力的一种语言。</div></p>
+
+<p><div>    C++就比较搞笑了，纯C++是一个非常糟糕的东西。我们列举其缺点：</div><ul><li>函数指针是C中常用的概念，在C++中应当使用抽象接口-实现的方式，或者使用仿函。从技术上说，在C++中使用函数指针是一个落后而没有C++特色的行为。然而无论使用哪种，生成一个新的函数就必须生成一个新的类。你当自己是java么？</li><li>太多internal操作，导致代码隐性错误和思考心智负荷大幅上升。例如某个类可以定义一个单参的构造函数，constructor(int c);这等于定义了一个隐性转换函数，允许将int转换为类。或者使用T operator T();算符函数，将类转换到T。如果此时错误的将类实例当作int来操作，就会产生编译通过但是运行时出错的问题。更严重的是，转换函数严重的消耗性能。在这种情况下，编译和运行都不会出错，只是莫名其妙的性能很差。要避免这个问题，可以用explicit关键字。具体可以看这里（<a href="http://www.cnblogs.com/cutepig/archive/2009/01/14/1375917.html" target="_blank"><a href="http://www.cnblogs.com/cutepig/archive/2009/01/14/1375917.html">http://www.cnblogs.com/cutepig/archive/2009/01/14/1375917.html</a></a>）。但是这就需要额外的知识，和随时关心自己是否会犯下这个错误的小心。</li></p>
+
+<p><li>强大到啰嗦的模板系统。那位有信心看懂所有stl编译时报错的？反正effactive C++的作者举过一个缺陷，打印了1500个左右的字符。大部分都是符号，望之犹如天书。</li><li>为了支持多重继承，导致指针类型转换可能导致指针地址变换。这是一个很扯淡的缺陷，转换指针类型不会引发指针的地址转换是一个C中的基础常识。然而C++为了支持多重继承，导致这个常识被破坏。</li><li>thiscall和non-thiscall指针无法转换。类成员函数和普通函数指针是无法转换的。这个破坏了所有代码都可获得地址的常识。</li></p>
+
+<p></ul><div>    其实C++的致命缺陷，就是过度设计。每一步都是很必要很有道理的改进，在最后就组合成了让人望之生畏的复杂系统。</div>    要使用C++，关键就是克制自己的过度设计欲望。C++可以很容易的使用类，模板，友元系统写的很强大，而且看起来很自然。例如你可以定义自己的BioTree，使用+做合并，可以使用|运算符做输出等。然而到最后，就会变成另一种语法。并且，如果合并上大数运算库之类的库，做一个BioTree，其中元素是大数的结构。当这个结构内发生错误的时候，你觉得你能够在里面找到正确的调试方向么？<br /></p>
+
+<p>    要克制自己觉得很自然的想法，使用传统C中的一些做法，哪怕他们看起来很古怪，但是这是有道理的。</p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Jun 8, 2011</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/c">c</a>  <a class="category" href="https://shell909090.github.io/tags/program">program</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/1822/" title="版权的态度">版权的态度</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/1826/" title="无题">无题</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

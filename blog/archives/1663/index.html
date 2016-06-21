@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>为什么我说框架和工具不是解决安全性的良好方案</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         为什么我说框架和工具不是解决安全性的良好方案 
+    </h1>
+    <p class="meta">Dec 30, 2010
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1663/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>&nbsp;&nbsp; &nbsp;在python-cn的maillist上，刚刚爆发了一场关于动态语言合并出错的争论。问题的起源，来自于这样一个问题。 <div>一个程序员A，写了一个函数，function1。程序员B对函数进行了调用。现在两个人分别在svn上工作，A修改了function1，而b修改了其他内容。</div><div>由于python并不在编译时检查类别问题，因此当两人的svn merge后，运行并没有出错。现在，问题只有等上线后客户提出来了。</div><div>&nbsp;&nbsp; &nbsp;几乎所有的人都同意，这问题的根源不是一个语言的问题。本质上说，这是一个工作流程问题。即使是C，也只检查参数的个数和类别，对于行为的变化和参数意义的变化还是无能为力的。</div>   <div>1.当你公开了一个函数，并要修改这个函数的外观行为的时候，必须向其他人通告。</div><div>2.python代码要通过unittest和黑盒检查覆盖。</div><div>3.代码应当cross review。</div><div>&nbsp;&nbsp; &nbsp;争论的焦点主要是在python下如何避免这个问题。楼主<span class="Apple-style-span" style="border-collapse: collapse; font-family: arial, sans-serif; font-size: 13px; white-space: nowrap; -webkit-border-horizontal-spacing: 2px; -webkit-border-vertical-spacing: 2px; ">Zhang Jiawei</span>的观点是使用pydev，加上工具来检查。我，沈崴，ZQ的意见是通过行为来避免这个问题。所谓行为，主要包括以下几个。</div>  <meta http-equiv="content-type" content="text/html; charset=utf-8"> <div>1.互相review代码。</div><div>2.修改通告。</div><div>3.编写无检查和无处理的代码，并大量运行。如果代码中有错，程序会持续崩溃。因此当大量运行程序不崩溃时，代码就无错了。</div><div>&nbsp;&nbsp; &nbsp;为什么我们并不推荐使用自动化工具来检测错误呢？主要是因为自动化工具可以*找到*问题，但是却不能*保证*是找到问题最彻底的一种。我举个最简单的例子：</div> <div>网络工程师A，用了pylint，找到了自己code中的15个低级bug。他很高兴，因为工具使用起来很方便。</div><div>A向领导汇报了自己的心得，建议全公司推行这个工具。假定他的领导是项目经理B。</div><div>A：这个工具太好了，一下就找出了我15个bug，我发现用这个工具很方便，blahblahblah。</div><div>B：恩，很好，过两天你在公司里面讲讲这个工具。对了，你的code review做了么？</div>   <div>A：我用工具查过拉。</div><div>B：你确定他找出了你的*所有*bug么？</div><div>&nbsp;&nbsp; &nbsp;问题的关键，就是*所有*。我们当然不可能找出程序中的所有bug。我所知的bug最少的程序是TeX，据说在数年的时间内只有数个bug。但是其版本号仍旧是3.1415926&mdash;&mdash;正好是祖率的密率&mdash;&mdash;而不是pi。我们毕竟不敢&mdash;&mdash;高伯伯也不敢&mdash;&mdash;保证没有bug。但是通过cross review，不处理加覆盖性检测，我们可以保证bug出现的概率在某个水平以下。</div>   <div>&nbsp;&nbsp; &nbsp;自动化工具寻找出的bug，是在这个水准以上的。就是说，自动化工具看的出的，人应该看的出。人看的出的，自动化工具不一定看的出。如果做不到这点，说明你的水准还不足。</div><div>&nbsp;&nbsp; &nbsp;所以，当我们需要一个尽量无错的code时，当你pydev/pylint，或者其他工具做了检测，问题是否解决了呢？没有，你仍旧需要review来保证没有bug。这样一来，工具的意义在哪里呢？</div><div>&nbsp;&nbsp; &nbsp;当然，这并非说在做code review之前，你*不能*去做一遍代码扫描。只是说这样做并*不能替代*对错误的人工控制行为。</div>   <div>&nbsp;&nbsp; &nbsp;除非你的目标是使用最低的成本，将错误减少到一个可接受的规模&mdash;&mdash;而不是最低。就像我们在外包中常做的那样。这种情况下使用工具是比较合适的。</div><div>&nbsp;&nbsp; &nbsp;而且一旦使用工具，很多程序员会产生依赖。所谓依赖，并不是讲从逻辑上他们不清楚在代码扫描外还需要独立的人工检测。但是在检测时，心里就会抱有一种放松的心态。尤其是其中某些虫族程序员让人无语叹息的行为。在中国的程序员界，有着诸多非常有创造力的bug提供者。例如擅长用str+=的java网页程序员很常见，这属于常见问题。但是自己写一套字典映射规则以完成数字到字符转换的（就是c下面的itoa）.net程序员真的让我大开眼界&mdash;&mdash;而且他同时犯下了str+=错误。要指望工具修正+=是可以的，要指望工具找出这类极品代码，估计下面会有更极品的人犯下更极品的错误。。。</div>   <div><br /></div></p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Dec 30, 2010</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/c">c</a>  <a class="category" href="https://shell909090.github.io/tags/java">java</a>  <a class="category" href="https://shell909090.github.io/tags/program">program</a>  <a class="category" href="https://shell909090.github.io/tags/python">python</a>  <a class="category" href="https://shell909090.github.io/tags/%e6%80%9d%e8%80%83">%e6%80%9d%e8%80%83</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/1661/" title="elisp的简单介绍">elisp的简单介绍</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/1666/" title="为什么C语言并不适合语言入门教学">为什么C语言并不适合语言入门教学</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

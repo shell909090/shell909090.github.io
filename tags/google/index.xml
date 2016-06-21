@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Google on Shell&#39;s Home</title>
+    <link>https://shell909090.github.io/tags/google/</link>
+    <description>Recent content in Google on Shell&#39;s Home</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 28 Jan 2014 13:08:45 +0800</lastBuildDate>
+    <atom:link href="https://shell909090.github.io/tags/google/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>google authenticator的特性</title>
+      <link>https://shell909090.github.io/blog/archives/2549/</link>
+      <pubDate>Tue, 28 Jan 2014 13:08:45 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2549/</guid>
+      <description>&lt;h1&gt;算法&lt;/h1&gt;
+
+&lt;ol&gt;
+&lt;li&gt;双方预先共享一对密码。&lt;/li&gt;
+&lt;li&gt;时间对30秒求整，用密码unbase64后HMAC签署。&lt;/li&gt;
+&lt;li&gt;如果当前时间前后一定时间内（几个误差）的值和用户提供值一致，就验证通过。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;攻击者获得了数个时间和序列对，但是根据HMAC特性，他无法反向出密码。&lt;/p&gt;
+
+&lt;h1&gt;因此&lt;/h1&gt;
+
+&lt;ol&gt;
+&lt;li&gt;gauth不需要联网。但是双方时间必须同步。&lt;/li&gt;
+&lt;li&gt;gauth的优势在于，即使有人可以获得一次密码(例如keylogger)，只要不在1分30秒内登录，获得的输入就无法使用。&lt;/li&gt;
+&lt;li&gt;对于可以取得gauth共享密码的人，gauth不能提供安全性加强。例如sudo，验证的是自己的身份。而用户密码只要登录即可读，因此没有提供加强的安全性。&lt;/li&gt;
+&lt;li&gt;对于ssh，在登录后也可以获得密码。因此只要给别人获得了一次登录权限，后续gauth不能保护你。反之，如果能保证对方一次登录都不会成功，则可以作为辅助。因此用于ssh上必须加上一个token只能使用一次，以确保对方获得了token也是作废的。&lt;/li&gt;
+&lt;li&gt;如果有人可以从手机中读取应用的信息，就可以一直冒充用户。因此越狱和root肯定会降低系统安全性。这就是为什么很多TOTP使用硬件来做这个事情。系统单纯，而且没有读取API。&lt;/li&gt;
+&lt;li&gt;缓慢的重试，每次命中概率都是1/1000000。持续试1000000次，也不能肯定猜中。实际上只有63.2%的概率猜中。如果30秒内连续重试1000000次，肯定破解了。合每秒重试3万多次，不算多。所以必须防止暴力破解。&lt;/li&gt;
+&lt;li&gt;如果没有紧急密码，安全性大约是20bit。但是数个紧急密码为破解提供了帮助。因此紧急密码一般是7位数字，综合复杂度一般评估为20bit上下。&lt;/li&gt;
+&lt;li&gt;以复杂度而言，不足以作为身份验证工具，只能作为身份验证辅助。所以gauth叫做two-factor-authentication。&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>openvpn auth with google authentication</title>
+      <link>https://shell909090.github.io/blog/archives/2545/</link>
+      <pubDate>Fri, 24 Jan 2014 12:33:39 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2545/</guid>
+      <description>&lt;h1&gt;client config&lt;/h1&gt;
+
+&lt;pre&gt;&lt;code&gt;# base config
+client
+dev tun
+proto udp
+remote 192.168.1.122 1194
+nobind
+user nobody
+group nogroup
+persist-key
+persist-tun
+mute-replay-warnings
+comp-lzo
+
+# authentication config
+ca ca.crt
+cert shell.crt
+key shell.key
+ns-cert-type server
+tls-auth ta.key 1
+auth-user-pass
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Group should be nogroup, not nobody in debian.&lt;/p&gt;
+
+&lt;p&gt;auth-user-pass is needed for google auth.&lt;/p&gt;
+
+&lt;h1&gt;pam config&lt;/h1&gt;
+
+&lt;pre&gt;&lt;code&gt;account [success=2 new_authtok_reqd=done default=ignore]    pam_unix.so
+account [success=1 new_authtok_reqd=done default=ignore]    pam_winbind.so
+account requisite           pam_deny.so
+account required            pam_permit.so
+auth required pam_google_authenticator.so
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;In /etc/pam.d/openvpn.&lt;/p&gt;
+
+&lt;h1&gt;server config&lt;/h1&gt;
+
+&lt;pre&gt;&lt;code&gt;# base config
+port 1194
+proto udp
+dev tun
+comp-lzo
+user nobody
+group nogroup
+persist-key
+persist-tun
+status openvpn-status.log
+log-append  openvpn.log
+
+# authentication config
+ca ca.crt
+cert server.crt
+key server.key
+dh dh2048.pem
+tls-auth ta.key 0
+plugin /usr/lib/openvpn/openvpn-plugin-auth-pam.so openvpn
+
+# network config
+server 10.55.66.0 255.255.255.0
+ifconfig-pool-persist ipp.txt
+client-to-client
+duplicate-cn
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Plugin should be /usr/lib/openvpn/openvpn-plugin-auth-pam.so in debian, &#34;openvpn&#34; behind is fit for the filename in /etc/pam.d/openvpn.&lt;/p&gt;
+
+&lt;h1&gt;google authentication config&lt;/h1&gt;
+
+&lt;p&gt;Look at this &lt;a href=&#34;http://shell909090.org/blog/2014/01/%E5%9C%A8pam%E4%B8%AD%E4%BD%BF%E7%94%A8google-authentication/&#34;&gt;在PAM中使用google authentication&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h1&gt;startup&lt;/h1&gt;
+
+&lt;pre&gt;&lt;code&gt;shell@debws0:~$ sudo openvpn --config shell.conf
+Fri Jan 24 11:17:17 2014 OpenVPN 2.3.2 x86_64-pc-linux-gnu [SSL (OpenSSL)] [LZO] [EPOLL] [PKCS11] [eurephia] [MH] [IPv6] built on Nov 28 2013
+Enter Auth Username:username
+Enter Auth Password:
+Enter Private Key Password:
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The user you used to config google authentication is the username put into Auth Username.&lt;/p&gt;
+
+&lt;p&gt;Put verification code as Password, and you may have Private Key Password in your private key.&lt;/p&gt;
+
+&lt;p&gt;Have a fun.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>在PAM中使用google authentication</title>
+      <link>https://shell909090.github.io/blog/archives/2539/</link>
+      <pubDate>Wed, 22 Jan 2014 13:31:45 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2539/</guid>
+      <description>&lt;p&gt;PAM是linux系统身份验证的核心，在用户登录/ssh身份校验中均有很大用途。但是很少有人想到，其实这个东西还可以用google authentication来进行身份校验。&lt;/p&gt;
+
+&lt;h1&gt;安装&lt;/h1&gt;
+
+&lt;pre&gt;&lt;code&gt;sudo apt-get install libpam-google-authenticator
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1&gt;设定&lt;/h1&gt;
+
+&lt;p&gt;使用前，需要对用户做一个用户级配置，生成配置文件。这个文件就是这个用户的身份验证凭证。配置请使用用户执行&lt;code&gt;google-authenticator&lt;/code&gt;。&lt;/p&gt;
+
+&lt;p&gt;上来先会问你是否使用基于时间的验证，肯定选是。但是注意，基于时间的验证要求服务器时间必须精确。更准确的说，是服务器时间和手机时间校准在30秒以内。由于手机一般都采用GSM校时，因此只需要在意服务器时间。建议是使用ntpdate来校准时间。特别注意，linux的时钟是会漂移的，必须按天级校准。&lt;/p&gt;
+
+&lt;p&gt;然后程序会给出一个url，还可能有QR码（真够不容易的，Console级别的QR码。。。）。记住，一定要用url去获得QR码给程序扫描。因为url获得的QR码算法是最新的，而直接生成的有可能不能跑。&lt;/p&gt;
+
+&lt;p&gt;下面是secret key和verification code，一般来说这两个不用关心。但是你需要记住emergency scratch codes。libpam-google-authenticator默认给你生成了5个，一般都够用了。通常用到3个就更新一遍吧。&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;是否生成配置，选是。&lt;/li&gt;
+&lt;li&gt;是否拒绝使用同一个token的人登录。如果选是，30秒内只能登录一个人。建议选是。&lt;/li&gt;
+&lt;li&gt;是否放送时间验证，从1分30秒到4分钟。如果选是，允许更大的服务器时间偏差。看你服务器时间是不是够准。&lt;/li&gt;
+&lt;li&gt;是否防止暴力破解，30秒内尝试不超过3次。建议选是。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;OK，你的配置就完成了。如果有多个用户，请多次配置。&lt;/p&gt;
+
+&lt;h1&gt;手机app&lt;/h1&gt;
+
+&lt;p&gt;按照系统安装以下app，下面以android版为例介绍。&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;amp;hl=en_GB&#34;&gt;Google Authenticator Android&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://itunes.apple.com/gb/app/google-authenticator/id388497605?mt=8&#34;&gt;Google Authenticator iOS&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.windowsphone.com/en-gb/store/app/authenticator/e7994dbc-2336-4950-91ba-ca22d653759b&#34;&gt;Authenticator for Windows Phone&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://matthill.eu/linux/ssh-two-factor-authentication-google/m.google.com/authenticator&#34;&gt;Blackbarry&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;选择setup account，然后scan a barcode。程序会要求你使用barcode扫描软件扫描(推荐barcode scanner)。这时去扫描设定一节中访问url显示的那个qr码。&lt;/p&gt;
+
+&lt;h1&gt;pam配置&lt;/h1&gt;
+
+&lt;p&gt;对于ssh而言，请在/etc/pam.d/sshd的最后一行增加这句。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;auth required pam_google_authenticator.so
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;注意，这样其实是密码/校验码双重验证。如果你不需要密码请注释掉下面这句。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;@include common-auth
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;或者其他包含以下这句的地方。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;auth    required            pam_permit.so
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;如果你希望增强sudo安全性，也可以把这句加入/etc/pam.d/sudo后面。如果同样不需要密码，请注释上面那句。&lt;/p&gt;
+
+&lt;h1&gt;sshd配置&lt;/h1&gt;
+
+&lt;p&gt;保证/etc/ssh/sshd_config里面，以下参数都处于正确的配置。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;ChallengeResponseAuthentication yes
+PasswordAuthentication no
+UsePAM yes
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;如果你使用openssh6.2以上版本，请额外加入这句以开启publickey和验证同时启用。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;AuthenticationMethods publickey,keyboard-interactive
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1&gt;sudo&lt;/h1&gt;
+
+&lt;p&gt;注意，如果是NOPASSWORD，则没有校验。&lt;/p&gt;
+
+&lt;h1&gt;参考和鸣谢&lt;/h1&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;http://matthill.eu/linux/ssh-two-factor-authentication-google/&#34;&gt;Why enable SSH Two-Factor Authentication on your server?&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://scottlinux.com/2013/06/02/use-google-authenticator-for-two-factor-ssh-authentication-in-linux/&#34;&gt;Use Google Authenticator For Two-Factor SSH Authentication in Linux&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.linux.org/threads/google-authenticator-for-ssh.4590/&#34;&gt;Google Authenticator For SSH&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;感谢Scott Miller在引用2中的回答，AuthenticationMethods这个细节在其他文献中没有提及。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>关于昨天&#34;google drive你这是在找死&#34;的补充</title>
+      <link>https://shell909090.github.io/blog/archives/2156/</link>
+      <pubDate>Sat, 28 Apr 2012 07:04:54 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2156/</guid>
+      <description>&lt;div&gt;    随手就写害死人阿。&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;昨天写了一篇google drive你这是在找死，结果被人指出了错。我忘记注明了，没有文件夹上传的是android版本，linux版没有客户端，windows版可以看到客户端下载，但是我目前没有确认下来有人能用。&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;即使如此，我还是觉得google drive不好用。&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;# 基于文件的数据管理 #&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;基于文件的数据管理很简单，一个文件系统有很多目录，每个目录可以放文件或者其他目录，文件里面就是各个程序的数据。基本上每个用电脑的人都知道基于文件的数据管理是怎么回事。&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;问题是基于文件的数据管理很不好用。&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;文件就有文件名，我需要找一个文档，里面是上个月的财务数据，但是我不知道叫什么文件名，这种需求并不少见。然而，要在文件系统上干这个事情，你只有搜索所有doc/xls文件，然后一个个看。&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;蛋疼不蛋疼阿。&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;基于文件的数据管理的理由，多半因为多文件组合。例如，我有一个html，里面引用了两张图片，一段音乐。在html里面，我只要写明其他文件的文件名，就自然可以指定对其他文件的引用。这省去了“复合数据存储”的烦恼。但是，大部分情况下，我们用不到这个。&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;因此，目前逐步在向另一个方向过渡，基于数据集合的数据存储。&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;# 基于数据集合的数据管理 #&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;数据集合，听起来和文件没什么区别，但是本质上并不是一回事。大家都用过flickr吧，也用过google doc吧。他们基本上就是“基于数据集合的数据管理”。和文件的区别在于，数据集合是有“元数据”的。照片会有拍照时间，说明。如果运气好，还有地点和评论。文档是有作者，简述等等。你可以基于数据类型和元数据进行过滤，排序等动作。而基于文件的基本没有办法这么玩。微软winXP以上版本的资源管理器可以看到，如果文件夹里面多半是图片，就会变成图片专用视图，而显示出图片的内置元数据。然而，这个是逐个扫描的，速度慢。而且万一一个文件夹里面又是图片又是音乐，至少有一个得虾米。&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;google drive基本是google doc的升级替代品，可以打开多种格式的文件。然而，当上传一个文件时，必须显示的“转换”为google doc文档，才可以介入管理。而且，每个类型的google文档，都有限额。以文本文件为例，大小限制在2M以内。我上传了一个5M的小说，直接报错，要求原样上传。上传后不能直接打开，必须下载打开。&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;# 整合和过渡 #&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;两者如何整合？&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;在文件系统的管理上，同步，而非上传，是一个非常重要的功能。我不可能每时每刻都联网，即使联网，也不能每个文件修改好了就上传一次。我需要对传统的文件系统做持续的修改，然后通过手工的，或者自动的同步，将差异转移到云端上去。而不是我手工的对比每个文件差异，然后一个一个的上传更新和删除。&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;没有同步工具的云端存储是个垃圾，除非你共享的目标是少数几个超大的文件，例如电影，或者资源合集之类的东西。这是以共享为目的的云，说的更直白点，就是免费的下载空间，而不是个人云存储。&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;在个人文件被同步到了云端后，应当能够让云端的程序直接打开和修改某个文件，而不是强迫转换。&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;# google drive是什么 #&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;从表现上看，还是基于文件的管理。我不能通过元数据直接查看我拥有多少张相片，也没办法找所有邓丽君的歌。&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;然而，他们又没有同步，至少linux不行。而且android手机上连文件夹上传都没有。也许有人说了，找个数据线和电脑连起来不就得了？要是我喜欢用数据线连，我到哪连一次电脑，玩个同步就完了，还要云干吗？&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;所以，结论还是不变。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>google drive你这是在找死</title>
+      <link>https://shell909090.github.io/blog/archives/2154/</link>
+      <pubDate>Fri, 27 Apr 2012 03:36:47 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2154/</guid>
+      <description>&lt;p&gt;昨天收到了google drive的邮件，今天就做了个简单的测试。我不确定是否是我的错觉，但是google drive不支持文件夹上传。&lt;div&gt;    ？！&lt;/div&gt;&lt;div&gt;    是的，我找了半天，没找到。即使有这个功能，它也被藏的很深，至少一个熟练用户花了10分钟找不到。据我看到的资料，这是因为谷歌试图抛弃文件概念。&lt;/div&gt;&lt;div&gt;    好吧，抛弃文件概念是个先进的理念，我也认为那是对的。但是，当我需要为我的200多个手机小说，一个一个上传，然后再手工建立目录，重新分类，打tag的时候。你连从文件夹直接导入的功能都没有。&lt;/div&gt;&lt;/p&gt;
+
+&lt;div&gt;    告诉我，我为什么要用你。&lt;/div&gt;&lt;div&gt;    其余特性我就不多吐槽了，包括中国群众使用的不稳定(虽然不是你们的错，而且dropbox也不稳定)。才5G的免费空间。目前还没有客户端。至少这些问题都是可以改进的(除掉那个不是你们的问题)。&lt;/div&gt;&lt;div&gt;    但是拿着已经存在的事实不当回事，只考虑未来是美好的——&lt;/div&gt;&lt;div&gt;    ——那就是在找死了。&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>关于减少使用gmail的建议</title>
+      <link>https://shell909090.github.io/blog/archives/88/</link>
+      <pubDate>Tue, 19 Jan 2010 21:18:00 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/88/</guid>
+      <description>&lt;p&gt;这次，google又不走了。
+事情处于很奇怪的状态，google本是不可能留下的。既然它留下了，我们说，事有反常必为妖。这次妖在哪里呢？
+我建议大家减少使用gmail，最好别用。原因如下：
+如果google的却是受到了某些关于知识产权的攻击，但是却愿意在中国留下，并且在发生这次的事件后，还能留下。这说明google(非中国的谷歌公司)已经和北京达成了某种秘密的和解协议。无论这个协议的细节是什么，我们有理由猜测，google的产品不能完全的信任了，包括gmail，google reader，bloger等。
+另一方面，如果google并没有受到这些攻击，那就是出于各种原因的新闻炒作。既然google背弃不作恶的宣言在前，那杯葛在后也是自然而然咯？
+所以说，如果google打算继续在中国留下，那么包括gmail在内的各种google产品，都必须视为非安全产品看待。建议尽量减少使用，并准备替代方案。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>关于google退出中国的FAQ</title>
+      <link>https://shell909090.github.io/blog/archives/86/</link>
+      <pubDate>Thu, 14 Jan 2010 12:52:00 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/86/</guid>
+      <description>&lt;p&gt;F:google真的准备退出中国了么？
+Q:历史告诉我们，两个人谈价的时候，如果出现有人生气要走，那可能是讲价的手段。如果出现扇耳光，那么多数是谈崩了。除非被扇的人授意这么做，否则双方都没有回头路可走。目前google等于明确的在指责中国进行网络监控，并试图进行网络攻击。耳光都扇出去了，下面就不是谈价的问题了。&lt;/p&gt;
+
+&lt;p&gt;F:中国政府会怎样处理google的谈判呢？
+Q:这也是个挺头痛的问题，要是让google就这么走了，无异于变相承认了中国的网络舆论监控和网络安全问题。但是要答应无控制的搜索，那是绝对不可能 的。可能会派出发炎人，声明，中国要求google进行网络控制的理由是为了防止网络色情和网络暴力，这是我国内政，其他国家无权干涉。目前没有证据表明 入侵google的黑客得到中国政府的授意，任何试图联系两者的人都是邪恶和别有企图的。中国是一个开放的市场，任何人进入和离开是个人自己的选择，中国 依旧欢迎其他公司来中国建厂投资。&lt;/p&gt;
+
+&lt;p&gt;F:google退出中国真的是因为不作恶么？还是为求一个体面的退出？
+Q:别太把自己当回事了。google在中国的利润有多少？不超过总利润的10%。投资有多少？鬼知道。市场份额多少？33%。我们不看其他，就算中国市场全争取过来，最高也只能将利润增加到25%((10*3)/(100+10*2))。也就是说，中国最多是一块肉丝，而美国是块肥肉。如果肉丝真的有臭掉的风险，宁可丢块肉丝，也别丢肥肉。
+而且，一旦明确指责网络舆论控制和网络安全问题，那么，同样进入中国的其他大型厂商就会陷入被动，包括微软，雅虎等。撤吧，他们的市场份额更大，问题也更复杂。不撤吧，他们在美国的形象会受到影响，有利于google在其他地区的业务。&lt;/p&gt;
+
+&lt;p&gt;F:google走了，百度得益了？
+Q:短期来看，没错，长期来看，市场会重新平衡。由于百度在谈判上的强势地位，因此会导致代理商和广告主非常难做，同时互联网广告的成本会增加。进而加剧劣币驱逐良币，最后让整个互联网的所有广告都变成近乎于废纸，互联网广告业务名存实亡。
+而且，一旦google离开，百度就会直面政府。从政府需要&amp;rdquo;团结和依靠&amp;rdquo;的多数，变成需要&amp;rdquo;警惕&amp;rdquo;的&amp;rdquo;怀有异心&amp;rdquo;的人。可以预见，政府对百度的监控和利用会达到一个新的高峰(因为用不着让你活着对付google了)，并且可能会提出注资成为某部下属机构的要求。&lt;/p&gt;
+
+&lt;p&gt;F:google走了，我们将会怎样？
+Q:google的离开，标志着中国的互联网整体倒退了6年。在IT界，3年是一个时代，6年的倒退，让我们退回了两个时代去，变成了上个世纪网络刚刚兴起的时候，那种上网艰难的状况。这不是用备份邮箱，备份新闻标签等方法可以解决的。
+更严重的是，这会严重打击整个业界，工程师，对于中国的网络发展的评价。在这个问题解决前，我们可能落后其他国家10年以上。当然，之所以我这么担忧，其实还是因为这直接影响到了我的饭碗。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>竞价排名和不作恶</title>
+      <link>https://shell909090.github.io/blog/archives/47/</link>
+      <pubDate>Sun, 23 Nov 2008 22:58:00 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/47/</guid>
+      <description>&lt;p&gt;前两个月贝壳才刚说到百度的竞价排名，果然，这回又出问题了，而且还出的很好笑。
+央视曝光了百度竞价排名中的一些问题，主要是有很多医疗信息，百度并没有核实来源。此后，百度总裁李彦宏声称，法律没有要求百度对付费信息负责。从法律角度说，这是对的，我们今天说的主题也不是他，而是这个(&lt;a href=&#34;http://www.cnbeta.com/articles/69964.htm)。&#34;&gt;http://www.cnbeta.com/articles/69964.htm)。&lt;/a&gt;
+本来曝光百度，怎么转眼变成google了？
+看来百度不应该叫搜索引擎公司，而应该叫公关公司。前两个月讲三鹿问题，他是公关。央视曝光医疗问题，他是公关。现在出这个，还在公关。不过你可以公你的关，不代表股东会买你的帐。详细情况大家可以看这里(&lt;a href=&#34;http://realtime.zaobao.com&#34;&gt;http://realtime.zaobao.com&lt;/a&gt; /2008/11/081120_21.shtml)。
+估计我这篇blog的百度排名应该会很低吧——
+下面贝壳废话一下，讲解一下竞价排名的问题，google的价值观和策略。
+竞价排名在前两年是一个非常好的模式，通过竞价本身，我们就可以发现很多有价值的信息。例如，我们在搜索IBM的时候，肯花钱的蓝色巨人总比不肯花钱的国际大嘴(International Big Mouth)来的有价值吧。然而问题在于，由于搜索引擎价值的外在性很大，又没有监管，搞不好就要出问题。而且往往不是竞价排名供应商出问题，而是上游下游出，他们没法管。首先我们说外在性的问题，所谓外在性，是指由不应当承担后果的人承担后果的一种状况。好比我在XX地开了一个工厂，生产在欧洲要花很多环保费的东西，破坏了当地的环境。我获得了收入，但是后果由当地人来承担。不论出现的原因，由于外在性的存在，会破坏社会公平，因此很多国家都有补偿外在性的措施。例如排污税，针对富人的高所得税等。竞价排名的外在性在于，有人花钱买排名，并不总是发现价值的过程，也可能是减少价值的过程。而减少价值的损失并不总由百度承担，而是由百度的用户承担。更麻烦的是，这个过程是不可监管的。
+我们举例详述整个过程。假定有人在百度竞价买了“流产”(这也是百度最贵的排名)这个关键词，那么，什么人会最乐意去购买呢？我们分析一下流产的潜在市场。正规医院的流产总要通过手续，未成年需要父母签字。很多有钱的小孩宁可多花钱也不希望父母知道，因此他们会选择一些非正规的医院。于是，这些市场一般都是非正规的医院把持的，因为正规医院的收费公开固定，流程有一定监管，肯定没法和这些非正规医院去竞标这个关键词。那么非正规医院中，我们可以想象，应当是付出最高价格的人能够获得这个关键词。如果你按照百度的去，那么你去的地方一定是市场上拥有最高的成本收益比的地方——因为只有这样他才能标到百度的关键词。问题是，什么样的医院会拥有最高的成本收益比？如果是监管医院，这个答案一般是私人贵族医院——如果中国有的话。如果是非监管，那肯定有问题。因为他不能贵族化，收入上不去，又要保证成本收益比，只有降低成本咯。而且医疗系统里面，降低成本普通人根本看不出来。不普通的人——不普通还需要自己找非监管医院么？同样，一些用户不希望被监管的医疗问题中，这个关键词应当也是非常贵的。例如生育，肾亏，等等。这个过程也是不可监管的，百度自己难道还逐个核查竞价排名的真实性？他又如何有权力做这个事情呢？
+一家不在监管下的医疗机构，这个问题够严重了吧？但是百度有做什么非法的事情么？没有。从法律角度讲，任何人有权付费将某个信息在百度的排名变更。例如，我可以付费将布什是条狗的网页调整到最高——如果我对布什不爽的话。这个不触犯任何法律，除非你调整有悖法律的关键字。你不能说布什是条狗不是事实，因而不允许我调整排名。那么，百度调整这些有问题的医疗机构的网页，并不能说他触犯了任何一条的法律——从法理上讲是这样的。
+通常来说，如果是普通机构，市场会自行调整。如果一个公司提供的信息是违背市场本意的，那么这个公司本身就会被市场淘汰。如果你天天提供广告给我们，我们应当一脚把你踢开。问题是，百度获得了足够的互联网资源，百度搜索是个太重要的东西了。因此他可以屏蔽对自己不利的消息。于是，即使百度有问题，大家也不会知道，直到上面的这幕出现。百度被另外一个媒体的老大——央视——点名，他屏蔽不掉了——总不能屏蔽央视吧？当然，他还是屏蔽了部分消息，并且留下了相当的尾巴。
+google的核心哲学观点之一就是“不作恶”。简单来说，就是不因为外力——包括广告，赞助，等等——人工改变排名。google的排名一般有两种变更方法，一种是被发现作弊或者犯规，另一种是更改算法。用google的话来说，即使我们认为某个关键字结果是错误的，修正错误的方法不是我们调整这个页面的pagerank，而是使用更公正的算法，保证每个人在同一个起跑线上。这个和美国法律的精髓如出一辙。即使我认为这个判例是错的，我也不会行政干预这个判决。而是通过议会修正法案来修正法律，保证一个更公正的法律。
+至于google的广告，不要误会，google也是卖广告的。google的广告都统一显示在页面的右边，和左边的搜索结果严格分离。大家可以很容易的识别出google的广告。如果你们对广告内容有兴趣，可以点击广告——这是google广告的本意。如果你们对广告内容没兴趣，不强迫你们。这个是“不作恶”的本意。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>百度、官员辞职和特供局</title>
+      <link>https://shell909090.github.io/blog/archives/37/</link>
+      <pubDate>Tue, 23 Sep 2008 10:33:00 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/37/</guid>
+      <description>&lt;p&gt;这几个东西有什么联系？其实没什么大联系，只是同样是没用的东西而已。
+先说百度吧，大家可能不知道，google的一个原则就是“不作恶”。简单来说，不因为人为的理由而改变搜索结果。包括调整排名，屏蔽关键词等。google卖的关键词和百度不大一样，百度的是改变搜索结果，google则是在旁边显示广告栏，其显示特征明显不同于正常搜索结果。从商业角度来说，卖排名当然不如卖广告收入多，但是google的收入却比百度高很多。我以前也完全无法理解google费力坚持不做恶的理由，更无法理解为什么google的收入会远远超过百度，然而这次却明白了。大家应当听说某奶粉品牌300万搞定某搜索引擎的事情吧？当然，某搜索引擎否认了，我们也没有什么证据来说明这次的却是被搞定了。但是，百度卖排名是事实，卖关键词屏蔽也不是什么很难理解的事情吧？也许这次没有被搞定，然而在卖屏蔽却没有什么异议。然而如果这么说的话，那么百度，无疑就成为了遮盖大众知情权的帮凶了。当然，同样的问题google并非没有。google在进入中国后，和政府达成了协议。部分涉及国家的敏感词汇被封锁，大家可以看google最下方的提示。“据当地法律法规和政策，部分搜索结果未予显示。” 如果出现这个，就代表你的关键词有问题，部分内容被屏蔽了。作为进入中国的代价，我们理解这种事情。然而即使是这种程度的改变，依然被很多google的 fans质疑，认为google背叛了“不作恶”的原则。大家可以想想，一个搜索引擎受到国家约束而被迫改变结果尚且要引来怀疑。这时候，一个可以用钱买卖，结果改来该去的引擎，有用么？
+因此我强烈的建议大家，使用google的搜索引擎。或者说，当你需要知道什么事情，怀疑什么事情，而这个事情又和强权的利益相关的时候，请使用google搜索引擎，因为百度可能被“买通”了。你不知道你搜索出来的“最有名”的培训公司是否真的好(这是我一个朋友的真实例子，他所在的培训公司就是打的百度排名，但公司有严重问题)，你不知道你“搜索不到”有问题的词是否真的只是因为你个人的问题(例如这次的三鹿)。当你搜索到的东西其实只是一堆利益的集合的时候，我觉得这个搜索引擎也就没用了。
+我当然不是对百度有意见，也不是对国产有意见。我本人就是中国的程序员，也有朋友在百度任职。然而中国的公义(好吧，这个词大了点)是不能因为利益而含糊的。说的更准确点，当你为了利益而含糊公义的时候，说不定你的儿女正在喝三鹿奶粉。
+下面讲讲官员辞职。这次溃坝辞职的孟学农，其实是第二次辞职了。头一次是因为在北京，非典处置不力而辞职。这次又在山西，因为溃坝辞职。中国官方的解释是，孟学农的两次辞职为做太平梦的太平官敲响了警钟。然而贝壳要问，为什么辞职了两次？
+大家理解官员辞职，基本就是，辞去职务。辞去后干什么？我们并不清楚。当然，辞职后又重入公职，说起来也不是不可以。但是，这样真的可以么？有人可能说说法规并不反对，但是我想问，一个已经有了明显的处置不力前科的人，为什么那么容易的又进入了公务员队伍呢？难道中国对农村户口的人进入公职防范的那么严格，对有处理问题不力前科的人反倒不必防范？辞职，下台躲躲风头，学学陈冠希，事情走了再出来，损失的只是以前积累的名气，是不是太容易了？进一步说，这次因为三鹿辞职的某些官员，下次又准备在哪里任职呢？大家明天又想喝些什么呢？
+当然，还有一个更坏的理由，就是这些人因为没有背景，被屡次作为代罪羔羊。为什么说比辞职重新担任公职更糟糕呢？因为这代表真正应当负责的人屁股都不必动。辞职重新担任官职，好歹还有躲风头的时间，还要损失自己的名气和政绩。作为官员，在做事情前还是要想想这个代价的。然而花钱弄一堆不做事的替罪羊养起来，出了问题就让他们辞职顶罪，然后再给他们重新安排一个替罪羊的职务。这连想代价的时间都省了，反正这帮人的工资是国家支付，人民出钱。拿人民的钱来糊弄人民，没有比这个更好做的决定了。如果真的碰到这种情况(当然，这只是贝壳的猜测)，那官员问责机制就会从“没什么用 ”彻底变成“什么用都没”。
+最后一个，讲讲特供局。特供局的意义相信大家都清楚，就是给皇帝弄贡品的单位。这种局弄出来，肯定要被大家骂的。当官的只管自己吃喝好，不管老百姓生死。有人还这么说，只要特供局存在一天，当官的就不会真正在意老百姓的生死。只要产品安全到家了，总理可以在大街上随便买个番茄吃了。在这里贝壳不打算讨论政府和食品安全问题，只是想问另外一个问题。让一帮人浮于事吃拿卡要的家伙负责另外一帮同样家伙的食品，有用么？
+以前给皇帝拿贡品的时候，下面的经手太监经常吃拿卡要雁过拔毛。只要给一定的好处，就可以打上贡品的标签。多收了是朝廷付钱，好吃的自己先吃掉，反正皇帝也不会来查——要是他有这个空，肯定自己来管了。最后经常会出现朝廷的采买太监吃的比皇帝都好的现象。同样的事实难保不会再特供局出现，毕竟东西经过特供局后一般不会再交付其他部门检查。那特供局完全有可能检验一下，扣下一些特别好的，收钱定贡品。反正只要交上去的东西没问题，就没人问他们负责。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Google Calender</title>
+      <link>https://shell909090.github.io/blog/archives/418/</link>
+      <pubDate>Mon, 26 Nov 2007 17:49:12 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/418/</guid>
+      <description>&lt;p&gt;Google有很多产品，Google Calender就是其中之一，这个东西主要的目的就是管理日历。&lt;br /&gt;    其实从常规角度考虑，这是最不适合bs的产品。日历的要点就是随身，谁会高兴为了看个日历找宽带上网阿。可不能不感慨Google的水平，凭着各种技术的支持，这么一个产品居然还真让我觉得好用。&lt;br /&gt;    Google Calender的两个核心思想就是同步和共享，同步用的是iCalender标准，共享也很类似。Google Calender的管理中，允许在多种客户端内同步Google Calender的日程。这样Google Calender就从一个不适合的产品一下变成了多个日程工具的平台标准。贝壳现在是利用他同步多个机器上的多个软件，主要的产品包括Sunbird/Lighting，raincalender，部分的手机日历，相信很多人也会做这个应用。贝壳用的就是其中的Sunbird，这个软件是Mozilla的产品之一。(贝壳现在是Mozilla的忠实用户，FireFox，Thunderbird，Sunbird三件套常备，都做了跨系统共享)不加载&lt;a href=&#34;https://addons.mozilla.org/zh-TW/sunbird/addon/4631&#34;&gt;Provider for Google Calendar&lt;/a&gt;的情况下，可以读取iCalender格式的远程日历。加载插件后会多出一个Google日历的选项，用Google中的个人xml链接，保存入个人的用户名和密码(个人的gmail，带域名)，然后就可以双向同步gcal了。&lt;br /&gt;    至于共享，在管理的时候应该可以看到和谁共享。做项目的时候，拉组员进来共享。或者没有gmail的可以用全可见加给html链接的方式。这样就可以给组员看他们的工作状态，别人的工作状态，将来的项目安排。如果组员可信任，可以给予写权限。这样他们会自动更新进度，可谓超级省事。&lt;br /&gt;    最后，Google Calender可以被结合入iGoogle里面，成为标准平台的一部分。
+&lt;div&gt;&lt;/div&gt;&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Google earth</title>
+      <link>https://shell909090.github.io/blog/archives/305/</link>
+      <pubDate>Sat, 01 Jul 2006 05:35:56 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/305/</guid>
+      <description>&lt;div&gt;google earth很多人已经用过了，不过google earth有linux的bata版了。下载解压，解压界面非常漂亮，很容易上手。运行来看，是QT的界面。不愧是google阿。&lt;/div&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

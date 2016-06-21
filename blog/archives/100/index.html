@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>emacs配置系统</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         emacs配置系统 
+    </h1>
+    <p class="meta">Mar 3, 2010
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/100/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>emacs是个超级复杂的程序，尤其在配置问题上。贝壳的emacs要跨越三个环境。环境一，WindowsXP+Emacs23。环境二，Debian Testing + Xfce4。环境三，CentOS + Ssh。而整个的操作方式，个性设定需要保持一致。因此，引出一个问题。配置如何设置，跨平台，同步。
+首先解决配置的同步问题，贝壳建立了一个svn仓库，用于存储该配置系统。然后在各个系统中co出这个仓库，当有需要调整时ci就可以保持同步了。Linux下可以使用ln连接文件，Windows下比较麻烦点，NTFS格式(大多都是NTFS格式了吧)可以去sysinternals下一个叫做junction的工具，以建立目录的工具链接，当然，.emacs文件只能手工拷贝了。
+然后是配置的切分问题，如果只有一个文件，即使使用了版本控制，意义也不大。同时，将配置切割成不同的部分，控制载入过程，也可以跨平台和加速。以下是贝壳的.emacs文件。
+;; .emacs profile, written by shell.xu</p>
+
+<p>;; load other set
+(add-to-list &lsquo;load-path &ldquo;~/.emacs.d/&ldquo;)
+(add-to-list &lsquo;load-path &ldquo;~/.emacs.d/auto-complete/&ldquo;)
+(add-to-list &lsquo;load-path &ldquo;~/.emacs.d/plugins/&ldquo;)
+(load &ldquo;emacs-setup&rdquo;)
+(load &ldquo;emacs-redef&rdquo;)
+(load &ldquo;emacs-plugin&rdquo;)
+(cond
+((not (boundp &lsquo;initial-window-system)) (load &ldquo;emacs-console&rdquo;))
+((memq initial-window-system &lsquo;(x w32))
+(cond
+((memq system-type &lsquo;(windows-nt cygwin)) (load &ldquo;emacs-win&rdquo;))
+((memq system-type &lsquo;(gnu/linux)) (load &ldquo;emacs-linux&rdquo;))
+)
+)
+)
+(load &ldquo;emacs-keymap&rdquo;)
+从上可以看出，我们先设定了.emacs.d作为默认加载路径——大多数文件都是放在这里。plugins是各种第三方程序的安装路径，这样这些程序就无需在各个平台上各自安装一次。而auto-complete单独拆出来纯粹是因为文件太多了。而后，我们加载了setup，这个文件内定义了emacs的基本配置，redef文件内定义了各种自定义函数和变量，plugin内控制了需要加载的各个插件和配置。
+下面就有点复杂，简单来说，设定无Windows系统的时候加载emacs-console文件，有Windows的情况下，在windows下加载emacs-win，在linux下加载emacs-linux。这是实现跨平台设置的核心。
+最后是keymap，经过上面复杂的设定，按键设置是统一的。
+setup文件就不细说了，大家按照自己的习惯设定就好。下面我说几个redef中定义的函数。
+(defun switch-windows-buffer ()
+(interactive)
+(let ((this-buffer (window-buffer)))
+(switch-to-buffer (window-buffer (next-window (selected-window))))
+(switch-to-buffer-other-window this-buffer)
+(other-window 1)
+)
+)
+这个函数的目标是用热键交换两个窗口的位置。如果你经常用C-x 3分栏，并且在两者间跳来跳去的话，有的时候往往希望两者的位置换一下。通常都是C-x b切换当前的窗口，然后C-x o切到隔壁去再换。这个太繁琐了。
+(defun popup-term ()
+(interactive)
+(apply &lsquo;start-process &ldquo;terminal&rdquo; nil popup-terminal-command)
+)
+这个函数是用于在当前文件所在路径弹出一个term的。也许有人说了，emacs有term啊。问题是，那个term只能开一个，而且有些东西操作不了。例如你如果想在这个term里面跑aptitude&hellip;
+注意这个函数里面的popup-terminal-command，这个需要跨平台的，因此在windows和linux下设定各自不同。以下是两个典型设定，至于哪个是哪个我想都看得懂。注意console下面没必要搞这个。
+(setq popup-terminal-command &lsquo;(&ldquo;xfce4-terminal&rdquo;))
+(setq popup-terminal-command &lsquo;(&ldquo;cmd&rdquo; &ldquo;/c&rdquo; &ldquo;start&rdquo;))
+然后我们说plugin，这个文件其实很简单，加载插件，然后设定就好。下面是一部分范例。
+;; load template
+(require &lsquo;template)
+;;here set the templates directory
+(setq template-subdirectories &lsquo;(&ldquo;./&rdquo; &ldquo;Templates/&rdquo; &ldquo;~/.emacs.d/templates/&ldquo;))
+(template-initialize)
+(setq template-auto-insert t)
+这部分范例说明了如何载入template，并且进行设定。
+下面是一点细节问题，tool-bar-mode这个设定相信多数人都有做。问题是，如果你在console下用过就知道，如果你设定了(tool-bar-mode -1)，立刻会报错——因为console下面根本没这个东西。所以，记得把这个设定放到各个平台上。
+最后，这些设定，必须经过编译才能起效。包括所有第三方插件，都必须编译生效。而显然，每个平台编译一遍是个脑残的事情。因此，我们需要写一个Makefile。
+DEPENDS=auto-complete plugins
+SOURCES=emacs-console.el emacs-keymap.el emacs-linux.el emacs-redef.el emacs-setup.el emacs-win.el</p>
+
+<p>build: $(SOURCES) emacs-plugin.el
+for i in $(DEPENDS); do $(MAKE) -C $$i build || exit 1; done
+emacs &ndash;batch -f batch-byte-compile $(SOURCES)
+emacs &ndash;batch -l ~/.emacs -f batch-byte-compile emacs-plugin.el</p>
+
+<p>clean:
+rm -rf *.elc
+for i in $(DEPENDS); do $(MAKE) -C $$i clean || exit 1; done
+注意，在每个目录中也要分别写Makefile，不过内容简单多了，基本就是emacs &ndash;batch -f batch-byte-compile *.el而已。而plugin这个文件比较特殊——他必须依赖于所有插件才能工作，所以最后才进行编译。
+以上工作，基本完成了一个跨平台的emacs配置系统的组建。当然，如果你高兴向其中加入更多的内容，可以遵循以上规范进行。</p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Mar 3, 2010</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/emacs">emacs</a>  <a class="category" href="https://shell909090.github.io/tags/linux">linux</a>  <a class="category" href="https://shell909090.github.io/tags/sche">sche</a>  <a class="category" href="https://shell909090.github.io/tags/scheme-2">scheme-2</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/99/" title="android历史记录备份和应用三例">android历史记录备份和应用三例</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/101/" title="游新场镇">游新场镇</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

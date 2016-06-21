@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>无线网络问题的诊断</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         无线网络问题的诊断 
+    </h1>
+    <p class="meta">Apr 1, 2012
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2130/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>今天看到ZQ在坛子里面说无线网络卡，想想这对很多人是个问题。现在越来越多设备采用无线网络，本来看似够用的无线网络应该也会逐渐变的不怎么够用。这篇文章的大部分内容在blog中都有说，但是没有集结成文。今天集结一下，为大家提供便利。 <div>    关于无线网络卡这个问题，有多种可能，我们逐个分析原因/诊断方法/解决方案。</div><div><br /></div><div>= 有终端连不上，即使这个终端就在路由器附近 =</div><div>这个主要是因为无线网络负载的设备达到极限所致的。这个极限，我见过最差的路由器是8个，普通路由器（包括dir-825刷openwrt）大概是50上下，苹果的要超过100。一个/24子网的最大负荷是253个IP地址，如果不另行设定，大多数的默认配置都无法超过这个极限。</div></p>
+
+<p><div>解决方案很简单，加路由器，或者换一个更好的路由器。加路由器具体参考<a href="http://shell909090.org/blog/2011/09/%E5%90%88%E7%94%A8%E4%B8%A4%E4%B8%AA%E8%B7%AF%E7%94%B1%E5%99%A8%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E6%A1%88/" target="_blank">这篇</a>。换路由器的意见是，不要用fastnet，推荐tplink或者dlink的设备，buffalo的也不错。如果你已经用了这些路由器，但是终端超过50个（好像通常只有公司会碰到吧），可以考虑苹果的，或者多扔两个路由器，辐射小信号好。</div></p>
+
+<div><br /></div><div>= 有终端离开一点距离后就连不上，或者离开一定距离后速度变慢 =</div> <div>这是典型的信号衰减。作为不严谨的测试，你可以在android上安装wifi测试仪，然后走到各个角落。如果你的信号质量不足80dbm，那么就属于比较差的情况。大概能连接，但是经常断线，或者速度很慢。如果不足90dbm，基本就不可用了。</div><div>解决方案也很简单，同上一个。总之优化到家里的每个点信号质量都可以就好了。</div><div><br /></div><div>= 明明信号很好，速度就是上不去 =</div><div>
+
+有可能是因为周围的channel干扰，也可能是因为你的路由器CPU不足。你可以用wifi测试仪，看看你周围当时有多少人在用你路由器的channel。两个channel相隔5以上才不互相干扰。所以，如果你使用channel6，那么channel2-channel10都会对你的信道造成一定干扰，相隔越远干扰越小。而如果你隔壁有一堆和你同channel的AP，实际带宽是均分给你们所有channel的。如果对方用的比较多，也会对你造成干扰。</div>
+
+<p><div>这是非常难解决的问题，你总不能跑到隔壁说，你们改个信道吧。一方面，如果有条件，你可以对墙壁，门缝做信号屏蔽。这样能减小一点隔壁的信号干扰。另一方面，建议你采用5G频段。这个频段的信道更多，更不容易串扰。但是目前支持5G频段的设备少，而且5G的穿透能力比2.4G更差。</div><div><br /></div><div>= CPU不足呢 =</div><div>CPU不足最典型的确诊就是关掉加密，你的无线网速就会突然暴增。或者你保持无线空载，用有线狂用网络，无线的ping值从10变化到上千。</div></p>
+
+<div>碰到这种情况，扔掉垃圾路由器重新买一个。</div><div><br /></div><div>= 明明有些设备一点问题都没有，有些设备就是连AP都找不到 =</div><div>看看你的channel是否设定到了11以上，例如12/13/14之类的。各个国家对channel的许可范围不一，欧洲日本美国的许可比中国宽一些，因此有12等信道，中国最高到11。因此你用水货手机连外贸版本的路由器的时候，channel12没问题，而用中国许可的设备的时候就连AP都找不到。</div>
+
+<div>解决方法很简单，换个中国许可的channel。</div><div><br /></div><div>= 无线速度跟不上外网速度 =</div><div>自从20M以上光纤出现以来，这个问题就逐渐变成主要问题。11g的标准速度号称54Mbps，但是实际上通常只有18Mbps。而外网速度从常见的1/2/4Mbps骤然升到了10/20/30Mbps，就出现了严重的外网速度反超内网速度。</div> <div>这个一点办法都没有，只能把11g的设备都淘汰光。只要有11g的设备在，11n就无法发挥极限速度，导致你的无线只能在18Mbps上晃。而换用11n的设备后，速度一般可以达到30-40Mbps以上，基本够用。</div><div><br /></div><div>= 路由器被打爆 =</div><div>由于速度加快，导致现在有更多的小包可能被传输。虽然传输速率要求不高，但是由于路由器对每个包都需要做同样处理，所以大量小包的资源消耗和同样数量的大包是同一个量级的。我们做一个简单的计算。如果一个包是1500字节，128KB/s的网络可以每秒传输90个包。而如果每个包是64字节，就可以传输2000个包。而当速度升级到2.5MB/s（20Mbps光纤），如果是1500字节，每秒1700个，而64字节的就是40000个。如果路由器的处理能力是每秒10000个包，升级到光纤一跑小包就挂了。很多人在ADSL的时代没问题，升级到光纤反而频繁出问题就是这个原因。</div>
+
+<p><div>现象比较多，如果是交换机挂掉，往往是一个机器链路OK但是就是有TX没有RX。怎么整也没用，但是过一会，这台机器突然就OK了，换下一台出同样问题。而如果是整个路由器挂掉，可能是路由器突然重启，或者ppp0断线重新拨号。还有的机器是死在那里没任何反应，必须拔掉电源线重新插才有效。</div></p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Apr 1, 2012</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/computer">computer</a>  <a class="category" href="https://shell909090.github.io/tags/wifi">wifi</a>  <a class="category" href="https://shell909090.github.io/tags/wireless">wireless</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/2128/" title="redis的rdb和aof模式性能对比">redis的rdb和aof模式性能对比</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/2132/" title="empathy的无聊问题——记一次排错">empathy的无聊问题——记一次排错</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

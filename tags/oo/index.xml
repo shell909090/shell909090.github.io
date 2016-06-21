@@ -1,0 +1,336 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Oo on Shell&#39;s Home</title>
+    <link>https://shell909090.github.io/tags/oo/</link>
+    <description>Recent content in Oo on Shell&#39;s Home</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 02 May 2008 19:03:00 +0800</lastBuildDate>
+    <atom:link href="https://shell909090.github.io/tags/oo/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>C&#43;&#43;继承,虚,转换规则探究</title>
+      <link>https://shell909090.github.io/blog/archives/15/</link>
+      <pubDate>Fri, 02 May 2008 19:03:00 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/15/</guid>
+      <description>&lt;p&gt;以下讨论的东西都是在VS2005下跑出来的，如果想知道别的编译器规则，请照跑一遍。以下是类定义，函数内容为打印出当前函数名称，所以就不再贴了。
+class Base
+{
+public:
+Base();
+Base(const Base &amp;amp; o);
+virtual ~Base();
+virtual Base &amp;amp; operator = (const Base &amp;amp; o);&lt;/p&gt;
+
+&lt;p&gt;void function1();
+virtual void function2();
+void function3();
+virtual void function4();
+//virtual void function5();
+virtual void function6();
+};
+class Derive : public Base
+{
+public:
+Derive();
+Derive(const Derive &amp;amp; o);
+virtual ~Derive();
+virtual Derive &amp;amp; operator = (const Derive &amp;amp; o);&lt;/p&gt;
+
+&lt;p&gt;void function1();
+virtual void function2();
+virtual void function3();
+void function4();
+//compiler error
+//int function5();
+protected:
+virtual void function6();
+public:
+};
+首先我们讨论继承下的构造/析构顺序。
+pa = dynamic_cast(new Derive ());
+delete pa;
+Base::Base
+Derive::Derive
+Derive::~Derive
+Base::~Base
+关于这段代码多说两句，如果我们把class Derive : public Base中的public删除，就会出现C2243错误，看来默认是私有继承。
+先是基类构造，然后是继承类构造。先是继承类析够，然后是基类析够。然后我们将virtual ~Base();的virtual删除，结果就变成了。
+Base::Base
+Derive::Derive
+Base::~Base
+注意继承类的析构没了。所以如果你打算让人继承你的类，记得将类的析构改成virtual，否则他怎么写析构都不会被调用的。
+然后是虚函数继承。
+pa-&amp;gt;function1 ();
+pa-&amp;gt;function2 ();
+pa-&amp;gt;function3 ();
+pa-&amp;gt;function4 ();
+结果是这样。
+Base::function1
+Derive::function2
+Base::function3
+Derive::function4
+Derive::function6
+看来，虚特性出来不出来完全看基类。注意到上面的function5么？假设你继承了一个类，打算写一个函数，和基类里面的某个虚函数具有一样的名称和参数，但是返回不一样。嘟嘟～～抱歉，编译器错误。而且注意function6，即使在继承类中声明说这是保护函数，也可以通过公开的基类函数的虚特性进行调用。
+下面我们要说一下拷贝构造函数，这不可避免的要说到定义。
+Derive::Derive(const Derive &amp;amp; o)
+{
+printf (&amp;ldquo;Derive::Derive copy constructern&amp;rdquo;);
+}
+猜猜这个会出什么结果？
+Base::Base
+Derive::Derive copy constructer
+要是经常看我blog的人就不会意外，继承类的拷贝构造函数调用的是基类的普通构造函数。如果你打算让基类也拷贝构造，那这么做。
+Derive::Derive(const Derive &amp;amp; o):Base (o)
+{
+printf (&amp;ldquo;Derive::Derive copy constructern&amp;rdquo;);
+}
+然后是拷贝构造函数的使用时机。运行代码如下，我们逐步分析。
+Base ta = *pa;
+Base::Base copy constructer
+Base::~Base
+当对象声明时，如果加一个=，则以=后的对象来构造当前对象，这是拷贝构造的第一个用法。
+Derive tb = *static_cast(pa);
+Base::Base copy constructer
+Derive::Derive copy constructer
+Derive::~Derive
+Base::~Base
+当然，如果我们声明继承类的时候，一样拷贝构造。
+//compiler error
+//Derive tc = ta;
+当我们试图用基类构造继承类的时候，理所当然的，出错了。
+void test1 (Base &amp;amp;)
+{
+printf (&amp;ldquo;test1n&amp;rdquo;);
+}
+test1(*pa);
+输出：test1
+如果我们以一个对象调用的时候，如果是引用，当然是不拷贝的。
+void test2 (Base)
+{
+printf (&amp;ldquo;test2n&amp;rdquo;);
+}
+test2(*pa);
+Base::Base copy constructer
+test2
+Base::~Base
+如果是直接调用，首先是拷贝构造，然后调用，最后析构。
+Base&amp;amp; test3 ()
+{
+printf (&amp;ldquo;test3n&amp;rdquo;);
+return Base ();
+}
+pb = &amp;amp;test3();
+test3
+Base::Base
+Base::~Base
+当返回对象引用的时候，只有很正常的构造和析构。
+Base test4 ()
+{
+printf (&amp;ldquo;test4n&amp;rdquo;);
+return Base ();
+}
+pb = &amp;amp;test4();
+test4
+Base::Base
+Base::~Base
+返回对象本身的话，哎，怎么会这样？
+熟悉语言的应该看出来了，return Base ();的时候，先跑了一次构造，建立在栈里面，返回的时候要copy到堆中。拷贝构造呢？
+这就是传说中的返回构造优化拉，直接构造在堆上面，省掉一次copy，下面我们看看原始的状态。
+Base&amp;amp; test5 ()
+{
+Base b;
+printf (&amp;ldquo;test5n&amp;rdquo;);
+return b;
+}
+pb = &amp;amp;test5();
+Base test6 ()
+{
+Base b;
+printf (&amp;ldquo;test6n&amp;rdquo;);
+return b;
+}
+pb = &amp;amp;test6();
+Base::Base
+test5
+Base::~Base
+Base::Base
+test6
+Base::Base copy constructer
+Base::~Base
+Base::~Base
+大家看到了？5的时候先构造，再传回，和返回对象引用的时候行为一致。6的时候可没有返回构造优化，于是先构造，然后拷贝。删除的时候先删除原始对象，再删除拷贝对象，大家可以自行证实这点。
+我们再修改上面的调用为下面的。
+Base td = test5();
+Base::Base
+test5
+Base::~Base
+Base::Base copy constructer
+Base::~Base
+首先是5的构造，析构，然后才是td的拷贝构造，析构。这个顺序，熟悉语言的人应该感觉到奇怪了吧。按照推论，应当是先拷贝再析构的。如果你这么觉得，还是先看完下面的东西吧。
+Base te = test6();
+Base::Base
+test6
+Base::Base copy constructer
+Base::~Base
+Base::~Base
+这才是预计的顺序。注意，这里并没有调用两次拷贝构造。虽然贝壳并不了解机制，不过估计又是一种返回构造优化。
+5中例子觉得迷惑的人，不妨在拷贝构造里面打个断点，看看你copy的对象是什么，无效对象！！！！
+返回引用的情况下，一旦返回对象的生命周期结束了，返回的数据就无法保证有效。因此返回局部对象是非常危险的，唯一的里外就是3例子中在返回的时候构造一个新的对象而引发的返回构造优化。
+下面是拷贝构造和operator =的区别和调用时间。
+Base ya = *pa;
+Base yb;
+yb = &lt;em&gt;pa;
+Base::Base copy constructer
+Base::Base
+Base::operator =
+Base::~Base
+Base::~Base
+上面一个是拷贝构造，下面一个是普通构造加operator =。
+最后是全部的定义和源码，类的定义参考最上面的。
+void test1 (Base &amp;amp;)
+{
+printf (&amp;ldquo;test1n&amp;rdquo;);
+}
+void test2 (Base)
+{
+printf (&amp;ldquo;test2n&amp;rdquo;);
+}
+Base&amp;amp; test3 ()
+{
+printf (&amp;ldquo;test3n&amp;rdquo;);
+return Base ();
+}
+Base test4 ()
+{
+printf (&amp;ldquo;test4n&amp;rdquo;);
+return Base ();
+}
+Base&amp;amp; test5 ()
+{
+Base b;
+printf (&amp;ldquo;test5n&amp;rdquo;);
+return b;
+}
+Base test6 ()
+{
+Base b;
+printf (&amp;ldquo;test6n&amp;rdquo;);
+return b;
+}
+int _tmain(int argc, _TCHAR&lt;/em&gt; argv[])
+{
+Base *pa, *pb;&lt;/p&gt;
+
+&lt;p&gt;pa = dynamic_cast(new Derive ());&lt;/p&gt;
+
+&lt;p&gt;// test inherit function rule
+//pa-&amp;gt;function1 ();
+//pa-&amp;gt;function2 ();
+//pa-&amp;gt;function3 ();
+//pa-&amp;gt;function4 ();
+//pa-&amp;gt;function6 ();&lt;/p&gt;
+
+&lt;p&gt;//test copy constructer
+//pb = dynamic_cast(new Derive (*static_cast(pa)));
+//delete pb;
+//Base ta = *pa;
+//Derive tb = *static_cast(pa);
+//compiler error
+//Derive tc = ta;
+//test1(*pa);
+//test2(*pa);
+//pb = &amp;amp;test3();
+//pb = &amp;amp;test4();
+//pb = &amp;amp;test5();
+//pb = &amp;amp;test6();
+//Base td = test5();
+//Base te = test6();&lt;/p&gt;
+
+&lt;p&gt;//diffrence between copy cotr and operator =
+//Base ya = *pa;
+//Base yb;
+//yb = *pa;&lt;/p&gt;
+
+&lt;p&gt;delete pa;
+return 0;
+}&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>继承函数的拷贝构造</title>
+      <link>https://shell909090.github.io/blog/archives/422/</link>
+      <pubDate>Tue, 25 Dec 2007 23:49:53 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/422/</guid>
+      <description>&lt;div dir=ltr style=&#34;margin-right:0px&#34;&gt;    从基类继承一个子类，基类有一个拷贝构造函数，子类重载了一个。那么在子类拷贝构造的时候会自动调用基类的拷贝构造函数吗？&lt;/div&gt;
+&lt;div dir=ltr style=&#34;margin-right:0px&#34;&gt;    答案是不会，自动调用的是基类的构造函数。&lt;/div&gt;
+&lt;div dir=ltr style=&#34;margin-right:0px&#34;&gt;    子类中如果需要调用基类的拷贝构造函数，需要这样用。&lt;/div&gt;
+&lt;div dir=ltr style=&#34;margin-right:0px&#34;&gt;    D (const D &amp;amp; o): B (o){...}&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>RTTI的几个应用</title>
+      <link>https://shell909090.github.io/blog/archives/369/</link>
+      <pubDate>Mon, 02 Apr 2007 23:39:23 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/369/</guid>
+      <description>&lt;p&gt;贝壳最近研究了下RTTI，发现几个有意思的事情。&lt;br /&gt;    dynamic_cast的应用。&lt;br /&gt;    dynamic_cast可以将一个指针的类型试图转换为指定的类型，是否能转换要看当前指针的动态类型是否是指定类型的子类，而不管指针的声明类型。当失败时返回NULL，因此可以用来识别一个指针的动态类型是否是某个类的子类。&lt;br /&gt;    typeid的应用。&lt;br /&gt;    typeid可以获得某个类的类型信息，最主要的就是name。指明了当前是哪个类，这在串行化中是必要的信息。当判断一个指针的动态类型是否就是某个类的时候可以这样typeid(*p)==typeid(class)。&lt;br /&gt;&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>继承类静态对象虚拟化</title>
+      <link>https://shell909090.github.io/blog/archives/357/</link>
+      <pubDate>Fri, 02 Feb 2007 17:36:35 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/357/</guid>
+      <description>&lt;p&gt;其实这个标题不准确，准确的说，应该是继承类拥有自己的基类静态对象。&lt;br /&gt;    我们知道，类中的静态对象本质上是全局变量，不过名字在类命名空间里面。如果类B有静态对象S，D继承了B(先按照public继承讨论，其他其实也一样)。那么在D里面访问S的时候，其实是访问的B命名空间里面的静态对象S。验证代码如下：&lt;br /&gt;class           B {&lt;br /&gt;  protected:&lt;br /&gt;    static int      S;&lt;br /&gt;};&lt;br /&gt;int B::S = 0;&lt;br /&gt;class D:public B {&lt;br /&gt;  public:&lt;br /&gt;    void print () {&lt;br /&gt;        printf (&amp;quot;%dn&amp;quot;, S);&lt;br /&gt;    };&lt;br /&gt;};&lt;br /&gt;class E:public B {&lt;br /&gt;  public:&lt;br /&gt;    static void rewrite () {&lt;br /&gt;        S = 1;&lt;br /&gt;    };&lt;br /&gt;};&lt;br /&gt;int _tmain (int argc, _TCHAR * argv[]){&lt;br /&gt;    D d;&lt;br /&gt;    d.print ();&lt;br /&gt;    E::rewrite ();&lt;br /&gt;    d.print ();&lt;br /&gt;    return 0;&lt;br /&gt;}&lt;br /&gt;    上例中可以看到，两个继承类，其实都是将父类的命名空间导入而已。假定我们要使得每类专有一个静态成员，例如我们要计算每个类的生成对象个数，怎么办呢？&lt;br /&gt;    如果不用继承，我们可以在每个类里面加一个静态成员。然后在构造函数中加1，析构中减1。但是如果我们想把这个功能放到基类中，事情就麻烦了。因为所有类从同一个基类派生，我们算出来的其实是所有从基类继承的类的总对象生成个数。&lt;br /&gt;    当然，我们可以用实现的方法来做。把所需要的功能抽离出来，放到一个单独的计数类中。然后构造的时候调用加1，析构的时候减1。听起来很蠢，那是因为例子容易的关系。比较复杂的时候，这样抽象相对简单的。计数类可以用于多个类，实现了代码重用。但是仍旧没有解决关键问题，怎么让继承类特化基类的静态对象？(虚拟化和特化的意思差不多，就是针对具体对象使用具体方法)&lt;br /&gt;    答案最后被我在More Effective C++中找到了，正确的方法不是寻找一个特化的方法，而是继承不同的基类，使用同一套代码。既然是不同基类，怎么具备同一套代码呢？想到了吧，模版。&lt;br /&gt;template &lt;br /&gt;class           B {&lt;br /&gt;  protected:&lt;br /&gt;    static int      S;&lt;br /&gt;};&lt;br /&gt;class D:public B {&lt;br /&gt;  public:&lt;br /&gt;    void print () {&lt;br /&gt;        printf (&amp;quot;%dn&amp;quot;, S);&lt;br /&gt;    };&lt;br /&gt;};&lt;br /&gt;int B::S = 0;&lt;br /&gt;&lt;br /&gt;class E:public B {&lt;br /&gt;  public:&lt;br /&gt;    static void rewrite () {&lt;br /&gt;        S = 1;&lt;br /&gt;    };&lt;br /&gt;};&lt;br /&gt;int B::S = 0;&lt;br /&gt;&lt;br /&gt;int _tmain (int argc, _TCHAR * argv[])&lt;br /&gt;{&lt;br /&gt;    D d;&lt;br /&gt;    d.print ();&lt;br /&gt;    E::rewrite ();&lt;br /&gt;    d.print ();&lt;br /&gt;    return 0;&lt;br /&gt;}&lt;br /&gt;    看到了？每个继承类拥有了自己的静态成员。如果我们把上面的例子中，S改成ID。就可以做到RTTI了(只是还需要很多技巧)。&lt;br /&gt;&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>基础类</title>
+      <link>https://shell909090.github.io/blog/archives/354/</link>
+      <pubDate>Fri, 26 Jan 2007 18:28:28 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/354/</guid>
+      <description>&lt;div&gt;    设计程序的时候，往往觉得怎么这么困难，基础类为什么不多提供些能力。现在风水轮流转，我开始设计基础类了。&lt;/div&gt;
+&lt;div&gt;    站着说话不腰疼，设计基础类才发现基础类这东西真不是人做的。调用上讲究非常多。要返回引用呢？还是值？是需要const呢，还是不能const。返回的时候是一次拷贝构造呢？还是两次。算子需要不需要设计成friend，重复代码能不能消除。着重效率还是安全性，线程安全不安全。这些问题真是活活逼死人啊。&lt;/div&gt;
+&lt;div&gt;    现在正在设计实现一下几个类，有兴趣的可以一起来研究。&lt;/div&gt;
+&lt;div&gt;LargeInteger 超大整数实现 计算RSA的时候很有用，考虑在内部实现一些有用的算法&lt;/div&gt;
+&lt;div&gt;Matrix模板类,容器类 矩阵实现 设计的时候就考虑到内部容纳的不一定是数据，也可能是字符串或者超大数&lt;/div&gt;
+&lt;div&gt;vector2D 两维矢量 专门针对平面计算优化&lt;/div&gt;
+&lt;div&gt;Line 两维线 专门针对平面计算优化&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>关于Java和C&#43;&#43;的一点争论</title>
+      <link>https://shell909090.github.io/blog/archives/353/</link>
+      <pubDate>Fri, 26 Jan 2007 07:00:15 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/353/</guid>
+      <description>&lt;p&gt;不知道为什么，大家好像都喜欢争来争去。关于Java和C++的优劣不知道听了多少。碰巧我两者都会，怎么说也算是公平了吧。我就大着胆子，比较下两者的情况。&lt;br /&gt;    对程序而言，速度不是最终要素。否则我们都应该去用汇编不是？一个程序有六个特性，易学，易用，安全，高效，可变，成本低。然而他们一般都是两两冲突的，好学了，就不好用。强大了，就不好学。安全了，自然要执行很多检查，高效了，自然不安全。针对某个平添优化了，可变性就很差，又不能移植，又不好修改。成本低了，自然什么都差。&lt;br /&gt;    往往我们写企业应用的时候，都看重可变，低成本，安全，易用。高效呢？企业有钱买大服务器啊，这样的话效率差的不是太多也能接受。易学呢？企业有钱搞推广培训啊，只要有什么功能就加什么功能，不用考虑学不会。写用户应用的时候，则是看重安全，高效，然后易学易用里面要占据一样。可变呢？用户应用有多大？不行重写一个。低成本呢？这就是比较吊诡的事情了，没有啥经济效益的用户程序，往往是写起来最不怕费时最不管经济效益的。&lt;br /&gt;    首先从性能角度来说。也许C++程序员说到这里就得意了，不过先别高兴。如果单论速度，汇编语言还在C之上呢。现在网络上很多人讲C优化好了比汇编快，Java优化好了比C快。听听都要笑掉大牙的。C再怎么快，完成同样的步骤，都需要这些汇编代码。Java再怎么快，完成一个动作，底下C代码也不会少的。所谓Java优化好了能快过C，不过是一个Java高手一门心思搞优化，加上碰到一个C语言白痴而已。&lt;br /&gt;    我们先不讨论上面问题，就一般Java程序员和C++程序员而言(注意为啥我没说是C程序员，因为能自称纯C程序员的人要么非常精通语言，不会使用C++特性，要么就根本是个白痴)，Java程序员编写出的代码效率比C++大约慢5倍上下。这个数据是我个人写两个程序，一个运算，一个读取处理，对比出来的。都是没有优化的代码。经过极端的优化后，C++的代码我大概提高了4-8倍的速度。可惜我不是个很好的Java程序员，Java代码的速度大概提升了一倍还不足。就是说，最终C++代码比Java快了将近15倍。&lt;br /&gt;    但是C++程序员们先别乐，首先我Java语言并不好，这还不是最终的速度比。其次我牺牲了C++的很多特性。运算上几乎就是在写汇编了，接口都直接用了WIN32SDKAPI。没有移植性，没有可维护性，还需要特殊的技巧，怎么想都是牺牲重大。如果要真的这么追求速度，相信汇编会是更好的选择。我们在速度相差5倍左右的情况下就可以使用C++而不用汇编，为什么不能在速度相差5倍的情况下选择Java呢？&lt;br /&gt;    然后我们再看性能的另外一个方面，存储管理。说简单点，就是外围设备吞吐管理和内存管理。这方面上C++也是远远超越了Java。不需要的内存就不要，不必须的吞吐就不吐。C++是门培养人的语言，没有很好的功底是无法驾驭的。C++是门程序员负责一切的语言，任何错误都是程序员的错误。然而对于Java来说，就不必处理复杂而没有意义的内存管理了。假设一个Java程序员需要传一个对象给子函数，他只要传递就可以了。然而如果C++程序员直接传递，那么就会出现参数拷贝过程。不但效率差，还可能出现错误。单单一个参数传递，就有三种方式。传值，传址，引用。又分成四类，静态动态，常量非常量。交叉起来，总共是12种情况，需要量材选用。如此烦琐的管理方式，我们可以想想对于内存来说是很有好处的。嵌入系统中大型程序设计绝对是C的天下。然而这么困难的使用方式，需要多大的人力成本才能做到呢？这明显的违反了低成本的原则。&lt;br /&gt;    Java的内存管理从C++的角度看绝对是具有瑕疵的，内存释放了不管，直到没有空间了才收集。然而很多C++程序高手在特殊情况下，会重载operator new算子。其中的行为就很类似这个，Java只是将特殊情况下的应用放到了一般情况。这样对于速度的后果就是，很多的缓存会被持续的从物理内存中挤压出去，导致磁盘吞吐效率降低。对于Java程序，我猜测提升效率的瓶颈将会在和系统交互以取得最佳的垃圾收集时间上。&lt;br /&gt;    下面的论题就可能是C++程序员所不高兴看到的了，安全性和可变性。&lt;br /&gt;    就语言来说，用户输入的检查这种安全性是一点意义都没有的。我们所说的基本包括几个方面，非正常用法安全，线程安全，异常过程安全。就语言来说，分为了解释型和编译型。那么怎么区分呢？我这里有个很简单的方法，如果程序本身能被本身修改，就是编译型的，否则是解释型。注意，不是让你修改了磁盘上的源码再运行。这个能力赋予了C++强大的功能，例如修改游戏，检查病毒，都需要这个能力。但是不可否认的，比起无法修改自身的程序，安全性就差太多了。线程安全性上讲，Java的所有对象都是系统管理的，也就很容易的可以管理互斥。用过C++的都知道，C++自身是没有互斥的，全靠系统的函数库或者第三方库支撑。好用不好用不说，无法移植是一定的！最后是异常过程安全，C++的异常过程是很恐怖的。关键在于C++的异常传递有三种办法，传值，传址，引用。而且在异常过程中还又涉及回了内存管理啥的。天啊，要是异常都不能专心处理异常，我还要异常干嘛？&lt;br /&gt;    至于可变性，那就更别说了。连处理异常都要小心内存泄露的家伙，你指望在修改代码的时候轻松到哪里去？C++是具备了强大的可变性，然而处于效率考虑，很多增强可变性的东西是选项的。例如RTTI，居然要开编译器选项的说。需要使用可变性就要牺牲性能，而且还要你小心的使用。如果使用不小心，抱歉，你又陷入效率和安全的问题里面去了。&lt;br /&gt;    如果你有很好的系统功底，准备往计算机领域发展(注意不是计算领域)。那么C++是门很好的语言，只是非常费时而已。而且建议你学C#，VB或者Java作为第二语言，选择Bash或者Perl作为第三语言。这样在处理问题上可以事半功倍。如果你打算增加自己的计算机能力，方便日常的电脑使用，而不准备深入学习这个领域。那么只学C#，VB或者Java就足够了。&lt;br /&gt;    最后要提到的是易学和易用，这两个特性都是软件设计所赋予的。也就是说，即使是以简单著称的VB.NET，也可以写很好用的程序。以复杂著称的汇编，也可以写很友好的界面。这就不在本文的论题以内了。&lt;br /&gt;&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>构造过程</title>
+      <link>https://shell909090.github.io/blog/archives/347/</link>
+      <pubDate>Sat, 13 Jan 2007 22:12:10 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/347/</guid>
+      <description>&lt;p&gt;&lt;span&gt;
+&lt;div&gt;    在进入正题前，我们首先回顾下我们的基础C++常识。如果调用某个对象的某个方法，那么会调用到什么？&lt;br /&gt;    一般来说，如果这个方法是普通函数，则按照这个对象的声明类型去调用。就好像(&amp;amp;obj)-&amp;gt;obj_type::function(param&amp;hellip;);。而如果是虚函数，则是按照这个对象的构造类型去调用。就好像(&amp;amp;obj)-&amp;gt;((&amp;amp;obj)-&amp;gt;_v_ptr[n])&lt;span&gt;(param&amp;hellip;);。或者说简单点，一个是按照这个类看起来像是哪个类来调用，一个是按照这个类实际是哪个类来调用。&lt;br /&gt;    那么，如果在一个基类的某个成员里面调用这个类的另外一个虚函数，调用的是哪个呢？&lt;br /&gt;    任何正常人来说，都应该说是，按照这个类的构造类型来确定。基本上没错，不过有一个函数例外。&lt;br /&gt;    那么先看一个问题。&lt;br /&gt;&lt;/span&gt;class           B {&lt;br /&gt;public:&lt;br /&gt;    B(){test ();}&lt;br /&gt;    virtual void test (){printf (&amp;quot;parentn&amp;quot;);}&lt;br /&gt;    void out (){test ();}&lt;br /&gt;};&lt;/div&gt;
+&lt;div&gt;class D:public B {&lt;br /&gt;public:&lt;br /&gt;    virtual void test (){printf (&amp;quot;childn&amp;quot;);}&lt;br /&gt;};&lt;/div&gt;
+&lt;div&gt;int _tmain(int argc, _TCHAR* argv[]){&lt;br /&gt; D d;&lt;br /&gt; d.out();&lt;br /&gt; return 0;&lt;br /&gt;}&lt;br /&gt;    想像下输出，再运行下。想想为什么，再看下面。想通了就不用看了。&lt;br /&gt;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;我是无敌的分割线&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;ndash;&lt;br /&gt;    C++标准规定，任何一个带有虚函数的类都有一个_v_ptr成员，这个成员必须存放在这个类内存地址中头部。这个成员指向了这个类的虚函数表。于是，调用虚函数的时候，我们首先确定这个是虚函数。(按照这个逻辑，如果父类不声明为虚函数，子类重载为虚函数，还是没用的)然后，我们确定这是第几个虚函数(严格来说，这并不符合面对对象的设计规范，应该是按照函数名字查表的，_v_ptr也不应该仅仅指向虚函数表，而应该是类形态表)。最后，我们去虚函数表中取得入口地址进行调用。&lt;br /&gt;    那么为什么在构造函数中调用就无法调用子类的虚函数呢？问题在于_v_ptr的初始化时间上。某个类的构造函数启动前，这个类的_v_ptr才能完成初始化。如果是多重继承，那么首先调用最初类的，然后是次类的，最后是子类的。_v_ptr首先指向基类的，再是继承类，最后是子类。我们在父类构造函数中，_v_ptr指针还指向了父类的虚函数表，所以调用不到子类的虚函数。&lt;br /&gt;    其实我们可以这么说，构造函数以前，子类不存在。&lt;br /&gt;&lt;/div&gt;&lt;/span&gt;&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

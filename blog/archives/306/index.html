@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>linux中文说</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         linux中文说 
+    </h1>
+    <p class="meta">Jul 2, 2006
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/306/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <div>linux号称可以支持全部语言，其实细节上还是有不少问题的。具体情况大致是这样的，linux的中文支持分三部分，locales，字体，设置。</div>
+<div>首先是locale的部分，这个最简单不过，用root运行dpkg-reconfigure locales，然后选择你需要的解码方式，最后再设定系统默认语言（这个是可以修改的），就OK了。</div>
+<div>然后是字体，字体的设定比较复杂，不过在debian中安装所有中文桌面的字体就可以了。不用自己去绞尽脑汁。<br /></div>
+<div>最后是设定，这个比较复杂。因为可定制性非常好的系统，无法避免要用大量的脚本来定制。如果可定制性差，相信你也不会用了。和中文相关的设置大致有一下几个，针对debian系统。<br />/etc/default/gdm:LANG=zh_CN.GBK #gdm登录时候的locales<br />/etc/default/locale:LANG=zh_CN.GBK #这个是系统默认登录的locals，如果你使用命令行登录就是使用这个的<br />/etc/environment:LANGUAGE=&quot;zh_CN:zh:en_US:en&quot;<br />/etc/environment:LANG=zh_CN #这个是登录进入X后的设置，你运行的所有程序基本都是使用这个<br />dpkg-reconfigure locales的默认语言设定修改的是/etc/default/locale，所以对X登录进去后的程序不一定起作用。一般情况下这zh_CN的设定就通吃了，不过有的时候有点小BUG，例如term下面vi后退出，就变成看不懂的乱马了。这个时候要重设屏幕才可以恢复。而且在输入的时候没有——的，很多东西也看不到。所以我改成了zh_CN.GBK，然后出现了两个问题。<br />一个是gvim不运行了，这个看了看别人，这么解决。<br />----------------------~/.gvimrc-----------------------<br />set encoding=gb2312<br />set langmenu=zh_CN.GB2312<br />set imcmdline<br />source $VIMRUNTIME/delmenu.vim<br />source $VIMRUNTIME/menu.vim<br />---------------------------------------------------------<br />保证这个文件里面有这些内容就可以了。<br />然后是gtk1.X的程序都不正常了，主要是xmms和audacity。这个看了人家忽悠半天，最后这么解决的。<br />-----------------/usr/bin/env_zh_CN---------------<br />#!/bin/bash<br />LANG=zh_CN<br />exec $@<br />----------------------------------------------------------<br />然后chmod a+x /usr/bin/env_zh_CN<br />再修改所有运行语句成env_zh_CN xmms<br />我修改了两处。<br /><br />世界基本就清静了。<br /></div>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Jul 2, 2006</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/codec">codec</a>  <a class="category" href="https://shell909090.github.io/tags/linux">linux</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/305/" title="Google earth">Google earth</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/307/" title="debian live">debian live</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

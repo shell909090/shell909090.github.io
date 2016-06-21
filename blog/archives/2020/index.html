@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>linux tty部分源码阅读</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         linux tty部分源码阅读 
+    </h1>
+    <p class="meta">Dec 19, 2011
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2020/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p><h1>1.事情从file开始</h1>
+<div>    file的定义在include/linux/fs.h中，其中有两个field，一个叫file_operations *f_op，一个叫void *private_data。file_operations定义了所有file能够进行的操作，在tty这个层面而言，drivers/tty/tty_io.c能看到有个叫做file_operations tty_fops的东西，下面有个叫console_fops的东西。两者区别不大，就是write函数进行了一下包装而已。从这里可以看出，系统将某个file的读写操作，转包给了tty_io.c这个文件。这个转包的手法非常类似虚函数。如果将tty_io.c里面的函数看作一个类的所有成员，那么tty_fops就是虚函数表，而f_op就是虚函数指针_v_ptr。</div>
+<br/>
+<h1>2.tty_io的二转包</h1>
+<div>    tty_io做了什么？他直接转包给了ldisc来处理这个事情。从tty_struct的结构我们能够看到，有这么一个field，tty_ldisc *ldisc。而tty_ldisc.h文件里面，我们能看到这个结构又有这么一个成员，tty_ldisc_ops *ops。同样手法，第二次使用。目标是tty/下面很多n_开始的文件，例如n_gsm，估计是处理手机的。我们的目标看起来像是n_tty.c中的tty_ldisc_ops tty_ldisc_N_TTY对象。</div>
+<br/>
+<h1>3.n_tty做了些什么</h1>
+<div>    n_tty也做了很多转包，例如对于n_tty_write而言，他使用了tty-&gt;ops-&gt;write这个函数。我们从struct tty_struct中可以看到这个field，tty_operations *ops。目标是谁？看起来像是pty.c，他里面有很多定义，例如tty_operations master_pty_ops_bsd，tty_operations slave_pty_ops_bsd，tty_operations ptm_unix98_ops，tty_operations pty_unix98_ops。</div>
+<br/>
+<h1>4.pty总不转包了吧</h1>
+<div>    以write而言，pty.c做的很简单，就是tty_insert_flip_string而已。不过之后调用了tty_flip_buffer_push，这个又会调用flush_to_ldisc，这个里面会调用ldisc-&gt;ops。从上文中我们知道，这个函数的实体在n_tty.c的n_tty_receive_buf。</div>
+<br/>
+<h1>5.n_tty_receive_buf做了些什么</h1>
+<div>    这个函数对每个字符依次处理，如果是普通字符，就调用n_tty_receive_char。这个函数会调用put_tty_queue，经过两次转手，最终，这个字符进入了read_buf。这是一个循环队列。</div></p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Dec 19, 2011</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/kernel">kernel</a>  <a class="category" href="https://shell909090.github.io/tags/linux">linux</a>  <a class="category" href="https://shell909090.github.io/tags/source">source</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/2018/" title="android几个常识">android几个常识</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/2024/" title="某日的一点小事">某日的一点小事</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>Debian GNU/Linux下安装Oracle 9i</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         Debian GNU/Linux下安装Oracle 9i 
+    </h1>
+    <p class="meta">Nov 21, 2005
+         - 2 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/262/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <div>&nbsp;&nbsp;&nbsp; 最近因为工作需要，在Debian GNU/Linux安装了Oracle 9i。Debian代号sarge，版本号release 3.1，testing发行。Oracle代号9ir2,版本号9.2.0.4。安装文件名称为ship_9204_linux_disk1.cpio.gz ship_9204_linux_disk2.cpio.gz ship_9204_linux_disk3.cpio.gz。需要一个补丁，文件名为p3006854_9204_LINUX.zip。Oracle 9i安装的是Enterprise Datebase。</div>
+<div>&nbsp;&nbsp;&nbsp; 先执行以下脚本：</div>
+<div>#! /bin/bash<br />&nbsp;<br />#变更内核参数<br />cd /proc/sys/kernel<br />#1G内存状况，按照需要调整<br />echo 4294967295 &gt; shmmax<br />touch /etc/rac_on<br />&nbsp;<br />#增加一个link，debian需要<br />apt-get install libstdc++-glibc ; 或者使用aptitude<br />cd /usr/lib<br />ln -s libstdc++-libc6.2-2.so.3 libstdc++-libc6.1-1.so.2<br />&nbsp;<br />#增加用户<br />cd /home<br />mkdir oracle<br />groupadd dba<br />useradd -g dba -d /home/oracle -s /bin/bash oracle<br />#注意-s参数，如果不指定下面的初试化脚本不一定跑的起来<br />passwd -d oracle<br />chown -cR oracle:dba oracle<br />cd /usr<br />mkdir oracle<br />chown -cR oracle:dba oracle<br />cd /var<br />mkdir oracle<br />chown -cR oracle:dba oracle<br />&nbsp;<br />#增加初试化脚本<br />cd /home/oracle<br />echo &quot;export DISPLAY=''&quot;&gt;.bash_profile<br />echo &quot;export BASH_ENV=$HOME/.bashrc&quot;&gt;&gt;.bash_profile<br />echo &quot;export LD_ASSUME_KERNEL=2.4.1&quot;&gt;&gt;.bash_profile<br />echo &quot;ORACLE_HOME=/usr/oracle; export ORACLE_HOME&quot;&gt;&gt;.bash_profile<br />echo &quot;ORACLE_BASE=/var/oracle; export ORACLE_BASE&quot;&gt;&gt;.bash_profile<br />echo &quot;ORACLE_SID=oracle; export ORACLE_SID&quot;&gt;&gt;.bash_profile<br />echo &quot;ORACLE_TERM=xterm; export ORACLE_TERM&quot;&gt;&gt;.bash_profile<br />echo &quot;TNS_ADMIN=/home/oracle/config/9.0.1; export TNS_ADMIN&quot;&gt;&gt;.bash_profile<br />echo &quot;NLS_LANG=american_america.ZHS16GBK; export NLS_LANG&quot;&gt;&gt;.bash_profile<br />echo &quot;ORA_NLS33=$ORACLE_HOME/ocommon/nls/admin/data; export ORA_NLS33&quot;&gt;&gt;.bash_profile<br />echo &quot;LD_LIBRARY_PATH=$ORACLE_HOME/lib;export LD_LIBRARY_PATH&quot;&gt;&gt;.bash_profile<br />echo &quot;PATH=$PATH:/bin:/usr/bin:/usr/sbin:/etc:/opt/bin:/usr/ccs/bin:/usr/openwin&quot;&gt;&gt;.bash_profile<br />echo &quot;PATH=$PATH:/opt/local/bin:/opt/NSCPnav/bin:$ORACLE_HOME/bin&quot;&gt;&gt;.bash_profile<br />echo &quot;PATH=$PATH:/usr/local/samba/bin:/usr/ucb&quot;&gt;&gt;.bash_profile<br />echo &quot;export PATH&quot;&gt;&gt;.bash_profile<br />echo &quot;CLASSPATH=$ORACLE_HOME/JRE:$ORACLE_HOME/jlib:$ORACLE_HOME/rdbms/jlib&quot;&gt;&gt;.bash_profile<br />echo &quot;CLASSPATH=$CLASSPATH:$ORACLE_HOME/network/jlib&quot;&gt;&gt;.bash_profile<br />echo &quot;TMPDIR=/tmp;export TMPDIR&quot;&gt;&gt;.bash_profile<br />echo &quot;umask 022&quot;&gt;&gt;.bash_profile<br />&nbsp;<br />&nbsp;&nbsp;&nbsp; 然后，复制oracle安装程序到用户目录，执行以下脚本：<br />#! /bin/bash</div>
+<div>cd /home/oracle<br />gunzip -dc ship_9204_linux_disk1.cpio.gz | cpio -idv --quiet &amp;<br />gunzip -dc ship_9204_linux_disk2.cpio.gz | cpio -idv --quiet &amp;<br />gunzip -dc ship_9204_linux_disk3.cpio.gz | cpio -idv --quiet &amp;</div>
+<div>#使用补丁p3006854_9204_LINUX.zip<br />cd /home/oracle/patch<br />unzip p3006854_9204_LINUX.zip<br />cd 3006854<br />chmod 755 rhel3_pre_install.sh<br />./rhel3_pre_install.sh<br />cd ..<br />rm p3006854_9204_LINUX.zip<br />rm -R 3006854</div>
+<div>cd /home/oracle<br />rm ship_9204_linux_disk2.cpio.gz<br />rm ship_9204_linux_disk1.cpio.gz<br />rm ship_9204_linux_disk3.cpio.gz<br />cd ..<br />chown -cR oracle:dba oracle<br />&nbsp;<br />&nbsp;<br />&nbsp;&nbsp;&nbsp; 最后检查临时盘大小大于400M，交换区大小大于两倍内存。<br />df -hT<br />&nbsp;&nbsp;&nbsp; 重新登录，使用oracle。<br />startx<br />&nbsp;&nbsp;&nbsp; Xwindows启动后开一个console，运行以下指令。<br />cd Disk1<br />./runInstaller<br />&nbsp;<br />谢谢观赏</div>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Nov 21, 2005</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/debian">debian</a>  <a class="category" href="https://shell909090.github.io/tags/linux">linux</a>  <a class="category" href="https://shell909090.github.io/tags/oracle">oracle</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/261/" title="模块化便携设备">模块化便携设备</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/263/" title="C&#43;&#43;语言跨系统编程">C&#43;&#43;语言跨系统编程</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

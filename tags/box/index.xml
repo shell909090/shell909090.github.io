@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Box on Shell&#39;s Home</title>
+    <link>https://shell909090.github.io/tags/box/</link>
+    <description>Recent content in Box on Shell&#39;s Home</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 07 Mar 2011 09:43:00 +0800</lastBuildDate>
+    <atom:link href="https://shell909090.github.io/tags/box/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>debian under box</title>
+      <link>https://shell909090.github.io/blog/archives/1719/</link>
+      <pubDate>Mon, 07 Mar 2011 09:43:00 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/1719/</guid>
+      <description>&lt;p&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;This is linux tech blog, so&amp;hellip;猫咪和六牙四皂小姐退散。&amp;nbsp;&lt;div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;下面简介一下小型系统组装NAS和服务器的完整攻略。实话说这篇文章写的异常艰难，题目本来叫debian squeeze under EPIA。结果一晃过了一个春节，debian升级了，EPIA挂了。下面前一部分的文章是开始写的，后来发现M10000系列主板只要上sata to ide就会死机，部分IDE硬盘也会死机。所以&amp;hellip;&lt;/div&gt;    &lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;首先是物理硬件的组成办法。推荐购买VIA EPIA M10000，价格大约在150上下。附带了VIA C3 Eden，只要一条内存就可以工作，非常便宜。不过USB引导有些问题，所以后面用的是其他机器装的Linux，并且给折腾了个半死。贝壳还买了一个小机箱，能够放置3.5&amp;#39;硬盘，并且买了1T的硬盘来组装NAS。由于1T的硬盘只有Sata接口，因此还得买一块Sata to IDE，大概是30-40。全部的硬件就是这样，组装起来就可以工作。主板的右下角是主板控制跳线，从左（以CPU和电源所在边为上）到右顺序，引脚如下定义：上排2-3，power sw。上排4-5，reset sw。上排6-7，power led。&lt;/div&gt;      &lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;首先借助一台大型机，使用USB开始debian系统的安装。另外补充说明一下USB安装debian一文中的一个情况，在boot.img.gz解压开的U盘内复制入netinst也是可以工作的，不一定是businesscard。按照这个估计，复制入完整ISO也是可以的。在分区的时候，贝壳选择了full disk with LVM。/boot分配了228M，最后用了17M。root用LVM中的ext3卷，分配了7G，用了不到1G。全部装好大约有2G吧，安全起见。swap用了2.5G，其实不用这么大，不过我懒得换了。剩下908M，因为1T有一定损耗，还有JS的1000进制算法。。。好吧，全部用ext3放到/home下放数据用。&lt;/div&gt;      &lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;之所以没用btrfs的原因，一方面是这个是硬盘，不是ssd，也没有高等数据管理要求。另一方面也要求一定的稳定性，btrfs还没有fsck呢。&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;系统安装并没有什么太大困难，对于熟悉linux系统安装的人，很快就可以完成安装。不过由于是在其他机器上安装，因此注意在迁移后需要修改/etc/udev，把网卡修改为eth0。&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;下面就是大头了，系统使用grub2引导，但是在booting kernel这里直接挂掉，完全起不来。问过gary后，基本肯定要么是主板坏了，要么是内核坏了。后来我猛然想起，C3是个老CPU了，我用的内核是686内核。改为486内核？顺利引导。&lt;/div&gt;      &lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;EPIA edin C3 just support i486&amp;nbsp;&lt;span style=&#34;font-family: arial,sans-serif; line-height: 15px;&#34;&gt;Instruction Set, so don&amp;#39;t use linux-image-.*-686。&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&#34;font-family: arial,sans-serif; line-height: 15px;&#34;&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;系统启动后，发现速度并不很快。我用samba和windows共享文件，大约只有7M/s的读写速度，消耗了60%的CPU。我使用的是TP-504G+路由器，后面是一个100M的交换机。EPIA是VT6102，10/100M自适应网卡。主机是1G的网卡&amp;mdash;&amp;mdash;不过没任何用。理论上，最高读写速度应该有12M/s的。实际上根据我的测试，瓶颈居然可能在windows上。我在windows复制文件的时候从box上读取数据，居然对复制没有影响的情况下达到了2M的速度。这样的速度远远低于硬盘30M/s的持续读写速率，所以硬盘效率不用顾虑太多，包括碎片问题。&lt;/span&gt;&lt;/div&gt;    &lt;div&gt;&lt;font face=&#34;arial, sans-serif&#34;&gt;&lt;span style=&#34;line-height: 15px;&#34;&gt;&lt;br /&gt;&lt;/span&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&#34;arial, sans-serif&#34;&gt;&lt;span style=&#34;line-height: 15px;&#34;&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;当我发现sata的问题后，使用iozone确认了问题在udma层面上。杯具的是，这问题无解。所以，退了主板换了一块新的。新主板上去后，性能有所升高。硬盘的吞吐到了97M/s，网络共享的读写速度大约是10M/s。其余都很顺利，就不废话了。&lt;/span&gt;&lt;/font&gt;&lt;/div&gt;      &lt;/div&gt;&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>openvpn的几种基本模式</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         openvpn的几种基本模式 
+    </h1>
+    <p class="meta">Feb 4, 2015
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2724/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <h1>vpn的原始模式</h1>
+
+<p>vpn的最简模型，相当于在两台机器上插一块虚拟网卡，然后中间连一根虚拟网线连通。因此vpn才得名vpn(virtual private network)。</p>
+
+<p>其复杂之处在于，这块虚拟网卡如何配置网络，和别的网卡是什么关系。再加上多个节点间如何通讯。种种都够新手喝一壶。</p>
+
+<p>虽然openvpn在科学上网上是废了，但是在不出国的网络上用来保护通讯，还是非常好用的。</p>
+
+<h1>tap模式</h1>
+
+<p>tap模式的特点是二层打通。典型场景是从外部打一条隧道到本地网络。进来的机器就像本地的机器一样参与通讯，你分毫看不出这些机器是在远程。</p>
+
+<p>优点：</p>
+
+<ul>
+<li>配置简单。</li>
+<li>不需要在所有机器上配置或者动网关。</li>
+</ul>
+
+<p>缺点：</p>
+
+<ul>
+<li>tap在部分设备上不支持(例如移动设备)。</li>
+<li>wlan加入网桥后不一定可以工作。</li>
+<li>广播包会散发到虚拟网络中，可能极大消耗流量。</li>
+</ul>
+
+<p>特别解说一下wlan。部分AP对一个客户只接受一个MAC地址，因此无法做网桥。这应该是wifi网络的常规问题了。解决方法是换AP，或者做mac-nat。</p>
+
+<p>操作方法：</p>
+
+<p>你需要先在当前网络中，为vpn预留一些地址。这些地址应该足够拨入用户使用，不应和dhcp撞车，不应有其他人使用。</p>
+
+<p>而后，建立一个br，将当前工作的eth迁移过去。(具体细节就不说了，每个系统小有差别)再建立一个tap vpn，在启动脚本中指定加入这个br。</p>
+
+<h2>example</h2>
+
+<p>假定内网地址为172.19.0.0/24，其中保留172.19.0.16-172.19.0.31供vpn使用。</p>
+
+<p>服务器配置:</p>
+
+<p>port [port num]
+proto udp ; 参考我上一篇<a href="http://shell909090.org/blog/archives/2722">vpn不要走tcp协议</a>
+dev tap
+ca ca.crt
+cert server.crt
+key server.key
+server-bridge 172.19.0.16 255.255.255.0 172.19.0.17 172.19.0.31
+; 或者可以采用这句
+; server 172.19.0.16 255.255.255.240
+; 注意掩码实际上等于/28，做掩码运算后，这段地址和上面的保留地址重合
+script-security 2
+up vpn-start ; 建议使用绝对路径，避免版本坑
+down vpn-stop</p>
+
+<p>vpn-start:</p>
+
+<p>brctl add br0 $dev</p>
+
+<p>vpn-stop:</p>
+
+<p>brctl del br0 $dev</p>
+
+<p>客户端配置:</p>
+
+<p>client
+dev tap
+proto udp
+remote [server ip] [port num]
+ca ca.crt
+cert client.crt
+key client.key</p>
+
+<p>测试:</p>
+
+<p>直接ping任何一台机器，通了就是通了。没通在网关上抓包，看看断哪了。注意关闭防火墙。</p>
+
+<p>PS:</p>
+
+<p>上面的配置我配过，但是没有经过实际测试，所以可能有问题。有问题请联系我，我马上改。</p>
+
+<p>dh和tls-auth可以配，个人每次都是配的。但是懒的话也可以不搞。</p>
+
+<p>user nobody和group nobody强烈建议配，注意debian上是nogroup。这个配置可以将openvpn的执行权搞低，如果openssl再出什么执行任意代码漏洞，那么问题就不是立刻致命。</p>
+
+<p>注意使用了user和group后，要配置persist-key和persist-tun，避免出错。</p>
+
+<h1>tun模式</h1>
+
+<p>tun模式的特征是三层打通，你可以当作没有二层数据。因此从拨入用户那里去问内网IP的mac是多少，根本没人理你。你必须将包发到vpn网关上，交由网关转交。目标服务器还得知道回这个数据的时候，网关是vpn网关，而不是默认网关。当然，有的时候两者其实是一个，例如vpn网关在默认网关上。或者不修改每台机器配置，直接在网关上做第二跳指向。</p>
+
+<p>典型场景是多个网段打通(所以才叫tun——tunnel)。</p>
+
+<p>优点：</p>
+
+<ul>
+<li>基本在所有设备上都支持。</li>
+<li>可以透过wlan。</li>
+<li>不会在所有网段上广播报文(广播风暴不过网关，这应该是常识了)。</li>
+</ul>
+
+<p>缺点：</p>
+
+<ul>
+<li>需要修改每台机器，或者网关。</li>
+</ul>
+
+<p>操作方法：</p>
+
+<p>非常灵活，几乎无法总结。简单说说从外网拨入内网，打通两者间互访的配法吧。</p>
+
+<p>配置一个tun vpn，连接到vpn网关上。配置中下发内网网段，走vpn。内网下发vpn路由，指向vpn网关。</p>
+
+<h2>example</h2>
+
+<p>假定内网地址为172.19.0.0/24，其中vpn网关在内网的地址为172.19.0.100。虚拟网络为172.19.1.0/24，其中vpn网管在虚拟网络的地址为172.19.0.1(默认)。</p>
+
+<p>服务器配置:</p>
+
+<p>port [port num]
+proto udp
+dev tun
+ca ca.crt
+cert server.crt
+key server.key
+server 172.19.1.0 255.255.255.0
+push "route 172.19.0.0 255.255.255.0"</p>
+
+<p>在服务器上一定要打开:</p>
+
+<p>sysctl -w 'net.ipv4.ip_forward=1'</p>
+
+<p>在所有服务器上执行/在网关上执行:</p>
+
+<p>ip route add 172.19.1.0/24 via 172.19.0.100</p>
+
+<p>或</p>
+
+<p>route add -net 172.19.1.0 netmask 255.255.255.0 gateway 172.19.0.100</p>
+
+<p>客户端配置:</p>
+
+<p>client
+dev tun
+proto udp
+remote [server ip] [port num]
+ca ca.crt
+cert client.crt
+key client.key</p>
+
+<p>测试:</p>
+
+<p>在拨入设备上，使用mtr 172.19.0.1(内网网关)，来查看是否通过172.19.1.1和172.19.0.1。如果都到了，说明整个配置成功。否则看是否到vpn网关，再在网关上抓包。</p>
+
+<h1>多节点通过虚拟骨干网打通</h1>
+
+<p>这个模式在很多地方很有用，例如多个办公室互通，多个机房互通，等等。当然，这也是有前提的，这些节点的网段不能出现互相重叠，不然路由表这一段该指给谁？</p>
+
+<p>另一点细节在于，最好每个节点都在网关上做。不然如上面所说，在每台服务器上做一次配置，非常复杂。</p>
+
+<p>方案基本和tun方案一致，但是在不同的客户端上，将其他节点的网段全部上行到vpn骨干网，分别交由这个内网对应的网关去路由。做这点在客户端配置上做可能会有麻烦，可以考虑使用ccd(client-config-dir ccd)。这样可以在服务器上设定，在客户端拨入的时候下发部分网络配置。</p>
+
+<p>更详细可以看<a href="https://community.openvpn.net/openvpn/wiki/RoutedLans">这篇文档</a>。</p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Feb 4, 2015</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/computer">computer</a>  <a class="category" href="https://shell909090.github.io/tags/openvpn">openvpn</a>  <a class="category" href="https://shell909090.github.io/tags/vpn">vpn</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/2722/" title="vpn不要走tcp协议">vpn不要走tcp协议</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/2727/" title="p2p vpn的部署方法">p2p vpn的部署方法</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

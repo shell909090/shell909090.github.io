@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>ppa的使用</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         ppa的使用 
+    </h1>
+    <p class="meta">Apr 21, 2015
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2737/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p><p>最近用ppa做了backport，这里记录一下用法。</p>
+<h1>编译简述</h1>
+<p>ppa的大概工作原理，和mentors非常类似。</p>
+<ol>
+<li>包一个deb包，然后build这个包，生成dsc，deb，build和changes。</li>
+<li>上传这些文件，然后ppa丢弃所有deb（是的，ppa不接受编译好的包，因为可能在编译过程中被做手脚），从源码编译所有文件。</li>
+<li>ppa生成了一堆deb文件，并丢到一个特别的目录下。</li>
+<li>ppa为这堆deb文件做签署。</li>
+<li>最终用户将这个目录添加到apt源中，就可以安装这些包了。</li>
+</ol>
+<p>这里有几个细节：</p>
+<ol>
+<li>服务器怎么知道是你上传的包？<br/>
+答案是在打包时进行签署，所以dput是不验证身份的。也因此，你需要将自己的gpg key上传到服务器。</li>
+<li>既然不需要deb，如何构建一个没有deb的编译？<br/>
+答案是<code>debuild -S</code>。当然，这也可能有变化。如果是建立一个已经存在的包，是-sd，否则是sa。后面还可以用-k&amp;lt;keyid&gt;来指定</li>
+<li>最终用户如何构建信任？<br/>
+答案是由ppa编译，由ppa签署。用户并不导入维护者的任何key。但是如果用户不信任维护者，那么维护者可以在包内夹杂任何恶意代码。因此ppa只解决安全传递和构建，而不解决维护者信任问题。</li>
+</ol>
+<h1>申请ppa</h1>
+<p>不废话，自己去<a href="https://launchpad.net/">launchpad</a>申请。这个是要ubuntu one帐号的，然后openid认证。不过不算太麻烦。</p>
+<h1>添加key</h1>
+<p>首先需要生成gpgkey，这里不解释如何生成key pair。</p>
+<p>然后需要将key pair上传到ubuntu key server。我不知道其他key server最终会不会同步，但是即使会，同步时间也是长的那啥。</p>
+<pre><code>gpg &ndash;keyserver keyserver.ubuntu.com -send &lt;keyid&gt;
+</code></pre>
+<p>这样就行了。</p>
+<h1>设定dput</h1>
+<p>在<a href="https://help.launchpad.net/Packaging/PPA/Uploading">这个页面</a>有解释。在ubuntu 9.10以上版本，可以直接dput ppa:userid/ppa &lt;source.changes&gt;来上传。如果是更老版本（或者像我一样用debian），可以设定~/.dput.cf来工作（刚刚的页面下面有样例，照着改就行）。</p>
+<h1>添加ppa</h1>
+<p>使用<code>add-apt-repository ppa:userid/ppa</code>就行了。本质上，他做了两件事。</p>
+<ul>
+<li>在/etc/apt/sources.list.d/下面生成一个文件，将你的repository添加到系统中。</li>
+<li>将ppa的sign key导入到系统中，并添加信任。</li>
+</ul></p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Apr 21, 2015</time>
+    <span class="categories">
+      Tags:
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/2734/" title="EFI和GPT的研究">EFI和GPT的研究</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/2739/" title="python代码写给你看 [广告]">python代码写给你看 [广告]</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

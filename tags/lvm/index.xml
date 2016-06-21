@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Lvm on Shell&#39;s Home</title>
+    <link>https://shell909090.github.io/tags/lvm/</link>
+    <description>Recent content in Lvm on Shell&#39;s Home</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 23 Jan 2014 11:04:34 +0800</lastBuildDate>
+    <atom:link href="https://shell909090.github.io/tags/lvm/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>lxc和virtualbox和物理机的简单性能测试和对比</title>
+      <link>https://shell909090.github.io/blog/archives/2542/</link>
+      <pubDate>Thu, 23 Jan 2014 11:04:34 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2542/</guid>
+      <description>&lt;h1&gt;说明&lt;/h1&gt;
+
+&lt;p&gt;测试各种虚拟化系统下的虚拟机性能。&lt;/p&gt;
+
+&lt;p&gt;测试使用sysbench。&lt;/p&gt;
+
+&lt;p&gt;CPU采用如下指令测试。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sysbench --test=cpu --num-threads=2 --cpu-max-prime=50000 run
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;文件IO采用如下指令测试。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sysbench --test=fileio --file-total-size=10G prepare
+sysbench --test=fileio --file-total-size=10G --file-test-mode=rndrw --init-rng=on --max-time=300 --max-requests=0 run
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;内存采用如下指令测试。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sysbench --test=memory --num-threads=2 --memory-access-mode=seq run
+sysbench --test=memory --num-threads=2 --memory-access-mode=rnd run
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;线程采用如下指令。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sysbench --test=threads --num-threads=2 run
+sysbench --test=mutex --num-threads=2 --mutex-locks=1000000 run
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;裸硬盘测试采用如下指令。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;hdparm -tT &amp;lt;dev&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;物理机上有三个文件系统，ext4/xfs/btrfs，前两者仅做fileio测试以对比性能。&lt;/p&gt;
+
+&lt;p&gt;另外做两个特殊文件系统对比，aufs带复制和aufs无复制。前者在只读层上准备好测试文件，而后进行随机读写测试。其中就附带了文件复制开销。后者在aufs建立后初始化测试文件，因此消除了文件复制开销。&lt;/p&gt;
+
+&lt;p&gt;所有测试都是测试数次，取最高者（因为低者可能受到各种干扰）。一般是2-3次。&lt;/p&gt;
+
+&lt;p&gt;物理机是一台DELL Intel 64位桌面系统，支持硬件虚拟化，有4G内存。系统采用debian jessie，测试于2014年1月17日-20日执行，内核3.12.6-2 (2013-12-29) x86_64。&lt;/p&gt;
+
+&lt;p&gt;虚拟机lxc是使用lxc切分的一台虚拟机，没有做资源限制。&lt;/p&gt;
+
+&lt;p&gt;虚拟机vbox是使用virtualbox切分的一台虚拟机，分配了所有CPU，打开了硬件虚拟化，分配了1G内存。&lt;/p&gt;
+
+&lt;h1&gt;文件系统&lt;/h1&gt;
+
+&lt;h2&gt;ext4&lt;/h2&gt;
+
+&lt;p&gt;Operations performed: 21311 Read, 14207 Write, 45440 Other = 80958 Total Read 332.98Mb Written 221.98Mb Total transferred 554.97Mb (1.8499Mb/sec) 118.39 Requests/sec executed&lt;/p&gt;
+
+&lt;p&gt;Test execution summary: total time: 300.0044s total number of events: 35518 total time taken by event execution: 168.4761 per-request statistics: min: 0.00ms avg: 4.74ms max: 118.67ms approx. 95 percentile: 12.48ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 35518.0000/0.00 execution time (avg/stddev): 168.4761/0.00&lt;/p&gt;
+
+&lt;h2&gt;xfs&lt;/h2&gt;
+
+&lt;p&gt;Operations performed: 20789 Read, 13859 Write, 44288 Other = 78936 Total Read 324.83Mb Written 216.55Mb Total transferred 541.38Mb (1.8046Mb/sec) 115.49 Requests/sec executed&lt;/p&gt;
+
+&lt;p&gt;Test execution summary: total time: 300.0018s total number of events: 34648 total time taken by event execution: 172.0475 per-request statistics: min: 0.00ms avg: 4.97ms max: 96.11ms approx. 95 percentile: 12.30ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 34648.0000/0.00 execution time (avg/stddev): 172.0475/0.00&lt;/p&gt;
+
+&lt;h2&gt;btrfs&lt;/h2&gt;
+
+&lt;p&gt;Operations performed: 6180 Read, 4120 Write, 13105 Other = 23405 Total Read 96.562Mb Written 64.375Mb Total transferred 160.94Mb (549.23Kb/sec) 34.33 Requests/sec executed&lt;/p&gt;
+
+&lt;p&gt;Test execution summary: total time: 300.0556s total number of events: 10300 total time taken by event execution: 65.8914 per-request statistics: min: 0.00ms avg: 6.40ms max: 337.28ms approx. 95 percentile: 17.01ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 10300.0000/0.00 execution time (avg/stddev): 65.8914/0.00&lt;/p&gt;
+
+&lt;h2&gt;aufs透明&lt;/h2&gt;
+
+&lt;p&gt;Operations performed: 5340 Read, 3560 Write, 11279 Other = 20179 Total Read 83.438Mb Written 55.625Mb Total transferred 139.06Mb (474.65Kb/sec) 29.67 Requests/sec executed&lt;/p&gt;
+
+&lt;p&gt;Test execution summary: total time: 300.0084s total number of events: 8900 total time taken by event execution: 32.3634 per-request statistics: min: 0.00ms avg: 3.64ms max: 1037.04ms approx. 95 percentile: 0.02ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 8900.0000/0.00 execution time (avg/stddev): 32.3634/0.00&lt;/p&gt;
+
+&lt;h2&gt;aufs非透明&lt;/h2&gt;
+
+&lt;p&gt;Operations performed: 20320 Read, 13546 Write, 43264 Other = 77130 Total Read 317.5Mb Written 211.66Mb Total transferred 529.16Mb (1.7638Mb/sec) 112.88 Requests/sec executed&lt;/p&gt;
+
+&lt;p&gt;Test execution summary: total time: 300.0054s total number of events: 33866 total time taken by event execution: 170.7252 per-request statistics: min: 0.00ms avg: 5.04ms max: 143.86ms approx. 95 percentile: 12.62ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 33866.0000/0.00 execution time (avg/stddev): 170.7252/0.00&lt;/p&gt;
+
+&lt;h1&gt;物理机&lt;/h1&gt;
+
+&lt;h2&gt;hdparm&lt;/h2&gt;
+
+&lt;p&gt;Timing cached reads: 11980 MB in 2.00 seconds = 5992.56 MB/sec Timing buffered disk reads: 366 MB in 3.01 seconds = 121.52 MB/sec&lt;/p&gt;
+
+&lt;h2&gt;cpu&lt;/h2&gt;
+
+&lt;p&gt;Test execution summary: total time: 51.4463s total number of events: 10000 total time taken by event execution: 102.8828 per-request statistics: min: 9.93ms avg: 10.29ms max: 36.11ms approx. 95 percentile: 11.29ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 5000.0000/30.00 execution time (avg/stddev): 51.4414/0.00&lt;/p&gt;
+
+&lt;h2&gt;memory&lt;/h2&gt;
+
+&lt;p&gt;Operations performed: 104857600 (4545662.48 ops/sec)&lt;/p&gt;
+
+&lt;p&gt;102400.00 MB transferred (4439.12 MB/sec)&lt;/p&gt;
+
+&lt;p&gt;Test execution summary: total time: 23.0676s total number of events: 104857600 total time taken by event execution: 34.1991 per-request statistics: min: 0.00ms avg: 0.00ms max: 18.05ms approx. 95 percentile: 0.00ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 52428800.0000/69790.00 execution time (avg/stddev): 17.0995/0.01&lt;/p&gt;
+
+&lt;p&gt;Operations performed: 104857600 (5407739.22 ops/sec)&lt;/p&gt;
+
+&lt;p&gt;102400.00 MB transferred (5281.00 MB/sec)&lt;/p&gt;
+
+&lt;p&gt;Test execution summary: total time: 19.3903s total number of events: 104857600 total time taken by event execution: 26.8579 per-request statistics: min: 0.00ms avg: 0.00ms max: 22.46ms approx. 95 percentile: 0.00ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 52428800.0000/7211.00 execution time (avg/stddev): 13.4289/0.14&lt;/p&gt;
+
+&lt;h2&gt;threads&lt;/h2&gt;
+
+&lt;p&gt;Test execution summary: total time: 1.0112s total number of events: 10000 total time taken by event execution: 2.0210 per-request statistics: min: 0.15ms avg: 0.20ms max: 11.19ms approx. 95 percentile: 0.24ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 5000.0000/3.00 execution time (avg/stddev): 1.0105/0.00&lt;/p&gt;
+
+&lt;p&gt;Test execution summary: total time: 0.1665s total number of events: 2 total time taken by event execution: 0.3238 per-request statistics: min: 157.39ms avg: 161.90ms max: 166.41ms approx. 95 percentile: 10000000.00ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 1.0000/0.00 execution time (avg/stddev): 0.1619/0.00&lt;/p&gt;
+
+&lt;h2&gt;nginx&lt;/h2&gt;
+
+&lt;p&gt;Concurrency Level: 10000 Time taken for tests: 5.745 seconds Complete requests: 100000 Failed requests: 0 Write errors: 0 Total transferred: 172100000 bytes HTML transferred: 160000000 bytes Requests per second: 17404.93 &amp;#91;#/sec&amp;#93; (mean) Time per request: 574.550 &amp;#91;ms&amp;#93; (mean) Time per request: 0.057 &amp;#91;ms&amp;#93; (mean, across all concurrent requests) Transfer rate: 29251.85 [Kbytes/sec] received&lt;/p&gt;
+
+&lt;h1&gt;lxc&lt;/h1&gt;
+
+&lt;h2&gt;cpu&lt;/h2&gt;
+
+&lt;p&gt;Test execution summary: total time: 51.4368s total number of events: 10000 total time taken by event execution: 102.8619 per-request statistics: min: 9.92ms avg: 10.29ms max: 35.08ms approx. 95 percentile: 11.68ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 5000.0000/5.00 execution time (avg/stddev): 51.4310/0.00&lt;/p&gt;
+
+&lt;h2&gt;fileio&lt;/h2&gt;
+
+&lt;p&gt;Operations performed: 5548 Read, 3698 Write, 11776 Other = 21022 Total Read 86.688Mb Written 57.781Mb Total transferred 144.47Mb (493.07Kb/sec) 30.82 Requests/sec executed&lt;/p&gt;
+
+&lt;p&gt;Test execution summary: total time: 300.0294s total number of events: 9246 total time taken by event execution: 84.4687 per-request statistics: min: 0.01ms avg: 9.14ms max: 394.13ms approx. 95 percentile: 36.20ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 9246.0000/0.00 execution time (avg/stddev): 84.4687/0.00&lt;/p&gt;
+
+&lt;h2&gt;memory&lt;/h2&gt;
+
+&lt;p&gt;Operations performed: 104857600 (4456398.83 ops/sec)&lt;/p&gt;
+
+&lt;p&gt;102400.00 MB transferred (4351.95 MB/sec)&lt;/p&gt;
+
+&lt;p&gt;Test execution summary: total time: 23.5297s total number of events: 104857600 total time taken by event execution: 34.8417 per-request statistics: min: 0.00ms avg: 0.00ms max: 20.22ms approx. 95 percentile: 0.00ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 52428800.0000/155952.00 execution time (avg/stddev): 17.4208/0.06&lt;/p&gt;
+
+&lt;p&gt;Operations performed: 104857600 (5327923.43 ops/sec)&lt;/p&gt;
+
+&lt;p&gt;102400.00 MB transferred (5203.05 MB/sec)&lt;/p&gt;
+
+&lt;p&gt;Test execution summary: total time: 19.6808s total number of events: 104857600 total time taken by event execution: 27.3010 per-request statistics: min: 0.00ms avg: 0.00ms max: 16.48ms approx. 95 percentile: 0.00ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 52428800.0000/297738.00 execution time (avg/stddev): 13.6505/0.09&lt;/p&gt;
+
+&lt;h2&gt;threads&lt;/h2&gt;
+
+&lt;p&gt;Test execution summary: total time: 1.2490s total number of events: 10000 total time taken by event execution: 2.4954 per-request statistics: min: 0.21ms avg: 0.25ms max: 7.39ms approx. 95 percentile: 0.28ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 5000.0000/7.00 execution time (avg/stddev): 1.2477/0.00&lt;/p&gt;
+
+&lt;p&gt;Test execution summary: total time: 0.1222s total number of events: 2 total time taken by event execution: 0.2275 per-request statistics: min: 107.53ms avg: 113.77ms max: 120.02ms approx. 95 percentile: 10000000.00ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 1.0000/0.00 execution time (avg/stddev): 0.1138/0.01&lt;/p&gt;
+
+&lt;h2&gt;nginx&lt;/h2&gt;
+
+&lt;p&gt;Concurrency Level: 10000 Time taken for tests: 16.976 seconds Complete requests: 100000 Failed requests: 0 Write errors: 0 Total transferred: 1551500000 bytes HTML transferred: 1539400000 bytes Requests per second: 5890.69 &amp;#91;#/sec&amp;#93; (mean) Time per request: 1697.594 &amp;#91;ms&amp;#93; (mean) Time per request: 0.170 &amp;#91;ms&amp;#93; (mean, across all concurrent requests) Transfer rate: 89252.02 [Kbytes/sec] received&lt;/p&gt;
+
+&lt;h1&gt;vbox&lt;/h1&gt;
+
+&lt;h2&gt;hdparm&lt;/h2&gt;
+
+&lt;p&gt;Timing cached reads: 10122 MB in 1.99 seconds = 5088.70 MB/sec Timing buffered disk reads: 300 MB in 3.00 seconds = 99.87 MB/sec&lt;/p&gt;
+
+&lt;h2&gt;cpu&lt;/h2&gt;
+
+&lt;p&gt;Test execution summary: total time: 54.0469s total number of events: 10000 total time taken by event execution: 108.0595 per-request statistics: min: 9.03ms avg: 10.81ms max: 61.39ms approx. 95 percentile: 14.87ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 5000.0000/87.00 execution time (avg/stddev): 54.0297/0.00&lt;/p&gt;
+
+&lt;h2&gt;fileio&lt;/h2&gt;
+
+&lt;p&gt;Operations performed: 68153 Read, 45435 Write, 145280 Other = 258868 Total Read 1.0399Gb Written 709.92Mb Total transferred 1.7332Gb (5.916Mb/sec) 378.62 Requests/sec executed&lt;/p&gt;
+
+&lt;p&gt;Test execution summary: total time: 300.0045s total number of events: 113588 total time taken by event execution: 177.2314 per-request statistics: min: 0.01ms avg: 1.56ms max: 579.66ms approx. 95 percentile: 13.10ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 113588.0000/0.00 execution time (avg/stddev): 177.2314/0.00&lt;/p&gt;
+
+&lt;h2&gt;memory&lt;/h2&gt;
+
+&lt;p&gt;一直报错，测试不出来。&lt;/p&gt;
+
+&lt;h2&gt;threads&lt;/h2&gt;
+
+&lt;p&gt;Test execution summary: total time: 16.0377s total number of events: 10000 total time taken by event execution: 32.0421 per-request statistics: min: 1.19ms avg: 3.20ms max: 38.39ms approx. 95 percentile: 5.74ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 5000.0000/15.00 execution time (avg/stddev): 16.0210/0.00&lt;/p&gt;
+
+&lt;p&gt;Test execution summary: total time: 0.3023s total number of events: 2 total time taken by event execution: 0.5990 per-request statistics: min: 297.52ms avg: 299.50ms max: 301.47ms approx. 95 percentile: 10000000.00ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 1.0000/0.00 execution time (avg/stddev): 0.2995/0.00&lt;/p&gt;
+
+&lt;h2&gt;nginx&lt;/h2&gt;
+
+&lt;p&gt;Concurrency Level: 5000 Time taken for tests: 41.758 seconds Complete requests: 50000 Failed requests: 0 Write errors: 0 Keep-Alive requests: 0 Total transferred: 890350000 bytes HTML transferred: 884250000 bytes Requests per second: 1197.38 &amp;#91;#/sec&amp;#93; (mean) Time per request: 4175.799 &amp;#91;ms&amp;#93; (mean) Time per request: 0.835 &amp;#91;ms&amp;#93; (mean, across all concurrent requests) Transfer rate: 20821.94 [Kbytes/sec] received&lt;/p&gt;
+
+&lt;h1&gt;vbox on lvm&lt;/h1&gt;
+
+&lt;p&gt;在物理机上开辟一个lvm卷，然后用vmdk引用物理卷的功能挂到vbox上使用，格式化为ext4文件格式。&lt;/p&gt;
+
+&lt;h2&gt;hdparm&lt;/h2&gt;
+
+&lt;p&gt;Timing cached reads: 10034 MB in 1.99 seconds = 5044.30 MB/sec Timing buffered disk reads: 270 MB in 3.01 seconds = 89.73 MB/sec&lt;/p&gt;
+
+&lt;h2&gt;fileio&lt;/h2&gt;
+
+&lt;p&gt;Operations performed: 22765 Read, 15176 Write, 48512 Other = 86453 Total Read 355.7Mb Written 237.12Mb Total transferred 592.83Mb (1.976Mb/sec) 126.47 Requests/sec executed&lt;/p&gt;
+
+&lt;p&gt;Test execution summary: total time: 300.0080s total number of events: 37941 total time taken by event execution: 286.5402 per-request statistics: min: 0.01ms avg: 7.55ms max: 336.67ms approx. 95 percentile: 20.49ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 37941.0000/0.00 execution time (avg/stddev): 286.5402/0.00&lt;/p&gt;
+
+&lt;h1&gt;vbox on vdi&lt;/h1&gt;
+
+&lt;p&gt;基本同vbox on lvm，不过使用vdi作为存储。和vbox测试相比，内部系统换为主系统同样的debian。&lt;/p&gt;
+
+&lt;h2&gt;hdparm&lt;/h2&gt;
+
+&lt;p&gt;Timing cached reads: 9152 MB in 1.99 seconds = 4598.80 MB/sec Timing buffered disk reads: 352 MB in 3.00 seconds = 117.16 MB/sec&lt;/p&gt;
+
+&lt;h2&gt;fileio&lt;/h2&gt;
+
+&lt;p&gt;Operations performed: 151020 Read, 100680 Write, 322060 Other = 573760 Total Read 2.3044Gb Written 1.5363Gb Total transferred 3.8406Gb (13.109Mb/sec) 839.00 Requests/sec executed&lt;/p&gt;
+
+&lt;p&gt;Test execution summary: total time: 300.0011s total number of events: 251700 total time taken by event execution: 60.6296 per-request statistics: min: 0.01ms avg: 0.24ms max: 106.94ms approx. 95 percentile: 0.26ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 251700.0000/0.00 execution time (avg/stddev): 60.6296/0.00&lt;/p&gt;
+
+&lt;h1&gt;分析&lt;/h1&gt;
+
+&lt;h2&gt;计算&lt;/h2&gt;
+
+&lt;p&gt;从CPU上说，vbox的消耗大约是5%，而lxc的消耗基本是0%。&lt;/p&gt;
+
+&lt;p&gt;内存测试上，vbox无法测量。lxc的性能和物理机十分相近，两者的差异在1.5%-2%之间。&lt;/p&gt;
+
+&lt;p&gt;在threads测试和mutex测试上，vbox显示出远远低于lxc的性能。这些基本都是内核陷入类的事务，也是预期vbox会发生性能下降的地方。&lt;/p&gt;
+
+&lt;h2&gt;IO&lt;/h2&gt;
+
+&lt;p&gt;从硬件设备IO上来分析，lxc和主机是共用一套物理设备的。vbox的裸设备IO比物理机低了15-18%。但是文件系统IO则表现出完全相反的景象。&lt;/p&gt;
+
+&lt;p&gt;lxc底层使用的是btrfs，因此性能和物理机上的btrfs性能十分相近，误差在10%以内。这一性能比物理机上的ext4/xfs低了70%以上。这个表现出btrfs的性能和ext4/xfs性能的差异(注：怎么会差这么多？)。&lt;/p&gt;
+
+&lt;p&gt;如果使用aufs的话，则要视复制特性而定。如果引发复制，性能会跌到和btrfs相近。而不引发复制的话，则和aufs下面的文件系统相近(误差在5%以内)。&lt;/p&gt;
+
+&lt;p&gt;而vbox内只有ext4，其性能高达物理机的220%。怎么可能？&lt;/p&gt;
+
+&lt;h2&gt;network&lt;/h2&gt;
+
+&lt;p&gt;从nginx的rps来说，lxc的性能只有物理机的1/3，vbox的更只有7%。而且vbox连10000并发都无法支撑，只能用5000并发测试。&lt;/p&gt;
+
+&lt;p&gt;这里固然有因为物理机目录中文件比较少的原因，但是vbox和lxc的文件数是一样的，两者性能比高达1:5是个不争的事实。&lt;/p&gt;
+
+&lt;h2&gt;加测&lt;/h2&gt;
+
+&lt;p&gt;因为vbox内的ext4性能太好，怀疑有鬼，所以加测了一下。果然，使用vdi后fileio性能比物理机还好（我用的是新的vdi）。这个结论在大规模读写和老的vdi上很可能退化成一点都不靠谱，否则所有的设备都应该先装一堆虚拟机做vdi。&lt;/p&gt;
+
+&lt;h1&gt;结论&lt;/h1&gt;
+
+&lt;h2&gt;虚拟化层级&lt;/h2&gt;
+
+&lt;p&gt;从虚拟化的深度来说，CPU虚拟化最深，完全虚拟化次之，半虚拟化其后，硬件虚拟化和半虚拟化难分伯仲，操作系统虚拟化已经很浅了。下面是简单解说。&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;CPU虚拟化：使用CPU仿真另一块CPU的每个指令。速度最慢（大约是真实CPU的1/60），可以仿真其他CPU。bochs为其代表，qemu亦支持。&lt;/li&gt;
+&lt;li&gt;完全虚拟化：对另一个系统的部分核心调用进行处理。速度次之（大约一半略快）。必须是同种CPU，但可以是不同系统。vmware早期的虚拟机都是此种。&lt;/li&gt;
+&lt;li&gt;半虚拟化：修改另一个系统的核心代码，使其与hypervisor交互以提高性能（大约5-10%）。必须同种CPU，但是guest系统必须可以修改（排除了windows）。Xen为其代表。&lt;/li&gt;
+&lt;li&gt;硬件虚拟化：利用硬件加速完全虚拟化，使其性能接近半虚拟化，但是不需要修改内核。必须同种CPU，可以为不同系统。目前大部分虚拟机都支持。&lt;/li&gt;
+&lt;li&gt;系统虚拟化：在系统上完成另一个系统的特性。必须是同种CPU同种内核，但可以是不同系统（例如debian和centos）。linux上的lxc/openvz，bsd上的jail，windows上的Virtuozzo为其代表。&lt;/li&gt;
+&lt;li&gt;用户隔离：在同一个系统上，利用用户分割权限和限制配额。必须在同一个系统内。DAE为其代表。&lt;/li&gt;
+&lt;li&gt;沙盒：在语言内部搭建隔离平台，对API进行鉴定和抽象。GAE为其代表。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2&gt;性能和隔离性的取舍&lt;/h2&gt;
+
+&lt;p&gt;上面显然可见，隔离性越好，性能越差。使用硬件虚拟化后，nginx的rps只有原本的1/10。lxc的overload明明很低，但是因为用了虚拟网卡，所以rps下降到1/3。从效率上说，当然不希望为了虚拟化而消耗大量的资源。所以，如果服务原本可以用户隔离，就不要用系统虚拟化，如果可以系统虚拟化，就不要硬件虚拟化。所以在大规模使用虚拟化之前，不妨考虑一下是不是先好用户权限级隔离比较合适。&lt;/p&gt;
+
+&lt;h2&gt;文件系统&lt;/h2&gt;
+
+&lt;p&gt;从上面可以看出，对于lxc这种小消耗的虚拟方案，与其在意虚拟机的性能消耗，不如更在意文件系统的性能消耗。但是比较倒霉的是，lxc是不能在虚拟机内自行配置文件系统的，需要从主机内分配挂载。&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;ext4：适用于大部分情况，iops很高，小文件下吞吐量很不错。大部分虚拟化场景都是小系统简单服务的时候适合。&lt;/li&gt;
+&lt;li&gt;xfs：适用于大设备内部的大虚拟机。每个虚机的服务复杂，或者是有大文件。&lt;/li&gt;
+&lt;li&gt;btrfs：这个东西性能很低，但是写时复制的能力对快速clone很重要。适合用于产生一堆临时生成的环境，用于程序员测试或者测试工程师搭环境，测试完了就删除的。&lt;/li&gt;
+&lt;li&gt;aufs：和btrfs情况差不多，快速clone不错。不过安全起见，clone后原image不可以启动实例或者修改image。在没有COW写入时性能很高，这点比btrfs好。而在COW时瞬时开销很高。&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>重分区和lvm</title>
+      <link>https://shell909090.github.io/blog/archives/1859/</link>
+      <pubDate>Wed, 20 Jul 2011 14:15:10 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/1859/</guid>
+      <description>&lt;p&gt;上篇btrfs会导致虚拟机慢死的blog都看到了吧？看到了就不多解释。&lt;br /&gt;    首先，删除掉cache数据，还有冗余数据，使得数据可备份化。然后执行rsync -av /home /mnt/mdisk/sync，将数据同步到备份的移动硬盘上。之所以用rsync，是因为我在备份的时候还能看看网页什么的。等第一次备份完成，关闭所有X程序，退出shell这个用户的所有进程，然后再次执行rsync，就可以保证同步。同步完成后，注销/etc/fstab下面的/home和swap项目，重启。&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;    系统启动后，先登入root用户，因为此时/home已经恢复到了/下面，所有shell用户的home路径不存在。建立/home/shell目录，并且复制/etc/skel配置，修改owner后，shell就可以登入了。当然，此时是系统默认环境，并没有定制化。没有关系，我们只需要terminal。在terminal中执行gparted，会出现图形的分区管理工具。当然，理论上说，如果你够熟悉，使用fdisk完成全部操作也是可以的，这免除了初始化shell用户和登入图形界面的麻烦。删除原先的/home所在分区和swap所在分区，切割一个ntfs分区用于将来安装windows(回头可以打游戏)，剩余的全部切割，而后开启lvm标记。当然，这一步贝壳当时不知道，而是创立了一个未知分区，再用fdisk调整分区类型为8E。而后系统会提示你，不能保证内核数据结构更新，需要执行kpartx /dev/sda。无论如何，此时我们已经有了一个lvm分区。&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;    lvm的结构是pv -&amp;gt; pg -&amp;gt; lv，也就是物理卷-&amp;gt;物理组-&amp;gt;逻辑卷。物理的各个分区首先被组织成物理组，再被划分为逻辑卷。这样设计是因为可能有多个磁盘上的空间，被划分为多个逻辑卷。在不改变逻辑的情况下，lvm的默认组织构型是raid0的。不过这对我不是个问题，我只有一个磁盘。&lt;br /&gt;    首先创建pv，使用命令pvcreate，没什么好多说的。然后是产生vg，使用vgcreate main /dev/sda7，之所以需要main，是因为需要一个vg命名。而后我们需要从这个vg中创建出一个lv来，执行指令lvcreate -L150G -nhome main，设定lv的名字叫做main-home，大小150G。此时在/dev/mapper/main-home，就产生了一个设备文件，大小150G，可以当作/dev/sda1之类的设备一样使用。不过，这个设备没有经过任何格式化过程，所以还需要mkfs.ext3 /dev/mapper/main-home。在这个指令后，我很习惯的跟了一个tune2fs -c 0 /dev/mapper/main-home来关闭重启检测。使用blkid，发现这个设备已经成功创立，并且有了ID。把UUID复制进（这时就知道X的好处了，console下面比较绕路）/etc/fstab，并且修改刚刚被注释掉的/home一行，更改UUID和分区格式。贝壳当时光记得复制，忘记改分区格式，导致系统进不去。不过也不困难，修改/etc/fstab后mount -a一下就可以了。&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;    此时我们已经建立了有效的逻辑卷，并且正确配置。下面要创建一个交换分区，并且挂上去。废话不多说，lvcreate -L6G -nswap main，mkswap /dev/mapper/main-swap。而后一样blkid和vi /etc/fstab。系统就基本配置好了。验证一下看看。&lt;br /&gt;shell-deb:~# pvs&lt;br /&gt;  PV         VG   Fmt  Attr PSize   PFree &lt;br /&gt;  /dev/sda7  main lvm2 a-   229.19g 73.19g&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;shell-deb:~# lvs&lt;br /&gt;  LV   VG   Attr   LSize   Origin Snap%  Move Log Copy%  Convert&lt;br /&gt;  home main -wi-ao 150.00g                                      &lt;br /&gt;  swap main -wi-ao   6.00g &lt;br /&gt;    而后就是新系统的启用过程，首先要退出X，注销shell用户的所有进程，然后以root删除/home下的所有数据。如果不删除的话，重启后，这里的数据无法访问，变成垃圾。而后重启，就可以看到正确结果了。不过还不要着急登入shell。首先执行rsync -av /mnt/mdisk/sync/home /home，将备份同步回去。这样我们登入shell的时候就可以看到有效的定制化界面了。另外一点细节是，mdisk使用了ntfs格式，所以导致数据恢复后属性混乱。使用find . -type d -exec chmod 755 {} ;和find . -type f -exec chmod 644 {} ;可以恢复大部分，少部分例如~/.ssh/authorized_keys和~/.gnupg需要手工调整。&lt;br /&gt;&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

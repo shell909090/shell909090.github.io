@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>Shell&#39;s Home</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  <link href="https://shell909090.github.io/index.xml" rel="alternate" type="application/rss+xml" title="Shell&#39;s Home" />
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+ <div id="content">
+  <div class="blog-index">
+    
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/1772/">说说x509证书链</a>
+    </h1>
+    <p class="meta">Apr 11, 2011
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1772/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>x509证书一般会用到三类文件，key，csr，crt。key是私用密钥，openssl格式，通常是rsa算法，爱咋用咋用的。csr是证书请求文件，用于申请证书。在申请的时候，必须使用自己的私钥来签署申请，还可以设定一个密钥。crt是证书文件（windows下面的csr，其实是crt），是签署人用自己的key给你签署的凭证。通常签名证书的时候都需要一个序列号，避免两个证书重复，当指明序列文件后，被签名证书会使用这个文件，并且文件会发生变化。另外一个额外说明的东西是dh参数，做openvpn的时候需要这个东西，大致是什么算法的初始参数，在下面有生成方法。 key的生成方法： openssl genrsa -des3 -out in.key 2048 这样是生成rsa私钥，des3算法，openssl格式，2048位强度。ca.key是文件名。 为了生成这样的密钥，需要一个至少四位的密码。可以通过以下方法去除。 openssl rsa -in in.key -out out.key 输入密钥后，out.key就是没有密码的版本了。 csr的生成方法： openssl req -new -key server.key -out server.csr 需要依次输入国家，地区，组织，email。最重要的是，有一个common name，可以写你的名字或者域名。如果为了https申请，这个必须和域名吻合，否则会引发浏览器警报。 crt生成方法：openssl x509 -md5 -days 3560 -req -CA ca.crt -CAkey ca.key -CAcreateserial -CAserial ca.srl -in server.csr -out server.crt 输入key的密钥后，完成证书生成。-CA选项指明用于签名的ca证书，-CAkey选项指明用于签名的密钥。-CAserial指明序列号文件，而-CAcreateserial指明文件不存在时自动生成。 openssl req -new -x509 -days 3650 -key ca.key -out ca.crt 这个是用于生成自签名证书的。 dh参数生成方法： openssl dhparam -out dh1024.pem 1024 1024是位数，一般1024已经够了。 x509的证书链是这样的。crt上有证书持有人的信息，持有人的公钥，签署者的签名。当你安装了一个证书后，就信任了这份证书。证书上会说明用途，例如服务器认证，客户端认证，或者签署其他证书。当系统收到一份新的证书的时候，证书会说明，是由谁签署的。如果这个签署者确实可以签署其他证书，并且收到证书上的签名和签署者的公钥可以对上的时候，系统就自动信任新的证书。 在系统开始的时候，会自动安装信任一些证书机构，这些被称为根证书机构（CA）。根证书机构会为其他公司颁发证书，用于各种用途。当然，被签署的证书也可能是一份“可签署证书”，这样就要检查对方的资质。这样逐层签署，就会形成一个叫做“证书链”的东西。从拓扑结构上来说，其实应该是森林结构。 当然，如果我们要弄ssl，又没有钱请CA给我们签署的时候（他们的验证费都好贵的），可以考虑自己给自己签署。生成一份key，生成一个req，然后用自己的key签署自己的req。当你使用这份证书做ssl的时候，就会产生不受信任的证书警报。你可以在客户那里安装这张证书为根证书，就不会弹出这个警告了。当然，考究的人，签署用证书和服务器身份认证证书要分开。先做一个自签署证书作为根证书，然后用这个根证书签署一个服务器证书。这样在客户那里安装根证书后，服务器证书就会自动信任。这样的好处是，一本证书只能颁发给一个特定域名。如果你有多个域名，就要反复在客户这里安装证书。然而如果采用根证书签名，那么只要安装一张根证书，其他都是自动的。不过如果事情只要干一次，就不用讲究这么多了。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/1770/">为什么我觉得拿版权较真的人都在扯淡</a>
+    </h1>
+    <p class="meta">Apr 8, 2011
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1770/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>重申一遍，我不反对版权，我只反对使用版权牟取暴利。 什么叫暴利？我是个程序员，我做一个软件出来，我希望用我软件的人能给我点钱，对得起我的工作。或者最起码，不要拿着我的软件改的面目全非，在里面安放病毒什么的。这就是我对知识产权/版权的全部诉求——我希望得到收益，这个是一种尊重，也会激励我更好的做别的软件。 然而今天，我们往往碰到这么一个情况。在校的时候，我们看到漫天的，学XX语言吧。同学老师都在讨论XX技术，彷佛美好的未来向自己招手。等到了工作时，发现，原来XX技术是XXX公司的专利，以此技术为核心构架程序，尤其是企业级程序必须向XXX公司交费。好吧，用东西付钱天经地义，哥回头也做个值钱的东西出来。做着做着，XXX公司又往往会三天两头变来变去，做一些你觉得技术上说不通的，很恶心的变更。当然，人家的东西，人家说了算。等自己做了很久后，发现自己用心做出的XXXX技术压根无人问津，因为XXX公司又推出了和这个技术相近的XXXX技术。他们曾经开出一个天价——天下最低的价——来购买你的技术的全部权利，并且宣称，自己的收购价这么低而权利费这么高，是因为在策划，宣传，包装，完善上花费了巨额投入的原因。这时你才发现，原来当初在学校里面，还有OOO语言可以选择。一切都是免费的，你不需要付钱来用别人的技术，当然产品多数也是免费给别人使用的，通常也只能收服务费。一切都和你想的差不多，只是——你当时根本不知道。 宣传，策划，包装，完善到底要花多少钱呢？这个和中国移动到底从我们的手机账单中支出多少到基础设备建设，支出多少到服务一样，是个很难揣测的概念。然而我们可以知道另一个东西——他们的资产回报比——一般是多高。一切拿着策划，宣传，包装，需要花费巨额费用来说事，但是自己却有超高资产回报比的公司，哥都认为是在扯淡。 更不提因为XXX技术和OOO技术针对的客户群接近，就无视两者根本没有血亲的事实，打官司指控OOO技术抄袭XXX技术，企图将松散的社区送上死路的动作。这其实不是为了给程序员更高的回报，而是出于资本的贪婪。版权/著作权应当保护作者的利益，而不是资本的利益。这就是我对版权/著作权的态度。 夸张？松茸叔叔说过一个很有趣的内容，因为是豆瓣广播，链接不好找，我就不贴了。“从前有群人喜欢吃狗不理包子，他们搞了个狗不理包子同好会。后来有天来个人说，我是狗不理新老板，你们借用狗不理的名字，这是亲，呃，侵了我的权，你们得散了。于是他们只好改名为包子同好会。好笑吗？如果JavaEye没说谎，这就是Oracle对他们干的事情。”</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/1768/">决定了，以后增加一个标签叫评论</a>
+    </h1>
+    <p class="meta">Apr 7, 2011
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1768/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>看了看日志，发现很多人还是在乎别人的评价是什么的，经常有搜索“XX怎么样”之类的关键字跳到我的blog上。最近在挑一些东西的时候，发现，确实，别人的评论很重要，尤其是负面评论。 所以，决定了，以后就增加一类叫做评论，专门就是评论看到的各种东西的。当然，负面评论多正面评论少。不过大家别以为负面评论少是好事。10块买个手电筒，负面评论最多是“不够亮”。6000买个ipad2，你看看能出多少负面评价。 ——可是你愿意弄个ipad2还是弄个手电筒？</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/1766/">baidu和google的选择</a>
+    </h1>
+    <p class="meta">Apr 6, 2011
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1766/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>baidu是个很垃圾的公司，我坚信。 但是再垃圾的公司也有他的用途，例如baidu mp3是个很好用的服务。google会和你JJYY版权问题，百度不会。 不过，有利也有弊，google上只是有广告，baidu上只要有钱，出什么都不奇怪。例如这个：http://www.douban.com/note/128688737/ 所以，如同文章说的。你要找信息的时候还是找google吧，baidu上全是广告。你想投资，怕被骗？别去baidu，那里全是广告，至少是软文。也别去天涯mop，那里也全是软文。即使你一对一的去问人，也不知道那ID后面是不是枪手的马甲。上google，搜全世界的blog，独立主机，那里也许有你感兴趣的东西。 当然，你要找广告的话就别找google了，不够多。 另外，该骂的，骂出来。老子布衣一个，还能怕谁呢？</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/1764/">twip在LiteSpeed上碰到403问题的解法</a>
+    </h1>
+    <p class="meta">Apr 2, 2011
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1764/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>这是一个老bug了，具体问题看这里( http://code.google.com/p/twip/issues/detail?id=80 )。 当你使用o模式，到twitter上同意后跳回来，就会撞上403。 不管他，当时你的url应当是http://xxx.com/path/getapi.php?api=http://xxx.com/path/o/username/token。xxx.com是你的域名，path是路径，username是用户名，token是一个随机的数字。 用http://xxx.com/path/o/username/token，直接上去。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/1762/">作家们和百度的战争</a>
+    </h1>
+    <p class="meta">Apr 1, 2011
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1762/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>作家们和百度打起来了，真是让我情何以堪呐。 照理说，作为一个码工，怎么也算是码字工的同行，应当对作家们表示一下支持。但是我又是个开源免费的爱好者。为防止有人搞不大明白啥叫开源免费，我简单解释一下。简单来说，就是拿着自己的东西在那里叫卖，来吧都来看吧，白给不要钱，还送设计图。作为正常中国人，也许很难理解这种脑残行为。不过事实上，这一切真的发生了，而且在全球范围内轰轰烈烈。 不过这让我的立场就尴尬了。唔，怎么说呢？我们还是把这件事情拆开说吧。 1.百度有错么？ 我没仔细看，不过依据我的推测，作家在看到自己的作品出现在百度文库中之后，告知了百度，百度却没有积极的配合移除。实话说，这个比较符合我对百度的一贯认识。上次百度因为类似问题，还和盛大吵起来过。当时百度那位发言人的言论，让我颇为惊叹——这么好的人才怎么就没去中宣部或者外交部呢？ 系统里有他人作品并不是原罪，但是别人告诉你，别收录，你还不当回事情就是了。想不被收录进去还要交钱，你当自己是中国黄页么？ 另外做一个不负责任的猜测，说百度和此事无关，也未必完全无关。百度当年曾有要求其他公司购买自己排名，不买就把对方的关键词指到自己身上的记录。我怀着恶意的猜测，若是百度文库的产品经理发现自己产品没人用，找一堆枪手以普通用户身份上传也是有可能的。可惜事出有因，查无实据。本段落仅供一笑，切莫当真。 2.普通人的态度？ 我和女朋友说过这个事情，她的态度是，趁着百度没关，赶快上去看看。还看到一款百度和爱国者推出的电子书，等于免费看很多作品。于是感慨早知道不买kindle，买这个了。我坚决的劝下了她，这种擦边球是不稳定的，投资硬件实属风险，买下来谁知道哪天就白买了。verycd殷鉴在先，百度文库也难说的很——果然，没几天李彦宏出来说话，管不好就关。算不算数倒是另说，要是买了那个电子书，怕是又要担心能不能用了吧。 有便宜不占是很正常的思路，不过在占便宜前，先考虑一下这句话：起初他们追杀共产主义者，我没有说话-因为我不是共产主义者；后来他们追杀工会成员，我没有说话-因为我不是工会成员；接着他们追杀犹太人，我没有说话-因为我不是犹太人；最后他们奔我而来，却再也没有人站出来为我说话了。（http://www.kaieconblog.net/2011/03/29/10343/）我觉得郭凯说的很好，你可能觉得百度很好，白看东西不花钱。这次你支持了百度，下次就有人搞软件下载中心，上面全是破解软件。再下次就有人搞不知道什么中心—— 中国已经够山寨了，别搞的全国皆山寨，OK？ 可能你说，我种地，我不靠脑子吃饭，搞不到我头上来。那也请你多想一步。搞死中国的作家，我们就只能看免费的社论。搞死了中国的程序员，我们就只能高价买别人的程序。你把中国做创造的都搞死了，你就等着老外涨价吧。山寨老外的？当WTO吃干饭的阿？WTO已经因为中国没有按约定开放出版市场提出抗议了(猛击这里：http://www.etu.net.cn/Article_Show.asp?ArticleID=579)，重复这么搞下去，还想不想出口了？ 3.作家维权，结果如何？ 我觉得，这是另一方面。百度固然有错，但是我却不看好作家的维权行动。如我上文所说，中国人现在的习惯就是，窃书不算偷，读书人的事，能算偷么？对着这样的民众，我常有有力无处使的感觉。实话说，我是非常不看好维权的结果的。这种土壤中，即使一个百度倒下去，千百个白读站起来。 4.有什么建议？ 别搞纸质书了，那个注定是昨日黄花。一本纸质书，作家能拿多少？一本电子书能拿多少？假定读者不变，作家收入不变的情况下，电子书定价可以达到纸质书的一到两折，而且没有什么前期费用。作为用户而言，家里堆一堆纸海也是浪费且不低碳的生活。我实在搞不懂为什么要弄纸质书。盗版问题？电子书是比较容易盗版，纸质书就不会受到电子盗版的冲击么？要真不会也没有这次事情了。而且，在一本书一两折的低折扣下，读者反倒会比较多。一本深入浅出MFC，我八年前买的时候是90，现在恐怕要到150上下。一两折只有20-30，买也无关痛痒。读者增多，作家收入还会增加。 不过现实的一个问题是，传统认为，花钱买一刀纸回去叫消费，天经地义。花钱买一本电子书就不好接受了，总想弄免费的。不过我得说——未来笼罩在迷雾中，一切都会变的，观念也是—— 5.我为什么情何以堪？ 因为我比较赞同开源运动的精神，所以也对保护版权的问题提不起精神来。 开源运动据说起于上世纪美国的嬉皮士文化，主要观点是，代码应当属于全人类，而不是被某个人圈起来贩卖牟利。开源运动开始之所以风行，是因为很多大学教授碰到了版权上的实际问题——版权条约禁止代码用于教学。最有名的例子是UNIX做了闭源限定后催生了minix，后者催生了linux。程序员必须阅读很多的源码，来增加自己的水平，而版权限制这点。 到了后期，很多大公司也开始支持开源运动。因为这一运动对上游和下游都非常有利，它只损害以版权牟取暴利的人。作为上游厂商，雇用一个熟悉开源系统的硬件程序员，就可以直接开发这一系统的硬件驱动。而不用像微软模式一样，雇用通过微软认证，并且和微软签署不可泄漏协议的硬件专家——这些人的工资中有相当部分是交给微软的保护费。使用开源可以直接的降低成本。而作为下游，则更看中开源系统代码透明，不容易植入有害代码（这点上，微软一直盛传被植入了后门，但是始终无法有力辩驳就可以知道），而且很容易基于自己的需要定制修改。中游厂商则是通过服务收取有限费用，而不是暴利。 实际上，版权从始至终，都是在保护创造作品的人的积极性。在软件业，开源运动找到了另一种方式来激励创作者的积极性，而不是一味的把东西保护起来。这让我们反思对影视产品的保护力度问题。软件业只享有20年的保护，而出版业，唱片业享有70年的保护。我们是否应当执行如此强力的版权保护政策呢？ 问题归于出版领域，这篇博文（猛击这里： http://weiwuhui.com/4190.html ）印证了我的想法。出版业的大头都在出版社这里，这才是使用版权赚取金钱的大头。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/1760/">python源码解析读书笔记（四）——杂项</a>
+    </h1>
+    <p class="meta">Mar 31, 2011
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1760/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>1.GIL的影响 很多人讨论python性能的时候都提到一个概念，GIL。我在python源码中搜了一下，这个函数调用并不多，但是位置很要命。每个线程，生成的时候请求一下，退出的时候释放一下。在每次运行字节码前也会短暂的释放一下，让其他线程有获得运行的机会。说白了，除非程序显式的调用release_lock去释放资源，否则python是没有任何多线程能力的。这种机会并不很多，通常只发生在阻塞的时候。 而python原子化的粒度也比较清晰，就是每个字节码内部一定是原子的，字节码和字节码之间是非原子的。当我们操作l.append的时候，不用担心线程竞争导致数据结构损坏。但是如果我们操作del l[len(l)]的时候，存在发生异常的概率。 2.对象缓存池 python对小内存对象（碎片对象）提供了小内存对象缓存池。默认情况下，256字节以下的内存由小内存缓存池管理，以上的直接向系统申请，申请大小每8字节对齐。 对象缓存池的分配和收集技术采用了自由资源链表，在2.5之后，当某个尺度的资源不再需要时，会整体释放。3.python的GC机制 python的GC机制是基于引用计数的，因此当引用计数归零，对象一定会被释放（如果是碎片对象，内存不一定直接释放，可能归对象缓存池）。 python的辅助垃圾收集算法是三色标记法和分代垃圾收集模型（generation），由于要跟踪所有的容器对象，因此容器对象上有跟踪链表。4.字符编码处理方案 无论从何种来源，只要是字符串，并可能交给一个和当前代码并不紧密耦合的代码处理，就应当被转换为unicode。或者换一个更简洁的说法，应当使用unicode作为接口数据类型。 str对象是很难猜测编码的，当离开了数据源代码后，再分析编码是个不靠谱的方案。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/1759/">python源码解析读书笔记（三）——对象和函数</a>
+    </h1>
+    <p class="meta">Mar 30, 2011
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1759/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>1.mro 算法，自身先入栈，而后按声明顺序继承每个父类的mro，内部对象在最后。简单来说，深度优先，从左向右。 当类对象创建时，会将父类所有函数全部复制过来（很明显，应当是符号复制）。 2.super规则&gt;&gt;&gt; class A(object):&hellip; def f(self): print &#39;A&#39; &hellip;&gt;&gt;&gt; class B(object):&hellip; def f(self): print &#39;B&#39;&hellip;&gt;&gt;&gt; class C(A):&hellip; def f(self): print &#39;C&#39;&hellip; &gt;&gt;&gt; class D(C, B): &hellip; def f(self): super(D, self).f()&hellip;&gt;&gt;&gt; d = D()&gt;&gt;&gt; d.f()C&gt;&gt;&gt; D.base&lt;class &#39;main.C&#39;&gt; &gt;&gt;&gt; D.bases (&lt;class &#39;main.C&#39;&gt;, &lt;class &#39;main.B&#39;&gt;)&gt;&gt;&gt; class A(object):&hellip; def f(self): print &#39;A&#39;&hellip;&gt;&gt;&gt; class B(object): &hellip; def g(self): print &#39;B&#39;&hellip;&gt;&gt;&gt; class C(A, B):&hellip; def f(self): super(C, self).g()&hellip;&gt;&gt;&gt; c = C()&gt;&gt;&gt; c.f() B&gt;&gt;&gt; C.mro(&lt;class</p>
+
+          
+              <footer>
+                  <a href="https://shell909090.github.io/blog/archives/1759/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/1757/">python源码解析读书笔记（二）——函数特性</a>
+    </h1>
+    <p class="meta">Mar 29, 2011
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1757/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>1.函数的性质&gt;&gt;&gt; def outer(o1, o2):... def inner(i1 = 10, i2 = []): ... return i1+o1+o2... return inner...&gt;&gt;&gt; a1 = outer(50, 30)&gt;&gt;&gt; a2 = outer(50, 30)&gt;&gt;&gt; a1.func_closure(&lt;cell at 0xb75454f4: int object at 0x8455ddc&gt;, &lt;cell at 0xb7545524: int object at 0x8455cec&gt;) &gt;&gt;&gt; a2.func_closure(&lt;cell at 0xb754541c: int object at 0x8455ddc&gt;, &lt;cell at 0xb75453a4: int object at 0x8455cec&gt;)两次生成的函数对象拥有不同的闭包空间。&gt;&gt;&gt; a1.func_defaults (10, [])&gt;&gt;&gt; a2.func_defaults(10, [])&gt;&gt;&gt; a1.func_defaults[1].append(10)&gt;&gt;&gt; a1.func_defaults(10, [10])&gt;&gt;&gt; a2.func_defaults (10, [])也拥有不同的默认值空间。&gt;&gt;&gt; def default_test(d = []):&hellip; print d&hellip;&gt;&gt;&gt; default_test.func_defaults([],)&gt;&gt;&gt; default_test.func_defaults[0].append(10) &gt;&gt;&gt; default_test()[10]然而同一次生成的默认值空间是共享的，哪怕多次运行。 2.参数传递&gt;&gt;&gt; def f(a,b,c,d): return a,b,c,d&hellip; &gt;&gt;&gt; f(1,2,3,4)(1, 2, 3, 4)&gt;&gt;&gt; f(1,2,a=3,b=4)Traceback (most recent call last): File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;TypeError: f() got multiple values for keyword argument &#39;a&#39; &gt;&gt;&gt; f(1,2,c=3,d=4)(1, 2, 3, 4)参数分两种，位置参数和键值参数。具体如何传递是由调用时决定而非编译时。调用时参数必须先以位置参方式传递，再以键值参方式传递。一旦出现键值传递，再出现位置传递即出现编译时非法。调用时会先入栈所有参数，一个位置参占一个对象，一个键值参占两个对象（这是当然）。解析的时候按照先位置后键值的方式赋值，先将所有位置参依次赋值给所有参数名。如果位置参有多，而没有扩展位置参来接收，则报错TypeError: %s expected at %s %d arguments, got %d。而后将所有键值参赋值给未赋值的参数，如果这个参数名已经赋值，则如上文，报错。如果键值参数有多，又没有扩展键值参来接受，也报错。 最后，如果有参数名尚未赋值，查看这些参数名是否有默认值。如果没有，报错。另外，在字节码中访问本地（locals）命名空间的时候，是不通过命名空间查询的方式进行的。因为编译时可以明确一个名称是否在locals空间中，而不用理会代码段在名称空间中的位置结构。而一旦明确其在locals命名空间中，则可以直接堆栈访问位置，这样使得locals名称查询速度远高于普通名称空间。对于一个函数内频繁使用的符号，建议做一次赋值，将其引入locals命名空间。 3.调用堆栈 python的调用堆栈是通过PyFrameObject来实现的，每一次调用，python会产生一个新的PyFrameObject加入到栈中。而每个PyFrameObject自带一个小数据区域，用于接收参数，处理局部变量。python字节码指令中的LOAD_FAST，STORE_FAST就是操作的这个区域。 4.层级闭包的实现 &gt;&gt;&gt; def f1(): ...</p>
+
+          
+              <footer>
+                  <a href="https://shell909090.github.io/blog/archives/1757/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/1756/">python源码解析读书笔记（一）——内置对象</a>
+    </h1>
+    <p class="meta">Mar 27, 2011
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1756/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>1.类型的类型 obj int(10).ob_type -&gt; PyInt_Type PyInt_Type.ob_type -&gt; PyType_Type PyInt_Type.tp_base -&gt; PyBaseObject_Type PyBaseObject_Type.ob_type -&gt; PyType_Type PyType_Type.ob_type -&gt; PyType_Type更精确的参考源码解析262页图。 2.小整数对象 if (-NSMALLNEGINTS &lt;= ival &amp;&amp; ival &lt; NSMALLPOSINTS) { v = small_ints[ival + NSMALLNEGINTS]; Py_INCREF(v); } 3.大整数对象，空对象池，对象缓存&gt;&gt;&gt; a = 1000000&gt;&gt;&gt; b = 2000000&gt;&gt;&gt; id(a) == id(1000000) False&gt;&gt;&gt; id(100000) == id(100000) True最后一个是因为python解析器在解析对象的时候，对前后生成的对象进行了缓存。经过测试，对文件也有效。 4.字符串对象复用和缓存&gt;&gt;&gt; c = &#39;qazwsxedcrfvt&#39; &gt;&gt;&gt; c += &#39;gbyhnujmikolp&#39;&gt;&gt;&gt; a = &#39;qazwsxedcrfvtgbyhnujmikolp&#39; &gt;&gt;&gt; id(a) == id&copy;False&gt;&gt;&gt; a = &#39;abc&#39;&gt;&gt;&gt; b = &#39;def&#39;&gt;&gt;&gt;</p>
+
+          
+              <footer>
+                  <a href="https://shell909090.github.io/blog/archives/1756/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    
+    
+
+
+
+
+<div class="pagination">
+
+    
+        
+        
+        
+        <a href="/" aria-label="First" class="label-pagination"><i class="fa fa-angle-double-left fa-lg"></i></a>
+    
+
+    
+    
+        <a href="/page/40/" aria-label="Previous" class="label-pagination"><i class="fa fa-angle-left fa-lg"></i></a>
+    
+
+    
+        <a href="/" class="label-pagination">1</a>
+    
+        <a href="/page/2/" class="label-pagination">2</a>
+    
+        <a href="/page/3/" class="label-pagination">3</a>
+    
+        <a href="/page/4/" class="label-pagination">4</a>
+    
+        <a href="/page/5/" class="label-pagination">5</a>
+    
+        <a href="/page/6/" class="label-pagination">6</a>
+    
+        <a href="/page/7/" class="label-pagination">7</a>
+    
+        <a href="/page/8/" class="label-pagination">8</a>
+    
+        <a href="/page/9/" class="label-pagination">9</a>
+    
+        <a href="/page/10/" class="label-pagination">10</a>
+    
+        <a href="/page/11/" class="label-pagination">11</a>
+    
+        <a href="/page/12/" class="label-pagination">12</a>
+    
+        <a href="/page/13/" class="label-pagination">13</a>
+    
+        <a href="/page/14/" class="label-pagination">14</a>
+    
+        <a href="/page/15/" class="label-pagination">15</a>
+    
+        <a href="/page/16/" class="label-pagination">16</a>
+    
+        <a href="/page/17/" class="label-pagination">17</a>
+    
+        <a href="/page/18/" class="label-pagination">18</a>
+    
+        <a href="/page/19/" class="label-pagination">19</a>
+    
+        <a href="/page/20/" class="label-pagination">20</a>
+    
+        <a href="/page/21/" class="label-pagination">21</a>
+    
+        <a href="/page/22/" class="label-pagination">22</a>
+    
+        <a href="/page/23/" class="label-pagination">23</a>
+    
+        <a href="/page/24/" class="label-pagination">24</a>
+    
+        <a href="/page/25/" class="label-pagination">25</a>
+    
+        <a href="/page/26/" class="label-pagination">26</a>
+    
+        <a href="/page/27/" class="label-pagination">27</a>
+    
+        <a href="/page/28/" class="label-pagination">28</a>
+    
+        <a href="/page/29/" class="label-pagination">29</a>
+    
+        <a href="/page/30/" class="label-pagination">30</a>
+    
+        <a href="/page/31/" class="label-pagination">31</a>
+    
+        <a href="/page/32/" class="label-pagination">32</a>
+    
+        <a href="/page/33/" class="label-pagination">33</a>
+    
+        <a href="/page/34/" class="label-pagination">34</a>
+    
+        <a href="/page/35/" class="label-pagination">35</a>
+    
+        <a href="/page/36/" class="label-pagination">36</a>
+    
+        <a href="/page/37/" class="label-pagination">37</a>
+    
+        <a href="/page/38/" class="label-pagination">38</a>
+    
+        <a href="/page/39/" class="label-pagination">39</a>
+    
+        <a href="/page/40/" class="label-pagination">40</a>
+    
+        <a href="/page/41/" class="label-pagination">41</a>
+    
+        <a href="/page/42/" class="label-pagination">42</a>
+    
+        <a href="/page/43/" class="label-pagination">43</a>
+    
+        <a href="/page/44/" class="label-pagination">44</a>
+    
+        <a href="/page/45/" class="label-pagination">45</a>
+    
+        <a href="/page/46/" class="label-pagination">46</a>
+    
+        <a href="/page/47/" class="label-pagination">47</a>
+    
+        <a href="/page/48/" class="label-pagination">48</a>
+    
+        <a href="/page/49/" class="label-pagination">49</a>
+    
+        <a href="/page/50/" class="label-pagination">50</a>
+    
+        <a href="/page/51/" class="label-pagination">51</a>
+    
+        <a href="/page/52/" class="label-pagination">52</a>
+    
+        <a href="/page/53/" class="label-pagination">53</a>
+    
+        <a href="/page/54/" class="label-pagination">54</a>
+    
+        <a href="/page/55/" class="label-pagination">55</a>
+    
+        <a href="/page/56/" class="label-pagination">56</a>
+    
+        <a href="/page/57/" class="label-pagination">57</a>
+    
+        <a href="/page/58/" class="label-pagination">58</a>
+    
+        <a href="/page/59/" class="label-pagination">59</a>
+    
+        <a href="/page/60/" class="label-pagination">60</a>
+    
+        <a href="/page/61/" class="label-pagination">61</a>
+    
+        <a href="/page/62/" class="label-pagination">62</a>
+    
+        <a href="/page/63/" class="label-pagination">63</a>
+    
+        <a href="/page/64/" class="label-pagination">64</a>
+    
+        <a href="/page/65/" class="label-pagination">65</a>
+    
+        <a href="/page/66/" class="label-pagination">66</a>
+    
+        <a href="/page/67/" class="label-pagination">67</a>
+    
+        <a href="/page/68/" class="label-pagination">68</a>
+    
+        <a href="/page/69/" class="label-pagination">69</a>
+    
+        <a href="/page/70/" class="label-pagination">70</a>
+    
+        <a href="/page/71/" class="label-pagination">71</a>
+    
+        <a href="/page/72/" class="label-pagination">72</a>
+    
+        <a href="/page/73/" class="label-pagination">73</a>
+    
+        <a href="/page/74/" class="label-pagination">74</a>
+    
+        <a href="/page/75/" class="label-pagination">75</a>
+    
+        <a href="/page/76/" class="label-pagination">76</a>
+    
+        <a href="/page/77/" class="label-pagination">77</a>
+    
+        <a href="/page/78/" class="label-pagination">78</a>
+    
+        <a href="/page/79/" class="label-pagination">79</a>
+    
+        <a href="/page/80/" class="label-pagination">80</a>
+    
+        <a href="/page/81/" class="label-pagination">81</a>
+    
+        <a href="/page/82/" class="label-pagination">82</a>
+    
+        <a href="/page/83/" class="label-pagination">83</a>
+    
+        <a href="/page/84/" class="label-pagination">84</a>
+    
+        <a href="/page/85/" class="label-pagination">85</a>
+    
+        <a href="/page/86/" class="label-pagination">86</a>
+    
+        <a href="/page/87/" class="label-pagination">87</a>
+    
+        <a href="/page/88/" class="label-pagination">88</a>
+    
+        <a href="/page/89/" class="label-pagination">89</a>
+    
+        <a href="/page/90/" class="label-pagination">90</a>
+    
+        <a href="/page/91/" class="label-pagination">91</a>
+    
+
+    
+    
+        <a href="/page/42/" aria-label="Next" class="label-pagination"><i class="fa fa-angle-right fa-lg"></i></a>
+    
+
+    
+    
+        <a href="/page/91/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
+    
+
+</div>
+
+  
+
+  </div>
+
+  
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+    
+ </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+   

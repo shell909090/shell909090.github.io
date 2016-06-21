@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>有一种错误，叫做太常见了以至于视而不见</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         有一种错误，叫做太常见了以至于视而不见 
+    </h1>
+    <p class="meta">Feb 20, 2012
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2098/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>最近整XEN，出了一个奇怪的错误。 <div><span style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif">ERROR (SrvDaemon:355) Exception starting xend </span><span style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif">((22, &#39;Invalid argument&#39;)) </span><br style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif"></p>
+
+<p><span style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif">Traceback (most recent call last): </span><br style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif"> <span style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif">   File &quot;/usr/lib/xen-4.0/lib/python/xen/xend/server/SrvDaemon.py&quot;, line </span><br style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif"></p>
+
+<p><span style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif">335, in run </span><br style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif"> <span style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif">     xinfo = xc.xeninfo() </span><br style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif"> <span style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif">Error: (22, &#39;Invalid argument&#39;) </span></div><div><span style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif">    根据网络上的内容，首先排除没有xen模块——有了，然后是/proc/xen目录是否mount——有了，然后是/sys/hypervisor/下面的一堆属性——有了，然后是版本——不对。xen-utils-4.1是4.1.2版本，而xen-tools是4.2版本。不过xen-utils并不依赖xen-tools，没有后者应当也可以运行这些玩意。hypervisor和xen-utils的版本是一致的。那问题是什么？</span></div></p>
+
+<p><div><span style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif">    出错的文件是</span><font face="Verdana, Geneva, Helvetica, Arial, sans-serif">/usr/lib/xen-4.1/lib/python/xen/lowlevel/xc.so里面发生的异常，下载xen的源码检查，这个函数主要是检查属性。属性检查会出什么错？</font></div></p>
+
+<p><div><font face="Verdana, Geneva, Helvetica, Arial, sans-serif">    正在一头雾水的时候，突然想起一个问题。我安装的是xen-hypervisor-4.1-amd64，因为kernel是linux-image-3.1.0-1-amd64。然而，我这个系统有一个非常大的特殊——在64位CPU上运行的32位系统。因此，实际上xen-utils是32位的。行了行了，下面的事情用膝盖都能想到。</font></div></p>
+
+<p><div><font face="Verdana, Geneva, Helvetica, Arial, sans-serif">    叹气，这世界上，真的有种错误，叫做太常见了以至于视而不见。不要认为自己不会犯。</font></div></p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Feb 20, 2012</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/kernel">kernel</a>  <a class="category" href="https://shell909090.github.io/tags/linux">linux</a>  <a class="category" href="https://shell909090.github.io/tags/vm">vm</a>  <a class="category" href="https://shell909090.github.io/tags/xen">xen</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/2096/" title="最新一期的freenas测试报告">最新一期的freenas测试报告</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/2100/" title="从黑客到极客——hacker文化的演化">从黑客到极客——hacker文化的演化</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

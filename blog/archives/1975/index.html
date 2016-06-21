@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>几个模板系统的性能对比</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         几个模板系统的性能对比 
+    </h1>
+    <p class="meta">Nov 9, 2011
+         - 2 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1975/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>对比目标，jinja2，cheetah，mako，webpy，bottle，tornado，django的性能。 <div>    方法，随机生成一个二维数组，第一列是自增数据，第二列是长度为100的随机字符串，然后生成html，比较一次生成的时间。</div><div>    说明，如果模板有编译缓存，打开。有其他方法加速，打开。生成缓存，关闭。不计算随机数据生成时间，一次生成后一直使用。</div><div>    以下是文件有效内容，没用的都略去了。最后的顺序是因为我根据结果整理了一下调用次序。</div><div>&mdash;&ndash;testcheetah.tmpl&mdash;&ndash;</div></p>
+
+<p><div><div>    &lt;table&gt;</div> <div>      #for $i in $l</div><div>      &lt;tr&gt;</div><div><span style="white-space:pre-wrap">    </span>&lt;td&gt;$i[0]&lt;/td&gt;</div><div><span style="white-space:pre-wrap"> </span>&lt;td&gt;$i[1]&lt;/td&gt;</div> <div>      &lt;/tr&gt;</div><div>      #end for</div><div>    &lt;/table&gt;</div></div><div>&mdash;&ndash;testdjango.html&mdash;&ndash;</div><div><div>    &lt;table&gt;</div><div>      {% for i in l %}</div><div>      &lt;tr&gt;</div><div></p>
+
+<p><span style="white-space:pre-wrap"> </span>&lt;td&gt;{{ i.0 }}&lt;/td&gt;</div><div><span style="white-space:pre-wrap"> </span>&lt;td&gt;{{ i.1 }}&lt;/td&gt;</div><div>      &lt;/tr&gt;</div> <div>      {% endfor %}</div><div>    &lt;/table&gt;</div></div><div>&mdash;&ndash;testjinja2.html&mdash;&ndash;</div><div><div>    &lt;table&gt;</div><div>      {% for i in l %}</div><div>      &lt;tr&gt;</div><div><span style="white-space:pre-wrap">   </span>&lt;td&gt;{{ i[0] }}&lt;/td&gt;</div></p>
+
+<div><span style="white-space:pre-wrap">    </span>&lt;td&gt;{{ i[1] }}&lt;/td&gt;</div><div>      &lt;/tr&gt;</div><div>      {% endfor %}</div><div>    &lt;/table&gt;</div></div><div>-----testmako.html-----</div> <div><div>    &lt;table&gt;</div><div>      % for i in l:</div><div>      &lt;tr&gt;</div><div><span style="white-space:pre-wrap">   </span>&lt;td&gt;${i[0]}&lt;/td&gt;</div><div><span style="white-space:pre-wrap">   </span>&lt;td&gt;${i[1]}&lt;/td&gt;</div>
+
+<div>      &lt;/tr&gt;</div><div>      % endfor</div><div>    &lt;/table&gt;</div></div><div>-----testwebpy.html-----</div><div>$def with(l)</div><div><div>    &lt;table&gt;</div><div>      $for i in l:</div><div>      &lt;tr&gt;</div>
+
+<div><span style="white-space:pre-wrap">    </span>&lt;td&gt;$i[0]&lt;/td&gt;</div><div><span style="white-space:pre-wrap"> </span>&lt;td&gt;$i[1]&lt;/td&gt;</div><div>      &lt;/tr&gt;</div> <div>    &lt;/table&gt;</div></div><div>-----tmpl.py-----</div><div><div>#!/usr/bin/python</div><div># -*- coding: utf-8 -*-</div><div>&#39;&#39;&#39;</div><div>@date: 2011-11-03</div><div>@author: shell.xu</div><div>&#39;&#39;&#39;</div>
+
+<div>import os, random, string, timeit</div><div><br /></div><div>testdata = []</div><div>def init_testdata():</div><div>    for i in xrange(1000):</div><div>        s = &#39;&#39;.join([random.choice(string.letters) for j in xrange(100)])</div>
+
+<div>        testdata.append((i, s))</div><div>init_testdata()</div><div><br /></div><div># --------webpy--------</div><div>import web</div><div>render = web.template.render(&#39;./&#39;)</div><div>def render_webpy():</div>
+
+<div>    return render.testwebpy(testdata)</div><div><br /></div><div># --------jinja2--------</div><div>from jinja2 import Environment, FileSystemLoader, FileSystemBytecodeCache</div><div>env = Environment(loader = FileSystemLoader(&#39;./&#39;),</div>
+
+<div>                  bytecode_cache = FileSystemBytecodeCache(&#39;./&#39;, &#39;%s.cache&#39;))</div><div>tmpl_jinja = env.get_template(&#39;testjinja2.html&#39;)</div><div>def render_jinja2():</div><div>    return tmpl_jinja.render(l = testdata)</div>
+
+<div><br /></div><div># --------cheetah--------</div><div>from testcheetah import testcheetah</div><div>def render_cheetah():</div><div>    return testcheetah(searchList = [{&#39;l&#39;: testdata},])</div><div><br /></div><div>
+
+
+
+# --------mako--------</div><div>from mako.template import Template as makotmpl</div><div>tmpl_mako = makotmpl(filename = &#39;./testmako.html&#39;)</div><div>def render_mako():</div><div>    return tmpl_mako.render(l = testdata)</div>
+
+<div><br /></div><div># --------django--------</div><div>from django.template import Template as djangotmpl</div><div>from django.template import Context</div><div>from django.conf import settings</div><div>settings.configure()</div>
+
+<div>with open(&#39;testdjango.html&#39;, &#39;r&#39;) as fi: tmpl_django = djangotmpl(fi.read())</div><div>def render_django():</div><div>    return tmpl_django.render(Context({&#39;l&#39;: testdata}))</div><div><br /></div>
+
+<p><div><div># &mdash;&mdash;&ndash;bottle&mdash;&mdash;&ndash;</div><div>from bottle import SimpleTemplate</div><div>with open(&#39;testbottle.html&#39;, &#39;r&#39;) as fi: tmpl_bottle = SimpleTemplate(fi.read())</div><div>def render_bottle():</div></p>
+
+<p><div>    return tmpl_bottle.render(l = testdata)</div></div><div><br /></div><div><div># &mdash;&mdash;&ndash;tornado&mdash;&mdash;&ndash;</div><div>from tornado import template as tornado_tmpl</div><div>with open(&#39;testtornado.html&#39;, &#39;r&#39;) as fi: tmpl_tornado = tornado_tmpl.Template(fi.read())</div></p>
+
+<p><div>def render_tornado():</div><div>    return tmpl_tornado.generate(l = testdata)</div></div><div><br /></div> <div>def testfunc(funcname, times = 10000):</div><div>    from timeit import Timer</div><div>    t = Timer(&quot;%s()&quot; % funcname, &quot;from <strong>main</strong> import *&quot;)</div><div>    print &#39;funcname: %s used %f&#39; % (funcname, t.timeit(times) / times)</div></p>
+
+<div><br /></div><div>if __name__ == &#39;__main__&#39;:</div><div>    testfunc(&#39;render_django&#39;, times = 1000)</div><div>    testfunc(&#39;render_webpy&#39;, times = 1000)</div><div>    testfunc(&#39;render_bottle&#39;, times = 10000)</div>
+
+<p><div><div>    testfunc(&#39;render_tornado&#39;, times = 10000)</div></div><div>    testfunc(&#39;render_jinja2&#39;, times = 10000)</div> <div>    testfunc(&#39;render_mako&#39;, times = 10000)</div><div>    testfunc(&#39;render_cheetah&#39;, times = 100000)</div></div><div><br /></div><div>    以下是运行结果。</div><div><div>funcname: render_django used 0.071762</div></p>
+
+<p></div><div><div>funcname: render_webpy used 0.015729</div><div>funcname: render_bottle used 0.008752</div><div>funcname: render_tornado used 0.005675</div><div>funcname: render_jinja2 used 0.002073</div><div>funcname: render_mako used 0.001627</div></p>
+
+<p><div>funcname: render_cheetah used 0.000014</div></div><div>    点评一下吧。django就是个渣，不多废话了。webpy的代码很简洁，可惜速度太慢了。bottle看起来快一点，不过也没有多出彩。tornado本身速度很快，不过模板——也就是如此吧。真的值得一用的，只有jinja2，mako，cheetah三个。速度都小于了5ms，单核每秒可以生成200个页面，16核机器上大概就能跑到3000req/s，性能比较高。jinja2的速度比较折衷，配置灵活，语法类似django是他的优点。而且不得不说，jinja2的文档真的很不错。mako的速度比jinja2略快，模板写起来也很舒服。文档略凌乱，可以接受。cheetah的速度——已经不像是模板了好吧。</div></p>
+
+<p><div>    这个东西是使用编译器将模板编译为py文件，然后再通过python编译为pyc，从而获得如此高的性能的。如果python可以执行加速（例如psyco, pypy什么的），相信速度还要快。但是不得不说，语法实在是太严格了一点。我在for前面多了一个空格，居然直接报错，而且还是一个无关错误。找起问题来相当困难。不过，对于习惯了python格式的格式控来说，cheetah还是有相当价值的。cheetah加速后的速度，单核上每秒可以生成7W多个页面，16核的普通服务器，每秒可以承载100W req/s。看在效率的份上，我可以原谅他大多数的问题。</div></p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Nov 9, 2011</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/program">program</a>  <a class="category" href="https://shell909090.github.io/tags/python">python</a>  <a class="category" href="https://shell909090.github.io/tags/template">template</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/1973/" title="openwrt配置——arptables配置">openwrt配置——arptables配置</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/1976/" title="openwrt配置——自动重启openvpn">openwrt配置——自动重启openvpn</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

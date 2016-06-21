@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>Shell&#39;s Home</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  <link href="https://shell909090.github.io/index.xml" rel="alternate" type="application/rss+xml" title="Shell&#39;s Home" />
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+ <div id="content">
+  <div class="blog-index">
+    
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/2200/">debian wheezy下以uwsgi安装graphite</a>
+    </h1>
+    <p class="meta">Jul 9, 2012
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2200/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p># abstract # graphite是一个python写的性能监控系统。这个系统是由多个分离的部分组成的。 * graphite-web: 由django写的web界面系统。* carbon: 数据收集的守护进程。* whisper: 一种python写的数据库，类似rrd，便于大量的性能日志数据收集和处理。上两个组件会调用这个库。 * collectd: 数据收集守护进程，向carbon中喂数据的数据源。 另外，有一点黑色幽默的就是，graphite的意思是石墨，是炭(carbon)的一种同素异形体。因此在graphite项目中，多次出现carbon这个名字。当然，另两个同素异形体是钻石(diamond)和足球烯(footballene)，你就暂时别指望看到他们的身影了。 另一个用python写的，以元素命名的著名软件是mercurial。化学元素中的汞，俗称水银，符号hg。因此mercurial的命令行简写才是hg。 以上几个的结构大概是这样的： collectd(source) -network-&gt; carbon -writing-&gt; whisper database -reading-&gt; graphite-web 下文描述了在debian wheezy下，以nginx+uwsgi模式安装graphite的过程。之所以用这个模式，是因为我的大部分系统都是python写的，同样安装在uwsgi下面。一事不烦二主。 # carbon # carbon有对应的debian包，可以很简单的安装。 sudo aptitude install graphite-carbon 默认的数据端口是2003，默认的数据路径是/var/lib/graphite/，这个在下文需要用到。 # graphite # ## virtual ## graphite有部分需要安装到系统中，因此最好用virtualenv进行安装。 cd /var/web/ sudo aptitude install python-virtualenv virtualenv --system-site-packages graphite 我假定你的安装路径是/var/web/graphite，这个在下面要反复用到。 ## install ## 在安装路径下，执行以下内容 source bin/activite pip install graphite-web --install-option=&quot;--prefix=/var/web/graphite&quot; --install-option=&quot;--install-lib=/var/web/graphite/webapp&quot; 注意，/var/web/graphite需要根据上面的设定自行修改，webapp是你的django基础路径。 ## configure ## 在/var/web/graphite/webapp/graphite下面，执行以下内容 cp local_settings.py.example local_settings.py 然后编辑local_settings.py GRAPHITE_ROOT = &#39;/var/web/graphite&#39; WHISPER_DIR = &#39;/var/lib/graphite/whisper&#39; DATABASES = ...</p>
+
+          
+              <footer>
+                  <a href="https://shell909090.github.io/blog/archives/2200/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/2198/">一次韵达投诉经历</a>
+    </h1>
+    <p class="meta">Jul 2, 2012
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2198/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>最近婚礼，碰到个挺憋屈的事情。 婚礼不是要印请贴么？老妈说亲戚都是远道来的，请贴印的高级点，把照片印上去。再把路线什么的也打一张纸，一起邮过去。我在淘宝上订购了一家婚礼请贴公司的服务，结果邮寄过来一看，货倒是对版的，但是字太小，颜色还有色偏，偏红，纸质也不算高档。没办法，1.4元就这个质量，我也没功夫去投诉什么的。直接找了另一家，好像叫上海络客，老妈跑去现场沟通印刷的。4元一份，50份，总价200。 我找韵达给邮了过去，5.21号发件，过程还挺顺的，没出别的事情。第二天，快递员给我打电话，说对方不在。我说不在阿，不好意思，您能回头送么？他说已经放门卫那里了，让我通知对方。我心说你怎么随随便便就放那里了。但是放都放了，还是尽快给老姐打电话吧。 电话到了，张姐也知道了。事情看起来到此为止咯。不，事情才刚刚开始。 我6.10号接到老妈电话，说老爹那里没收到快递。我说张姐不是说知道了么。她说，张姐去找了，没找到。我说都半个月了，才说阿。老妈说，她联系你爸的事情忙（我爸还有别的事情请她帮忙），把这个给忘了。 我X，这下篓子大了。请人过来，连请柬都没一张，像话不像话？而且还有线路图，证婚人证词，全丢了。 没办法，还有6天就是婚礼了。老妈跑过即加急补印了一套，然后重新打线路图，还有证词，再发过去。全家总动员，一天内搞定了所有材料，结果在快递上又出了问题。 韵达是不敢用了，我找的联邦。联邦总机没说啥，快递员告诉我，请柬算文件，按照邮政法不得快递。我想没办法阿，找EMS。和EMS的快递员扯淡半天，发现：他们的件都是三天内达，到时候人都在上海了。隔日达的限于特定区域，例如长三角。但是张家港又不在这个业务的覆盖范围之内。我说我加急费用行不行。他们回答我：抱歉，没这个业务，加费用也不行。我一想没办法，用毛巾包起请柬，打给联邦说我邮一条毛巾过去。联邦的业务员说，好，你别包起来，我要检查的。。。 我X，这TM扯淡劲的？咋办？ 和老爹打了半天电话，听他念了半天，最后决定：他去和所有亲戚道歉，到了上海再给人家请柬。 结果婚礼那天，没线路图，四辆车（分批次走的）里面有两辆走偏。老爹车上有GPS不会用，开去了外高桥。老姐车上的GPS数据不够新，开到浦东没下出口，一路开去了浦西再开回来。 事情闹这么大，怎么也得有个说法对吧。这里面有两个问题，一个是张姐忘记和我说了，一个是韵达丢件。张姐那里是我们有求于人没办法。韵达丢件是实打实的，所以我打给韵达总部去投诉，并且看了一下单子上的快递条件。未保价的，按照运费5倍赔偿。 请柬大概10张，一张就是4元，总价40。还有各项其他材料，小礼品。加起来大概是60朝上。我报了个80。实话说损失远不止这点。光是开错去外高桥的车的油钱就多少？加上加急印刷，我接近两天的时间浪费，总数合计可能要破千。更不提这件事情麻烦而且丢面子。但是运费只有6元，最高只能赔偿30。好吧，既然是合同，我无话可说。而且主要责任确实不是韵达的，所以我就打算弄一个投诉，拿这点小钱，小惩以戒。 投诉上去，隔天（大概13号）有人打给我，说是上海网点的人。去找了，但是这么久了，找不到了。我说那怎么办。她说你想怎么办。我说这个当然是你们说怎么办。她还是问我怎么办。我说按照你们标准来吧。我估计是她被人搞的怕了，听到这个松了口气，说明天我给你带去。 结果第二天她没来，倒是有个号码疯狂的打我手机。我的手机婚礼后就被各种人狂打，估计是婚礼中方方面面的人都拿到了我的个人资料。所以我开了防火墙，就一直没接到。第二天下午（大概是6.18号）接起来，是那个送件的快递员。他打过来要我别投诉了，说可以按照东西价格赔偿。 我当场就发飙了。东西才多少钱？后果值多少钱？我让你赔个精神损失费10000你赔么？我邮递个东西，就给你们随随便便的放门卫那里，还很不耐烦的让我通知对方去拿。放门卫是你的选择，选择了就要承担后果。你要是摸着良心说你尽到责任了，我当场就打电话去取消投诉。 结果他答不出来，但是还是吭哧吭哧的道歉。刚刚做这个不容易拉。我说，这和我没关系。我投诉的是韵达，要求赔偿的也是韵达。你的处罚是韵达的决定。因为你不容易要求我解除对韵达的投诉是没有道理的。你要是真不容易，找你们领导求情阿，真不容易假不容易他最清楚。 说完我就挂了。 结果没两天，我姐给我打电话，说小伙子跑她家里去了。这下我就更来气了。事情本来就是你自己问题，最多是你和韵达的问题，你老骚扰委托人算是怎么回事呢？我坚决的没撤销投诉，隔手又打给韵达总部，投诉快递员骚扰。 总部的接线员很无奈的道歉，我们会加强对快递员的管理。我说你们处理问题的时候，左一个电话右一个电话就算了。现在快递员都跑到家里去了，我可以不可以投诉他骚扰。接线员犹豫了一下，说可以，但是这样就会加重对对方的处罚，快递员也不是很容易，问我是不是要投诉。我想想，人家也挺不容易，就和接线员实话实说了。你想法联系他，让他别再一趟趟的求情了。我再知道这种事情就肯定投诉了。 好，这个JP快递员的事情暂时告一段落。我们说回上海网点。不知道是韵达上海网点的执行会导致快递员受罚还是怎么回事，我12号投诉的，13号接到电话说隔天赔偿。到19号一点动静都没有。没办法，再打去韵达那里投诉。这次投诉他们赔偿协议不执行。然后韵达上海网点的人终于来了，说今天不过去了，三天内赔付到位。我说三个工作日吧，下面三天放假，我都不在。他们说，周一保证送过去。我说好吧，事情总算完了。 就快递一份东西，加起来耗费两天时间，全家总动员，还打了三个投诉电话，才解决问题。我细数一下里面的问题和教训，给大家做个参考，也希望知道的朋友解答一下我的问题：1. 按照邮政法，快递是否可以邮递文件？请贴是否算文件？如果可以，那么联邦快递有问题。如果不行，那么韵达有问题。无论如何，我可能还得多一个投诉。2. 如果快递不能送文件，这就是彻头彻尾的垄断腐败。3. 个人资料泄漏阿，结个婚，最近我的电话都快爆了。幸好早改成接听免费了。我听到广告就说，您大声点，我听不大清。然后放一边—— 4. 如果东西比较重要，一定要保价，而且要按照结果保价。也不贵，韵达是3%收取的。如果考虑到丢件，当时我保价100，也不过是3元而已。快递总价不过是6元涨到9元，但是基本可以保证东西不丢了。如果真考虑这东西比较重要，我会走联邦（如果可以的话），而且大概会足额保价。5. 韵达对网点和快递员的控制和监管很差。网点有没有和我达成协议，总部不知道。网点赔偿没赔偿，总部不知道。快递员出了问题，还可以和委托人讨价还价。这根本是淘宝的加盟模式。 6. 对快递员的处理只有赔钱，完全没有培训过快递员，什么情况下可以放门卫。如果他是先问我，是否可以放门卫，我说可以。那我这个投诉电话也不打了。7. 谢天谢地的是，总算投诉是有效的，投诉后对方是有反应的。如果我投诉了，责任方完全没半点反应。这家快递可以从我的联系人中除名了。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/2196/">预言和伪预言的几项判定</a>
+    </h1>
+    <p class="meta">Jun 25, 2012
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2196/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>人类很信算命，世界各地各种预言层出不穷。我碰到过真的预言，也碰到过假的。当然，真的预言并不代表我相信对方的宗教，或者其他的什么。只是说，对方的预言是有效和正确的。而假的预言，不消说，就是指预测是无效或者错误的。有很多预言披着各种外皮，让你觉得像真的一样。所以我提出几个观点，来区分两者。1. 预言的结果总是增加信息量。这是预言判定的大纲。如果一个预言没有增加信息量，那么就不是一个有效预言。2. 预言是对未发生事情的断言。预言的主体事件必须清晰明确。反例如：明天下午，你身上会发生一些事情。废话，只要我醒着肯定会发生事情，这种预言无论对错，是无效且无用的。 3. 预言不得以隐喻，暗示方式说出，解释上亦不得附会。例如：推背图，爱怎么解释怎么解释。4. 预言的时间和地点可有可无，但是如果有则必须符合事实。如果时间，地点，事情细节不完全吻合，可以称为“带误差的命中”。5. 预言必须是可验证的，不可验证的事情不叫预言。反例如：下辈子你会投胎成什么。。。这怎么验证呢？6. 预言不可以是自实现的。反例如：很有名的股市预测者预测股市涨跌，这属于“自我实现的预言”。这种情况很特殊，因为预言本身是有效的，而且是会实现的。但是不是以某种神秘的方式，而是可知的心理学。 7. 预言的总体必须是常人无法推测的小概率事件。反例如：你一个月内将会吃到一次米饭。废话，这TM不叫预言，叫2B。8. 对预言者的分析，必须注意“多次预言”，或者隐性的&quot;多次预言“。反例如：找1000个人，然后分别为他们预测股市。你只要对一半人预测涨，一半预测跌。理论上说，应当有一个人会连续预测中10次。这是符合上述规则的预言，但是是无效的。类似手法经常用于短信诈骗，群发短信预测股市，对预测正确的再进行预测，最后就有一批人会觉得预测者很神奇，从而容易轻信对方要求代为理财的言语。 9. 因此，承8。对不同人，预言同一事物，必须做出一样预测。10. 承9，如果你不能确定预言者散布预言的范围，以及范围内是否都听到同样的预言，那就是一个无效的预言。11. 同样承8。在预言帝，章鱼哥之类的事务面前，你要考虑总数有多少类似的预言者在进行预言，其中有一个人做出了全部正确预测是不是一件很奇怪的事情。当然，这并不否认预言者可能是真的具备预知能力。只是以统计而言，无法区分是真的具备预言能力还是仅仅是统计上的胜利。 12. 承1, 8，判定预言的终极方式，是将预言者对于某一事务的所有预言进行收集，计算其正确率。如果这个正确率高于热噪声选择的平均正确率向上修正三倍方差，那么这个预言者就是有效预言者。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/2194/">快速深入一门语言的几个问题</a>
+    </h1>
+    <p class="meta">Jun 15, 2012
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2194/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>劳资明天要结婚了，今天婚前最后一个blog。 1.hello, world 目标：屏幕上打印出hello, world。 原因：不解释。进阶：当命令行给与不同参数的时候，打印hello, 名字。给与开关的时候，打印hello, 123。 2.正则提取 目标：写一个正则表达式(或者类似的东西)，从一段网页源码中找到某个标签的内容，去掉前后空格，显示。 原因：测试字符串处理能力。 进阶：支持正则扩展 3.扫描排重 目标：将某个目录和子目录下的所有文件扫描，排除重复的文件。 原因：测试文件系统操作能力。进阶：多线程处理，注意吞吐颠簸。 4.做24点自动计算程序 目标：写一个程序，能够计算24点。要求能够自定义扩展算符。 原因：检查深度优先搜索，栈，结构设计，抽象处理能力等等。进阶：做并发处理。有数种语言可能无法实现并发，或并发实现难度大，不美观，例如python。 5.做一个计算器 目标：做一个计算器，要求能计算1+2*3=7，并支持()。 原因：表达式解析和处理需要用到程序的方方面面，字符串处理等等。进阶：做一个本语言的eval函数出来。 7.抓网页 目标：实现一个服务，定期下载符合规则的一批网页，解析，获得格式化的数据，并存入数据库。原因：测试系统开发能力，基础网络库，字符串处理能力。进阶：分布化抓取。 8.留言板 目标：设计一个留言板，将所有人提交的话保存起来，能一并展示。提交不需验证，展示不需分页。 原因：测试网络服务能力，数据库支持和多国语言支持。 进阶：防止XSS攻击。 9.异步大并发服务器目标：设计一个异步http服务器，能对请求做出响应，添加，删除，修改数据库中的数据。不得使用现有的http框架和容器。原因：集成性测试进阶：不使用现有数据库，自己写一个。。。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/2192/">multiseat简说</a>
+    </h1>
+    <p class="meta">Jun 11, 2012
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2192/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p># 简述 # 这篇文章说的是如何实现multiseat，必须的条件和步骤等等。 首先简介一下multiseat。multiseat又叫做多座电脑，和瘦客户端(thinclient)一样，是一种降低电脑平均使用成本的方案。基本思路是，买一台稍好的物理机，然后买两个显示器和键盘鼠标，让两个(或者多个)人同时使用一台电脑。和瘦客户端一样，multiseat一般只用于对电脑计算能力要求不高的场合，打游戏的一般就别考虑了。和瘦客户端不同的是，multiseat的处理都在近程，所以在体验上会略好一些，部署时也不依赖于中心化网络。不过这些年网络设备都在改善，相差也不多。 # 硬件解说 # ## 显示系统 ## 显示系统通常分为显卡和显示器两部分。multiseat至少需要两个显示器，但是两台显示器输出有多种情况。1. 单卡单核心双输出。一块显卡，一块核心，pci上就一个物理设备，但是可以输出到两台显示器上。例如笔记本，一个输出到本子上，一个输出到投影上。大部分机器都是这种情况。 2. 单卡双核心单输出。又叫做单卡双核心交火。交火是一个ati术语，在nv那里叫做sli。是指用两块显卡为同一个显示进行加速，达到比一块显卡更快的情况。这一般是顶级显卡。3. 单卡双核心双输出。在单卡双核心单输出的卡上，一般都有两个输出。如果接入两个设备，那就是双核心双输出了。4. 双卡双核心单输出。又叫做双卡交火，在pci上有两个物理设备。同样是为了游戏而生的电脑。 5. 双卡双核心双输出，两个pci-e。在上面的基础上，多接一台显示器。6. 双卡双核心双输出，一个pci。很少见，一般都是图形工作站。之所以在这个问题上说这么细，是因为多X方案必须工作在两个以上核心上，每个核心分别输出一路。也就是说，上文中的3, 5, 6三种情况。我们最常见的1是不可以用多X方案的。而方案5, 6，是这么分的。一般的显卡都是pci-e的，而一块主板上只有一个pci-e插槽。所以普通主板是配不上两块普通显卡的。也不要考虑板载显卡和外接显卡的问题，卖电脑的说，大部分主板上都做了自动屏蔽。外接显卡一插上去，板载显卡自动屏蔽。 ## 键盘和鼠标 ## multiseat至少两套键盘和鼠标，这是常识。 ## 声音和外设 ## 做的好的multiseat，尤其是搭配硬件卖的商业方案，一般都会做声音和外设隔离。你接上去的u盘不会出现在另一个人的电脑里。不过有些方案的隔离就不是那么完美，有可能只有主座有声音拉，或者是声音不能用拉。或者是自己指定声音输出到哪个设备，然后再抢耳机拉，或者是干脆多装一块声卡拉。这个问题自己留心。 # windows # windows下可以用softxpand[2]或者betwin[3]，俗称拖机软件，不过两者的破解都不是很好找，尤其是win7可用的。windows下拖机的后果可能是，D3D加速有问题，两个人同时用的时候CPU使用率升高，其中一个人没有声音等。具体情况你设法下到试试再说。 # linux # 以下linux，没特别说明的话都是指debian，默认的发行版本是wheezy。 ## 多X方案 ## 所谓多X，就是开启两个以上的X，每个显卡一个X。这样形成的multiseat保留了原生的一切能力，包括3D加速。只要你原生显卡支持，都可以做到。多X方案的第一个显卡可以看到console，第二个只能看到图形界面，不能通过C-M-F1切换到console。 但是多X的条件也非常严格，上面列的情况1是没戏的。大部分人的电脑都被划到了这种情况。即使你有幸，弄到了3, 5, 6三种情况中的一个，也要注意，两块显卡必须是同一厂家，最好是同一型号。这点尤其对pci显卡更需要注意，pci显卡和pci-e显卡显然不能是同一型号，但是*必须是同一厂家*。 这个方案最鸡肋的地方在于，3, 5两种情况只有在针对游戏特别配置的电脑上才有效，而这种电脑本身是非常昂贵的。这和降低系统成本的初衷相违背。 ## Xephyr方案 ## Xephry是一个X的模块，他的目的是使用内存作为X的输出设备。因此Xephry做出来的X可以将显示内容再显示到其他地方，例如作为其他X中的一个窗口出现，等等。 利用这个特点来做multiseat的思路基本是这样的。首先我们将两个显示器合并成一个虚桌面，如同我们常规做的那样，左边的窗口拖一下可以到右边。然后再开两个Xephry，每个里面包含一个标准的X，包括display manager，session，window manager等等。最后每个X分别用一套键盘/鼠标。这样出现的效果和multiseat是完全一样的。 这个方案的优点是，支持众多的机器，尤其是我们最常见的1情况。但是，其缺点和优点一样明显。由于我们操作的是Xephry，而不是实际的显卡，因此会缺少一些X扩展，例如3D。而且相比原生设备，Xephry方案会有少量延迟。贝壳做过实际测量，至少在播放普通视频的时候，60Hz的刷新率没什么问题，播放无卡顿。 这个方案有一个封装好的实现，帮你做了整个过程。(不过我没有测试)叫做MDM[4]。 # 虚拟化拖机 # 无论是windows还是linux，都有一个不算方案的方案。安装一套vmware，然后将vmware在其中一个显示器全屏，再把其中一个鼠标和键盘指定给这台虚拟机。这样也可以做到multiseat的效果。使用Virtualbox/Vitrual PC也是完全一样的原理。 vmware中原生是不可以将鼠标/键盘指定给虚拟机的。关于这点，文档[6]给出了完整的解决方案。在.vmx中加入下面一行即可。 &gt; usb.generic.allowHID = &quot;TRUE&quot; # 参考 # 1.</p>
+
+          
+              <footer>
+                  <a href="https://shell909090.github.io/blog/archives/2192/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/2190/">从术前和术后红包说起</a>
+    </h1>
+    <p class="meta">Jun 7, 2012
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2190/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>六六的《心术》里面曾经说到，医生比较喜欢术后红包。因为术后红包心理负担小，只是患者表达感谢而已。 听上去是有道理的，毕竟我们还是可以相信，大部分人在其他条件相同的情况下，更倾向于选择不作恶。或者说，肚子吃饱的情况下，人会选择让自己的心里好受点。从另一方面说，术后红包毕竟风险小很多。术前红包是有风险的，如果手术失败，家属可能没法和医生打手术官司，但是完全可以打红包官司。即使不打官司，给过红包的家庭比不给的家庭更容易闹事。然而术后，好坏都定了，好的就收，不好就算。 从患者角度说，听上去也很不错。做好了有红包，做不好就算。很符合我们物质激励的特性。名气大的，成功率高的医生，自然红包拿的多。而名气小的，成功率低的，则红包拿的少。这其实是一种变相的小费制度。如果把医生的工资理解为基础工资，红包理解为小费。那么要拿红包就必须有足够的成功率，所以我们预期得到的是越来越好的服务。 为什么不行？ 因为手术做都做好了，谁会给红包阿，同志。 住个医院都贵的要死，一个手术下来几万没了。这是一个家庭一年乃至更多年的积蓄阿。要说再去给医生红包，很多时候红包真的就变成红包了——也就100,200图个吉利，很多时候还毛都见不着。 其实术后红包的不风行，正是能证明医生有意图希望收到红包的证据。毕竟医生也是人，9年医科念出来，再熬个10年乃至更长，他也是希望获得与之相称的收入的。什么叫做与之相称呢？医科大学不好念，能进去的学生，同等分数的，读一般学校，熬20年后是什么水平？一年30W都算混的差的。医生不收红包的情况下，一年有30W么？同样，我们再拿专家说。普通医生再熬个20年，一年收入期望多少？你说专家不收红包，一年收入多少？ 不收红包人家心里能平衡么？要收的话，能等术后么？ 所以，即使有风险，也肯定需要收你的红包。如果不缴怎么办？肯定要变着法的杀鸡儆猴，否则这事情就没法干了。 所以，很容易的想到。既然目前术前红包是潮流，那么：1. 医生肯定是希望收红包的。 2. 无论比例多少，肯定有被杀掉的鸡。 但是，我并不是说，红包就一定是糟糕的。如同我刚刚说的那样，如果我们能像交小费一样的缴红包，如果红包的机制透明化，无疑，对双方都是一个很有利的事情。成了才收钱，不成就退掉，只收成本。把医院的收入和手术的直接成功率挂钩起来，这样才能提高医院的水平——当然，贵的事情另当别论。 其实，中国的医改，正在扭曲和纠结的路上越走越远。看病贵，本来是医保的事情，要医院解决。医院是什么地方？同志，医院是营利性社会机构，不是福利院阿。就算你说医院是社会性的，医院应该便宜，医院应该像福利院一样，那也得政府给钱阿。别跟我说医保，医保针对的是个人，你进去看10W，国家报销8W，和医院没什么太大关系的。你有医保，看病确实像福利一样便宜，没有？那就像扒皮一样贵了。 而且医保降低了一些人的价格的同时，又产生了供需问题。你可以看看，天天往医院跑的，有多少是老干部，有多少是民工？往往老干部连破了个伤口都跑趟医院的同时，民工连大病都不敢去医院。这道理想想就能明白。一样的包子，卖你2块，卖他10块，你说天天往这里跑的是谁？实际上，老干部被过度医疗了，而民工则是医疗不足。不得不说，这是对中国“劳动最光荣”的极度讽刺。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/2188/">一个超微模板系统</a>
+    </h1>
+    <p class="meta">Jun 6, 2012
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2188/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>re_tmpl = re.compile(&#39;&lt;%(.*?)%&gt;&#39;)def template(s, d): return re_tmpl.sub(lambda m: str(eval(m.group(1), globals(), d)), s)template(&#39;&lt;%&quot;ddd&quot; if abc else &quot;eee&quot;%&gt;&#39;, {&#39;abc&#39;: 1}) 限制挺多，只能在&lt;%%&gt;中写一行代码，不能多行。不能用跨区块的if for等控制结构。但是对于功能需求不复杂，需要可变性强，又不希望引入额外库的地方还是非常实用的。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/2186/">上网本的发展</a>
+    </h1>
+    <p class="meta">Jun 4, 2012
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2186/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>看了一下，小上网本几年基本没发展。1公斤以下，3小时以上的本，和我三年前买的本比，只从3000降到了2000上下。没有什么更轻更能续航的本。也许是大众不接受这种流行方式，小上网本的核心实质是“操作终端”而非“独立电脑”，使用上网本/ipad/手机，都是需要在家里安放集成服务器的。我下面从几个方面，说一下我对小上网本的想法。 上网本前几年比较流行SSD，今年找不到了。我一直觉得SSD才是上网本的绝配，用微硬盘，倒是容量上去了，可是你需要把需要的数据全存里面么？我照片43G，其他数据15G，带全部的存档。加上影片，大概就上涨到100G。问题是，未归档的数据大概只有3-5G。归档数据带在上网本上干什么呢？你有多大机会用到？你不可能只用一个上网本而不用普通电脑。把90G+的存档数据放上网本不放主机很蠢，两边各放一遍更蠢。我真正需要的，是16G的空间，可以和我的普通电脑工作区同步。从这点而言，苹果的ipad和mbp才是绝配。 我一直认为，中国的上网本不是用来上网的。现在移动上网太贵了，真正我需要的流量，一个月大概要200-300，和光纤差不多贵。可是理论速度只有光纤的1/10不到，而且还不能总是达到。而且为了让各种设备上网，我还要备多张卡？现在的流行是两种趋势，一个是使用联通的套餐，通话贵就让他贵，然后用手机tether。另一个是该怎么用还怎么用。买一个3G路由器，然后用一个便宜的上网卡。 如果在国外，用ipad和mbp，那你是不用看我下面的话了。但是国内，暂时还没办法指望云，用android的，用windows的，更是如此。既然你没有云，又要长期同步ipad。最舒服的方式就是使用专业的nas，组成modem/router/nas的家庭服务组。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/2184/">人际关系网络的变迁</a>
+    </h1>
+    <p class="meta">May 31, 2012
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2184/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>人类是一种社群化的动物，一个人一般会和多个人发展出朋友关系，进而产生交际圈。随着人类的进化，交际圈的规模和特征也在不断变化。但是基本假定都是类似的。两个人为了维持朋友关系，必须在生活中抽出一定的时间进行共同活动。 如果我们能够回到6000年前，仔细看原始人类的社会交往模式的话(6000年前的埃及人已经在社会化耕种了，中国人民么，大概在有巢氏的带领下刚刚学会住在树上)。你大概会发现这么一个情况：大部分的人际圈子，都分布在半径1-5公里以内。其实这很符合常识。人一小时大概能走5公里，1-5公里的距离，每天要花最高两小时往返。当时人类并没有太高的耕种技术，每天花两个小时以上往返和别人交友对于大多数普通人来说是不可能的事情。当然，这也不是绝对化的定例。如果是游牧区，那么交友模式都会发生变化。人和人见面机会少，生活孤独，因此和耕种文明模式完全不同。如果是海洋文明，也会产生另一种社会特征。但是每种闻名的社会特征，基本都脱胎于当地交通运载能力和信息传递能力——例如典型的民主社会基础，希腊城邦，就是由海洋和群岛分割造成的文明。 这个模式一持续就是5000年，历史上，交友距离的第一次全局性增加得益于工业革命。在工业革命之前，人类的动力源基本只有几类。畜力，可移动，但是需要喂养，昂贵，普通人多数用于耕种。风力水力，不可移动，不稳定。还有人类自身。在工业革命后，人类第一次得到了可持续，可移动的外动力源。廉价，而且强大。火车和钢铁轮船是工业文明的代表作。自从大型交通工具发明后，人类的交友距离就大大增加了。这很容易理解。原本无法走出村庄的人，如果每周可以乘坐一次火车或轮船去附近的都市。他就很容易和附近村庄乃至都市的人发展出人际关系。而强动力源的产生也使得生产能力大大增加，普通人有那个时间和金钱来负担中距旅行的成本。 由于社会圈子的规模大大增加，因此人类社会在工业革命后起了爆炸性的变化。如果说人类文明的前5000年犹如一个缓慢加热的水锅，那工业革命后的1000年不到就是他的沸腾期。社会圈子的增大，首先产生的变化就是破坏传统社会结构。西方文明史我并不熟悉，以中国的传统文明来说，安土重迁是中国人传统的基本思路。由于社会圈子的强内聚，因此主体社交圈子都是以村庄或是城镇为基础的。在圈子内，由推举产生一些人，来维持圈子的稳定(族长制)。虽说名义上，国家是皇帝的，但是实际施行治理的，是每个村镇的族长和乡绅。实际上这是一种民主自治的典型，只是在上层要受到国家的管理。但是在近代，由于轮船在江面上大量运行，因此交往实际上跨出了地域的限制，从而使得地域自治和市场经济发生了强烈的碰撞。当然，我不会说这导致了辛亥革命或者别的什么近代重大变迁——那是其他因素的结果。然而，在文革结束后，中国(至少大陆地区)的传统社会圈系统实际上已经基本破灭了。 这个阶段的人际网络边界，实际上是受到了生产的限制。如果你足够有钱，那么走遍整个世界还是做的到的。然而从这个时代开始，另一项阻碍社会圈子扩张的因素已经逐渐开始显现——语言和文化。 第二次大的改进，起始于网络时代的开始。如果要我比喻的话，会将其比喻为世界初始之光。由于网络互联，分组交换技术的发展，因此低价的，普通人可以接受的世界范围通讯成为可能。如果只考虑文字，按照目前的网络通讯价格等比来计算(注意，这实际是不可能的)，上海一条20M的光纤2000一年，等比来说一条100kbps的线路10元一年。即使是偏远山区的人，也可以负担和巴西的通讯——这原本是世界的两端。如果没有语言和文化障碍，任何人——包括偏远山区的人，也完全可以发展出人际关系。 想必你也觉得不可能吧，这是理所当然的。即使是和我们文化相关性很大的日本，普通人发展社会圈子的可能性也不高。尽管你可能可以阅读一些日文文字，但是却不一定能明白其意思。在这种磕磕绊绊中，发展人际关系是很困难的。同样的困难更是横跨在中文和英文世界中——这是世界上使用范围最广的两种基本语言。更细分来说，中文还要分为Mandarin，Cantonese，Min，Hakka，Teochew等几个大的系统，这还不包括方言。英文则分为British，American，Australasia三种大的系统，不包括各种方言和pidgin。英文系统我不是很清楚，但是中文的几大系统间互通基本是不可能的。这使得看似连成一体的网络世界实际上分割成了以语言和文化为基础的几个区块。 同样以中文网络世界为例(因为我毕竟熟悉一点)，中国的网络很特殊，因为有GFW。但是实际上，即使去掉GFW，很多人还是只会上国内的网站。因为其他国家的网站，1. 没听说过，2. 语言不通，3. 没有朋友在用。这是国际巨头进入中国的巨大壁垒。实际上不仅仅是中国，所有华语使用者恐怕都有类似问题，例如香港和台湾的网络。国际上，twitter是主流，台湾是噗浪，大陆是新浪微博，这不能说和墙有关吧。 以中文语言系统世界的进化而论，实际上这些年看似是开放了普通话一家独大的限制，让各地方言都有了存活的空间。其实发生的事情则正好相反，网络极大的摧毁着各地的文化。台湾，广东是典型的双语言系统使用地区，当地大部分年轻人都可以同时使用Cantonese(或者其他地方方言)，同时使用Mandarin——这不是普通话一家独大是什么？更明显的是l18n的时候，你见过说做了一家中文网站的，希望做成英文版本。也见过英文网站的汉化。你何曾见过一家网站的“广东话化”？这种事情只有wiki那帮人才干的出来。大部分网站还是做一个普通话版本就算完成了中文化。这些年香港繁体都受到了很大限制，唯一还坚持中文文字多样性的只有台湾了。 从语言角度说，这是倒退。然而从社交网络圈子的角度说，这是进化。各地通行普通话的结果，使得中文世界基本只要会普通话就可以正常浏览网页。当然，从世界发展的角度来说，如果你要真正畅通无碍的在网上来去，英文才是必备语言。从这个角度来说，只怕汉语会逐步变成今日的广东话，在存留之间诸多挣扎。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/2182/">语言的效率差异3</a>
+    </h1>
+    <p class="meta">May 28, 2012
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2182/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>在总结前，我们首先搞明白三个问题的差异“效率的决定因素”，“语言效率差异”和“日常使用中造成运行效率差异的因素”。 代码的效率最根本因素绝对不是语言的效率，我一直这么确信。代码效率的决定因素必然是算法的正确选择和实现的优秀程度。这里面包括了正确评估问题，选择合适的数据结构，使用合适的算法等。例如对给定数据的高速查询，用红黑树去跑查询肯定跑不过预编译的哈希算法和哈希表。即使前者使用汇编实现，而后者只是python实现。(对于这点，我对比过一个大规模数据的查询，数据是固定的。数据库效率最差，C++用红黑树的map次之，效率最好的是python的dict，底层是hashtable。当然，为了防止某些人补充，我自己先说了——我最后用了stlport的hash_map) 语言效率的差异，有很多因素。例如编译型/解释型语言，动态语言和静态语言，是否带jit优化等，都会造成很大的性能差异。甚至同样是C，不同的编译和优化参数也会造成很大规模的差异，做优化的朋友一定心里有数。然而大多数情况下，决定语言效率的关键因素都不在语言自身的效率上，而是在于底层库实现的效率上。当然，如果底层库使用该种语言直接写成(我也比较喜欢这种风格)，那么归根结底还是考验语言本身的效率问题的。以正则测试为例，实际上python是一种性能很差的语言，但是在测试上并不很低。因为python的库实现是直接引用了C库，其效率仅仅是C加上一个不高的值。而lua得分不足只能说是库的实现比python差。 最后一个问题相信大家最关心，即日常使用中造成运行效率差异的关键。到底是什么，决定了我们每天写的代码的效率？ 可能要出乎大家的意料，从实际测试来看，实际上是测试能力和可变性。我们能够大致预料某些性能特别差的情况，然而对于性能在50%-200%以内变化的细节，实际上是很难提前预测的。也许我们会“猜测”某种情况性能比较优秀，但是实现下来情况可能完全不是这么回事。例如我曾经就一个C代码进行优化，预期应当能提高4倍性能，当时测试的结果是性能提高3-5倍，但是实际生产环境跑下来觉得没区别。后来发现，我自己测试用的是-O0，而生产系统是-O2。我的优化实际上在-O2的时候就全部被自动优化掉了。如果你觉得你的经验够丰富，能够预测-O2会优化你的哪些代码。那么你可以考虑一下，CPU的指令流水优化呢？系统上所安装版本的libc的实现细节和内核细节呢？如果都能精通，您可以忽略我这篇文章。但是对于我自己而言，我只能预计某个做法可能优化，而不能确定。 这时候，对于这个优化的实现难易程度，和实现完成后进行测量的难度就成为了关键。尤其是精确测量耗费时间的代码，执行时的瓶颈，这些能力才是优化代码的关键所在。我曾经写过为什么python效率不比C低，有人不服。我说了，并且反复强调了，这个仅限于“两者的生产速度一致”这个前提下。实际上如果真满足这个前提，大部分情况下C这边都输的没法测试的。因为完成同样任务，python的编码时间大约只有C的一半到1/4。即使算上优化，python完成项目的时间，C都不一定能写的完代码。更不提后面还要进行泄漏测试，复查，复杂的调试。等全部通过，开始关注效率问题，生产时间早超了。 作为日常生产，我想大部分程序员都有这么个经验。决定代码质量的实际上是项目的时间是否充裕，程序员是否用心严谨，生产流程管理是否到位。除非程序员太差劲，否则技术性代码质量差异并不特别多——一般都是远远小于赶代码造成的严重问题的。如果您那里不是这样，我建议您更换一批靠谱的程序员。同样，在真实的日常生产中，大部分项目都没有那个机会对代码进行多次的复查，深层次优化所有问题。基本是写，写完了查，没有什么表面问题。然后检查一下，用户体验效率是不是很差，找最差的地方优化一下，然后直接交货。很少有像理论代码那样，反复优化和测试，甚至受到来自不同程序员的交叉检测和沟通。如果有这种级别的反复优化，毫无疑问的，C会是常用语言中的效率之王。在[shootout](http://shootout.alioth.debian.org/u64q/which-programming-languages-are-fastest.php)给出的速度评测上，仅有Intel自己实现的fortran超越了C。当然，我相信汇编会更加优秀。 然而杯具的是，日常生产中恰恰相反，至少我是没什么时间去优化每行代码的。大部分时候，为了处理一个排序问题，我不会去网络上找一个vector库，而是直接开一个100的数组，然后qsort。前方报错了，改1000的数组。在写python的时候，也不会精细的考虑每个地方是否都用了合适的方法，某点是生成器好还是list好。大不了觉得某个程序慢了，cProfile一把，然后对着花时间最长的几个点看看是否有问题。自我感觉而言，python项目在做完之余，我还能泡个茶聊会天，自然也有功夫去看两眼代码，是否有哪里写的太难看了。而C代码就是不停的debug，即使我好容易喘口气，也绝对不会想去再看了。 最后说一下sbcl，在自身性能测试中，是当之无愧的语言之王。速度是python的一倍不到，代码量是python的一半。常规来说，出错概率，维护难度，都是和代码行数直接相关。一半的代码量基本就意味着维护成本削减一半，而一倍的速度基本和java持平，在C后面紧追不舍。但是，以上常理对lisp均不适用。lisp的学习难度惊人不说，维护难度和代码行数没有直接关系，而是取决于写作者的水平。水平越好的写作者，代码越容易维护，反之，初心者写出来的玩意那是看都看不懂的。冰河在博客上说他找了个职业lisp程序员的工作，人家视若珍宝。我不知道是哪年的blog，但是从老板的角度来说，这才是程序员的悲哀。老板喜欢什么语言？最好有个点子，跑去人才市场插个牌子，上书“我要人”。然后就会有一堆人云集过来，脖子上面都套着“五行一元”，“精通XXX”的草标。抓一只大个的，给个项目经理的头衔，让他管着别人。每个月扔一麻袋饲料下去，过两个月就能收程序了。 看起来和农场有点像，不是么？遗憾的是，lisp看来是达不到这个要求了。全国能用的python程序员不会超过5000，lisp程序员大概连500都不到。如果哪个老板不幸脑残，用了lisp来做项目，那么在招人这个问题上会比python更难执行。从这个意义上说，这才是lisp程序员不流行的关键——不好找工作。即使运行效率再高，语言本身再好，也没法过老板那关。</p>
+
+          
+
+        
+
+    </article>
+    
+    
+    
+
+
+
+
+<div class="pagination">
+
+    
+        
+        
+        
+        <a href="/" aria-label="First" class="label-pagination"><i class="fa fa-angle-double-left fa-lg"></i></a>
+    
+
+    
+    
+        <a href="/page/18/" aria-label="Previous" class="label-pagination"><i class="fa fa-angle-left fa-lg"></i></a>
+    
+
+    
+        <a href="/" class="label-pagination">1</a>
+    
+        <a href="/page/2/" class="label-pagination">2</a>
+    
+        <a href="/page/3/" class="label-pagination">3</a>
+    
+        <a href="/page/4/" class="label-pagination">4</a>
+    
+        <a href="/page/5/" class="label-pagination">5</a>
+    
+        <a href="/page/6/" class="label-pagination">6</a>
+    
+        <a href="/page/7/" class="label-pagination">7</a>
+    
+        <a href="/page/8/" class="label-pagination">8</a>
+    
+        <a href="/page/9/" class="label-pagination">9</a>
+    
+        <a href="/page/10/" class="label-pagination">10</a>
+    
+        <a href="/page/11/" class="label-pagination">11</a>
+    
+        <a href="/page/12/" class="label-pagination">12</a>
+    
+        <a href="/page/13/" class="label-pagination">13</a>
+    
+        <a href="/page/14/" class="label-pagination">14</a>
+    
+        <a href="/page/15/" class="label-pagination">15</a>
+    
+        <a href="/page/16/" class="label-pagination">16</a>
+    
+        <a href="/page/17/" class="label-pagination">17</a>
+    
+        <a href="/page/18/" class="label-pagination">18</a>
+    
+        <a href="/page/19/" class="label-pagination">19</a>
+    
+        <a href="/page/20/" class="label-pagination">20</a>
+    
+        <a href="/page/21/" class="label-pagination">21</a>
+    
+        <a href="/page/22/" class="label-pagination">22</a>
+    
+        <a href="/page/23/" class="label-pagination">23</a>
+    
+        <a href="/page/24/" class="label-pagination">24</a>
+    
+        <a href="/page/25/" class="label-pagination">25</a>
+    
+        <a href="/page/26/" class="label-pagination">26</a>
+    
+        <a href="/page/27/" class="label-pagination">27</a>
+    
+        <a href="/page/28/" class="label-pagination">28</a>
+    
+        <a href="/page/29/" class="label-pagination">29</a>
+    
+        <a href="/page/30/" class="label-pagination">30</a>
+    
+        <a href="/page/31/" class="label-pagination">31</a>
+    
+        <a href="/page/32/" class="label-pagination">32</a>
+    
+        <a href="/page/33/" class="label-pagination">33</a>
+    
+        <a href="/page/34/" class="label-pagination">34</a>
+    
+        <a href="/page/35/" class="label-pagination">35</a>
+    
+        <a href="/page/36/" class="label-pagination">36</a>
+    
+        <a href="/page/37/" class="label-pagination">37</a>
+    
+        <a href="/page/38/" class="label-pagination">38</a>
+    
+        <a href="/page/39/" class="label-pagination">39</a>
+    
+        <a href="/page/40/" class="label-pagination">40</a>
+    
+        <a href="/page/41/" class="label-pagination">41</a>
+    
+        <a href="/page/42/" class="label-pagination">42</a>
+    
+        <a href="/page/43/" class="label-pagination">43</a>
+    
+        <a href="/page/44/" class="label-pagination">44</a>
+    
+        <a href="/page/45/" class="label-pagination">45</a>
+    
+        <a href="/page/46/" class="label-pagination">46</a>
+    
+        <a href="/page/47/" class="label-pagination">47</a>
+    
+        <a href="/page/48/" class="label-pagination">48</a>
+    
+        <a href="/page/49/" class="label-pagination">49</a>
+    
+        <a href="/page/50/" class="label-pagination">50</a>
+    
+        <a href="/page/51/" class="label-pagination">51</a>
+    
+        <a href="/page/52/" class="label-pagination">52</a>
+    
+        <a href="/page/53/" class="label-pagination">53</a>
+    
+        <a href="/page/54/" class="label-pagination">54</a>
+    
+        <a href="/page/55/" class="label-pagination">55</a>
+    
+        <a href="/page/56/" class="label-pagination">56</a>
+    
+        <a href="/page/57/" class="label-pagination">57</a>
+    
+        <a href="/page/58/" class="label-pagination">58</a>
+    
+        <a href="/page/59/" class="label-pagination">59</a>
+    
+        <a href="/page/60/" class="label-pagination">60</a>
+    
+        <a href="/page/61/" class="label-pagination">61</a>
+    
+        <a href="/page/62/" class="label-pagination">62</a>
+    
+        <a href="/page/63/" class="label-pagination">63</a>
+    
+        <a href="/page/64/" class="label-pagination">64</a>
+    
+        <a href="/page/65/" class="label-pagination">65</a>
+    
+        <a href="/page/66/" class="label-pagination">66</a>
+    
+        <a href="/page/67/" class="label-pagination">67</a>
+    
+        <a href="/page/68/" class="label-pagination">68</a>
+    
+        <a href="/page/69/" class="label-pagination">69</a>
+    
+        <a href="/page/70/" class="label-pagination">70</a>
+    
+        <a href="/page/71/" class="label-pagination">71</a>
+    
+        <a href="/page/72/" class="label-pagination">72</a>
+    
+        <a href="/page/73/" class="label-pagination">73</a>
+    
+        <a href="/page/74/" class="label-pagination">74</a>
+    
+        <a href="/page/75/" class="label-pagination">75</a>
+    
+        <a href="/page/76/" class="label-pagination">76</a>
+    
+        <a href="/page/77/" class="label-pagination">77</a>
+    
+        <a href="/page/78/" class="label-pagination">78</a>
+    
+        <a href="/page/79/" class="label-pagination">79</a>
+    
+        <a href="/page/80/" class="label-pagination">80</a>
+    
+        <a href="/page/81/" class="label-pagination">81</a>
+    
+        <a href="/page/82/" class="label-pagination">82</a>
+    
+        <a href="/page/83/" class="label-pagination">83</a>
+    
+        <a href="/page/84/" class="label-pagination">84</a>
+    
+        <a href="/page/85/" class="label-pagination">85</a>
+    
+        <a href="/page/86/" class="label-pagination">86</a>
+    
+        <a href="/page/87/" class="label-pagination">87</a>
+    
+        <a href="/page/88/" class="label-pagination">88</a>
+    
+        <a href="/page/89/" class="label-pagination">89</a>
+    
+        <a href="/page/90/" class="label-pagination">90</a>
+    
+        <a href="/page/91/" class="label-pagination">91</a>
+    
+
+    
+    
+        <a href="/page/20/" aria-label="Next" class="label-pagination"><i class="fa fa-angle-right fa-lg"></i></a>
+    
+
+    
+    
+        <a href="/page/91/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
+    
+
+</div>
+
+  
+
+  </div>
+
+  
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+    
+ </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+   

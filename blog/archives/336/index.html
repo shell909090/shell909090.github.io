@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>P2P和DHT的结构</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         P2P和DHT的结构 
+    </h1>
+    <p class="meta">Dec 15, 2006
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/336/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <div>    最近P2P是越来越盛行，按照公司要求，我们要写一个P2P下载支持。老板发话，越小越好。想想有道理，只是要减轻服务器压力，又不是要和P2P下载商抢生意。不过老板又发话，必须保持核心服务器高可用性。偶当场啥掉，怎么办？</div>
+<div>    说起P2P下载的原始面目，其实是很简单的技术。假定你一个人在下载一个文件，同时你又知道所有有这个文件或者在下这个文件(那就有一部分)的人的套接字。那么连接上去下载，并且提供你可以提供的部分就好了。其中只有两个问题(也和算法没啥关系)，应该先下谁的，应该先给谁。但是困难在于，你如何知道谁有某个文件呢？</div>
+<div>    按照获得这个信息的方法不同，P2P分成三代。</div>
+<div>    第一代是核心服务器型的，术语叫做中心化拓扑（Centralized Topology）[1]，例如<font size=2>Napster[4]</font>。这种类型的P2P下载可以说是传统下载和P2P下载的结合体。他同时具备了P2P的特性，例如带宽占用分布，高容错，高可用。也具备了核心模式的特性，例如中心依赖，可模糊搜索。<font size=2>Napster可以说就是因为核心依赖性而输掉了官司。</font></div>
+<div><font size=2>    这代P2P的运作方式是，用户上线的时候把自身的资源提交到服务器。由服务器维护表来做查询，并且定时删除过期的客户。用户查找文件的时候需要向服务器提交请求，服务器返回拥有文件的客户端。由于文件信息提交到服务器端，因此服务器上可以说是拥有版权文件的索引。</font></div>
+<div><font size=2>    第二代是泛洪/限制性泛洪型的，术语叫做全分布式非结构化拓扑（Decentralized Unstructured Topology）[1]，代表就是Gnutella[3]。这种类型的P2P才是完全意义上的P2P，因为去掉了核心服务器，因此没有中心依赖性。拥有P2P良好的带宽占用分布，高容错，高可用性能。但是致命缺点是，当网络节点扩展时，维护网络的带宽消耗就会成几何扩展。在大规模应用中，这无疑是不可接受的。所以有限制性泛洪的结构，不过限制性泛洪只是增强网络的抗性，没有根本的改变现状。</font></div>
+<div><font size=2>    这类P2P的运作方式是，用户维护自身拥有文件的列表，和其他一些客户的列表。当一个用户需要知道谁有一个文件的时候，就向他所有知道的其他客户查询。如此反复层级查询，并且用SPT或者TTL来做优化，最后可以得到结果。不过可想而知，网络消耗是惊人的。</font></div>
+<div><font size=2>    这代P2P有个变形，术语叫做半分布式拓扑（Partially Decentralized Topology）[1]，代表是KaZaa。简单来说就是把核心服务器型的一个核心服务拆成多个分布在某些比较强大的节点上。核心服务间使用泛洪/限制性泛洪型的方式通讯，核心和非核心间还是核心服务器查询的老路子。这类P2P修正了核心服务器型的中心依赖问题，并且可模糊搜索。也修正了泛洪的带宽占用问题。但是资源消耗分布不均匀，结构比较复杂，而且长期运行的核心节点可能莫名其妙就成为了被告，因为核心节点也拥有版权文件的索引。</font></div>
+<div><font size=2>    第三代是DHT型，术语叫做全分布式结构化拓扑（Decentralized Structured Topology）[1]，代表就是Chord[6]，Pastry[5]，Kadamila[2]。这种的P2P也是去核心的，拥有P2P良好的带宽占用分布，高容错，高可用性能。同时资源消耗比较平均，网络消耗小，扩展性好，抗网络不稳定能力强。缺点就是失去了模糊搜索的能力，只能变通的模糊搜索。</font></div>
+<div><font size=2>    DHT是Distributed Hash Table的缩写，用于节点搜索的。在此之前，我们先来想想数据结构课程的一些东西(没学的就表看了，看下面的吧，这节看了铁晕)。如果我需要知道一个对象，找出关联的一个对象，那应该用哪种结构？map！那如果要增加map的效率怎么办？hash table！那么hash table的内存布型怎么处理？如果要经常删除添加，那应该用链表。OK，我们想像一下，假设一个节点就持有链表中的一项，上下项的指针改成上下节点的网络描述，那是啥？Bingo，DHT。当然，DHT不会傻到让一个节点就保存两个网络描述，那一旦断裂就全玩完。DHT中是先给予所有节点一个ID，然后定义一个距离算法，再按照ID来保存hash的。一个节点保存和他的ID相邻的一定距离的hash(当然还包括值)，并且保存一些ID近的节点的网络描述和一些节点远的网络描述。就好像在hash table里面，一个节点保存了上下临节点的同时，也保存了很远的节点的指针。这样在链表查询的时候速度可以更快。</font></div>
+<div><font size=2>    DHT的运作原理是，一个节点加入DHT网络，就会生成一个不重复的ID。然后会寻找一些节点来扩充自己的相邻节点列表，并且获取于自己相邻到一定程度的Hash的内容。当节点够多的时候，所有的Hash都会有一个以上的节点来维护，这样就有了足够的容错性，性能，稳定性。在寻取一个内容的时候，会寻找自己的临节点列表中最近的节点，然后向他查询进一步的消息。这个在几次循环后就可以足够近到获得目标信息了。当然，大家可以看出，要寻取一个对象，就必须有这个对象的hash，因此是不可模糊的。</font></div>
+<div><font size=2>    Kadamila是eMule所用的服务，很多BT中也使用了兼容协议。</font></div>
+<div><font size=2>    另外顺便在此提出一个P2P流的思想。传统的P2P下载是基于块的，简单来说就是文件。现在很多P2P技术可以基于流，就是可以在允许一定延时的情况下，将延时允许区域内的数据作为一个块来传送。这种技术对于P2P的要求更高，但是应用范围更加广阔。例如用于视频流播放，广播，股票数据传输等等。现在的流技术都是针对特定协议来展开的，例如视频流点播就用PPstream。我们可以将P2P流封装成一个独立服务，从发起端上连接一个接口，到客户端上监听一个接口，中间过程透明化。简单来说，发送端上运行一个服务，客户端上运行一个服务。发送端上的服务连接到一个特定端口来获得数据，然后通过P2P流来传输给客户端，客户端的P2P服务再监听到一个端口上，向所有(或者有限)连接上的接口提供数据。除去只能接受数据，并且存在一定延迟和丢包外。整个过程就被掩盖在了单纯的网络传输下面。这样很多协议可以在不修改协议(但是至少要可以对抗错包丢包等等网络状况)的情况下直接P2P流化。当然，P2P流在实时性，安全性上的要求会更加高。</font></div>
+<div><font size=2>    顺便说一下网状模型的一个修改吧，几年前的东西了，可惜一直弄不出算法来。当前的网状模型是一个节点传输给其他节点，然后层级传递。理论上应该将发起节点最近的和提供带宽最高的节点放在顶层，以减少网的层数。不过将底层的节点带宽废弃还是可惜了点。我们可以将一个流分成两个部分(如果先天就可以分离最好，例如视频和音频，不过他们不对等)，然后组成两颗树。这样网络中的底层节点就可以在另外一颗树中被定义为次层节点。如此会对带宽利用更加彻底，当然，程序也会更加复杂。</font></div>
+<div><font size=2>参考和引用:</font></div>
+<div>1.P2P网络的拓扑结构:<a href="http://www.intsci.ac.cn/users/luojw/P2P/ch02.html">http://www.intsci.ac.cn/users/luojw/P2P/ch02.html</a></div>
+<div>2.Kademlia协议:<a href="http://www.itslife.net/blog/?p=132">http://www.itslife.net/blog/?p=132</a></div>
+<div>                           :<a href="http://blog.csdn.net/colinchan/archive/2006/05/08/712760.aspx">http://blog.csdn.net/colinchan/archive/2006/05/08/712760.aspx</a></div>
+<div>3.Gnutella协议:<a href="http://www9.limewire.com/developer/gnutella_protocol_0.4.pdf">http://www9.limewire.com/developer/gnutella_protocol_0.4.pdf</a></div>
+<div>4.Napster官方网站:<a href="http://www.napster.com/">http://www.napster.com/</a></div>
+<div>5.Pastry 工程:<a href="http://research.microsoft.com/~antr/PAST/pastry.pdf">http://research.microsoft.com/~antr/PAST/pastry.pdf</a></div>
+<div>6.Chord 工程:<a href="http://pdos.csail.mit.edu/chord/">http://pdos.csail.mit.edu/chord/</a></div>
+<div>7.对等网络中主流分布式哈希算法比较分析:<a href="http://www.p2psky.com/tech/article1274.html">http://www.p2psky.com/tech/article1274.html</a></div>
+<div>8.细说 Kademlia:<a href="http://www.vshj.com/Article/2005/200512/Article_18386.shtml">http://www.vshj.com/Article/2005/200512/Article_18386.shtml</a></div>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Dec 15, 2006</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/computer">computer</a>  <a class="category" href="https://shell909090.github.io/tags/dht">dht</a>  <a class="category" href="https://shell909090.github.io/tags/p2p">p2p</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/335/" title="Boost">Boost</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/337/" title="出差到宁波">出差到宁波</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

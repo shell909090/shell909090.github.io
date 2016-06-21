@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>英雄传说6空之轨迹SC修改</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         英雄传说6空之轨迹SC修改 
+    </h1>
+    <p class="meta">Oct 10, 2007
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/413/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>以下是空之轨迹SC的存档修改方法和部分物品代码表，六牙四皂小姐可以跳过了。<br />晶片数目：<br />0x2534C 金钱<br />0x25354 地<br />0x25358 水<br />0x2535C 火<br />0x25360 风<br />0x25364 行动<br />0x25368 EP<br />0x2536C 时间<br />个人经验：<br />0x1F460 艾丝蒂尔经验<br />0x1F514 奥利维尔经验<br />0x1F550 科络丝经验<br />0x1F604 金经验<br />物品代码：<br />01c9 最终浓缩药草茶<br />01c8 大麦奶酪果冻<br />01c7 苦味兽肉焖<br />01C6 每日天妇罗<br />01AE 提神果冻<br />01C4 营养果汁<br />019F 清凉药草茶<br />01B9 内陆佳肴<br />01BD 卡布其诺薄饼<br />0195 千层薄饼<br />01a0 红莲炖兽肉<br />01a6 春风螺狮面<br />01ba 阳光冰淇凌<br />01bb 月光冰淇凌<br />01A1 不可思议的糊<br />01AF 激情蛋卷<br />01be 终极冰淇凌<br />01b0 海味鲜珍<br />000f 火绒草杖<br />0014 蓝璃<br />001b 麒麟<br />002e 漆黑之刃<br />0031 凤凰剑<br />004b 积木鞭<br />006a 独眼巨人<br />0087 天琴<br />0105 树脂装甲<br />0108 大地女神之服<br />010E 古代神铠<br />0171 女战士机甲<br />0172 炮术师战甲<br />0129 普罗米修斯神靴<br />0139 神圣挂链<br />0140 土人偶<br />    物品这里只有贝壳测试出来的部分，不过理论上也很强了。<br />    下面说明怎么使用上面的数据。<br />    首先，用16进制编辑器打开存档，推荐用HEdit。存档在save下面，按照次序存储的SVDAT???.SAV文件。<br />    晶片的话，跳到这个偏移位置，直接修改就行了。注意NUXI问题，高低字节是颠倒的。例如9999就写入0F27。<br />    经验的话基本是没用的，因为升级时候的算法很有意思。如果当前经验小于下一级别经验，加了获得经验后大于下一级别经验，则完成升级步骤。否则光写到了多少级别，不调整当前的级别和参数。因此经验改高后，反而会造成无法升级的问题。除非你修改到当前级别的最高经验，然后K一次怪升级，再重复……<br />    物品的话是这样存储的，XX XX NN NN。四字节一组，前两个是物品代码，后两个是物品数量。注意都是高低位反过来的WORD型数据。上面给出的代码也全是反过来的，使用的时候注意颠倒(贝壳颠倒成习惯了……)。<br />    例如我们要把火绒草杖变成神圣挂链x99(最强的辅助物品，除了战斗不能的一切异常免疫)。那么请先首先确定你当前火绒草杖的数目。用别的物品的话需要预先知道物品代码，或者你自己搞出物品代码表来。然后推算一下，数据应当被存储为0F 00 01 00。(假定你就一个)打开存档，查找这个数据，然后修改为39 01 63 00，存盘结束。<br />    基本这些就够用了把…… <br /></p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Oct 10, 2007</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/computer">computer</a>  <a class="category" href="https://shell909090.github.io/tags/game">game</a>  <a class="category" href="https://shell909090.github.io/tags/%e5%85%b6%e4%bb%96">%e5%85%b6%e4%bb%96</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/412/" title="骑马">骑马</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/414/" title="三甲港游记">三甲港游记</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

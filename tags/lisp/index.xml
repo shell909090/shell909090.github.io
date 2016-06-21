@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Lisp on Shell&#39;s Home</title>
+    <link>https://shell909090.github.io/tags/lisp/</link>
+    <description>Recent content in Lisp on Shell&#39;s Home</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 28 May 2012 02:13:32 +0800</lastBuildDate>
+    <atom:link href="https://shell909090.github.io/tags/lisp/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>语言的效率差异3</title>
+      <link>https://shell909090.github.io/blog/archives/2182/</link>
+      <pubDate>Mon, 28 May 2012 02:13:32 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2182/</guid>
+      <description>&lt;div&gt;在总结前，我们首先搞明白三个问题的差异“效率的决定因素”，“语言效率差异”和“日常使用中造成运行效率差异的因素”。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;代码的效率最根本因素绝对不是语言的效率，我一直这么确信。代码效率的决定因素必然是算法的正确选择和实现的优秀程度。这里面包括了正确评估问题，选择合适的数据结构，使用合适的算法等。例如对给定数据的高速查询，用红黑树去跑查询肯定跑不过预编译的哈希算法和哈希表。即使前者使用汇编实现，而后者只是python实现。(对于这点，我对比过一个大规模数据的查询，数据是固定的。数据库效率最差，C++用红黑树的map次之，效率最好的是python的dict，底层是hashtable。当然，为了防止某些人补充，我自己先说了——我最后用了stlport的hash_map)&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;语言效率的差异，有很多因素。例如编译型/解释型语言，动态语言和静态语言，是否带jit优化等，都会造成很大的性能差异。甚至同样是C，不同的编译和优化参数也会造成很大规模的差异，做优化的朋友一定心里有数。然而大多数情况下，决定语言效率的关键因素都不在语言自身的效率上，而是在于底层库实现的效率上。当然，如果底层库使用该种语言直接写成(我也比较喜欢这种风格)，那么归根结底还是考验语言本身的效率问题的。以正则测试为例，实际上python是一种性能很差的语言，但是在测试上并不很低。因为python的库实现是直接引用了C库，其效率仅仅是C加上一个不高的值。而lua得分不足只能说是库的实现比python差。&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;最后一个问题相信大家最关心，即日常使用中造成运行效率差异的关键。到底是什么，决定了我们每天写的代码的效率？&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;可能要出乎大家的意料，从实际测试来看，实际上是测试能力和可变性。我们能够大致预料某些性能特别差的情况，然而对于性能在50%-200%以内变化的细节，实际上是很难提前预测的。也许我们会“猜测”某种情况性能比较优秀，但是实现下来情况可能完全不是这么回事。例如我曾经就一个C代码进行优化，预期应当能提高4倍性能，当时测试的结果是性能提高3-5倍，但是实际生产环境跑下来觉得没区别。后来发现，我自己测试用的是-O0，而生产系统是-O2。我的优化实际上在-O2的时候就全部被自动优化掉了。如果你觉得你的经验够丰富，能够预测-O2会优化你的哪些代码。那么你可以考虑一下，CPU的指令流水优化呢？系统上所安装版本的libc的实现细节和内核细节呢？如果都能精通，您可以忽略我这篇文章。但是对于我自己而言，我只能预计某个做法可能优化，而不能确定。&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;这时候，对于这个优化的实现难易程度，和实现完成后进行测量的难度就成为了关键。尤其是精确测量耗费时间的代码，执行时的瓶颈，这些能力才是优化代码的关键所在。我曾经写过为什么python效率不比C低，有人不服。我说了，并且反复强调了，这个仅限于“两者的生产速度一致”这个前提下。实际上如果真满足这个前提，大部分情况下C这边都输的没法测试的。因为完成同样任务，python的编码时间大约只有C的一半到1/4。即使算上优化，python完成项目的时间，C都不一定能写的完代码。更不提后面还要进行泄漏测试，复查，复杂的调试。等全部通过，开始关注效率问题，生产时间早超了。&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;作为日常生产，我想大部分程序员都有这么个经验。决定代码质量的实际上是项目的时间是否充裕，程序员是否用心严谨，生产流程管理是否到位。除非程序员太差劲，否则技术性代码质量差异并不特别多——一般都是远远小于赶代码造成的严重问题的。如果您那里不是这样，我建议您更换一批靠谱的程序员。同样，在真实的日常生产中，大部分项目都没有那个机会对代码进行多次的复查，深层次优化所有问题。基本是写，写完了查，没有什么表面问题。然后检查一下，用户体验效率是不是很差，找最差的地方优化一下，然后直接交货。很少有像理论代码那样，反复优化和测试，甚至受到来自不同程序员的交叉检测和沟通。如果有这种级别的反复优化，毫无疑问的，C会是常用语言中的效率之王。在[shootout](&lt;a href=&#34;http://shootout.alioth.debian.org/u64q/which-programming-languages-are-fastest.php)&#34;&gt;http://shootout.alioth.debian.org/u64q/which-programming-languages-are-fastest.php)&lt;/a&gt;给出的速度评测上，仅有Intel自己实现的fortran超越了C。当然，我相信汇编会更加优秀。&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;然而杯具的是，日常生产中恰恰相反，至少我是没什么时间去优化每行代码的。大部分时候，为了处理一个排序问题，我不会去网络上找一个vector库，而是直接开一个100的数组，然后qsort。前方报错了，改1000的数组。在写python的时候，也不会精细的考虑每个地方是否都用了合适的方法，某点是生成器好还是list好。大不了觉得某个程序慢了，cProfile一把，然后对着花时间最长的几个点看看是否有问题。自我感觉而言，python项目在做完之余，我还能泡个茶聊会天，自然也有功夫去看两眼代码，是否有哪里写的太难看了。而C代码就是不停的debug，即使我好容易喘口气，也绝对不会想去再看了。&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;最后说一下sbcl，在自身性能测试中，是当之无愧的语言之王。速度是python的一倍不到，代码量是python的一半。常规来说，出错概率，维护难度，都是和代码行数直接相关。一半的代码量基本就意味着维护成本削减一半，而一倍的速度基本和java持平，在C后面紧追不舍。但是，以上常理对lisp均不适用。lisp的学习难度惊人不说，维护难度和代码行数没有直接关系，而是取决于写作者的水平。水平越好的写作者，代码越容易维护，反之，初心者写出来的玩意那是看都看不懂的。冰河在博客上说他找了个职业lisp程序员的工作，人家视若珍宝。我不知道是哪年的blog，但是从老板的角度来说，这才是程序员的悲哀。老板喜欢什么语言？最好有个点子，跑去人才市场插个牌子，上书“我要人”。然后就会有一堆人云集过来，脖子上面都套着“五行一元”，“精通XXX”的草标。抓一只大个的，给个项目经理的头衔，让他管着别人。每个月扔一麻袋饲料下去，过两个月就能收程序了。&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;看起来和农场有点像，不是么？遗憾的是，lisp看来是达不到这个要求了。全国能用的python程序员不会超过5000，lisp程序员大概连500都不到。如果哪个老板不幸脑残，用了lisp来做项目，那么在招人这个问题上会比python更难执行。从这个意义上说，这才是lisp程序员不流行的关键——不好找工作。即使运行效率再高，语言本身再好，也没法过老板那关。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>语言的效率差异2</title>
+      <link>https://shell909090.github.io/blog/archives/2174/</link>
+      <pubDate>Fri, 18 May 2012 07:14:24 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2174/</guid>
+      <description>&lt;div&gt;# 问题 #&lt;/div&gt;&lt;div&gt;为了更深入的测试语言，我做了一个经典问题——24点。&lt;/div&gt;&lt;div&gt;这个问题主要是测试递归，循环效率，还有数组和树的复制性能。&lt;/div&gt;&lt;div&gt;为了简化问题，方便测试，我的问题是这样描述的：&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&amp;gt; 有一个数组，里面有多个正整数。有一个操作数组，其中每个都是双目操作符。找出以两者构成算式，其值等于给定值的所有表达式组合。&lt;/div&gt;&lt;div&gt;
+
+&amp;gt; 要求不得遗漏，可以有少量重复。例如可交换算符的交换同构暂不做排重。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;实际运行的时候，取+-*/和3 4 6 8，运行100次，查看时间消耗。正确的单次输出结果应当是这样的。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&amp;gt; (((8 + 4) / 3) * 6) = 24&lt;/div&gt;&lt;div&gt;&amp;gt; (6 / (3 / (8 + 4))) = 24&lt;/div&gt;&lt;div&gt;
+
+&amp;gt; (((8 + 4) * 6) / 3) = 24&lt;/div&gt;&lt;div&gt;&amp;gt; (((8 / 4) + 6) * 3) = 24&lt;/div&gt;&lt;div&gt;&amp;gt; (((8 - 6) * 3) * 4) = 24&lt;/div&gt;&lt;div&gt;&amp;gt; (((8 - 6) * 4) * 3) = 24&lt;/div&gt;&lt;div&gt;&amp;gt; (((3 * 4) - 8) * 6) = 24&lt;/div&gt;&lt;div&gt;&amp;gt; ((8 - (6 / 3)) * 4) = 24&lt;/div&gt;
+
+&lt;div&gt;&amp;gt; (((4 + 8) / 3) * 6) = 24&lt;/div&gt;&lt;div&gt;&amp;gt; (6 / (3 / (4 + 8))) = 24&lt;/div&gt;&lt;div&gt;&amp;gt; (((4 + 8) * 6) / 3) = 24&lt;/div&gt;&lt;div&gt;&amp;gt; (((8 / 4) + 6) * 3) = 24&lt;/div&gt;&lt;div&gt;&amp;gt; (((4 * 3) - 8) * 6) = 24&lt;/div&gt;&lt;div&gt;&amp;gt; (((8 - 6) * 3) * 4) = 24&lt;/div&gt;
+
+&lt;div&gt;&amp;gt; (((8 - 6) * 4) * 3) = 24&lt;/div&gt;&lt;div&gt;&amp;gt; ((8 - (6 / 3)) * 4) = 24&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;# python #&lt;/div&gt;&lt;div&gt;python的解很复杂，长达31行，以下是我写的解。当然，还有更简单的版本，我可以用eval来干这个事情，代码只有24行，但是确实给人很evil的感觉。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;
+
+&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;from itertools import combinations&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;class opt(object):&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;    def __init__(self, name, func, ex=True):&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;        &lt;a href=&#34;http://self.name&#34;&gt;self.name&lt;/a&gt;, self.func, self.exchangable = name, func, ex&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;    def __str__(self): return &lt;a href=&#34;http://self.name&#34;&gt;self.name&lt;/a&gt;&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;    def __call__(self, l, r): return self.func(l, r)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;    def fmt(self, l, r):&lt;/div&gt; &lt;div&gt; &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;        return &amp;#39;(%s %s %s)&amp;#39; % (fmt_exp(l), str(self), fmt_exp(r))&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;def eval_exp(e):&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;    if not isinstance(e, tuple): return e&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;    try: return e[0](eval_exp(e[1]), eval_exp(e[2]))&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;    except: return None&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;def fmt_exp(e): return e[0].fmt(e[1], e[2]) if isinstance(e, tuple) else str(e)&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;def print_exp(e): print fmt_exp(e), eval_exp(e)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;def chkexp(target):&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;    def do_exp(e):&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;        if abs(eval_exp(e) - target) &amp;lt; 0.001: print fmt_exp(e), &amp;#39;=&amp;#39;, target&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;    return do_exp&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;def iter_all_exp(f, ops, ns, e=None):&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;    if not ns: return f(e)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;    for r in set(ns):&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;        ns.remove(r)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;        if e is None: iter_all_exp(f, ops, ns, r)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;        else:&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;            for op in ops:&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;                iter_all_exp(f, ops, ns, (op, e, r))&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;                if not op.exchangable:&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;                    iter_all_exp(f, ops, ns, (op, r, e))&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;        ns.append(r)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;opts = [&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;    opt(&amp;#39;+&amp;#39;, lambda x, y: x+y),&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;    opt(&amp;#39;-&amp;#39;, lambda x, y: x-y, False),&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;    opt(&amp;#39;*&amp;#39;, lambda x, y: x*y),&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;    opt(&amp;#39;/&amp;#39;, lambda x, y: float(x)/y, False),]&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;if __name__ == &amp;#39;__main__&amp;#39;:&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;    for i in xrange(100): iter_all_exp(chkexp(24), opts, [3, 4, 6, 8])&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;以下是100次的时间：&lt;/div&gt;&lt;div&gt;&amp;gt; real&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;0m2.259s&lt;/div&gt;
+
+&lt;div&gt;&amp;gt; user&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;0m2.248s&lt;/div&gt;&lt;div&gt;&amp;gt; sys&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;0m0.004s&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;# common lisp #&lt;/div&gt;&lt;div&gt;
+
+lisp来解这个问题简直是作弊，难怪被叫做人工智能语言。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;(defun chkexp (target)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;  (lambda (e)&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;    (if (equal (ignore-errors (eval e)) target) (print e))))&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;(defun exchangeable (op)&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;  (not (member op &amp;#39;(- /))))&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;(defun iter-all-exp (f ops ns &amp;amp;optional e)&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;  (cond&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;    ((not ns) (funcall f e))&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;    ((not e) (dolist (r (remove-duplicates ns))&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;      &lt;/span&gt;       (iter-all-exp f ops (remove r ns :count 1) r)))&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;    (t (dolist (r (remove-duplicates ns))&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;      &lt;/span&gt; (let ((nss (remove r ns :count 1)))&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;     &lt;/span&gt;   (dolist (op ops)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;      &lt;/span&gt;     (iter-all-exp f ops nss `(,op ,e ,r))&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;      &lt;/span&gt;     (if (not (exchangeable op))&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;         &lt;/span&gt; (iter-all-exp f ops nss `(,op ,r ,e)))))))))&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;(iter-all-exp (chkexp 24) `(+ - * /) `(3 4 6 8))&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;只有短短17行。原因在于，lisp本身的ast即是用数据结构表示的，因此根本不需要我做eval函数，也不需要画蛇添足的弄自定义算符，直接用系统算符上。显示，打印，都是现成的。需要写的只有主体逻辑。结果也很特别：&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&amp;gt; (* (- (* 3 4) 8) 6) &lt;/div&gt;&lt;div&gt;&amp;gt; (* (- 8 (/ 6 3)) 4) &lt;/div&gt;&lt;div&gt;&amp;gt; (* (- (* 4 3) 8) 6) &lt;/div&gt;&lt;div&gt;&amp;gt; (* (/ (+ 4 8) 3) 6) &lt;/div&gt;&lt;div&gt;&amp;gt; (/ 6 (/ 3 (+ 4 8))) &lt;/div&gt;&lt;div&gt;&amp;gt; (/ (* (+ 4 8) 6) 3) &lt;/div&gt;
+
+&lt;div&gt;&amp;gt; (* (+ (/ 8 4) 6) 3) &lt;/div&gt;&lt;div&gt;&amp;gt; (* (- 8 (/ 6 3)) 4) &lt;/div&gt;&lt;div&gt;&amp;gt; (* (* (- 8 6) 3) 4) &lt;/div&gt;&lt;div&gt;&amp;gt; (* (* (- 8 6) 4) 3) &lt;/div&gt;&lt;div&gt;&amp;gt; (* (/ (+ 8 4) 3) 6) &lt;/div&gt;&lt;div&gt;&amp;gt; (/ 6 (/ 3 (+ 8 4))) &lt;/div&gt;&lt;div&gt;
+
+&amp;gt; (/ (* (+ 8 4) 6) 3) &lt;/div&gt;&lt;div&gt;&amp;gt; (* (+ (/ 8 4) 6) 3) &lt;/div&gt;&lt;div&gt;&amp;gt; (* (* (- 8 6) 3) 4) &lt;/div&gt;&lt;div&gt;&amp;gt; (* (* (- 8 6) 4) 3) &lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;不但行数只有一半，速度也很让人吐血，比python快了近一倍，这是100次的结果。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;Evaluation took:&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;  1.379 seconds of real time&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;  1.372086 seconds of total run time (1.372086 user, 0.000000 system)&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;  [ Run times consist of 0.012 seconds GC time, and 1.361 seconds non-GC time. ]&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;  99.49% CPU&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;  3,628,800 forms interpreted&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;  4,127,047,350 processor cycles&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;  102,577,080 bytes consed&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;# go #&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;# lua #&lt;/div&gt;&lt;div&gt;lua的代码是所有语言中最罗嗦的，足足长达60行，超过python许多。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;function find_item(tbl, obj)&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;   for i, v in pairs(tbl) do&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;      if v == obj then return i end&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;   end&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;   return nil&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;end&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;function remove_duplicates (tbl)&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;   local newtbl = {}&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;   for i, v in pairs(tbl) do&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;      if find_item(newtbl, v) == nil then&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;      &lt;/span&gt; table.insert(newtbl, v)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;      end&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;   end&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;   return newtbl&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;end&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;function fmt_exp (e)&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;   if type(e) ~= &amp;#39;table&amp;#39; then&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;      return tostring(e)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;   else&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;      return &amp;#39;(&amp;#39; .. fmt_exp(e[3]) .. e[1] .. fmt_exp(e[4]) .. &amp;#39;)&amp;#39;&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;   end&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;end&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;function eval_exp (e)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;   if type(e) ~= &amp;#39;table&amp;#39; then&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;      return tonumber(e)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;   else&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;      return e[2](eval_exp(e[3]), eval_exp(e[4]))&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;   end&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;end&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;function chkexp (target)&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;   return function (e)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;       &lt;/span&gt;     if eval_exp(e) == target then&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;           &lt;/span&gt;print(fmt_exp(e))&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;      &lt;/span&gt;     end&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;     &lt;/span&gt;  end&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;end&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;function iter_all_exp (f, ops, ns, e)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;   if table.maxn(ns) == 0 then return f(e) end&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;   for i, r in pairs(remove_duplicates(ns)) do&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;      table.remove(ns, find_item(ns, r))&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;      if e == nil then&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;       &lt;/span&gt; iter_all_exp(f, ops, ns, r)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;      else&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;      &lt;/span&gt; for op, fp in pairs(ops) do&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;     &lt;/span&gt;    iter_all_exp(f, ops, ns, {op, fp, e, r})&lt;/div&gt;&lt;div&gt;
+
+&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;       &lt;/span&gt;    if find_item(exchangable, op) == nil then&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;        &lt;/span&gt;       iter_all_exp(f, ops, ns, {op, fp, r, e})&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;      &lt;/span&gt;    end&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;      &lt;/span&gt; end&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;      end&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;      table.insert(ns, r)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;   end&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;end&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;exchangable = {&amp;#39;+&amp;#39;, &amp;#39;*&amp;#39;}&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;opts = {&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;   [&amp;#39;+&amp;#39;] = function (a, b) return a + b end,&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;   [&amp;#39;-&amp;#39;] = function (a, b) return a - b end,&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;   [&amp;#39;*&amp;#39;] = function (a, b) return a * b end,&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;   [&amp;#39;/&amp;#39;] = function (a, b) return a / b end,&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;}&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;iter_all_exp(chkexp(24), opts, {3, 4, 6, 8})&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;其实lua的代码很好看，自然语言风格，语言写出来后都能看懂。然而lua秉持了最小化内核的方针，死活不提供一些很常用的函数。我上来近15行全在写常用函数，查找某个值在表中的位置，还有除去表中的重复元素。实现下来，效率也不是特别高，基本和python相当。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&amp;gt; real&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;0m2.222s&lt;/div&gt;
+
+&lt;div&gt;&amp;gt; user&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;0m2.184s&lt;/div&gt;&lt;div&gt;&amp;gt; sys&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;0m0.000s&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>语言的效率差异1</title>
+      <link>https://shell909090.github.io/blog/archives/2172/</link>
+      <pubDate>Mon, 14 May 2012 02:52:27 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2172/</guid>
+      <description>&lt;div&gt;# 问题 #&lt;/div&gt;&lt;div&gt;为了测试语言的效率，做一个正则解析。&lt;/div&gt;&lt;div&gt;预先说好，正则解析的问题是老板正在做的一个实际问题，我把其他和效率无关的部分去了。因此我接受“用法不正确”这样的反驳理由，但是不接受“这不是典型用例”的理由。我欢迎你指正我的用法错误，或者对语言不了解导致的效率低下，但是别来和我吵吵这种例子太特殊。另外，在调整代码和评估速度的时候，顺便注意一下代码行数。我知道用汇编逐行写和优化会很优秀，但是这对实际工作基本没有帮助。&lt;/div&gt;
+
+&lt;div&gt;问题是这样的：&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&amp;gt; 有一个文本文件，每行两个数，要求解析出来这两个数。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;我用python生成了数据，代码是这样的&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;    with open(sys.argv[1], &amp;#39;w&amp;#39;) as fo:&lt;/div&gt;&lt;div&gt;        for i in xrange(500000):&lt;/div&gt;
+
+&lt;div&gt;            fo.write(&amp;#39;%d %dn&amp;#39; % (i, random.randint(0, 10000)))&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;正则分析速率，是个典型的CPU密集操作。对于非编译型语言而言(这里的编译是指正则表达式的解析预编译，实际上除了lisp还真没有编译型的，即使是go也是现场拿到正则进行解析的)，这主要是看正则库的实现效率。很多时候，语言的效率问题并不取决于语言本身，还取决于语言的库的实现。大部分情况下我们都不可能砍掉系统的库重新来一个，那还不如换一门语言。&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;# python #&lt;/div&gt;&lt;div&gt;我首先贴出python语言的解答。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;reline = re.compile(&amp;#39;(d+) (d+)&amp;#39;)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;def main():&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;      &lt;/span&gt;with open(sys.argv[1], &amp;#39;r&amp;#39;) as fi:&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;           &lt;/span&gt;for line in fi: reline.match(line).groups()&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;这是性能&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&amp;gt; real    0m0.466s&lt;/div&gt;&lt;div&gt;&amp;gt; user    0m0.436s&lt;/div&gt;&lt;div&gt;&amp;gt; sys     0m0.012s&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;# common lisp #&lt;/div&gt;&lt;div&gt;我找了N个正则包，实际能用的只有ppcre。有些包号称很快，实际测试下来还不如ppcre。&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;(require :cl-ppcre)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;(defun grepfile (filename)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;  (let* ((cl-ppcre:*use-bmh-matchers* t)&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;      &lt;/span&gt; (cl-ppcre:*regex-char-code-limit* 256)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;      &lt;/span&gt; (scanner (cl-ppcre:create-scanner &amp;quot;d+ d+&amp;quot;)))&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;    (with-open-file (in filename)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;      (loop for line = (read-line in nil) while line do&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;      &lt;/span&gt;   (cl-ppcre:split scanner line)))&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;  ))&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;代码在slime里面测试(time (grepfile &amp;quot;data.dat&amp;quot;))，下面是结果&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;CL-USER&amp;gt; (time (main))&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;Evaluation took:&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;  0.398 seconds of real time&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;  0.392025 seconds of total run time (0.384024 user, 0.008001 system)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;  [ Run times consist of 0.016 seconds GC time, and 0.377 seconds non-GC time. ]&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;  98.49% CPU&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;  1,188,481,425 processor cycles&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;  72,242,256 bytes consed&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;# go #&lt;/div&gt;&lt;div&gt;go的代码是现学现卖的，不知道是不是哪里写出问题了。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;func main() {&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;        &lt;/span&gt;f, _ := os.Open(&amp;quot;data.txt&amp;quot;)&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;      &lt;/span&gt;r := bufio.NewReader(f)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;     &lt;/span&gt;rex, _ := regexp.Compile(&amp;quot;(d+) (d+)&amp;quot;)&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;     &lt;/span&gt;for line, isPrefix, err := r.ReadLine();&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;     &lt;/span&gt;    err == nil &amp;amp;&amp;amp; !isPrefix;&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;      &lt;/span&gt;    line, isPrefix, err = r.ReadLine() {&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;         &lt;/span&gt;rex.FindSubmatch(line)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;       &lt;/span&gt;}&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;}&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;结果居然要差一个数量级！&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&amp;gt; real&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;0m8.699s&lt;/div&gt;&lt;div&gt; &amp;gt; user&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;0m8.593s&lt;/div&gt; &lt;div&gt;&amp;gt; sys&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;0m0.036s&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;这太出乎我的意料了。google的v8引擎赫赫有名，我猜想也应当用到了go上面才是，怎么会性能差成这样？gary说过正则在他那里很快，我希望是我用错了。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;# lua #&lt;/div&gt;
+
+&lt;div&gt;lua没有使用正则包，更准确的说，lua内置的字符串处理函数可以处理这个情况。以下是我的代码：&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;for line in io.lines(&amp;quot;data.txt&amp;quot;) do&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;   for w in string.gmatch(line, &amp;quot;%d+&amp;quot;) do&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;      -- print(w)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;   end&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;end&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;以下是执行结果：&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&amp;gt; real&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;0m0.796s&lt;/div&gt;&lt;div&gt;&amp;gt; user&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;0m0.792s&lt;/div&gt;
+
+&lt;div&gt;&amp;gt; sys&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;0m0.000s&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;lua的代码的却很好看，但是效率上却不见得高。这是当然的，gmatch可是每工作一次就要解析一次阿。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;# lua-rex-pcre #&lt;/div&gt;&lt;div&gt;装一个支持pcre的正则包，lua-rex-pcre。&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;r = require &amp;quot;rex_pcre&amp;quot;.new(&amp;quot;(d+) (d+)&amp;quot;, 0)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;   &lt;/span&gt;for line in io.lines(&amp;quot;data.txt&amp;quot;) do&lt;/div&gt;
+
+&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;   r.match(r, line)&lt;/div&gt;&lt;div&gt;&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;  &lt;/span&gt;end&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;OK，速度一下就快了不少：&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt; &lt;div&gt; &amp;gt; real&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;0m0.643s&lt;/div&gt;&lt;div&gt;&amp;gt; user&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;    &lt;/span&gt;0m0.632s&lt;/div&gt;&lt;div&gt;&amp;gt; sys&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;0m0.008s&lt;/div&gt;
+
+&lt;div&gt;&lt;br /&gt;&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>如何用tabbar插件做emacs的tab定位切换</title>
+      <link>https://shell909090.github.io/blog/archives/2134/</link>
+      <pubDate>Tue, 10 Apr 2012 06:50:56 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2134/</guid>
+      <description>&lt;p&gt;说明一下，定位切换的意思，是像chromium那样，用Atl-1-9直接切换tab。而不是用上一个下一个慢慢换。另外，是切换buffer，不是切换frame。&lt;div&gt;    以下是实现部分：&lt;/div&gt;&lt;div&gt;;; 全部的buffer都分一组，否则这个修改是没任何意思的&lt;/div&gt;&lt;div&gt;&lt;div&gt;(setq tabbar-buffer-groups-function&lt;/div&gt;&lt;div&gt;      (lambda () (list &amp;quot;All Buffers&amp;quot;)))&lt;/div&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;;; 去掉emacs自带的几个buffer&lt;/div&gt;&lt;div&gt;(setq tabbar-buffer-list-function&lt;/div&gt;&lt;div&gt;      (lambda ()&lt;/div&gt;&lt;div&gt;        (remove-if&lt;/div&gt;&lt;div&gt;&lt;span style=&#34;white-space:pre-wrap&#34;&gt;  &lt;/span&gt; (lambda(buffer)&lt;/div&gt; &lt;div&gt;&lt;span style=&#34;white-space:pre-wrap&#34;&gt;  &lt;/span&gt;   (find (aref (buffer-name buffer) 0) &amp;quot; &lt;em&gt;&amp;quot;))&lt;/div&gt;&lt;div&gt;&lt;span style=&#34;white-space:pre-wrap&#34;&gt;    &lt;/span&gt; (buffer-list))))&lt;/div&gt;&lt;div&gt; &lt;br /&gt;&lt;/div&gt;&lt;div&gt;;; 切换到第N个buffer，1为第一个，负数表示从后数，注意0会出错，这里就不处理了&lt;/div&gt;&lt;div&gt;&lt;div&gt;(defun switch-tabbar (num)&lt;/div&gt;&lt;div&gt;  (let&lt;/em&gt; ((tabs (tabbar-tabs (tabbar-get-tabset &amp;quot;All Buffers&amp;quot;)))&lt;/div&gt;&lt;div&gt;         (tab (nth&lt;/div&gt;&lt;/p&gt;
+
+&lt;div&gt;               (if (&amp;gt; num 0) (- num 1) (+ (length tabs) num))&lt;/div&gt;&lt;div&gt;               tabs)))&lt;/div&gt;&lt;div&gt;    (if tab (switch-to-buffer (car tab)))&lt;/div&gt;&lt;div&gt;    ))&lt;/div&gt;&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;;; 不说废话，绑热键&lt;/div&gt; &lt;div&gt; &lt;div&gt;(global-set-key [(meta 1)] (lambda () (interactive) (switch-tabbar 1)))&lt;/div&gt; &lt;div&gt;(global-set-key [(meta 2)] (lambda () (interactive) (switch-tabbar 2)))&lt;/div&gt;&lt;div&gt;(global-set-key [(meta 3)] (lambda () (interactive) (switch-tabbar 3)))&lt;/div&gt;&lt;div&gt;(global-set-key [(meta 4)] (lambda () (interactive) (switch-tabbar 4)))&lt;/div&gt;
+
+&lt;p&gt;&lt;div&gt;(global-set-key &lt;a href=&#34;lambda () (interactive) (switch-tabbar 5)&#34;&gt;(meta 5)&lt;/a&gt;)&lt;/div&gt;&lt;div&gt;(global-set-key &lt;a href=&#34;lambda () (interactive) (switch-tabbar 6)&#34;&gt;(meta 6)&lt;/a&gt;)&lt;/div&gt;&lt;div&gt;(global-set-key &lt;a href=&#34;lambda () (interactive) (switch-tabbar 7)&#34;&gt;(meta 7)&lt;/a&gt;)&lt;/div&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;div&gt;(global-set-key &lt;a href=&#34;lambda () (interactive) (switch-tabbar 8)&#34;&gt;(meta 8)&lt;/a&gt;)&lt;/div&gt;&lt;div&gt;(global-set-key &lt;a href=&#34;lambda () (interactive) (switch-tabbar 9)&#34;&gt;(meta 9)&lt;/a&gt;)&lt;/div&gt;&lt;div&gt;(global-set-key &lt;a href=&#34;lambda () (interactive) (switch-tabbar -1)&#34;&gt;(meta )&lt;/a&gt;)&lt;/div&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt; &lt;/div&gt;&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>elisp的简单介绍</title>
+      <link>https://shell909090.github.io/blog/archives/1661/</link>
+      <pubDate>Sat, 25 Dec 2010 20:16:00 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/1661/</guid>
+      <description>&lt;p&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;emacs是利用elisp写成的，而elisp是lisp的一个方言。lisp语言是出名的优美和晦涩，当然，更出名的是括号。。。 &lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;emacs利用elisp作为上层抽象。首先，emacs提供了基本的编辑器框架，包括文件操作函数API，buffer，frame，windows的API。而后，emacs附带了很多函数实现，并且和按键一一绑定。例如Ctrl+N（简写为C-N）就被绑定到&amp;ldquo;换到下一行&amp;rdquo;这个API上。于是，我们按下Ctrl+N的时候，就会触发&amp;ldquo;换到下一行&amp;rdquo;这个函数的执行。dired等插件也是基于类似的原理写成。&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;我们可以用类似的方法，来编写自己的函数，扩充emacs的功能。下面我们看一个例子：&lt;/div&gt;    &lt;div&gt;&lt;div&gt;(defun popup-term ()&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;(interactive)&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;(apply &amp;#39;start-process &amp;quot;terminal&amp;quot; nil popup-terminal-command)&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;)&lt;/div&gt;&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;首先先说明一下，elisp的基于规则是利用括号匹配的s表达式，通过特定规则计算表达式。每个表达式由多个原子构成，一个原子可以是符号，对象（数字或者字符串），序对，表（包括空表），树，以及他们的嵌套。求值的时候，第一个原子做动词，先求值第一个原子，直到得到一个对象，再根据第一个原子的特性决定正则序和应用序。应用序的先对每个后续原子求值，再调用第一个原子对应的对象。正则序直接交给第一个原子对应对象处理。上文那个表达式，最外层的是(defun)列表，defun是函数定义函数，popup-term是符号。这部分混合起来，就是定义(interactive)&amp;nbsp;(apply &amp;#39;start-process &amp;quot;terminal&amp;quot; nil popup-terminal-command)为一个函数，并在上层框架空间内把内容赋值给popup-term这个符号。说的更直白一点，就是定义函数。&lt;/div&gt;    &lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;当我们执行popup-term这个函数的时候（M-x加上函数名就可以手工调用），首先执行interactive过程。这个函数可以在这里（&lt;a href=&#34;http://www.gnu.org/software/emacs/manual/html_node/elisp/index.html&#34; target=&#34;_blank&#34;&gt;&lt;a href=&#34;http://www.gnu.org/software/emacs/manual/html_node/elisp/index.html&#34;&gt;http://www.gnu.org/software/emacs/manual/html_node/elisp/index.html&lt;/a&gt;&lt;/a&gt;）查到，基本上，可以认为执行了这个函数，才能够和前台交互。而后是apply函数，这个函数将后面的几个值作用于紧跟着的那个符号所对应的函数。用python语言来描述，大概是这个样子。&lt;/div&gt;    &lt;div&gt;def apply(func, *param): return&amp;nbsp;globals()&lt;a href=&#34;*param&#34;&gt;func&lt;/a&gt;&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;这个函数真正的部分，是从start-process到括号结束。其意义是启动一个子进程，名为terminal，没有对应的buffer（熟悉emacs的应该知道这是什么），命令为popup-terminal-command。这个命令在windows下和linux下有不同定义，所以我将这个定义放在了emacs-win.el和emacs-linux.el里面。在linux下，他是这么定义的。&lt;/div&gt;    &lt;div&gt;(setq popup-terminal-command &amp;#39;(&amp;quot;x-terminal-emulator&amp;quot;))&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;setq是设定一个全局变量。整句合起来的意思是，在执行popup-term的时候，启动一个子进程，执行x-terminal-emulator。最后，将popup-term绑定到keymap上。&lt;/div&gt;&lt;div&gt;(global-set-key [(control c) (s)] &amp;#39;popup-term)&lt;/div&gt;    &lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;现在，在任何一个buffer中按下C-c s，就可以弹出当前目录对应的term了。&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;我们在emacs中所做的所有配置，插件安装，其实本质上是写代码控制其他代码的载入，变更环境变量。只要有合适的文档，或者有时间阅读源码，我们就可以对其他程序进行扩充。下面介绍一个对dired进行扩充的例子，我们向dired中加入copy-from和rename-from，还有dired-open功能。dired的copy和rename必须在源目录中，选择文件，按C，输入目标路径。有的时候我们在某个目录工作到一半，突然需要从另外一个目录复制一个文件过来。这时候打开对方目录进行复制动作太繁琐，因此我编写了两个函数，分别绑定到r和c上。dired-open则是另外一个文件，有时我们需要通过其他程序打开某个文件，例如播放电影。在dired中直接用&amp;amp;可以实现这个目标，但是需要自行输入播放命令，而且会新开一个buffer。以下是代码。&lt;/div&gt;    &lt;div&gt;&lt;div&gt;(defun dired-open-file (&amp;amp;optional arg)&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;(interactive)&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;(apply &amp;#39;start-process &amp;quot;dired-open&amp;quot; nil&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; (append (split-string&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;(read-shell-command&lt;/div&gt;    &lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;quot;command: &amp;quot; (dired-guess-cmd (dired-get-filename))))&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;(list (dired-get-filename)))))&lt;/div&gt;&lt;div&gt;(defun dired-copy-from (&amp;amp;optional arg)&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;(interactive)&lt;/div&gt;    &lt;div&gt;&amp;nbsp;&amp;nbsp;(let ((source-path (read-file-name &amp;quot;filepath: &amp;quot;)))&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;(copy-file source-path (file-name-nondirectory source-path))))&lt;/div&gt;&lt;div&gt;(defun dired-rename-from (&amp;amp;optional arg)&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;(interactive)&lt;/div&gt;    &lt;div&gt;&amp;nbsp;&amp;nbsp;(let ((source-path (read-file-name &amp;quot;filepath: &amp;quot;)))&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;(rename-file source-path (file-name-nondirectory source-path))))&lt;/div&gt;&lt;div&gt;(add-hook &amp;#39;dired-mode-hook&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;(lambda ()&lt;/div&gt;    &lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;(define-key dired-mode-map &amp;quot;b&amp;quot; &amp;#39;dired-open-file)&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;(define-key dired-mode-map &amp;quot;c&amp;quot; &amp;#39;dired-copy-from)&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;(define-key dired-mode-map &amp;quot;r&amp;quot; &amp;#39;dired-rename-from)&lt;/div&gt;    &lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;(define-key dired-mode-map [(control c) (g)] &amp;#39;dired-etags-tables)&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;))&lt;/div&gt;&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;如上文一样，我们定义了dired-open-file函数，这个函数的核心部分是start-process，但是在命令上，我们的命令是这个。&lt;/div&gt;&lt;div&gt;&lt;div&gt;(append (split-string&lt;/div&gt;    &lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;(read-shell-command&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;quot;command: &amp;quot; (dired-guess-cmd (dired-get-filename))))&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;(list (dired-get-filename)))&lt;/div&gt;&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;这段代码，是将两个表进行混合。第一个是从mini-buffer读取入一个命令行，而后分解为列表，读取时的默认值由dired-guess-cmd这个函数确定。第二个表是当前光标所在的文件名。两者合起来，在执行的时候就会变成命令行后加上文件名的执行效果。而dired-guess-cmd这个函数，接受当前文件名作为参数，猜测一个正确的命令行。在windows下，大多数时候等于start，linux下则是大多数时候等于xdg-open。&lt;/div&gt;    &lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;下面的dired-copy-from和dired-rename-from函数非常简单，大家可以自行分析。不明白的函数可以查阅上文那份elisp的参考手册。&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;最后，我们把这些函数绑定到键上。由于不是全局绑定，因此不能使用global-set-key。非常幸运的，dired在加载的时候会调用dired-mode-hook。我们将一个lambda函数加入这个函数调用中，这个lambda函数中，使用define-key定义了键和函数的对应关系。于是，我们在dired模式下，通过b c r就可以调用以上三个我们编写的功能了。&lt;/div&gt;    &lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;elisp可以通过pymacs和python进行混编调用，但是通常并不需要这么复杂而强大&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

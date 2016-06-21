@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>python环境部署</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         python环境部署 
+    </h1>
+    <p class="meta">Nov 22, 2012
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2278/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p><h2>abstract</h2>
+本文的目的，在于教授使用virtualenv创立python环境，对环境的管理和使用，以及代码和部署的用法范例。在阅读完本文后，你应当可以。
+<ul>
+    <li>创立，部署，管理virtualenv环境</li>
+    <li>使用virtualenv环境进行编码</li>
+</ul>
+<h2>virtualenv环境建立</h2>
+virtualenv是python的虚环境管理包，他的主要目的是为了隔离环境。其中包含以下两个范畴。
+<ul>
+    <li>在虚环境中安装包，不需要对系统进行修改，不会对系统造成污染。</li>
+    <li>在系统中安装的包，不会对虚环境造成污染。这主要是出于版本安全考虑。</li>
+</ul>
+因此，virtualenv默认会阻止你使用系统中安装的包。要解决这个问题，需要在建立虚拟环境时指定参数&ndash;system-site-packages。</p>
+
+<p>virtualenv的环境可以通过执行virtualenv path加以建立。当建立完成后<strong>不可移动</strong>，需要一些特殊调整，使用参数&ndash;relocatable对此没有帮助。
+<h2>virtualenv环境的激活和反激活</h2>
+virtualenv环境是通过替换系统环境变量工作的。在激活后会替换系统的提示符，提示你进入环境。一般我们使用source $VIRTUALENVPATH/bin/activate来激活。激活后直接执行deactivate反激活。</p>
+
+<p>virtualenv替换系统环境变量的方式是在path前加入virtualenv的bin路径，使自己的python优于系统python执行。同时替换pythonhome，变更lib查找路径。因此，对于某些可以指定pythonhome的应用（例如网络部署），直接指定pythonpath为virtualenv路径即可。</p>
+
+<p>注意，由于virtualenv的工作方式，因此当你执行su/sudo bash后，virtualenv环境都有可能消失，但是提示符仍旧生效。建议通过sudo执行脚本，脚本内进行source比较安全。或者直接sudo目标程序也可以，<strong>不要新建上下文</strong>。</p>
+
+<p>如果需要保持持续的环境激活，可以将source $VIRTUALENVPATH/bin/activate加入~/.bashrc。</p>
+
+<p>当virtualenv激活后，后续的pip安装和python使用都会使用virtualenv内的版本。因此下文未经特殊说明，都是指在激活环境后进行操作。
+<h2>virtualenv环境的管理</h2>
+主要包括两种手段，安装和删除。一般使用pip install package name进行安装。pip uninstall package name进行删除。
+<h2>virtualenv环境的保存和恢复</h2>
+virtualenv环境可以保存和恢复。所谓保存和恢复，是指在安装过包的环境中保存包列表（和具体版本），在未安装（或版本错误）的环境中启用。</p>
+
+<p>一般通过pip freeze &gt; filename进行保存。在目标机器上执行pip install -r filename进行恢复。</p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Nov 22, 2012</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/program">program</a>  <a class="category" href="https://shell909090.github.io/tags/python">python</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/2272/" title="python入门指引">python入门指引</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/2282/" title="异常和错误的几条军规">异常和错误的几条军规</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

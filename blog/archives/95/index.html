@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>PC使用android上网</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         PC使用android上网 
+    </h1>
+    <p class="meta">Feb 22, 2010
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/95/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>最简单的方法是使用<a style="text-decoration: none; color: #000000;" href="http://code.google.com/p/android-wifi-tether/">android-wifi-tether</a>，不过我这里使用不成功，原因不明。所以今天我们不去说他，我们说另外一个软件，azlink(<a href="http://code.google.com/p/azilink/">http://code.google.com/p/azilink/</a>)。
+首先是安装。检查是否满足安装条件，如果满足的话，安装apk，这个不用多说。azlink.ovpn需要复制到电脑上，并且准备好openvpn和adb。另外，推荐在手机上也保存一个azlink.ovpn和adb，openvpn，以便在多个机器上使用。
+下面开始正式的连接操作，作为测试，请先关闭手机的wifi上网功能和电脑的wifi，有线，以免影响测试结果。本文中的范例系统是Debian Testing(Squeeze)，网络环境是中国移动的CMNET(8元80M包月，很合算的)。如果环境有所差异，请照您的环境做相应调整。
+1.使用usb线连接andriod和PC，此时android上会出现USB已连接的提示。
+2.在android上执行azlink，并且勾第一个勾，Service active，保证系统运行。此时状态应当是Warting for connection。
+3.在PC上执行adb forward tcp:41927 tcp:41927，此时可能出现service start。这个是首次运行的原因，不影响结果。
+4.执行openvpn azlink.ovpn。此时会出现虚拟网络，并且android上的状态发生变化。
+5.在android上，设置-&gt;高级属性-&gt;手机信息中，查看下面的GSM信息，一般能看到网关和DNS。请去ping一次网关，如果成功，你的事情已经成功了大半。
+如果上面不成功，请联系我。如果成功，请在你的系统内重设DNS。azlink.ovpn将你的DNS指向了手机上，可手机本身无法做DNS的。因此请将你电脑的DNS重设为手机上的值。如果你高兴，也可以将azlink.ovpn中的值改掉，理论上说一个地区的移动网络中，DNS应当都是一样的。不过如果你要跨地区，这个DNS就会发生变化。因此，我无法预先给定值，也无法获得。
+这是整个过程中最关键的一步。很多人说为什么无法上网，其实是可以的，只是你的DNS没有指向正确的值而已。
+6.如果是CMNET，事情就到此为止了。如果是CMWAP，你还需要做一小步。找一个CMWAP能够访问的代理，设到你的浏览器里面。
+作为关闭，其实拔线就可以了。不过作为程序员，我们习惯完美的析构过程。所以，下面是关闭过程。
+1.恢复浏览器原先的代理设置。
+2.断开openvpn，此时android上的状态会恢复Warting for connection。
+3.PC上需要执行adb kill-server。这样会kill掉adb的daemon进程，否则adb会一直假转发，并且始终占用进程号。
+4.在android上，关闭Service active的勾。并且，如果你喜欢，可以kill掉进程以回收内存。
+5.拔USB线。
+如果你曾经关闭了手机的wifi，电脑的wifi和有线，现在也可以恢复了。</p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Feb 22, 2010</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/android">android</a>  <a class="category" href="https://shell909090.github.io/tags/computer">computer</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/94/" title="ext3下小文件的恢复">ext3下小文件的恢复</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/96/" title="领导的艺术">领导的艺术</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>一个远程下载verycd的小技巧</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         一个远程下载verycd的小技巧 
+    </h1>
+    <p class="meta">Jan 29, 2010
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/89/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>贝壳家里开了emule，天天下载，问题是又不能每次都是晚上添加资源。
+怎么办呢？不知道大家知道不知道，emule是可以网络管理的，端口是4711。不过不是https，密码容易泄露。而且贝壳已经有一个nginx服务器了，也懒的再做端口映射，换端口。于是，在nginx中做如下设定。(当然，贝壳是放在https段中的)</p>
+
+<p>location ^~ /emule/ {
+rewrite             ^/emule/(.*)$ /$1 break;
+proxy_pass          <a href="http://hostip:4711">http://hostip:4711</a>;
+proxy_set_header    Host            $host;
+proxy_set_header    X-Real-IP       $remote_addr;
+proxy_set_header    X-Forwarded-For $proxy_add_x_forwarded_for;
+}</p>
+
+<p>然后，用<a href="https://dynname/emule/">https://dynname/emule/</a>就可以访问你家里的emule了，记得密码设强点。</p>
+
+<p>接下来，verycd里面曾经有复制所有连接的选项，现在没了。面对几个链接，也就手工复制一下，面对上百个连接，贝壳就无语了。贝壳试验过几个插件，都无法正确识别ed2k的链接获取。那怎么办呢？这时就要请出我们伟大的Linux。
+需要准备的工具是lynx，请预先装好，然后如下操作。(范例是个动画^_^)</p>
+
+<p>wget -c <a href="http://www.verycd.com/topics/2779234/">http://www.verycd.com/topics/2779234/</a>
+lynx -dump -listonly index.html | grep &ldquo;ed2k://&rdquo; | sed &ldquo;s/.*ed2k/ed2k/g&rdquo; | grep -v BIG5 &gt; out.txt
+wc -l out.txt</p>
+
+<p>lynx的-dump选项是将某个网页全部渲染成文本进行展示，这是html2text的好方法，效果还不错哦，不过中文支持好像不是很好。而-listonly则是展示出页面上的所有链接，这就拿到了我们需要的原始数据。
+然后，我们取其中的ed2k行，忽略其他链接，再通过sed转换，去除头部的编号和空格，这样就可以得到所有的ed2k链接。
+我在下面是用-v BIG5的参数，忽略了其中繁体中文的资源，然后输出到一个文件中。数数行数，52行，大致和文件个数相当(其中好像有两个v2)。那就是可用资源了，复制到emule的控制页面中——出错？
+这是因为emule的控制页面使用GET方式传递参数，因此有长度限制。你需要将链接10个一批往里面复制——有个几次就OK了。当然，如果还是多，贝壳回头会写一篇文章，介绍如何使用curl自动干这事情——这还不算太难。
+这就是为啥贝壳喜欢Linux的原因了。相比Windows下的两个解决方案，找插件太费劲，自己写程序更费劲。Linux使用现有工具的组合可以轻松完成这一任务。</p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Jan 29, 2010</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/emule">emule</a>  <a class="category" href="https://shell909090.github.io/tags/linux">linux</a>  <a class="category" href="https://shell909090.github.io/tags/lynx">lynx</a>  <a class="category" href="https://shell909090.github.io/tags/nginx">nginx</a>  <a class="category" href="https://shell909090.github.io/tags/wget">wget</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/88/" title="关于减少使用gmail的建议">关于减少使用gmail的建议</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/90/" title="手机又丢了">手机又丢了</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

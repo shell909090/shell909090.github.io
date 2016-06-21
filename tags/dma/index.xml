@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Dma on Shell&#39;s Home</title>
+    <link>https://shell909090.github.io/tags/dma/</link>
+    <description>Recent content in Dma on Shell&#39;s Home</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 17 Mar 2014 14:01:13 +0800</lastBuildDate>
+    <atom:link href="https://shell909090.github.io/tags/dma/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>系统内存有富裕但是syslog中持续报告内存耗尽</title>
+      <link>https://shell909090.github.io/blog/archives/2594/</link>
+      <pubDate>Mon, 17 Mar 2014 14:01:13 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2594/</guid>
+      <description>&lt;h1&gt;现象&lt;/h1&gt;
+
+&lt;p&gt;ubuntu12.04，3.5.0-23的内核。在syslog里面持续看到内存耗尽，用free去查看却是内存还有80G左右。检查系统没有cgroup或者ulimit限制。log如下:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Mar 11 14:45:34 nb81 kernel: [7352493.081026] swapper/0: page allocation failure: order:4, mode:0x4020
+Mar 11 14:45:34 nb81 kernel: [7352493.081035] Pid: 0, comm: swapper/0 Tainted: G        W    3.5.0-23-generic #35~precise1-Ubuntu
+Mar 11 14:45:34 nb81 kernel: [7352493.081038] Call Trace:
+Mar 11 14:45:34 nb81 kernel: [7352493.081040]  &amp;lt;IRQ&amp;gt;  [&amp;lt;ffffffff8112d1b6&amp;gt;] warn_alloc_failed+0xf6/0x150
+Mar 11 14:45:34 nb81 kernel: [7352493.081065]  [&amp;lt;ffffffff81139a51&amp;gt;] ? wakeup_kswapd+0x101/0x160
+Mar 11 14:45:34 nb81 kernel: [7352493.081071]  [&amp;lt;ffffffff81130ffb&amp;gt;] __alloc_pages_nodemask+0x6db/0x930
+Mar 11 14:45:34 nb81 kernel: [7352493.081079]  [&amp;lt;ffffffff815c80df&amp;gt;] ? tcp_new_space+0xbf/0xd0
+Mar 11 14:45:34 nb81 kernel: [7352493.081086]  [&amp;lt;ffffffff816895e2&amp;gt;] kmalloc_large_node+0x57/0x85
+Mar 11 14:45:34 nb81 kernel: [7352493.081092]  [&amp;lt;ffffffff811766f5&amp;gt;] __kmalloc_node_track_caller+0x1a5/0x1f0
+Mar 11 14:45:34 nb81 kernel: [7352493.081099]  [&amp;lt;ffffffff81574b8b&amp;gt;] ? __alloc_skb+0x4b/0x230
+Mar 11 14:45:34 nb81 kernel: [7352493.081103]  [&amp;lt;ffffffff81574ee5&amp;gt;] ? skb_copy+0x45/0xb0
+Mar 11 14:45:34 nb81 kernel: [7352493.081108]  [&amp;lt;ffffffff81574bb8&amp;gt;] __alloc_skb+0x78/0x230
+Mar 11 14:45:34 nb81 kernel: [7352493.081113]  [&amp;lt;ffffffff81574ee5&amp;gt;] skb_copy+0x45/0xb0
+Mar 11 14:45:34 nb81 kernel: [7352493.081135]  [&amp;lt;ffffffffa00181e5&amp;gt;] tigon3_dma_hwbug_workaround+0x205/0x270 [tg3]
+Mar 11 14:45:34 nb81 kernel: [7352493.081142]  [&amp;lt;ffffffff8134d359&amp;gt;] ? swiotlb_unmap_page+0x9/0x10
+Mar 11 14:45:34 nb81 kernel: [7352493.081151]  [&amp;lt;ffffffffa0019e25&amp;gt;] tg3_start_xmit+0x445/0x990 [tg3]
+Mar 11 14:45:34 nb81 kernel: [7352493.081157]  [&amp;lt;ffffffff815848b6&amp;gt;] dev_hard_start_xmit+0x256/0x550
+Mar 11 14:45:34 nb81 kernel: [7352493.081165]  [&amp;lt;ffffffff815a09c6&amp;gt;] sch_direct_xmit+0xf6/0x1c0
+Mar 11 14:45:34 nb81 kernel: [7352493.081170]  [&amp;lt;ffffffff815a0b36&amp;gt;] __qdisc_run+0xa6/0x130
+Mar 11 14:45:34 nb81 kernel: [7352493.081175]  [&amp;lt;ffffffff81583786&amp;gt;] net_tx_action+0xe6/0x200
+Mar 11 14:45:34 nb81 kernel: [7352493.081183]  [&amp;lt;ffffffff8105ba88&amp;gt;] __do_softirq+0xa8/0x210
+Mar 11 14:45:34 nb81 kernel: [7352493.081191]  [&amp;lt;ffffffff8169e7de&amp;gt;] ? _raw_spin_lock+0xe/0x20
+Mar 11 14:45:34 nb81 kernel: [7352493.081196]  [&amp;lt;ffffffff816a841c&amp;gt;] call_softirq+0x1c/0x30
+Mar 11 14:45:34 nb81 kernel: [7352493.081204]  [&amp;lt;ffffffff81016245&amp;gt;] do_softirq+0x65/0xa0
+Mar 11 14:45:34 nb81 kernel: [7352493.081209]  [&amp;lt;ffffffff8105be6e&amp;gt;] irq_exit+0x8e/0xb0
+Mar 11 14:45:34 nb81 kernel: [7352493.081214]  [&amp;lt;ffffffff816a8c73&amp;gt;] do_IRQ+0x63/0xe0
+Mar 11 14:45:34 nb81 kernel: [7352493.081220]  [&amp;lt;ffffffff8169ec6a&amp;gt;] common_interrupt+0x6a/0x6a
+Mar 11 14:45:34 nb81 kernel: [7352493.081222]  &amp;lt;EOI&amp;gt;  [&amp;lt;ffffffff81040af9&amp;gt;] ? default_spin_lock_flags+0x9/0x10
+Mar 11 14:45:34 nb81 kernel: [7352493.081236]  [&amp;lt;ffffffff813992da&amp;gt;] ? intel_idle+0xea/0x150
+Mar 11 14:45:34 nb81 kernel: [7352493.081241]  [&amp;lt;ffffffff813992bc&amp;gt;] ? intel_idle+0xcc/0x150
+Mar 11 14:45:34 nb81 kernel: [7352493.081247]  [&amp;lt;ffffffff81535509&amp;gt;] cpuidle_enter+0x19/0x20
+Mar 11 14:45:34 nb81 kernel: [7352493.081252]  [&amp;lt;ffffffff81535b2c&amp;gt;] cpuidle_idle_call+0xac/0x2a0
+Mar 11 14:45:34 nb81 kernel: [7352493.081258]  [&amp;lt;ffffffff8101d89f&amp;gt;] cpu_idle+0xcf/0x120
+Mar 11 14:45:34 nb81 kernel: [7352493.081266]  [&amp;lt;ffffffff81661f8e&amp;gt;] rest_init+0x72/0x74
+Mar 11 14:45:34 nb81 kernel: [7352493.081274]  [&amp;lt;ffffffff81cf3c45&amp;gt;] start_kernel+0x3c5/0x3d2
+Mar 11 14:45:34 nb81 kernel: [7352493.081280]  [&amp;lt;ffffffff81cf3801&amp;gt;] ? pass_bootoption.constprop.3+0xd3/0xd3
+Mar 11 14:45:34 nb81 kernel: [7352493.081286]  [&amp;lt;ffffffff81cf3397&amp;gt;] x86_64_start_reservations+0x131/0x135
+Mar 11 14:45:34 nb81 kernel: [7352493.081292]  [&amp;lt;ffffffff81cf3120&amp;gt;] ? early_idt_handlers+0x120/0x120
+Mar 11 14:45:34 nb81 kernel: [7352493.081298]  [&amp;lt;ffffffff81cf3468&amp;gt;] x86_64_start_kernel+0xcd/0xdc
+Mar 11 14:45:34 nb81 kernel: [7352493.081300] Mem-Info:
+Mar 11 14:45:34 nb81 kernel: [7352493.081303] Node 0 DMA per-cpu:
+Mar 11 14:45:34 nb81 kernel: [7352493.081307] CPU    0: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081309] CPU    1: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081312] CPU    2: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081314] CPU    3: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081317] CPU    4: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081319] CPU    5: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081321] CPU    6: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081324] CPU    7: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081326] CPU    8: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081329] CPU    9: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081331] CPU   10: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081333] CPU   11: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081336] CPU   12: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081338] CPU   13: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081340] CPU   14: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081343] CPU   15: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081345] CPU   16: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081347] CPU   17: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081350] CPU   18: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081352] CPU   19: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081354] CPU   20: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081357] CPU   21: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081359] CPU   22: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081361] CPU   23: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081363] Node 0 DMA32 per-cpu:
+Mar 11 14:45:34 nb81 kernel: [7352493.081367] CPU    0: hi:  186, btch:  31 usd: 155
+Mar 11 14:45:34 nb81 kernel: [7352493.081369] CPU    1: hi:  186, btch:  31 usd:  63
+Mar 11 14:45:34 nb81 kernel: [7352493.081372] CPU    2: hi:  186, btch:  31 usd: 135
+Mar 11 14:45:34 nb81 kernel: [7352493.081374] CPU    3: hi:  186, btch:  31 usd: 170
+Mar 11 14:45:34 nb81 kernel: [7352493.081377] CPU    4: hi:  186, btch:  31 usd:  79
+Mar 11 14:45:34 nb81 kernel: [7352493.081379] CPU    5: hi:  186, btch:  31 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081381] CPU    6: hi:  186, btch:  31 usd: 118
+Mar 11 14:45:34 nb81 kernel: [7352493.081384] CPU    7: hi:  186, btch:  31 usd: 176
+Mar 11 14:45:34 nb81 kernel: [7352493.081386] CPU    8: hi:  186, btch:  31 usd:  53
+Mar 11 14:45:34 nb81 kernel: [7352493.081389] CPU    9: hi:  186, btch:  31 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081391] CPU   10: hi:  186, btch:  31 usd: 183
+Mar 11 14:45:34 nb81 kernel: [7352493.081393] CPU   11: hi:  186, btch:  31 usd:   1
+Mar 11 14:45:34 nb81 kernel: [7352493.081396] CPU   12: hi:  186, btch:  31 usd: 168
+Mar 11 14:45:34 nb81 kernel: [7352493.081398] CPU   13: hi:  186, btch:  31 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081401] CPU   14: hi:  186, btch:  31 usd: 180
+Mar 11 14:45:34 nb81 kernel: [7352493.081403] CPU   15: hi:  186, btch:  31 usd: 156
+Mar 11 14:45:34 nb81 kernel: [7352493.081406] CPU   16: hi:  186, btch:  31 usd:  55
+Mar 11 14:45:34 nb81 kernel: [7352493.081408] CPU   17: hi:  186, btch:  31 usd: 183
+Mar 11 14:45:34 nb81 kernel: [7352493.081410] CPU   18: hi:  186, btch:  31 usd: 138
+Mar 11 14:45:34 nb81 kernel: [7352493.081413] CPU   19: hi:  186, btch:  31 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081415] CPU   20: hi:  186, btch:  31 usd: 174
+Mar 11 14:45:34 nb81 kernel: [7352493.081418] CPU   21: hi:  186, btch:  31 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081420] CPU   22: hi:  186, btch:  31 usd:  62
+Mar 11 14:45:34 nb81 kernel: [7352493.081422] CPU   23: hi:  186, btch:  31 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081424] Node 0 Normal per-cpu:
+Mar 11 14:45:34 nb81 kernel: [7352493.081428] CPU    0: hi:  186, btch:  31 usd: 131
+Mar 11 14:45:34 nb81 kernel: [7352493.081431] CPU    1: hi:  186, btch:  31 usd: 177
+Mar 11 14:45:34 nb81 kernel: [7352493.081433] CPU    2: hi:  186, btch:  31 usd: 157
+Mar 11 14:45:34 nb81 kernel: [7352493.081436] CPU    3: hi:  186, btch:  31 usd: 176
+Mar 11 14:45:34 nb81 kernel: [7352493.081438] CPU    4: hi:  186, btch:  31 usd:  88
+Mar 11 14:45:34 nb81 kernel: [7352493.081440] CPU    5: hi:  186, btch:  31 usd: 177
+Mar 11 14:45:34 nb81 kernel: [7352493.081443] CPU    6: hi:  186, btch:  31 usd: 159
+Mar 11 14:45:34 nb81 kernel: [7352493.081445] CPU    7: hi:  186, btch:  31 usd: 157
+Mar 11 14:45:34 nb81 kernel: [7352493.081447] CPU    8: hi:  186, btch:  31 usd: 152
+Mar 11 14:45:34 nb81 kernel: [7352493.081450] CPU    9: hi:  186, btch:  31 usd: 183
+Mar 11 14:45:34 nb81 kernel: [7352493.081452] CPU   10: hi:  186, btch:  31 usd: 145
+Mar 11 14:45:34 nb81 kernel: [7352493.081454] CPU   11: hi:  186, btch:  31 usd: 169
+Mar 11 14:45:34 nb81 kernel: [7352493.081457] CPU   12: hi:  186, btch:  31 usd: 182
+Mar 11 14:45:34 nb81 kernel: [7352493.081459] CPU   13: hi:  186, btch:  31 usd:  11
+Mar 11 14:45:34 nb81 kernel: [7352493.081462] CPU   14: hi:  186, btch:  31 usd: 145
+Mar 11 14:45:34 nb81 kernel: [7352493.081464] CPU   15: hi:  186, btch:  31 usd: 173
+Mar 11 14:45:34 nb81 kernel: [7352493.081467] CPU   16: hi:  186, btch:  31 usd: 153
+Mar 11 14:45:34 nb81 kernel: [7352493.081469] CPU   17: hi:  186, btch:  31 usd: 177
+Mar 11 14:45:34 nb81 kernel: [7352493.081471] CPU   18: hi:  186, btch:  31 usd:  54
+Mar 11 14:45:34 nb81 kernel: [7352493.081474] CPU   19: hi:  186, btch:  31 usd: 161
+Mar 11 14:45:34 nb81 kernel: [7352493.081476] CPU   20: hi:  186, btch:  31 usd:  76
+Mar 11 14:45:34 nb81 kernel: [7352493.081479] CPU   21: hi:  186, btch:  31 usd: 178
+Mar 11 14:45:34 nb81 kernel: [7352493.081481] CPU   22: hi:  186, btch:  31 usd: 153
+Mar 11 14:45:34 nb81 kernel: [7352493.081483] CPU   23: hi:  186, btch:  31 usd: 178
+Mar 11 14:45:34 nb81 kernel: [7352493.081486] Node 1 Normal per-cpu:
+Mar 11 14:45:34 nb81 kernel: [7352493.081489] CPU    0: hi:  186, btch:  31 usd: 168
+Mar 11 14:45:34 nb81 kernel: [7352493.081491] CPU    1: hi:  186, btch:  31 usd: 156
+Mar 11 14:45:34 nb81 kernel: [7352493.081493] CPU    2: hi:  186, btch:  31 usd: 177
+Mar 11 14:45:34 nb81 kernel: [7352493.081495] CPU    3: hi:  186, btch:  31 usd:  65
+Mar 11 14:45:34 nb81 kernel: [7352493.081498] CPU    4: hi:  186, btch:  31 usd: 163
+Mar 11 14:45:34 nb81 kernel: [7352493.081500] CPU    5: hi:  186, btch:  31 usd: 110
+Mar 11 14:45:34 nb81 kernel: [7352493.081502] CPU    6: hi:  186, btch:  31 usd: 179
+Mar 11 14:45:34 nb81 kernel: [7352493.081505] CPU    7: hi:  186, btch:  31 usd:  39
+Mar 11 14:45:34 nb81 kernel: [7352493.081507] CPU    8: hi:  186, btch:  31 usd: 181
+Mar 11 14:45:34 nb81 kernel: [7352493.081509] CPU    9: hi:  186, btch:  31 usd: 107
+Mar 11 14:45:34 nb81 kernel: [7352493.081511] CPU   10: hi:  186, btch:  31 usd: 159
+Mar 11 14:45:34 nb81 kernel: [7352493.081514] CPU   11: hi:  186, btch:  31 usd: 113
+Mar 11 14:45:34 nb81 kernel: [7352493.081516] CPU   12: hi:  186, btch:  31 usd: 167
+Mar 11 14:45:34 nb81 kernel: [7352493.081518] CPU   13: hi:  186, btch:  31 usd: 125
+Mar 11 14:45:34 nb81 kernel: [7352493.081521] CPU   14: hi:  186, btch:  31 usd: 164
+Mar 11 14:45:34 nb81 kernel: [7352493.081523] CPU   15: hi:  186, btch:  31 usd:  68
+Mar 11 14:45:34 nb81 kernel: [7352493.081525] CPU   16: hi:  186, btch:  31 usd: 169
+Mar 11 14:45:34 nb81 kernel: [7352493.081528] CPU   17: hi:  186, btch:  31 usd: 152
+Mar 11 14:45:34 nb81 kernel: [7352493.081530] CPU   18: hi:  186, btch:  31 usd: 160
+Mar 11 14:45:34 nb81 kernel: [7352493.081532] CPU   19: hi:  186, btch:  31 usd: 129
+Mar 11 14:45:34 nb81 kernel: [7352493.081535] CPU   20: hi:  186, btch:  31 usd: 156
+Mar 11 14:45:34 nb81 kernel: [7352493.081537] CPU   21: hi:  186, btch:  31 usd:  56
+Mar 11 14:45:34 nb81 kernel: [7352493.081539] CPU   22: hi:  186, btch:  31 usd: 183
+Mar 11 14:45:34 nb81 kernel: [7352493.081542] CPU   23: hi:  186, btch:  31 usd: 161
+Mar 11 14:45:34 nb81 kernel: [7352493.081548] active_anon:2011479 inactive_anon:465423 isolated_anon:0
+Mar 11 14:45:34 nb81 kernel: [7352493.081548]  active_file:8441358 inactive_file:12481139 isolated_file:8
+Mar 11 14:45:34 nb81 kernel: [7352493.081548]  unevictable:0 dirty:223271 writeback:7577 unstable:0
+Mar 11 14:45:34 nb81 kernel: [7352493.081548]  free:105270 slab_reclaimable:1002710 slab_unreclaimable:35112
+Mar 11 14:45:34 nb81 kernel: [7352493.081548]  mapped:7298 shmem:370 pagetables:10455 bounce:0
+Mar 11 14:45:34 nb81 kernel: [7352493.081552] Node 0 DMA free:15904kB min:12kB low:12kB high:16kB active_anon:0kB inactive_anon:0kB active_file:0kB inactive_file:0kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:15648kB mlocked:0kB dirty:0kB writeback:0kB mapped:0kB shmem:0kB slab_reclaimable:0kB slab_unreclaimable:0kB kernel_stack:0kB pagetables:0kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? yes
+Mar 11 14:45:34 nb81 kernel: [7352493.081561] lowmem_reserve[]: 0 2947 48307 48307
+Mar 11 14:45:34 nb81 kernel: [7352493.081567] Node 0 DMA32 free:190008kB min:2744kB low:3428kB high:4116kB active_anon:30588kB inactive_anon:56160kB active_file:200180kB inactive_file:1256876kB unevictable:0kB isolated(anon):0kB isolated(file):12kB present:3017920kB mlocked:0kB dirty:19992kB writeback:4092kB mapped:4kB shmem:0kB slab_reclaimable:1213128kB slab_unreclaimable:45256kB kernel_stack:3528kB pagetables:408kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
+Mar 11 14:45:34 nb81 kernel: [7352493.081575] lowmem_reserve[]: 0 0 45360 45360
+Mar 11 14:45:34 nb81 kernel: [7352493.081580] Node 0 Normal free:83784kB min:42264kB low:52828kB high:63396kB active_anon:3823788kB inactive_anon:923604kB active_file:19944584kB inactive_file:19948720kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:46448640kB mlocked:0kB dirty:459668kB writeback:14692kB mapped:16260kB shmem:1456kB slab_reclaimable:1234664kB slab_unreclaimable:43432kB kernel_stack:2856kB pagetables:21028kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
+Mar 11 14:45:34 nb81 kernel: [7352493.081589] lowmem_reserve[]: 0 0 0 0
+Mar 11 14:45:34 nb81 kernel: [7352493.081593] Node 1 Normal free:131384kB min:45084kB low:56352kB high:67624kB active_anon:4191540kB inactive_anon:881928kB active_file:13620668kB inactive_file:28718960kB unevictable:0kB isolated(anon):0kB isolated(file):20kB present:49545216kB mlocked:0kB dirty:413424kB writeback:11524kB mapped:12928kB shmem:24kB slab_reclaimable:1563048kB slab_unreclaimable:51760kB kernel_stack:3560kB pagetables:20384kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
+Mar 11 14:45:34 nb81 kernel: [7352493.081601] lowmem_reserve[]: 0 0 0 0
+Mar 11 14:45:34 nb81 kernel: [7352493.081606] Node 0 DMA: 0*4kB 0*8kB 0*16kB 1*32kB 2*64kB 1*128kB 1*256kB 0*512kB 1*1024kB 1*2048kB 3*4096kB = 15904kB
+Mar 11 14:45:34 nb81 kernel: [7352493.081619] Node 0 DMA32: 20628*4kB 12963*8kB 195*16kB 20*32kB 0*64kB 0*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 189976kB
+Mar 11 14:45:34 nb81 kernel: [7352493.081631] Node 0 Normal: 19369*4kB 378*8kB 0*16kB 2*32kB 2*64kB 1*128kB 2*256kB 0*512kB 1*1024kB 1*2048kB 0*4096kB = 84404kB
+Mar 11 14:45:34 nb81 kernel: [7352493.081643] Node 1 Normal: 21441*4kB 3184*8kB 1142*16kB 5*32kB 6*64kB 3*128kB 4*256kB 1*512kB 1*1024kB 0*2048kB 0*4096kB = 132996kB
+Mar 11 14:45:34 nb81 kernel: [7352493.081674] 20923024 total pagecache pages
+Mar 11 14:45:34 nb81 kernel: [7352493.081676] 736 pages in swap cache
+Mar 11 14:45:34 nb81 kernel: [7352493.081679] Swap cache stats: add 17169, delete 16433, find 241775/241891
+Mar 11 14:45:34 nb81 kernel: [7352493.081681] Free swap  = 911316kB
+Mar 11 14:45:34 nb81 kernel: [7352493.081682] Total swap = 975868kB
+Mar 11 14:45:34 nb81 kernel: [7352493.576101] 25165808 pages RAM
+Mar 11 14:45:34 nb81 kernel: [7352493.576105] 425876 pages reserved
+Mar 11 14:45:34 nb81 kernel: [7352493.576107] 18906312 pages shared
+Mar 11 14:45:34 nb81 kernel: [7352493.576108] 5736141 pages non-shared
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;内存不足报警是个非常严重的问题，但是又不能对内存做调整，所以需要快速的对这个问题给出一个方案。当然，这个问题最后就到我头上了。&lt;/p&gt;
+
+&lt;h1&gt;处理&lt;/h1&gt;
+
+&lt;p&gt;找了半天的类似错误，找到的原因乱七八糟。有说是网络问题的，有说是硬盘swap有问题导致的，还有说是numa造成的。运维组调整了&lt;code&gt;min_free_bytes&lt;/code&gt;，从结果来看，问题倒是减轻了不少。于是分开尝试。&lt;/p&gt;
+
+&lt;h2&gt;swap&lt;/h2&gt;
+
+&lt;p&gt;这个其实最好验证，关掉swap就知道了，反正我们内存也够。可惜golang1.1以前有个bug，在amd64上关闭swap会导致程序crush。所以不能关闭swap，只能替换。&lt;/p&gt;
+
+&lt;p&gt;运维组的老大做的实验，换个盘新建swap。用swapon启用新的swap，swapoff关闭原来的swap。然后系统没有变化，因此排除swap导致问题的可能性。&lt;/p&gt;
+
+&lt;h2&gt;numa和内存分配碎片化问题&lt;/h2&gt;
+
+&lt;p&gt;检查出问题设备的/proc/buddyinfo文件，可以看到所有出问题设备的DMA32大块都被耗尽了。在大部分的系统上，最大的块不过是32K。64K的块只有一两块或者根本没有。这个假设可以解释&lt;code&gt;min_free_bytes&lt;/code&gt;调整能够减轻问题的理由。&lt;/p&gt;
+
+&lt;p&gt;但是经过扫描，不少没有问题的机器上也存在非常严重的内存碎片化效应。只能说碎片化属于相关现象，而不是决定性差异。而且是单向相关——报警必然伴随碎片化内存，但是内存碎片化却并不一定导致报警。&lt;/p&gt;
+
+&lt;p&gt;对于这个问题，我试过内核参数迫使其回收内存。使用&lt;code&gt;zone_reclaim_mode&lt;/code&gt;改变内存回收模型(尽管解说中这个对某些业务非常有害)。但是始终没有彻底解决问题。&lt;/p&gt;
+
+&lt;h2&gt;网络问题&lt;/h2&gt;
+
+&lt;p&gt;我找到了某个朋友的&lt;a href=&#34;https://gist.github.com/jaseywang/800560&#34;&gt;gist&lt;/a&gt;，发现和我们的错误堆栈非常接近。经过询问，他有篇文章&lt;a href=&#34;http://jaseywang.me/2014/03/11/%E4%B8%8D%E5%90%8C%E4%B8%9A%E5%8A%A1%E5%AF%B9%E7%BD%91%E7%BB%9C%E7%9A%84%E8%A6%81%E6%B1%82/&#34;&gt;不同业务对网络的要求&lt;/a&gt;，里面猜测是交换机丢包导致的问题。&lt;/p&gt;
+
+&lt;p&gt;我找运维组的同事帮忙，检查了一下出问题的设备所连接的交换机。结果是，虽然这些设备的丢包非常多，但是其他没出问题的设备丢包也不少。两者的比例没有决定性的差异。&lt;/p&gt;
+
+&lt;p&gt;另一个是在设备上用&lt;code&gt;netstat -s&lt;/code&gt;来查看丢包率。但是不是每个设备都有丢包率。所以也可以排除网络问题。&lt;/p&gt;
+
+&lt;h1&gt;定向&lt;/h1&gt;
+
+&lt;p&gt;在上面三种假说里，我首先可以否定swap。因为两块磁盘同时损坏的概率基本是0。其他两个假说很难区分。我始终觉得两者都不能解释很多问题。例如内存碎片化假说无法说明为什么不是每个内存碎片化的系统都出现问题。网络假说也无法说明为什么问题只出现在某些设备上。&lt;/p&gt;
+
+&lt;p&gt;看来再找下去也是白费，于是我改用了其他方法——根据堆栈阅读源码。&lt;/p&gt;
+
+&lt;h1&gt;内核源码&lt;/h1&gt;
+
+&lt;p&gt;参阅lxr的结果。堆栈如下所列：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;http://lxr.linux.no/#linux+v3.5/drivers/net/ethernet/broadcom/tg3.c#L6843&#34;&gt;tg3_start_xmit&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://lxr.linux.no/#linux+v3.5/drivers/net/ethernet/broadcom/tg3.c#L6743&#34;&gt;tigon3_dma_hwbug_workaround&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://lxr.linux.no/#linux+v3.5/net/core/skbuff.c#L859&#34;&gt;skb_copy&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://lxr.linux.no/#linux+v3.5/net/core/skbuff.c#L169&#34;&gt;_alloc_skb&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://lxr.linux.no/#linux+v3.5/mm/slub.c#L3365&#34;&gt;kmalloc_large_node&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://lxr.linux.no/#linux+v3.5/mm/page_alloc.c#L2474&#34;&gt;_alloc_pages_nodemask&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://lxr.linux.no/#linux+v3.5/mm/page_alloc.c#L2278&#34;&gt;__alloc_pages_slowpath&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://lxr.linux.no/#linux+v3.5/mm/page_alloc.c#L1923&#34;&gt;warn_alloc_failed&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;这个问题发生在&lt;code&gt;tigon3_dma_hwbug_workaround&lt;/code&gt;中，以下调用使用的是GFP_ATOMIC。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;new_skb = skb_copy(skb, GFP_ATOMIC);
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这导致问题被报告。但是在最下方，如果没有内存，函数只是不做处理，增加丢包计数，并返回成功。这使我怀疑这个报警本身只是一个警告，不需要认真处理。&lt;/p&gt;
+
+&lt;p&gt;在有点数之后，我修改了关键词又去google了一把。得到了以下bug：&lt;/p&gt;
+
+&lt;p&gt;https://bugzilla.kernel.org/show_bug.cgi?id=12135&lt;/p&gt;
+
+&lt;h1&gt;结论&lt;/h1&gt;
+
+&lt;p&gt;这是一种在tigon3上才出现的问题，由于网络传输速率大于内存回收速率，内核不停报警。本质上这个报警可以被忽略，或者调整&lt;code&gt;min_free_bytes&lt;/code&gt;来减轻。内核组暂时不对这个问题做出任何修正。&lt;/p&gt;
+
+&lt;p&gt;OK，问题解决，洗洗睡吧。&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

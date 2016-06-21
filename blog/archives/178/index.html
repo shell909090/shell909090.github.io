@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>抱怨</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         抱怨 
+    </h1>
+    <p class="meta">Jun 13, 2005
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/178/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>吃了人家的免费午餐，照例应该专程为人做做广告，致致贺词。不济也不应该抱怨连连。不过MSN的空间的却引我腹诽。过去的文章找不到……不知道是我方法不对还是什么。如果真的如此我干脆另觅它处，好过我珍贵的文章白白无人看……</p>
+
+<p>OK，先放下MSN空间的问题吧。本周我分析了UPX的压缩原理分析结果亦不外如是。不过话说回来UPX毕竟不是专业的防跟踪壳，仅仅是资源压缩程序而已。好分析也没有什么值得意外的。</p>
+
+<p>源程序如下，是最最出名的Hello,World.：</p>
+
+<p>#include &ldquo;stdafx.h&rdquo;
+#include &lt;windows.h&gt;
+#pragma comment(linker, &ldquo;/ENTRY:main&rdquo;)
+//#pragma comment(linker, &ldquo;/ALIGN:0x1000&rdquo;)//这厮一上程序就变成3k党了，然后UPX就死气活样的不肯工作</p>
+
+<p>#define put(x) WriteFile(hOutput, (x), sizeof(x), &amp;NumOfBytes, NULL)
+#define get(x) ReadFile(hInput, (x), sizeof(x), &amp;NumOfBytes, NULL)</p>
+
+<p>HANDLE hOutput, hInput;
+DWORD NumOfBytes;</p>
+
+<p>void main(){
+char tmp[1];
+hOutput=GetStdHandle(STD_OUTPUT_HANDLE);
+hInput=GetStdHandle(STD_INPUT_HANDLE);
+put(&ldquo;Hello,World.n&rdquo;);
+get(tmp);
+return ;
+}</p>
+
+<p>UPX压缩下来的程序，section会变成三个。UPX0,UPX1,UPX2。其中UPX0是虚段，具备实际的段名称和段地址，但是RawDateSize是0。所以这个段在载入后是全0数据。数据和解压代码合并在了UPX1段中，由UPX1的解压代码注入UPX0的段中。看样子解压代码是附在了最后，从入口点到段实际内容结束点之间的范围。而UPX3的段最是搞笑，是一个单独的ImportTable，仅仅导入了Kernel32.dll中ExitProcess,LoadLibrary和GetProcessAddr三个函数。UPX1在解压并且注入UPX0后，会调用这三个函数来分析和获得每个导入表项的地址，然后完成导入表的动作。</p>
+
+<p>换言，程序在从UPX1段JMP入UPX0段的瞬间，从UPX0段DUMP出来的数据就是正常的数据，除了要重建Section，并且重建所有DateDirectory外。</p>
+
+<p>OK，下面说说压缩算法的问题。上面可以看出，压缩动作不难，但是算法我可没有能力分析和实现。所以我脑筋就动到了zip算法上去。可是根据我以前看zip文档得到的经验，zip内部分多种格式。貌似rar也分多种格式。所以我不打算挑战极限，自行写出每种算法的代码。不过我打算做一个标准的扩展接口，可以让所有的压缩算法都容纳在这一个框架内。并且可以支持多种压缩文件的格式。对上可以封装成标准的文件读写函数，然后再写一个COM组件，让所有的人都可以任意的运用（嘿嘿，写网页的人估计最需要）。至于后面要不要写一个什么东西让整个windows可以把压缩文件无缝的当成文件夹处理，那就再说了。</p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Jun 13, 2005</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/windows">windows</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/177/" title="babylon">babylon</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/179/" title="blogs">blogs</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

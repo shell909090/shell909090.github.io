@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>linux下的文件系统选型</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         linux下的文件系统选型 
+    </h1>
+    <p class="meta">Aug 15, 2011
+         - 2 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1883/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>贝壳原来一直认为文件系统可以随便选，结果最近吃了两次苦头。一个是btrfs对虚拟机支持不良，另一个是特定情况下xfs性能比ext3高20倍。痛定思痛，打算列一下文件系统选型的方法和依据，欢迎拍砖。<div>    下面我列一下纳入参考的文件系统，当然，ntfs就不要出来搞基了，玩嵌入式/光盘live之类的朋友也不要来凑热闹了阿。<a href="http://zh.wikipedia.org/wiki/Btrfs" target="_blank">btrfs</a>(<a href="http://www.ibm.com/developerworks/cn/linux/l-cn-btrfs/" target="_blank">简介</a>), <a href="http://zh.wikipedia.org/wiki/Ext3" target="_blank">ext3</a>, <a href="http://zh.wikipedia.org/wiki/Ext4" target="_blank">ext4</a>(<a href="http://www.ibm.com/developerworks/cn/linux/l-anatomy-ext4/" target="_blank">简介</a>), <a href="http://en.wikipedia.org/wiki/JFS_(file_system)" target="_blank">jfs</a>(<a href="http://www.ibm.com/developerworks/cn/linux/filesystem/jfs/jfs/" target="_blank">简介</a>), <a href="http://zh.wikipedia.org/wiki/ReiserFS" target="_blank">reiserfs</a>, <a href="http://zh.wikipedia.org/wiki/XFS" target="_blank">xfs</a>，基本涵盖常用文件系统。最下面加入ntfs和zfs对比，实际上不参与选型。以下进制换算为1024，大小依次为KB,MB,GB,TB,PB,EB,ZB。</div></p>
+
+<div><font size="3">
+
+
+
+
+
+
+
+
+
+
+
+ <table frame="VOID" cellspacing="0" cols="10" rules="NONE" border="0"> <colgroup><col width="107"><col width="82"><col width="87"><col width="94"><col width="99"><col width="86"><col width="109"><col width="66"><col width="86"><col width="76"></colgroup> <tbody> <tr> <td width="107" height="19" align="LEFT" valign="BOTTOM"><font color="#000000">文件系统</font></td> <td width="82" align="RIGHT" valign="BOTTOM"><font color="#000000">btrfs</font></td> <td width="87" align="RIGHT" valign="BOTTOM"><font color="#000000">ext3</font></td> <td width="94" align="RIGHT" valign="BOTTOM"><font color="#000000">ext4</font></td> <td width="99" align="RIGHT" valign="BOTTOM"><font color="#000000">jfs</font></td> <td width="86" align="RIGHT" valign="BOTTOM"><font color="#000000">reiserfs</font></td> <td width="109" align="RIGHT" valign="BOTTOM"><font color="#000000">reiser4</font></td> <td width="66" align="RIGHT" valign="BOTTOM"><font color="#000000">xfs</font></td> <td width="86" align="RIGHT" valign="BOTTOM"><font color="#000000">ntfs</font></td> <td width="76" align="RIGHT" valign="BOTTOM"><font color="#000000">zfs</font></td> </tr> <tr> <td height="19" align="LEFT" valign="BOTTOM"><font color="#000000">最大卷容量</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">16 EB</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">32 TB</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">1 EB (16TB)</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">32 PB</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">16 TB</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">??</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">16 EB</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">256 TB</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">16 EB</font></td> </tr> <tr> <td height="19" align="LEFT" valign="BOTTOM"><font color="#000000">最大文件容量</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">16 EB</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">2 TB</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">16 TB</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">4 PB</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">8TB</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">8TB</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">8 EB</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">16 TB</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">16 EB</font></td> </tr> <tr> <td height="19" align="LEFT" valign="BOTTOM"><font color="#000000">目录结构</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">B tree</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">list/tree</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">list/Htree</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">B tree</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">B+ tree</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">dancing B* tree</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">B+ tree</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">B+ tree</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">hash table</font></td> </tr> <tr> <td height="19" align="LEFT" valign="BOTTOM"><font color="#000000">文件分配</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">extents</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">bitmap/table</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">bitmap/extents</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">bitmap/extents</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">bitmap</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">??</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">extents</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">bitmap</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">??</font></td> </tr> <tr> <td height="19" align="LEFT" valign="BOTTOM"><font color="#000000">ACLS</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">Yes</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">Yes</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">Yes</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">Yes</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">No</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">No</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">Yes</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">ACLS only</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">Yes</font></td> </tr> <tr> <td height="19" align="LEFT" valign="BOTTOM"><font color="#000000">checksum</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">Yes</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">No</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">journal</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">No</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">No</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">No</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">No</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">No</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">Yes</font></td> </tr> <tr> <td height="19" align="LEFT" valign="BOTTOM"><font color="#000000">透明压缩</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">Yes</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">No</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">No</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">No</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">No</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">Plugin</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">No</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">Yes</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">Yes</font></td> </tr> <tr> <td height="19" align="LEFT" valign="BOTTOM"><font color="#000000">透明加密</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">No</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">No</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">No</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">No</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">No</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">Plugin</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">No</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">Yes</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">Yes</font></td> </tr> <tr> <td height="19" align="LEFT" valign="BOTTOM"><font color="#000000">online defrag</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">Yes</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">No</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">Yes</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">Yes</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">No</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">Yes</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">Yes</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">Yes</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">Yes</font></td> </tr> <tr> <td height="19" align="LEFT" valign="BOTTOM"><font color="#000000">shrink</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">Yes</font></td> <td align
+="RIGHT" valign="BOTTOM"><font color="#0000FF">Yes</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">Yes</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">No</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">Offline resize</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">Offline</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">No</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">Yes</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">No</font></td> </tr> <tr> <td height="19" align="LEFT" valign="BOTTOM"><font color="#000000">特性</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">SSD</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000"><br /></font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000"><br /></font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000"><br /></font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000"><br /></font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000"><br /></font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000"><br /></font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">Stream</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000"><br /></font></td> </tr> </tbody> </table></font><div>    首先，文件系统选择上要考虑现实性和支持情况。如果你希望得到广泛的支持，在移动硬盘上被多个系统挂载，应用于老内核，或者不使用/boot分区，那么可选项目基本只有ext3。作为老牌文件系统，ext3的支持是最广泛的，工具组也相对全面。无论其他文件系统拥有多大的优势，在现实情况考虑下往往会败给ext3，基本就是因为广泛的使用和支持。另外，btrfs我所知还没有fsck工具，出了问题全看RP，而且在上面使用虚拟机速度特别慢。reiser4作者目前在监狱中，出了问题能否获得支持全靠RP。jfs用的人相对xfs少一些，也比较不活跃。这些虽然并不出现在数据上，但是最好特别注意。</div>
+
+<div>    其次，文件系统的选择要考虑必要特性。例如如果你希望使用SSD支持，你可选的项目就只有btrfs。如果需要透明加密，那只有reiser4。当然，在决定必要特性前，请仔细考虑，自己是否真的必须使用这些特性。为了一个不必须的特性选用一个不合适的文件系统会付出极大代价。linux下文件系统还是比较单调和弱小了点，基本不支持透明压缩，全部不支持透明加密，ext两兄弟更是没有完全实现Btree目录结构（ext4其实有用Htree，一种改过的Btree，不过为了兼容ext3，好像升级来的目录不使用）。不过好佳在，大部分都支持online defrag/growing，否则不如一头撞死算了。ext3/4, btrfs是支持shrink的，但是jfs, xfs只支持growing，reiser4必须offline shrink。xfs的growing在1T（一说2T）以上有点问题，非64位内核在1T以上可能无法创建inode。本来是会在1T内创建inode，使用高位空间。但是growing的时候可能地位空间已经满了，会报没有空间的错误。解决方案是将老文件移出再移回，或者看看用inode64参数是否解决。如果你确定需要shrink，最佳选项是使用ext4。另外补充一点，ntfs的online shrink也不是完美无缺，他只能shrink到未被使用的地方。也就是说，如果有不可移动文件，有可能就无法shrink到以下内容。</div>
+
+<p><div>   第三个要确定的问题，是你的系统服务的数据大小。即使是表里面最小的ext3，一次也可以使用2T的卷。贝壳全部数据加起来大概2T多一点，家用绝对不成问题。然而作为商业用途，动辄数百T的数据正常到不能再正常，ext3就可以直接出局了，同理reiser4也直接出局。jfs是唯一没有达到EB级别的文件系统，不过32PB也可堪一用，大部分商业系统都到不了这个量级。在管理大型卷的时候，bitmap比extents会消耗更大的空间进行管理。因此不支持bitmap的文件系统可以少考虑，ext3/4虽说支持extents，但是ext3中默认不开启，必须手工指定挂载参数。ext4中一旦启用extents，就无法兼容于ext3。</div></p>
+
+<div>    最后是性能考量。在贝壳在公司的测试中，xfs会性能高于ext3达20倍。因为根据<a href="http://www.evanhoffman.com/evan/2011/07/22/benchmarking-disk-io-on-ext3-vs-ext4-with-fio/" target="_blank">这篇文章</a>，xfs的随机写性能比ext兄弟差很多，但是顺序写的性能比ext要强上无数倍。我们的业务大部分情况下是顺序写，因此差异非常明显。所以，当你的特性要求差不多的时候，性能和稳定性是另一个考量因素。</div>
+
+<div>
+
+
+
+
+
+
+
+<table frame="VOID" cellspacing="0" cols="7" rules="NONE" border="0"> <colgroup><col width="107"><col width="99"><col width="106"><col width="101"><col width="103"><col width="99"><col width="92"></colgroup> <tbody> <tr> <td width="107" height="19" align="LEFT" valign="BOTTOM"><font color="#000000">文件系统</font></td> <td width="99" align="RIGHT" valign="BOTTOM"><font color="#000000">btrfs</font></td> <td width="106" align="RIGHT" valign="BOTTOM"><font color="#000000">ext3</font></td> <td width="101" align="RIGHT" valign="BOTTOM"><font color="#000000">ext4</font></td> <td width="103" align="RIGHT" valign="BOTTOM"><font color="#000000">jfs</font></td> <td width="99" align="RIGHT" valign="BOTTOM"><font color="#000000">reiserfs</font></td> <td width="92" align="RIGHT" valign="BOTTOM"><font color="#000000">xfs</font></td> </tr> <tr> <td height="19" align="LEFT" valign="BOTTOM"><font color="#000000">全填充速率</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">1m22.083s</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">1m34.821s</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">1m15.495s</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">1m5.819s</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">1m34.310s</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">1m38.953s</font></td> </tr> <tr> <td height="19" align="LEFT" valign="BOTTOM"><font color="#000000">全填充利用率</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">0.8945</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">0.9065</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">0.9047</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">0.9959</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">0.9927</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">0.9918</font></td> </tr> <tr> <td height="19" align="LEFT" valign="BOTTOM"><font color="#000000">大文件效率</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">14.676</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">17.435</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">10.7255</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">13.7493</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">14.319</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">12.7093</font></td> </tr> <tr> <td height="19" align="LEFT" valign="BOTTOM"><font color="#000000">大文件删除</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">2.693</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">5.262</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">2.422</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">0.037</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">1.802</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">0.296</font></td> </tr> <tr> <td height="19" align="LEFT" valign="BOTTOM"><font color="#000000">小文件效率</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">9.949</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">5.131</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#3333ff">2.7866</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">40.949</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">13.605</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">8.978</font></td> </tr> <tr> <td height="19" align="LEFT" valign="BOTTOM"><font color="#000000">小文件删除</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">6.737</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">10.7227</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#3333ff">1.39</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">16.116</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">2.756</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">5.653</font></td> </tr> <tr> <td height="19" align="LEFT" valign="BOTTOM"><font color="#000000">循环列文件</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">0.124</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">0.089</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">0.002</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">0.094</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">0.19</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">0.099</font></td> </tr> <tr> <td height="19" align="LEFT" valign="BOTTOM"><font color="#000000">大文件read</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">2046206</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">1931451</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">1946598</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">2003912</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">1537752</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">1970242</font></td> </tr> <tr> <td height="19" align="LEFT" valign="BOTTOM"><font color="#000000">大文件write</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">1279625</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">565960</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">926461</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">962617</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">446841</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">812466</font></td> </tr> <tr> <td height="19" align="LEFT" valign="BOTTOM"><font color="#000000">大文件rndread</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">2012771</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">1926287</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">1934420</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">1985273</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">1490199</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">1976056</font></td> </tr> <tr> <td height="19" align="LEFT" valign="BOTTOM"><font color="#000000">大文件rndwrite</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">1380404</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">1187010</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">1294689</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">1446011</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">1308210</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">1384804</font></td> </tr> <tr> <td height="19" align="LEFT" valign="BOTTOM"><font color="#000000">小文件read</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">2375893</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">2934815</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">3019732</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">2708437</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">2559371</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">2236197</font></td> </tr> <tr> <td height="19" align="LEFT" valign="BOTTOM"><font color="#000000">小文件write</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">926602</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">526469</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">681710</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">844237</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">395810</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">939536</font></td> </tr> <tr> <td height="19" align="LEFT" valign="BOTTOM"><font color="#000000">小文件rndread</font></
+td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">3324647</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">3544566</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">2702282</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">3737551</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">4045575</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">2666753</font></td> </tr> <tr> <td height="19" align="LEFT" valign="BOTTOM"><font color="#000000">小文件rndwrite</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#FF0000">910277</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">1525970</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">1244240</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#0000FF">1910756</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">1790393</font></td> <td align="RIGHT" valign="BOTTOM"><font color="#000000">1311261</font></td> </tr> </tbody> </table>    以上数据，在公司的debian testing上测定。机器型号Dell Inspiron 560s，CPU Dual-Core E5700，4G内存，硬盘WDC WD3200AAKS-75L9A0。系统是debian testing，内核2.6.39-2-amd64。全填充是用time dd if=/dev/zero of=abc来测试填满一个分区的速度和容量。大文件是四个ISO文件，共1.3G，从tmpfs上复制到目标设备上的时间平均值，三次平均。小文件是pypy/python2.7/linux kernel2.6.39所有源码，总计49242个文件，629M。从tmpfs上复制到目标设备的时间平均值，三次平均。循环列文件是通过time find .测试效率。下面测试单位为bytes/sec，是iozone测试结果。</div>
+
+<div>    首先是文件利用率，btrfs/ext3/ext4会消耗10%左右的空间作为系统消耗。如果你需要比较高的磁盘利用率，请不要考虑这三种系统。也许你会认为，放文件又不会放满，必须空出部分来才能减少文件碎片。实际上，被消耗掉的空间也并不是白白消耗，你的所有数据，都会增加10%的系统消耗空间。因此ntfs的防碎片阀值（为了防止碎片化，磁盘使用率不应当高于）大约是85%，而ext3就只有75%-80%。</div><div>    其次是大文件效率，除了ext3不予考虑外，其余系统都过的去。btrfs/ext4在删除大文件的时候耗时略多，大概是和管理特性有关。</div>
+
+<div>    第三是小文件效率。如果你需要用小文件，千万不要考虑jfs，慢到我无法相信。ext4比btrfs和xfs快了四倍左右，非常适合操作大量小文件。例如源码编译，有blog说ext4比xfs快数倍。</div><div>    最后是循环列文件效率，同样，ext4一枝独秀，其余水准相去不远。</div><div> <div><br /></div><div>    综合以上几个考量，linux中比较推荐的文件系统是ext4, xfs两种。大量文件存储用xfs，小规模文件密集使用用ext4。在特定情况下，可以使用btrfs（它的特性非常全）或者jfs（小文件操作慢，但是随机读写快）。兼容考量下，可以用ext3。不推荐使用reiser4。</div><div><br /></div><div>参考：</div><ol><li><a href="http://www.ilsistemista.net/index.php/linux-a-unix/6-linux-filesystems-benchmarked-ext3-vs-ext4-vs-xfs-vs-btrfs.html" target="_blank">Linux filesystems benchmarked: EXT3 vs EXT4 vs XFS vs BTRFS - Bonnie++ random seeks and file handling</a></li>
+
+
+
+ <li><a href="http://www.kuqin.com/linux/20090204/34063.html" target="_blank">Ext4 ReiserFS Btrfs 等7种文件系统性能比拼</a></li><li><a href="http://www.debian-administration.org/articles/388" target="_blank">Filesystems (ext3, reiser, xfs, jfs) comparison on Debian Etch</a></li>
+
+
+
+ <li><span style="font-family:Verdana, &#39;Lucida Grande&#39;, &#39;Lucida Sans Unicode&#39;, Tahoma, Arial, sans-serif;font-size:12px;line-height:19px;background-color:rgb(244, 244, 238)"><a href="http://lists.mysql.com/benchmarks/131" target="_blank">XFS, Reiser, JFS &amp; ext3 performance on Suse 9 Enterprise</a></span></li>
+
+
+
+ <li><a href="https://securfox.wordpress.com/tag/filesystem-jfs-xfs-ext3/" target="_blank">Filesystems (jfs, xfs, ext3) comparison on Debian</a></li></ol></div> </div>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Aug 15, 2011</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/btrfs">btrfs</a>  <a class="category" href="https://shell909090.github.io/tags/ext3">ext3</a>  <a class="category" href="https://shell909090.github.io/tags/ext4">ext4</a>  <a class="category" href="https://shell909090.github.io/tags/filesystem">filesystem</a>  <a class="category" href="https://shell909090.github.io/tags/jfs">jfs</a>  <a class="category" href="https://shell909090.github.io/tags/linux">linux</a>  <a class="category" href="https://shell909090.github.io/tags/reiserfs">reiserfs</a>  <a class="category" href="https://shell909090.github.io/tags/xfs">xfs</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/1881/" title="硬盘底座入手">硬盘底座入手</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/1885/" title="ACC lead to no core temp reading?">ACC lead to no core temp reading?</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

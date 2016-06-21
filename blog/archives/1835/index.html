@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>openwrt配置——路由规则</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         openwrt配置——路由规则 
+    </h1>
+    <p class="meta">Jun 16, 2011
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1835/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>&nbsp;&nbsp;&nbsp; 路由其实是个很简单的事情，不知道为什么在实际运用中被很多人误解。首先，路由规则是个纯IP层的事情，和TCP没有关系。其次，路由和NAT没有关系。实际上，和这两个有关系的都是iptables。
+&nbsp;&nbsp;&nbsp; 路由表的大概概念就是，你家门口有三条路，有一张路径表。到上海市，走左边，北京市，走右边，西安市，走中间。因此路由表的概念是发出规则。当你收到一个包，如果目的地址是本地，那么就交给监听程序处理。如果没有监听程序，那么就拒绝报文。（注意，下文讨论的时候都略去了iptables）如果目的地址不是本地，则看是否允许转发。不允许，丢弃，允许，加入发出队列。路由表就是发出队列的选择规则。这个规则之所以存在，主要是因为多头主机的存在。如果一台机器只有一个发出设备，路由表是没有任何用处的。
+&nbsp;&nbsp;&nbsp; 发出规则计算很简单，首先取目标网络地址，还有包网络地址，然后分别和子网掩码求与（AND）。如果两者相等，那么就转发到这个规则所指定的接口上，如果不等，继续匹配。规则顺序也很简单，子网掩码距离越长，子网越小，规则越靠上。其中有两种特殊的子网掩码，一种是255.255.255.255，或者叫/32，用于指定主机。一种是0.0.0.0，或者叫/0。这个子网只有一个，叫做default。因为按照规则用这个掩码计算的结果，任何目标地址都可以匹配这一规则。
+&nbsp;&nbsp;&nbsp; 当然，根据上面的解释我们可以知道，路由表只管发出报文。如果目标设备需要返回一个报文，他必须保证返回路由的正确。因此在下面的openvpn讲解中，你在vps也必须配置路由。很幸运，这个问题openvpn已经帮我们做好了。
+&nbsp;&nbsp;&nbsp; 通常而言，我们拨号上网后应当有三条路由规则，第一条不解释。第二条通常是内网IP通过内网端口发出——这是当然的，否则内网包就暴露了。第三条通常是其他IP通过外网发出。当内网需要向外网发送数据的时候，会设定路由器作为网关。路由器会转发内网的包到他的上级路由器上。而当外网有数据要发送给内网的时候，情况则正好相反。注意，实际中一般是要进行NAT的，不是这么直接收发。
+&nbsp;&nbsp;&nbsp; 如果当你使用了openvpn的routed模式，那么你就有了两个内网——常规内网和虚拟内网。我们可以想像，首先需要配置的是两个内网的互通问题。在你本地的网关上，需要配置虚拟网络段发送到tun0设备上。而在远程，需要配置常规内网段发送到拨号上来的这个IP上。大致要配置这些东西。
+<pre>
+&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;vps-server.conf&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;-
+client-config-dir /etc/openvpn/ccd
+route 192.168.x.0 255.255.255.0
+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;ccd/openwrt&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;
+iroute 192.168.x.0 255.255.255.0
+</pre>
+&nbsp;&nbsp;&nbsp; 这样，当openwrt这个用户拨号上来后，vps上就会添加一条路由，192.168.1.0网段通过刚刚拨号的地址来转发。
+&nbsp;&nbsp;&nbsp; 其次，哪些数据发送到拨号网络，哪些需要通过虚拟内网呢？这规则通常由你来定。不过千万注意，不要用tun0这个设备来发送到服务器的数据——这会引发循环。这个问题一个不是那么明显的例子是，你设定使用tun0来发送default，但是又没有特别指定vps的地址使用ppp0发送。</p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Jun 16, 2011</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/computer">computer</a>  <a class="category" href="https://shell909090.github.io/tags/openwrt">openwrt</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/1833/" title="openwrt配置——openvpn的基础配置">openwrt配置——openvpn的基础配置</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/1836/" title="openwrt配置——防火墙规则">openwrt配置——防火墙规则</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>Shell&#39;s Home</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  <link href="https://shell909090.github.io/index.xml" rel="alternate" type="application/rss+xml" title="Shell&#39;s Home" />
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+ <div id="content">
+  <div class="blog-index">
+    
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/2160/">dvc和vc简评</a>
+    </h1>
+    <p class="meta">May 3, 2012
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2160/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p># 我有必要换git么 #实话说，这得分干吗。目前的推荐是，如果是企业级项目，对权限要求比较严格，你必须用svn。如果是普通项目，你可以尝试使用git，但是这并不表示git是最适合你项目的。有的时候svn比git合用的多。 # svn是什么模式 #svn的核心思路是，取出，修改，提交，合并。即，你从核心库中取得数据，修改，然后提交上去。如果有两个一样的修改，那么要求你进行合并。当然，svn工具会首先尝试自动合并，然后再让你手工干。但即使如此，合并的时候还是很费力。 svn的模式很容易理解，然而在使用中却有两个实际缺陷。 1. 保存数据的唯一方式就是提交，而提交是不可撤销的。2. 必须连接核心库使用。 第一点问题，就是说，如果你希望暂时保存一下当前的修改状态，然后进行某个测试性修改。如果失败，退回当前。抱歉，做不到。你的提交一定会进入svn库。虽然你可以退回到你提交前的版本，但是很麻烦，而且版本记录不会消失。而第二个问题更加致命。如果在网络不稳定/没网络的时候，还干不干活了？ 因此，svn的设计模式并不鼓励你提交。当你有修改的时候，你必须保持修改的状态，直到某个稳定的状态。你需要检查代码是基本可用的，然后才应当提交。svn提交有个基础原则，不能塞住head，讲的就是这个。 # 所以有了hg #hg正是为了解决上述问题而出现的。hg实际上是用python实现的，解决上两个问题的svn。hg拥有本地版本库，这解决了离线模式。至于暂存性提交，你可以在本地随便提交。只要不提交到核心库上，就不会导致塞住。如果你觉得本地库不行，可以直接重新co，而不进行push。 # git和hg哪个好 #锤子和扳手哪个好？我永远无法回答你这个问题，因为这两个的目标根本不同，因此根本没有可比性。同样，git和hg的工作流程和模式完全是两回事，因此不要问这个问题，没意义。 # 哦，那么git是 #git的设计核心思路，是取出，分支，修改，提交，合并分支。git的分支是处理工作的利器。 要彻底理解git，你必须接受平行世界假定。假设世界并不是顺序发展的，由于你的选择不同，而会变成不同的几个分支。git可以让你在分支间自由穿越，并且让世界变成某个分支上的某个点的状态。你可以重新选择，产生一个不同的分支。当你需要时，可以对两个分支进行合并。如果两个分支从源头分开后，对世界的影响各自不同，那么合并就是自动的。git的同步就是在同步这颗世界树。树扩展成什么样子和你在树的什么位置没有关系，因此fetch后如果不chechout，那么就不会应用最新的修改。 # 我没看出多大区别 #实际是非常大的。有了平行世界假定，我可以正交的对一个源码做两件以上不同的事情。而在hg中，虽然也可以做两个不同的分支，然而却很难在两个分支间切换，从而使得切换到做另一件事情非常困难。这也导致了一个人实际上只能做一件事情，否则就无法将过程同时纳入vc管理，又满足正交。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/2158/">首次bsp日记</a>
+    </h1>
+    <p class="meta">May 2, 2012
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2158/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>第一次参加BSP，还不错拉。因为以前没参加过，所以等搞明白了这个是干吗的再和大家说。 BSP是bug squeeze party的简称，简单来说就是修错会。debian马上要发行7了，在此之前有很多的bug没有修复。其中有一种是RC bug，即运行就会出大问题的bug，或者干脆没法编译。无论哪个，都会导致这个包不能进入最新的发布。有些bug很麻烦，需要maintainer和author沟通，这个没有办法。但是有些问题解决起来很简单，只是因为后果很严重，作者又暂时没空处理，导致包无法进入stable，实在很无谓。BSP的目的，主要是以非维护者上传(non-maintainer upload)的方式修复这类bug。因为包不是自己的，所以礼貌上，只修复半个月以上的rc级别bug，其他的留给maintainer来处理。 BSP的主要目的，就是这么一个苦力会。没有挂名，最多只有一条changelog记录，还要大量寻找和修复bug。不过BSP相当重要，因为很多maintainer往往有一段一段的不活跃时间。这时候即使再简单的问题也不会处理。按照debian的规则，别人也不会帮他处理。除了BSP，很少有一批人会专门找这种简单的Bug来修正。如果没有BSP，debian stable发布的时候一做RC冻结，就要少掉很多有用的包。BSP更大的目的是，交流和传授debian打包和除错的经验，唤起人们的关注。也许在会后，如果有人看到一些简单bug，会使用nmu的方法给与修正。不过BSP到确实是有一个额外加成的好处——基本变成了签名会。昨天估计是中国大陆地区首次DD数量接近其他人数量，我一下弄到了5个签名，2个DD一个Ubuntu员工。加上原来就有的zigo签名，我就有3个DD签名了。 本地BSP是在thomas的公司举行，欧特家博士匹萨厂商赞助了我们两天的午餐——微波食品匹萨。第一天来的人比较多，很多都是纯新手，大概有20多人。Zigo倒是在网络上说会帮助新手，但是纯新手看到debian打包系统根本无从下手，所谓指导什么的也无从说起。很多人一天一个bug都修不掉，甚至都看不懂，很有挫折感，估计有不少有热情的人在第二天就这么默默退散了，第二天只来了15个左右。 我主要是以修复自己的问题为主，python-snappy和python-formalchemy都升级到了最高级，并且修复了自己以前打包的一个问题。至于RC bug么，我修了一个。两个包在python中命名冲突了，所以在debian中需要声明为conflicts。另外我评审了一下，最终还是决定关闭了python-libmemcached的ITP。虽然对douban很不好意思，还让他们修了一下。但是python-libmemcached依赖于libmemcached，而后者已经逐步升级到了1.0.X版本，但是douban为了稳定使用，是sticky在0.4版上的。因此当更新的debian发行时，实际上python-libmemcached和系统中的libmemcached不是一回事。因此，我不能依赖libmemcached的维护者，而是需要自己去维护后者——没办法，我就是怂了。python-libmemcached的爱用者，还是自己打包吧。我倒是可以公开打包文档。 另外，我在想是否要集合一批python/debian的用户，来做投票。例如，python的一个容器——flup，在debian中实际上已经orphon了。如果有足够的人投票，我愿意为flup做接手维护工作。不过目前debian下问下来的结果，大家对flup没什么太大兴趣。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/2156/">关于昨天&#34;google drive你这是在找死&#34;的补充</a>
+    </h1>
+    <p class="meta">Apr 28, 2012
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2156/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>随手就写害死人阿。 昨天写了一篇google drive你这是在找死，结果被人指出了错。我忘记注明了，没有文件夹上传的是android版本，linux版没有客户端，windows版可以看到客户端下载，但是我目前没有确认下来有人能用。 即使如此，我还是觉得google drive不好用。 # 基于文件的数据管理 # 基于文件的数据管理很简单，一个文件系统有很多目录，每个目录可以放文件或者其他目录，文件里面就是各个程序的数据。基本上每个用电脑的人都知道基于文件的数据管理是怎么回事。 问题是基于文件的数据管理很不好用。 文件就有文件名，我需要找一个文档，里面是上个月的财务数据，但是我不知道叫什么文件名，这种需求并不少见。然而，要在文件系统上干这个事情，你只有搜索所有doc/xls文件，然后一个个看。 蛋疼不蛋疼阿。 基于文件的数据管理的理由，多半因为多文件组合。例如，我有一个html，里面引用了两张图片，一段音乐。在html里面，我只要写明其他文件的文件名，就自然可以指定对其他文件的引用。这省去了“复合数据存储”的烦恼。但是，大部分情况下，我们用不到这个。 因此，目前逐步在向另一个方向过渡，基于数据集合的数据存储。 # 基于数据集合的数据管理 # 数据集合，听起来和文件没什么区别，但是本质上并不是一回事。大家都用过flickr吧，也用过google doc吧。他们基本上就是“基于数据集合的数据管理”。和文件的区别在于，数据集合是有“元数据”的。照片会有拍照时间，说明。如果运气好，还有地点和评论。文档是有作者，简述等等。你可以基于数据类型和元数据进行过滤，排序等动作。而基于文件的基本没有办法这么玩。微软winXP以上版本的资源管理器可以看到，如果文件夹里面多半是图片，就会变成图片专用视图，而显示出图片的内置元数据。然而，这个是逐个扫描的，速度慢。而且万一一个文件夹里面又是图片又是音乐，至少有一个得虾米。 google drive基本是google doc的升级替代品，可以打开多种格式的文件。然而，当上传一个文件时，必须显示的“转换”为google doc文档，才可以介入管理。而且，每个类型的google文档，都有限额。以文本文件为例，大小限制在2M以内。我上传了一个5M的小说，直接报错，要求原样上传。上传后不能直接打开，必须下载打开。 # 整合和过渡 # 两者如何整合？ 在文件系统的管理上，同步，而非上传，是一个非常重要的功能。我不可能每时每刻都联网，即使联网，也不能每个文件修改好了就上传一次。我需要对传统的文件系统做持续的修改，然后通过手工的，或者自动的同步，将差异转移到云端上去。而不是我手工的对比每个文件差异，然后一个一个的上传更新和删除。 没有同步工具的云端存储是个垃圾，除非你共享的目标是少数几个超大的文件，例如电影，或者资源合集之类的东西。这是以共享为目的的云，说的更直白点，就是免费的下载空间，而不是个人云存储。 在个人文件被同步到了云端后，应当能够让云端的程序直接打开和修改某个文件，而不是强迫转换。 # google drive是什么 # 从表现上看，还是基于文件的管理。我不能通过元数据直接查看我拥有多少张相片，也没办法找所有邓丽君的歌。 然而，他们又没有同步，至少linux不行。而且android手机上连文件夹上传都没有。也许有人说了，找个数据线和电脑连起来不就得了？要是我喜欢用数据线连，我到哪连一次电脑，玩个同步就完了，还要云干吗？ 所以，结论还是不变。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/2154/">google drive你这是在找死</a>
+    </h1>
+    <p class="meta">Apr 27, 2012
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2154/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>昨天收到了google drive的邮件，今天就做了个简单的测试。我不确定是否是我的错觉，但是google drive不支持文件夹上传。 ？！ 是的，我找了半天，没找到。即使有这个功能，它也被藏的很深，至少一个熟练用户花了10分钟找不到。据我看到的资料，这是因为谷歌试图抛弃文件概念。 好吧，抛弃文件概念是个先进的理念，我也认为那是对的。但是，当我需要为我的200多个手机小说，一个一个上传，然后再手工建立目录，重新分类，打tag的时候。你连从文件夹直接导入的功能都没有。 告诉我，我为什么要用你。 其余特性我就不多吐槽了，包括中国群众使用的不稳定(虽然不是你们的错，而且dropbox也不稳定)。才5G的免费空间。目前还没有客户端。至少这些问题都是可以改进的(除掉那个不是你们的问题)。 但是拿着已经存在的事实不当回事，只考虑未来是美好的—— ——那就是在找死了。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/2152/">和谐音程的条件</a>
+    </h1>
+    <p class="meta">Apr 24, 2012
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2152/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>和谐音程的发生条件，是冠音的震动频率和根音呈倍数关系。以此为基础，我们做一个简单计算： 首先是八度：&gt;&gt;&gt; 12*math.log(2, 2)12.0 即，12个半音(高八度)是和谐音程。&gt;&gt;&gt; 12*math.log(3.0/2, 2)7.019550008653875&gt;&gt;&gt; 12*math.log(4.0/3, 2) 4.980449991346124&gt;&gt;&gt; 12*math.log(5.0/4, 2)3.863137138648348&gt;&gt;&gt; 12*math.log(6.0/5, 2)3.1564128700055254&gt;&gt;&gt; 12*math.log(7.0/6, 2) 2.6687090560373763 即，7个半音(纯五度)，5个半音(纯四度)，约4个半音(大三度)，约3个半音(小三度)，为和谐音程。由数值可以看出，纯四纯五的和谐程度又超过大三小三，因为和绝对和谐震动比例的误差更小。 再下面也是可以发生和谐音程的，只是误差更大而已。 为什么是“十二平均率”的原因也很清楚了。 &gt;&gt;&gt; 1/(math.log(3.0/2, 2)-math.log(4.0/3, 2))5.884949192361715 从数值上看，六平均率也是可以的。但是六平均率只能保证第二和三个和谐音程关系在音阶上，要保证第四个，就必须是11平均以上。&gt;&gt;&gt; 1/(math.log(4.0/3, 2)-math.log(5.0/4, 2)) 10.740053666281327 综合两者，12平均率可以基本保证第二三四三个和谐音程都在音阶上。 同时，也基本满足人类对声音的分辨能力。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/2150/">你认识这人多少？</a>
+    </h1>
+    <p class="meta">Apr 23, 2012
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2150/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>别误会，这篇是讲个人信息在网络上传播和留存相关话题的。但是不得不说，有点拷问人生的味道。 你究竟认识一个人多少呢？知道名字算认识么？知道性别，年龄，长相，工作单位，算认识么？ 这么说吧，如果一个人留了足够多的信息在网络上，你就能找到他/她么？ 本周末我就做了这个有趣的研究，事情从欢乐开始，结束于惆怅。 # 我自己认识我自己吧 # 当然，如果不认识自己，您需要做的事情是逆运真气修炼九阴真经，而不是在这里看博客。既然您能够正常阅读博客，我假定您对自己的了解超过对其他任何一个人，同时您也是所有人中最了解自己的。 在这个假定下，贝壳搜索了自己的真名。结果是——第一个？没办法，用真名给网易写过一篇东西，就像在身上绑了一根定位锚一样，看起来很长时间内褪不下去了。Google上大部分都是那篇文章的转载，而baidu上还命中了我的开心首页。好吧，鉴于名人效应，我忽略这篇文章所有有关的内容继续研究。 第二个实验是使用自己的网名，分别搜索baidu和google。结果两者都是全部命中，没有一篇是错误的。可见shell909090是一个罕见关键字，如果你只知道我的英文名shell就糟了，全是某个能源公司和自然生物，翻到10多页都看不到我呢。 第三个实验是联合限定，使用自己的真名加上描述关键词，我首先选用了“程序”。结果是google在第三页找到了两个命中，都是python相关的内容。而baidu翻了三页什么都没有。。。 第四个实验是联合限定，关键词用大学名。结果是baidu三页内什么都没有，google给出了我的一篇论文，还有一篇通知，是我在吉他社当副社长的时候的。如果你知道我弹过吉他，应该能发现那是有关我的信息。 结论：1. 仅仅搜索我本人而言，baidu只有一次比google强——他上面有开心的信息。后面两次google都给出了比baidu更加准确的关于我的信息。2. 如果没有网易的这篇文章，很多人不一定找的到我自己。你需要知道我的网名，或者知道我的职业，或者知道就读大学和兴趣。3. 个人身上的特征比想象的更少，尤其在网络上。我总不能联合我的身高体重吧，长相也没什么用处。一般只有职业，大学，公司这种特征才能有效筛选信息。 4. 你对某人的了解在搜信息的时候多半用不到，在筛选哪条是的时候才用的上。 # 有没有什么别人肯定搜不到的 # 贝壳其实有一篇IEEE论文，是合作作者。师兄的论文，贝壳提供仿真计算代码，师兄客气，给挂了个名字。这篇论文里，署名是Zhi-Xiang Xu。我自己都是IEEE发通知才知道，别人搜的到才有鬼！ # 筛我妹看看 # 为什么搜我妹？我基本把人在网络上的信息的多少和类型分为五类。第一类是老太太型，例如我外婆。什么都没有，也不用网络，你搜的到才是怪事。第二类是潜水员型，使用网络，但是不会在网络上使用自己的真名。偶尔帐号丢了就丢了，再申请一个，记得多少朋友就加多少。第三类是网络活跃型，网络上信息很多，但是基本都是网名为基础的，真名信息找不到。第四型是真实人物型，真名信息很多，但是网络上的活动类比一/二型。最后是全面活跃型，主要是网络名人，真名网名都是一堆信息。 我妹妹是潜水员的典型代表。我跳过整个过程，简述一下结果：满地都是某个书记的言论，无论我用什么关键字搜，基本都找不到相关信息。唯一的命中就是大学里面的考试名单，一个xls文件被公开在了网上。 结论：1. 要完全屏蔽信息不是你说了算的，很多时候依赖于学校老师/管理员/公司HR有没有错误的把信息贴出去，尤其是word文档。这是大部分人最容易中枪的地方。2. 当你的名字或者关键字和某个热关键字重合的时候，你的信息就像被遮盖起来一样，很难从大量垃圾中筛出。 3. baidu基本找不到word文档，估计是没这个能力。 # 老婆 # 本人名字和著名音乐家重合，所以死活找不到。联合大学找不到，联合单位后找到了一篇关于考试的xls文档，确实是她的。 换网名，我擦，满屏的命中，基本没几个错的，很多我都不知道。。。所以，我慢慢去看了。 里面还有她的班号，顺着还检索出了她的奖学金。各种信息满坑满谷。网络活跃型典型。 # 小学同学 # 很罕见的名字，输入后直接筛出两篇内容，google和baidu都是同时给出。一篇是该同学写给哈尔滨日报的吐槽，2005年的事情。另一篇是该同学上班后发的文，被收录了。后者有她所属部门的名字，交叉检索后能够多看到一篇文档。影响力不大，估计是内部发行。还有一次去台湾出席会议的经历。资料不是太多，典型的真实人物型啊。 # 以前有过暧昧的女孩子1 # 恩，别告诉某喵，大家懂。 跳过过程，上结果：不行，只有她考试的名单。典型的潜水员。 # 某个朋友 # 出乎贝壳的意料，直接输入姓名后，直接命中开心首页。google还命中了一场官司。从公开的文档中给出的家庭地址来看，确实就是她本人打的官司。这个算是信息的被动泄露，本人还是网络活跃型的吧。 # 以前曾经喜欢过的女孩子 # 曾经听说过此人进了中国一家很有名的网络公司当经理，一搜，果然有。不但有文字材料，还有该公司公关帐号放出的活动照片。近几年基本没怎么大变化，和当初看起来差不多。资料上发的文章，职位变迁一点不少，甚至还有一些帐号。但是没有QQ/开心之类的信息。也就是说，属于真实人物型。 好吧，看起来不错就好。这么多年，同学之间也只能说看你看起来不错就好。也许再过一段时间，标准会进一步降低为活着就好。 # 以前有过暧昧的女孩子2 # 此人信息非常奇怪。首先是真名什么资料都找不到，那么就是二/三型的。我有她的hotmail，搜索之后找到了一个论坛，上面的资料非常全，而且还找到了一个QQ号。交叉检索QQ号，发现是她当时男朋友的。在德国华人社区有发言，和她说男朋友去德国留学相一致。再检索她的网名，有大量资料。但是奇怪的是，都在某个时间点以前。具体来说，大概是2008年5月前后。之后的信息就完全消失。而她男友的帐号直到今年(2012年)一月还在活跃。结合上述来说，我有种非常不好的预感。更炸头皮的是，我检索了自己和她联系的历史记录。在同一个时间点后，我发送的所有信息都没有回应。包括msn上线状态/聊天记录，手机拜年短信等。。。 结论：1. 此人改名搬家，去了德国。配合她男友的记录来看，这种情况不无可能。2. 此人曾说过，如果要躲某人，就会彻底和自己以前的生活告别，在陌生的城市里过陌生的生活，即使见到也不会相认。我相信她是做的到这点的人。3. 此人已死。 好吧，按照最低标准，活着就好。 # 总结论 # 1. 现实中大部分人都是一/二型，在网络上什么信息都找不到。之所以没有在贝壳这里体现，是因为贝壳做不到纯随机取样的条件。数据源本身是贝壳自己认识的人，大部分都是受到良好教育，能够熟练使用网络的青年。有不少甚至从事相关行业。用这些人做样本，你可以认为不存在不上网的人。2.</p>
+
+          
+              <footer>
+                  <a href="https://shell909090.github.io/blog/archives/2150/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/2148/">语义的精密表达</a>
+    </h1>
+    <p class="meta">Apr 19, 2012
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2148/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>辨析语言的微妙差异，使得语言精密的符合目的语义，此为程序员基本功的最高要求。对精密语义的追求，应当凌驾于排版美观，代码美感，代码简化之上，也凌驾于运行时效率之上。除非为特定目的小幅的修正，否则不应破坏此原则。 以此为指导，我们看几个if。 # if a in python # 以下代码的目标语义是，如果a不为None，就运行代码。`if a: do something` 有什么问题？ 有没有考虑a=0的情况？a=[]呢？ `if a is not None: do something` 这样才是严密表达。 # if a in C # 以下代码的目标语义是，a是一个int数，对a!=0的情况下，执行代码。 `if (a) do something` 有什么问题？ 没问题，因为C是静态语言，这限定了a的使用。除了代码并没有体现a!=0的条件，没有太大问题。但是鉴于语言表达语义，最好改为以下代码。`if (a != 0)` 相对的，如果a是bool型，就可以直接用了。`if (a)` 如果a是char*形，那么合适的语义表达应当是。`if (a != NULL)` 他们生成的汇编代码都没有差异。 # if a in C++ # 概念上同C，不过a是一个复杂对象。`if (a) do something` 有什么问题？ 问题大了去了，和python一样，C++可以重载行为。谁知道type(a)::opreator bool(const type(a) &amp;a)函数被定义为什么鬼逻辑。这就是为什么我憎恨默认行为重载的原因——因为他们对精密语义表达有破坏作用。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/2146/">值返回和指针返回简说</a>
+    </h1>
+    <p class="meta">Apr 18, 2012
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2146/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>好吧，这是常识，我说快点。 C * c = get_c(); 这是指针返回。 C c = get_c(): 这是值返回。 指针返回的缺点是，你必须检测返回指针的有效性，也就是NULL。并且，你需要手工管理指针释放。而优点则是避免了值拷贝，还有可以返回空值，即通过返回NULL表示没有值的情况。 而引用返回最大的优势在于，变量的生存周期和作用域相同，你无需管理释放问题。然而缺陷就是庞大的拷贝开销。 在get_c返回的时候，会return一个对象。这个对象是子函数作用域对象(sub function scope)，会随着子函数退出而失效。因此，在返回值的时候会引发拷贝。这种拷贝有两种可能。1. 拷贝构造 当返回值被用于某个对象的声明时，会触发拷贝构造函数。被返回的对象会作为拷贝构造参数传递(引用传递)，而拷贝出的对象就是被生成对象。 2. 赋值算子 即operator =。当对某个已经声明对象进行赋值时，会发生这种现象。 当然，近代编译器对于“在返回时进行构造用于返回后的构造”这种情况做了优化，通称RVO优化。例如上文，如果get_c中使用return C(a, b);进行返回，实际上只有C::C(a, b)的调用，而没有C::C(const C &amp; c)的调用。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/2144/">vps上应当装什么</a>
+    </h1>
+    <p class="meta">Apr 17, 2012
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2144/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>假定你有一台debian vps，上面需要装一些东西来——你懂。你应该装一些什么呢？ # 基础部分 ### ssh ## 没啥好多说，没有ssh，你甚至无法管理机器。不过注意，安全的ssh方式应当只允许使用key登录，禁止一切密码登录。而且对于没必要登录的某些用户，需要在/etc/passwd中将shell改为/bin/false。至于端口改不改，这个不重要，看你心情。 ## vim ## debian默认装的是vim-tiny，很不好用。建议改为vim，改配置的时候让自己舒服点。 ## 安全部分 #### iptables-persistent ## 这是debian内用于iptables规则持久化的工具，你可以编辑/etc/iptables/rules.v4来修改防火墙规则。注意，目前debian stable(squeeze)中的版本还没有4/6区分，你可以弄一个testing(wheezy)中的来装。 一般来说，你的规则中至少要包含以下内容：`-A INPUT -m state &ndash;state RELATED,ESTABLISHED -j ACCEPT-A INPUT -i lo -j ACCEPT-A INPUT -i tun+ -j ACCEPT -A INPUT -i ppp+ -j ACCEPT-A INPUT -p tcp -m multiport &ndash;dport 22,xxx,xxx,xxx -j ACCEPT-A INPUT -p udp -m multiport &ndash;dport xxx,xxx,xxx -j ACCEPT` 而且强烈建议，先保存一个没问题的iptables，然后直接修改iptables，再保存。这样的好处是，当你脑残改错了导致你自己都无法管理的时候，只要重启就可以恢复vps工作，而不用更麻烦的动作。 ## denyhosts ## 这是ssh的连接防御进程，用python编写。如果有人试图尝试你的ssh密码，这个程序就会踢掉他的ip。 如果你已经用了我说的，通过key的连接方式，你可以一次就直接踢掉对方ip。 # 管理部分 ###</p>
+
+          
+              <footer>
+                  <a href="https://shell909090.github.io/blog/archives/2144/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/2142/">2012年4月12日断网的技术记录</a>
+    </h1>
+    <p class="meta">Apr 16, 2012
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2142/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>4月12日上午, 大约北京时间10点(UTC02:00前后), 中国大部分地区发生了一次断网. 这次断网我有幸正好在使用网络, 因此跟踪调试了整个过程. 1. 网络开始中断 当时我在公司里面用ssh调整一台国外的机器, 同时用另一台机器作为ssh跳板访问google. 问题发生的时候, 很多国外网站都无法打开, ssh指令不能工作. 我的第一反应就是, GFW针对ssh做了拦截. 鉴于其他可能, 我登录回了家中, 从家里的机器直接ssh到国外的跳板, 一切正常. 莫非只是我这里的ssh发生了断路? 我正在这么猜测的时候, 家里的ssh也随即断开. 我kill了当前进程, 重新连接后, 恢复了对家里服务器的控制, 但是境外的ssh跳板已经不能连接. 至此, 可以确定中国出国网络逐步发生中断, 针对什么协议, 机制如何尚不清楚. 但是, 我同时用同一台机器打开了openvpn, openvpn会提供一个内网接口. 我偶然的用这个内网iface访问了一下, 一切正常. 再尝试了一下, openvpn上网正常. 这说明问题可能局限在ssh上. 2. 这不是一个个例, 这是大规模断网 既然我对境外服务器还有控制能力, 我就更换了一个ssh端口, 但是问题并没有解决. 这似乎说明封锁不是针对端口(port), 而是针对协议(protocol)的. 为了确证这点, 我对通讯过程做了抓包, 但是结果出乎我的意料. 问题并不出现在ssh握手的时候, 而是tcp第二步的syn-ack回包彻底消失. 这表明封锁并不针对ssh协议, 而是tcp协议栈! 这非常疯狂, 如果是这样的话, 大部分基于tcp的网络协议将无法工作, 包括境外大部分网站的http协议. 我从twitter上看到, 很多人的各种工具都相继失效, 并且境外很多的http(而非https)确实无法访问, 这和我的判断相一致. 这是针对tcp协议栈的大规模拦截. 3. 为什么特殊 通常而言, GFW有三个常见工作模式. * dns污染* ip封锁* 深度包过滤(关键字拦截) 其中dns封锁只对域名有效, ip封锁只对ip有效, 只有深度包过滤才是最麻烦的.</p>
+
+          
+              <footer>
+                  <a href="https://shell909090.github.io/blog/archives/2142/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    
+    
+
+
+
+
+<div class="pagination">
+
+    
+        
+        
+        
+        <a href="/" aria-label="First" class="label-pagination"><i class="fa fa-angle-double-left fa-lg"></i></a>
+    
+
+    
+    
+        <a href="/page/20/" aria-label="Previous" class="label-pagination"><i class="fa fa-angle-left fa-lg"></i></a>
+    
+
+    
+        <a href="/" class="label-pagination">1</a>
+    
+        <a href="/page/2/" class="label-pagination">2</a>
+    
+        <a href="/page/3/" class="label-pagination">3</a>
+    
+        <a href="/page/4/" class="label-pagination">4</a>
+    
+        <a href="/page/5/" class="label-pagination">5</a>
+    
+        <a href="/page/6/" class="label-pagination">6</a>
+    
+        <a href="/page/7/" class="label-pagination">7</a>
+    
+        <a href="/page/8/" class="label-pagination">8</a>
+    
+        <a href="/page/9/" class="label-pagination">9</a>
+    
+        <a href="/page/10/" class="label-pagination">10</a>
+    
+        <a href="/page/11/" class="label-pagination">11</a>
+    
+        <a href="/page/12/" class="label-pagination">12</a>
+    
+        <a href="/page/13/" class="label-pagination">13</a>
+    
+        <a href="/page/14/" class="label-pagination">14</a>
+    
+        <a href="/page/15/" class="label-pagination">15</a>
+    
+        <a href="/page/16/" class="label-pagination">16</a>
+    
+        <a href="/page/17/" class="label-pagination">17</a>
+    
+        <a href="/page/18/" class="label-pagination">18</a>
+    
+        <a href="/page/19/" class="label-pagination">19</a>
+    
+        <a href="/page/20/" class="label-pagination">20</a>
+    
+        <a href="/page/21/" class="label-pagination">21</a>
+    
+        <a href="/page/22/" class="label-pagination">22</a>
+    
+        <a href="/page/23/" class="label-pagination">23</a>
+    
+        <a href="/page/24/" class="label-pagination">24</a>
+    
+        <a href="/page/25/" class="label-pagination">25</a>
+    
+        <a href="/page/26/" class="label-pagination">26</a>
+    
+        <a href="/page/27/" class="label-pagination">27</a>
+    
+        <a href="/page/28/" class="label-pagination">28</a>
+    
+        <a href="/page/29/" class="label-pagination">29</a>
+    
+        <a href="/page/30/" class="label-pagination">30</a>
+    
+        <a href="/page/31/" class="label-pagination">31</a>
+    
+        <a href="/page/32/" class="label-pagination">32</a>
+    
+        <a href="/page/33/" class="label-pagination">33</a>
+    
+        <a href="/page/34/" class="label-pagination">34</a>
+    
+        <a href="/page/35/" class="label-pagination">35</a>
+    
+        <a href="/page/36/" class="label-pagination">36</a>
+    
+        <a href="/page/37/" class="label-pagination">37</a>
+    
+        <a href="/page/38/" class="label-pagination">38</a>
+    
+        <a href="/page/39/" class="label-pagination">39</a>
+    
+        <a href="/page/40/" class="label-pagination">40</a>
+    
+        <a href="/page/41/" class="label-pagination">41</a>
+    
+        <a href="/page/42/" class="label-pagination">42</a>
+    
+        <a href="/page/43/" class="label-pagination">43</a>
+    
+        <a href="/page/44/" class="label-pagination">44</a>
+    
+        <a href="/page/45/" class="label-pagination">45</a>
+    
+        <a href="/page/46/" class="label-pagination">46</a>
+    
+        <a href="/page/47/" class="label-pagination">47</a>
+    
+        <a href="/page/48/" class="label-pagination">48</a>
+    
+        <a href="/page/49/" class="label-pagination">49</a>
+    
+        <a href="/page/50/" class="label-pagination">50</a>
+    
+        <a href="/page/51/" class="label-pagination">51</a>
+    
+        <a href="/page/52/" class="label-pagination">52</a>
+    
+        <a href="/page/53/" class="label-pagination">53</a>
+    
+        <a href="/page/54/" class="label-pagination">54</a>
+    
+        <a href="/page/55/" class="label-pagination">55</a>
+    
+        <a href="/page/56/" class="label-pagination">56</a>
+    
+        <a href="/page/57/" class="label-pagination">57</a>
+    
+        <a href="/page/58/" class="label-pagination">58</a>
+    
+        <a href="/page/59/" class="label-pagination">59</a>
+    
+        <a href="/page/60/" class="label-pagination">60</a>
+    
+        <a href="/page/61/" class="label-pagination">61</a>
+    
+        <a href="/page/62/" class="label-pagination">62</a>
+    
+        <a href="/page/63/" class="label-pagination">63</a>
+    
+        <a href="/page/64/" class="label-pagination">64</a>
+    
+        <a href="/page/65/" class="label-pagination">65</a>
+    
+        <a href="/page/66/" class="label-pagination">66</a>
+    
+        <a href="/page/67/" class="label-pagination">67</a>
+    
+        <a href="/page/68/" class="label-pagination">68</a>
+    
+        <a href="/page/69/" class="label-pagination">69</a>
+    
+        <a href="/page/70/" class="label-pagination">70</a>
+    
+        <a href="/page/71/" class="label-pagination">71</a>
+    
+        <a href="/page/72/" class="label-pagination">72</a>
+    
+        <a href="/page/73/" class="label-pagination">73</a>
+    
+        <a href="/page/74/" class="label-pagination">74</a>
+    
+        <a href="/page/75/" class="label-pagination">75</a>
+    
+        <a href="/page/76/" class="label-pagination">76</a>
+    
+        <a href="/page/77/" class="label-pagination">77</a>
+    
+        <a href="/page/78/" class="label-pagination">78</a>
+    
+        <a href="/page/79/" class="label-pagination">79</a>
+    
+        <a href="/page/80/" class="label-pagination">80</a>
+    
+        <a href="/page/81/" class="label-pagination">81</a>
+    
+        <a href="/page/82/" class="label-pagination">82</a>
+    
+        <a href="/page/83/" class="label-pagination">83</a>
+    
+        <a href="/page/84/" class="label-pagination">84</a>
+    
+        <a href="/page/85/" class="label-pagination">85</a>
+    
+        <a href="/page/86/" class="label-pagination">86</a>
+    
+        <a href="/page/87/" class="label-pagination">87</a>
+    
+        <a href="/page/88/" class="label-pagination">88</a>
+    
+        <a href="/page/89/" class="label-pagination">89</a>
+    
+        <a href="/page/90/" class="label-pagination">90</a>
+    
+        <a href="/page/91/" class="label-pagination">91</a>
+    
+
+    
+    
+        <a href="/page/22/" aria-label="Next" class="label-pagination"><i class="fa fa-angle-right fa-lg"></i></a>
+    
+
+    
+    
+        <a href="/page/91/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
+    
+
+</div>
+
+  
+
+  </div>
+
+  
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+    
+ </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+   

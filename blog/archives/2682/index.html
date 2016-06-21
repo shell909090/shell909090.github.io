@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>context切换测试——进程有关部分请求review</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         context切换测试——进程有关部分请求review 
+    </h1>
+    <p class="meta">Oct 28, 2014
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2682/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <h2>测试环境</h2>
+
+<ul>
+<li>Intel(R) Pentium(R) CPU G2030 @ 3.00GHz</li>
+<li>8G内存</li>
+<li>debian jessie</li>
+<li>Linux 3.16-2-amd64</li>
+<li>2014年10月27日</li>
+</ul>
+
+<p>附注一下，该CPU有2核心，无HT，1ns3个时钟周期。</p>
+
+<h2>测试方法</h2>
+
+<p>测试代码如下：</p>
+
+<pre><code>time -f "%e,%S,%c,%r,%s,%K,%P" ./perf_fork
+</code></pre>
+
+<p>数据的意义分别为: 总时间，占用CPU时间，context switch次数，读/写次数，内存耗用，CPU使用百分比。</p>
+
+<p>数据处理方法如下：</p>
+
+<pre><code>import numpy as np
+p = lambda s: [float(line.strip().split(',')[0]) for line in s.splitlines()]
+q = lambda s: [float(line.strip().split(',')[1]) for line in s.splitlines()]
+np.array(p(s)).mean()
+np.array(p(s)).var()
+np.array(q(s)).mean()
+np.array(q(s)).var()
+</code></pre>
+
+<h2>进程fork开销</h2>
+
+<p>使用<a href="https://gitcafe.com/shell909090/context/blob/master/s_fork.c">s_fork</a>程序(注释语句关闭模式)，粒度1M次，重复6次，原始数据如下：</p>
+
+<pre><code>49.04,26.83,29784,0,0,0,55%
+51.53,26.38,32057,0,0,0,52%
+49.88,26.02,30892,0,0,0,53%
+51.39,27.13,37573,0,0,0,54%
+52.89,28.12,37924,0,0,0,54%
+51.19,27.02,35880,0,0,0,54%
+</code></pre>
+
+<p>统计结果如下：</p>
+
+<ul>
+<li>time mean = 50.98</li>
+<li>time var = 1.52</li>
+<li>cpu mean = 26.92</li>
+<li>cpu var = 0.43</li>
+</ul>
+
+<p>从数据上，我们可以简单得到结论。在测试设备上，每次fork的开销为51us，CPU开销为27us，精确级别在1-2us左右。粗略换算一下，一次fork大约消耗了150k个时钟周期。</p>
+
+<p>注意，这个数据并不代表fork本身的速度。因为除去fork之外，我们还有子进程退出的开销，父进程wait的开销。甚至严格来说，还包括了至少一次的context switch(有趣的是，这个取决于fork后是优先执行子进程还是父进程)。</p>
+
+<p>但是作为进程模式的服务程序，这些开销都是预料中必须付出的。</p>
+
+<p>另外cs次数比产生的进程数远小(TODO: why?)。</p>
+
+<h2>fork模式强制优先执行子进程</h2>
+
+<p>在<a href="https://gitcafe.com/shell909090/context/blob/master/s_fork.c">s_fork</a>中，注意那句注释。当优先执行子进程时，会发生什么现象？</p>
+
+<p>预期来说，应当不发生变化，或者轻微的变慢。因为我们预期系统优先执行子进程(以减少exec前的page cow)。如果发生变化，那么说明这个假定是不正确的。真实情况是优先执行父进程或者无保证。</p>
+
+<p>如果发生变化，首先是一次context switch会变为两次。因为如果在产生了大量子进程后再依次cs，那么需要N+1次cs来结束所有子进程并返回父进程，平均每个子进程一次cs(N足够大的情况下基本近似，例如在标准配置下30000以上)。而如果每次产生子进程就切换，那么会变为每个子进程两次cs。</p>
+
+<p>其次，先执行父进程导致在每次调度时的活跃进程数更高，因此调度器的每次执行开销更高。按照算法量级估计，大约是4倍以上。但是实际复杂度的估量比平均值更加麻烦——因为活跃数总是在不停的变化中。大约是Sum(logn)/n=log(n!)/n。因此，虽然在cs次数上减少，但是每次cs的开销会增加。</p>
+
+<p>最后，先执行子进程会导致上下文描述符表项被频繁的重用，从而提高命中率。当然，在我们的测试程序中做不到这点，因为每次都是开满才开始回收的。</p>
+
+<p>下面是实际原始数据：</p>
+
+<pre><code>45.19,22.42,399890,0,0,0,51%
+47.66,22.46,414808,0,0,0,48%
+45.51,23.12,376053,0,0,0,52%
+46.35,22.10,401536,0,0,0,49%
+48.28,22.82,415162,0,0,0,48%
+47.44,22.34,413285,0,0,0,48%
+</code></pre>
+
+<p>统计结果如下：</p>
+
+<ul>
+<li>time mean = 46.73</li>
+<li>time var = 1.29</li>
+<li>cpu mean = 22.54</li>
+<li>cpu var = 0.11</li>
+</ul>
+
+<p>解读上可以发现，每10次fork产生四次cs(TODO: 为什么？)，但是每次fork的开销降低为47us，CPU降为23us(用户态时间几乎不发生变化)，精确级别在1us左右。</p>
+
+<p>这提示我们至少一件事情——如果要用进程模式，记得先执行子进程。</p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Oct 28, 2014</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/linux">linux</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/2680/" title="bash严重漏洞">bash严重漏洞</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/2684/" title="context切换测试——python有关部分请求review">context切换测试——python有关部分请求review</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

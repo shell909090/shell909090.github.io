@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>在PAM中使用google authentication</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         在PAM中使用google authentication 
+    </h1>
+    <p class="meta">Jan 22, 2014
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2539/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>PAM是linux系统身份验证的核心，在用户登录/ssh身份校验中均有很大用途。但是很少有人想到，其实这个东西还可以用google authentication来进行身份校验。</p>
+
+<h1>安装</h1>
+
+<pre><code>sudo apt-get install libpam-google-authenticator
+</code></pre>
+
+<h1>设定</h1>
+
+<p>使用前，需要对用户做一个用户级配置，生成配置文件。这个文件就是这个用户的身份验证凭证。配置请使用用户执行<code>google-authenticator</code>。</p>
+
+<p>上来先会问你是否使用基于时间的验证，肯定选是。但是注意，基于时间的验证要求服务器时间必须精确。更准确的说，是服务器时间和手机时间校准在30秒以内。由于手机一般都采用GSM校时，因此只需要在意服务器时间。建议是使用ntpdate来校准时间。特别注意，linux的时钟是会漂移的，必须按天级校准。</p>
+
+<p>然后程序会给出一个url，还可能有QR码（真够不容易的，Console级别的QR码。。。）。记住，一定要用url去获得QR码给程序扫描。因为url获得的QR码算法是最新的，而直接生成的有可能不能跑。</p>
+
+<p>下面是secret key和verification code，一般来说这两个不用关心。但是你需要记住emergency scratch codes。libpam-google-authenticator默认给你生成了5个，一般都够用了。通常用到3个就更新一遍吧。</p>
+
+<ul>
+<li>是否生成配置，选是。</li>
+<li>是否拒绝使用同一个token的人登录。如果选是，30秒内只能登录一个人。建议选是。</li>
+<li>是否放送时间验证，从1分30秒到4分钟。如果选是，允许更大的服务器时间偏差。看你服务器时间是不是够准。</li>
+<li>是否防止暴力破解，30秒内尝试不超过3次。建议选是。</li>
+</ul>
+
+<p>OK，你的配置就完成了。如果有多个用户，请多次配置。</p>
+
+<h1>手机app</h1>
+
+<p>按照系统安装以下app，下面以android版为例介绍。</p>
+
+<ul>
+<li><a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;hl=en_GB">Google Authenticator Android</a></li>
+<li><a href="https://itunes.apple.com/gb/app/google-authenticator/id388497605?mt=8">Google Authenticator iOS</a></li>
+<li><a href="http://www.windowsphone.com/en-gb/store/app/authenticator/e7994dbc-2336-4950-91ba-ca22d653759b">Authenticator for Windows Phone</a></li>
+<li><a href="http://matthill.eu/linux/ssh-two-factor-authentication-google/m.google.com/authenticator">Blackbarry</a></li>
+</ul>
+
+<p>选择setup account，然后scan a barcode。程序会要求你使用barcode扫描软件扫描(推荐barcode scanner)。这时去扫描设定一节中访问url显示的那个qr码。</p>
+
+<h1>pam配置</h1>
+
+<p>对于ssh而言，请在/etc/pam.d/sshd的最后一行增加这句。</p>
+
+<pre><code>auth required pam_google_authenticator.so
+</code></pre>
+
+<p>注意，这样其实是密码/校验码双重验证。如果你不需要密码请注释掉下面这句。</p>
+
+<pre><code>@include common-auth
+</code></pre>
+
+<p>或者其他包含以下这句的地方。</p>
+
+<pre><code>auth    required            pam_permit.so
+</code></pre>
+
+<p>如果你希望增强sudo安全性，也可以把这句加入/etc/pam.d/sudo后面。如果同样不需要密码，请注释上面那句。</p>
+
+<h1>sshd配置</h1>
+
+<p>保证/etc/ssh/sshd_config里面，以下参数都处于正确的配置。</p>
+
+<pre><code>ChallengeResponseAuthentication yes
+PasswordAuthentication no
+UsePAM yes
+</code></pre>
+
+<p>如果你使用openssh6.2以上版本，请额外加入这句以开启publickey和验证同时启用。</p>
+
+<pre><code>AuthenticationMethods publickey,keyboard-interactive
+</code></pre>
+
+<h1>sudo</h1>
+
+<p>注意，如果是NOPASSWORD，则没有校验。</p>
+
+<h1>参考和鸣谢</h1>
+
+<ol>
+<li><a href="http://matthill.eu/linux/ssh-two-factor-authentication-google/">Why enable SSH Two-Factor Authentication on your server?</a></li>
+<li><a href="https://scottlinux.com/2013/06/02/use-google-authenticator-for-two-factor-ssh-authentication-in-linux/">Use Google Authenticator For Two-Factor SSH Authentication in Linux</a></li>
+<li><a href="http://www.linux.org/threads/google-authenticator-for-ssh.4590/">Google Authenticator For SSH</a></li>
+</ol>
+
+<p>感谢Scott Miller在引用2中的回答，AuthenticationMethods这个细节在其他文献中没有提及。</p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Jan 22, 2014</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/computer">computer</a>  <a class="category" href="https://shell909090.github.io/tags/google">google</a>  <a class="category" href="https://shell909090.github.io/tags/pam">pam</a>  <a class="category" href="https://shell909090.github.io/tags/security">security</a>  <a class="category" href="https://shell909090.github.io/tags/ssh">ssh</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/2536/" title="golang和nginx的简单性能对比">golang和nginx的简单性能对比</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/2542/" title="lxc和virtualbox和物理机的简单性能测试和对比">lxc和virtualbox和物理机的简单性能测试和对比</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

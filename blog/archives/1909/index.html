@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>gnupg的基础概念</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         gnupg的基础概念 
+    </h1>
+    <p class="meta">Sep 15, 2011
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1909/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>上次gnupg签名写完后，雨苍跑过来问我gnupg里面的一些细节，讲，为什么不写清楚呢？我说不是写过一篇gnupg基础么？回去翻blog，居然没有！好吧，那就现场写一篇gnupg的基础概念。<div><br /></div><div>非对称密钥<br />    gnupg是一种签名/加密系统，通常而言，多数被用在mail和deb包签署上。普通加密程序的最大区别在于，gnupg是一种公钥/私钥结构。<div>    我们简单点说，你可以用gpg &ndash;gen-key生成一个密钥对（是的，一次一对密钥），一个密钥对包含一个公钥和一个私钥。公钥是公布在网络上的，私钥自己持有，并且可以加一个密码，以防私钥泄漏。学过非对称密码体系的同学应该知道，公钥加密，私钥解密，私钥加密，公钥解密。因此，这个密钥对可以用于签署。方法是，对你的目标数据进行哈希，然后使用私钥加密这个哈希，得到签名数据。如果别人可以用你的公钥解密这个签名数据，然后和目标数据的哈希对比，那么这个数据就一定是私钥签署的。</div></p>
+
+<p><div><br /></div><div>附加资源</div><div>    下面是最精彩的地方。一个密钥对里面，其实不仅包含一对密钥，而是包含多对。刚刚生成的公钥(pub)和私钥(sec)这对，被称为主密钥。而除去主密钥外，还可以加入三种资源，子密钥，uid，签名。</div><div>    子密钥是另一个合法的对称或者非对称密钥。子密钥的常见用途是延长密钥的可用期，或者提供不同强度的加密（通常是减弱）。</div><div>    密钥长期被用于加密数据后，可能会被已知明文攻击，因此一般密钥都有一个合理的使用周期。对于大量加密数据的人来说，这个合理使用周期可能比较短。看过上一篇互相签署的应当知道，对一个密钥每三四年乃至一年就签署一遍太麻烦了。因此，你可以使用子密钥。这个密钥的使用和吊销就比主密钥更加方便，生成一个，用六个月，然后废弃。而使用主密钥签署过的子密钥，同样可以认证该密钥属于某人。</div></p>
+
+<p><div>    uid则是认证这个人的合理名字，主要是姓名，昵称，邮箱。通过主密钥签署，别人可以认可这个网络身份真实的属于你。</div><div>    签名则是别人对你的uid的认可。一般一个uid上可以有一个或者多个签名（至少需要自己主密钥的签名）。</div><div><br /></div><div>常见参数选择</div><div>    主密钥过期时间，建议选择5-10年，推荐10年。因为主密钥过期后需要重新签署，每三四年就重新签署一遍你的密钥实在是太麻烦了。</div></p>
+
+<p><div>    主密钥长度，我建议选择你能选择的最长长度。因为主密钥有相当长的过期时间，过短的密钥很快就不实用了。在2000年的时候，1024位还是比较安全的，但是2009年，RSA-768被成功破解，威胁到了1024位密钥的安全性。目前debian推荐密钥都是4096位长。至于对此造成的计算压力增加，你可以通过子密钥来解决。</div><div>    主密钥一般是RSA的，gpg -k可以看到4096R之类的标示。</div><div></p>
+
+<p><br /></div><div>公钥的网络管理</div><div></p>
+
+<p>    上面说到，公钥需要公布在网络上。现在网络上就有一种专门的服务器，用于提供公钥的上传和管理。我用的是<a href="http://pgp.mit.edu" target="_blank">pgp.mit.edu</a>，很有名（主要是比较短，好记）。你可以在上面放置一个你的公钥，里面附加各种uid和签名，吊销凭证，等等。</div><div><br /></div><div>文件签名</div><div>    密钥对可以对文件进行签署，生成分离的(.sig文件)或者内含的签名。签名方法是gpg -s，你可以用gpg &ndash;verify来验证。</div></p>
+
+<p><div><br /></div><div>FAQ:</div><div>Q: 有什么机构对gpg进行认证么？</div><div>A: 这个真没有，虽然你可以从公钥服务器上获得很多人的公钥，但你无法确认他们的身份。确认身份唯一可靠的办法就是线下交换fingerprint并且签署。作为替代，完全信任和勉强信任也部分的可靠。</div><div>Q: 签署和加密有什么区别？</div><div>A: 签署表示这个内容是被你确认过的（由你发出或者经你许可），所有人都能看到。加密表示这个内容只有你能看到，所有人都能发出。如果你打算给一个人发送一个内容，内容是经你确认的，并且只想被他看到。你可以同时签名和加密。</div></p>
+
+<div>Q: 签名可以伪造么？</div><div>A: 这个应该不行，如果可以，你可以写个paper，全球奖金就数百万美元，更不提领域上的名声。</div><div>Q: 国家可以调动专用服务器来进行破解。</div><div>A: 目前已知破解的最长的密钥是RSA-768，长度768bit，因此1024位密钥有可能被政府机关破解。然而破解难度随着位数增加以几何级数增长，因此2048位的破解目前还遥遥无期。目前而言，2048以上长度的密钥还是无解的。</div>
+
+<div>Q: 真的不行么？我知道各国军队都有保密的研究成果。</div><div>A: 如果你相信所谓的“秘密成果”，我也无话可说。仅公共领域流通的成果而言，离可接受的破解方法还差很远。目前已知最好的算法是<a href="http://zh.wikipedia.org/wiki/%E6%99%AE%E9%80%9A%E6%95%B0%E5%9F%9F%E7%AD%9B%E9%80%89%E6%B3%95">普通数域筛选法</a>，有希望成为可接受的破解方法的是基于量子计算机的<a href="http://zh.wikipedia.org/wiki/%E7%A7%80%E7%88%BE%E6%BC%94%E7%AE%97%E6%B3%95">Shor算法</a>——不过量子计算机还没有制造出来。</div>
+
+<p></div><div>Q: 既然2048位密钥不可破解，为什么还要选择4096位？</div><div>A: 一个不幸的事实是，虽然破解难度随着位数增加几何级数增长，然而破解速度随着时间流逝也在几何级数增长。如果你打算长期使用，还是使用4096位的比较保险。</div></p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Sep 15, 2011</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/%e5%85%b6%e4%bb%96">%e5%85%b6%e4%bb%96</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/1907/" title="北京，北京">北京，北京</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/1911/" title="给初创小公司的几句话（四）">给初创小公司的几句话（四）</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

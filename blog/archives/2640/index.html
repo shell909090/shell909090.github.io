@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>为什么running不高但是load很高</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         为什么running不高但是load很高 
+    </h1>
+    <p class="meta">Jun 3, 2014
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2640/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>很多初学者会混淆几个概念。CPU繁忙程度，load。两者的区别在于，一个秘书是真的忙着抄抄写写，另一个么，反正领导只检查桌子上堆的文件数。只要桌子上准备一堆文件，在文件里换来换去就好了，没必要真的很忙。当然，大多数时候桌子上堆着很多文件的理由还是因为秘书手不够了，不过少数时候也有例外。例如fork boom，CPU很空但是load奇高。</p>
+
+<p>我们就遇到了一个例外的例外。</p>
+
+<p>症状是这样的。系统经常出现偶发性的load过高。例如有那么几分钟，load会高到100-200，然后就快速下降。但是检查后发现，即使在load极高的时候，cpu占用率也并不高，大概在10-20左右。磁盘吞吐也一般。那么load为什么会这么高呢？</p>
+
+<p>我的第一怀疑当然是超多数量的小线程，在那里搞切换调度。所以我第一反应就是看了/proc/loadavg的当前活跃线程数——结果居然只有1-5。为了确认，我特意的持续观察了数次，在我观测期间load的1分钟计数还升高了——这说明当前实际队列比1分钟平均还要高，而活跃线程却是3。</p>
+
+<p>怎么可能？交通系统报警说北三环大赛车，平均堵塞长度500辆。去一辆警车到现场回报说只看到塞了两辆，再去一辆说算上我们自己三辆。去了十多次都如此。任何脑子清楚的人都会毫无疑问的喊出——黑箱政治，政府不作为，我们要占领国会——不好意思，我们好像没有这个东西。</p>
+
+<p>OK，言归正转。为了解释这个疑惑，我特意的去看了一下内核源码——我擦，loadavg的平均值计算中，是把uninterruptible算在一起的。而活跃上下文中，只算了nr_running！</p>
+
+<p>——你丫敢再精神分裂点么？</p>
+
+<p>为了确认，我还特意man proc，结果发现里面确实有说，平均值是R和D两者去算的。但是在活跃上下文那里，只说了the number of currently runnable kernel scheduling entities——看看清楚，这里可从没有说有D。脑子清楚的仔细想想就知道，D是不可调度的。</p>
+
+<p>——问题是咱脑子不清不楚的就没想这差异，而且咱连man proc都没查。。。</p>
+
+<p>另外顺便说一句，内核也告诉了我们一点东西——load计算的时候是连内核线程一起算的。</p>
+
+<p>清楚这点差异后，问题的原因也很清楚了——肯定是哪里有很高的D。用<code>ps -e Hl | grep -e R -e D</code>扫了一下，再用<code>wc -l</code>做了一下统计。214个线程在D(或者R，或者只是不小心被grep到，但是实际上大部分都是D)。系统当前的loadavg正好长这样：</p>
+
+<pre><code>214.12 156.63 82.25 7/4629 10027
+</code></pre>
+
+<p>7个执行中线程(R)，207个uninterruptible。</p>
+
+<p>——所有的谜都解开了。</p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Jun 3, 2014</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/linux">linux</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/2635/" title="台北地铁砍人事件">台北地铁砍人事件</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/2642/" title="cgroup限定内存">cgroup限定内存</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

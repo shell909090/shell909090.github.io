@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>手工删除oracle数据库实例的全部文件</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         手工删除oracle数据库实例的全部文件 
+    </h1>
+    <p class="meta">Jan 11, 2010
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/85/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>今天公司搬家，没啥好写的，简单记录一下前两天删除重建oracle数据库的过程吧。
+首先，我重建的是oracle数据库，而不是oracle数据库程序。这几天不知道怎么回事，整个数据库的redo log出问题了，我又懒得去找。加上这个数据库做演示的时候乱糟糟的配置做了一堆，也记不请了，干脆重建。
+重建的第一步，需要找到所有程序实例的位置，这个可以看/etc/oraInv什么的一个文件，这里会指向一个目录。这个目录是标准的，里面有各种格式的oracle程序实例的位置。然后，一个程序实例可以运行多个数据库实例，因此，要找出这些数据库实例的配置文件。这个就需要对oracle的数据库基本结构有所了解，这里不赘述oracle数据库的各种基本概念。
+oracle的数据库配置文件在一个很怪的位置，/etc/oratab里面。其中有SID到spfile路径的对应关系，通常而言，这个路径位于$ORACLE_HOME/dbs/init$ORACLE_SID。我们首先不要删除这个对应关系和文件，因为启动中其他文件需要通过这个找到。我们首先通过spfile建立pfile，来读取其中的参数。
+$ export SID=orcl
+$ sqlplus / as sysdba
+&gt; create pfile from spfile
+&gt; exit
+OK，这样我们就建立了pfile，现在可以删除$ORACLE_HOME/dbs目录下所有的SID相关的文件，并且删除oratab中的对应关系。完成这步后，数据库就无法启动，也不存在了。但是我们还需要回首数据库相关的文件，主要是收回空间，同时也免除后患。
+首先，数据库有三个control files，还有一个到多个data files，以及多个redo log。在默认设置中，这些文件一般放在一起，你可以通过查看pfile确认这些文件的路径。找到之后，直接删除，没啥好多说的。在完成数据基础文件的删除后，我们还需要删除flash_recovery文件，这个也可以通过pfile确认，位置一般在data文件上两级(就是通常$ORACLE_BASE的位置)下面，flash什么的一个目录，很好找。
+最后，我们删除admin目录，具体是在$ORACLE_BASE下面的admin下面，以SID命名的，可以通过pfile确认。至此，oracle数据库的删除完成。不过呢——呵呵——让大家失望的是，其实DBCA也可以完成一样的工作&hellip;
+不过，dbca的工作必须通过vnc，绝对不要通过ssh + xming，因为那个会让最后一步执行前的确认无法被确认，导致不能执行。实在是很让人郁闷的一个bug，切记切记。</p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Jan 11, 2010</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/linux">linux</a>  <a class="category" href="https://shell909090.github.io/tags/oracle">oracle</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/84/" title="replay">replay</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/86/" title="关于google退出中国的FAQ">关于google退出中国的FAQ</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

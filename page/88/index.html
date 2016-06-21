@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>Shell&#39;s Home</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  <link href="https://shell909090.github.io/index.xml" rel="alternate" type="application/rss+xml" title="Shell&#39;s Home" />
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+ <div id="content">
+  <div class="blog-index">
+    
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/195/">windows系统四、五</a>
+    </h1>
+    <p class="meta">Jul 15, 2005
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/195/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>四，内核对象和句柄 调用API的过程中，有必要区分调用的目的和对象。说的通俗点，就是为什么调用和对谁调用。例如打开哪个文件，或者终止什么进程。调用的目的是根据不同的API和状态或者属性参数而变化的，而调用的对象则是根据句柄而选择的。 句柄大致分为内核句柄和对象句柄两种。一般来说，申请打开句柄时需要你传入安全令牌的就是内核句柄，内核句柄具有可继承性（inherit）。而像窗口等等东西就是对象句柄。SDK编程中，程序根据句柄的不同而操作不同对象，实现程序的种种目的。可以说，句柄和API组成了程序对下层的接口。 而在系统实现中，句柄则是某个内核对象，这个对象在系统中有个编号。句柄实际返回的多数是这个编号。大家可以申请两个句柄出来玩玩看，一般都是09XX之类的数字。从大小上看还属于NULL地址段（具体请看jefferey的windows核心编程），所以多数就是内核对象表项编号。这种一般以非内核句柄居多，因为这种句柄的特性可以从一个进程直接传递到另外一个进程。而有的则是某个在进程地址空间（这里插句，windows中进程和线程的区别可以理解成为，进程拥有独立空间和句柄，线程拥有独立CPU调度）内的某个数据块。这个块指向了某个确定的内核对象，这种句柄数字上一般大于4M。一般以内核句柄居多，进程间不可以传递只能继承。（其实也可以传递的，不过要用API主动复制，而不是Copy句柄过去了事） 五，通讯方法 通讯方法，通俗的讲，任何程序必定涉及和其他程序的通讯。windows中的通讯肯定是要通过API实现的。具体方法最简单的是消息通讯。需要对方的线程ID（进程ID没用的），或者进程创立的windows句柄。如果使用sendmseeage发送消息，接收方又是本线程创立的窗口，则将窗口处理函数作为子例调用（因为sendmessage是阻塞调用，本线程阻塞了来调用本线程的派生，当然，也只能，直接调用）。否则将消息挂到对方的接收区域去，然后要么阻塞，要么直接返回。（注意到为何sendmessage给本线程要直接调用了吧。阻塞的线程是无法通过messageloop的。） 如果不高兴使用消息，那么可以使用文件映射。这个方法本来是自虚拟内存中引入的，后来渐渐用来做文件的系统缓冲处理，也用来处理系统通讯。将一个文件同时映射到两个进程空间，则任何空间的变化会引发另外一个空间的变化。注意所谓文件的变化和虚拟内存一样，是未必写入磁盘的。使用这个方法需要注意同步问题。 另外，这个方法有个变形。可执行文件是PE格式时，文件载入内存时会自动做文件内存映射。此时设定属性，让某个section自动的作为同步映射，这样所有的自这个文件派生的进程在此section上是内存共享的。具体还是可以看jefferey的windows核心编程。 再差就是使用管道了，管道是用来套接标准输入输出的。去找找CUI界面重定向的问题就知道管道的用途了。除了定向到网络上，管道还可以定向到text框中。例如VC编译的时候…… 再傻点？你两个程序各申请一个winsock通讯好咯，OLE，COM，都随便你用的阿。不过拿电脑间互相通讯的东西做进程通讯，你一定是头壳坏去了。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/194/">windows系统二、三</a>
+    </h1>
+    <p class="meta">Jul 14, 2005
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/194/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>二，从程序到内核 程序是被CreateProcess载入的，中间过程就略去不说了。不过程序为何可以在不同系统上运行呢？ 首先每个程序会调用一系列的库函数，具体视使用语言和编译工具，编程框架而定。程序或者框架会调用系统的API，这个部分是SDK编程的内容。具体调用哪个API，在什么DLL里面，传入啥参数，在所有windows系统中都是一样的。不过每个windows系统对于具体实现就完全不同了。调用的API会在程序文件中载明。然后系统会将每个DLL载入进程空间，于是就实现了具体和系统的链接。每个DLL最终都会调用int 2eh（或者SYSENTER）陷入系统来完成各种使用。这部分就是内核的事情了。由刚刚的程序载入（每个系统都相同的动作），到内核实现（每个内核都不同的事情）。中间具体的过程就是系统附带的DLL的所完成的。 三，MM，不是美媚 MM是MemoryMangermant的简称，而非美媚。windows的内存管理在程序来看是透明的，因为对于程序来说，地址空间是连续的。主要原因是系统通过段寄存器索引了某个表，通过此表来映射你的“连续”内存地址到真实内存地址上来。当然，也有可能映射到了硬盘上的某个区域。Windows的每个内存块都对应某个硬盘上的区域。不过如果在内存中，则区域保留等待写入。如果不在内存中，需要的时候读出来而已。在你“透明”访问内存的时候，段寄存器会访问这张表（实际一般不访问，表的项目会在首次访问的时候载入某个缓冲用的快速寄存器），而后映射到真实的内存地址。如果“真实”的内存地址不存在，则会发生异常。windows的异常捕获会直接将硬盘内数据调入，然后继续程序执行。所以在访问内存过程中，程序看来是“透明”的。 如果你打算载入其他段寄存器来绕过系统访问的话。嘿嘿，非常抱歉，我记得段寄存器载入是特权指令。（没有研究过x86保护模式汇编指令，所以不大清楚）</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/193/">病毒编年史-当代</a>
+    </h1>
+    <p class="meta">Jul 14, 2005
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/193/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>现代病毒的最大特征是混合化，商业化。可能同时具备文件病毒，木马，蠕虫的特征，很难界定其归属。也可能具备多种传播途径，在多方向传播。同时可能具备多个部分分别载入。病毒的意义也渐渐从无明确的多种意义渐渐转向商业化。 AD 2001.9.18，混合代码出现，代表作 W32.Nimda，作者未知。 蠕虫通过电子邮件发送自己，搜索开放的网络共享，试图将自己复制到未打补丁的或已经有漏洞的 Microsoft IIS 网站服务器上，是一种既影响本地文件又影响远程网络共享文件的病毒。 贝壳评论： 可以看出，蠕虫同时具备了邮件蠕虫，漏洞蠕虫，社会工程蠕虫三者的特征。并且蠕虫会在系统中留下一个后门，这又具备了木马的特征。这正是现代病毒非常明显的特征。 AD 2002.5，蠕虫中的病毒，W32.Klez中的W95.CIH.1049。上面曾经说BackOrifice2000感染过CIH，这次CIH又感染了W32.Klez蠕虫，W32.Klez的大规模流行使得CIH卷土重来。这是首次由大规模蠕虫引起的病毒流行。 AD 2003，IM混合型病毒大规模流行，代表作 QQ尾巴。 贝壳评论： QQ尾巴是比较有趣的混合型IM病毒（虽然很多人不这么认为……）。通过IM传递一个消息，驱动你去某个网站访问，然后通过IE漏洞使你中毒。结合了IM传递，AcitveX或者脚本病毒，蠕虫三者的特征。这表明现代的病毒正逐渐融合各种技术，各个有害代码的严格分界线正在渐渐消失。 IM病毒有很多有趣的分支，无论技术如何变革。其核心都在IM传递的语言如何驱动人获得病毒。最近有直接发送病毒文件的例子，还有通过URL用户名结合的特定传染的（http://www.sina.com.cn:80@18.com/1.scr）。甚至有你回复是否中毒时对方自动应答没有啊的例子。这个过程中一般用的是社会工程攻击的知识，通过人的心理去驱动人。 AD 2003.2，W32.SQLExp.Worm SQL注入病毒，相信众多网管一定感触多多。 AD 2003.8，W32.Blaster.Worm 史上赫赫有名的“冲击波”病毒。步了红码的后尘，也是一个蠕虫。不过2K/XP双溢出的特性加上2K中一分钟重起的“有趣”特性造就了它的名声。曾经有人说病毒自动设计了一分钟重起，防止更新补丁。根据贝壳的分析，这个应该是溢出失败导致系统进程关闭，而后系统自行决定重起的。这种防止下补丁的方法既不实用风险也大，而且对于病毒传播没有贡献。只有呆子才用他。 AD 2003，“无法删除”的3721。3721是一家公司的网络实名解决方案。为了防止软件被删除，该公司使用底层驱动阻止核心文件和注册表键值被删除，导致系统效率低下。 老实说我对诸多解决方案没有啥兴趣，严格来说左解决右解决就是为了抢实名到底谁用的问题。但是这个事情引申出来一个问题，无法删除是否是恶意代码。如果说非恶意吧，他确实的违背了用户的意志。要说恶意吧，谁能说防删除就是恶意呢？如果这么说，防修改的保护卡是否是恶意呢？同时，这个技术也为诸多病毒提供了借鉴。可以想见将来的诸多病毒左右删不掉的场景，届时恐怕就头痛多多了。 另外贝壳插句话，谁写个linux引导专门对付3721之类的东西阿？我已经被问的脑袋大死了。这个东西DOS下删不了，上NTFS4DOS是ReadOnly的。linux支持了NTFS的RW挂载恐怕内核在软盘上已经放不下了，那就是说要光引导或者是USB引导咯……多软件也可以考虑。哪位大大，出一个吧。 PS.后记，病毒编年史的更新曾经一度中断。最后贝壳偶尔想起是否是文字中的某些病毒特征码导致的呢？结果果然如此，哎……此天意也（旁：又开始打太极了）。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/192/">病毒编年史-近代</a>
+    </h1>
+    <p class="meta">Jul 14, 2005
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/192/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>近代病毒的特征是多样化，结合化，跨平台。对社会工程的依赖大于对技术问题的依赖，传播中对于网络的依赖大于对软盘的依赖。种种病毒多数是通过社会工程方法或者漏洞来传播的。此时也大规模的兴起了后门运动。满世界飞的后门造就了很多Cracker，有害代码的破坏力展露无疑。 AD 1998，木马后门首次为大众所知，代表作 Back Orifice，作者 死牛崇拜(Cult Dead Cow)。 贝壳评论： 1998年真是电脑界风云之年，win98出世，BO发布，CIH流行，java病毒出现，到处充满了生机（如果这个算是生机的话）。BO作为木马，不是最早的一个。但是作为近代木马的鼻祖，BO当之无愧。木马自Unix产生以来就出现了，最早是管理员用来方便自己进出的后门，或者诱骗套取密码用。BO发布的木马可以在win9X系统上开个洞，使得别人任意操控机器。当今世界九成以上的破坏性代码（或者说恶意代码），均结合了这个特点，在侵入别人的机器后会留下后门方便作者进出，或者窃取用户各类密码。 说到死牛崇拜，还有个好笑的事情。在美国拉斯维加斯第七届“黑客”周年大会上，黑客组织“死牛崇拜” 推出特洛伊木马型黑客软件Back Orifice 2000。然而15日“死牛帮”证实其推出的正式版“BackOrifice2000”软件光盘确实感染了CIH病毒…… AD 1999，中国木马兴起，代表作 glacier，作者 西安电子科技大学 黄鑫。 冰河为国内相当优秀的木马，即使在国际上也非常有名。现今很多出名的黑客都是利用冰河迈向通往黑客道路的第一步的。黄鑫的冰河让很多人体会了做黑客的快感，更让很多人了解了网络安全的重要性。此人目前为网站“安全焦点” 的工作人员，水平极高。在安焦论坛上经常可以见到，大家不妨去过把名人瘾，要两个签名来留念…… AD 1999，Millenniu蠕虫出现，作者未知。这是迄今为止最没有名气的一种病毒，只有一个人报告受到感染。因此此病毒入选最没有名气病毒奖…… AD 1999，邮件蠕虫兴起，代表作 W97M/Melissa，作者 David L. Smith。不要被骗了哦，W97M中指的是win97。时间大约是99年（贝壳在symantec的安全响应中心99年才找到它的资料）。 AD 2000.5，邮件蠕虫和脚本病毒的结合，代表作 VBS.LoveLetter，作者未知。 AD 2000.10，嵌入式系统病毒出现，代表作 Palm.Phage.Dropper，作者未知。这是一个感染PlamOS的病毒，感染能力很小。但是代表嵌入设备病毒首次出现。 AD 2000.11，PHP网页病毒出现，代表作 PHP.Pirus，作者未知。 AD 2000，史上最出名的本地漏洞出现，代表作 win2000，作者Bill.Gates。 贝壳评论： windows2000的输入法漏洞可以号称是计算机史上最出名的漏洞了，直到去年还出现了一种新的表现形式。输入法漏洞以其简洁有效，立竿见影而著称。任何人都可以轻易学会，从而进入不是自己的系统里面去。漏洞总共有三种表现形式。一个是登陆时使用输入法，察看帮助，Internet属性。一个是登陆是等待，直到KV系列杀毒软件跳出来（怎么又是你）。一个是在特定输入法中按特定键序列，导致缓冲溢出。（这个去年才出来） AD 2001，史上最出名网络漏洞，UNICODE绕回漏洞出现，代表作 IIS5，作者Bill.Gates，发现者NSFOCUS。 贝壳评论： 这个漏洞是下面的红码的基础，红码在窜入新的机器前就扫描此漏洞。并且在远程下载病毒执行。漏洞简单来说就是在UNICODE解码的时候检验不严格，导致可以执行任何一个同盘上的文件。严格来说，如果在IIS或者NTFS安全属性上设置过的话，或者使用了安全策略和IPSEC，漏洞都不会作用。但是漏洞之所以出名就是因为连IIS都是大家糊里糊涂装上去的…… 其攻击形式大致如下： （此处省略，否则无法发表） 想当年我的IIS上面一半都是这种扫描代码。虽然我开了各种安全配置，而且上了补丁，上了IISLock。不过机器不停跑这种东西还是非常讨厌的，最终导致了贝壳的个人网站的倒站（太麻烦了）。 AD 2001.8，新一代蠕虫，红色代码II出现。 贝壳评论： 红色代码不同于以往蠕虫的是，它不使用感染文件的方法驻留在系统内部，因此可以简单的通过重起解除感染。但是问题在于，如果没有打补丁，重起后会重新感染病毒。这点和Blaster很像，但是Blaster还会定时重起，导致无法下载补丁。由于很多默认安装的个人win2000系统安装了没有必要的IIS组件，导致了该病毒大量感染。其声势不在Morris之下。 AD 2001.9，反蠕虫蠕虫，W32.BlueCode.Worm出现。此病毒的目的是为了解除红码的流行。在利用和红码相同的漏洞入侵系统后，此病毒会去下载补丁并且清除红码。而后寻找下个中毒机器，并且消灭自身。作为反蠕虫蠕虫，早在磁芯大战(Core War)的年代就出来过了。不过其合法和有效性一直没有得到肯定。 近代的结束年月并无法详细划定，不过我将其定为2001年9月。因为此时出现了一种混合型的病毒，结合了蠕虫，后门，病毒的特征。此后的有害代码正向混合化的方向发展。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/191/">windows系统一</a>
+    </h1>
+    <p class="meta">Jul 13, 2005
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/191/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>一，启动 任何一个系统，一般都从启动讲起的。这里讲启动本来从NTLDR讲就好，可是怕有人不懂，所以简略概述加电后系统的启动流程。 系统加电后，会将CS:IP（注意不是EIP）设定为FFFF:0000。然后开始BIOS自检流程（Power-On Self Test,POST），最后初始化0地址的中断向量表，将引导盘CHS(0,0,1)读入系统0000:7C00开始执行。我们假定这是硬盘（软盘的没有MBR这步），并且没有安装LILO到MBR（否则流程不大一样）。于是MBR会先读取分区表（Disk Partition Table,DPT），寻找活动分区并且载入其第一扇区到000:7C00位置执行。这样MBR等于一个透明层，无论哪个分区（逻辑磁盘不行哦）获得了活动分区，其引导区（OS Boot Record,OBR）都可以当做自己是被BIOS读取执行的。而后如果是9X系统，引导区会读取系统文件（FAT32）头部来执行。这个就是我们非常熟悉的DOS启动流程。同时插句话，如果您无法format一个DOS系统盘出来。那么先彻底格式化（注意彻底，否则FAT遗留信息会让你失败）磁盘，然后COPY IO.SYS上去。照样可以产生系统盘，当然这种BT非常规手法只有了解系统才干的出来…… 如果是NT系统嘛，就会按照某种方法载入NTLDR这个文件。具体方法我也不清楚。因为NTLDR文件没有位置要求支持NTFS和FAT两种格式。按理这么一来引导代码会超过引导区的容量。根据分析NT系统的引导区内容总共有六个连续扇区，分布在头六扇区中。当然第一个扇区还包含了文件系统相关信息BPB（BIOS Parameter Block，研究MFT的还有一个Extend）。这样的大小还是无法容纳整个文件系统的支持阿？要解决除非我愿意反向引导代码，不过为了这么一个问题反向引导代码……等我有空再说吧。 下面NTLDR会进入保护模式，设置了GDT,LDT等等东西，并且彻底支持了NTFS和FAT的读取（引导区只要能从两个格式盘上马找到一个文件就好）。然后会根据BOOT.ini中内容决定如何进行引导，如果出现文字，还可能需要bootfont.bin字体文件。一般来说，会直接调用NTDETECT.COM来检测硬件变化，继续系统加载过程。这个就是我们经常看到的黑色屏幕上有东西从左到右闪的那个…… 后面的东西就是微软内部的资料，众人根据推理分析得来，所以不是很准确。不过可以肯定，后面的东西全在system32中打转。根据分析，首先加载的是NTOSKRNL.EXE（单处理器）或者NTKRNLPA.EXE（SMP，对称多处理器）。这个东西就是windows的微内核，由它导出了windows全部NativeAPI的实现。然后是SMSS.EXE，这是进程管理器，也可以说是头个系统派生的进程。后续所有进程可以视为它的子例。由它派生了CSRSS.EXE和WINLOGON.EXE。后者接管了系统的很多部分，例如GINA。它派生了SERVICES.EXE进程，系统开始加载各种服务。最后在登陆后由GINA启动EXPLORER.EXE。出现桌面等操作界面，启动基本完成。按照上述分析，多数服务的宿主进程都是SERVICES.EXE的派生进程（有特例，例如贝壳手里的RaidenFTPD守护进程就是先由SERVICES.EXE派生，再两次派生所成的）。而多数应用程序的进程都是EXPLORER.EXE的派生进程（当然，或者再派生进程）。EXPLORER.EXE负责的内容包括了开始菜单等等，所以除非你通过某个服务去启动程序，否则都是它的子孙。（特例包括Process Explorer工具作为Ctrl+Atl+Del启动时，是WINLOGON.EXE的子例。所以在上面启动一个CMD就成了服务派生，无服务身份。还有MSN弹出的邮件或者Space都是作为某个服务的派生的，所以也不是EXPLORER.EXE的子例。）</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/190/">Windows系统引论</a>
+    </h1>
+    <p class="meta">Jul 13, 2005
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/190/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>最近在开linux系统，找找发现资料那个叫……哎。到不是说少，linux号称开放源码，想要什么没有阿。问题是精论系统结构和意义的很少，一般都是讨论某个技术点如何如何的。没有大略的瞻观（当然，也有可能是英文，贝壳的E文水平看了等于没看到）。而一般系统中要做某个应用，除了经验，就是根据系统的运作方法、构架、原理等等去模拟。例如了解了file HANDLE这种东西后，自然会就如何将一个HiddenConsole的Output转Dump到一个windows的text中产生想法。或者了解了\.系列文件后，自然会想到如何制作的ISO。当然，其实还有ATAPI的方法。如果了解了winsock的层实现流程，自然会知道防火墙如何实现。所以了解一个系统，无须了解内核的每句代码（对于windows，根本无法了解。即使是linux，了解了全部也要数年。届时你了解的也该淘汰了。）。系统主要了解其构架和思想，关键部分才了解实现。 现在看linux系统，犹如隔纱而望。当然，系统的命令我了解了不少（其实了解了ls和man已经差不多了）。但是每个命令是哪里的？系统的目录如何设置？什么配置应该看什么地方。linux载入进程是如何实现的。（估计这个是ELF的范畴，不过肯定要先啃过内核在看的懂。否则就如同我当年不知道NativeAPI的时候看NE和PE一样） 所以现在写一个windows系统引论，希望抛砖引玉。毕竟windows的资料全，了解时间长。所以难保还有哪位大大也写过类似文章，大家姑且看之吧。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/189/">史上最倒霉的一天</a>
+    </h1>
+    <p class="meta">Jul 12, 2005
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/189/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>今天是俺历史上最倒霉的一天。先是上午，老师打电话过来，说毕设里面至少要有篇翻译。当场我大惊失色，不是原来说不需要吗？赶快提枪上马，抓篇文章过来翻译，五个钟头翻译了五千字中文。连带周岚一起上马，晕头转向外加金山快译，总算即时翻译完成。然后赶快打印把。结果打印机突然没墨水了……我Ft。干脆不打，跑到学校再说。 跑学校的时候，天气非常凉爽。嗯，如何凉爽呢？我这么说吧，我下车的时候已经开始下冷雨了……幸好带了伞。不过刚刚庆幸完就给偶换成滂沱大雨了，我哭。在这么赶的时候，要是碰不到老师毕设就算完蛋了。所以冒雨前进，衣服完好，鞋子报废了…… 然后到了老师办公室，拿原来论文，要我拆封重装订。Oh My God，我的论文封面已经给我搬家的时候弄的不成人型了，重装的结果可不比计算机，估计是要废了。（结果果然破了……）不过事情还没有结束，装订好了跑过来，发现我给出去的四张经装进去一张。装订业的先生们，让我说什么呢？我可以保证我放了四张进去。算了，直接用胶水粘上去吧，否则书真的散架了。 装订好书，我倒霉的一天还没有结束。我懒的慢慢晃公交，所以直接去交大番禹门口拉Texi。其中变态的是，七辆空车从我面前飞驰而过，其中还有两个司机和我招手。我说大哥，我招手是要上车。您招手干吗？换我开车您下来？您闹肚子？还有三部车，在我面前停好后，重新启动，跑到别人面前……几位，我没得罪出租车公司吧。最倒霉的是，拦了部车，然后跑来一个MM，说那里有个大肚子。你说我有脸和孕妇抢车吗？ 总算抢了部车子，开回来的时候一路红灯。当时让我想起交通模型的绿浪理论，其中的倒霉状况就让我碰上了。当时脑子里面就高唱“一路狂奔不回头”，而且是经过变形的“一路红灯不能走”。停车算车费，结果发票开不出来了……邪门吧。回来装好容易下完的冷门游戏发现需要特定软件，软件比游戏更难找。给人CopyMp3的时候发现差点Copy上了XX歌曲……呃，具体内容省略。最倒霉的是，写这个最倒霉的一天文章的时候，居然碰上了三次软件异常关闭和一次软件错手点关闭…… 赶快上床睡觉吧……</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/188/">惊叹某MM大大的……</a>
+    </h1>
+    <p class="meta">Jul 10, 2005
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/188/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>原文如下： 但是...由于生理结构的先天性不同...有经验的厨师都知道....洗干净一条黄瓜远远比洗干净一只鲍鱼来的容易上百倍。 就是“下馆子”，最多也就吃个凉菜，鲍鱼、象拔蚌之类的大菜就不用上了。 躲避吃“热菜”的可能性，先自己塞了两大包子，估计啥啥鲍鱼在几小时之内很难引起食欲了。 如果您正在吃饭，那么非常抱歉，您吐出去的东西我不负责。如果您已经年满18但还是看不懂，我更抱歉了，您将来的另一半想必是要活在黑暗中。如果您年满18，本来看不懂，看了这段文字还没看懂。然后去google上面找了半天，最后抓下N多菜谱开始做菜……我为您远弗无界的无知和千锤百炼的粗线条神经而悲哀。 引用： http://www.blogcn.com/User2/lome/blog/22539888.html</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/187/">代码和数据</a>
+    </h1>
+    <p class="meta">Jul 9, 2005
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/187/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>从某种意义上说，代码即数据，数据即代码。不仅仅是因为无论何种代码，何种系统，什么格式，什么CPU，代码都是以数据方式存储的。更重要的是，设计良好的数据会自动驱动程序的运行。使得精简的代码发挥意外的功能。最出名的例子有XML，MFC的MessageRoute。或者从某个意义讲，所以代码都是数据驱动的。 现在的所有数据结构都是基于三个内容，数据，列表，指针。数据，即内容本身，也可以认为是某个数字。毕竟电脑是按数字方式编码所有数据的。列表，指某个定长数据区域。指针，即使用某种方式指向的另外一个数据。例如寻址编码。按这三种内容，可以构建出多数的结构来。例如树，图，列表，等等。 如果基于另外的数据方式，是否能构建出另外的数据结构呢？这种结构是否能更好的驱动程序的运行，或者使得程序更智能化的运行呢？我不知道，不过按照我的预感，遗传算法可能是其中的突破口。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/186/">毕设答辩</a>
+    </h1>
+    <p class="meta">Jul 7, 2005
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/186/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>好久没写blog了。其实不是没写，而是都更新堆在了一个项下面。就是那个NTFS格式解析那个，回头还要继续看，新出一个项吧。 今天下午三点答辩，目前还有两个半小时（注意，不是两个“半小时”）。我不知道别人在答辩前面干些啥，不过我觉得很无聊。资料准备好了，演示和示例代码做好了，文档写的差不多了，就差N臭N长N烦琐的引用列表。我还特定找了个秒表（杀鸡用牛刀？）测了PPT的讲解时间，预期是十分钟。如果加上支线和突发，可以到十五到二十分钟。很好，偶很满意，然后呢？ 突然发现，同学一个个都已经有确定的将来，只有偶还在这里迷茫。今天下午的答辩应该是过的去了（至少我没有听说答辩做了还过不去的……），补考也都合格了（嘿嘿，特别感谢马师姐）。还有呢？我的毕业手续也应该要办了。虽然烦琐点，但是总是要过去的。然后呢？ 我不知道我将来准备干吗？读研和出国肯定不考虑的了。我不喜欢本系相关的研究生，出国到是可以读计算机，可惜我的英文差到在国外生存都是一个奇迹。这样的英文还在玩电脑，想必是一个更了不得的奇迹吧。那么我准备找工作吗？北京上海？什么类型？怎么发展？我统统不知道。 目前我的生活就是做一天和尚撞一天钟。如果这个和尚突然发现钟被偷了呢？他是找个木鱼来敲？找人重新弄个钟出来？还是还俗？我也不知道。不过我知道，我做和尚的岁月永远的过去了。那不闻窗外事，只读圣贤书的岁月过去了。那单纯无忧，自由自在的时光过去了。我们都要还俗，投身到俗世浊流中，直到死亡将我们带出。</p>
+
+          
+
+        
+
+    </article>
+    
+    
+    
+
+
+
+
+<div class="pagination">
+
+    
+        
+        
+        
+        <a href="/" aria-label="First" class="label-pagination"><i class="fa fa-angle-double-left fa-lg"></i></a>
+    
+
+    
+    
+        <a href="/page/87/" aria-label="Previous" class="label-pagination"><i class="fa fa-angle-left fa-lg"></i></a>
+    
+
+    
+        <a href="/" class="label-pagination">1</a>
+    
+        <a href="/page/2/" class="label-pagination">2</a>
+    
+        <a href="/page/3/" class="label-pagination">3</a>
+    
+        <a href="/page/4/" class="label-pagination">4</a>
+    
+        <a href="/page/5/" class="label-pagination">5</a>
+    
+        <a href="/page/6/" class="label-pagination">6</a>
+    
+        <a href="/page/7/" class="label-pagination">7</a>
+    
+        <a href="/page/8/" class="label-pagination">8</a>
+    
+        <a href="/page/9/" class="label-pagination">9</a>
+    
+        <a href="/page/10/" class="label-pagination">10</a>
+    
+        <a href="/page/11/" class="label-pagination">11</a>
+    
+        <a href="/page/12/" class="label-pagination">12</a>
+    
+        <a href="/page/13/" class="label-pagination">13</a>
+    
+        <a href="/page/14/" class="label-pagination">14</a>
+    
+        <a href="/page/15/" class="label-pagination">15</a>
+    
+        <a href="/page/16/" class="label-pagination">16</a>
+    
+        <a href="/page/17/" class="label-pagination">17</a>
+    
+        <a href="/page/18/" class="label-pagination">18</a>
+    
+        <a href="/page/19/" class="label-pagination">19</a>
+    
+        <a href="/page/20/" class="label-pagination">20</a>
+    
+        <a href="/page/21/" class="label-pagination">21</a>
+    
+        <a href="/page/22/" class="label-pagination">22</a>
+    
+        <a href="/page/23/" class="label-pagination">23</a>
+    
+        <a href="/page/24/" class="label-pagination">24</a>
+    
+        <a href="/page/25/" class="label-pagination">25</a>
+    
+        <a href="/page/26/" class="label-pagination">26</a>
+    
+        <a href="/page/27/" class="label-pagination">27</a>
+    
+        <a href="/page/28/" class="label-pagination">28</a>
+    
+        <a href="/page/29/" class="label-pagination">29</a>
+    
+        <a href="/page/30/" class="label-pagination">30</a>
+    
+        <a href="/page/31/" class="label-pagination">31</a>
+    
+        <a href="/page/32/" class="label-pagination">32</a>
+    
+        <a href="/page/33/" class="label-pagination">33</a>
+    
+        <a href="/page/34/" class="label-pagination">34</a>
+    
+        <a href="/page/35/" class="label-pagination">35</a>
+    
+        <a href="/page/36/" class="label-pagination">36</a>
+    
+        <a href="/page/37/" class="label-pagination">37</a>
+    
+        <a href="/page/38/" class="label-pagination">38</a>
+    
+        <a href="/page/39/" class="label-pagination">39</a>
+    
+        <a href="/page/40/" class="label-pagination">40</a>
+    
+        <a href="/page/41/" class="label-pagination">41</a>
+    
+        <a href="/page/42/" class="label-pagination">42</a>
+    
+        <a href="/page/43/" class="label-pagination">43</a>
+    
+        <a href="/page/44/" class="label-pagination">44</a>
+    
+        <a href="/page/45/" class="label-pagination">45</a>
+    
+        <a href="/page/46/" class="label-pagination">46</a>
+    
+        <a href="/page/47/" class="label-pagination">47</a>
+    
+        <a href="/page/48/" class="label-pagination">48</a>
+    
+        <a href="/page/49/" class="label-pagination">49</a>
+    
+        <a href="/page/50/" class="label-pagination">50</a>
+    
+        <a href="/page/51/" class="label-pagination">51</a>
+    
+        <a href="/page/52/" class="label-pagination">52</a>
+    
+        <a href="/page/53/" class="label-pagination">53</a>
+    
+        <a href="/page/54/" class="label-pagination">54</a>
+    
+        <a href="/page/55/" class="label-pagination">55</a>
+    
+        <a href="/page/56/" class="label-pagination">56</a>
+    
+        <a href="/page/57/" class="label-pagination">57</a>
+    
+        <a href="/page/58/" class="label-pagination">58</a>
+    
+        <a href="/page/59/" class="label-pagination">59</a>
+    
+        <a href="/page/60/" class="label-pagination">60</a>
+    
+        <a href="/page/61/" class="label-pagination">61</a>
+    
+        <a href="/page/62/" class="label-pagination">62</a>
+    
+        <a href="/page/63/" class="label-pagination">63</a>
+    
+        <a href="/page/64/" class="label-pagination">64</a>
+    
+        <a href="/page/65/" class="label-pagination">65</a>
+    
+        <a href="/page/66/" class="label-pagination">66</a>
+    
+        <a href="/page/67/" class="label-pagination">67</a>
+    
+        <a href="/page/68/" class="label-pagination">68</a>
+    
+        <a href="/page/69/" class="label-pagination">69</a>
+    
+        <a href="/page/70/" class="label-pagination">70</a>
+    
+        <a href="/page/71/" class="label-pagination">71</a>
+    
+        <a href="/page/72/" class="label-pagination">72</a>
+    
+        <a href="/page/73/" class="label-pagination">73</a>
+    
+        <a href="/page/74/" class="label-pagination">74</a>
+    
+        <a href="/page/75/" class="label-pagination">75</a>
+    
+        <a href="/page/76/" class="label-pagination">76</a>
+    
+        <a href="/page/77/" class="label-pagination">77</a>
+    
+        <a href="/page/78/" class="label-pagination">78</a>
+    
+        <a href="/page/79/" class="label-pagination">79</a>
+    
+        <a href="/page/80/" class="label-pagination">80</a>
+    
+        <a href="/page/81/" class="label-pagination">81</a>
+    
+        <a href="/page/82/" class="label-pagination">82</a>
+    
+        <a href="/page/83/" class="label-pagination">83</a>
+    
+        <a href="/page/84/" class="label-pagination">84</a>
+    
+        <a href="/page/85/" class="label-pagination">85</a>
+    
+        <a href="/page/86/" class="label-pagination">86</a>
+    
+        <a href="/page/87/" class="label-pagination">87</a>
+    
+        <a href="/page/88/" class="label-pagination">88</a>
+    
+        <a href="/page/89/" class="label-pagination">89</a>
+    
+        <a href="/page/90/" class="label-pagination">90</a>
+    
+        <a href="/page/91/" class="label-pagination">91</a>
+    
+
+    
+    
+        <a href="/page/89/" aria-label="Next" class="label-pagination"><i class="fa fa-angle-right fa-lg"></i></a>
+    
+
+    
+    
+        <a href="/page/91/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
+    
+
+</div>
+
+  
+
+  </div>
+
+  
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+    
+ </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+   

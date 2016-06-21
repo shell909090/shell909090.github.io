@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>lxc的double NAT模式无法使用dnsmasq的分析</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         lxc的double NAT模式无法使用dnsmasq的分析 
+    </h1>
+    <p class="meta">Nov 25, 2013
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2517/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>系统debian testing，lxc-0.9。</p>
+
+<p>在笔记本上做lxc，网络是wifi，AP会drop不同MAC发出的报文，所以无法做网桥。一个办法是用ebtables做规则，我嫌麻烦。另一个是配置多头主机，double NAT。当然，还有路由器模式。不过大多数网络环境中我搞不到default gateway的权限来添加子网的路由规则。所以就选了double NAT。</p>
+
+<p>问题出在dnsmasq作为dhcp和dns服务器上。整个网络都搭好了，通的。完了我在host上启动dnsmasq，在guest里就是硬生生无法获得IP。</p>
+
+<p>首先host上vi /var/log/syslog，看到dnsmasq把dhcp offer发出去了。在guest里tcpdump，看到有报文收到。那就奇怪该死的dhclient不工作了。dhclient版本4.2.4，和主系统一致。网桥环境中这个版本可以工作。</p>
+
+<p>所以把网桥环境中的报文也tcpdump了一遍，加上刚刚不成功的dumpout一起看——什么都看不出来。</p>
+
+<p>偶然dhclient -v -d -4 eth0了一下，看到bad udp checksums，顿时一愣。跑到wireshark下面看了一下——还真是没有计算checksum。打开checksum计算可以看到double NAT里的checksum算错了。提示是maybe checksum offload。</p>
+
+<p>我找到这个链接：http://www.wireshark.org/docs/wsug_html_chunked/ChAdvChecksums.html</p>
+
+<p>里面提到，checksum可能是由网卡或驱动计算的。这就难怪——没问题的dhcp offer的udp checksum是由openwrt的网卡发出，而有问题的则是由bridge和virtual ethernet发出。</p>
+
+<p>那见鬼，别人是怎么成功的？</p>
+
+<p>一番搜索，看来lxc还不是第一个中招的：http://lists.xen.org/archives/html/xen-devel/2011-12/msg01770.html</p>
+
+<p>dhcp-4.2.2可以打这个补丁，使得dhcp-client不去校验udp checksum：http://pkgs.fedoraproject.org/cgit/dhcp.git/plain/dhcp-4.2.2-xen-checksum.patch?id2=HEAD</p>
+
+<p>当然，也有各种坑爹补丁（例如这个：http://marc.info/?l=kvm&amp;m=121882968407525&amp;w=2）来修复虚拟驱动上的问题，计算出正确的checksum。</p>
+
+<p>在debian下，他被报为bts671707(http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=671707)。已经报了一年半，尚未处理。</p>
+
+<p>网上很多教程能够跑通的原因，大概是因为他们的guest基于08年以后的rh系系统。rh在08年就对dhclient出了一个补丁（4.2.2那个），用于暂时修复这个问题。</p>
+
+<p>所有基于debian系的系统都无法从offloading不处理的系统上获得dhcp offer。</p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Nov 25, 2013</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/linux">linux</a>  <a class="category" href="https://shell909090.github.io/tags/lxc">lxc</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/2513/" title="甘肃行——第四五天（阳关，玉门关，雅丹）">甘肃行——第四五天（阳关，玉门关，雅丹）</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/2519/" title="KK行——第零日">KK行——第零日</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

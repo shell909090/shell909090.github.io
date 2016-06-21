@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>Linux内存计数详解</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         Linux内存计数详解 
+    </h1>
+    <p class="meta">Nov 24, 2005
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/264/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <div>&nbsp;&nbsp;&nbsp; 又中计了……</div>
+<div>&nbsp;&nbsp;&nbsp; 近几天用oracle，发现oracle狂用内存，经常内存小到10M的规模。汗一个，赶快让经理买了新的1G内存来装，上去后发现根本认不出来。加班一多小时才发现386内核根本不认高端内存(HIGHMEM)，所以内存极限一直是896M。以前是1G内存，所以看不出来，现在换了1.5G，看出来了。</div>
+<div>&nbsp;&nbsp;&nbsp; 赶快上了一个2.6.12-1-686的内核，然后重启，认出来了。不过free还是只有32M左右，我们大惊小怪的打电话到oracle那里去咨询，得到的答复是要安装完整的补丁，并且要用oracle认证过的服务器。oracle认证了啥服务器？RedHatEnterpriseAS3/4,那个东西要收费的，而且绝对不便宜。最后无奈，做了一次不启动oracle的测试。出乎我们意料的，mysql吃了多数的内存。具体造成这种状况的原因是啥呢？</div>
+<div>&nbsp;&nbsp;&nbsp; 偶查阅了linux内存管理资料，发现linux的内存管理计数上讲的东西和windows讲的有很大差异。下面具体列举下几种计数、查看方式和含义。</div>
+<div>&nbsp;&nbsp;&nbsp; total mem，可以用top free查看出来。</div>
+<div>&nbsp;&nbsp;&nbsp; free mem，可以用top free vmstat查看出来。</div>
+<div>&nbsp;&nbsp;&nbsp; used mem，可以用top free查看出来.</div>
+<div>&nbsp;&nbsp;&nbsp; buffer mem，可以用top free vmstat查看出来。</div>
+<div>&nbsp;&nbsp;&nbsp; shared mem，可以用free查看出来。</div>
+<div>&nbsp;&nbsp;&nbsp; swap mem，可以用top查看出来。</div>
+<div>&nbsp;&nbsp;&nbsp; swap used，可以用top vmstat查看出来。</div>
+<div>&nbsp;&nbsp; &nbsp;cached mem，可以用top free vmstat查看出来。</div>
+<div>&nbsp;&nbsp;&nbsp; active mem，可以用free vmstat -a查看出来，即cached used。</div>
+<div>&nbsp;&nbsp; &nbsp;inactive mem，可以用free vmstat -a查看出来，即cached free。</div>
+<div>&nbsp;&nbsp;&nbsp; 其中total mem是除去系统外的可用内存，系统大约占1M多。然后分配给free mem和used mem。used mem又包括了内核表使用（例如GDT），程序使用，buffer，cached。所以</div>
+<div>&nbsp;&nbsp;&nbsp; cached mem=active mem+inactive mem</div>
+<div>&nbsp;&nbsp;&nbsp; total mem=free mem+used mem</div>
+<div>&nbsp;&nbsp;&nbsp; used mem=内核表使用+程序使用物理内存+buffer mem+cached mem</div>
+<div>略去内核表使用，这个式子可以变形成这样：</div>
+<div>&nbsp;&nbsp;&nbsp; 程序使用总内存=swap used+程序使用物理内存</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=swap used+used mem-buffer mem-cached mem</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =total mem-free mem+swap used-buffer mem-cached mem</div>
+<div>根据所有系统内存管理的恒等式：</div>
+<div>&nbsp;&nbsp;&nbsp; 程序使用总内存+一次可申请内存=total mem+swap used</div>
+<div>我们可以计算出：</div>
+<div>&nbsp;&nbsp;&nbsp; 一次可申请内存=free mem+buffer mem+cached mem（事实上要略小于这个值）</div>
+<div>&nbsp;&nbsp;&nbsp; 程序使用的部分swap出去部分，占用total部分，剩下的就是一次可以申请的最大值。多次申请造成这个值太小就继续向swap里面交换。</div>
+<div>&nbsp;</div>
+<div>&nbsp;&nbsp;&nbsp; 首先解释buffer和cached区别。通俗的讲，buffer中放的是对象数据结构，而cached中放的是无结构的块数据。cached可以缓冲任何标准的块设备，而不用管是什么东西。其中涉及写通和写回的概念，大家自己看去吧。</div>
+<div>&nbsp;&nbsp;&nbsp; 然后是程序使用物理内存的概念。程序的总内存等于交换出去的部分加上程序使用物理内存。而程序使用的总内存和各个程序的内存占用是什么关系呢？这个又要涉及共用页面的问题。</div>
+<div>&nbsp;&nbsp;&nbsp; windows中也有类似概念，如果两个页面内容相同，那么在内存中保留一份就可以了。这个是动态链接库/动态共享库的理论基础。所以所有进程的shared mem只有一份copy。进程使用的Data+Stack是数据空间，code是代码空间，两者和减去shared mem是私有空间，也就是俗称的进程内存占用。将所有内存占用求和加上shared mem的和，就得到了程序的总内存。</div>
+<div>&nbsp;&nbsp;&nbsp; Linux的cached和windows的一个很大差异在于，windows的磁盘缓存是读写缓存队列。写入操作和预读取操作在队列中排序。完了就释放了，主要用于平缓读写瓶颈。读取预测机制才是增加命中的重头。linux的cached读写完了一直不释放，直到内存不足再释放。释放的速度来说应该是没有问题的，毕竟数据已经写入了，只差一个数据结构标志位修改而已。这种机制主要对应高命中率，如果重复使用相同文件（应该说是相同块设备的相同offset）。那么缓存机制永远只要读一次，写入次数也远远小于应当的写入次数。</div>
+<div>&nbsp;</div>
+<div>&nbsp;&nbsp;&nbsp; 根据上面一次可申请内存的计算公式，可以知道这次偶死在哪里了吧。</div>
+<div>&nbsp;</div>
+<div>reference：</div>
+<div>&nbsp;&nbsp;&nbsp; 感谢以下几位作者的文章为我解答了疑惑，为了表达敬意列于下。我没有全文照抄，按理不用起告知义务吧。</div>
+<div>&nbsp;&nbsp;&nbsp; [1].Linux内存使用的体会.nonameboy.linux宝库.http://www.linuxmine.com/5621.html</div>
+<div>&nbsp;&nbsp;&nbsp; [2].Linux 管理员手册(4)--内存管理...http://it.qlsh.net/html/2004/11/20041110092900-1.htm</div>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Nov 24, 2005</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/linux">linux</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/263/" title="C&#43;&#43;语言跨系统编程">C&#43;&#43;语言跨系统编程</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/265/" title="quiz tree">quiz tree</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

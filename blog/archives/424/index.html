@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>财务数据库</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         财务数据库 
+    </h1>
+    <p class="meta">Jan 25, 2008
+         - 4 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/424/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>贝壳最近工作繁忙，一般都是晚上十一点到家睡觉，第二天早上继续上班的那种，所以blog基本没怎么动。现在放篇财务数据库的原型，大家参考一下吧。当然，是对程序员而言。像六牙四皂小姐这种下面估计是压根看不懂的，而且也不会有那种变态的资金准度要求。<br />    首先建立一个账户表。<br />DROP TABLE IF EXISTS <code>accont_info</code>;<br />CREATE TABLE <code>accont_info</code> (<br />  <code>id</code> int(11) NOT NULL auto_increment,<br />  <code>username</code> varchar(40) NOT NULL,<br />  <code>accont</code> varchar(40) NOT NULL,<br />  <code>accont_type</code> int(11) NOT NULL default &lsquo;0&rsquo;,<br />  PRIMARY KEY  (<code>id</code>),<br />  UNIQUE KEY <code>username</code> (<code>username</code>,<code>accont</code>)<br />) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=gbk;<br />    输入用户名，账户名和账户类型，例如&quot;许智翔&quot;,&quot;招行账户&quot;,2。账户类型中规定1是现金，2是存款，3是信用卡，4以上不计算。这样可以使用多个现金账户，存款账户和信用卡账户。然后利用子查询把所有类型间的相互行为统计出来。<br />    然后是类型表。<br />DROP TABLE IF EXISTS <code>type_info</code>;<br />CREATE TABLE <code>type_info</code> (<br />  <code>id</code> int(11) NOT NULL auto_increment,<br />  <code>type</code> varchar(40) NOT NULL,<br />  <code>subtype</code> varchar(40) default NULL,<br />  PRIMARY KEY  (<code>id</code>),<br />  UNIQUE KEY <code>type</code> (<code>type</code>,<code>subtype</code>)<br />) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=gbk;<br />    最后是资金流动数据表，accont_id中填写出户账户名，to_accont中填写入户账户名。如果是外部(例如从别人那里拿钱或者给别人钱)，则写0。happen_time上填写发生时间，money上写金额，message上写备忘。<br />DROP TABLE IF EXISTS <code>money_info</code>;<br />CREATE TABLE <code>money_info</code> (<br />  <code>id</code> int(11) NOT NULL auto_increment,<br />  <code>accont_id</code> int(11) NOT NULL,<br />  <code>to_accont</code> int(11) default NULL,<br />  <code>happen_time</code> datetime NOT NULL,<br />  <code>type</code> int(11) NOT NULL,<br />  <code>record_modify</code> timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,<br />  <code>money</code> decimal(9,2) NOT NULL,<br />  <code>message</code> varchar(400) default NULL,<br />  PRIMARY KEY  (<code>id</code>),<br />  KEY <code>happen_time</code> (<code>happen_time</code>,<code>type</code>,<code>accont_id</code>)<br />) ENGINE=InnoDB AUTO_INCREMENT=914 DEFAULT CHARSET=gbk;<br />    下面就是核心代码了。这个存储过程需要两个时间，统计的开始和结束时间。可以得出两个表，这段时间的收支和余额表，分类支出表。<br />DELIMITER $$<br /><br />DROP PROCEDURE IF EXISTS <code>money</code>.<code>count_all</code> $$<br />CREATE DEFINER=<code>shell</code>@<code>%</code> PROCEDURE <code>count_all</code>(IN start_date DATETIME, IN end_date DATETIME)<br />BEGIN<br />declare cash_get DECIMAL(9,2);<br />declare bank_get DECIMAL(9,2);<br />declare card_get DECIMAL(9,2);<br />declare cash_used DECIMAL(9,2);<br />declare cash_bank DECIMAL(9,2);<br />declare bank_used DECIMAL(9,2);<br />declare bank_cash DECIMAL(9,2);<br />declare card_used DECIMAL(9,2);<br />select sum(money) into cash_get from money_info where happen_time&gt;=start_date and happen_time&lt;end_date and<br />to_accont in (SELECT id FROM accont_info where accont_type=1);<br />select sum(money) into bank_get from money_info where happen_time&gt;=start_date and happen_time&lt;end_date and<br />to_accont in (SELECT id FROM accont_info where accont_type=2);<br />select sum(money) into card_get from money_info where happen_time&gt;=start_date and happen_time&lt;end_date and<br />to_accont in (SELECT id FROM accont_info where accont_type=3);<br />select sum(money) into cash_used from money_info where happen_time&gt;=start_date and happen_time&lt;end_date and<br />accont_id in (SELECT id FROM accont_info where accont_type=1);<br />select sum(money) into cash_bank from money_info where happen_time&gt;=start_date and happen_time&lt;end_date and<br />accont_id in (SELECT id FROM accont_info where accont_type=1) and<br />to_accont in (SELECT id FROM accont_info where accont_type=2);<br />select sum(money) into bank_used from money_info where happen_time&gt;=start_date and happen_time&lt;end_date and<br />accont_id in (SELECT id FROM accont_info where accont_type=2);<br />select sum(money) into bank_cash from money_info where happen_time&gt;=start_date and happen_time&lt;end_date and<br />accont_id in (SELECT id FROM accont_info where accont_type=2) and<br />to_accont in (SELECT id FROM accont_info where accont_type=1);<br />select sum(money) into card_used from money_info where happen_time&gt;=start_date and happen_time&lt;end_date and<br />accont_id in (SELECT id FROM accont_info where accont_type=3);<br />select &quot;开始日期&quot;,start_date<br />union<br />select &quot;结束日期&quot;,end_date<br />union<br />select &quot;现金总收入&quot;,cash_get<br />union<br />select &quot;现金总支出&quot;,cash_used<br />union<br />select &quot;  现金存款&quot;,cash_bank<br />union<br />select &quot;  现金使用&quot;,cash_used-cash_bank<br />union<br />select &quot;现金总余额&quot;,cash_get-cash_used<br />union<br />select &quot;总存款&quot;,bank_get<br />union<br />select &quot;存款使用&quot;,bank_used<br />union<br />select &quot;  银行提款&quot;,bank_cash<br />union<br />select &quot;  信用卡使用&quot;,card_used<br />union<br />select &quot;  其他使用&quot;,bank_used-bank_cash-card_used<br />union<br />select &quot;存款余额&quot;,bank_get-bank_used<br />union<br />select &quot;信用卡平衡&quot;,card_get-card_used<br />;<br />select m.type as typeid,t.type as typename,sum(m.money)as money from money_info m left join type_info t on m.type=t.id<br />where happen_time&gt;=start_date and happen_time&lt;end_date and to_accont=0 group by m.type;<br />END $$<br /><br />DELIMITER ;<br />    下面这个是上面的辅助代码，统计这个月的数据。<br />DELIMITER $$<br /><br />DROP PROCEDURE IF EXISTS <code>money</code>.<code>count_this_month</code> $$<br />CREATE DEFINER=<code>shell</code>@<code>%</code> PROCEDURE <code>count_this_month</code>()<br />BEGIN<br /><br />set @now_start=if(day(current_date())&lt;25,<br />date_format(date_sub(current_date(),interval 1 month),&lsquo;%Y-%m-25&rsquo;),<br />date_format(current_date(),&lsquo;%Y-%m-25&rsquo;));<br />set @now_end=date_add(@now_start,interval 1 month);<br />CALL count_all(@now_start,@now_end);<br /><br />END $$<br /><br />DELIMITER ;<br />    最后这个是统计历史的收入，支出，现金支出，银行支出，信用卡支出和其他支出。<br />DELIMITER $$<br /><br />DROP PROCEDURE IF EXISTS <code>money</code>.<code>count_month</code> $$<br />CREATE DEFINER=<code>shell</code>@<code>%</code> PROCEDURE <code>count_month</code>()<br />BEGIN<br /><br />create temporary table temp_in(<br />yearmonth datetime,<br />money DECIMAL(9,2)<br />);<br />create temporary table temp_out(<br />yearmonth datetime,<br />money DECIMAL(9,2)<br />);<br />create temporary table temp_cash(<br />yearmonth datetime,<br />money DECIMAL(9,2)<br />);<br />create temporary table temp_bank(<br />yearmonth datetime,<br />money DECIMAL(9,2)<br />);<br />create temporary table temp_card(<br />yearmonth datetime,<br />money DECIMAL(9,2)<br />);<br /><br />insert into temp_in<br />select date_format(date_sub(happen_time, interval 24 day),&quot;%Y-%m-25&quot;) as yearmonth,sum(money)<br />from money_info where accont_id=0 group by yearmonth;<br />insert into temp_out<br />select date_format(date_sub(happen_time, interval 24 day),&quot;%Y-%m-25&quot;) as yearmonth,sum(money)<br />from money_info where to_accont=0 group by yearmonth;<br />insert into temp_cash<br />select date_format(date_sub(happen_time, interval 24 day),&quot;%Y-%m-25&quot;) as yearmonth,sum(money)<br />from money_info where to_accont=0 and accont_id in (select id from accont_info where accont_type=1) group by yearmonth;<br />insert into temp_bank<br />select date_format(date_sub(happen_time, interval 24 day),&quot;%Y-%m-25&quot;) as yearmonth,sum(money)<br />from money_info where to_accont=0 and accont_id in (select id from accont_info where accont_type=2) group by yearmonth;<br />insert into temp_card<br />select date_format(date_sub(happen_time, interval 24 day),&quot;%Y-%m-25&amp;
+quot;) as yearmonth,sum(money)<br />from money_info where to_accont=0 and accont_id in (select id from accont_info where accont_type=3) group by yearmonth;<br /><br />select o.yearmonth as startday,date_add(o.yearmonth,interval 1 month) as endday,<br />ifnull(i.money,0) as money_in,ifnull(o.money,0) as money_out,ifnull
+(c.money,0) as money_cash,<br />ifnull(b.money,0) as money_bank,ifnull(d.money,0) as money_card,<br />ifnull(o.money,0)-ifnull(c.money,0)-ifnull(b.money,0)-ifnull(d.money,0) as money_other<br />from temp_out o<br />left join temp_in i on o.yearmonth=i.yearmonth<br />left join temp_cash c on o.yearmonth=c.yearmonth<br />left join temp_bank b on o.yearmonth=b.yearmonth<br />left join temp_card d on o.yearmonth=d.yearmonth;<br /><br />drop temporary table if exists temp_in,temp_out,temp_cash,temp_bank,temp_card;<br /><br />END $$<br /><br />DELIMITER ;<br />    怎么样，很简单实用吧。建议实用mysql+mysqlgui。图形的录入和统计，方便的备份。比以前写的方便多了。<br /></p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Jan 25, 2008</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/database">database</a>  <a class="category" href="https://shell909090.github.io/tags/program">program</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/423/" title="libxml使用中的编码问题">libxml使用中的编码问题</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/425/" title="弄死MSN的共享文件夹">弄死MSN的共享文件夹</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

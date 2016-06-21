@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>如何做一个mercurial的http发布</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         如何做一个mercurial的http发布 
+    </h1>
+    <p class="meta">Nov 22, 2010
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1618/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>&nbsp;&nbsp; &nbsp;我假定你了解hg，了解python，理解nginx或者其他cgi/fcgi的配置过程。现在想用http发布自己的mercurial仓库，而且可能发布一群，怎么操作呢？ <div>&nbsp;&nbsp; &nbsp;首先，复制模板文件过来，你可以挑选其中之一。以下是debian的文件位置，其他发布请自行查询。</div><div><div>/usr/share/doc/mercurial-common/examples/hgweb.wsgi</div><div>/usr/share/doc/mercurial-common/examples/hgweb.fcgi</div><div>/usr/share/doc/mercurial-common/examples/hgweb.cgi</div>    </div><div>&nbsp;&nbsp; &nbsp;我使用nginx+fastcgi模式部署，因此复制了hgweb.fcgi。我假定你的仓库在~/hg下面，有很多子仓库。复制hgweb.fcgi到~/hg/下，改名为hgweb.py，并修改以下两行。</div><div>config = &quot;/path/to/you/config&quot;</div><div>WSGIServer(application, bindAddress=&#39;hgweb.sock&#39;).run()</div>    <div>&nbsp;&nbsp; &nbsp;其中bindAddress为你需要监听的unixsocket路径，没有前缀表示在当前目录生成。而后建立配置文件，大概为以下内容。</div><div><div>[web]</div><div>allow_push = someone</div><div>push_ssl = false</div><div><br /></div><div>[paths]</div><div>/hg/proj1=/path/to/proj1</div>    <div>/hg/proj2=/path/to/proj2</div><div>&nbsp;&nbsp; &nbsp;以上就完成了hgweb的服务配置，/hg/proj1是你的url映射路径，/path/to/proj1是物理路径。someone是允许进行push的人，而push_ssl是允许http推送。而后，启动服务。</div><div>python hgweb.py &amp;</div><div>chmod 666 hgweb.sock</div><div>    &nbsp;&nbsp; &nbsp;注意，这里要用screen之类的程序来启动hgweb，否则term关闭后服务进程停止，就没的玩了。修改权限是因为debian下的nginx使用www-data运行，对/home/user/hg没有读写权限，导致无法使用unixsock。</div><div>&nbsp;&nbsp; &nbsp;在nginx中做以下配置。</div></div><div><div><div>location ^~ /hg/ {</div><div>&nbsp;&nbsp; &nbsp;limit_except GET {</div>   <div>&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;auth_basic &quot;Restricted&quot;;</div><div>&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;auth_basic_user_file /home/user/hg/users;</div><div>&nbsp;&nbsp; &nbsp;}</div><div>&nbsp;&nbsp; &nbsp;fastcgi_pass &nbsp; unix:/home/user/hg/hgweb.sock;</div><div>&nbsp;&nbsp; &nbsp;include fastcgi_params;</div>   <div>}</div></div></div><div>&nbsp;&nbsp; &nbsp;如果你不需要auth，可以自行参照nginx的配置修改。其他web服务器以此类推。重启服务后，<a href="http://domains/hg/proj1" target="_blank"><a href="http://domains/hg/proj1">http://domains/hg/proj1</a></a>就可以访问到proj1了。</div> <div>&nbsp;&nbsp; &nbsp;当然，其实最后还要提一句，如果你不需要web界面，可以直接设定将文件内容直接发出去，这样也是可以做pull/push的。</div><div>参考：</div><div><a href="http://mercurial.selenic.com/wiki/PublishingRepositories" target="_blank"><a href="http://mercurial.selenic.com/wiki/PublishingRepositories">http://mercurial.selenic.com/wiki/PublishingRepositories</a></a></div></p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Nov 22, 2010</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/linux">linux</a>  <a class="category" href="https://shell909090.github.io/tags/nginx">nginx</a>  <a class="category" href="https://shell909090.github.io/tags/python">python</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/1613/" title="为什么高性能框架都是http的">为什么高性能框架都是http的</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/1623/" title="要这么招人恨也挺不容易的">要这么招人恨也挺不容易的</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

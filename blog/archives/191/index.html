@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>windows系统一</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         windows系统一 
+    </h1>
+    <p class="meta">Jul 13, 2005
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/191/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>一，启动
+任何一个系统，一般都从启动讲起的。这里讲启动本来从NTLDR讲就好，可是怕有人不懂，所以简略概述加电后系统的启动流程。
+系统加电后，会将CS:IP（注意不是EIP）设定为FFFF:0000。然后开始BIOS自检流程（Power-On Self Test,POST），最后初始化0地址的中断向量表，将引导盘CHS(0,0,1)读入系统0000:7C00开始执行。我们假定这是硬盘（软盘的没有MBR这步），并且没有安装LILO到MBR（否则流程不大一样）。于是MBR会先读取分区表（Disk Partition Table,DPT），寻找活动分区并且载入其第一扇区到000:7C00位置执行。这样MBR等于一个透明层，无论哪个分区（逻辑磁盘不行哦）获得了活动分区，其引导区（OS Boot Record,OBR）都可以当做自己是被BIOS读取执行的。而后如果是9X系统，引导区会读取系统文件（FAT32）头部来执行。这个就是我们非常熟悉的DOS启动流程。同时插句话，如果您无法format一个DOS系统盘出来。那么先彻底格式化（注意彻底，否则FAT遗留信息会让你失败）磁盘，然后COPY IO.SYS上去。照样可以产生系统盘，当然这种BT非常规手法只有了解系统才干的出来……
+如果是NT系统嘛，就会按照某种方法载入NTLDR这个文件。具体方法我也不清楚。因为NTLDR文件没有位置要求支持NTFS和FAT两种格式。按理这么一来引导代码会超过引导区的容量。根据分析NT系统的引导区内容总共有六个连续扇区，分布在头六扇区中。当然第一个扇区还包含了文件系统相关信息BPB（BIOS Parameter Block，研究MFT的还有一个Extend）。这样的大小还是无法容纳整个文件系统的支持阿？要解决除非我愿意反向引导代码，不过为了这么一个问题反向引导代码……等我有空再说吧。
+下面NTLDR会进入保护模式，设置了GDT,LDT等等东西，并且彻底支持了NTFS和FAT的读取（引导区只要能从两个格式盘上马找到一个文件就好）。然后会根据BOOT.ini中内容决定如何进行引导，如果出现文字，还可能需要bootfont.bin字体文件。一般来说，会直接调用NTDETECT.COM来检测硬件变化，继续系统加载过程。这个就是我们经常看到的黑色屏幕上有东西从左到右闪的那个……
+后面的东西就是微软内部的资料，众人根据推理分析得来，所以不是很准确。不过可以肯定，后面的东西全在system32中打转。根据分析，首先加载的是NTOSKRNL.EXE（单处理器）或者NTKRNLPA.EXE（SMP，对称多处理器）。这个东西就是windows的微内核，由它导出了windows全部NativeAPI的实现。然后是SMSS.EXE，这是进程管理器，也可以说是头个系统派生的进程。后续所有进程可以视为它的子例。由它派生了CSRSS.EXE和WINLOGON.EXE。后者接管了系统的很多部分，例如GINA。它派生了SERVICES.EXE进程，系统开始加载各种服务。最后在登陆后由GINA启动EXPLORER.EXE。出现桌面等操作界面，启动基本完成。按照上述分析，多数服务的宿主进程都是SERVICES.EXE的派生进程（有特例，例如贝壳手里的RaidenFTPD守护进程就是先由SERVICES.EXE派生，再两次派生所成的）。而多数应用程序的进程都是EXPLORER.EXE的派生进程（当然，或者再派生进程）。EXPLORER.EXE负责的内容包括了开始菜单等等，所以除非你通过某个服务去启动程序，否则都是它的子孙。（特例包括Process Explorer工具作为Ctrl+Atl+Del启动时，是WINLOGON.EXE的子例。所以在上面启动一个CMD就成了服务派生，无服务身份。还有MSN弹出的邮件或者Space都是作为某个服务的派生的，所以也不是EXPLORER.EXE的子例。）</p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Jul 13, 2005</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/system">system</a>  <a class="category" href="https://shell909090.github.io/tags/windows">windows</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/190/" title="Windows系统引论">Windows系统引论</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/192/" title="病毒编年史-近代">病毒编年史-近代</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

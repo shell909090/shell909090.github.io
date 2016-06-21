@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>搭建家用的OpenVPN服务器</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         搭建家用的OpenVPN服务器 
+    </h1>
+    <p class="meta">Sep 4, 2009
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/76/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          
+
+<p>啥都不说了，贝壳最近搞了一个家用的OpenVPN服务器，任何机器，随时随地可以穿到家里来，很方便。用VPN干啥？这就多了。我可以用vpn操作 Windows上的vnc，使用Windows的共享文件服务，直接向Linux Server放文件(这样别人可以用http下载)，查看摄像头(被网络公布了)。将来如果有其他网络设备(例如冰箱和空调)，也可以一并管理。不过最直 观的——可以很方便的打游戏，我们根本就在一个网络里面。要点是，这些服务要分别开映射端口非常麻烦。而且有的服务从安全起见，根本不能开端口(例如臭名 昭著的Windows文件共享服务)。
+具体原理上，贝壳有一台Windows，上面用Vmware搭建了一台Debian Linux，两者使用桥接模式。从概念上看，就是一台通向公网的路由器，里面放了一台Windows和一台Linux。现在，贝壳想通过某种方法，将外部 的一台机器接入内部的局域网中，就如同随身携带着一根通向家里路由器的网线一样。
+下面直接上具体配置：
+&mdash;&mdash;&mdash;&ndash;filename: /etc/network/interface&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;-
+auto lo
+iface lo inet loopback
+iface eth0 inet static
+address 0.0.0.0
+iface tap0 inet static
+address 0.0.0.0
+auto br0
+iface br0 inet static
+bridge_ports eth0 tap0
+address 192.168.1.IP
+netmask 255.255.255.0
+network 192.168.1.0
+broadcast 192.168.1.255
+gateway 192.168.1.1
+dns-nameservers 192.168.1.1</p>
+
+<h2 id="dns-search-home">dns-search home</h2>
+
+<p>使用上述配置的原因是，vpn只能联通你机器上的逻辑网卡和服务器上的逻辑网卡。单就vpn自身而言，是无法让你连到服务器上的内网网卡的。因此，我们需要通过网桥的配置，将eth0和tap0配置成网桥。这样，你的服务器就如同一台交换机一般，联通了两个网段。
+而后，我们设定服务器配置。
+&mdash;&mdash;&mdash;&ndash;filename: /etc/openvpn/server.conf&mdash;&mdash;&mdash;&mdash;&mdash;-
+local 192.168.1.51
+port 1194
+proto udp
+dev tap0</p>
+
+<p>ca /etc/openvpn/keys/ca.crt
+cert /etc/openvpn/keys/server.crt
+key /etc/openvpn/keys/server.key
+dh /etc/openvpn/keys/dh2048.pem</p>
+
+<p>server-bridge 192.168.1.IP 255.255.255.0 192.168.1.100 192.168.1.149
+push &ldquo;route 192.168.1.0 255.255.255.0&rdquo;
+keepalive 10 120</p>
+
+<p>user nobody
+group nogroup</p>
+
+<p>persist-key
+persist-tun</p>
+
+<p>cipher DES-EDE3-CBC # Triple-DES
+comp-lzo</p>
+
+<p>verb 3
+status /var/log/openvpn-status.log
+;log openvpn.log</p>
+
+<h2 id="log-append-openvpn-log">log-append openvpn.log</h2>
+
+<p>其中的server-bridge是因为我们采用网桥的关系，100-149是向外部拨入分配的IP池。贝壳的2-100是内部固定IP保留，150-199是内部DHCP池，200-254保留。这个大家可以按照自己的情况配置。
+需要特别注意的是，由于上文我们已经建立了tap0这个设备，因此才dev中必须指定tap0设备。如果你仅写tap，那有可能是新建一个设备出来。到时候就好玩大了&hellip;
+上文中，我们使用了ca cert key dh四个密钥文件选项。下面我们说说如何产生这些密钥文件。
+首先，你需要复制usr/share/doc/openvpn/examples/easy-rsa/2.0/到你的个人目录，并修改其中的vars文 件。将其中的一些东西修改为你需要的参数(很简单，我假定大多数人都会用，这个是基于SSL的)，而后source vars，执行下述命令。
+./clean-all
+./build-ca
+./build-key-server server
+./build-dh
+#需要�入密�的
+./build-key-pass username
+#不需要�入密�的
+./build-key username
+最后两个可以随便签署，想发多少密钥就给多少人签署。不过请注意，easy-rsa的默认脚本中，是没有ns-cert-type server的设定的，因此*千万不要*在配置中加上这个设定。否则会导致TLS handshark failed。
+最后，启动vpn，并且修改你的防火墙和路由器映射，贝壳这里使用的是udp1194端口(默认)。再给客户分发配置和key，具体如下：
+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;filename: home.ovpn&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;
+remote <a href="http://shell909090.3322.org">shell909090.3322.org</a> 1194
+client
+proto udp
+dev tap</p>
+
+<p>ca home.crt
+cert shell.crt
+key shell.key</p>
+
+<p>resolv-retry infinite
+persist-key
+persist-tun</p>
+
+<p>cipher DES-EDE3-CBC
+comp-lzo</p>
+
+<h2 id="verb-3">verb 3</h2>
+
+<p>其中home.crt是服务器上的server.crt，shell.crt和shell.key是刚刚签署的用户密钥。如果有密码，需要设定密码，或在连接时提供。</p>
+
+<p>&ndash;
+与其相濡以沫，不如相忘于江湖</p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Sep 4, 2009</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/linux">linux</a>  <a class="category" href="https://shell909090.github.io/tags/vpn">vpn</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/75/" title="互联网的黄金时代">互联网的黄金时代</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/77/" title="计算机中的海森堡效应和罗素悖论">计算机中的海森堡效应和罗素悖论</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

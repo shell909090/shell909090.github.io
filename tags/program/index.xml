@@ -1,0 +1,1323 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Program on Shell&#39;s Home</title>
+    <link>https://shell909090.github.io/tags/program/</link>
+    <description>Recent content in Program on Shell&#39;s Home</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 27 Jan 2015 22:19:37 +0800</lastBuildDate>
+    <atom:link href="https://shell909090.github.io/tags/program/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Charlie and Dave</title>
+      <link>https://shell909090.github.io/blog/archives/2720/</link>
+      <pubDate>Tue, 27 Jan 2015 22:19:37 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2720/</guid>
+      <description>&lt;p&gt;公司希望弄一套双授权的安全系统，老大提供了一套算法，求大家review。如果这个方案确实可行，那么我们会做完然后开源出来给大家用。&lt;/p&gt;
+
+&lt;h1&gt;Author and License&lt;/h1&gt;
+
+&lt;p&gt;Author: 韩拓
+保留所有权利
+All Rights Reserved
+以下内容不以cc-by-sa3.0发布。(因为根本不是我的创作)&lt;/p&gt;
+
+&lt;h1&gt;场景&lt;/h1&gt;
+
+&lt;ol&gt;
+&lt;li&gt;Alice希望登录到Bob上执行操作。&lt;/li&gt;
+&lt;li&gt;两者的基本控制协议为ssh。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h1&gt;假定&lt;/h1&gt;
+
+&lt;ol&gt;
+&lt;li&gt;攻击者名叫Mallory。&lt;/li&gt;
+&lt;li&gt;如果Alice的私钥泄漏，管理者必须有权停止Alice到Bob的访问而不需要更换所有Bob的公钥。&lt;/li&gt;
+&lt;li&gt;除去Alice和Bob外，参与通讯过程的所有机器(即下文中的Charlie和Dave)中可能随机被攻破一台。&lt;/li&gt;
+&lt;li&gt;服务都在内网，但是如果网关和被攻破的机器是同类系统，Mallory即可具有内网监听和伪造数据报文的权限。&lt;/li&gt;
+&lt;li&gt;Alice不会利用获得的Bob的权限故意执行危害性指令(但是可能被诱骗)。&lt;/li&gt;
+&lt;li&gt;Alice和Bob不会被攻破。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h1&gt;方案&lt;/h1&gt;
+
+&lt;p&gt;假定有两台机器，Charlie和Dave，Dave和网关不得是同类系统。根据假定4，两台机器不会同时被攻破。&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;Alice通过SSL和Dave建立连接，上报自己的用户名，需要访问的设备和帐号，并提交一个临时生成的ssh pubkey(username, account, host, pubkey)。&lt;/li&gt;
+&lt;li&gt;Dave根据预先设的IP-username-sslkey验证用户身份为Alice，并且根据ACL确认其具有访问权限。&lt;/li&gt;
+&lt;li&gt;如果通过验证，那么Dave用自己的key，通过SSL联系Bob上的某个程序，将Alice的pubkey提交到Bob的合适帐号上(account, pubkey)。&lt;/li&gt;
+&lt;li&gt;Bob通过sslkey验证提交者确系Dave，将pubkey临时加入account中。&lt;/li&gt;
+&lt;li&gt;Bob完成此事后，通过Dave向Alice返回成功。&lt;/li&gt;
+&lt;li&gt;Alice通过SSL和Charlie联系，上报自己的(username, account, host)。&lt;/li&gt;
+&lt;li&gt;Charlie根据预设的IP-username-sslkey验证用户身份为Alice，并且根据ACL确认其具有访问权限。&lt;/li&gt;
+&lt;li&gt;如果通过验证，那么Charlie用自己的key，通过SSL联系Bob上某个程序，为Alice开通到Bob的22端口的tcp盲转发。&lt;/li&gt;
+&lt;li&gt;Alice利用开启的tcp通道，和自己的临时ssh private key验证登录Bob。&lt;/li&gt;
+&lt;li&gt;在Alice连接Bob上的程序后，删除alice留在Bob上的临时pubkey。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h1&gt;验证&lt;/h1&gt;
+
+&lt;p&gt;假定Charlie被攻破。&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;方案1-5没有影响。&lt;/li&gt;
+&lt;li&gt;Charlie拥有能够在任意一台机器上开启盲转发的权限。&lt;/li&gt;
+&lt;li&gt;但是Charlie并不能影响Dave去添加pubkey。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;假定Dave被攻破。&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;Dave拥有在任意一台机器上添加pubkey的权限。&lt;/li&gt;
+&lt;li&gt;但是Dave并不具有打开到任意一台机器ssh端口的权限。&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>手机上app的权限对比和分析</title>
+      <link>https://shell909090.github.io/blog/archives/2698/</link>
+      <pubDate>Fri, 07 Nov 2014 16:16:04 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2698/</guid>
+      <description>&lt;h1&gt;简述&lt;/h1&gt;
+
+&lt;p&gt;今天看到&lt;a href=&#34;https://blog.swan.im/analysis-of-juhe-data-who-steal-user-contacts-book/&#34;&gt;这篇文章&lt;/a&gt;，勾起了我的好奇。我的手机里有多少app有安全隐患呢？当然，我知道很多有安全问题的app我不能删——例如企鹅家。但是如果某个app没有必然需要，或者有替代品。我不介意换一个用。所以我写了这篇blog，对比了各种同类或近似app的权限要求。&lt;/p&gt;
+
+&lt;p&gt;先说明一点，这篇文章所列出的app权限，是根据当前(2014-11-07)google play上的应用权限数据，截取我感兴趣的部分权限汇总的。既不是完全的敏感权限列表，也不可能不变化。如果有什么补充，欢迎你联系我。&lt;/p&gt;
+
+&lt;p&gt;同时你需要知道，app需要某个权限，并不一定表示要用来做坏事。很多时候是因为功能确实需要。因此我也在下面点评了部分我知道的功能需要对应权限。即便我们在app里面找不到权限对应功能，也不能绝对断言app正在作恶——只是相比起来我更信任不需要提供这个权限的app而已。这也是为什么我做的是分类对比——方便你来比较和替换。&lt;/p&gt;
+
+&lt;h1&gt;IM类&lt;/h1&gt;
+
+&lt;h2&gt;telegram&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;read SMS&lt;/li&gt;
+&lt;li&gt;照相&lt;/li&gt;
+&lt;li&gt;录音&lt;/li&gt;
+&lt;li&gt;location&lt;/li&gt;
+&lt;li&gt;read/modify contacts&lt;/li&gt;
+&lt;li&gt;run at startup&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;talkback&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;change audio setting&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;我太感动了。&lt;/p&gt;
+
+&lt;h2&gt;QQ&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;read SMS&lt;/li&gt;
+&lt;li&gt;read/modify contacts&lt;/li&gt;
+&lt;li&gt;照相&lt;/li&gt;
+&lt;li&gt;录音&lt;/li&gt;
+&lt;li&gt;location&lt;/li&gt;
+&lt;li&gt;read/write call log&lt;/li&gt;
+&lt;li&gt;read/write calendar&lt;/li&gt;
+&lt;li&gt;disable screen lock&lt;/li&gt;
+&lt;li&gt;NFC&lt;/li&gt;
+&lt;li&gt;bluetooth&lt;/li&gt;
+&lt;li&gt;run at startup&lt;/li&gt;
+&lt;li&gt;change audio setting&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;流氓权限大集合啊。你说要contacts我还能理解，要call log干嘛？还要write？而且功能里也找不到为什么需要NFC和蓝牙。&lt;/p&gt;
+
+&lt;h2&gt;微信&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;read SMS&lt;/li&gt;
+&lt;li&gt;照相&lt;/li&gt;
+&lt;li&gt;录音&lt;/li&gt;
+&lt;li&gt;location&lt;/li&gt;
+&lt;li&gt;read/modify contacts&lt;/li&gt;
+&lt;li&gt;bluetooth&lt;/li&gt;
+&lt;li&gt;run at startup&lt;/li&gt;
+&lt;li&gt;change audio setting&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;基本同QQ，不过权限少了很多。&lt;/p&gt;
+
+&lt;h2&gt;评论&lt;/h2&gt;
+
+&lt;p&gt;虽然我们都知道talkback比企鹅家的对隐私更友好，可是有本事你别用企鹅家。。。&lt;/p&gt;
+
+&lt;h1&gt;SNS&lt;/h1&gt;
+
+&lt;h2&gt;facebook&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;read sms&lt;/li&gt;
+&lt;li&gt;照相&lt;/li&gt;
+&lt;li&gt;录音&lt;/li&gt;
+&lt;li&gt;location&lt;/li&gt;
+&lt;li&gt;read/modify contacts&lt;/li&gt;
+&lt;li&gt;read/write calendar&lt;/li&gt;
+&lt;li&gt;run at startup&lt;/li&gt;
+&lt;li&gt;set wallpaper&lt;/li&gt;
+&lt;li&gt;change audio setting&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;不知道为啥需要change audio setting，而且write calendar也奇怪了些。其他权限基本还能找到对应功能。&lt;/p&gt;
+
+&lt;h2&gt;twitter&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;receive sms&lt;/li&gt;
+&lt;li&gt;照相&lt;/li&gt;
+&lt;li&gt;location&lt;/li&gt;
+&lt;li&gt;read contacts&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;评论&lt;/h2&gt;
+
+&lt;p&gt;twitter权限明显比facebook少，不过fb功能也比tw多。&lt;/p&gt;
+
+&lt;h1&gt;购物&lt;/h1&gt;
+
+&lt;h2&gt;Amazon&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;照相&lt;/li&gt;
+&lt;li&gt;录音&lt;/li&gt;
+&lt;li&gt;location&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;一号店&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;location&lt;/li&gt;
+&lt;li&gt;read/send SMS&lt;/li&gt;
+&lt;li&gt;read/write calendar&lt;/li&gt;
+&lt;li&gt;设定闹钟&lt;/li&gt;
+&lt;li&gt;run at startup&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;不知道为啥需要设定闹钟，可能因为每日惠，所以要提醒？至于读取/发送sms也是很奇怪。location倒是很好理解——定位收货地址。可是在应用里又找不到这个功能。而且你说一款购物软件，启动时运行干嘛？24小时不间断购物？&lt;/p&gt;
+
+&lt;h2&gt;大众点评&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;read sms&lt;/li&gt;
+&lt;li&gt;照相&lt;/li&gt;
+&lt;li&gt;录音&lt;/li&gt;
+&lt;li&gt;location&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;大众点评就是做location的，照相录音权限也很好理解。只有read sms有点奇怪。&lt;/p&gt;
+
+&lt;h2&gt;去哪儿&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;read contacts&lt;/li&gt;
+&lt;li&gt;read/write calendar&lt;/li&gt;
+&lt;li&gt;location&lt;/li&gt;
+&lt;li&gt;录音&lt;/li&gt;
+&lt;li&gt;照相&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;权限让人直挠头，果然有高大上的读取通讯录。设定calendar是要做行程提醒么？虽然我在应用里面没找到对应功能。location很好理解，起飞/降落城市挺好用。但是照相和录音就不知道干嘛用的了。&lt;/p&gt;
+
+&lt;h2&gt;华住酒店&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;location&lt;/li&gt;
+&lt;li&gt;send SMS&lt;/li&gt;
+&lt;li&gt;照相&lt;/li&gt;
+&lt;li&gt;read contacts&lt;/li&gt;
+&lt;li&gt;disable screen lock&lt;/li&gt;
+&lt;li&gt;run at startup&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;location挺好理解，找酒店时很方便。但是send SMS干嘛用的？&lt;/p&gt;
+
+&lt;p&gt;还有照相和读取contacts。我觉得一款酒店软件要求这俩权限的唯一目的就是晒炮。&lt;/p&gt;
+
+&lt;p&gt;更不可理喻的是disable screen lock和run at startup。你没事关掉锁屏干嘛？盯着放广告么？24小时放广告？&lt;/p&gt;
+
+&lt;h2&gt;评论&lt;/h2&gt;
+
+&lt;p&gt;Amazon和大众点评的权限要求比较简单。一号店/去哪儿/华住的权限就比较流氓了。反正后面三个可以通过web使用，不如不装。&lt;/p&gt;
+
+&lt;h1&gt;打车&lt;/h1&gt;
+
+&lt;h2&gt;快的&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;read sms&lt;/li&gt;
+&lt;li&gt;录音&lt;/li&gt;
+&lt;li&gt;location&lt;/li&gt;
+&lt;li&gt;read contacts&lt;/li&gt;
+&lt;li&gt;change audio setting&lt;/li&gt;
+&lt;li&gt;run at startup&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;location很好理解，但是为什么又是read contacts？还有run at startup。我不能24小时都要打车吧。&lt;/p&gt;
+
+&lt;h2&gt;uber&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;照相&lt;/li&gt;
+&lt;li&gt;location&lt;/li&gt;
+&lt;li&gt;read contacts&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;read contacts无法理解&lt;/p&gt;
+
+&lt;h2&gt;评论&lt;/h2&gt;
+
+&lt;p&gt;打车软件普遍要求contacts，这点无法理解。但是又不能不用——快的和uber的服务目标不交叉，而且都要求了contacts。&lt;/p&gt;
+
+&lt;p&gt;另外，滴滴打车在google play里面找不到，所以不评论。&lt;/p&gt;
+
+&lt;h1&gt;金融&lt;/h1&gt;
+
+&lt;h2&gt;wallet&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;照相&lt;/li&gt;
+&lt;li&gt;location&lt;/li&gt;
+&lt;li&gt;read contacts&lt;/li&gt;
+&lt;li&gt;NFC&lt;/li&gt;
+&lt;li&gt;run at startup&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;支付宝&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;location&lt;/li&gt;
+&lt;li&gt;read contacts&lt;/li&gt;
+&lt;li&gt;bluetooth&lt;/li&gt;
+&lt;li&gt;run at startup&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;浦发银行&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;read/recieve sms&lt;/li&gt;
+&lt;li&gt;照相&lt;/li&gt;
+&lt;li&gt;录音&lt;/li&gt;
+&lt;li&gt;read call log&lt;/li&gt;
+&lt;li&gt;read contacts&lt;/li&gt;
+&lt;li&gt;NFC&lt;/li&gt;
+&lt;li&gt;change audio setting&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;为啥要NFC？我在里面看到了拍拍付，也许是为这个准备的。但是read sms和change audio setting也是个奇怪的东西。&lt;/p&gt;
+
+&lt;p&gt;而且又是read call log/read contacts。你们这帮应用啊。&lt;/p&gt;
+
+&lt;h2&gt;CMB&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;read/recieve sms&lt;/li&gt;
+&lt;li&gt;照相&lt;/li&gt;
+&lt;li&gt;录音&lt;/li&gt;
+&lt;li&gt;location&lt;/li&gt;
+&lt;li&gt;read/modify contacts&lt;/li&gt;
+&lt;li&gt;read/write call log&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;除了NFC和audio setting外，和浦发差不多。还多了location——你没事想知道我的location干嘛？最近网点导航？&lt;/p&gt;
+
+&lt;h2&gt;工行手机银行&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;read contacts&lt;/li&gt;
+&lt;li&gt;location&lt;/li&gt;
+&lt;li&gt;照相&lt;/li&gt;
+&lt;li&gt;录音&lt;/li&gt;
+&lt;li&gt;NFC&lt;/li&gt;
+&lt;li&gt;bluetooth&lt;/li&gt;
+&lt;li&gt;change audio setting&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;contacts就不说了。又是一个要求location的，到底准备干嘛呢？&lt;/p&gt;
+
+&lt;p&gt;没装过(没工行帐号)，所以不知道功能上用不用NFC和bluetooth。&lt;/p&gt;
+
+&lt;h2&gt;评论&lt;/h2&gt;
+
+&lt;p&gt;金融类软件几乎无一例外都要求contacts，连google家都不例外，让我真是不知道说什么好。不过互联网应用要求contacts的理由更强一些——可以通过contacts关联的email或者mobile来找到收款人/汇款人。但是如果银行能这么做就是安全漏洞了。&lt;/p&gt;
+
+&lt;p&gt;总体来说，wallet和支付宝的权限要求还比较低。而银行类无一例外都要求照相和录音权限——你们要这个干嘛？&lt;/p&gt;
+
+&lt;h1&gt;媒体类&lt;/h1&gt;
+
+&lt;h2&gt;bilibili&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;照相&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;这个权限太让我感动了。&lt;/p&gt;
+
+&lt;h2&gt;网易音乐&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;录音&lt;/li&gt;
+&lt;li&gt;location&lt;/li&gt;
+&lt;li&gt;read call log&lt;/li&gt;
+&lt;li&gt;read contacts&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;要求contacts似乎是因为好友功能会直接用，call log也是同样原因。location是找附近听的音乐功能要求的。&lt;/p&gt;
+
+&lt;h1&gt;天气类&lt;/h1&gt;
+
+&lt;h2&gt;weather channel&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;读取location&lt;/li&gt;
+&lt;li&gt;启动时运行&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;墨迹天气&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;read SMS&lt;/li&gt;
+&lt;li&gt;照相&lt;/li&gt;
+&lt;li&gt;location&lt;/li&gt;
+&lt;li&gt;disable screen lock&lt;/li&gt;
+&lt;li&gt;设定闹钟&lt;/li&gt;
+&lt;li&gt;run at startup&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;照相还可以理解，墨迹有现场照片分享功能。location和run at startup也很正常。&lt;/p&gt;
+
+&lt;p&gt;但是你说read sms和设定闹钟是干嘛用的？而且disable screen lock。我没事开个天气软件锁屏还被关了？&lt;/p&gt;
+
+&lt;h1&gt;词典类&lt;/h1&gt;
+
+&lt;h2&gt;网易有道词典&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;location&lt;/li&gt;
+&lt;li&gt;read sms&lt;/li&gt;
+&lt;li&gt;照相&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;作为一款词典，我可以理解为什么要照相。但是我是在无法理解读取短信(想帮我翻译短信？)和获得location(看看我在哪里好多国翻译)的用途？&lt;/p&gt;
+
+&lt;h2&gt;欧路词典&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;照相&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;我太感动了。&lt;/p&gt;
+
+&lt;h2&gt;金山词霸&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;照相&lt;/li&gt;
+&lt;li&gt;录音&lt;/li&gt;
+&lt;li&gt;run at startup&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;除了开机执行，其他都还好。&lt;/p&gt;
+
+&lt;h2&gt;translate&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;read sms&lt;/li&gt;
+&lt;li&gt;照相&lt;/li&gt;
+&lt;li&gt;录音&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;为什么要read sms？&lt;/p&gt;
+
+&lt;h2&gt;评论&lt;/h2&gt;
+
+&lt;p&gt;如果你的要求不是特别高，非要用网易有道不可，我建议换成欧路。词霸其实也很不错。&lt;/p&gt;
+
+&lt;h1&gt;其他&lt;/h1&gt;
+
+&lt;h2&gt;dropbox&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;read contacts&lt;/li&gt;
+&lt;li&gt;run at startup&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;read contacts干嘛？&lt;/p&gt;
+
+&lt;h2&gt;evernote&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;照相&lt;/li&gt;
+&lt;li&gt;录音&lt;/li&gt;
+&lt;li&gt;location&lt;/li&gt;
+&lt;li&gt;read contacts&lt;/li&gt;
+&lt;li&gt;read calendar&lt;/li&gt;
+&lt;li&gt;run at startup&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;评论&lt;/h2&gt;
+
+&lt;p&gt;无可奉告，反正也没的换。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>context切换测试——C语言协程有关部分请求review</title>
+      <link>https://shell909090.github.io/blog/archives/2696/</link>
+      <pubDate>Thu, 06 Nov 2014 17:08:18 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2696/</guid>
+      <description>&lt;h2&gt;setjmp/longjmp测试&lt;/h2&gt;
+
+&lt;p&gt;使用&lt;a href=&#34;https://gitcafe.com/shell909090/context/blob/master/s_jmp.c&#34;&gt;s_jmp&lt;/a&gt;程序来测试setjmp的性能。1G次循环。下面是结论：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;5.77,0.00,29,0,0,0,99%
+5.70,0.00,30,0,0,0,99%
+5.71,0.00,22,0,0,0,99%
+5.71,0.00,23,0,0,0,99%
+5.70,0.00,30,0,0,0,100%
+5.70,0.00,23,0,0,0,99%
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;统计结果如下：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;time mean = 5.715&lt;/li&gt;
+&lt;li&gt;time var = 0.000625&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;单次调度开销只有5.7ns，在所有测试中性能最优。(glibc-2.19/sysdeps/x86_64/setjmp.S)&lt;/p&gt;
+
+&lt;h2&gt;getcontext/setcontext测试&lt;/h2&gt;
+
+&lt;p&gt;使用&lt;a href=&#34;https://gitcafe.com/shell909090/context/blob/master/s_context.c&#34;&gt;s_context&lt;/a&gt;程序来测试setcontext的性能。100M次循环。下面是结论：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;12.96,5.88,79,0,0,0,99%
+13.13,5.94,105,0,0,0,99%
+12.95,6.18,57,0,0,0,99%
+13.13,5.90,64,0,0,0,99%
+12.95,5.88,82,0,0,0,99%
+12.96,5.80,51,0,0,0,99%
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;统计结果如下：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;time mean = 13.01&lt;/li&gt;
+&lt;li&gt;time var = 0.0068&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;单次调度开销高达130ns，仅比系统的sched在高线程下略快。这事很奇怪，因为根据我看到的源码(glibc-2.19/sysdeps/unix/sysv/linux/x86_64/setcontext.S)，getcontext/setcontext在glibc中是用汇编实现的。其中陷入内核只是为了设定signal mask。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>context切换测试——python有关部分请求review</title>
+      <link>https://shell909090.github.io/blog/archives/2684/</link>
+      <pubDate>Wed, 29 Oct 2014 10:30:23 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2684/</guid>
+      <description>&lt;h2&gt;python yield模式性能测试&lt;/h2&gt;
+
+&lt;p&gt;python下的测试就不用time了，我们改用python的timeit，循环100M次。具体可以看&lt;a href=&#34;https://gitcafe.com/shell909090/context/blob/master/py_yield.py&#34;&gt;py_yield.py&lt;/a&gt;。数据结果如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;7.64262938499 9.2919304393e-06
+5.41777145863 4.94284924931e-06
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;从结果来看，100M次循环的平均时间是5.4s，平均每次大约54ns。使用yield后变为76ns，增加了22ns。&lt;/p&gt;
+
+&lt;h2&gt;python greenlet模式性能测试&lt;/h2&gt;
+
+&lt;p&gt;这次代码在&lt;a href=&#34;https://gitcafe.com/shell909090/context/blob/master/py_greenlet.py&#34;&gt;py_greenlet.py&lt;/a&gt;，循环10M次。数据结果如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;5.35270996888 7.44085846125e-05
+5.31448976199 5.82336765673e-05
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;单次循环时间消耗为535ns。比最初的54ns，增加了481ns。基本来说，时间增长了10倍率。&lt;/p&gt;
+
+&lt;p&gt;这是预料中的，因为greenlet早就声明自己通过堆栈拷贝来实现上下文切换。这会消耗大量CPU时间。从原理上说，栈越深，消耗越大。但是测试结果表明两者几乎没有差异，栈深反而性能更加优异(TODO: why?)。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>goproxy和msocks简介</title>
+      <link>https://shell909090.github.io/blog/archives/2627/</link>
+      <pubDate>Thu, 08 May 2014 16:41:25 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2627/</guid>
+      <description>&lt;p&gt;goproxy是我个人写的，和shadowsocks同类的软件。当然，在设计之初我完全不知道shadowsocks的存在，goproxy的最初目标也不是成为shadowsocks的同类。只是我一直无法实现一个可靠的，能够达成目标的系统。最后想，那这样吧，我找一个跳一跳能够够到的苹果。大幅简化的结果就是goproxy——后来我才知道shadowsocks。&lt;/p&gt;
+
+&lt;h1&gt;shadowsocks的基本原理&lt;/h1&gt;
+
+&lt;p&gt;shadowsocks的基本概念，就是利用某种不同于SSL的协议，将本地的socks数据流转发到远程。这个协议，在默认版本中是一个凯撒变换，后来有了aes等加密算法。goproxy也采用了类似的做法，同样支持aes等加密算法。在每次连接时，客户端先用加密通道连接服务器端，然后完成整个连接通路。这样的设计鲁棒性相当好，但是作为代价的，也有不少缺陷。&lt;/p&gt;
+
+&lt;p&gt;首先，goproxy和shadowsocks不约而同的采用了自己的协议，而非将socks5透明的转发到远程的服务器端。为什么？因为socksv5协议中，握手过程是三次交互。客户发送握手包，服务器响应允许的握手验证方法。客户发送验证报文，服务器端返回是否成功，客户发送要连接的目标，服务器端返回是否成功。细节我记得不是很清楚，但是2-3次往返是必须的。&lt;/p&gt;
+
+&lt;p&gt;这种工作机制需要client -&gt; proxy-client -&gt; proxy-server -&gt; server的一个链条，本身就比直连多了两次TCP握手。加上上述的往返过程，更加耗时。而且这个消耗在每次建立链接时都要来一次，而HTTP是一种短连接协议——这就更加无法容忍了。因此改用自有协议，一次交互完成握手，就会更加快速。&lt;/p&gt;
+
+&lt;p&gt;更根本的原因在于，这两个系统都需要越过IDS，而三次交互的报文大小是几乎固定的——就算加密也无法改变报文大小。不但大小一样，而且由于用户名密码相同，起始加密过程和IV一致，因此采用socks协议的话，每个链接开始都有相同的来返数据。&lt;/p&gt;
+
+&lt;p&gt;我不知道shadowsocks怎么处理的这个问题。qsocks协议（msocks）的前身规定，每次握手时客户端提供一组IV，然后发送一个头部变长的字符串（256字符以内），在远程丢弃同样长度的随机字符。经过这样的处理，每次链接时的报文长度和内容序列都不一样，增加了破译难度。至于多出来的几十个字节，和验证报文在一个报文内，开销相比一次RTO几乎可以忽略不计。&lt;/p&gt;
+
+&lt;p&gt;但是还是有一点无法避免的问题。如果你看到某个服务器上有一个端口，频繁的被一个或多个IP链接。每个链接都不长，每次都是客户端吐一堆数据，服务器返回一堆，然后关闭链接。尽管协议无法破解，但是基本可以肯定这就是shadowsocks。根据这个特性，可以有效的阻挡服务——这也是我最近碰到的问题。&lt;/p&gt;
+
+&lt;p&gt;而且每个链接都需要验证和TCP握手太慢了。&lt;/p&gt;
+
+&lt;h1&gt;msocks的改进&lt;/h1&gt;
+
+&lt;p&gt;所以，我参考SPDY协议，做了msocks。msocks的核心思路和qsocks很类似，主要修改是以下两点：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;使用一个可靠链接（这里是经过加密的TCP），在这个链接里面封装多对传输。&lt;/li&gt;
+&lt;li&gt;每个链接只要一次验证。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;这样做，首先减少了一次TCP握手和一次身份验证，工作速度更加快。其次多个传输叠加在一个流里面，流特征更加变化莫测。最后，无论是服务器端还是客户端的开销都小了很多。&lt;/p&gt;
+
+&lt;p&gt;当然，这也带来不少问题。例如TCP原本的拥塞控制窗口是为了一对传输序列设计的。当很多传输序列在一对TCP上传递的时候，丢报文造成的影响会作用作用在全体传输序列上。包括丢了一个报文重传的时候，所有序列都必须阻塞。还有基础的TCP被施加了丢包，导致全体序列共享5k带宽。当然，经过评估后，我觉得这些问题比频繁握手更加轻，所以就设计了msocks协议。&lt;/p&gt;
+
+&lt;p&gt;协议设计的时候，有几个细节问题。&lt;/p&gt;
+
+&lt;h1&gt;多对复用&lt;/h1&gt;
+
+&lt;p&gt;我采用了一个map，来记录某个id是否对应到了一个控制结构。这个映射只能被客户端更改，并且有个专门的函数负责查找空闲的id，每次生成的id都是递增的，如果碰到最大值则绕回。&lt;/p&gt;
+
+&lt;p&gt;id的大小是16位，足够容纳65536对同时链接。其实不修改内核的话，500对代理就会导致too many files。&lt;/p&gt;
+
+&lt;p&gt;实际上一般到id达到400后，单一的tcp就断线重连了。目前我还没见过上千的数字呢。&lt;/p&gt;
+
+&lt;h1&gt;连接状态&lt;/h1&gt;
+
+&lt;p&gt;连接一般情况下可以看到5种状态，连接请求发送，连接请求接收，连接建立，主动关闭连接中，被动关闭连接中。&lt;/p&gt;
+
+&lt;p&gt;当客户端请求代理连接一个远程服务器时，进入连接请求发送。代理远程端接受后在连接目标服务器的过程中，进入连接请求接收。当成功后，双方进入连接建立。&lt;/p&gt;
+
+&lt;p&gt;当关闭时，主动发起关闭一端进入主动关闭，另一端进入被动关闭。当被动关闭端调用close，或者主动关闭端收到对方关闭，整个链接就销毁。&lt;/p&gt;
+
+&lt;p&gt;由于tcp是可靠传输，因此三次握手和四次关闭都是不必须的。&lt;/p&gt;
+
+&lt;p&gt;简单吧。&lt;/p&gt;
+
+&lt;h1&gt;拥塞控制&lt;/h1&gt;
+
+&lt;p&gt;TCP原本是带有拥塞控制的——借助SSN双序列和窗口机制。但是在多路复用的时候，我们需要自行控制拥塞——而且不能采用会和机制。会和会导致后续已经到达的其他链接的报文被一个没人接收的报文阻挡。所以必须采用带拥塞控制的缓存队列机制。&lt;/p&gt;
+
+&lt;p&gt;不过幸好，TCP本身是可靠传输协议，所以我不用担心丢包重发之类的问题。我需要做的，就是把对方读取的字节数传递回来，减在控制器上，即可。&lt;/p&gt;
+
+&lt;p&gt;不过，我没有做对应于silly window syndrome的优化，在每次读取小数据量后，这个读取造成的window扩张都会被传回。当然，这么设计是有原因的。我默认采用了8K的buffer进行fd间拷贝，所以一般碰不到SWS。&lt;/p&gt;
+
+&lt;p&gt;为了解决tcp链接复用造成的单连接带宽问题，我强烈的建议你做以下的设定：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;net.ipv4.tcp_congestion_control = htcp
+net.core.rmem_default = 2621440
+net.core.rmem_max = 16777216
+net.core.wmem_default = 655360
+net.core.wmem_max = 16777216
+net.ipv4.tcp_rmem = 4096    2621440 16777216
+net.ipv4.tcp_wmem = 4096    655360  16777216
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1&gt;ip选择算法和DNS&lt;/h1&gt;
+
+&lt;p&gt;在goproxy中，我沿用了一个做法。通过DNS获得请求的目标IP，和中国IP范围核对。如果在国内则直接访问，否则透过代理。这个方法能够极快的加速访问，而且几乎不依赖于需要更新的列表（中国IP列表相对来说固定）。&lt;/p&gt;
+
+&lt;p&gt;问题是DNS解析过程。msocks内置了DNS能力，可以帮助做DNS。但是实践下来发现这样做效果并不很好。而原本是采用直接DNS，丢弃特定的报文。这样可以过滤防火墙污染。&lt;/p&gt;
+
+&lt;p&gt;原因很简单。原本的模式会让DNS服务器感知到查询者位于中国，于是给出中国可以访问的最快地址。而新的模式则会将DNS请求者搬到美国——这无故加重了代理的负担。例如www.qq.com，原本只需要请求得到一台深圳的服务器即可，现在则需要让DNS绕出去，再回来。如果不幸，QQ有一台位于美国的服务器，那么我的访问都会通过这台服务器——这可比深圳的服务器慢多了。&lt;/p&gt;
+
+&lt;h1&gt;地址&lt;/h1&gt;
+
+&lt;p&gt;抱歉刚刚忘记写地址了：&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://github.com/shell909090/goproxy&#34;&gt;goproxy&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;debian/ubuntu安装包：&lt;a href=&#34;http://xuzhixiang.u.qiniudn.com/program/goproxy_2.1.2_amd64.deb&#34;&gt;amd64&lt;/a&gt; &lt;a href=&#34;http://xuzhixiang.u.qiniudn.com/program/goproxy_2.1.2_i386.deb&#34;&gt;i386&lt;/a&gt;&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>一种新的python局部调试手法</title>
+      <link>https://shell909090.github.io/blog/archives/2450/</link>
+      <pubDate>Fri, 19 Jul 2013 14:33:14 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2450/</guid>
+      <description>&lt;p&gt;我们都知道，python里面可以用pdb来调试代码。但是pdb往往不大好用。有时候调试代码往往在多重条件里面，直接用pdb需要下条件断点，设定复杂的条件。&lt;/p&gt;
+
+&lt;p&gt;一个简单的办法就是这么干。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;    __import__(&#39;pdb&#39;).set_trace()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;但是有的时候，连这个出现的条件都不满足。例如，代码必须在一个受限环境中运行，很难拿到console，或者其他林林总总的毛病。这时候，我们还有一招秘技。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;    import pdb, socket
+    s = socket.socket()
+    s.connect((&#39;127.0.0.1&#39;, 8888))
+    f = s.makefile()
+    pdb.Pdb(stdin=f, stdout=f).set_trace()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;在连接到的目标端口上，提前用nc做好监听，就可以在触发断点的时候直接连接上来调试。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>git log的一个吐血问题</title>
+      <link>https://shell909090.github.io/blog/archives/2397/</link>
+      <pubDate>Sun, 28 Apr 2013 16:26:34 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2397/</guid>
+      <description>&lt;p&gt;刚刚在公司里查了半个多小时，记一下笔记。&lt;/p&gt;
+
+&lt;p&gt;不知道你们有没有这种吐血经历。在git上有两个分支，莫名其妙合并到一起了。这可能是某个人的误操作。你检查log的时候，只看到他不停的把主分支merge到支线上去，却从没有把支线合并到主线上去。但是最终两个线却合并了，主线指向了支线。这是为什么？&lt;/p&gt;
+
+&lt;p&gt;要理解这个问题，我们要搞明白，merge在git里是怎么工作的。当两个分支，来自同一个祖先，但是提交了不同修改，又要合并的时候，就需要进行merge。能够自动merge的，多一个merge commit，被合并分支的HEAD不变，合并入的分支的HEAD加一，指向merge commit。不能够自动merge的，手工处理冲突，其余和自动相同。&lt;/p&gt;
+
+&lt;p&gt;注意这点，“被合并分支的HEAD不变，合并入的分支的HEAD加一”。由于两者在不同的点上，因此修改和提交会形成不同的分支。合并后的两个分支不会发生交汇。&lt;/p&gt;
+
+&lt;p&gt;如果在一次正向的merge后，立刻进行了一次反向merge呢？事情就麻烦了。两个branch的HEAD指向了同一个commit。因此你可以认为支线分支合并到了主线，却没有merge记录。这是当然，因为这只是指针移动，属于fast forward。没有commit，没有log。&lt;/p&gt;
+
+&lt;p&gt;不幸的是，这种操作还经常发生。当我们把支线向主线合并的时候，合并难度可能非常大。此时我们可以将主线向支线合并，然后反向合并。这样的合并难度就小很多了。然而这会使得合并记录不可查。&lt;/p&gt;
+
+&lt;p&gt;所以，当碰到类似问题的时候，考虑两次合并的可能性。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>python插件技巧</title>
+      <link>https://shell909090.github.io/blog/archives/2344/</link>
+      <pubDate>Wed, 20 Mar 2013 11:18:03 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2344/</guid>
+      <description>&lt;h1&gt;简述和通则&lt;/h1&gt;
+
+&lt;p&gt;何谓插件。&lt;/p&gt;
+
+&lt;p&gt;在实现某个功能时，经常需要对一个功能提供多种实现。例如短信网关接口各异，但是对系统而言，发送代码是一样的。
+通过一套特定的机制，在成型的产品中，增加一个独立的文件，即可实现定制化实现。这套机制被称为插件机制。插件必须满足下面几个要求。&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;对于已经发出去的产品，插件机制可以通过增加文件，并少量修改（一般1-3行）产品源码，即可为产品添加新的功能。&lt;/li&gt;
+&lt;li&gt;对于产品主分支，带有插件不会影响主分支的正常工作。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;插件机制的以上两个特性对产品定制非常有帮助。因为使用插件进行定制开发的项目，不需要独立建立分支。只需要在主分支上添加几个文件即可。分发补丁时也格外容易。&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;禁止在python主目录下直接放置插件，所有插件必须在python下级目录下存放。&lt;/li&gt;
+&lt;li&gt;插件的命名必须使用前缀师命名规则，所有同类型插件，要么在一个目录下独立存放（目录下没有其他代码），要么在一个目录下拥有同样的前缀（其他代码不得使用这个前缀）。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h1&gt;替换型插件&lt;/h1&gt;
+
+&lt;p&gt;最简单的插件手法，就是某个文件提供提供某些函数，在变更功能时用另一个同样实现这些函数的文件替换掉原始文件。这甚至称不上一个插件手法，只能算打补丁。&lt;/p&gt;
+
+&lt;p&gt;替换型插件的提升，就是在文件中不直接提供函数，而是从某个其他文件载入这些函数。例如以下代码：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;from abc import *
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;原始是从abc文件中取得所有符号。当有新的文件abc2提供时，将原始文件替换为abc2，补上去，即可改变代码。注意这行代码一般不在一个大的文件中的某一行，而一般存放于一个独立文件。因为大文件相对容易修改，不能用新的代码替换。而独立文件相对固定，在打补丁时可以用新的代码直接替换。&lt;/p&gt;
+
+&lt;p&gt;替换型插件适用于，对于某个客户而言，只需要在多组实现中静态的选择一组的情况。替换型插件的优点是工作原理简单直观，排查容易。缺点是对于一个功能不能提供复数组实现。&lt;/p&gt;
+
+&lt;h1&gt;配置型插件&lt;/h1&gt;
+
+&lt;p&gt;另一种插件手法基于文件或配置。在某个目录中，放置某个功能的多个实现。在加载时，载入全部插件。在使用时，根据配置动态选择。这种手法被称为配置型插件。&lt;/p&gt;
+
+&lt;p&gt;配置型插件是一种非常重要的编程技巧，他为程序提供了非常优良的可扩展性。&lt;/p&gt;
+
+&lt;p&gt;例如下面的例子，简述了一种配置型插件的实现：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;funcmap = {}
+
+def register_func(name):
+    def _inner(func):
+        funcmap[name] = func
+        return func
+    return _inner
+
+在具体实现中
+
+@register_func(name)
+def func1(....):
+    pass
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;在__init__.py中，import一下新的文件。在原本的funcmap中，即可出现新的name和func的对应。&lt;/p&gt;
+
+&lt;p&gt;配置型插件适用于大多数场景，其优点是工作原理简单，可以为一个功能提供复数组实现。缺点是使用上限制比较大，必须和逻辑结合，思考困难。&lt;/p&gt;
+
+&lt;h1&gt;动态加载&lt;/h1&gt;
+
+&lt;p&gt;动态加载插件是一种插件技巧，并不特定用于替换型或配置型插件。&lt;/p&gt;
+
+&lt;p&gt;当需要加载插件时，通过python代码访问文件系统，枚举出特定文件并加载的技巧，称为动态加载。以下代码是配合上面的配置型插件的例子，实现动态加载的例子。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;def load_plugins():
+    for filename in os.listdir(&#39;plugins&#39;):
+        if filename.endswith(&#39;py&#39;): __import__(filename[:-3])
+        if filename.endswith(&#39;pyc&#39;): __import__(filename[:-4])
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;动态加载的优点是，可以通过放置文件来增加/修改功能，而不需要修改代码。缺点是，由于需要访问文件系统，因此效率并不高。如果每次加载都需要动态查询，那么系统效率会大幅下降。&lt;/p&gt;
+
+&lt;h1&gt;热加载插件&lt;/h1&gt;
+
+&lt;p&gt;热加载是一种比较高级的技巧。在程序执行中，不退出进程而动态的将最新的组件加载进来的能力，被称为热加载。&lt;/p&gt;
+
+&lt;p&gt;简单的热加载就是在每次执行功能的时候，检查是否有新的组件。由于这样会带来很高的系统负载，因此除非必要，否则不要滥用热加载。&lt;/p&gt;
+
+&lt;p&gt;更复杂一些的热加载，需要用新的实现替换原有实现。这涉及几个编程上的限制。&lt;/p&gt;
+
+&lt;p&gt;热加载有几个限制，必须严格遵循：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;在所有访问前，必须检查文件。&lt;/li&gt;
+&lt;li&gt;如果要进行热替换，不得将原有文件的导出符号作为值使用。即，无论是文件的导出数据，导出函数，都不得作为其他对象的赋值内容。&lt;/li&gt;
+&lt;li&gt;热替换内，不得保存私有数据。所有数据必须在上下文中，或者全局中存放。&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>异常和错误的几条军规</title>
+      <link>https://shell909090.github.io/blog/archives/2282/</link>
+      <pubDate>Tue, 27 Nov 2012 17:27:54 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2282/</guid>
+      <description>&lt;ol&gt;
+    &lt;li&gt;如果处理不了，就地崩溃，留尸不埋，供后人评价。
+&lt;ol&gt;
+    &lt;li&gt;偷偷埋尸，100军棍。处理不了偷偷埋尸，拉出去先轮后杀。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+    &lt;li&gt;忽略错误只有两种合法情况。
+&lt;ol&gt;
+    &lt;li&gt;逻辑上可以忽略，记log，忽略。&lt;/li&gt;
+    &lt;li&gt;逻辑上期待异常，不记log，忽略。&lt;/li&gt;
+    &lt;li&gt;逻辑上不可以忽略的忽略，100军棍。&lt;/li&gt;
+    &lt;li&gt;逻辑上可以忽略，没有记log，50军棍。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+    &lt;li&gt;错误在函数间传递的唯一理由，是可以期待别人那里有个错误处理函数，能够对的上这个错误。
+&lt;ol&gt;
+    &lt;li&gt;没人处理错误的乱传递，20军棍。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+    &lt;li&gt;该你处理的，处理，不该你处理的，别乱处理。
+&lt;ol&gt;
+    &lt;li&gt;乱处理错误的，先轮后杀。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>python环境部署</title>
+      <link>https://shell909090.github.io/blog/archives/2278/</link>
+      <pubDate>Thu, 22 Nov 2012 14:19:46 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2278/</guid>
+      <description>&lt;p&gt;&lt;h2&gt;abstract&lt;/h2&gt;
+本文的目的，在于教授使用virtualenv创立python环境，对环境的管理和使用，以及代码和部署的用法范例。在阅读完本文后，你应当可以。
+&lt;ul&gt;
+    &lt;li&gt;创立，部署，管理virtualenv环境&lt;/li&gt;
+    &lt;li&gt;使用virtualenv环境进行编码&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;virtualenv环境建立&lt;/h2&gt;
+virtualenv是python的虚环境管理包，他的主要目的是为了隔离环境。其中包含以下两个范畴。
+&lt;ul&gt;
+    &lt;li&gt;在虚环境中安装包，不需要对系统进行修改，不会对系统造成污染。&lt;/li&gt;
+    &lt;li&gt;在系统中安装的包，不会对虚环境造成污染。这主要是出于版本安全考虑。&lt;/li&gt;
+&lt;/ul&gt;
+因此，virtualenv默认会阻止你使用系统中安装的包。要解决这个问题，需要在建立虚拟环境时指定参数&amp;ndash;system-site-packages。&lt;/p&gt;
+
+&lt;p&gt;virtualenv的环境可以通过执行virtualenv path加以建立。当建立完成后&lt;strong&gt;不可移动&lt;/strong&gt;，需要一些特殊调整，使用参数&amp;ndash;relocatable对此没有帮助。
+&lt;h2&gt;virtualenv环境的激活和反激活&lt;/h2&gt;
+virtualenv环境是通过替换系统环境变量工作的。在激活后会替换系统的提示符，提示你进入环境。一般我们使用source $VIRTUALENVPATH/bin/activate来激活。激活后直接执行deactivate反激活。&lt;/p&gt;
+
+&lt;p&gt;virtualenv替换系统环境变量的方式是在path前加入virtualenv的bin路径，使自己的python优于系统python执行。同时替换pythonhome，变更lib查找路径。因此，对于某些可以指定pythonhome的应用（例如网络部署），直接指定pythonpath为virtualenv路径即可。&lt;/p&gt;
+
+&lt;p&gt;注意，由于virtualenv的工作方式，因此当你执行su/sudo bash后，virtualenv环境都有可能消失，但是提示符仍旧生效。建议通过sudo执行脚本，脚本内进行source比较安全。或者直接sudo目标程序也可以，&lt;strong&gt;不要新建上下文&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;如果需要保持持续的环境激活，可以将source $VIRTUALENVPATH/bin/activate加入~/.bashrc。&lt;/p&gt;
+
+&lt;p&gt;当virtualenv激活后，后续的pip安装和python使用都会使用virtualenv内的版本。因此下文未经特殊说明，都是指在激活环境后进行操作。
+&lt;h2&gt;virtualenv环境的管理&lt;/h2&gt;
+主要包括两种手段，安装和删除。一般使用pip install package name进行安装。pip uninstall package name进行删除。
+&lt;h2&gt;virtualenv环境的保存和恢复&lt;/h2&gt;
+virtualenv环境可以保存和恢复。所谓保存和恢复，是指在安装过包的环境中保存包列表（和具体版本），在未安装（或版本错误）的环境中启用。&lt;/p&gt;
+
+&lt;p&gt;一般通过pip freeze &amp;gt; filename进行保存。在目标机器上执行pip install -r filename进行恢复。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>python入门指引</title>
+      <link>https://shell909090.github.io/blog/archives/2272/</link>
+      <pubDate>Mon, 19 Nov 2012 10:11:49 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2272/</guid>
+      <description>&lt;h1&gt;前言&lt;/h1&gt;
+
+&lt;p&gt;其实我也不知道python怎么入门，由我来写这个真的不是很合适。我学python是直接找了dive into python来看。然后照着写了几个例子。大概两天后，就能磕磕绊绊的上路了。就好像拿筷子，都不记得怎么学会的拿筷子，怎么来教人呢？&lt;/p&gt;
+
+&lt;p&gt;不过最近在python-cn的列表里面，我大概连续数周都持续看到“python入门看哪本教程比较好”，实在是不堪其扰。干脆就写个简单的guide，有心的人自己看。没心的——那我也没办法了。&lt;/p&gt;
+
+&lt;h1&gt;基本知识&lt;/h1&gt;
+
+&lt;p&gt;首先，你要了解一个事情。很多你不会的东西并不属于python。例如你不知道网络通讯的流程，你不知道文件的权限和打开标志用法，你不知道fork和stdin/stdout的关系。这些python教不会你。如果你缺乏这些和语言/库无关的相关知识，请自行补课。如果你缺乏计算机基础理论，请自行补课。&lt;/p&gt;
+
+&lt;p&gt;因此不要随便给我发邮件/留言/咨询，为什么这个问题在python里无法解决。为什么python无法所见即所得，为什么python无法热部署，为什么python无法用于嵌入式开发。在问这个问题之前，请先确认“这是一个python的问题”。例如GIL，或者脑残lambda。如果你不确定，请自己搜索一下相关的文章，确认一下。在提问前，看看“提问的智慧”。如果你确实搜过了，找不到，那就问吧，没办法。&lt;/p&gt;
+
+&lt;h1&gt;入门&lt;/h1&gt;
+
+&lt;p&gt;在网络上，python入门的两大基础书籍分别是(后面有朋友补充了一本，我也加上)：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.swaroopch.com/notes/python/&#34;&gt;A Byte of Python&lt;/a&gt; &lt;a href=&#34;http://woodpecker.org.cn/abyteofpython_cn/chinese/&#34;&gt;中文版&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.diveintopython.net/&#34;&gt;Dive Into Python&lt;/a&gt; &lt;a href=&#34;http://woodpecker.org.cn/diveintopython/&#34;&gt;中文版&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://learnpythonthehardway.org/book/&#34;&gt;Learn Python The Hard Way, 2nd Edition&lt;/a&gt; &lt;a href=&#34;https://learn-python-the-hard-way-zh_cn-translation.readthedocs.org/en/latest/&#34;&gt;中文版&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;后面基本就是看&lt;a href=&#34;http://www.python.org/doc/&#34;&gt;python-doc&lt;/a&gt;，我推荐你跳过一堆有的没的，直接看&lt;a href=&#34;http://docs.python.org/2/library/&#34;&gt;Library Reference&lt;/a&gt;。python本身就是易读性极强的代码，文档又相当漂亮，内置库又全。大部分情况下，python-doc都应当能解决你的问题。&lt;/p&gt;
+
+&lt;h2&gt;web&lt;/h2&gt;
+
+&lt;p&gt;web是程序员的一大去向。python程序员入门必须要过的一个框架就是django。不要纠结了，django在python社区中名气太大，用的人太多。因此入门材料是最多的，社区最大，门槛最低。如果你要入门web，必然从django开始。在不熟悉python的情况下，我不推荐你贸然从其他框架开始入门。&lt;/p&gt;
+
+&lt;p&gt;当然，如果你已经熟悉python了，考虑入门web框架，可以参考专精一节。&lt;/p&gt;
+
+&lt;h2&gt;爬虫&lt;/h2&gt;
+
+&lt;p&gt;python下说到爬虫开发，入门首选Scrapy。原因和上面一样，社区最大，用的人最多。好不好用就见仁见智了。反正我的所有爬虫框架都是用自己基于gevent写的库。&lt;/p&gt;
+
+&lt;h2&gt;ui&lt;/h2&gt;
+
+&lt;p&gt;python的ui框架也很多，很复杂。同样，如果是入门，我建议从qt的两个框架，pyqt和pyside开始入门。关于这两家的恩怨我就不多废话了。&lt;/p&gt;
+
+&lt;h1&gt;专精&lt;/h1&gt;
+
+&lt;p&gt;所谓专精，是指使用python在特定工作上。我们基本分为几个领域。&lt;/p&gt;
+
+&lt;h2&gt;系统和部署&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;virtualenv：基本凡是在商用环境中部署的，建议都用这个。可以将python自带在源码里面，避免迁移/集成问题。&lt;/li&gt;
+&lt;li&gt;python-daemon：写daemon的时候比较方便。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;网络&lt;/h2&gt;
+
+&lt;p&gt;说到网络，基本就是除web外。&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;twisted：非常强大的网络库，各种协议支持全面，不过reactor模式真是纠结。&lt;/li&gt;
+&lt;li&gt;gevent：异步协程模式的网络库。&lt;/li&gt;
+&lt;li&gt;Scapy：强大的网络库，基本啥都能干。&lt;/li&gt;
+&lt;li&gt;pyzmq：我一直不觉得zeromq是一个mq。我觉得他是一个抽象网络层。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;web容器&lt;/h2&gt;
+
+&lt;p&gt;python web框架的一大特点，是容器/框架/ORM/template可以分开自己玩。&lt;/p&gt;
+
+&lt;p&gt;注意，容器和框架是两码事情。容器是python web运行的环境，框架是解析环境的玩意。两者间一般都使用&lt;a href=&#34;http://www.python.org/dev/peps/pep-0333&#34;&gt;wsgi接口&lt;/a&gt;进行连接。这是python的标准做法，fastcgi/scgi也会被转换为wsgi进行连接。但是也不是没有其他选择。一般我们有以下模式：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;cgi：python-doc中自带了cgi模块。&lt;/li&gt;
+&lt;li&gt;mod_python：embed in apache。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;下面是wsgi接口的容器。wsgi的优点在于我们可以在这些容器上运行任意一款支持wsgi的框架。&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;flup：支持提供fastcgi, scgi, AJP接口，web server可以用这三种协议进行连接。&lt;/li&gt;
+&lt;li&gt;Google App Engine：PaaS服务。&lt;/li&gt;
+&lt;li&gt;Gunicorn：直接提供http服务。&lt;/li&gt;
+&lt;li&gt;mod_wsgi：使用内部协议和apache集成。&lt;/li&gt;
+&lt;li&gt;twisted：直接提供http服务。&lt;/li&gt;
+&lt;li&gt;tornado：直接提供http服务。&lt;/li&gt;
+&lt;li&gt;uWSGI：使用内部协议和nginx集成。&lt;/li&gt;
+&lt;li&gt;werkzeug：直接提供http服务。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;建议的部署模式是，用apache的，去mode_wsgi。用nginx的，去uwsgi。用GAE的，直接可用。其他，通通转发。&lt;/p&gt;
+
+&lt;h2&gt;web&lt;/h2&gt;
+
+&lt;p&gt;你可以参考飞龙的&lt;a href=&#34;http://feilong.me/2011/01/talk-about-python-web-framework&#34;&gt;这篇文章&lt;/a&gt;，里面介绍了数种框架。你可以通通玩一下，反正也不麻烦，然后选择一种最适合自己的玩意。&lt;/p&gt;
+
+&lt;p&gt;python中有一种不得不提的玩意就是Zope。这个东西我不知道该如何评价，有兴趣的自己看吧。&lt;/p&gt;
+
+&lt;h2&gt;ORM&lt;/h2&gt;
+
+&lt;p&gt;ORM：python的ORM系统比较单一，一般都是sqlalchemy。这个框架非常强大，但是很消耗资源。有兴趣的可以去&lt;a href=&#34;http://www.sqlalchemy.org/&#34;&gt;官网&lt;/a&gt;上自己了解。偶尔也见用SQLObject的，不多。&lt;/p&gt;
+
+&lt;p&gt;ORM的另一大选择是ZODB，不过用的比较少。希望了解的自己去咨询老潘。&lt;/p&gt;
+
+&lt;h2&gt;template&lt;/h2&gt;
+
+&lt;p&gt;python wiki上&lt;a href=&#34;http://wiki.python.org/moin/Templating&#34;&gt;有篇文章&lt;/a&gt;提到了python template engine的分类和列表。作为专精，我建议你至少玩一下string.Template，webhelpers，mako，jinja2，Genshi这几个玩意。&lt;/p&gt;
+
+&lt;h2&gt;爬虫&lt;/h2&gt;
+
+&lt;p&gt;关于python爬虫的进阶，就比较不好说。我正在写一篇长篇blog，介绍python爬虫的种种。不过至少来说，你需要了解以下几个东西：celery，beautifulsoap，lxml，selenium，phantomjs，pyquery。&lt;/p&gt;
+
+&lt;h2&gt;ui&lt;/h2&gt;
+
+&lt;p&gt;gui库的列表可以看&lt;a href=&#34;http://wiki.python.org/moin/GuiProgramming&#34;&gt;这里&lt;/a&gt;，其中我推荐你看一下玩玩的有：PyGtk，TkInter，WxPython，Glade，pygame。&lt;/p&gt;
+
+&lt;h2&gt;科学计算&lt;/h2&gt;
+
+&lt;p&gt;不用废话，你可以看这篇文档&lt;a href=&#34;http://hyry.dip.jp:8000/pydoc/index.html&#34;&gt;用Python做科学计算&lt;/a&gt;。作者出书了，你可以支持一下。&lt;/p&gt;
+
+&lt;h2&gt;图形处理&lt;/h2&gt;
+
+&lt;p&gt;那必然要提到的就是pil，python imaging library。另一样要介绍的是pydot，pygraph或者pygraphviz。这不是图形库，准确的说，应当是图论库。他可以使用graphviz将图论结构转换为图像。&lt;/p&gt;
+
+&lt;h2&gt;文档&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;pygments：格式化代码的库，可以将文本代码格式化为不同格式的，带颜色的代码。&lt;/li&gt;
+&lt;li&gt;markdown：格式化markdown文档为html的库。不过我觉得实现的和标准不一致，没用。&lt;/li&gt;
+&lt;li&gt;reStructured：docutils工具组，可以转换为多种格式。&lt;/li&gt;
+&lt;li&gt;sphinx：同样是rst的工具，可以生成多种格式。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1&gt;进阶&lt;/h1&gt;
+
+&lt;p&gt;首先，你应当去看沈游侠在某次cpug聚会上的讲话&lt;a href=&#34;http://www.slideshare.net/wilhelmshen/py-art&#34;&gt;Python 编程艺术&lt;/a&gt;，这是python程序员进阶的必读。不过很可惜，slide是高桥流的，本身不是为了让你看内容而出的。而当时的演讲又没有录像（如果有的话，请给我一份拷贝，我会问沈游侠能不能放出，找空间，搞定相关问题，感谢），因此理解上相当困难。不过这里的每一句话都相当有道理，是数十年程序经验的总结。&lt;/p&gt;
+
+&lt;p&gt;另外，作为进阶，你可以适当的看python3的一些内容。&lt;a href=&#34;http://getpython3.com/diveintopython3/&#34;&gt;Dive Into Python 3&lt;/a&gt; &lt;a href=&#34;http://woodpecker.org.cn/diveintopython3/&#34;&gt;中文版&lt;/a&gt;。还有&lt;a href=&#34;http://pypy.org/&#34;&gt;pypy&lt;/a&gt;和&lt;a href=&#34;http://cython.org/&#34;&gt;cython&lt;/a&gt;。&lt;/p&gt;
+
+&lt;p&gt;作为python进阶人士，你一定要在手头备一份常用发行的&lt;a href=&#34;http://www.python.org/download/&#34;&gt;源码&lt;/a&gt;，不要求小版本一致，至少大版本一致（2.7.x，最后一位可以不对齐）。适当的阅读源码，尤其是Objects目录。经常重新阅读python-doc。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>异常之殇</title>
+      <link>https://shell909090.github.io/blog/archives/2266/</link>
+      <pubDate>Tue, 30 Oct 2012 16:42:25 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2266/</guid>
+      <description>&lt;h1&gt;异常之殇&lt;/h1&gt;
+
+&lt;h1&gt;辗转开解&lt;/h1&gt;
+
+&lt;p&gt;辗转开解(stack unwinding)说的其实是这么一个现象。当执行流从深层向浅层转移时，深层调用所产生的栈上对象(stack object)需要销毁，资源需要释放。对于面对对象语言而言，往往就会执行到析构函数。&lt;/p&gt;
+
+&lt;h2&gt;辗转开解中的异常&lt;/h2&gt;
+
+&lt;p&gt;辗转开解真正令人迷惑之处在于，如果在析构函数中发生错误怎么办？在异常处理中发生异常，我们可以继续向上抛出。但是在辗转开解代码中出现异常，上层应当收到两个异常呢？还是一个？&lt;/p&gt;
+
+&lt;p&gt;无论是哪种可能，都没有完美自恰的符合直觉，因此这一般是一个未定义的行为。在C++中，进程会整个彻底崩溃掉的。因此，&lt;strong&gt;千万不要在析构函数内抛出(或者可能抛出)异常&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;h2&gt;如果分离析构和资源销毁&lt;/h2&gt;
+
+&lt;p&gt;一种做法是，在析构时不做资源销毁，转而提供专门的函数来执行资源销毁过程。析构只处理简单的delete等操作。然而这种做法的杯具在于，你在任何时候，一旦使用对象，都必须使用finally来保证销毁函数的调用。在发生异常时，栈上对象的辗转开解是自动的，析构函数的调用也是自动的，但是销毁函数的调用就是手工的了。&lt;/p&gt;
+
+&lt;h1&gt;拷贝构造和隐式转换&lt;/h1&gt;
+
+&lt;p&gt;和构造相反，对于构造函数，我们不能限制异常使用。你必须捕获构造函数的异常。&lt;/p&gt;
+
+&lt;h2&gt;假如构造函数出了错&lt;/h2&gt;
+
+&lt;p&gt;普通函数出错，你有两种选择。1. 异常。2. 返回值。构造函数出错，是没有选项2的。因此构造函数凡是出错必定异常。&lt;/p&gt;
+
+&lt;p&gt;而如果构造函数可能出错，而你期望捕获他，你就不能栈上构造一个对象出来。因为这会导致栈上对象的作用域被限定在捕获他所用的try块之内。&lt;/p&gt;
+
+&lt;h2&gt;分离构造的尝试&lt;/h2&gt;
+
+&lt;p&gt;和析构函数类似，我们可以尝试在构造函数外，提供一个构造函数，来替代构造的初始化过程。这样可以很大程度上保证构造函数不出错。&lt;/p&gt;
+
+&lt;p&gt;然而，首先，这样的代码就会变的复杂。每次构造函数完成调用后，都必须调用初始化函数。而且，有两种特殊的构造函数你不可能使用这种方法来解决。&lt;/p&gt;
+
+&lt;h2&gt;拷贝构造和隐式转换&lt;/h2&gt;
+
+&lt;p&gt;是的，这两种构造函数分别叫做拷贝构造(copy construct)和隐式转换(implicit casting)。我们举例来说。如果你在函数内建立了一个对象，你希望返回这个对象，怎么做呢？第一个思路是引用返回。不幸的是，要做引用返回，这个对象必须是堆上对象，而非栈上对象。因为栈上对象在返回后会销毁掉。如果要返回栈上对象，唯一靠谱的方案是先将对象复制到堆上，然后再复制到调用者的栈里。&lt;/p&gt;
+
+&lt;p&gt;C++中有一类特殊的优化，叫做对象返回优化。当编译器察觉到你需要返回栈上对象时，那么编译器会直接获得调用者栈里的对象地址。这样可以避免两次的拷贝过程。然而，如果没有对象返回优化（或者没有识别出来），那么就需要两次复制以保证正确性。而C++里，默认的复制过程是内存拷贝。&lt;/p&gt;
+
+&lt;p&gt;对于很多对象，内存拷贝是错误的行为。例如字符串，一种字符串的加速方法叫做共享内存字符串。两个字符串对象会共享一个内存块，以避免重复内容的开销。直到其中一块需要修改时，复制才真的继续。对于这种情况，直接拷贝会明显的导致错误。因此C++有一种特殊的构造函数，叫做拷贝构造。&lt;/p&gt;
+
+&lt;p&gt;在拷贝构造的时候，调用是由C++隐式发生的，你根本没有先构造，再调用的机会和权力。因此，试图分离构造在技术上不可行。&lt;/p&gt;
+
+&lt;p&gt;隐式转换是另一种情况。当你传递的参数和实际被赋值对象的类型不一致时（例如调用了某个函数，其参数类型不一致），C++会试图将你的对象转换为目标对象。如果是内部类型，这个被称为内部隐式转换。unsigned char可以被无错的转换为unsigned long，这个大家都知道。但是如果是对象，转换行为就需要由构造函数定义，这个叫做隐式转换构造函数。&lt;/p&gt;
+
+&lt;p&gt;另外，隐式转换也是OO中的一大问题。我强烈建议你用explicit禁用所有隐式转换，改为显式转换。这会费一点事，但是却可以避免很多问题。&lt;/p&gt;
+
+&lt;h1&gt;分离构造/析构的邪恶之处&lt;/h1&gt;
+
+&lt;p&gt;ZMQ的作者曾经吐槽过这种在构造/析构之外再定义初始化/清除代码的努力。他的观点是，如果万一在构造函数中加入了代码，会引起半构造现象。为了解决这个问题，会使得整个类带上状态。我在上面已经假定这件事情不会发生了，否则代码会更加复杂，问题也更加严重。&lt;/p&gt;
+
+&lt;h1&gt;二次异常&lt;/h1&gt;
+
+&lt;p&gt;是的，你不应当在异常处理代码中抛出异常。当然，这里的异常指的是你的异常处理代码不应当发生异常。经过逻辑判定，当前的异常应当由更上层处理的情况不在此列。&lt;/p&gt;
+
+&lt;p&gt;如果在异常处理中抛出异常，很可能导致的结果就是异常处理没有完成。而未完成的异常处理会发生什么问题，那只有天晓得。这个在任何带有异常系统的语言中都是成立的。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>面对对象的吐槽——类型之殇</title>
+      <link>https://shell909090.github.io/blog/archives/2265/</link>
+      <pubDate>Mon, 29 Oct 2012 14:26:30 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2265/</guid>
+      <description>&lt;h1&gt;继承之殇&lt;/h1&gt;
+
+&lt;p&gt;讲继承问题，我们首先得定义什么是继承(inherit)，他是用来干吗的。&lt;/p&gt;
+
+&lt;p&gt;所谓继承，就是当两种实体，满足其中一种必然全部都满足另一种的定义(is a)。一旦构成继承，可以带来以下好处（简单起见，我们直接就管这俩实体一个叫派生类一个叫父类）：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;派生类具备父类所有已经实现的方法，毋须再实现一遍——除非需要重写(override)。&lt;/li&gt;
+&lt;li&gt;派生类可以当作父类使用，凡是使用父类的地方给与派生类也对。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;继承的最主要作用，是用于复用(reuse)。&lt;/p&gt;
+
+&lt;h1&gt;内涵和外延&lt;/h1&gt;
+
+&lt;p&gt;形式逻辑里面有一句话，内涵越大，外延越小。在继承上，如果我们严格按照定义来做，会发生很反人类的事情。因为类的定义是依赖于内涵的，&lt;/p&gt;
+
+&lt;p&gt;我们还是看平行四边形，长方形和正方形的例子。我们用两边长度，夹角来定义平行四边形。然后如何定义长方形？夹角为pi/2。然后如何定义正方形？两边长度相当。&lt;/p&gt;
+
+&lt;p&gt;不知道你是否看出了问题。是的，按照正统来定义，数据的约束只会越来越多。因为派生类必须是(ISA)父类，因此父类的约束必须全部满足。我们接着上面的例子，我们为平行四边形定义一个方法，设定夹角大小。那么在长方形中，这个方法如何处理？一旦用户调用方法设定夹角大小，必然会破坏长方形定义，因此这个方法只能重写抛错。&lt;/p&gt;
+
+&lt;p&gt;为什么？从逻辑的本源来说，平行四边形是“两组对边分别平行”，并没有说夹角的事情。到长方形的时候才说，长方形是夹角为90度的平行四边形。显然，长方形是不能设定夹角的。因此，我们要么承认，不是每个平行四边形都可以设定夹角的，例如长方形不行。要么承认，每个平行四边形都可以设定夹角，长方形不是平行四边形。显然，后者违背逻辑，我们只能得出结论，&lt;strong&gt;不是每个平行四边形都可以设定夹角&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;同样，正方形的例子也说明，不是每个平行四边形都可以设定两个分离的边长。如果以此标准来定义类，那么必然得到的是正确而无用的逻辑玩具。平行四边形没有夹角，我们就不能定义面积计算的函数，也不能——基本什么都不可以。更过分的是，我们还不能定义两个分离的边长，因为定义并没有告诉我们，边长一定不等。照此下去，我们除了一个空空荡荡的“平行四边形”这个名字外，什么都定义不下去。&lt;/p&gt;
+
+&lt;p&gt;为了解决这个问题，实践中，我们采取的都是，平行四边形是可以设定夹角的，然后对特例做抛错处理。这其实在本质上就违背了继承的原初意义。&lt;/p&gt;
+
+&lt;h1&gt;继承和聚合&lt;/h1&gt;
+
+&lt;p&gt;继承的另一个容易混淆的地方，就是分不清继承和聚合。&lt;/p&gt;
+
+&lt;p&gt;其实从逻辑上说。继承和聚合根本就不是一回事情。例如你有(have a)一条狗，你可以让狗做任何狗可以做的事情，例如追猎物。我们可以说，你可以做的事情和狗没有区别，所以——你就是(ISA)一条狗？！&lt;/p&gt;
+
+&lt;p&gt;傻子都不会弄错其中的区别！&lt;/p&gt;
+
+&lt;p&gt;我们说，如果一个东西看起来像鸭子，叫起来像鸭子，走起路来像鸭子，我们就可以当他是一只鸭子，说的是弱类型语言。而且我们只能认为，我们不知道那个东西是什么(这是弱类型的特点)，总之可以当他是一只鸭子用。但是这不代表那个东西就是一只鸭子，他也可以是鸭子的代理人，或者拥有一只鸭子。在静态类型语言中，为了复用就不管三七二十一，直接声明PNG图像是一种BMP图像的——这绝对是逻辑上错误的行为。&lt;/p&gt;
+
+&lt;p&gt;然而，你自己数数你在代码里面犯过多少次错？&lt;/p&gt;
+
+&lt;h1&gt;多重继承&lt;/h1&gt;
+
+&lt;p&gt;继承本身的问题我们先不说，我们再说一个很常见的问题——多重继承。&lt;/p&gt;
+
+&lt;p&gt;既然我们说，只要一种满足ISA谓词判定，就可以认为是继承。那么理论上，我们就不能否决双重继承。例如我们定义了平行四边形，又定义了中心对称图形。那么长方形就同时是(ISA)这两者。从逻辑关系上，我们说长方形可以合法的继承两者。&lt;/p&gt;
+
+&lt;p&gt;但是如果我们真的在程序内设定将长方形继承两者，马上会引起一连串的问题。&lt;/p&gt;
+
+&lt;h2&gt;当多重继承发生冲突时&lt;/h2&gt;
+
+&lt;p&gt;首先第一个是继承冲突。即当两个父类都具备同一个方法的时候，对派生类做方法调用会发生什么行为？&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;肯定不能只调用一个，这会因此另一个父类的方法间发生内在不一致。这违背了继承的好处2。&lt;/li&gt;
+&lt;li&gt;也不能两个都调用。两者的先后次序可能引发逻辑问题，因此先调用谁都是错误的。而且函数还有返回值问题——你返回谁的返回值呢？如果多值返回合并，这和函数原始的定义又发生了悖离，从而又违背了继承的好处2。&lt;/li&gt;
+&lt;li&gt;因此，我们只能宣布这是个错误。&lt;/li&gt;
+&lt;li&gt;既然是个错误，鉴于类间函数可能存在的内在联系，其他继承的函数也未必能够正常使用。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;你看，明明是合法的多重继承，居然造成了不可复用的结果。这就是继承冲突。&lt;/p&gt;
+
+&lt;h2&gt;菱形继承&lt;/h2&gt;
+
+&lt;p&gt;如果说继承冲突还是一个比较好考虑的问题的话，菱形继承就是一个让人吐血的东西了。&lt;/p&gt;
+
+&lt;p&gt;所谓菱形继承，就是两个父类继承同一个基类。在这种情况下，对父类的调用会间接转到基类上。那么，基类的函数会调用几次呢？&lt;/p&gt;
+
+&lt;h2&gt;继承冲突的几种解法&lt;/h2&gt;
+
+&lt;ol&gt;
+&lt;li&gt;所有冲突的函数，父类必须都无实现。&lt;/li&gt;
+&lt;li&gt;不得多重继承。这是很扯淡的，不过也是大多数时候的做法。我的编程指南之一就是——在C++中，任何时候都不要使用多重继承。&lt;/li&gt;
+&lt;li&gt;使用其中一者。python是个典型的使用其中一者的例子，具体使用的按照继承编写顺序展开成MRO次序决定。然而这直接违背了继承类是(ISA)父类的定义。因此不要以为在python中，继承后总是没问题的。有的时候可能会出现继承后不能正常工作的情况。&lt;/li&gt;
+&lt;li&gt;强制用户解决。要求用户必须人工定义函数，解决继承冲突的问题。从逻辑上说，如果用户定义的函数可以同时兼容于两个父类，就可以彻底化解多重继承冲突问题。然而杯具的是，很多时候在逻辑上，继承冲突是无解的。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2&gt;区分接口和继承&lt;/h2&gt;
+
+&lt;p&gt;父类没有实现冲突的函数，那么派生类中就不必纠结于调用谁的问题了。但是这引发了另一个问题——这就无法复用了。作为这一解法的极限，java不允许多重继承——除非继承的父类都是没有实现的类。这其实不是继承，而是实现(implement)接口(interface)。&lt;/p&gt;
+
+&lt;p&gt;接口编程是一个很有道理的东西，COM里面大量着重于接口。但是接口也有自己扯淡的地方——接口是一个编写期的东西，他最大的用途就是编译期类型检查。接口并不能复用(reuse)代码。如果你有一个接口，叫做平行四边形。里面有个方法，用于计算平行四边形面积。然后你实现了长方形和正方形——那么杯具来了，你需要在两个里面通通实现一遍这个方法，即使他们基本没区别。&lt;/p&gt;
+
+&lt;p&gt;当然，接口本身的好坏各有评价。你看，接口的唯一作用，就是声明类提供了某些函数。当我们对方法传入一个新的类的时候，我们必须将新的类也实现一下接口——哪怕这个类其实已经实现了这些方法。只要不实现接口，方法就不认可。这是强制编译器类型检查(静态类型语言)的基础。因此一般来说，静态类型语言，使用接口。动态类型语言，duck typing。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>cython编译细节</title>
+      <link>https://shell909090.github.io/blog/archives/2259/</link>
+      <pubDate>Thu, 25 Oct 2012 11:12:09 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2259/</guid>
+      <description>&lt;p&gt;两点简述：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;可以使用cython &amp;ndash;embed来编译一个pyx，生成带main的代码，然后用gcc直接编译过去。大概样例是这样的：&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;cython &amp;ndash;embed $^&lt;/p&gt;
+
+&lt;p&gt;gcc $(shell python-config &amp;ndash;includes) $(shell python-config &amp;ndash;libs) -O2 -o $@ $^&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;pyx的文件名会被转换为变量，所以所有在变量中不应当出现的符号也别出现，例如-。&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>pycon2012</title>
+      <link>https://shell909090.github.io/blog/archives/2257/</link>
+      <pubDate>Tue, 23 Oct 2012 14:27:34 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2257/</guid>
+      <description>&lt;p&gt;今天第一天在大型会议上演讲，其实挺紧张的。不过还不错，虽然临场反应并不热烈，但是至少不冷场。下面是我今天看到内容的回忆，有些印象不神，记得不清楚了。&lt;/p&gt;
+
+&lt;h1&gt;第一天上午&lt;/h1&gt;
+
+&lt;h2&gt;视频播放&lt;/h2&gt;
+
+&lt;p&gt;上来先是sting先给我们放了一堆视频，我基本啥都没记住。就记住一个在日本的pythoner说教孩子编程时大家的评语了——python穷三代，编程毁一生。我后面接的是，用scheme子子孙孙都完了。&lt;/p&gt;
+
+&lt;h2&gt;python产品构建和发布指南&lt;/h2&gt;
+
+&lt;p&gt;沈游侠的主题，彻底干货。基本要点就是利用cython和pypy来编译类python语言，变成C语言代码。这样不但速度快，而且C代码都是可以跨平台的。后面又列举了如何用cython和pypy来编译库。这样基本可以完成python到多数平台的移植。&lt;/p&gt;
+
+&lt;p&gt;我做了一下简单测试。cython对速度的增加主要是静态类型编译，如果保持代码不动，速度反而会略微下降。因此在速度提升上，作用并不如想像中那么明显。但是在跨平台上，效果就非常好。rpython则完全相反，经过rpython编译的代码，在基本不修改的情况下（当然，前提是你需要符合rpython），执行比C还快。&lt;/p&gt;
+
+&lt;p&gt;不过游侠在后面的答疑中也说了，pypy的rpython编译把握难度比较高，不建议在产品中使用。&lt;/p&gt;
+
+&lt;p&gt;另外，他后面也提了溜宝的例子，在python和js之间可以远过程调用，还可以回调。熟悉http的应该可以听出来，这个在现在浏览器中必然是要用到long pull技术的。因此底层框架不肖说，必然是Eurasia。&lt;/p&gt;
+
+&lt;h2&gt;让程序运行更快&lt;/h2&gt;
+
+&lt;p&gt;我们几个都在说，土豆的一贯风格是分享内容是和技术有关的干货，但是都和python不搭边。最多在最后说一句，这个技术在我们这里是利用python做的。上次黄东的演讲就是，讲如何算流量带宽费，最后来一句，这个是python实现的。这次李小红的分享也是，很技术，但是和python没啥关系。讲到一半还来了一句，“我对python不熟悉，前几天特意看了一下，dict是利用开放地址法实现而不是开链实现的，这让我对python顿时有了信心”。微薄上无数吐槽高级黑啊。&lt;/p&gt;
+
+&lt;p&gt;土豆的分享其实很简单，核心就是如何通过代理让网站的响应速度更快。干货是干货，但是不是非常熟悉http协议，能够将http本身优化到相当程度的，听了等于白听。因为上面讲的大部分，都是内存命中和交换，磁盘写出，cpu调度，poll和epoll内核模式差异之类的话题。在python下面，poll和epoll基本都看不出差别，大部分优化都围绕着模式打转。研究这种命中技巧不是南辕北辙么？&lt;/p&gt;
+
+&lt;p&gt;但是这不表示这个主题没用，只是如果你不把其他方面的问题解决的很彻底，先没头没脑在CPU和内存缓存命中上下功夫，多半是做不过别人的。&lt;/p&gt;
+
+&lt;h1&gt;第一天下午&lt;/h1&gt;
+
+&lt;h2&gt;OpenERP 即将推出的第 7 版的功能和新的编程框架介绍&lt;/h2&gt;
+
+&lt;p&gt;演讲者是个法国人，中文相当不错。不过和Thomas比起来还是差点。旁边的老外哥们说，那是因为Thomas有个好中国老婆。&lt;/p&gt;
+
+&lt;p&gt;基本是广告。除了让我们体验了一把openerp的风格外，啥都没看着。不过openerp看起来确实够屌的，直接去下一个插件，应用，然后就直接换掉了语言。这基本和php差不多。还有一堆的良好的交互特性，看起来非常像应用。此外，啥技术都没有。&lt;/p&gt;
+
+&lt;h2&gt;元编程在 Redis ORM 中的应用&lt;/h2&gt;
+
+&lt;p&gt;我自己的题目，会场反应并不很热烈。总共两个选项，我问认为是1的举手，几个。认为2的举手，几个。剩下的是啥？&lt;/p&gt;
+
+&lt;p&gt;其实元编程本身就不好讲，这个题目我写完文档算了一下，大概1个小时到一个半小时。问题是我问sting多要点时间，没有。好容易给我加到45分钟。我对着文档左砍右砍，还是紧紧张张的25分钟讲完。要在30分钟出头讲完整个题目，也难怪听众反应不良。&lt;/p&gt;
+
+&lt;p&gt;具体我也就不展开了，希望看到的可以看我的slide。另外我说一下，这个slide也是我用python做的。&lt;/p&gt;
+
+&lt;h2&gt;用 Tornado 开发 RESTful API 应用&lt;/h2&gt;
+
+&lt;p&gt;其实以这个应用而言，是适合GAE的项目。不过飞龙只是借这个题目讲Tornado而已。&lt;/p&gt;
+
+&lt;h2&gt;阿里云之移动开发者上云&lt;/h2&gt;
+
+&lt;p&gt;纯粹广告。不过既然是lighting topic，也不算太难受。我也顺便看了一下阿里云的架构。不过主讲完全没讲到要点，他们到底是卖IaaS业务，还是卖PaaS业务，还是云存储，还是三者都有？另外，用IaaS来做PaaS的可伸缩？我还真不觉得这是个好主意。。。&lt;/p&gt;
+
+&lt;h2&gt;Python如何帮助「逆转三国」获得成功&lt;/h2&gt;
+
+&lt;p&gt;广告中的广告。今天唯一一个妹纸上场的主题，我还在想，终于有妹纸上去做分享了，还是个美女。结果介绍完了心里就凉了半截——市场总监，这姐们是个非技术的角色。演讲的主要内容是，python很好，python没出过乱子。完了，总共15分钟不到，我连拍第二张照片的机会都没有。其余时间全在说游戏是如何成功，左右还有海报助阵。最后还出来一个美女发传单。&lt;/p&gt;
+
+&lt;p&gt;最后主办方出来道歉，他们也以为这个topic是正规演讲，没想到讲成了lighting topic。&lt;/p&gt;
+
+&lt;h2&gt;网页游戏的跨界开发&lt;/h2&gt;
+
+&lt;p&gt;董诣的题目，主要讲他如何训练公司的策划使用python。他用的方法基本就是元编程的路数。&lt;/p&gt;
+
+&lt;p&gt;策划将配置写入excel，然后他们的程序读取excel，写出一个python的文件，再由服务器加载。这是典型的字符处理型元编程的例子。早知道他们这么用，我满可以顺手拿来举例的。&lt;/p&gt;
+
+&lt;p&gt;最后他的例子倒是让我们吐槽了一把。print后面可以不加空格，这是他们公司美工教的。&lt;/p&gt;
+
+&lt;h2&gt;实战游戏客户端&lt;/h2&gt;
+
+&lt;p&gt;林伟每年来都是带来大量干货。今年他是特别从北京飞过来，在演讲前刚刚到场。&lt;/p&gt;
+
+&lt;p&gt;他的题目是用python做客户端，并不是很好讲。因为python做游戏客户端不是很多。他举了一个pygame的例子，超级玛丽的企鹅复刻版，玩的挺欢乐的。&lt;/p&gt;
+
+&lt;p&gt;后面他大概讲解了一下游戏界面编程的几代模式变化。不过我印象最深的还是说到flash在苹果上。后面他运行flash的那个模拟的时候，我彻底吓一跳。我偷偷和沈游侠说，林伟说的完全没错，乔帮主抹黑flash完全是为了抢app的地位。&lt;/p&gt;
+
+&lt;p&gt;大家可以想象一下，如果flash拿到了硬件驱动加速会如何？Apple Store上的程序还有谁会花钱？都直接用网页跑一个Flash游戏就直接玩了。PC上能跑的，在苹果上自然也能跑，效果还不差。那还用Objective C做什么？只有性能要求特别高的才会用到。如果不需要Objective C，那Apple Store还怎么赚钱？从Flash能够做到这点，还有Adobe的战略布局，以及Apple Store目前的情况。我们多半可以得出这么个结论，苹果抹黑Flash的主要目地是将Flash踢出移动平台。而只有将Flash踢出了移动平台，才能保护移动设备开发市场的封闭性，从而从中牟利。&lt;/p&gt;
+
+&lt;p&gt;另外，他讲到的FlashCC也很有意思。在一个语言内调用其他语言，这非常有利于Flash的开发。不过后面林伟的一句口误让全场都笑了。他说：“我今天来就是告诉大家，从今以后，大家可以用Flash开发python程序了。”得，又是一堆高级黑评价。&lt;/p&gt;
+
+&lt;h1&gt;第二天上午&lt;/h1&gt;
+
+&lt;h2&gt;网游开发中的 Python 组件&lt;/h2&gt;
+
+&lt;p&gt;赖总的topic，基本讲的其实是模式。&lt;/p&gt;
+
+&lt;p&gt;对我来说其实也挺有用的，尤其是关于对象可调用方法的那个idea。写程序到了一定程度，实现已经不是问题。只要有明确的实现方法，你给足够的时间干，肯定是干的出的。问题是思路，也就是idea。一个好的思路往往是经过很久的总结，在实践中不停摔倒，才能真正用上去。&lt;/p&gt;
+
+&lt;p&gt;另外，最后的吐槽，其实是自行实现语法，或者至少是语法糖。我和赖总说，scheme其实很容易嵌入，而且很容易实现这样的要求——lisp类语言的宏天下闻名。赖总在研究的是基于python自己的Parser的方案，我回头有空也看一下。&lt;/p&gt;
+
+&lt;h2&gt;Python in Gentoo Linux&lt;/h2&gt;
+
+&lt;p&gt;Patrick Lauer的主题，主要是讲了Gentoo下面如何使用python，每个版本的python在gentoo下面的支持情况如何。按照数据来看，python3的支持接近完成了。而pypy大概只有2/3的支持比例。&lt;/p&gt;
+
+&lt;h2&gt;其余大部分人的topic&lt;/h2&gt;
+
+&lt;p&gt;我都没印象了，或者在睡觉。&lt;/p&gt;
+
+&lt;h1&gt;问题节录&lt;/h1&gt;
+
+&lt;h2&gt;元编程的情况下，如何使用sphinx处理文档&lt;/h2&gt;
+
+&lt;p&gt;其实我不写文档，我可以拿代码当文档读。python讲的就是可读性，好的代码应该能做到这点。不过要用sphinx来处理文档，他获得的是对象的__doc__。既然在元编程中可以操作主体，也当然可以操作文档。但是元编程操作文档毕竟太蛋疼了点，如果不是必要我是不干的。&lt;/p&gt;
+
+&lt;p&gt;另外，sphinx的多半是代码文档，也就是你写的代码是给程序员看的。你完全可以在整个目录下面写一个markdown来讲解要点。那些不够要点的就让他去吧。&lt;/p&gt;
+
+&lt;h2&gt;入门推荐哪些书&lt;/h2&gt;
+
+&lt;p&gt;我的推荐是看任何一本入门指引，然后直接看python-doc。python的文档写的很好，你完全可以直接看。在熟悉python后，再去看一些比较深的专门讲解。&lt;/p&gt;
+
+&lt;h1&gt;组织问题&lt;/h1&gt;
+
+&lt;p&gt;回顾完了，我们得数数活动中的问题。今年北京的会议上来就被人吐槽。李小红的topic还没结束，我就看到微薄里面有吐槽说北京这里已经上了两个广告了。上午过去，cpug和weibo上看到无数吐槽。基本都是集中在一点。花了100多参加活动，为什么看到的全是广告？&lt;/p&gt;
+
+&lt;p&gt;首先说明一点，100多的活动费用真的不贵。我们公司里面有人买票了（我们是金牌赞助商，有票的），大家听到100多，都估计不会带午饭的。我按照去年的经验估计有午饭还被怀疑了。按照官网报价，30的午餐。北京有人吐槽说不够吃，上海这里我基本看到都是够吃了。连续两天的必胜客，我觉得自己出去30绝对吃不到。茶歇饮料10元也是很实诚的价格。40的礼品和衣服绝对属于成本价，您要是下次能操作到比这个还低的执行成本，我们明年就找您了。这样100里面已经去掉80了。&lt;/p&gt;
+
+&lt;p&gt;前200人是99的票，等于只有20的其他费用。后面200人是118的票，等于40的其他费用。我问过sting，报名只有250人（我们场地是14人的宽度，250人要坐17排以上，我看到坐了15排多了）。即使全是付费客户，也只有6000的其他费用。我们的工作人员都是志愿者，不付费的（去年我就是志愿者）。主要的费用是场地费。6000租那么个场地，两天，你开玩笑呢吧。还有外地演讲者来回的差旅费，也是肯定要报销的。一趟北京/广州飞机来回加上住宿就是2000，你自己算算总数多少？&lt;/p&gt;
+
+&lt;p&gt;所以大会非找赞助商不可，我们公司就是金牌赞助商。但是赞助商和赞助商不一样。去年的赞助商和我们差不多，都是为了在圈子里面打知名度的，或者说基本就是做贡献了。今年我们公司可是又出赞助又出干货。但是有些公司就需要一些更直观的东西——赞助商不是都有演讲时间么？给丫广告。广告还和广告不一样。oneclick的topic虽然是个纯粹的广告，可是大家都不反感——至少我不反感。他们可是又派妹纸，又不废话，上去讲了10多分钟。我照相还没来得及拍第二张，讲完了。反观淘宝的那个广告我就很有意见了。您讲半天，我都还没听明白您广告的到底是个啥。您那slide大家心里都有数，纯粹是骗外行老板的。下回来技术广告，直接点，专业点。上去说，我们是卖IaaS的，俗称虚拟机。我们的虚拟机有几个技术点。我们还有存储产品，类似S3。我们的存储有几个技术点。大部分来技术会议的都不是做决策的，讲那么花哨纯属浪费时间。&lt;/p&gt;
+
+&lt;p&gt;应该说，主办方在和厂商打交道的手腕和组织能力在这里就看出分别来了。怎么看赞助商是不是广告（他们可没法提前拿到slide，而题目——去，题目有啥用），如果是广告，怎么控制广告时间和数量。怎么把广告分散在干货里面，让大家在给干货打的晕头转向的时候可以缓一缓。这是很看水平的。我甚至看到一条weibo，说感谢openerp的广告，我睡了一会，在元编程的时候还能精神奕奕的跟进。。。&lt;/p&gt;
+
+&lt;p&gt;不得不说，ZQ在这方面和sting还是有很大差异的，sting毕竟基本是职业的活动主办方了。&lt;/p&gt;
+
+&lt;p&gt;当然，另一个方案是放弃其他费用。按照sting的经验，去掉午饭绝对不行，出去吃时间不够，还零零散散。去掉茶歇和饮料也不行，听那会议不停下来歇一下会疯的。能去的只有礼品和衣服。可是去掉礼品和衣服，来的人就会没留念感。再说，每个人省下40，250人省下10000，还是凑不出场地费。&lt;/p&gt;
+
+&lt;p&gt;这么数数看，其实办社区活动很苦逼的。大牛比例太少，赞助商和听众都不来，那事情就办不成。大牛比例太高，听众是高兴了，可是赞助商不足，没经费。没经费怎么请大牛？难道让赖总在广州开个视频给我们讲么？人家又写slide，又搭两天来参加，再要自费差旅——这得算赞助商吧。要真这么搞，我一点也不会奇怪赖总的题目会变成游戏推介会。&lt;/p&gt;
+
+&lt;p&gt;这么看起来，100来参加，听到广告就不是件很奇怪的事情了，听不到才奇怪。但是控制广告的数量和时间，怎么总体把控，还需要组织者多多上心。毕竟来的人花钱都是看大牛的，要是满眼看过去全是广告，那也没人来了。&lt;/p&gt;
+
+&lt;p&gt;另外一点批评。我去年整的wifi不好用，好歹还是能上去的。今年连上都上不去了，全靠自己的流量顶。也幸好是这个会议室，手机还有信号。同事说隔壁会议室手机一点信号都没有，要再没有wifi绝对会疯的。&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

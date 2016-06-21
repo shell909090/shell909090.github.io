@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>windows service的C&#43;&#43;封装实现</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         windows service的C&#43;&#43;封装实现 
+    </h1>
+    <p class="meta">Dec 20, 2006
+         - 6 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/338/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <div>    windows系统服务入口的封装类，service是基类，service_manager是管理类。支持UNICODE，可以多服务封装在一个程序里面，过程当然都是自动的。拥有自动防错系统，在服务异常退出的时候会去关闭服务，而不是开着服务直接没了进程。写一个类，继承service，然后在哪里出一个实例，就可以了。service中有很多虚函数，可以重载了监听对应事件(我应该写的比较明白吧)。 get_service_name，返回UNICODE的字符串指针，定义服务名称。注意是纯虚函数，必须实现。get_dependence，也是返回UNICODE的字符指针。指明这个服务依赖什么服务。get_service_type返回服务类型，其实也就是是否可以交互。get_contral_accepts，支持的信号(例如是否可以暂停)，默认可以暂停。on_start开始时候调用的函数，下同。</div>
+<div>使用方法</div>
+<div>
+<div>#include <br />#include &quot;service.h&quot;</div>
+<div>class test_service : public service{<br />public:<br /> virtual LPTSTR get_service_name ();<br /> virtual DWORD   on_start (DWORD argc, LPTSTR * argv);<br /> virtual DWORD   on_stop ();<br /> virtual DWORD   on_shutdown ();<br />};</div>
+<div>LPTSTR test_service::get_service_name ()<br />{<br /> return _T (&quot;test_service&quot;);<br />}</div>
+<div>DWORD test_service::on_start (DWORD argc, LPTSTR * argv)<br />{<br /> return service::on_start (argc, argv);<br />}</div>
+<div>DWORD test_service::on_stop ()<br />{<br /> return service::on_stop ();<br />}</div>
+<div>DWORD test_service::on_shutdown ()<br />{<br /> return service::on_shutdown ();<br />}</div>
+<div>int _tmain (int argc, _TCHAR * argv[])<br />{<br /> test_service ts;</div>
+<div> if (argc == 1)<br />  service_manager::start ();<br /> else if (!_tcscmp (argv[1], _T (&quot;install&quot;)))<br />  service_manager::install_services (NULL, false);<br /> else if (!_tcscmp (argv[1], _T (&quot;remove&quot;)))<br />  service_manager::remove_services (NULL);</div>
+<div> return 0;<br />}</div></div>
+<div>------------service.h-------------------</div>
+<div>#include <br />using namespace std;</div>
+<div>#include <br />#pragma comment(lib, &quot;psapi&quot;)</div>
+<div>typedef         basic_string &lt; TCHAR &gt; tstring;</div>
+<div>#ifndef _SERVICE_H_<br />#define _SERVICE_H_</div>
+<div>class           service {<br />  public:<br /> service ();<br /> ~service ();<br /> virtual LPTSTR get_service_name () = 0;<br /> virtual LPTSTR get_dependence ();<br /> virtual DWORD   get_service_type ();<br /> virtual DWORD   get_contral_accepts ();<br /> virtual DWORD   on_start (DWORD argc, LPTSTR * argv);<br /> virtual DWORD   on_stop ();<br /> virtual DWORD   on_interrogate ();<br /> virtual DWORD   on_pause ();<br /> virtual DWORD   on_continue ();<br /> virtual DWORD   on_shutdown ();</div>
+<div> void   pre_start (SERVICE_STATUS_HANDLE hServiceStatus,<br />          DWORD argc, LPTSTR * argv);<br /> BOOL            SetServiceStatus (DWORD dwState);<br />  protected:<br /> SERVICE_STATUS_HANDLE hServiceStatus;<br /> SERVICE_STATUS  ServiceStatus;<br />};</div>
+<div>class           service_manager {<br />  public:<br /> service_manager ();<br /> ~service_manager ();<br /> DWORD     register_service (service * s);<br /> DWORD     unregister_service (service * s);<br /> LPSERVICE_TABLE_ENTRY get_service_entries ();<br /> service       *get_service (LPCTSTR lpName);<br /> static service_manager *get_service_manager();<br /> static int    install_services (LPCTSTR lpServiceName, bool autostart);<br /> static int    remove_services (LPCTSTR lpServiceName);<br /> static int    start();<br /> static void WINAPI  service_start (DWORD argc, LPTSTR * argv);<br /> static DWORD WINAPI  ctrl_handler (DWORD dwControl, DWORD dwEventType,<br />           LPVOID lpEventData, LPVOID lpContext);<br /> static TCHAR     *service_status_name[];<br />  protected:<br /> static service_manager *this_for_static;<br /> vector &lt; service * &gt; service_list;<br />};</div>
+<div>#endif //_SERVICE_H_</div>
+<div>----------------------------------------</div>
+<div>------------service.cpp-----------------</div>
+<div>// service.cpp : 定义控制台应用程序的入口点。<br />//</div>
+<div>#include &quot;stdafx.h&quot;</div>
+<div>#define PRINTERROR(x) _tprintf (_T (&quot;%s failed, errorcode 0x%0.8Xn&quot;), (x), GetLastError ())</div>
+<div>service_manager *service_manager::this_for_static = NULL;<br />TCHAR          *service_manager::service_status_name[] = {<br /> _T (&quot;SERVICE_UNKNOWN&quot;),<br /> _T (&quot;SERVICE_STOPPED&quot;),<br /> _T (&quot;SERVICE_START_PENDING&quot;),<br /> _T (&quot;SERVICE_STOP_PENDING&quot;),<br /> _T (&quot;SERVICE_RUNNING&quot;),<br /> _T (&quot;SERVICE_CONTINUE_PENDING&quot;),<br /> _T (&quot;SERVICE_PAUSE_PENDING&quot;),<br /> _T (&quot;SERVICE_PAUSED&quot;)<br />};</div>
+<div>service::service ()<br />{<br /> if (service_manager::get_service_manager () == NULL)<br />  new             service_manager ();<br /> service_manager::get_service_manager ()-&gt;register_service (this);<br />}</div>
+<div>service::~service ()<br />{<br /> if (service_manager::get_service_manager () == NULL)<br />  return;<br /> service_manager::get_service_manager ()-&gt;unregister_service (this);<br />}</div>
+<div>LPTSTR service::get_dependence ()<br />{<br /> return NULL;<br />}</div>
+<div>DWORD service::get_service_type ()<br />{<br /> return 0;<br />}</div>
+<div>DWORD service::get_contral_accepts ()<br />{<br /> return SERVICE_ACCEPT_PAUSE_CONTINUE | SERVICE_ACCEPT_SHUTDOWN |<br />  SERVICE_ACCEPT_STOP;<br />}</div>
+<div>DWORD service::on_start (DWORD argc, LPTSTR * argv)<br />{<br /> return SERVICE_RUNNING;<br />}</div>
+<div>DWORD service::on_stop ()<br />{<br /> return SERVICE_STOPPED;<br />}</div>
+<div>DWORD service::on_interrogate ()<br />{<br /> return SERVICE_RUNNING;<br />}</div>
+<div>DWORD service::on_pause ()<br />{<br /> return SERVICE_PAUSED;<br />}</div>
+<div>DWORD service::on_continue ()<br />{<br /> return SERVICE_RUNNING;<br />}</div>
+<div>DWORD service::on_shutdown ()<br />{<br /> return SERVICE_STOPPED;<br />}</div>
+<div>void service::pre_start (SERVICE_STATUS_HANDLE hServiceStatus,<br />       DWORD argc, LPTSTR * argv)<br />{<br /> this-&gt;hServiceStatus = hServiceStatus;<br /> ServiceStatus.dwServiceType = SERVICE_WIN32;<br /> ServiceStatus.dwCurrentState = SERVICE_START_PENDING;<br /> ServiceStatus.dwControlsAccepted = 0;<br /> ServiceStatus.dwWin32ExitCode = 0;<br /> ServiceStatus.dwServiceSpecificExitCode = 0;<br /> ServiceStatus.dwCheckPoint = 0;<br /> ServiceStatus.dwWaitHint = 10000;<br /> SetServiceStatus (0);</div>
+<div> ServiceStatus.dwCurrentState = on_start (argc, argv);</div>
+<div> if (ServiceStatus.dwCurrentState == SERVICE_STOPPED)<br />  ServiceStatus.dwWin32ExitCode = ServiceStatus.dwCurrentState;<br /> ServiceStatus.dwCheckPoint = 0;<br /> ServiceStatus.dwWaitHint = 0;<br /> ServiceStatus.dwControlsAccepted = get_contral_accepts ();<br /> SetServiceStatus (0);<br /> return;<br />}</div>
+<div>BOOL service::SetServiceStatus (DWORD dwState)<br />{<br /> TCHAR lpOutString[0x400];<br /> if (dwState != 0)<br />  ServiceStatus.dwCurrentState = dwState;<br /> if (ServiceStatus.dwCurrentState &gt; 7)<br />  return 0;<br /> BOOL rslt =::SetServiceStatus (hServiceStatus, &amp;ServiceStatus);<br /> if (rslt)<br />  _stprintf (lpOutString,<br />       _T (&quot;%s set service status %s successed.n&quot;),<br />       get_service_name (),<br />       service_manager::service_status_name[ServiceStatus.<br />              dwCurrentState]);<br /> else<br />  _stprintf (lpOutString,<br />       _T<br />       (&quot;%s set service status %s failed, errorcode 0x%0.8Xn&quot;),<br />       get_service_name (),<br />       service_manager::service_status_name[ServiceStatus.<br />              dwCurrentState],<br />       GetLastError ());<br /> OutputDebugString ((LPCTSTR) lpOutString);<br /> return rslt;<br />}</div>
+<div>service_manager::service_manager ()<br />{<br /> if (this_for_static != NULL)<br />  return;<br /> this_for_static = this;<br />}</div>
+<div>service_manager::~service_manager ()<br />{<br /> this_for_static = NULL;<br />}</div>
+<div>DWORD service_manager::register_service (service * s)<br />{<br /> vector &lt; service * &gt;::iterator iter;<br /> iter = service_list.begin ();<br /> for (; iter != service_list.end (); iter++)<br />  if (*iter == s)<br />   return 1;<br /> service_list.push_back (s);<br /> return 0;<br />}</div>
+<div>DWORD service_manager::unregister_service (service * s)<br />{<br /> vector &lt; service * &gt;::iterator iter;<br /> iter = service_list.begin ();<br /> for (; iter != service_list.end (); iter++)<br />  if (*iter == s) {<br />   service_list.erase (iter);<br />   return 0;<br />  }<br /> return -1;<br />}</div>
+<div>LPSERVICE_TABLE_ENTRY service_manager::get_service_entries ()<br />{<br /> UINT i;<br /> LPSERVICE_TABLE_ENTRY lte = NULL;</div>
+<div> lte = new SERVICE_TABLE_ENTRY[service_list.size () + 1];<br /> for (i = 0; i &lt; service_list.size (); i++) {<br />  lte[i].lpServiceName = service_list[i]-&gt;get_service_name ();<br />  lte[i].lpServiceProc = (LPSERVICE_MAIN_FUNCTION) service_start;<br /> }<br /> lte[i].lpServiceName = NULL;<br /> lte[i].lpServiceProc = NULL;</div>
+<div> return lte;<br />}</div>
+<div>service        *service_manager::get_service (LPCTSTR lpName)<br />{<br /> for (UINT i = 0; i &lt; service_list.size (); i++)<br />  if (!_tcscmp (service_list[i]-&gt;get_service_name (), lpName))<br />   return service_list[i];<br /> return NULL;<br />}</div>
+<div>int service_manager::install_services (LPCTSTR lpServiceName, bool autostart)<br />{<br /> UINT i;<br /> int rslt = 0;<br /> DWORD service_type;<br /> TCHAR binary_path[0x400];<br /> SC_HANDLE hSCManager = NULL, hService = NULL;<br /> service        *pservice;</div>
+<div> if (lpServiceName == NULL) {<br />  for (i = 0; i &lt; this_for_static-&gt;service_list.size (); i++)<br />   install_services (this_for_static-&gt;service_list[i]-&gt;<br />         get_service_name (), autostart);<br />  return 0;<br /> }<br /> pservice = this_for_static-&gt;get_service (lpServiceName);<br /> if (pservice == NULL) {<br />  _tprintf (_T (&quot;get_service %s failed, don't have this servicen&quot;),<br />      lpServiceName);<br />  return -1;<br /> }<br /> if (!GetModuleFileNameEx (GetCurrentProcess (), NULL, binary_path, 0x400)) {<br />  PRINTERROR (_T (&quot;GetModuleFileNameEx&quot;));<br />  return -1;<br /> }<br /> if (this_for_static-&gt;service_list.size () &lt; 2)<br />  service_type = SERVICE_WIN32_OWN_PROCESS;<br /> else<br />  service_type = SERVICE_WIN32_SHARE_PROCESS;</div>
+<div><br /> __try {<br />  hSCManager = OpenSCManager (NULL, NULL, SC_MANAGER_ALL_ACCESS);<br />  if (hSCManager == NULL) {<br />   rslt = -1;<br />   __leave;<br />  }</div>
+<div>  hService = CreateService (hSCManager, lpServiceName, lpServiceName,<br />          SC_MANAGER_ALL_ACCESS,<br />          pservice-&gt;<br />          get_service_type () | service_type,<br />          (autostart ? SERVICE_AUTO_START :<br />           SERVICE_DEMAND_START),<br />          SERVICE_ERROR_NORMAL, binary_path, NULL,<br />          NULL, pservice-&gt;get_dependence (), NULL,<br />          NULL);<br />  if (hService == NULL) {<br />   rslt = -2;<br />   __leave;<br />  }<br /> }<br /> __finally {<br />  if (hService != NULL)<br />   CloseServiceHandle (hService);<br />  if (hSCManager != NULL)<br />   CloseServiceHandle (hSCManager);<br />  if (rslt == 0)<br />   _tprintf (_T (&quot;install_services %s successedn&quot;), lpServiceName);<br />  if (rslt == -1)<br />   PRINTERROR (_T (&quot;OpenSCManager&quot;));<br />  if (rslt == -2)<br />   PRINTERROR (_T (&quot;CreateService&quot;));<br /> }<br /> return rslt;<br />}</div>
+<div>int service_manager::remove_services (LPCTSTR lpServiceName)<br />{<br /> int rslt = 0;<br /> UINT i;<br /> SC_HANDLE hSCManager, hService;<br /> service        *pservice;</div>
+<div> if (lpServiceName == NULL) {<br />  for (i = 0; i &lt; this_for_static-&gt;service_list.size (); i++)<br />   remove_services (this_for_static-&gt;service_list[i]-&gt;<br />        get_service_name ());<br />  return 0;<br /> }<br /> pservice = this_for_static-&gt;get_service (lpServiceName);<br /> if (pservice == NULL) {<br />  _tprintf (_T (&quot;get_service failed, don't have this servicen&quot;));<br />  return -1;<br /> }</div>
+<div> __try {<br />  hSCManager = OpenSCManager (NULL, NULL, SC_MANAGER_ALL_ACCESS);<br />  if (hSCManager == NULL) {<br />   rslt = -1;<br />   __leave;<br />  }<br />  hService =<br />   OpenService (hSCManager, lpServiceName, SC_MANAGER_ALL_ACCESS);<br />  if (hService == NULL) {<br />   rslt = -2;<br />   __leave;<br />  }<br />  if (!DeleteService (hService)) {<br />   rslt = -3;<br />   __leave;<br />  }<br /> }<br /> __finally {<br />  if (hService != NULL)<br />   CloseServiceHandle (hService);<br />  if (hSCManager != NULL)<br />   CloseServiceHandle (hSCManager);<br />  if (rslt == 0)<br />   _tprintf (_T (&quot;remove_services %s successedn&quot;), lpServiceName);<br />  if (rslt == -1)<br />   PRINTERROR (_T (&quot;OpenSCManager&quot;));<br />  if (rslt == -2)<br />   PRINTERROR (_T (&quot;OpenService&quot;));<br />  if (rslt == -3)<br />   PRINTERROR (_T (&quot;DeleteService&quot;));<br /> }<br /> return rslt;<br />}</div>
+<div>int service_manager::start ()<br />{<br /> if (!StartServiceCtrlDispatcher (this_for_static-&gt;get_service_entries ()))<br />  OutputDebugString (_T (&quot;StartServiceCtrlDispatcher failedn&quot;));<br /> return 0;<br />}</div>
+<div>void WINAPI service_manager::service_start (DWORD argc, LPTSTR * argv)<br />{<br /> SERVICE_STATUS_HANDLE hServiceStatus;<br /> service        *pservice = this_for_static-&gt;get_service (argv[0]);<br /> if (pservice == NULL) {<br />  OutputDebugString (_T<br />         (&quot;get_service failed, don't have this servicen&quot;));<br />  return;<br /> }</div>
+<div> hServiceStatus =<br />  RegisterServiceCtrlHandlerEx (argv[0], ctrl_handler, (LPVOID)<br />           pservice);<br /> if (hServiceStatus == NULL) {<br />  OutputDebugString (_T (&quot;RegisterServiceCtrlHandlerEx return NULLn&quot;));<br />  return;<br /> }</div>
+<div> __try {<br />  pservice-&gt;pre_start (hServiceStatus, argc, argv);<br /> }<br /> __except (EXCEPTION_EXECUTE_HANDLER) {<br />  pservice-&gt;SetServiceStatus (SERVICE_STOPPED);<br /> }<br /> return;<br />}</div>
+<div>DWORD WINAPI service_manager::ctrl_handler (DWORD dwControl,<br />           DWORD dwEventType,<br />           LPVOID lpEventData,<br />           LPVOID lpContext)<br />{<br /> DWORD status;<br /> service        *pservice = (service *) lpContext;</div>
+<div> SetLastError (NO_ERROR);<br /> __try {<br />  switch (dwControl) {<br />  case SERVICE_CONTROL_STOP:<br />   status = pservice-&gt;on_stop ();<br />   break;<br />  case SERVICE_CONTROL_SHUTDOWN:<br />   status = pservice-&gt;on_shutdown ();<br />   break;<br />  case SERVICE_CONTROL_PAUSE:<br />   status = pservice-&gt;on_pause ();<br />   break;<br />  case SERVICE_CONTROL_INTERROGATE:<br />   status = pservice-&gt;on_interrogate ();<br />   break;<br />  case SERVICE_CONTROL_CONTINUE:<br />   status = pservice-&gt;on_continue ();<br />   break;<br />  default:<br />   return GetLastError ();<br />  }<br />  pservice-&gt;SetServiceStatus (status);<br /> }<br /> __except (EXCEPTION_EXECUTE_HANDLER) {<br />  pservice-&gt;SetServiceStatus (SERVICE_STOPPED);<br /> }<br /> return GetLastError ();<br />}</div>
+<div>service_manager *service_manager::get_service_manager ()<br />{<br /> return this_for_static;<br />}<br />----------------------------------------</div>
+<div>之所有list没有写成map是因为在某个服务处理过程中可能需要用到服务的名称。写成map就需要反向查询，也不是很方便。 register_service中会查询这个服务是否已经注册过，注意不能用服务名对比的方法。这也是我才发现的一个问题，C++在基类的构造函数中的时候，虚函数指针是指向基类虚函数表的。在某个service子类构造的时候，其基类(service)构造函数会自动调用register_service方法注册自身。如果在register_service用取得服务名的方法，此时虚函数指针指向了基类的虚函数表。也就是说，我们会调用到一个纯虚函数入口，从而产生C++错误。所以必须手工来匹配指针，大家忍耐忍耐。</div>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Dec 20, 2006</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/c">c</a>  <a class="category" href="https://shell909090.github.io/tags/windows">windows</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/337/" title="出差到宁波">出差到宁波</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/339/" title="正则表达式解析文本">正则表达式解析文本</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

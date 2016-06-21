@@ -1,0 +1,684 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Security on Shell&#39;s Home</title>
+    <link>https://shell909090.github.io/tags/security/</link>
+    <description>Recent content in Security on Shell&#39;s Home</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 08 Apr 2014 18:03:33 +0800</lastBuildDate>
+    <atom:link href="https://shell909090.github.io/tags/security/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>CVE-2014-0160(openssl)严重漏洞及其对应</title>
+      <link>https://shell909090.github.io/blog/archives/2618/</link>
+      <pubDate>Tue, 08 Apr 2014 18:03:33 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2618/</guid>
+      <description>&lt;h1&gt;描述&lt;/h1&gt;
+
+&lt;p&gt;openssl 1.0.1系列中，1.0.1f以前的版本在实现上存在漏洞，未正确处理Heartbeat扩展，导致攻击者可以窃取服务器端敏感数据。&lt;/p&gt;
+
+&lt;h1&gt;对应&lt;/h1&gt;
+
+&lt;ol&gt;
+&lt;li&gt;请立刻升级openssl到1.0.1g版以上，并重启整个系统，以保证不会遗漏某些已经启动的进程。&lt;/li&gt;
+&lt;li&gt;如果有自行编译的程序使用了openssl。当这些程序静态链接或链接了自定义的openssl时，需要重新编译。&lt;/li&gt;
+&lt;li&gt;在有问题的设备上使用过的key，需要升级私钥。&lt;/li&gt;
+&lt;li&gt;openssh不受影响，openvpn受影响。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;作为证明，请执行以下语句自行检查。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;ldd /usr/sbin/sshd | grep ssl
+ldd /usr/sbin/openvpn | grep ssl
+ldd /usr/sbin/nginx | grep ssl
+
+for i in $(ps aux | awk &#39;{print $2}&#39;); do echo $i; ldd /proc/$i/exe | grep ssl; done
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1&gt;其他&lt;/h1&gt;
+
+&lt;p&gt;根据昨晚看到的信息，这个漏洞会泄漏服务器端的通讯数据。因此请将所有session清空，在受影响期间使用过的用户名和密码请务必在3-5天后再修改一次(具体看服务商什么时候补掉漏洞)。&lt;/p&gt;
+
+&lt;h1&gt;参考&lt;/h1&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://web.nvd.nist.gov/view/vuln/detail?vulnId=CVE-2014-0160&#34;&gt;nvd&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://security-tracker.debian.org/tracker/CVE-2014-0160&#34;&gt;debian&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.ubuntu.com/usn/usn-2165-1/&#34;&gt;ubuntu&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.openssl.org/news/vulnerabilities.html&#34;&gt;openssl&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.reddit.com/r/netsec/comments/22gaar/heartbleed_attack_allows_for_stealing_server/cgmla8m&#34;&gt;Is OpenSSH affected by this as well?&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>安全的几点快速说明</title>
+      <link>https://shell909090.github.io/blog/archives/2611/</link>
+      <pubDate>Tue, 25 Mar 2014 17:14:14 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2611/</guid>
+      <description>&lt;p&gt;这篇文章谨献给某些特殊环境下奋斗的人士。其他人参考使用。&lt;/p&gt;
+
+&lt;h1&gt;物理设备&lt;/h1&gt;
+
+&lt;p&gt;物理设备上存储着相当多的个人资讯，所以所有的机密资讯要保密这是常识。&lt;/p&gt;
+
+&lt;p&gt;物理设备上可能拥有的机密资料：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;各大站点的session token。借助这些，虽然不能抢走帐号，但是可以仿冒身份，发出假消息，或者诈骗。&lt;/li&gt;
+&lt;li&gt;浏览器启用了“保存密码”选项后，所有的密码都半明文存储在硬盘上。这些信息可以被用来抢走帐号。&lt;/li&gt;
+&lt;li&gt;个人的文档，照片，私密视频。万一笔电丢失就够倒霉了，再变陈老师岂不更痛苦？&lt;/li&gt;
+&lt;li&gt;浏览某些特别站点的记录。咳咳，大家懂。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;之所以要设备加密，是因为有一种破解方法是将你的设备存储拆下来，接到独立的读写设备上，直接读取数据。无论系统密码设定多强，也无法防范。&lt;/p&gt;
+
+&lt;p&gt;如果是mac，有一个选项叫做全盘加密。ubuntu有home分区加密的选项。启用这两项可以有效加密你的电脑。windows也有个类似的功能叫做EFS，但是据说不少国家级单位有解密权限。&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;http://windows.microsoft.com/zh-tw/windows/what-is-encrypting-file-system#1TC=windows-7&#34;&gt;Windows&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://support.apple.com/kb/HT4790?viewlocale=zh_CN&amp;amp;locale=zh_CN&#34;&gt;Mac&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://laokaddk.blog.51cto.com/368606/422180&#34;&gt;Linux&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;android上有加密系统的选项。但是要注意，如果启用会消耗大量电力，而且必须擦除整个设备才能解除。iphone我没用过，据一位挺熟悉的朋友说，只要设定了pin码，整个手机就会被加密。&lt;/p&gt;
+
+&lt;p&gt;加密只是第一步。对于经常保持开机的系统，如果能够轻易的进入系统，那么磁盘加密也形同虚设。所以，请给你的系统加上一个足够强的登录密码。&lt;/p&gt;
+
+&lt;p&gt;最低强度：&lt;/p&gt;
+
+&lt;p&gt;磁盘加密8位以上，系统登录6位以上，包含小写和数字。&lt;/p&gt;
+
+&lt;p&gt;推荐强度：&lt;/p&gt;
+
+&lt;p&gt;磁盘加密10位以上，系统登录8位以上，包含大小写和数字。&lt;/p&gt;
+
+&lt;h1&gt;网络安全&lt;/h1&gt;
+
+&lt;p&gt;首先，请把系统的防火墙开到最大：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;http://windows.microsoft.com/zh-cn/windows/turn-windows-firewall-on-off#turn-windows-firewall-on-off=windows-vista&#34;&gt;Windows&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://help.ubuntu.com/community/IptablesHowTo&#34;&gt;Linux&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://hi.hiing.net/2009/04/how-to-configure-your-macs-firewall.html&#34;&gt;Mac&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;基本原则是，只许出不许进。如果需要可以开放特定端口。&lt;/p&gt;
+
+&lt;p&gt;然后，如果在不安全的环境下使用网络，请使用vpn。这里请允许我广告一把朋友的网站&lt;a href=&#34;https://www.ytvpn.com/&#34;&gt;云梯&lt;/a&gt;。一般是用来大陆翻墙的，不过要用来绕过不安全的环境也可以。&lt;/p&gt;
+
+&lt;p&gt;有时间有条件的朋友可以自行架设vpn服务器，这里给出linux下架设pptp vpn的方法。客户端使用方法可以参考云梯的说明。&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.howtogeek.com/51237/setting-up-a-vpn-pptp-server-on-debian/&#34;&gt;How to Setup a VPN (PPTP) Server on Debian Linux&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://wiki.archlinux.org/index.php/PPTP_Server&#34;&gt;PPTP Server&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://coolerfeng.blog.51cto.com/133059/64630&#34;&gt;linux pptp vpn服务器的架设&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.server110.com/linux/201402/5905.html&#34;&gt;Debian系统快速搭建pptp VPN&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;注意加密一定要使用128位，不要使用56位。&lt;/p&gt;
+
+&lt;h1&gt;网站访问&lt;/h1&gt;
+
+&lt;p&gt;如果可以选择，尽量使用https。下面有一些插件，使你可以尽可能的使用https访问站点。当然，如果站点没有https则无效。&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://chrome.google.com/webstore/detail/https-everywhere/gcbommkclmclpchllfjekcdonpmejbdp?hl=en&#34;&gt;Chromium&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://addons.mozilla.org/en-US/firefox/addon/force-tls/&#34;&gt;Firefox&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;在https访问的时候，如果跳出证书是伪造的之类的警告，请千万不要确定。这是有人在man-in-middle的信号。正确的做法是使用vpn，看看问题是否消失。如果消失，上报给工程师。如果没有消失，请找可信的工程师来排查。千万不要轻易认可未经鉴定的证书(实际上不建议自行接受任何证书——除非那是你自己配出来的)。&lt;/p&gt;
+
+&lt;p&gt;另外，请关注证书的签署者。在我这里看到的信息如下：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;google的证书签署者是GeoTrust&lt;/li&gt;
+&lt;li&gt;facebook的签署者是VeriSign&lt;/li&gt;
+&lt;li&gt;twitter的签署者是VeriSign&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;如果签署者有异，请上报工程师。这可能是有人获得了某个根证书机构的密钥来做的签署(例如CNNIC之类)。原则上这样的man-in-middle可以攻击任何网站。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>携程网信用卡泄密问题</title>
+      <link>https://shell909090.github.io/blog/archives/2606/</link>
+      <pubDate>Sun, 23 Mar 2014 22:15:38 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2606/</guid>
+      <description>&lt;h1&gt;事情经过&lt;/h1&gt;
+
+&lt;p&gt;2014年3月22日晚上6点多，乌云平台报告了&lt;a href=&#34;http://www.wooyun.org/bugs/wooyun-2014-054302&#34;&gt;携程平台支付日志泄漏问题&lt;/a&gt;，然后信息快速传播。晚上八点左右我就得到消息。&lt;/p&gt;
+
+&lt;p&gt;从描述中大致来看，应当是支付过程的各种信息都被打到了日志里面，然后日志泄漏了。&lt;/p&gt;
+
+&lt;p&gt;第二天，携程&lt;a href=&#34;http://pages.ctrip.com/commerce/promote/201403/other/xf/index.html&#34;&gt;发表声明&lt;/a&gt;。简单归纳就是几点:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;漏洞系调试所致。&lt;/li&gt;
+&lt;li&gt;受影响的用户为21-22日的用户，统计仅93人。&lt;/li&gt;
+&lt;li&gt;因漏洞引起损失，携程将全额赔付。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;个人认为，携程的声明基本就是在推卸责任。&lt;/p&gt;
+
+&lt;h1&gt;过程还原&lt;/h1&gt;
+
+&lt;p&gt;漏洞细节虽然没有暴露，但是从透露出来的信息仍然可以拼凑出部分过程。&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;某个时间开始，携程的某个内部人员打开了线上系统的日志，用来做调试。不幸的是，日志里面包含了信用卡所有刷卡信息，而且日志可以被穷举下载。这个人是谁，什么时间开始，不知道。&lt;/li&gt;
+&lt;li&gt;22日，漏洞发现者(猪猪侠)发现了这个问题，并报告在了乌云上。&lt;/li&gt;
+&lt;li&gt;携程收到信息后，立刻关闭了调试模式。并且把系统日志拉出来看看，发现里面有一些人。于是携程就发表声明。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h1&gt;问题分析&lt;/h1&gt;
+
+&lt;p&gt;在整个过程中，暴露出几个问题：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;携程未必是故意记录CVV信息。但是根据携程可以让用户仅提供卡号后四位就可以完成刷卡来看，携程一定是记录某些信息的，但是未受到本次漏洞影响。&lt;/li&gt;
+&lt;li&gt;交易过程所交流的数据属于机密，到底是什么人有权限打开调试日志，又没有经过严格的访问控制？是主管级以上？还是普通员工？无论哪个级别都是严重的问题。如果是普通员工，说明携程对员工的管理不到位，权限分割控制不合理。任何恶意员工可以打开日志得到数据而主管无法察觉。如果是主管以上级别则更加糟糕。说明主管根本不懂技术，也不知道如何保护客户的安全。&lt;/li&gt;
+&lt;li&gt;时间是否仅限于21-22日？如果是的话，意味着仅仅2天就被攻击者找到了漏洞。如果是偶然的话也太快了，如果是必然的话，则代表携程内部其实还有其他问题。&lt;/li&gt;
+&lt;li&gt;两天的交易仅仅是93人？没有更多？为什么只是部分用户受影响？携程并没有披露更多细节。要么是这里仍旧隐藏着漏洞，要么是携程的危机公关不到家。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h1&gt;评论&lt;/h1&gt;
+
+&lt;p&gt;为什么说携程的声明是推卸责任？&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;首先，对于受到影响的用户，只要能证明是携程的责任，无论携程是否发布声明，都可以打官司获得赔偿。携程的声明仅仅是表达了他必然受到的法律后果。如同驾驶员发表声明：“我喝醉后所撞伤的所有人，我将全额赔付其医疗费”一样，没有任何意义。而如果无法证明是携程的责任，携程当然不会管你。&lt;/li&gt;
+&lt;li&gt;携程是否隐瞒了更久以前服务器调试开启的事实？这并不好说。个人倾向于善意的揣测携程不会隐瞒，但是在行动上不妨恶意的揣测其实调试信息打开时间更长，受影响的人更多。&lt;/li&gt;
+&lt;li&gt;为什么只有93人受到影响，携程并没有公布。携程的事后分析，应当都是基于这个漏洞的特性“下载日志”而定的。其赔偿基线也是根据“下载日志就会有日志”而产生。但是是否有可能被擦脚印？或者内部人员打开日志然后关闭而逃过被抓？这些携程并不能回答。从问题分析2来看，这种可能并不能排除。而携程的声明并没有表示对这些情况负责(当然就算想要负责也无能为力)。&lt;/li&gt;
+&lt;li&gt;由于携程信息的不透明，其声明“只有93人受到影响，其他用户安全不受影响”，换个说法就是，“不接受任何赔偿请求，除非你们有足够证据”。问题是用户怎么可能有证据？证据都在携程的服务器上和拿到信息者手里。当有用户的信用卡被盗刷，如何确认是自己的责任还是携程的责任？&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;基于上述几点，我认为携程的声明是在推卸责任。&lt;/p&gt;
+
+&lt;h1&gt;建议&lt;/h1&gt;
+
+&lt;p&gt;如果你是93人之一，当然，携程应该已经联系你换卡了。&lt;/p&gt;
+
+&lt;p&gt;如果你不是93人之一，根据上文分析，携程是不会理你的。基于携程并没有透露更多的信息，也没有第三方机构佐证其说法的事实。你需要自行考量信用卡信息泄漏的风险。因此，我对所有在&lt;strong&gt;三年以内&lt;/strong&gt;在携程使用过信用卡的所有用户的建议是，&lt;strong&gt;立刻用各种方法冻结信用卡或额度&lt;/strong&gt;，并&lt;strong&gt;尽快换卡&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;我对所有人将来的建议是，&lt;strong&gt;远离携程直到其展现出对用户隐私和安全足够的尊重&lt;/strong&gt;，或者关门。&lt;/p&gt;
+
+&lt;p&gt;PS，你可以用下面几种方法冻结信用卡:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;打电话给发卡行，要求冻结。发卡行核对一些基本信息后就会帮你冻结。&lt;/li&gt;
+&lt;li&gt;使用网银将额度改为1元。根据网友反馈，建行的额度是千元为单位设定的，建议建行的用户们尽快弃卡。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h1&gt;信用卡的固有弱点&lt;/h1&gt;
+
+&lt;p&gt;信用卡消费的几个要素是，卡号，CVV号，还有有效期。如果是线下消费，需要核对签名(理论上如此)。如果有设定密码，需要核对密码。&lt;/p&gt;
+
+&lt;p&gt;密码的问题是，如果设定了密码，一旦信用卡被盗刷，而密码一次正确，将被视为用户责任。而且很多发卡行的跨境消费是设定了密码但是没有密码也能成功的。因此信用卡的建议是不打开密码。&lt;/p&gt;
+
+&lt;p&gt;在网络使用中，这里有个很严重的不便——卡号，CVV，有效期，都是发行时即固定，不可更换。这导致一旦你将这些信息交给对方，你的安全就全由对方保护，发卡行无法帮你做任何事情。&lt;/p&gt;
+
+&lt;p&gt;正常来说，应当使用密码乃至在信用卡上附上电子token来加强安全性需求。这样的话，token信息无法保存，密码可以修改。当出现携程这类问题时(或者更普遍的，当碰到有恶意的商家时)，可以通过修改密码来解决问题，不需要换卡。&lt;/p&gt;
+
+&lt;h1&gt;一个小故事——我和携程打交到的经历，还有我为什么幸运的逃过一劫&lt;/h1&gt;
+
+&lt;p&gt;我在某年，使用携程订机票的时候，对方业务员让我报出身份证号。我当时就一阵错愕——难道身份证号不是应当使用手机键盘输入么？&lt;/p&gt;
+
+&lt;p&gt;两者的区别在于，手机键盘输入，信息是直接输入到VI系统的电脑中，业务员只能看到尾号。而如果是业务员输入，那么他就有我的所有信息——从身份证号到信用卡号。也许我可以相信携程，但是我如何相信业务员？出了问题，我如何证明？&lt;/p&gt;
+
+&lt;p&gt;所以我就向携程的客户经理投诉了这个问题。具体经历在&lt;a href=&#34;http://shell909090.org/blog/2011/12/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8-%E4%BD%A0%E9%9C%80%E8%A6%81%E7%9F%A5%E9%81%93%E7%9A%84%E4%B8%9C%E8%A5%BF/&#34;&gt;网络安全——你需要知道的东西&lt;/a&gt;里面已经描述了。这里面甚至我质疑了携程保存信用卡的安全性，几乎和今天的问题类似。&lt;/p&gt;
+
+&lt;p&gt;结果没多久，我打给携程的时候，丫的业务员和我说，如果你信不过我，咱们可以走这套系统。&lt;/p&gt;
+
+&lt;p&gt;我了个大去，这种系统还允许旁路绕过？那有个毛线的意义？&lt;/p&gt;
+
+&lt;p&gt;从此(12年年中吧)我再也没有用过携程的业务——用也是让公司同事帮我用。因此，当去年(13年某个时候)我的老卡到期，我就换用了新卡。新卡还没有在携程上用过。所以本次问题我一点事都没有。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>google authenticator的特性</title>
+      <link>https://shell909090.github.io/blog/archives/2549/</link>
+      <pubDate>Tue, 28 Jan 2014 13:08:45 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2549/</guid>
+      <description>&lt;h1&gt;算法&lt;/h1&gt;
+
+&lt;ol&gt;
+&lt;li&gt;双方预先共享一对密码。&lt;/li&gt;
+&lt;li&gt;时间对30秒求整，用密码unbase64后HMAC签署。&lt;/li&gt;
+&lt;li&gt;如果当前时间前后一定时间内（几个误差）的值和用户提供值一致，就验证通过。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;攻击者获得了数个时间和序列对，但是根据HMAC特性，他无法反向出密码。&lt;/p&gt;
+
+&lt;h1&gt;因此&lt;/h1&gt;
+
+&lt;ol&gt;
+&lt;li&gt;gauth不需要联网。但是双方时间必须同步。&lt;/li&gt;
+&lt;li&gt;gauth的优势在于，即使有人可以获得一次密码(例如keylogger)，只要不在1分30秒内登录，获得的输入就无法使用。&lt;/li&gt;
+&lt;li&gt;对于可以取得gauth共享密码的人，gauth不能提供安全性加强。例如sudo，验证的是自己的身份。而用户密码只要登录即可读，因此没有提供加强的安全性。&lt;/li&gt;
+&lt;li&gt;对于ssh，在登录后也可以获得密码。因此只要给别人获得了一次登录权限，后续gauth不能保护你。反之，如果能保证对方一次登录都不会成功，则可以作为辅助。因此用于ssh上必须加上一个token只能使用一次，以确保对方获得了token也是作废的。&lt;/li&gt;
+&lt;li&gt;如果有人可以从手机中读取应用的信息，就可以一直冒充用户。因此越狱和root肯定会降低系统安全性。这就是为什么很多TOTP使用硬件来做这个事情。系统单纯，而且没有读取API。&lt;/li&gt;
+&lt;li&gt;缓慢的重试，每次命中概率都是1/1000000。持续试1000000次，也不能肯定猜中。实际上只有63.2%的概率猜中。如果30秒内连续重试1000000次，肯定破解了。合每秒重试3万多次，不算多。所以必须防止暴力破解。&lt;/li&gt;
+&lt;li&gt;如果没有紧急密码，安全性大约是20bit。但是数个紧急密码为破解提供了帮助。因此紧急密码一般是7位数字，综合复杂度一般评估为20bit上下。&lt;/li&gt;
+&lt;li&gt;以复杂度而言，不足以作为身份验证工具，只能作为身份验证辅助。所以gauth叫做two-factor-authentication。&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>openvpn auth with google authentication</title>
+      <link>https://shell909090.github.io/blog/archives/2545/</link>
+      <pubDate>Fri, 24 Jan 2014 12:33:39 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2545/</guid>
+      <description>&lt;h1&gt;client config&lt;/h1&gt;
+
+&lt;pre&gt;&lt;code&gt;# base config
+client
+dev tun
+proto udp
+remote 192.168.1.122 1194
+nobind
+user nobody
+group nogroup
+persist-key
+persist-tun
+mute-replay-warnings
+comp-lzo
+
+# authentication config
+ca ca.crt
+cert shell.crt
+key shell.key
+ns-cert-type server
+tls-auth ta.key 1
+auth-user-pass
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Group should be nogroup, not nobody in debian.&lt;/p&gt;
+
+&lt;p&gt;auth-user-pass is needed for google auth.&lt;/p&gt;
+
+&lt;h1&gt;pam config&lt;/h1&gt;
+
+&lt;pre&gt;&lt;code&gt;account [success=2 new_authtok_reqd=done default=ignore]    pam_unix.so
+account [success=1 new_authtok_reqd=done default=ignore]    pam_winbind.so
+account requisite           pam_deny.so
+account required            pam_permit.so
+auth required pam_google_authenticator.so
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;In /etc/pam.d/openvpn.&lt;/p&gt;
+
+&lt;h1&gt;server config&lt;/h1&gt;
+
+&lt;pre&gt;&lt;code&gt;# base config
+port 1194
+proto udp
+dev tun
+comp-lzo
+user nobody
+group nogroup
+persist-key
+persist-tun
+status openvpn-status.log
+log-append  openvpn.log
+
+# authentication config
+ca ca.crt
+cert server.crt
+key server.key
+dh dh2048.pem
+tls-auth ta.key 0
+plugin /usr/lib/openvpn/openvpn-plugin-auth-pam.so openvpn
+
+# network config
+server 10.55.66.0 255.255.255.0
+ifconfig-pool-persist ipp.txt
+client-to-client
+duplicate-cn
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Plugin should be /usr/lib/openvpn/openvpn-plugin-auth-pam.so in debian, &#34;openvpn&#34; behind is fit for the filename in /etc/pam.d/openvpn.&lt;/p&gt;
+
+&lt;h1&gt;google authentication config&lt;/h1&gt;
+
+&lt;p&gt;Look at this &lt;a href=&#34;http://shell909090.org/blog/2014/01/%E5%9C%A8pam%E4%B8%AD%E4%BD%BF%E7%94%A8google-authentication/&#34;&gt;在PAM中使用google authentication&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h1&gt;startup&lt;/h1&gt;
+
+&lt;pre&gt;&lt;code&gt;shell@debws0:~$ sudo openvpn --config shell.conf
+Fri Jan 24 11:17:17 2014 OpenVPN 2.3.2 x86_64-pc-linux-gnu [SSL (OpenSSL)] [LZO] [EPOLL] [PKCS11] [eurephia] [MH] [IPv6] built on Nov 28 2013
+Enter Auth Username:username
+Enter Auth Password:
+Enter Private Key Password:
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The user you used to config google authentication is the username put into Auth Username.&lt;/p&gt;
+
+&lt;p&gt;Put verification code as Password, and you may have Private Key Password in your private key.&lt;/p&gt;
+
+&lt;p&gt;Have a fun.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>在PAM中使用google authentication</title>
+      <link>https://shell909090.github.io/blog/archives/2539/</link>
+      <pubDate>Wed, 22 Jan 2014 13:31:45 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2539/</guid>
+      <description>&lt;p&gt;PAM是linux系统身份验证的核心，在用户登录/ssh身份校验中均有很大用途。但是很少有人想到，其实这个东西还可以用google authentication来进行身份校验。&lt;/p&gt;
+
+&lt;h1&gt;安装&lt;/h1&gt;
+
+&lt;pre&gt;&lt;code&gt;sudo apt-get install libpam-google-authenticator
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1&gt;设定&lt;/h1&gt;
+
+&lt;p&gt;使用前，需要对用户做一个用户级配置，生成配置文件。这个文件就是这个用户的身份验证凭证。配置请使用用户执行&lt;code&gt;google-authenticator&lt;/code&gt;。&lt;/p&gt;
+
+&lt;p&gt;上来先会问你是否使用基于时间的验证，肯定选是。但是注意，基于时间的验证要求服务器时间必须精确。更准确的说，是服务器时间和手机时间校准在30秒以内。由于手机一般都采用GSM校时，因此只需要在意服务器时间。建议是使用ntpdate来校准时间。特别注意，linux的时钟是会漂移的，必须按天级校准。&lt;/p&gt;
+
+&lt;p&gt;然后程序会给出一个url，还可能有QR码（真够不容易的，Console级别的QR码。。。）。记住，一定要用url去获得QR码给程序扫描。因为url获得的QR码算法是最新的，而直接生成的有可能不能跑。&lt;/p&gt;
+
+&lt;p&gt;下面是secret key和verification code，一般来说这两个不用关心。但是你需要记住emergency scratch codes。libpam-google-authenticator默认给你生成了5个，一般都够用了。通常用到3个就更新一遍吧。&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;是否生成配置，选是。&lt;/li&gt;
+&lt;li&gt;是否拒绝使用同一个token的人登录。如果选是，30秒内只能登录一个人。建议选是。&lt;/li&gt;
+&lt;li&gt;是否放送时间验证，从1分30秒到4分钟。如果选是，允许更大的服务器时间偏差。看你服务器时间是不是够准。&lt;/li&gt;
+&lt;li&gt;是否防止暴力破解，30秒内尝试不超过3次。建议选是。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;OK，你的配置就完成了。如果有多个用户，请多次配置。&lt;/p&gt;
+
+&lt;h1&gt;手机app&lt;/h1&gt;
+
+&lt;p&gt;按照系统安装以下app，下面以android版为例介绍。&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;amp;hl=en_GB&#34;&gt;Google Authenticator Android&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://itunes.apple.com/gb/app/google-authenticator/id388497605?mt=8&#34;&gt;Google Authenticator iOS&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.windowsphone.com/en-gb/store/app/authenticator/e7994dbc-2336-4950-91ba-ca22d653759b&#34;&gt;Authenticator for Windows Phone&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://matthill.eu/linux/ssh-two-factor-authentication-google/m.google.com/authenticator&#34;&gt;Blackbarry&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;选择setup account，然后scan a barcode。程序会要求你使用barcode扫描软件扫描(推荐barcode scanner)。这时去扫描设定一节中访问url显示的那个qr码。&lt;/p&gt;
+
+&lt;h1&gt;pam配置&lt;/h1&gt;
+
+&lt;p&gt;对于ssh而言，请在/etc/pam.d/sshd的最后一行增加这句。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;auth required pam_google_authenticator.so
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;注意，这样其实是密码/校验码双重验证。如果你不需要密码请注释掉下面这句。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;@include common-auth
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;或者其他包含以下这句的地方。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;auth    required            pam_permit.so
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;如果你希望增强sudo安全性，也可以把这句加入/etc/pam.d/sudo后面。如果同样不需要密码，请注释上面那句。&lt;/p&gt;
+
+&lt;h1&gt;sshd配置&lt;/h1&gt;
+
+&lt;p&gt;保证/etc/ssh/sshd_config里面，以下参数都处于正确的配置。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;ChallengeResponseAuthentication yes
+PasswordAuthentication no
+UsePAM yes
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;如果你使用openssh6.2以上版本，请额外加入这句以开启publickey和验证同时启用。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;AuthenticationMethods publickey,keyboard-interactive
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1&gt;sudo&lt;/h1&gt;
+
+&lt;p&gt;注意，如果是NOPASSWORD，则没有校验。&lt;/p&gt;
+
+&lt;h1&gt;参考和鸣谢&lt;/h1&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;http://matthill.eu/linux/ssh-two-factor-authentication-google/&#34;&gt;Why enable SSH Two-Factor Authentication on your server?&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://scottlinux.com/2013/06/02/use-google-authenticator-for-two-factor-ssh-authentication-in-linux/&#34;&gt;Use Google Authenticator For Two-Factor SSH Authentication in Linux&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.linux.org/threads/google-authenticator-for-ssh.4590/&#34;&gt;Google Authenticator For SSH&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;感谢Scott Miller在引用2中的回答，AuthenticationMethods这个细节在其他文献中没有提及。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>lxc的文件共享映射和严重安全隐患</title>
+      <link>https://shell909090.github.io/blog/archives/2334/</link>
+      <pubDate>Sat, 09 Feb 2013 01:18:31 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2334/</guid>
+      <description>&lt;p&gt;在lxc中，可以利用mount bind指定guest可以访问某些host的路径。例如：&lt;/p&gt;
+
+&lt;p&gt;lxc.mount.entry = /home/shell /var/lib/lxc/{vmname}/rootfs/home/shell none defaults,bind 0 0&lt;/p&gt;
+
+&lt;p&gt;注意，/home/shell是你希望共享的主机路径，/var/lib&amp;hellip;/shell是映射到的目标路径。&lt;/p&gt;
+
+&lt;p&gt;这个工作的基础原理，是在虚拟机启动的时候，自动执行mount，添加一条bind映射，将host的路径挂到guest可以访问的路径里去。&lt;/p&gt;
+
+&lt;p&gt;由此，我发现了一个lxc在文件共享时的严重bug。&lt;/p&gt;
+
+&lt;p&gt;user@guest:~$ mkdir -p ttt/123
+user@guest:~$ cd ttt/123
+user@host:~$ mv /var/lib/lxc/{vmname}/rootfs/home/user/ttt/123 .
+user@guest:~/ttt/123$ cd ..
+user@guest:(unreachable)/user$ ls -l&lt;/p&gt;
+
+&lt;p&gt;好了，现在guest在host的~user/目录下，host上本来不应当被看到的东西全被看光光了。&lt;/p&gt;
+
+&lt;p&gt;更严重的是，如果此时sudo成root，在host中可以以root的身份做任何事情。&lt;/p&gt;
+
+&lt;p&gt;结论：暂时来说，不要在host和guest之间直接共享任何数据。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>支付宝体系的问题</title>
+      <link>https://shell909090.github.io/blog/archives/2302/</link>
+      <pubDate>Mon, 31 Dec 2012 01:54:19 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2302/</guid>
+      <description>&lt;p&gt;今天和几位朋友讨论了一下支付宝的问题，又查了一下case，发现支付宝的问题不仅是那么简单而已。先不吐槽支付宝的问题了，赶快出验证和方案。
+&lt;h1&gt;在被人恶意补卡的情况下是否安全&lt;/h1&gt;
+关于恶意补卡，&lt;a href=&#34;http://bbs.paidai.com/topic/37047&#34;&gt;这里&lt;/a&gt;有个例子。简单来说，就是知道你的身份证和手机号，去异地营业厅用假身份证补手机卡。然后用手机卡获得支付宝系统，再套现。&lt;/p&gt;
+
+&lt;p&gt;贝壳分析了自己的系统，如果恶意补卡的话，对于200以上的消费转账，会要求输入宝令。宝令是绑定在手机而非卡上的，所以攻击者会无法消费。而要取消宝令就必须输入宝令，通过手机卡无法取消。因此攻击者即使补贝壳的卡，也无法进行200以上的消费。&lt;/p&gt;
+
+&lt;p&gt;但是如果你用的是U盾，那问题就没那么简单。在支付宝的设计中，手机是可以解除U盾绑定的。所以U盾不能对抗恶意补卡。&lt;/p&gt;
+
+&lt;p&gt;结论：如果仅仅是200而已，我可以认为这个系统是安全的。
+&lt;h1&gt;在手机丢失的情况下是否安全&lt;/h1&gt;
+如果手机丢失，问题就更加严重。支付宝密码，支付密码均会被找回，宝令本身就在手机里，因此支付宝的支付系统全面沦陷。支付宝内资金肯定不保。问题是卡上资金。&lt;/p&gt;
+
+&lt;p&gt;贝壳绑定了两张卡，浦发和招商，先从快捷支付检查起。检查浦发的卡发现，对支付宝默认开了20000的签约支付额度，当场汗就下来。对于快捷支付来说，这太高了。速度改成300。对于超过300的，依然可以通过网银验证来支付，比较安全。&lt;/p&gt;
+
+&lt;p&gt;招行的快捷支付我从头到脚就没看到签约这回事，貌似必须进行网银支付。那就需要我的卡号有效期密码什么的。我觉得这个不大可能出问题。&lt;/p&gt;
+
+&lt;p&gt;再检查浦发的普通支付，这需要登录浦发的网上银行。浦发网银是通过手机加密码验证的，基本可以保证转账汇款的安全。&lt;/p&gt;
+
+&lt;p&gt;结论：目前调整的结果，一次损失300左右。
+&lt;h1&gt;网银的一点隐忧&lt;/h1&gt;
+目前网银的密码都太弱了。浦发只有6位数字，招行也只有8位数字字母。难道就不能设定强一些的密码么？&lt;/p&gt;
+
+&lt;p&gt;浦发可能是要和卡本身的密码兼容，将手机作为补强。可是手机也会掉啊。一旦手机掉了，整个安全性就由6位数字密码保护。这和掉银行卡一样严重。
+&lt;h1&gt;建议&lt;/h1&gt;
+&lt;ol&gt;
+    &lt;li&gt;移动和联通关闭身份证显示，尤其是最后四位！&lt;/li&gt;
+    &lt;li&gt;无论哪种级别，使用支付宝一定要打开宝令。目前只有宝令可以有效对抗补卡攻击。&lt;/li&gt;
+    &lt;li&gt;在智能机上又绑定网银的，就不要乱装软件，更不要root/越狱。&lt;/li&gt;
+    &lt;li&gt;中国移动的补卡修改流程。如果当前卡处于激活中，先持续警告旧卡24小时后再激活新卡。&lt;/li&gt;
+    &lt;li&gt;移动至少应当允许客户自行选择“这个手机号码极端重要，不得实行异地补卡，不得显示个人信息，复机/补卡间隔需要在24小时以上”的增强选项。&lt;/li&gt;
+    &lt;li&gt;理论上说，移动应当可以推进二代身份证验证能力。使得补卡业务实行时，必须凭借二代身份证验证身份后进行。杜绝假身份证。&lt;/li&gt;
+    &lt;li&gt;支付宝的密码找回功能降速。从开始找回，发短信和邮件通知，到完成找回密码至少要一小时，最好要24小时才能找回密码。或者允许可以设定“我自愿将找回密码时限改为24小时”以增强安全性。&lt;/li&gt;
+&lt;/ol&gt;&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>移动的一点漏洞</title>
+      <link>https://shell909090.github.io/blog/archives/2296/</link>
+      <pubDate>Sun, 30 Dec 2012 22:34:45 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2296/</guid>
+      <description>&lt;p&gt;今天支付宝的那个问题，支付宝的人和我说。&lt;/p&gt;
+
+&lt;p&gt;猜到就是手机保存账户名可以找回密码的问题。。对于快捷用户明年会要求手机+证件找回密码，减低200以上的资损风险。所以现在我客户端使用后都删除用户名纪录，为了安全。那个token的想法挺好的！&lt;/p&gt;
+
+&lt;p&gt;我就考虑，是否可以通过手机获得身份证呢？&lt;/p&gt;
+
+&lt;p&gt;首先，利用手里的手机，得到自己的手机号。然后查询所在地，在对应的移动网站上（例如上海移动）找回密码，然后登录移动网站。进入个人信息管理，需要手机验证码。输入验证码，可以看到部分身份证。包括头4位和尾4位。普通身份证是18位的，分组方式6+8+4。隐藏掉的10位中有8位是生日，一般手机里都能找到，并不困难。&lt;/p&gt;
+
+&lt;p&gt;因此，实际需要得到的就是2位。而这两位又不是任意的，和个人出生地有关。具体到我的身份证上，有了前四位后，两位只有17种可能。我看了其他一些人的情况，运气差的情况下，这两位只有一两种可能，例如1405，山西省晋城市，只有00/01/02。全试一遍就可以了。&lt;/p&gt;
+
+&lt;p&gt;更新：同事反应，联通的网站更二，直接就显示了完整身份证。。。&lt;/p&gt;
+
+&lt;p&gt;更新2：同样漏洞，在招商银行的手机应用上也爆了出来。。。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>支付宝的一项设计问题</title>
+      <link>https://shell909090.github.io/blog/archives/2292/</link>
+      <pubDate>Sun, 30 Dec 2012 19:40:46 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2292/</guid>
+      <description>&lt;p&gt;话说最近，贝壳成批更新了一些密码。在更新到网络支付系统的时候，心血来潮做了个分析。感觉网银系统很不安全。尤其是支付宝的手机客户端。我们下面以一个实际例子说明一下支付宝系统（其实远不止支付宝）的问题。
+&lt;h1&gt;情况说明&lt;/h1&gt;
+贝壳的支付宝系统做了手机和淘宝帐号绑定，开启了手机动态口令，无线支付，和手机宝令三项功能。由于可以从淘宝或者支付宝登录，因此设定了70bit以上的高强度密码，1年更换一次。支付密码强度略弱，是30bit级别的，一年更换一次。支付宝账户安全等级高。使用支付宝的系统包括两台电脑和一台手机，一台是linux，一台是受限windows，只安装特定软件，不浏览和安装风险网页。总体来说，这个安全结构在支付宝用户中都是有数的。&lt;/p&gt;
+
+&lt;p&gt;风险在于支付宝手机客户端上，贝壳在评估的时候发现，支付宝手机客户端可以记录密码。这是一个非常具有风险的事情。因此贝壳模拟评估了一下，假如你丢失了手机，会发生什么事情。
+&lt;h1&gt;低于200的支付&lt;/h1&gt;
+首先，由于支付宝客户端保存了密码，因此你可以很容易的登录支付宝。上面有绑定快捷支付的话（这是贝壳的常态，相信也有很多人有绑定，或者账户内有余额），在200以下就可以直接支付给对方，不需要任何额外验证。贝壳绑定的浦发银行发出了提款警告，但是很可惜，由于手机在恶意者手上，这一行为没有任何用处。&lt;/p&gt;
+
+&lt;p&gt;当然，常识告诉我们，如果你丢了个手机只损失200，这个问题可以忽略不计。
+&lt;h1&gt;超过200的支付&lt;/h1&gt;
+如果超过200，则需要支付密码和手机验证码。在这个例子中，手机验证码是没有用处了，主要的保护就在支付密码上。然而，支付宝客户端具有找回支付密码的功能。幸好，他是基于身份证的。贝壳的身份证不是每个人都知道，因此在超过200的时候是安全的。&lt;/p&gt;
+
+&lt;p&gt;是否还有可能，从支付宝中恢复原始密码呢？因为有原始密码，就可以用网页访问支付宝，使用手机来恢复支付密码。关于这点，直到撰文为止，贝壳没有确认。&lt;/p&gt;
+
+&lt;p&gt;然而，问题其实远比这个简单。在没有支付宝密码的情况下。你可以申请忘记密码。然后支付宝会要求你输入你的账号来恢复密码。帐号？我记得在支付宝客户端上有记录。。。果然，输入帐号后，贝壳收到了支付宝的验证码。输入验证码后，贝壳重设了支付宝密码。在这一过程中，贝壳绑定的邮箱收到了警告——不过依然很可惜，唯一能够即时提示的手机现在在恶意者手中，主人一无所觉。&lt;/p&gt;
+
+&lt;p&gt;然后就是很没有新意的重设支付密码过程，借助手里的手机，我们完整的得到了整个支付宝的所有权，并且可以提光绑定了快捷支付的整张信用卡。在这里的唯一阻碍就是信用卡开卡行的支付限额。超过限额后需要使用密码和手机验证码来解除（浦发），手机验证码可以无视，密码是未知的。
+&lt;h1&gt;结论&lt;/h1&gt;
+粗算了一下，丢一台手机，在一个小时内没有察觉，大约会造成4000元-4500元的损失，这还没有算手机。如果发卡行没有设定限额，最高大约是10W元。&lt;/p&gt;
+
+&lt;p&gt;我们来细数一下，整个过程里面的问题。
+&lt;h1&gt;手机客户端不应当保存用户名密码，尤其是涉及资金的问题&lt;/h1&gt;
+对于频繁登录的问题，可以允许客户绑定一个手机token来解决。token等效于密码，但是不能做所有涉密操作，不能修改安全性，找回密码等。客户需要可以通过安全手段查看当前有多少个手机绑定了token，并且可以删除。贝壳之所以认为支付宝的系统有弱点，就是因为找遍整个支付宝系统，找不到删除token的地方。不能删除的token等于没用。
+&lt;h1&gt;丢失密码的找回需要更加慎重&lt;/h1&gt;
+单纯的手机找回密码是有风险的，当然，单纯的邮箱找回也有。一种方法是同时验证手机和邮箱可以立刻找回密码，否则需要等待一定时间（例如几个小时，等待主人发现手机丢失）。&lt;/p&gt;
+
+&lt;p&gt;但是这仍然有风险。一般android里都会绑定邮件接收吧，借助这个很容易收到邮件。设计一个安全的密码找回方案并不是那么容易的，看来只有多等几个小时的方案略安全一些了。&lt;/p&gt;
+
+&lt;p&gt;同时这里也提醒一下。如果你在银行挂失银行卡找回密码的时候，觉得业务很方便。贝壳建议你立刻更换银行。在找回密码时越麻烦的银行，才是越安全的。
+&lt;h1&gt;基于手机的核心验证体系&lt;/h1&gt;
+这是关键中的关键。我们可能会设计一个安全机制，里面有一步两步三步，必须全部通过才能操作资金。然而实际使用中，如果这三步都是依赖于同一个设备，那就对安全性没有任何提升——没有人敢保证手机不会丢失吧。钱包丢失最多损失几百，手机丢失呢？&lt;/p&gt;
+
+&lt;p&gt;目前，整个网银系统（不止是支付宝）都越来越多的依赖于手机。在手机越来越智能的今天，其可靠性实际上正在变差。手机可能丢失，也可能被安装恶意软件（尤其是root/越狱过的手机）。我们可以列出当手机丢失，或者安装了高权限的恶意软件时，会发生的安全问题。
+&lt;ol&gt;
+    &lt;li&gt;个人信息泄密，包括朋友通讯方式，备忘，生日，身份证号码，家庭地址等。其中有些就涉及安全。&lt;/li&gt;
+    &lt;li&gt;支付宝密码和支付密码可以重设（即，泄露）。&lt;/li&gt;
+    &lt;li&gt;宝令丢失。&lt;/li&gt;
+    &lt;li&gt;网银验证码无意义。&lt;/li&gt;
+    &lt;li&gt;支付宝警告无意义。&lt;/li&gt;
+    &lt;li&gt;网银警告无意义。&lt;/li&gt;
+&lt;/ol&gt;
+实际上，这不是支付宝的问题，而是用户在选择和设计自己的安全系统时，无意中造成的问题。
+&lt;h1&gt;解决方案&lt;/h1&gt;
+暂时还没有太好的方案。
+&lt;ol&gt;
+    &lt;li&gt;首先期待支付宝将手机登录改为token，取消密码保存，隐藏用户名，用户可以删除token，以解决直观的威胁。&lt;/li&gt;
+    &lt;li&gt;期待手机丢失时快速发现的应用/功能。如果能在5-10分钟内停机，可以有效的解决手机丢失造成的风险。（贝壳向中国移动确认了，当手机停机后，是不能收取短信的）&lt;/li&gt;
+    &lt;li&gt;当确实发生手机丢失时，应当首先立刻停机（因为停机速度快），然后向银行挂失（凡是绑定了手机的银行都要），然后以最快速度修改所有密码。&lt;/li&gt;
+    &lt;li&gt;涉及资金的系统要多考虑一下，设计安全结构的时候要注意，如果有多于一个的方法进入系统，安全性决定于最弱的那个系统。如果所有步骤的安全性都依赖于手机，那么要考虑，丢了手机的时候会发生什么。&lt;/li&gt;
+&lt;/ol&gt;&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>小公司在IT上容易犯的几个错误</title>
+      <link>https://shell909090.github.io/blog/archives/115/</link>
+      <pubDate>Wed, 19 May 2010 13:25:00 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/115/</guid>
+      <description>&lt;div&gt;很多同学现在自己开公司，或者有开公司的计划。公司都是由小做大的，万事开头难。小公司由于成本和规模的限制，IT上很多问题是不得已的。例如没有自己的网管，没有保密规定等等。然而注意以下几个低级错误，从IT从业人员角度来说，这些是绝不应当发生的低级错误。数数看您那里有几个？&lt;/div&gt;
+&lt;div&gt;第一，无线不设密码，或使用WEP加密，或公开SSID。&lt;/div&gt;
+&lt;div&gt;这是任何称职网管的第一禁忌。WEP，公开SSID，相当于弱无线网络。通过嗅探方法，别人很容易获得网络上传递的重要数据。不要以为谁会来关心你的数据，除非你有把握把公司里所有资料晒到网上也没问题，否则还是小心为妙，出问题再补救就太晚了。具体看前面有篇《无线网络安全问题》。&lt;/div&gt;
+&lt;div&gt;第二，使用hub而非交换机。&lt;/div&gt;
+&lt;div&gt;技术角度不说了，造成的问题和上文一样。这两个问题，只要请一个称职的网管当顾问，帮你进行一次规划就可以避免。惠而不费，何乐不为。&lt;/div&gt;
+&lt;div&gt;第三，一个隔间只拉一根网线，或者只有一个电源头。&lt;/div&gt;
+&lt;div&gt;兄弟，后期搞不好隔间会坐满的。就算没有，万一坏了呢？马上找人修理？起码两个隔间三个插座/网口。一个是方便损坏后替换，同时也方便新添电脑。&lt;/div&gt;
+&lt;div&gt;第四，雇新手当网管，没有公司内服务器。&lt;/div&gt;
+&lt;div&gt;相信我，找个靠谱的网管偶尔来几次，其他让行政接手，比找个新手当网管便宜又实用。你需要的是不会出问题，和出了问题能处理的人，而不是价格低廉却在发生问题时手足无措的菜鸟。&lt;/div&gt;
+&lt;div&gt;同样，让每个员工自己发布共享文件，大家互相访问，打印机在需要的时候搬来搬去。这是最没有管理的公司做的事情。一旦员工多于三人，找台电脑做服务器。共享文件，处理打印，跑个论坛什么的，比扁平而混乱的管理强。&lt;/div&gt;
+&lt;div&gt;第五，成批购买电脑。&lt;/div&gt;
+&lt;div&gt;对于大公司而言，一次购买上百台电脑只是公司内的一小部分。如果这些电脑出问题，不会引发大的赔偿问题，也不会造成公司停摆。但是如果一个小公司一次购买同型号的电脑，或者从同一个供应商那里进货太多。那么万一出问题，不说固定资产损耗。公司停摆造成的损失也是惊人的。&lt;/div&gt;
+&lt;div&gt;第六，弱邮件系统。&lt;/div&gt;
+&lt;div&gt;如果公司邮箱在发送和接收时没有启用SSL或TLS，会导致员工在其他网络中接受邮件时内容泄密。如果使用webmail，也要注意全过程需要有SSL。最好的办法是让网管尝试嗅探攻击一次，如果拿不到内容，邮件供应商就是过关的。另外，即使电子邮件供应商过关，邮件在传递途中也可能泄密。因此对于极密级的东西，rar加密打包后发送，密码另行传递。&lt;/div&gt;
+&lt;div&gt;第七，过份信任电子邮件效力。&lt;/div&gt;
+&lt;div&gt;也许有人不知道，“电子邮件无法篡改”只在公司内被认可，拿着企业电子邮箱和其他公司或离职员工打官司是没有效力的。因此，如果需要无法篡改的内容，请用纸。&lt;/div&gt;
+&lt;div&gt;第八，太短的员工密钥。&lt;/div&gt;
+&lt;div&gt;如果您的系统很安全，然而员工设定的密码为1，这等于一个最不安全的系统。因此，强调员工密码的安全性，加上密码设定时弱密钥检查是一个很好的方案。&lt;/div&gt;
+&lt;div&gt;第九，员工自己持有文档。&lt;/div&gt;
+&lt;div&gt;文档是企业的重要资产，因此整理和保存文档是公司的责任。让行政部的人跟踪每一个应当保存的文档，不要在员工离职后打电话过去要人帮帮忙看看三年前什么什么文档是否还在。&lt;/div&gt;
+&lt;div&gt;第十，不分机密级别。&lt;/div&gt;
+&lt;div&gt;小公司对于机密的规定无法太严格。但除非所有人的机密级别一致，否则一旦区分普通员工和经理，起码将文档划分成涉密和非涉密。不要让普通员工接触涉密文档。&lt;/div&gt;
+&lt;div&gt;第十一，过分神化IT。&lt;/div&gt;
+&lt;div&gt;有些小公司过于追求现代化，上班用ERP和OA管理，销售用CRM管理，交流沟通走论坛化。何时采用IT系统管理是一个复杂的问题，但是过早追求IT化会对公司发展造成不利影响。实行IT化是有成本的，仅在你需要的地方进行实施。&lt;/div&gt;
+&lt;div&gt;第十二，有极密的内容，没有极密的渠道。&lt;/div&gt;
+&lt;div&gt;回想一下，你们公司的报价是怎么传递给一线员工的？服务器密码呢？公司银行账户呢？对于最高机密的内容，没有合适的传递渠道是不行的。QQ，MSN之类的IM工具机会百分百的会导致泄密，对于嗅探和查看记录他们没有任何抵抗力。短信和电话也是不行的，虽然很困难，但是还是可以窃听的。电子邮件在附件中放一个加密的rar文件，并且提前约定密码，是个很好的方案。&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>关于无线的安全问题</title>
+      <link>https://shell909090.github.io/blog/archives/97/</link>
+      <pubDate>Fri, 26 Feb 2010 11:10:00 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/97/</guid>
+      <description>&lt;p&gt;一个无线路由只有150上下，安装方便使用简单，可以让你在床上躺着的时候还能和朋友聊天。大多有笔记本的家庭都会考虑买一个无线路由，组建自己的无线网络。不过先别高兴，如果你选择买来就用，我想你碰到艳照门只是个时间问题。下面简单说一下无线网络从决策到安全完成安装的全步骤。
+首先是决策，无线路由不是随便用的。有几种情况我建议你重新考虑这个问题。有孕妇者不用，这东西的辐射虽说不大，也不是忽略不计的。万一我乌鸦嘴，你孩子出点啥问题，你触不触的慌啊。电脑全堆在一起可以拉线者不用，这种情况下再买无线纯属烧包。房间太大者不用。最后一个要用也可以，建议你买多个。无线网卡在收信差的时候速度很慢，用起来很不爽，而且辐射大，所以一定要保证你的家里能被无线信号完整覆盖。一台标准路由器能覆盖的范围大约是10-30米内的所有区域，加穿一道普通墙(非钢筋水泥承重墙)。普通人家买一个无线路由器可以覆盖全家，但是我不保证有钱人家&amp;hellip;.
+其次是采购，推荐大家选择好一点的无线路由器，但是不用太贵。差的无线路由器往往不控制辐射功率，你高兴家里天天开一个大功率辐射源么？
+后面跟着的是环境检测。如果你有android，有一个软件叫做wifi检测仪，可以检测周围的wifi信道和功率。挑选一个比较空的信道，否则人家的通讯就会变成你的背景噪音，从而降低网速，增加辐射。而后确定你的无线路由的最佳安装位置——通常是在网络出口处。但是如果造成信号覆盖不好，可以考虑加长网线。毕竟加长网线只是一次的事情，天天断线再连接就痛不欲生了。
+然后是基础安装——这个都会，就不多罗嗦了。
+最后是重头，安全设置。请先设置不广播SSID，这样别人扫描的时候，你的AP是隐藏的。当然，如果你高兴，可以在AP名字上把偷网的人骂一顿。我记得某个咖啡厅的AP名字就是“你还要不要来杯咖啡”。其次，需要选择WPA加密，WEP的破解时间太短，在你通讯频繁的情况下，最多几个小时肯定可以破解——最少只要几分钟。而且更麻烦的是，一旦WEP被破解，对方可以嗅探到你的通讯包。到时候所有的聊天记录，明文密码，全部都是敞开了让别人看的。WPA即使别人破解了AP能上网，最多也只能上网而已。除非使用主动嗅探技术，否则无法造成威胁——而主动嗅探会造成你的网络超级不稳定，马上会被发现。
+以上两步保证了别人无法连接进你的网络，而下面我们还要保证网络内的安全。
+请先给你的路由器和Windows账户更换一个强密码——你可以自动登录和使用浏览器记录密码来避免输入，但是一定要强。否则当有人进入你的网络的时候，如果一次就拿到了管理员权限，其他安全措施就没有意义了。然后开启路由器防火墙，禁用所有的人连接，除非特定MAC地址。这样只有指定的几个机器可以上网，一般人进入网络后的兴趣就小了很多。最后，请开启你电脑的防火墙，以免进入网络的人利用漏洞进入主机系统。
+最后，如果有条件的话，可以用vmware部署一个honeypot，做一个漏洞百出的系统，引诱入侵者先进攻这里。一旦他发起进攻，那么你马上会发现他的踪迹——不过这个就不属于普通用户的范畴了。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>网络银行安全性的理论分析</title>
+      <link>https://shell909090.github.io/blog/archives/419/</link>
+      <pubDate>Wed, 28 Nov 2007 23:55:11 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/419/</guid>
+      <description>&lt;div&gt;    最近好像用网银的人比较多阿，贝壳就做件好事，简单介绍下密码学体系。让大家了解下网银安全性的方方面面。&lt;br /&gt;    我们说，银行系统的安全性和易用性往往是一个磁石的南北极，不大可能出现在一个地方的。从易用性角度来说，输入用户名和取款密码直接操作的网银是最方便的。可惜，你的钱被偷的概率也是最高的。因为你和银行间的通讯过程需要流经无数节点，任何一个地方都可以轻易拿到你的登录密码。那么重复这个过程就可以登录并且操作你的钱。所以，任何一家银行都不会提供直接的登录手段。&lt;br /&gt;    一般来说，银行在设计网银的时候，往往会提防以下的攻击手段。社会工程学，嗅探，重复发送，钓鱼，中间人钓鱼，猜解，内部盗窃。我们先来大致了解下这些攻击手段的方法和实施条件，然后再说银行的对应手段。&lt;br /&gt;    社会工程学攻击是成功率最高的，技术要求最低的攻击。其要决就是一个字，“骗”！社会工程学攻击主体上就是各种骗术，例如把机器塞上，旁边写一个处理电话。等你打电话的时候，就过来一个“工作人员”。然后弄出你的卡来，说要验明你是否是卡主，问你密码。等确认好了身份，你拿到的就不是自己的卡了，那个工作人员也就拿了钱跑了。诸如此类的攻击核心要点就是骗取客户信任。所以社会工程学的对应手段只有让客户提高警惕，其他没别的好办法。&lt;br /&gt;    嗅探指的是从登录的机器上或者附近符合一定条件的机器上(具体是哪些需要一定的专业知识)，窃取登录过程数据，并且从中还原出用户密码的手段。这种攻击往往和重复发送一起使用。无法还原密码的情况下，将原先登录的包重新发送一次。对应嗅探攻击的方法很简单，就是挑战-回应方法(Challenge-Responses)。现代加密算法有专门对应已知明文攻击的，用于对抗已经知道明文和密文情况下反解密码。服务器发送一个随机数过来，客户端加密后发送回去。服务器端核验客户端的加密结果和服务器端的加密结果，就知道客户端是否通过认证了。而嗅探者需要相当数目的明密文对才能知道密码。所以相对安全程度更高。&lt;br /&gt;    钓鱼是一种社会工程攻击。一般是通过邮件或者其他手段引导你到某个网站上，看上去和网银很像。等你登录想用的时候，会发现上面说网银现在正在调整。如果当时没有在意，等下次登录的时候帐户里面的钱就没了。由于窃取的是密码本身，所以挑战-回应方法无法解决这个问题。这种情况下就必须使用挑战-回应方法的变形，例如零知识验证。大致上看起来就是这样的，银行给你本很长的书，里面写什么你也不知道。然后银行问你，第512页三行15个字是啥？钓鱼收集到这个知识就没用了。但是中间人攻击还是有效的。中间人和钓鱼看起来很像，只是中间人不是窃取密码，而是窃取会话。当你以为登录到银行的时候，其实是登录到了一个中间服务器。一切你的操作其实是通过中间服务器代理上去的。当你退出的时候，中间服务器就会替换你的操作，实施一次转帐和退出。要屏蔽中间人攻击，就必须使用签名证书系统来认证服务器地址。&lt;br /&gt;    猜解和内部盗窃是通过对主人情况的了解来猜测或者偷窃密码/密码设备的攻击。目前没有啥好办法，只有想点自己都想不到的东西作为密码才行。生日，电话，车牌，名字，都不可以直接作为密码。当然，做一些基础变形后作为弱密码还是可以的。例如将生日倒过来作为查询密码。&lt;br /&gt;    目前网银的认证系统有以下几种，密码直接验证，文件证书验证，密码卡认证，手机动态认证，硬件设备认证。&lt;br /&gt;    密码直接认证一般使用了SSL技术来防止嗅探，但是对于钓鱼，中间人，猜解，内部盗窃都没有防护能力。一般都是各个网银的最差防护状态，为某些对安全不在意的人设计的。只是使用方便而已。&lt;br /&gt;    文件证书验证是利用密码和文件数字证书来验证身份的方法，对于钓鱼，中间人有比较好的防护手段。可以防止猜解，但是无法防止内部盗窃。因为文件证书为了方便起见都是存放在电脑内部的，所以文件证书的安全就又成了问题。即使是存放在U盘上，也会在使用的瞬间被复制。电脑中木马，文件或者U盘被盗拷，都是产生不安全的原因。&lt;br /&gt;    密码卡是某种零知识验证的变形。差不多就是给你张密码卡，刮一次能上一次。对于钓鱼有一定防护能力，但是对于中间人攻击无能为力。可以防止猜解，但是无法防止内部盗窃。&lt;br /&gt;    手机动态认证是通过手机收取临时动态验证码来确认客户的身份。如果要窃取客户的身份，就必须同时得到用户手机卡和用户密码。所以，也是防嗅探，钓鱼，猜解，但是不防中间人和内部盗窃。注意这里有种特殊形式，大家也许不知道，手机发送的短信是可以被特殊设备截获破解的——&lt;br /&gt;    硬件设备认证则是将密钥和计算放入了特殊硬件内。银行发送挑战数到硬件上，硬件设备返回数据到银行。如果要窃取身份，就必须获得设备和密码。因此，也是防嗅探，钓鱼，猜解，但是不防中间人和内部盗窃。一般就是指银行的U盾设备，但是要注意区分U盾究竟是用来计算呢，还是用来存放密钥。后者的安全级别和文件证书一致。&lt;br /&gt;    我们对比各种攻击之前，先去掉两个特殊选项，社会工程和中间人攻击。社会工程某种意义上是无法防御的，你说你要把东西交给别人，银行怎么防范？拿你的生物特征？那就太麻烦了。中间人则是因为可以用CA证书验证地址有效性，因此现在很少成功。当然，也有先欺骗DNS服务器的。碰上这种蓄意的中间人攻击，差不多就和碰上人强奸一样——反抗是没意义的。这两种方法，只要是有心算无心，基本都可以成功。因此我们先去掉这两个成功么未必成功，防范么没法防范的选项。&lt;br /&gt;    SSL技术是网银登录的基础技术，没有的话请记得早日离开这家银行。文件证书使用方便，但是电脑一旦中木马就立刻危险。密码卡看似安全，其实对于精心设计的钓鱼还是没用的。而且使用麻烦，不如趁早不用。手机动态验证的安全性是非常高啦，可是要记得手机的安全就是帐户的安全。所以手机卡千万看住，别被人复制了。(手机卡是可以复制的，然后就可以用这个号码打电话了。当然这种事情发生概率很小，一般倒是用在一卡多号上比较多)还有手机信号问题，找个深山老林上网吧。&lt;br /&gt;    硬件设备认证是比较硬的方法，一般是比较完美的。可惜价格太贵。&lt;br /&gt;    综合下来，偷懒的可以用手机。怕事的还是用硬件。&lt;/div&gt;
+&lt;div&gt; &lt;/div&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

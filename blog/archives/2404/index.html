@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>lxc路由模式</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         lxc路由模式 
+    </h1>
+    <p class="meta">May 24, 2013
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2404/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <h1>为什么使用路由模式</h1>
+
+<p>lxc默认使用的是桥模式，这也是我在家里和公司里部署的模式。在这种模式下，lxc虚拟机可以直接和真实网络中的机器互相访问，就如同一台真的机器一样。路由模式则没有这个便利性。</p>
+
+<p>但是桥模式有个缺陷，必须能够做出桥来。我们有做不出桥来的时候么？有，如果你用笔记本，大部分AP会拒绝第二个MAC地址的包。导致网桥可以组建，却永远无法正常使用。</p>
+
+<h1>第一种路由模式，双重NAT简版</h1>
+
+<p>双重NAT可以用于几乎所有场景，并且不会带来后遗症。然而，双重NAT的问题在于，物理网络不能直接访问虚拟机。对于很多设备来说，这就失去了价值。另外说一点，之所以叫做双重NAT，是因为多数时候物理网络接到外网还需要一次NAT。</p>
+
+<p>lxc的双重NAT可以视为两步，建立NAT连接的虚拟网络，将lxc连接到虚拟网络。</p>
+
+<p>第一步比较复杂，我们先从br0的建立开始说起。首先，你需要为虚拟网络分配一个不同的保留内网网段。如果使用同样的内网网段，在ARP查询的时候会从一个端口发出超过一个的MAC回应，这就退回了桥模式。</p>
+
+<p>然后我们需要建立一个br0网桥作为配置的起点，对这个网桥赋予IP，配置路由和防火墙，并启动dnsmasq以便于dhcp和dns。这个模式之所以叫做简版，是因为我们先不讨论dnsmasq。</p>
+
+<p>假如你的lxc内网网段是192.168.66.0/24，那么你大致可以如下配置：</p>
+
+<pre><code>brctl addbr br0
+ifconfig br0 192.168.66.1
+route add -net 192.168.66.0/24 dev br0
+iptables -A INPUT -s 192.168.66.0/24 -j ACCEPT
+iptables -t nat -A POSTROUTING -s 192.168.66.0/24 -j MASQUERADE
+</code></pre>
+
+<p>实际上，对于任何一种网口设备，将其配置为NAT的过程都是一样的。</p>
+
+<p>第二步非常容易，在lxc的config文件内，指定网桥为br0就OK了。当然，作为略去dnsmasq的代价，你需要手工配置每台机器的IP地址和DNS服务器。</p>
+
+<h1>第二种路由模式，双重NAT</h1>
+
+<p>双重NAT的完整版需要在内网网口上启动dns，作为dns缓存代理和dhcp服务器。其余和第一种模式没有区别，只是你不需要手工指定IP和DNS服务器了。</p>
+
+<p>当然，其实任何一种网口的NAT配置都是一样的。</p>
+
+<h1>第三种路由模式，双边交互路由</h1>
+
+<p>第三种路由模式的效果最好，虚拟机和真实机可以互相访问。但是这种模式需要能够修改物理网络网关的路由表。这种模式使用主机作为路由器，中转真实网络和虚拟网络。</p>
+
+<p>我略去如何创造br以及如何将lxc连接到上面，这些前面有叙述。下面我简述一下双边路由最关键的几点。</p>
+
+<ol>
+<li><p>最重要的重点，就是在真实网络的网关上，将你的真实物理机在外网的IP，配置为虚拟网络的下一跳网关。例如，对于上面的例子，我们应当在网关上如此配置。</p>
+
+<p>route add -net 192.168.66.0/24 gw 192.168.1.4</p></li>
+</ol>
+
+<p>如果不进行如此配置，物理网络所发出的包在到达网关后就不知道应当如何转发了。</p>
+
+<ol>
+<li>在物理机上允许双边网络的所有包透过。你的包当然不能被防火墙挡掉。</li>
+<li>虚拟网络的dhcp是不会传递到外网的，因此如果打算使用dhcp，还是需要开dnsmasq。</li>
+</ol>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>May 24, 2013</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/linux">linux</a>  <a class="category" href="https://shell909090.github.io/tags/lxc">lxc</a>  <a class="category" href="https://shell909090.github.io/tags/vm">vm</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/2400/" title="一次订错机票">一次订错机票</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/2417/" title="比特币的汇率问题">比特币的汇率问题</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>24点计算原理和程序</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         24点计算原理和程序 
+    </h1>
+    <p class="meta">Jan 20, 2009
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/50/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          
+
+<p>最近开心上狂算24点，于是贝壳搞了一个24点计算程序，并且说明原理。
+我们将24点问题一般化，变成一个搜索问题。假定从一个初始表开始，里面有一些原子。我们定义一个操作，结合。每次操作任意从中选择出两个(或者以上)原子，使用算符连接，成为一个新的原子。那么，一般来说，24点就是计算所有可能的路径，从初始表开始，持续进行结合，直到只剩下一个原子，并且对这个原子求值得24。
+有人可能在算符优先级上想不开，其实不用考虑这个问题，每次求值的时候，按照求值顺序优先就可以。你想到的另外一种优先级可能，会在穷举的时候被列举出来算掉，不用担心遗漏。
+同时，算子必须是两目以上算子，因为单目算子可以持续作用于同一个对象，因此原子表中的原子个数并不严格单调减少，造成无法肯定路径收敛于有限步骤上。并且，如果允许单目算子，那么我只需要求导和阶乘就可以对任何数字求24点。
+((a&rsquo;)!+(b&rsquo;)!+(c&rsquo;)!+(d&rsquo;)!)!=24
+因此，单目算符是没有意义的。
+另外，注意算符分可交换和非可交换的。例如：a+b=b+a，但是a-b!=b-a。如果不注意这点，倒是不会漏算，但是会造成搜索空间增大，并且有重复结果。
+以下是24点计算程序，python版本的。有兴趣的朋友可以用scheme重写，相信会更简洁有效。回头会用django封装一下，做成网页给大家玩玩。</p>
+
+<p>#!/usr/bin/python
+import sys</p>
+
+<p>symbol_list = [
+(&ldquo;%s+%s&rdquo;, True), (&ldquo;%s-%s&rdquo;, False),
+(&ldquo;%s*%s&rdquo;, True), (&ldquo;%s/%s&rdquo;, False), (&ldquo;%s**%s&rdquo;, False),</p>
+
+<h1 id="min-s-s-true-max-s-s-true">(&ldquo;min (%s,%s)&rdquo;, True), (&ldquo;max (%s,%s)&rdquo;, True),</h1>
+
+<p>];</p>
+
+<p>def diff_seq (length):
+for i in range (0, length):
+for j in range (i + 1, length):
+yield (i, j);</p>
+
+<p>def get_less_state (input_state):
+for i, j in diff_seq (len (input_state)):
+temp = input_state[:];
+del temp[j];
+del temp[i];
+for s in symbol_list:
+rslt = s[0] % (input_state[i], input_state[j]);
+rslt = &ldquo;(%s)&rdquo; % rslt;
+temp.append (rslt);
+yield temp;
+temp.remove (rslt);
+if s[1]:
+continue;
+rslt = s[0] % (input_state[j], input_state[i]);
+rslt = &ldquo;(%s)&rdquo; % rslt;
+temp.append (rslt);
+yield temp;
+temp.remove (rslt);</p>
+
+<p>def do_node (input_state, output):
+for i in get_less_state (input_state):
+if len (i) &gt; 1:
+do_node (i, output);
+continue;
+try:
+rslt = eval (i[0]);
+except:
+continue;
+if rslt == 24.0:
+output.add (i[0].replace (&ldquo;.0&rdquo;, &ldquo;&rdquo;));</p>
+
+<p>if <strong>name</strong> == &ldquo;<strong>main</strong>&ldquo;:
+rslt = [];
+for i in sys.argv[1:]:
+rslt.append (float (i));
+output = set ([]);
+do_node (rslt, output);
+for i in list (output):
+print &ldquo;%s=24&rdquo; % i;</p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Jan 20, 2009</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/program">program</a>  <a class="category" href="https://shell909090.github.io/tags/python">python</a>  <a class="category" href="https://shell909090.github.io/tags/scheme-2">scheme-2</a>  <a class="category" href="https://shell909090.github.io/tags/%e5%bc%80%e5%bf%83%e7%bd%91">%e5%bc%80%e5%bf%83%e7%bd%91</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/49/" title="论同时的双系统－－准虚拟对双系统的进一步扩充">论同时的双系统－－准虚拟对双系统的进一步扩充</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/484/" title="牛年快乐">牛年快乐</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

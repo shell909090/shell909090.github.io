@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>说说密码和安全设计</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         说说密码和安全设计 
+    </h1>
+    <p class="meta">Oct 22, 2015
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2809/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p><p>
+ 趁着某站密码泄漏，我review了一下整个密码和安全系统。下面总结一下要点，大家可以参考一下。但是我觉得多数人无法照抄。
+</p>
+<h1>
+ 基础
+</h1>
+<p>
+ 假定
+</p>
+<ol>
+ <li>
+  **会随时找我谈话。（不要以为不现实，想想我得分最高的项目）
+ </li>
+ <li>
+  手机是会丢的。但是窃贼不会攻击经济无关帐号。
+ </li>
+</ol>
+<p>
+ 设计
+</p>
+<ol>
+ <li>
+  尽量使得问题只出现于局部，不会波及全部系统。
+ </li>
+ <li>
+  在不严重的情况下，尽量简化使用，而不是增加复杂性。
+ </li>
+ <li>
+  在“大部分情况下更严密，小部分情况更糟糕”和“平均化”的选择中。只要小部分发生概率不高，选择大部分情况更严密，并尽力避免小部分情况。
+ </li>
+</ol>
+<h1>
+ 帐号体系
+</h1>
+<ul>
+ <li>
+  能用Oauth自动登录的尽量绑自动登录。能不自己管认证体系的尽量别自己管。
+ </li>
+ <li>
+  境外关键服务，应绑定邮箱，不可绑定手机。其余服务应绑定手机和邮箱。如果没有假定1，能绑啥绑啥。
+ </li>
+ <li>
+  集中绑定能减少帐号系统复杂性。其代价就是当基础手机/邮箱出问题时，后果会很严重。因此需要设计对应措施。
+ </li>
+ <li>
+  重要服务（尤其涉及钱）只能有一个绑定寻回，切忌绑了邮箱绑手机，还都能寻回。一个出问题，帐号很危险。
+ </li>
+ <li>
+  基础手机/邮箱之间严禁互相绑定，以防一个出问题全部出问题。
+ </li>
+ <li>
+  多个身份间不要串帐号。一个帐号体系和另一个帐号体系之间可以发生来往，但是不能发生混同。想一下妹子用自己手机号帮多个男的登记开房的事。。。
+ </li>
+ <li>
+  基础邮箱/手机的信任问题不是信任问题，是信仰问题。对应措施无法对应基础系统自身的问题，例如供应商恶意作恶，或者供应商出了问题。所以选择谁是个信仰问题，要仔细选择信仰。
+ </li>
+</ul>
+<h1>
+ OTP管理
+</h1>
+<ul>
+ <li>
+  能开OTP的统统开起来。把emergency token抄纸条上丟家里。
+ </li>
+ <li>
+  <a href="https://en.wikipedia.org/wiki/Time-based_One-time_Password_Algorithm#Server_implementations">
+   可以使用OTP的列表
+  </a>
+  。
+ </li>
+ <li>
+  上面的补充：Microsoft, CloudFlare，Slack，Vultr，Tumblr，Ifttt，Eveonline，阿里云, DigitalOcean，dnspod，btc-e。
+ </li>
+ <li>
+  ms家会让你装他自己的app。请在手机系统的选项里选other，这样他就乖乖出一个QR让你扫了。
+ </li>
+ <li>
+  OTP的保存时间和系统安全性有关。可信系统上可以保存一个月，不可信系统上尽量在一天以内。太长时间可以登录不需要输入OTP等于没有OTP。
+ </li>
+</ul>
+<h1>
+ 密码管理
+</h1>
+<ul>
+ <li>
+  使用密码数据库保存数据。
+ </li>
+ <li>
+  密码数据库管理程序应彻底开源。
+ </li>
+ <li>
+  使用同步网盘保存和同步密码数据库（加密后的）。
+ </li>
+ <li>
+  要注意防护整个系统突然失效。从出现概率分析，系统失效概率比被盗概率要高。而一旦发生失效，你的大多数帐号就全都失控了。
+ </li>
+ <li>
+  手机上不应同步密码库，而应手工复制更新。以防同步系统出错清了所有副本。
+ </li>
+ <li>
+  可以定期将基础密码(主要是邮箱)抄出来，放在家里的角落里。万一不得已，可以对所有系统做密码寻回。
+ </li>
+ <li>
+  密码维护建议在同一个环境上进行(例如全是windows)，以防两种不同版本的软件冲突导致数据丢失。
+ </li>
+ <li>
+  不应在不可信系统上输入主密码。否则主密码和密码文件都会丢失，等于所有密码丢失。所以不要在不安全系统上使用密码管理系统做任何操作。
+ </li>
+ <li>
+  要谨慎使用粘帖板管理程序。保存粘帖板历史的程序不要开。
+ </li>
+ <li>
+  搞一个足够安全的系统随身。推论可知，系统越多，出问题可能性越高。搞一个足够安全的系统随身，可以避免万一的情况下被迫要在不安全的系统上输密码。
+ </li>
+ <li>
+  这基本就是需要你有一只足够安全的手机。
+ </li>
+</ul>
+<h1>
+ 手机
+</h1>
+<ul>
+ <li>
+  如果手机有root，不算安全系统，不能使用密码管理系统。
+ </li>
+ <li>
+  注意手机上的“可以收取短信”和“可以访问剪贴板”权限。如果一个应用可以访问这两个，基本就可以访问大半密码数据库，并收取验证码。也就是可以在无察觉的情况下把某个帐号偷跑。
+ </li>
+ <li>
+  手机上保存的帐号尽量不使用手机寻回帐号，尤其是涉及钱的。如果帐号保存在手机上，而且可以用手机寻回。一旦手机丢失，拿到的人就可以长驱直入了。按照假定2，这很危险。
+ </li>
+</ul>
+<h1>
+ 钱
+</h1>
+<ul>
+ <li>
+  银行卡升级到高密卡。低密卡的安全性问题就不说了。
+ </li>
+ <li>
+  目前高密卡还是可以按照低密使用的，这其实仍然不安全，因为复制后还是可以偷钱。增强卡安全需要全部系统强制废弃低密卡。
+ </li>
+ <li>
+  经济相关帐号需要一个“防止手机丢失”的手段，否则不应在里面长期放大量资金（可视为这笔钱会随手机丢失）。
+ </li>
+ <li>
+  支付宝的设计是“手机高于一切”。所以在“手机会丢”的假定下，直接出局。微信的设计也类似，所以也出局。
+ </li>
+ <li>
+  银行帐号，其密码无法通过手机寻回的，可视为安全。
+ </li>
+ <li>
+  如果能通过手机寻回密码的，有转出限额(无法通过手机更改)也可以接受。
+ </li>
+</ul>
+<h1>
+ 吐槽
+</h1>
+<ul>
+ <li>
+  QQ现在要求我用申诉的方法才能改密。但是申诉需要三个以前好友的帮助。我TM从98年开始用的，连同学都没几个还在上了。你让我去找麻花藤来申诉啊。。。
+ </li>
+ <li>
+  支付宝本来还支持字母支付密码，后来直接改成了6位数字。手机应用本来还需要解锁，现在只在特定情况下需要输入手势锁。本来还有宝令，现在已经没有了。总体来说，支付宝的安全性是越做越差的。
+ </li>
+ <li>
+  在整个密码体系里，就属支付宝和微信的安全性最差，就属他们涉及的钱最多。
+ </li>
+</ul></p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Oct 22, 2015</time>
+    <span class="categories">
+      Tags:
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/2806/" title="从青蒿素得奖说现代医学里的方法论">从青蒿素得奖说现代医学里的方法论</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/2813/" title="云计算的成本计算">云计算的成本计算</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

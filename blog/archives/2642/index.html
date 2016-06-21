@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>cgroup限定内存</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         cgroup限定内存 
+    </h1>
+    <p class="meta">Jun 6, 2014
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2642/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <h1>机器配置</h1>
+
+<p>ubuntu 12.04</p>
+
+<p>内核版本：3.11.0-20-generic</p>
+
+<h1>ulimit的限制效果</h1>
+
+<ol>
+<li><p>ulimit -m 8192
+当内存突破8M时，什么事情都没有发生。直到38M都没任何反应。</p></li>
+<li><p>ulimit -v 65536
+python抛出MemoryError</p></li>
+</ol>
+
+<h1>cgroup的限制效果</h1>
+
+<ol>
+<li>echo 8388608 > memory.limit_in_bytes</li>
+</ol>
+
+<p>大小不对，cgroup的内存量计算方法和ps/status不一致。因此限制计数需要根据具体情况调整。</p>
+
+<h1>内核计数</h1>
+
+<h2>/proc/[pid]/statm</h2>
+
+<pre><code>size       (1) total program size
+(same as VmSize in /proc/[pid]/status)
+resident   (2) resident set size
+(same as VmRSS in /proc/[pid]/status)
+share      (3) shared pages (i.e., backed by a file)
+text       (4) text (code)
+lib        (5) library (unused in Linux 2.6)
+data       (6) data + stack
+dt         (7) dirty pages (unused in Linux 2.6)
+</code></pre>
+
+<h2>/proc/[pid]/status</h2>
+
+<p>statm的size和resident分别乘以pagesize等于VmSize和VmRSS。</p>
+
+<h2>pmap</h2>
+
+<pre><code>pmap -p [pid]
+</code></pre>
+
+<p>可以看到某个进程内部，用户地址空间分配情况。</p>
+
+<pre><code>pmap -d [pid] | grep 'rw' | awk '{a += $2} END {print a}'
+</code></pre>
+
+<p>可以看到所有可写入的内存大小，应当正好等于正常显示的writeable/private。</p>
+
+<p>这个值，应当等于status的VmHWM+VmStk。不知为何，VmStk和pmap里面显示的stack正好差了一个4k。怀疑是关于目前在正在使用的页的计算差异。</p>
+
+<p>而high water mark，从分析上说，即是某个进程内部，不是stack的，所有可写的地址空间。当然，这些页并不一定立刻映射了物理内存。因此VmHWM > VmRSS应当没什么问题。</p>
+
+<h2>ps</h2>
+
+<p>ps和top都是读的status，不废话。</p>
+
+<h1>资源限制实践</h1>
+
+<h2>准备</h2>
+
+<p>安装cgroup-bin</p>
+
+<pre><code>aptitude install cgroup-bin
+</code></pre>
+
+<h2>setup cgroup-bin</h2>
+
+<p>修改/etc/cgconfig.conf:</p>
+
+<pre><code>mount {
+        cpu = /sys/fs/cgroup/cpu;
+        cpuacct = /sys/fs/cgroup/cpuacct;
+        devices = /sys/fs/cgroup/devices;
+        memory = /sys/fs/cgroup/memory;
+        freezer = /sys/fs/cgroup/freezer;
+}
+
+group memimage {
+        perm {
+                admin {
+                        gid = root;
+                }
+                task {
+                        uid = user;
+                }
+        }
+        memory {
+                memory.swappiness = 0;
+                memory.limit_in_bytes = 2048000000;
+        }
+}
+</code></pre>
+
+<p>限定内存用量2G。</p>
+
+<pre><code>service cgconfig start
+</code></pre>
+
+<h2>执行效果</h2>
+
+<p>头部加入<code>nice -n 19 cgexec -g memory:memimage</code>。</p>
+
+<p>注意：使用内存限制，务必配置<strong>OOM日志告警通知</strong>。当重启时，管理者必须知道。当重复发生时，必须重新考虑内存限制问题。</p>
+
+<h2>监测</h2>
+
+<p>查看group内存状态</p>
+
+<pre><code>watch cat /sys/fs/cgroup/memory/memimage/memory.stat
+</code></pre>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Jun 6, 2014</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/cgroup">cgroup</a>  <a class="category" href="https://shell909090.github.io/tags/linux">linux</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/2640/" title="为什么running不高但是load很高">为什么running不高但是load很高</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/2645/" title="上海的出租车越来越不像话了">上海的出租车越来越不像话了</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

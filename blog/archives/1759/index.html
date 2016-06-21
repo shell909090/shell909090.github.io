@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>python源码解析读书笔记（三）——对象和函数</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         python源码解析读书笔记（三）——对象和函数 
+    </h1>
+    <p class="meta">Mar 30, 2011
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1759/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>1.mro <div>    算法，自身先入栈，而后按声明顺序继承每个父类的mro，内部对象在最后。简单来说，深度优先，从左向右。</div><div>    当类对象创建时，会将父类所有函数全部复制过来（很明显，应当是符号复制）。<br /><br /></div><div>2.super规则</div><div>&gt;&gt;&gt; class A(object):</div><div>&hellip;     def f(self): print &#39;A&#39;</div></p>
+
+<p><div>&hellip;</div><div>&gt;&gt;&gt; class B(object):</div><div>&hellip;     def f(self): print &#39;B&#39;</div><div>&hellip;</div><div>&gt;&gt;&gt; class C(A):</div><div>&hellip;     def f(self): print &#39;C&#39;</div><div>&hellip;</div><div></p>
+
+<p>&gt;&gt;&gt; class D(C, B):</div> <div>&hellip;     def f(self): super(D, self).f()</div><div>&hellip;</div><div>&gt;&gt;&gt; d = D()</div><div>&gt;&gt;&gt; d.f()</div><div>C</div><div>&gt;&gt;&gt; D.<strong>base</strong></div><div>&lt;class &#39;<strong>main</strong>.C&#39;&gt;</div><div></p>
+
+<p>&gt;&gt;&gt; D.<strong>bases</strong></div> <div>(&lt;class &#39;<strong>main</strong>.C&#39;&gt;, &lt;class &#39;<strong>main</strong>.B&#39;&gt;)</div><div><div>&gt;&gt;&gt; class A(object):</div><div>&hellip;     def f(self): print &#39;A&#39;</div><div>&hellip;</div><div>&gt;&gt;&gt; class B(object):</div></p>
+
+<p><div>&hellip;     def g(self): print &#39;B&#39;</div><div>&hellip;</div><div><div>&gt;&gt;&gt; class C(A, B):</div><div>&hellip;     def f(self): super(C, self).g()</div><div>&hellip;</div><div>&gt;&gt;&gt; c = C()</div><div>&gt;&gt;&gt; c.f()</div></p>
+
+<p><div>B</div><div>&gt;&gt;&gt; C.<strong>mro</strong></div><div>(&lt;class &#39;<strong>main</strong>.C&#39;&gt;, &lt;class &#39;<strong>main</strong>.A&#39;&gt;, &lt;class &#39;<strong>main</strong>.B&#39;&gt;, &lt;type &#39;object&#39;&gt;)</div></div></div><div>super的算法是跟随mro次序，寻找非本类第一个符合名称的函数，调用之。</div></p>
+
+<p><div>3.construct</div><div>instance = cls.<strong>new</strong>(cls, *args, **kargs)</div><div>cls.<strong>init</strong>(instance, *args, **kargs)</div><div><div>4.bound method</div><div><div>&gt;&gt;&gt; class A(object):</div><div>&hellip;     def f(self): pass</div></p>
+
+<p><div>&hellip;</div><div>&gt;&gt;&gt; a = A()</div><div>&gt;&gt;&gt; a.<strong>class</strong>.<strong>dict</strong>[&#39;f&#39;]</div><div>&lt;function f at 0xb7595454&gt;</div><div>&gt;&gt;&gt; a.f</div><div>&lt;bound method A.f of &lt;<strong>main</strong>.A object at 0xb75a1e6c&gt;&gt;</div></p>
+
+<p><div><div>&gt;&gt;&gt; a.f.im_self</div><div>&lt;<strong>main</strong>.A object at 0xb75a1e6c&gt;</div></div><div>bound method是一个函数对象和一个实例对象的集合。</div></div></div><div>5.descriptor</div><div><div>&gt;&gt;&gt; class A(object):</div><div></p>
+
+<p>&hellip;     def <strong>get</strong>(self, obj, cls): return &#39;A.<strong>get</strong> %s %s %s&#39; % (self, obj, cls)</div> <div>&hellip;</div><div>&gt;&gt;&gt; class B(object):</div><div>&hellip;     v = A()</div><div>&hellip;</div><div>&gt;&gt;&gt; b = B()</div><div>&gt;&gt;&gt; b.v</div><div>&quot;A.<strong>get</strong> &lt;<strong>main</strong>.A object at 0xb75a1cac&gt; &lt;<strong>main</strong>.B object at 0xb75a1cec&gt; &lt;class &#39;<strong>main</strong>.B&#39;&gt;&quot;</div></p>
+
+<p><div>某个instance的属性查找顺序为，obj.<strong>dict</strong>，class属性（按照mro顺序）。如果有data descriptor则先于obj.<strong>dict</strong>。</div><div>于是，这解释了一个问题。我们定义函数的时候，定义的都是“类函数”，即函数是类的成员。为什么最终函数会变成实例的成员呢？为什么又在调用时会自动产生一个self呢？</div><div>实例在查找的时候，会先查找class属性中的descriptor。假定class有成员函数f，当使用obj.f时，首先命中这个函数对象，因为这个对象是一个descriptor。descriptor在取值时，会被调用<strong>get</strong>方法，这一方法有obj参数。于是函数对象的默认<strong>get</strong>返回了一个bound method，其中包含了self和函数对象自身。</div></p>
+
+<p><div>这种行为在每次调用时都会发生，因此实例成员函数的性能比unbound method直接写对象要慢。</div> </div></p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Mar 30, 2011</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/program">program</a>  <a class="category" href="https://shell909090.github.io/tags/python">python</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/1757/" title="python源码解析读书笔记（二）——函数特性">python源码解析读书笔记（二）——函数特性</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/1760/" title="python源码解析读书笔记（四）——杂项">python源码解析读书笔记（四）——杂项</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

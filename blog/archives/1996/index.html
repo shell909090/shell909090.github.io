@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>python中dict的插入复杂度估算和排重复杂度估算</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         python中dict的插入复杂度估算和排重复杂度估算 
+    </h1>
+    <p class="meta">Nov 28, 2011
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1996/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>在做分词核心词典数据结构分析的时候需要，就先写一篇吧。 <div>    具体可以参考<a href="http://shell909090.org/blog/2011/03/python%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0%EF%BC%88%E4%B8%80%EF%BC%89%E2%80%94%E2%80%94%E5%86%85%E7%BD%AE%E5%AF%B9%E8%B1%A1/" target="_blank">python源码解析读书笔记（一）——内置对象</a>，这里面有说：</div></p>
+
+<p>7.dict对象的索引方案<br />dict对象的索引方案使用的是哈希表，而且是开放地址法的哈希表。当装载率达到一定规模后，会新申请一块内存，将有效数据复制过去。最小的表空间为8个对象，当装载率超过2/3时，会扩大规模到当前active的4倍（超过50000个对象为2倍）。目前为止，在对象被删除后，其表空间并不释放。因此曾经增长的非常大的dict对象，可以定期复制以回收空间。<div>    最初的表项空间为6个以内，满了之后，会自动扩张到24个，有效16个。从大致来说，如果要放下N个表项，大概就要扩张T次，他们满足以下关系。</div></p>
+
+<div>A0*(8/3)^(T-1)&lt;N&lt;A0*(8/3)^T</div><div>    而每次扩张，就要进行全表项复制，因此复杂度大约是O(N)量级。当扩张到放下N个表项时，就需要进行的复制的总数是：</div><div>sum(i, 0, T-1){A0*(8/3)^i}</div><div>    这是一个典型的等比数列求和问题，我们知道问题的答案应当是：</div><div>A0*3*((8/3)^T-1)/5=A0*(3/5)*(8/3)^T-(3/5)*A0</div>
+
+<div>    因此，(3/5)(N-A0)&lt;O&lt;(3/5)*((8/3)*N-A0)。如果只考虑数量级的话，插入的复杂度量级为O(n)，即哈希表的平均插入复杂度为n级。</div><div>    也许有人奇怪，哈希表的插入复杂度为1级阿，怎么得到n级的结论的？看上面，都说是放下N个表项时的总复杂度了。</div> <div>    我们可以和红黑树对比一下，红黑树的平均插入复杂度为logn级，平均查找复杂度为logn级。哈希表的平均插入复杂度为1级，查找复杂度为1级。但是红黑树在一点上比hash优秀——他的插入时间基本稳定，hash table的插入时间有可能会暴长。</div><div>    于是，当我们有N个元素，需要进行排重的时候，我们可以set化。假定set和dict基于一样原理运作，我们的时间复杂度为O(n+m)级，m为排重后元素个数。其实按照最差情况来说，也可以认为是O(n)级。</div>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Nov 28, 2011</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/algorithm">algorithm</a>  <a class="category" href="https://shell909090.github.io/tags/python">python</a>  <a class="category" href="https://shell909090.github.io/tags/%e5%85%b6%e4%bb%96">%e5%85%b6%e4%bb%96</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/1994/" title="正好聊到django——论他的模板问题">正好聊到django——论他的模板问题</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/1998/" title="五网融合——看起来很美">五网融合——看起来很美</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Openvpn on Shell&#39;s Home</title>
+    <link>https://shell909090.github.io/tags/openvpn/</link>
+    <description>Recent content in Openvpn on Shell&#39;s Home</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 04 Feb 2015 15:07:42 +0800</lastBuildDate>
+    <atom:link href="https://shell909090.github.io/tags/openvpn/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>openvpn的几种基本模式</title>
+      <link>https://shell909090.github.io/blog/archives/2724/</link>
+      <pubDate>Wed, 04 Feb 2015 15:07:42 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2724/</guid>
+      <description>&lt;h1&gt;vpn的原始模式&lt;/h1&gt;
+
+&lt;p&gt;vpn的最简模型，相当于在两台机器上插一块虚拟网卡，然后中间连一根虚拟网线连通。因此vpn才得名vpn(virtual private network)。&lt;/p&gt;
+
+&lt;p&gt;其复杂之处在于，这块虚拟网卡如何配置网络，和别的网卡是什么关系。再加上多个节点间如何通讯。种种都够新手喝一壶。&lt;/p&gt;
+
+&lt;p&gt;虽然openvpn在科学上网上是废了，但是在不出国的网络上用来保护通讯，还是非常好用的。&lt;/p&gt;
+
+&lt;h1&gt;tap模式&lt;/h1&gt;
+
+&lt;p&gt;tap模式的特点是二层打通。典型场景是从外部打一条隧道到本地网络。进来的机器就像本地的机器一样参与通讯，你分毫看不出这些机器是在远程。&lt;/p&gt;
+
+&lt;p&gt;优点：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;配置简单。&lt;/li&gt;
+&lt;li&gt;不需要在所有机器上配置或者动网关。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;缺点：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;tap在部分设备上不支持(例如移动设备)。&lt;/li&gt;
+&lt;li&gt;wlan加入网桥后不一定可以工作。&lt;/li&gt;
+&lt;li&gt;广播包会散发到虚拟网络中，可能极大消耗流量。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;特别解说一下wlan。部分AP对一个客户只接受一个MAC地址，因此无法做网桥。这应该是wifi网络的常规问题了。解决方法是换AP，或者做mac-nat。&lt;/p&gt;
+
+&lt;p&gt;操作方法：&lt;/p&gt;
+
+&lt;p&gt;你需要先在当前网络中，为vpn预留一些地址。这些地址应该足够拨入用户使用，不应和dhcp撞车，不应有其他人使用。&lt;/p&gt;
+
+&lt;p&gt;而后，建立一个br，将当前工作的eth迁移过去。(具体细节就不说了，每个系统小有差别)再建立一个tap vpn，在启动脚本中指定加入这个br。&lt;/p&gt;
+
+&lt;h2&gt;example&lt;/h2&gt;
+
+&lt;p&gt;假定内网地址为172.19.0.0/24，其中保留172.19.0.16-172.19.0.31供vpn使用。&lt;/p&gt;
+
+&lt;p&gt;服务器配置:&lt;/p&gt;
+
+&lt;p&gt;port [port num]
+proto udp ; 参考我上一篇&lt;a href=&#34;http://shell909090.org/blog/archives/2722&#34;&gt;vpn不要走tcp协议&lt;/a&gt;
+dev tap
+ca ca.crt
+cert server.crt
+key server.key
+server-bridge 172.19.0.16 255.255.255.0 172.19.0.17 172.19.0.31
+; 或者可以采用这句
+; server 172.19.0.16 255.255.255.240
+; 注意掩码实际上等于/28，做掩码运算后，这段地址和上面的保留地址重合
+script-security 2
+up vpn-start ; 建议使用绝对路径，避免版本坑
+down vpn-stop&lt;/p&gt;
+
+&lt;p&gt;vpn-start:&lt;/p&gt;
+
+&lt;p&gt;brctl add br0 $dev&lt;/p&gt;
+
+&lt;p&gt;vpn-stop:&lt;/p&gt;
+
+&lt;p&gt;brctl del br0 $dev&lt;/p&gt;
+
+&lt;p&gt;客户端配置:&lt;/p&gt;
+
+&lt;p&gt;client
+dev tap
+proto udp
+remote [server ip] [port num]
+ca ca.crt
+cert client.crt
+key client.key&lt;/p&gt;
+
+&lt;p&gt;测试:&lt;/p&gt;
+
+&lt;p&gt;直接ping任何一台机器，通了就是通了。没通在网关上抓包，看看断哪了。注意关闭防火墙。&lt;/p&gt;
+
+&lt;p&gt;PS:&lt;/p&gt;
+
+&lt;p&gt;上面的配置我配过，但是没有经过实际测试，所以可能有问题。有问题请联系我，我马上改。&lt;/p&gt;
+
+&lt;p&gt;dh和tls-auth可以配，个人每次都是配的。但是懒的话也可以不搞。&lt;/p&gt;
+
+&lt;p&gt;user nobody和group nobody强烈建议配，注意debian上是nogroup。这个配置可以将openvpn的执行权搞低，如果openssl再出什么执行任意代码漏洞，那么问题就不是立刻致命。&lt;/p&gt;
+
+&lt;p&gt;注意使用了user和group后，要配置persist-key和persist-tun，避免出错。&lt;/p&gt;
+
+&lt;h1&gt;tun模式&lt;/h1&gt;
+
+&lt;p&gt;tun模式的特征是三层打通，你可以当作没有二层数据。因此从拨入用户那里去问内网IP的mac是多少，根本没人理你。你必须将包发到vpn网关上，交由网关转交。目标服务器还得知道回这个数据的时候，网关是vpn网关，而不是默认网关。当然，有的时候两者其实是一个，例如vpn网关在默认网关上。或者不修改每台机器配置，直接在网关上做第二跳指向。&lt;/p&gt;
+
+&lt;p&gt;典型场景是多个网段打通(所以才叫tun——tunnel)。&lt;/p&gt;
+
+&lt;p&gt;优点：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;基本在所有设备上都支持。&lt;/li&gt;
+&lt;li&gt;可以透过wlan。&lt;/li&gt;
+&lt;li&gt;不会在所有网段上广播报文(广播风暴不过网关，这应该是常识了)。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;缺点：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;需要修改每台机器，或者网关。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;操作方法：&lt;/p&gt;
+
+&lt;p&gt;非常灵活，几乎无法总结。简单说说从外网拨入内网，打通两者间互访的配法吧。&lt;/p&gt;
+
+&lt;p&gt;配置一个tun vpn，连接到vpn网关上。配置中下发内网网段，走vpn。内网下发vpn路由，指向vpn网关。&lt;/p&gt;
+
+&lt;h2&gt;example&lt;/h2&gt;
+
+&lt;p&gt;假定内网地址为172.19.0.0/24，其中vpn网关在内网的地址为172.19.0.100。虚拟网络为172.19.1.0/24，其中vpn网管在虚拟网络的地址为172.19.0.1(默认)。&lt;/p&gt;
+
+&lt;p&gt;服务器配置:&lt;/p&gt;
+
+&lt;p&gt;port [port num]
+proto udp
+dev tun
+ca ca.crt
+cert server.crt
+key server.key
+server 172.19.1.0 255.255.255.0
+push &#34;route 172.19.0.0 255.255.255.0&#34;&lt;/p&gt;
+
+&lt;p&gt;在服务器上一定要打开:&lt;/p&gt;
+
+&lt;p&gt;sysctl -w &#39;net.ipv4.ip_forward=1&#39;&lt;/p&gt;
+
+&lt;p&gt;在所有服务器上执行/在网关上执行:&lt;/p&gt;
+
+&lt;p&gt;ip route add 172.19.1.0/24 via 172.19.0.100&lt;/p&gt;
+
+&lt;p&gt;或&lt;/p&gt;
+
+&lt;p&gt;route add -net 172.19.1.0 netmask 255.255.255.0 gateway 172.19.0.100&lt;/p&gt;
+
+&lt;p&gt;客户端配置:&lt;/p&gt;
+
+&lt;p&gt;client
+dev tun
+proto udp
+remote [server ip] [port num]
+ca ca.crt
+cert client.crt
+key client.key&lt;/p&gt;
+
+&lt;p&gt;测试:&lt;/p&gt;
+
+&lt;p&gt;在拨入设备上，使用mtr 172.19.0.1(内网网关)，来查看是否通过172.19.1.1和172.19.0.1。如果都到了，说明整个配置成功。否则看是否到vpn网关，再在网关上抓包。&lt;/p&gt;
+
+&lt;h1&gt;多节点通过虚拟骨干网打通&lt;/h1&gt;
+
+&lt;p&gt;这个模式在很多地方很有用，例如多个办公室互通，多个机房互通，等等。当然，这也是有前提的，这些节点的网段不能出现互相重叠，不然路由表这一段该指给谁？&lt;/p&gt;
+
+&lt;p&gt;另一点细节在于，最好每个节点都在网关上做。不然如上面所说，在每台服务器上做一次配置，非常复杂。&lt;/p&gt;
+
+&lt;p&gt;方案基本和tun方案一致，但是在不同的客户端上，将其他节点的网段全部上行到vpn骨干网，分别交由这个内网对应的网关去路由。做这点在客户端配置上做可能会有麻烦，可以考虑使用ccd(client-config-dir ccd)。这样可以在服务器上设定，在客户端拨入的时候下发部分网络配置。&lt;/p&gt;
+
+&lt;p&gt;更详细可以看&lt;a href=&#34;https://community.openvpn.net/openvpn/wiki/RoutedLans&#34;&gt;这篇文档&lt;/a&gt;。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>openvpn auth with google authentication</title>
+      <link>https://shell909090.github.io/blog/archives/2545/</link>
+      <pubDate>Fri, 24 Jan 2014 12:33:39 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2545/</guid>
+      <description>&lt;h1&gt;client config&lt;/h1&gt;
+
+&lt;pre&gt;&lt;code&gt;# base config
+client
+dev tun
+proto udp
+remote 192.168.1.122 1194
+nobind
+user nobody
+group nogroup
+persist-key
+persist-tun
+mute-replay-warnings
+comp-lzo
+
+# authentication config
+ca ca.crt
+cert shell.crt
+key shell.key
+ns-cert-type server
+tls-auth ta.key 1
+auth-user-pass
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Group should be nogroup, not nobody in debian.&lt;/p&gt;
+
+&lt;p&gt;auth-user-pass is needed for google auth.&lt;/p&gt;
+
+&lt;h1&gt;pam config&lt;/h1&gt;
+
+&lt;pre&gt;&lt;code&gt;account [success=2 new_authtok_reqd=done default=ignore]    pam_unix.so
+account [success=1 new_authtok_reqd=done default=ignore]    pam_winbind.so
+account requisite           pam_deny.so
+account required            pam_permit.so
+auth required pam_google_authenticator.so
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;In /etc/pam.d/openvpn.&lt;/p&gt;
+
+&lt;h1&gt;server config&lt;/h1&gt;
+
+&lt;pre&gt;&lt;code&gt;# base config
+port 1194
+proto udp
+dev tun
+comp-lzo
+user nobody
+group nogroup
+persist-key
+persist-tun
+status openvpn-status.log
+log-append  openvpn.log
+
+# authentication config
+ca ca.crt
+cert server.crt
+key server.key
+dh dh2048.pem
+tls-auth ta.key 0
+plugin /usr/lib/openvpn/openvpn-plugin-auth-pam.so openvpn
+
+# network config
+server 10.55.66.0 255.255.255.0
+ifconfig-pool-persist ipp.txt
+client-to-client
+duplicate-cn
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Plugin should be /usr/lib/openvpn/openvpn-plugin-auth-pam.so in debian, &#34;openvpn&#34; behind is fit for the filename in /etc/pam.d/openvpn.&lt;/p&gt;
+
+&lt;h1&gt;google authentication config&lt;/h1&gt;
+
+&lt;p&gt;Look at this &lt;a href=&#34;http://shell909090.org/blog/2014/01/%E5%9C%A8pam%E4%B8%AD%E4%BD%BF%E7%94%A8google-authentication/&#34;&gt;在PAM中使用google authentication&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h1&gt;startup&lt;/h1&gt;
+
+&lt;pre&gt;&lt;code&gt;shell@debws0:~$ sudo openvpn --config shell.conf
+Fri Jan 24 11:17:17 2014 OpenVPN 2.3.2 x86_64-pc-linux-gnu [SSL (OpenSSL)] [LZO] [EPOLL] [PKCS11] [eurephia] [MH] [IPv6] built on Nov 28 2013
+Enter Auth Username:username
+Enter Auth Password:
+Enter Private Key Password:
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The user you used to config google authentication is the username put into Auth Username.&lt;/p&gt;
+
+&lt;p&gt;Put verification code as Password, and you may have Private Key Password in your private key.&lt;/p&gt;
+
+&lt;p&gt;Have a fun.&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

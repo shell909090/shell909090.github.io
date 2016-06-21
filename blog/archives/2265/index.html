@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>面对对象的吐槽——类型之殇</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         面对对象的吐槽——类型之殇 
+    </h1>
+    <p class="meta">Oct 29, 2012
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2265/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <h1>继承之殇</h1>
+
+<p>讲继承问题，我们首先得定义什么是继承(inherit)，他是用来干吗的。</p>
+
+<p>所谓继承，就是当两种实体，满足其中一种必然全部都满足另一种的定义(is a)。一旦构成继承，可以带来以下好处（简单起见，我们直接就管这俩实体一个叫派生类一个叫父类）：</p>
+
+<ol>
+<li>派生类具备父类所有已经实现的方法，毋须再实现一遍——除非需要重写(override)。</li>
+<li>派生类可以当作父类使用，凡是使用父类的地方给与派生类也对。</li>
+</ol>
+
+<p>继承的最主要作用，是用于复用(reuse)。</p>
+
+<h1>内涵和外延</h1>
+
+<p>形式逻辑里面有一句话，内涵越大，外延越小。在继承上，如果我们严格按照定义来做，会发生很反人类的事情。因为类的定义是依赖于内涵的，</p>
+
+<p>我们还是看平行四边形，长方形和正方形的例子。我们用两边长度，夹角来定义平行四边形。然后如何定义长方形？夹角为pi/2。然后如何定义正方形？两边长度相当。</p>
+
+<p>不知道你是否看出了问题。是的，按照正统来定义，数据的约束只会越来越多。因为派生类必须是(ISA)父类，因此父类的约束必须全部满足。我们接着上面的例子，我们为平行四边形定义一个方法，设定夹角大小。那么在长方形中，这个方法如何处理？一旦用户调用方法设定夹角大小，必然会破坏长方形定义，因此这个方法只能重写抛错。</p>
+
+<p>为什么？从逻辑的本源来说，平行四边形是“两组对边分别平行”，并没有说夹角的事情。到长方形的时候才说，长方形是夹角为90度的平行四边形。显然，长方形是不能设定夹角的。因此，我们要么承认，不是每个平行四边形都可以设定夹角的，例如长方形不行。要么承认，每个平行四边形都可以设定夹角，长方形不是平行四边形。显然，后者违背逻辑，我们只能得出结论，<strong>不是每个平行四边形都可以设定夹角</strong>。</p>
+
+<p>同样，正方形的例子也说明，不是每个平行四边形都可以设定两个分离的边长。如果以此标准来定义类，那么必然得到的是正确而无用的逻辑玩具。平行四边形没有夹角，我们就不能定义面积计算的函数，也不能——基本什么都不可以。更过分的是，我们还不能定义两个分离的边长，因为定义并没有告诉我们，边长一定不等。照此下去，我们除了一个空空荡荡的“平行四边形”这个名字外，什么都定义不下去。</p>
+
+<p>为了解决这个问题，实践中，我们采取的都是，平行四边形是可以设定夹角的，然后对特例做抛错处理。这其实在本质上就违背了继承的原初意义。</p>
+
+<h1>继承和聚合</h1>
+
+<p>继承的另一个容易混淆的地方，就是分不清继承和聚合。</p>
+
+<p>其实从逻辑上说。继承和聚合根本就不是一回事情。例如你有(have a)一条狗，你可以让狗做任何狗可以做的事情，例如追猎物。我们可以说，你可以做的事情和狗没有区别，所以——你就是(ISA)一条狗？！</p>
+
+<p>傻子都不会弄错其中的区别！</p>
+
+<p>我们说，如果一个东西看起来像鸭子，叫起来像鸭子，走起路来像鸭子，我们就可以当他是一只鸭子，说的是弱类型语言。而且我们只能认为，我们不知道那个东西是什么(这是弱类型的特点)，总之可以当他是一只鸭子用。但是这不代表那个东西就是一只鸭子，他也可以是鸭子的代理人，或者拥有一只鸭子。在静态类型语言中，为了复用就不管三七二十一，直接声明PNG图像是一种BMP图像的——这绝对是逻辑上错误的行为。</p>
+
+<p>然而，你自己数数你在代码里面犯过多少次错？</p>
+
+<h1>多重继承</h1>
+
+<p>继承本身的问题我们先不说，我们再说一个很常见的问题——多重继承。</p>
+
+<p>既然我们说，只要一种满足ISA谓词判定，就可以认为是继承。那么理论上，我们就不能否决双重继承。例如我们定义了平行四边形，又定义了中心对称图形。那么长方形就同时是(ISA)这两者。从逻辑关系上，我们说长方形可以合法的继承两者。</p>
+
+<p>但是如果我们真的在程序内设定将长方形继承两者，马上会引起一连串的问题。</p>
+
+<h2>当多重继承发生冲突时</h2>
+
+<p>首先第一个是继承冲突。即当两个父类都具备同一个方法的时候，对派生类做方法调用会发生什么行为？</p>
+
+<ol>
+<li>肯定不能只调用一个，这会因此另一个父类的方法间发生内在不一致。这违背了继承的好处2。</li>
+<li>也不能两个都调用。两者的先后次序可能引发逻辑问题，因此先调用谁都是错误的。而且函数还有返回值问题——你返回谁的返回值呢？如果多值返回合并，这和函数原始的定义又发生了悖离，从而又违背了继承的好处2。</li>
+<li>因此，我们只能宣布这是个错误。</li>
+<li>既然是个错误，鉴于类间函数可能存在的内在联系，其他继承的函数也未必能够正常使用。</li>
+</ol>
+
+<p>你看，明明是合法的多重继承，居然造成了不可复用的结果。这就是继承冲突。</p>
+
+<h2>菱形继承</h2>
+
+<p>如果说继承冲突还是一个比较好考虑的问题的话，菱形继承就是一个让人吐血的东西了。</p>
+
+<p>所谓菱形继承，就是两个父类继承同一个基类。在这种情况下，对父类的调用会间接转到基类上。那么，基类的函数会调用几次呢？</p>
+
+<h2>继承冲突的几种解法</h2>
+
+<ol>
+<li>所有冲突的函数，父类必须都无实现。</li>
+<li>不得多重继承。这是很扯淡的，不过也是大多数时候的做法。我的编程指南之一就是——在C++中，任何时候都不要使用多重继承。</li>
+<li>使用其中一者。python是个典型的使用其中一者的例子，具体使用的按照继承编写顺序展开成MRO次序决定。然而这直接违背了继承类是(ISA)父类的定义。因此不要以为在python中，继承后总是没问题的。有的时候可能会出现继承后不能正常工作的情况。</li>
+<li>强制用户解决。要求用户必须人工定义函数，解决继承冲突的问题。从逻辑上说，如果用户定义的函数可以同时兼容于两个父类，就可以彻底化解多重继承冲突问题。然而杯具的是，很多时候在逻辑上，继承冲突是无解的。</li>
+</ol>
+
+<h2>区分接口和继承</h2>
+
+<p>父类没有实现冲突的函数，那么派生类中就不必纠结于调用谁的问题了。但是这引发了另一个问题——这就无法复用了。作为这一解法的极限，java不允许多重继承——除非继承的父类都是没有实现的类。这其实不是继承，而是实现(implement)接口(interface)。</p>
+
+<p>接口编程是一个很有道理的东西，COM里面大量着重于接口。但是接口也有自己扯淡的地方——接口是一个编写期的东西，他最大的用途就是编译期类型检查。接口并不能复用(reuse)代码。如果你有一个接口，叫做平行四边形。里面有个方法，用于计算平行四边形面积。然后你实现了长方形和正方形——那么杯具来了，你需要在两个里面通通实现一遍这个方法，即使他们基本没区别。</p>
+
+<p>当然，接口本身的好坏各有评价。你看，接口的唯一作用，就是声明类提供了某些函数。当我们对方法传入一个新的类的时候，我们必须将新的类也实现一下接口——哪怕这个类其实已经实现了这些方法。只要不实现接口，方法就不认可。这是强制编译器类型检查(静态类型语言)的基础。因此一般来说，静态类型语言，使用接口。动态类型语言，duck typing。</p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Oct 29, 2012</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/c">c</a>  <a class="category" href="https://shell909090.github.io/tags/java">java</a>  <a class="category" href="https://shell909090.github.io/tags/program">program</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/2263/" title="高考和大学的选择">高考和大学的选择</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/2266/" title="异常之殇">异常之殇</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

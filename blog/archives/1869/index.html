@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>除虫故事（二）</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         除虫故事（二） 
+    </h1>
+    <p class="meta">Aug 2, 2011
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1869/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>第二个故事，是一次oracle数据库的紧急损坏抢修问题。 <div>    当时客户紧急保修，系统无法继续工作，重启后无效。我们就找了DBA赶快飞去客户那里。客户有两台应用服务器和两台数据库，应用服务器组成热备的态势，数据库组成RAC。数据保存在一个SAN盘阵上，LogFile放本地，ArchivedLog使用备份脚本复制到备份服务器后删除。听起来是挺靠谱的方案，没想到就坏了。</div><div>    去了后，客户说暂时恢复了运作。然而我们还是要出具详细的报告，因此赶快去了机房。贝壳第一眼看的东西，就是/var/log。里面的报告是err9，也就是文件读写错误。oracle一切正常，应用发布服务器一切正常。</div></p>
+
+<p><div>    这下有点抓瞎了，难不成要出具一份报告说SAN盘阵损坏？可是损坏也得有厂商来维修，说坏得有真凭实据阿。现在SAN一切正常，这个报告怎么写呢？</div><div>    说来算巧合，贝壳检查磁盘的时候，顺手打了一句df -h进去，看到磁盘空间已经用掉了80%以上，顺口问了句DBA，如果空间耗尽会如何。DBA说会挂起，和目前状况一致。贝壳顿觉狐疑，是不是空间耗尽呢？是的话，为什么会神秘的恢复呢？</div><div>    Oralce的运作非常精巧，也非常复杂。当一条SQL语句执行的时候，先写LOG，然后操作数据，最后再将结果写入LOG。当出现问题需要复原的时候，根据某个时间点的数据备份，和整个运作过程中的所有Log，就可以复原。但是LOG写出的时候量非常大，没有无限的空间给他写阿。所以LogFile的设计是文件循环，当写满一个文件，切换下一个文件。一个文件写满后，就会有一个服务，趁着磁盘空闲，将Log压缩备份为ArchivedLog，然后再将这个文件的状态变为Empty。</div></p>
+
+<p><div>    我们的设计，是通过脚本备份ArchivedLog，除去最后一个文件外，复制到备份服务器上，然后删除。但是我们对ArchivedLog的量估计不足，一天清理一次，分配空间只有20G出头。系统开始的时候压力不高，因此绰绰有余。后来压力逐渐升高，这天的操作比较多，ArchivedLog量大了点，导致空间写满。当ArchivedLog空间满之后，备份进程就会报告错误，这就是/var/log下面err9的来历，因此LogFile无法备份出来。当所有的LogFile被循环写满后，SQL执行前试图写入LogFile失败，执行就会失败，然后挂起在那里。这导致了所有应用发布服务器的失效。</div></p>
+
+<p><div>    备份脚本的设计是定时和开机结合的，在客户第一次重启设备的时候，已经执行了备份脚本。然而备份动作需要执行相当久，中间客户又重启了几次，导致备份工作进展缓慢。直到半个小时后，第一份ArchivedLog才备份出去。然后清理文件，开始LogFile的备份，大约执行了一个小时多。此时服务就突然恢复了，因为空间问题已经暂时解决。而后是不断的ArchivedLog备份和LogFile的备份的平衡，直到我们到的时候，LogFile已经全部空了，ArchivedLog还没有完成备份。因此我们才能抓到最后的尾巴。</div></p>
+
+<p><div>    反过去检查备份脚本的执行记录，基本验证了这个想法，客户也接受了我们的报告，不过还是要责令修改系统——这是后话不提了。</div><div>    这个故事里面，至少有几个教训。</div><div><ol><li>    对于所有编程时无关紧要的假定值，在开发时可以胡给一个差不多就行，但是上线的时候必须重新分配合理的值。因此必须将这些假定值记录出来，否则从程序中找出假定值来本身就是一个非常困难的事情。</li><li></p>
+
+<p>    确实运作一下，搞清楚运作方方面面的问题，不要想当然，觉得没问题。就算运作了没问题，在时间的考验前都没人敢保证没事。</li> <li>    一套系统，尤其是大型复杂系统，必须有懂得运维的人员接手管理。检查磁盘IO，CPU压力，内存和磁盘用量，数据量，网络响应速度等等问题。</li><li>    废物Log不要乱出，太多的Log和没有无异。如果早关注备份脚本的执行记录，就能早找到问题。可是由于量太大，我都是过滤掉了看的。</li></ol></div></p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Aug 2, 2011</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/bug">bug</a>  <a class="category" href="https://shell909090.github.io/tags/program">program</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/1867/" title="除虫故事（一）">除虫故事（一）</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/1871/" title="如果你的python项目一定要源码保密，你一定用错语言了">如果你的python项目一定要源码保密，你一定用错语言了</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

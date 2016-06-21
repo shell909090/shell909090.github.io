@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>Shell&#39;s Home</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  <link href="https://shell909090.github.io/index.xml" rel="alternate" type="application/rss+xml" title="Shell&#39;s Home" />
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+ <div id="content">
+  <div class="blog-index">
+    
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/1975/">几个模板系统的性能对比</a>
+    </h1>
+    <p class="meta">Nov 9, 2011
+         - 2 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1975/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>对比目标，jinja2，cheetah，mako，webpy，bottle，tornado，django的性能。 方法，随机生成一个二维数组，第一列是自增数据，第二列是长度为100的随机字符串，然后生成html，比较一次生成的时间。 说明，如果模板有编译缓存，打开。有其他方法加速，打开。生成缓存，关闭。不计算随机数据生成时间，一次生成后一直使用。 以下是文件有效内容，没用的都略去了。最后的顺序是因为我根据结果整理了一下调用次序。&mdash;&ndash;testcheetah.tmpl&mdash;&ndash; &lt;table&gt; #for $i in $l &lt;tr&gt; &lt;td&gt;$i[0]&lt;/td&gt; &lt;td&gt;$i[1]&lt;/td&gt; &lt;/tr&gt; #end for &lt;/table&gt;&mdash;&ndash;testdjango.html&mdash;&ndash; &lt;table&gt; {% for i in l %} &lt;tr&gt; &lt;td&gt;{{ i.0 }}&lt;/td&gt; &lt;td&gt;{{ i.1 }}&lt;/td&gt; &lt;/tr&gt; {% endfor %} &lt;/table&gt;&mdash;&ndash;testjinja2.html&mdash;&ndash; &lt;table&gt; {% for i in l %} &lt;tr&gt; &lt;td&gt;{{ i[0] }}&lt;/td&gt; &lt;td&gt;{{ i[1] }}&lt;/td&gt; &lt;/tr&gt; {% endfor %} &lt;/table&gt;-----testmako.html----- &lt;table&gt; % for i in l: &lt;tr&gt; &lt;td&gt;${i[0]}&lt;/td&gt; &lt;td&gt;${i[1]}&lt;/td&gt; &lt;/tr&gt; % endfor &lt;/table&gt;-----testwebpy.html-----$def with(l) &lt;table&gt; $for</p>
+
+          
+              <footer>
+                  <a href="https://shell909090.github.io/blog/archives/1975/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/1973/">openwrt配置——arptables配置</a>
+    </h1>
+    <p class="meta">Nov 7, 2011
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1973/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>让其他人的设备无法使用网络。opkg install arptables --------/etc/init.d/arptables--------#!/bin/sh /etc/rc.common start (){ arptables -F INPUT arptables -A INPUT --src-mac aaa -j ACCEPT arptables -P INPUT DROP} stop (){ arptables -F INPUT arptables -P INPUT ACCEPT}&mdash;&mdash;&ndash;end files&mdash;&mdash;&ndash; 注意，千万把自己的mac地址写对了，否则一个/etc/init.d/arptables restart下去，你自己的机器就断线连不上了。不过一般来说，重启后arp限制会失效，因此可以重启来去掉限制。实在不行也可以拔下U盘，在电脑上进行mount和修改，然后再插回去启动设备。根据测试结果，内网还是可以访问的，不过路由器无法访问了。有一个链叫做FORWARD，也许改这个可以解决。但是我没有找到相关资料，因此没有下手。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/1971/">Openwrt pptp passthought</a>
+    </h1>
+    <p class="meta">Nov 4, 2011
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1971/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>你还在为使用openwrt路由器无法使用pptp客户端而烦恼么？请看这个页面。按照他的说法，输入以下句子就可以解决你的烦恼。 If you use a pptp client behind an openwrt router, and pptp tunnel not work, look at thispage. opkg update opkg install kmod-ipt-nathelper-extra 这个方法不仅对路由器内使用一个pptp有效，而且对多个pptp也有效。 It&#39;s work for both single pptp tunnel and for multi pptp tunnels. 然后，记得重启。 Remember to reboot router.</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/1969/">SHLUG Summit 2011</a>
+    </h1>
+    <p class="meta">Nov 3, 2011
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1969/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>这次有我的演讲，转一下转一下，大家来捧场。 &mdash;&mdash;&mdash;- Forwarded message &mdash;&mdash;&mdash;- From: ghosTM55 &lt;ghosthomas@gmail.com&gt; Date: 2011/11/2 Subject: [shlug] [公告]SHLUG Summit 2011 To: shlug &lt;shlug@googlegroups.com&gt; Hi all,我们SHLUG的2011年年度大会来了! 作为惯例，我们的年会会面向Linux新手以及初学者来进行Linux的宣传与知识普及，这次也不例外 这次我们将会来到松江大学城，在东华大学进行一场200人规模的交流会，欢迎有时间和兴趣的朋友一同前去参加 时间: 2011年11月6日(周日) 下午2点 地点: 东华大学 松江大学城校区 报名: 不需要 入场费用: 不需要 演讲主题: * 如何成为一名黑客 * Debian GNU/Linux介绍 * 实战Linux网络部署 隐藏关卡: * Ubuntu 11.10 Release Party 和去年一样，在这里我需要: 1. 一些朋友能够来帮助到我们运维好本次SHLUG的年会(拍照，摄影，现场话筒传递，入场引导等) 2. SHLUG的朋友在参与活动的时候尽可能坐在教室后排并请勿在演讲过程中大声讨论问题 3. 大家对于此次活动的线上以及线下的帮忙宣传 在这里需要感谢东华大学开源社区的同学们的积极配合与帮助，为我们奔波于松江大学城各高校进行宣传 并且为我们找到了能够容纳200人的教室(具体教室号码尚未确定，我会在列表以及blog中进行更新，请持续关注) 欢迎各位参与本次年会并向我提出建议，谢谢</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/1967/">收稿子啦，宅男买数码</a>
+    </h1>
+    <p class="meta">Nov 2, 2011
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1967/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>淘宝上东西很多，360buy东西也很多，电脑卖场多如牛毛，听起来买个数码产品是个很容易的事情。其实才不是呢，尤其是对于对数码有要求的宅男来说，买个设备要多困难有多困难。 贝壳上淘宝买一个充电器，要求也不高，5V/2A，可以用于我的台电P81HD平板。OK，上淘宝，找第一个卖家，狮王的四口充电器——结果，总电流不足，退货。第二个卖家，瑞能官方店——结果，有高频分量，在充电时无法正常操作，目前还在协商中。第三个卖家，三星的充电器——结果，充电有高频电流声，温度很高。gary说，他有个DELL的充电器也有类似问题。我很高兴的说，那是没事咯？他说，结果，爆了，连带烧了整个房间的电闸。然后拆开塑封看印刷，粗糙，肯定假货无疑，强行要求退货。第四个卖家，上去问，有货么？有货。真货么？真货。确定么？确定。我这么说吧，我不和您讲道理，到手后，我找三星干活的兄弟看。他说真货我就收货，他说假货我就退货，连邮费一起退。不退差评。 ——先生？ ——您好？ ——还在么？ OK，这就是淘宝的品质。当然，我不是说淘宝无好货。Thomas老婆在淘宝上买的DIR-825路由器还是挺好用的，我在上面订花什么的也不错。问题是，对于产品挑剔的宅男来说，在淘宝上买东西是一个艰难的抉择。应该说，淘宝基本无真货。 那么京东之类的电子商城呢？ 贝壳买过他们的两箱秋叶原六类线，结果其中一箱的中心龙骨缺失。我问他们怎么回事，他们就只负责退货。还好，退货，换发票的过程都是OK的，但是没有一个人出来说一句，这是为什么，也没有人道歉。看看京东上面比较热门的东西，基本都能看到旧货贴。啊——运气不好，终于让我碰到旧货了。看来他们也没靠谱到哪里去。 那咋办？ OK，贝壳简单说一下一个想法。 贝壳会收集您的文章，包括某个数码产品，您的购买时间，价格，个人评价，当然，最重要的，购买方式。因为文章要发在贝壳的blog上，所以您需要同意内容以cc-by-sa3.0相容版权发布。当然，文章会署您的名字。收集文章的前提是，我得认识您。您和贝壳是在哪里吃过饭，您帮贝壳解决过什么问题，物理世界里面互相有过交流。只要认识，我就会贴出，或者转发您的文章。注意，需要反复强调的是，里面需要提供购买方式。贝壳不介意那个卖家和您有没有亲戚朋友关系，只要这个东西是可靠的。为什么可靠？既然我认得您，我就相信您。一个人钻研半天技术，只为了其他几个宅买几样东西而说谎，这是不值得的。就好象贝壳写那么一大堆技术资料，开这么一个blog，不会为了几个钱的回扣专门骗你一回。因此，如果你认得贝壳，这个事情也是比较有保障的——至少你不会故意的被骗。至于运气好坏，个人感觉，这个就真不好说了。所以，如果您不认识贝壳，只是经常跑过来看技术资料的——那，就看您信不信了。不管您信不信，反正我信了。 而对于来挑选东西的宅男们，贝壳要说明的是。贝壳买东西的风格，是偏好产品的用途和质量，而无视价格的。所谓无视，既包括可能因为某个卖家不靠谱或者某个型号不靠谱而购买相对比较贵的产品。也包括某个东西虽然名声不显，但确实很好用，而无视东西的品牌。因此，您可能会问，为什么贝壳这里只介绍DIR-825路由器，还有那么多更物美价廉的呢？例如buffalo的某款。首先，可能因为贝壳的朋友只有人用过DIR-825。其次，贝壳知道buffalo的路由器都是单AP，而贝壳本身是一定需要双AP的。或者您也可能会问，为什么我们对苹果这样的东西，周边居然配了一个名不见经传的充电器/触摸笔。实话说，只要好用，我不在乎。 另外，我也希望从文章中挑东西的人，把您的经历也附加在下面。包括您买了同样产品，感觉如何？其他产品，好不好用？这也是给后来者一个借鉴。 好吧，废话半天，现在贝壳开始征集稿子了。 PS：个人希望，如果有买了小米手机量产版本的小白鼠，能够跳出来说说情况。贝壳希望入一个，可是网络上说法满天飞，不知道该信谁啊。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/1965/">P81HD，以及任意一种Android的翻墙</a>
+    </h1>
+    <p class="meta">Oct 31, 2011
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1965/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>假如，你有一台Android，不能刷机（厂家没提供ROM，也没有源码，而且可能锁了bootloader），没有ip_gre模块，没有tun模块，连iptables_filter模块都没有，那怎么办呢？没有第一个，就无法使用pptp/l2tp的内置VPN，没有第二个，就无法使用openvpn，没有第三个，就无法使用sshtunnel。如果你运气不好，这个东西连root都没有，肿末办？ 很简单，你得先弄到Opera，注意Opera Mini没有测试过，据说不行。然后准备一台vps，上面不但要开ssh，而且必须在机器上有个代理。然后在地址里面输入opera:config，看到设定了？下面有一项proxy。按照参考[1]的方法设定代理，地址设定为127.0.0.1:1984。注意不要写成localhost:1984，后者不一定认。代理服务器用sshtunnel，注意不要用Socks5翻墙，必须用http模式。打开看看？是不是可以了？ 原理很简单，sshtunnel使用redsocks来执行的全局翻墙。根据参考[3]，redsocks是通过iptables规则来将所有连接重定向到自身，然后包装成代理的。由于iptables_filter模块缺失，或者干脆没有root，这个路子走不通。但是启动sshtunnel后1984端口的翻墙链是好的，只是程序都不使用而已。Opear又给了我们一个自行设定代理的能力。因此，结合使用两种方法，能让你在没有模块，没有root的情况下，自行拥有翻墙能力。由于Opera只支持HTTP代理，因此你必须满足http代理翻墙要求（远程服务器上有代理，不启用socks5模式）。 参考：1. Android下使用Opera实现Wifi代理上网2. Android 平台的 SSH Tunnel 应用 3. redsocks on android指南</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/1963/">一个充电器的小问题</a>
+    </h1>
+    <p class="meta">Oct 28, 2011
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1963/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>我不知道我的blog读者有多少是使用手机/平板来看我的blog的，估计不会很多。但是如果说有多少人用电容屏手机/平板，那估计不会少。那有多少人知道，充电器选择不好会导致触摸屏出现问题呢？ 今天贝壳就有幸碰到了这个问题。P81HD，买了一个单独的蓝魔的线进行充电。USB2DC，2.5mm头，内正外负。不知道有多少人看出来了，DC的电气特性和USB有个很大的区别——不是，我不是说没有信号引脚，当然DC是没有信号引脚的——最大区别在于，USB定义了一根地线，而DC没有。因此DC的屏蔽能力比USB差一点。差多少呢？如果你的充电器是2口的，那就是没区别。。。 不过，无论充电口怎么设计，电气参数都是5V/2A。从ipad以后，这都成了usb充电器的标准最大功率了。另外科普一下，usb的四种常见电流，100mA，500mA，1A，2A。100mA是电脑连接小型设备时的默认功率，500mA是电脑USB口的最大输出电流。1A的就是手机充电器/非标准电脑口的输出电流了。至于2A，这是非标准功率，ipad用的。 5V/2A的功率是相当大的，在使用的时候，如果充电器不好，会造成触摸屏不灵敏，甚至无法工作。贝壳的P81HD配合上瑞能的充电器（旗舰店出的，应该是正品），在一个手指点击的时候，会出现额外的触摸。本来点在左下角，在右下角会多出现一根触摸点，一跳一跳的。本来贝壳自己还想不通是什么理由，周四聚会的时候，旁边的LTN同学给出了答案。如果你用了不合格的充电器，会导致你的手机无法在充电时使用。具体可以看这里。简单来说，所有便携式开关电源，都会造成电容屏手机无法正常工作。不过有些开关电源做的比较好，在输出上加了滤波环。如果自己使用带有滤波环的数据线，一样可以缓解这个问题。 我找瑞能旗舰店的人反映，他们说让我打客服电话。先打了一个福建的电话，0595-22636088。接电话的是个售后，我描述情况后，他找了一个技术。技术告诉我，这情况他也没碰到过，我是头一个反映的。他们也没有办法，要退货找瑞能旗舰店的人。然后，旗舰店的又给了我一个电话，是800的全国电话，8008585185。打过去，这个客服靠谱多了，说这个情况他们见过。一个iphone用户，也有类似情况，重启后问题消失。我说我重启N趟了，他说，这个就不知道了，我找技术问问。 不得不说，人家做服务的态度真的非常好。过10分钟，电话打过来了。说，他们的产品都是经过严格的出厂检测的，应当不存在输出电流不稳的情况。我这个情况有可能是因为在使用时，瞬时电流超过2.1A，导致软件故障。我说，你知道我的设备的功率是多少么？他说，不知道。我说，电池是3.7V*4Ah的，应当是15Wh左右。可用5小时，功率应当是3W。除以输入电压5V，电流是600mA。如果充电电流维持2A不变，加入一个0.6A的工作电流，你这个充电器早严重超载了。这个理由说不通。他说，那要么你去我们上海的维修点，带着设备，他们会给你当场测试。如果确实不解决问题——你那里买的？我说，淘宝的瑞能旗舰店。他说——那个没事，他们会当场给你退货的。如果设备烧掉了，我们也有保险的。 当然，说是这么说，不过地址是在南站那里，贝壳过去太困难了。反正我把这个过程说给猫咪听，她说，废话什么，直接给差评得了。卖家的东西在客户这里用出问题，应当负责运费给换一个。让客户自己带来带去非常不负责。然而作为一个死理性派，贝壳比较反对没有弄清事情就直接下结论，何况人家态度很好。（当然，这些承诺你信不信就是另一回事了）因此打算找个人检测一下输出，看看是否带有交流。 然后，贝壳和小强说起这个问题，小强借出了他自己的ipad充电器。这个是上海苹果官方店里面买苹果附送的，带序列号，绝对正品。接上去——一样不行。可见并不是瑞能的问题，而是P81HD的屏幕太容易受到干扰了。当然，瑞能和苹果充电器本身有高频分量是一定的。为了解决这个问题，贝壳行险，在淘宝上买了一个三星galaxy的充电器，就是thomas借给我的那种。到货接上去试了试，一点问题都没有。这说明，三星的充电器在质量上比苹果的好多了。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/1961/">ApacheBench在性能分析时的一点注意</a>
+    </h1>
+    <p class="meta">Oct 27, 2011
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1961/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>废话不多说，上干货。 http://blog.miniasp.com/post/2009/10/07/Explain-ApacheBench-ab-for-the-Failed-request-field.aspx http://stackoverflow.com/questions/579450/load-testing-with-ab-fake-failed-requests-length 简单来说，如果你用ab压网站，发现很多Failed requests。只要这些都是Length，就不算数。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/1959/">浮生半日</a>
+    </h1>
+    <p class="meta">Oct 26, 2011
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1959/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>先说一下，文写的是上上周去北京的事情，因为前面堆积的文太多了，所以拖到现在才发出来。 早上先去了中关村。这次出来匆忙，忘记带usb数据线和otg线。结果跑到北京发现，要多呆几天就势必难免需要给手机充电。而我带了移动电源，却忘记带数据线。。。 好久不去海龙，里面的商贩更加乱来。一根USB数据线，开出天价来。开始一个开20一根USB，35一根OTG。USB成本一般就是1元，最高不会超过5元。老子就算是旅游，也不是来当冤大头的好吧。何况老子15年前就在这买电子产品了，那会你还不知道中关村在哪呢。换下一个——我靠，改30了。再跑到HTC的专卖店，更加夸张了，看了一眼接口，报价50。恩，莫非是我没说明白。G2手机的数据线比较特殊，是T型口多一个角。这种线无法连接其他设备，但是普通USB线可以连接这种手机。我只是要一根普通USB线——50。 好，你狠，我找下一家。下一家倒是靠谱很多，USB线10元，OTG20，虽然小贵，但是可以接受了。而且USB线和OTG的质量颇好，不算太冤枉。我干脆就让他们介绍一家3G上网卡店（通常介绍客人过去都是有回扣的，或者有合作，关系比较好）。中兴MF633的上网卡是在说明中明确表示支持Linux的，不过他们没有。所以我就挑了一个别人测试下来，肯定P81HD肯定支持的网卡，MF190。他们开价190，比淘宝贵了30。好吧，去掉邮费，这个也算合理利润。何况我要求现场试货，可退还的。 测试下来，一切正常，我现在有3G上网能力了，很高兴，于是紧接着，乐极生悲了。我的P81HD挂着耳机线，出门的时候剐了一下，摔地上，贴膜喇伤了。真是无妄之灾，幸好，这个可以破财免灾。找个贴膜的，说P81是8寸4:3，尺寸特殊，需要裁。裁就裁吧。贴膜的是个汕头来的女的，手艺还不错。整个膜的中间没有气泡，手感比上个膜好，只要20。唯一的问题是屏幕下方部分边角，没有贴合平整。 午饭还是在鼎好楼上吃的，依然是京东肉饼和酸梅汤，上次和猫咪一起吃的东西。不过今天的人更加少了，看来附近卖场一家接一家开门，对他们生意造成了很大冲击。酸梅汤比上次给力，可是肉饼却太难吃了。吃了半个，实在没胃口，加买了一些锅贴——呕，比肉饼更难吃。我看午饭就这样吧，再吃下去保不齐是个悲剧。 猫咪说有空带点吃的回去，下午就跑一趟王府井吧。中关村去王府井最快的方式是四号线，中间要过西单。我索性在西单下车，逛了逛西单商场和图书大楼。大楼前的景观如故，就是稍显破旧。西单的一堆商场人山人海，比以前热闹多了。不过可惜的是，以前连着的两家KFC全没了。吉野家开了进去，外面修了一个小楼卖衣服，小下沉广场完全看不出样子了。临街一堆卖衣服鞋子的小店全拆掉了，改成了大卖场。周围车多，人也多。人不管车，横冲直撞。车怕人，左躲右闪，步履艰难。今天还看到了一辆京?00010的车，开的倒是很规矩，红灯停车，避让行人。不知道这种车的车主跑到西单来干嘛，不会是来买东西吧。。。 西单到王府井不远，不过我不高兴坐地铁了。过地道坐99路，一路能看到天安门广场什么的，算是短途观光吧。西单地道里面已经有警察站岗了，里面一个卖艺的都没有。这里曾是西单女孩起家的地方，现在西单女孩上了春晚，这却没人卖艺了。不止地道，整个图书大厦前面，还有左安门车站，都是密集的警察执勤。不知道是惯例还是今天有什么事情。 王府井这地方也算挺熟悉的，以前有空进城来玩，一个选项就是王府井。现在车水马龙更加了不得。不过热闹归热闹，其实商业氛围非常浮躁。我在王府井走了半天，找猫咪要吃的东西。结果连食品商店都没几家。大多数都是金店，工艺品店，高级餐厅，服装，玩具。日用品和食品几乎没见到。就算有，我找了一圈也没有。走的腿都快断了，好吧，试图在商业购物中心找日常吃食是我的错。说打算找一家一茶一座给自己的设备充电，顺便上个网，休息一下，喝点东西。点评上找到一家，走过去，保安说这里现在没有了，要走更远的路才有。好吧，别的店也可以，只要有电源，我自己有3G网络。不过我走了10多分钟，没有一家店里面有电源的。我了个去阿，我在南京路上随便找三家商场，问他们的保安。基本就能找到一家店，廉价的休息喝饮料，而且还有电源。好容易找了一家星巴克，居然还客满，没地方坐。好吧，鉴于我腿实在受不了了，我干脆到大食代去坐坐吃东西，顺便找一家小店给我的设备冲个电。 今天在大食代碰到几件很有意思的事情。我刚开始吃锅贴的时候，有一对夫妻在吵架。男的是广东口音，女的是北京口音。量过人吵架的事情，听起来也有地域风格特征——但不是地域歧视哦。好吧，听夫妻吵架比较无聊。然后是喝果汁的时候，看到两个中国人样子的人在说英文。当他们两个不说了，我用英文问了问其中一个，样子比较像白领的年轻男性。他说他是新加坡人，所以只会说英文。我再稍微听了点他和老板的谈话，老板和他一样，是新加坡人，跑到中国经营一家小小的店面。老板说，也说不上喜欢不喜欢，反正就是混饭。白领样子的青年说他是来中国旅游的，去过一大堆地方，具体我记不请了，只记得一个蒙古。老板问他蒙古如何？他说还不错，不像想像中的差。 在这个男人的旁边，是一对打扮入时的年轻姑娘。最奇怪的是，两个人用手语交谈。神奇之处在于，两个人一边吃东西，一边用手语交谈。甚至端着一个碗，打手语，喝一口，打手语，换手，打手语，夹菜，还是手语，吃下去，手语继续。看起来好像日本的手印表演一样，但是不是特意留意这桌，一点看不出突兀。看来无论什么情况，八卦都是女孩子的天性和本能。更奇怪的是，两个人手语流利，显然都是长期使用的。作为残疾人（没有鄙视的意思），两个姑娘都穿着入时，不知道她们是什么情况。 再旁边，是两个老外，老老实实吃东西，没啥好说的。老头很像好莱坞电影里面的美国农场出来的顽固老头，旁边的女士不时的根他说话，他就是简单的点头，吃饭，吃饭，点头。旁边的女士一点也没有奇怪的和他继续说，他也没有不耐烦，用筷子夹起——一颗鱼丸？！我去阿，哪个美国顽固老头在好莱坞电影里玩出这手都可以当成杂技了好吧。说话间，外国老头又熟练的夹起一颗鱼丸吃掉。 再旁边——好吧，我都奇怪为什么在短短一个小时内，能让我看到这么多有意思的东西——他们是一堆青年男女，男的坐左边，女的坐右边，有个坐错位置的，和旁边人贴的很紧——为什么你懂的。一帮人的年纪都不大，看起来像高中生的样子。他们的奇特之处在于，他们中有一半白人，而且是金发碧眼白皮肤，白到发红的正宗白人。当然，仅仅是这个还没什么奇怪的。问题是，其中有一个白人男孩身边是亚洲女孩，一个白人男孩身边是亚洲男孩，剩下的人不停的在照相。绯闻女孩剧组出外景来北京了？ 出门来，看到一对情侣。男的很正常，女的穿着执事服，梳着两个包包，单从头发来看，有点像银魂里面的神乐。画着很夸张的妆，一看就是cosplay。不过刚刚看的奇怪事情已经够多了，再来一个我也不怎么奇怪了。 From P81HD</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="https://shell909090.github.io/blog/archives/1957/">旅行感想</a>
+    </h1>
+    <p class="meta">Oct 25, 2011
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1957/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>大巴最好的位置在中间靠前，靠近门的位置。后面比较颠簸，下坡的时候刹车片又有味道。前面出事故的时候比较严重。 每次履行都肯定有计划外的支出——还不包括购物和消费——说白了就是明抢一票。很多消费，明面上说是非强制的，但是你不缴，肯定麻烦多多。这次旅行，几乎必须缴的自费项目有（没有强制项目），大理古城电瓶车，一人30，观光缆车，一人172（事先在旅行合同中说明），玉龙雪山景区车套票，一人50（事先在旅行合同中说明）。洱海游船，上船是站着的，要座位要么抢，要么15一人包座位。 跟团旅游，赠送景点基本是不去的，除非这个景点不但不收门票，而且反而会给旅行社人头费。当然，给人头费的理由是客人在里面要有可观的消费。路上时间基本是忽悠的，导游告诉你一个小时，那差不多按照一个半小时来计算就好。搭配景点基本是不值得看的。要评价旅游项目，就要看主景点的名声和时间。尤其注意细节。例如大缆车可以看看雪山，小缆车基本就白来了。 组团的几个常见问题是，餐标太低，不接受地陪投诉，变相购物，行程太紧。旅行团价格战的结果就是，大部分团的餐标都很低。桌子上吃的都是很难吃的东西，这就失去旅游的乐趣了。要自己加餐，一个是餐馆必须接受，另外如果用餐时间过长，其他客人等待，大家有意见，导游也会催。 很多旅行社写明，对地陪导游的投诉必须在旅游结束时的地陪卡上反映，回来后不受理。您别傻，这就是不接受地陪投诉的意思。您别以为有问题等旅游结束的时候可以在意见卡上反应，好点的情况是，导游到一半的时候，就找你们来填卡了。要么是填了卡才敢给你出问题，要么就是你人还在导游手里，人生地不熟，有意见敢写么？差点的情况，据说有导游上车就让你填卡的，你是填呢，还是不填呢？最糟情况是，你连卡都见不着，导游直接找了几个人，自己填掉了。所以，凡是不能以行程结束后多少天内为基准进行反应的投诉，一概可以认为是不接受投诉。 至于变相购物，这点见仁见智。我出去玩，大部分时间都有购买当地特产。作为买家，我总是试图买个物美价廉的东西。不过，除非是当地人，否则物美价廉是不可能的。所以购物基本呈现两级特征，高价正品，还有低价无保。如果购物能够事先说明，符合个人需要，并且能负担部分旅游费用，那我也不介意购物。然而跟团购物的问题是，导游往往会为了利益，使用不违规的最大力度促销。这样完全失去了旅游的乐趣，变成购物了。云南这里号称没有进店，但是导游在车上会介绍螺旋藻，翡翠什么的，不能不听。要买，到地方一会就买了跑。导游直说，他工资都是从里面赚的，我们购物的钱，他提百分之三的介绍费。然后这些钱要缴掉百分之七的税，在一个月没有投诉后拿到手。这个算不算购物，是否影响心情，就自己评价吧。 最后一个问题，就是行程太紧，这点最影响心情。为了增加卖点，旅行社总是试图在短行程内加入最多的景点，很多客人也以为景点越多越好。其实每个景点多少时间都有相应的评估，旅游总体时间以这些时间略宽松为好。相对来说，自由行给出的时间评估都是比较准的。如果一次旅游上景点过于密集，那么每个景点的时间就会减少，景点间的路程还会压缩时间。最后就变成了上车睡觉，下车尿尿，到景点拍照，回家什么都不知道。 如果自己出行，长途旅行最好的方式是使用公众交通，例如火车，飞机，等。自驾游通常限于不超过400公里的城市。原因很简单，不疲劳驾驶的情况下，最高可以一个人驾驶3小时，中间休息一次就好。即使高速上开到120，也就360公里，加上头尾，自驾4小时出去玩，已经是单人驾驶的极限。再远，需要多人轮流，而且车上太累，不如直接火车飞机。 到当地后，有条件的可以租车游玩，没条件的可以包车游玩，最没条件的公众交通。不要随意跟团，团很不自由。要跟团索性在外地直接定好了团过去，到了当地跟团就实在没必要了。不过三种方式各有缺点。租车需要熟悉情况，碰到当地人拦路收费，野外抛锚没信号，虽说不一定出事，但是一定影响心情。包车一定要熟悉师傅，最好找靠谱的朋友推荐，否则不出事则已，一出事非小。就算拉到个山沟沟里面涨价，你也没什么办法的。公众交通不封闭上下，要注意哪里上车，哪里下车。尤其在一个陌生的地方，需要自己处理所有问题，比较辛苦。 出发前，先确定你所需要的东西都带上了。如果去西部游玩，尤其注意带一个3g混合路由器。西部往往有时没有手机信号，有时只有普通网线，有时只有手机信号没网络。所以同时支持手机3g和有线，又自带电池的路由器相当有用。当然，如果您不是个计算机控，那当我没说。我只是假定来看我blog的都是计算机控而已。长期坐车的，带好围着脖子的靠枕和眼罩，耳塞。准备点黄连素片和蒙脱石散，闹肚子和便秘是旅行常见麻烦。 其实个人认为我们需要旅行社做的，最好是来回机票，酒店预定，景点门票。前两者有，叫做旅行社自由行套餐。最后一个我不知道有没有。 From galaxy</p>
+
+          
+
+        
+
+    </article>
+    
+    
+    
+
+
+
+
+<div class="pagination">
+
+    
+        
+        
+        
+        <a href="/" aria-label="First" class="label-pagination"><i class="fa fa-angle-double-left fa-lg"></i></a>
+    
+
+    
+    
+        <a href="/page/29/" aria-label="Previous" class="label-pagination"><i class="fa fa-angle-left fa-lg"></i></a>
+    
+
+    
+        <a href="/" class="label-pagination">1</a>
+    
+        <a href="/page/2/" class="label-pagination">2</a>
+    
+        <a href="/page/3/" class="label-pagination">3</a>
+    
+        <a href="/page/4/" class="label-pagination">4</a>
+    
+        <a href="/page/5/" class="label-pagination">5</a>
+    
+        <a href="/page/6/" class="label-pagination">6</a>
+    
+        <a href="/page/7/" class="label-pagination">7</a>
+    
+        <a href="/page/8/" class="label-pagination">8</a>
+    
+        <a href="/page/9/" class="label-pagination">9</a>
+    
+        <a href="/page/10/" class="label-pagination">10</a>
+    
+        <a href="/page/11/" class="label-pagination">11</a>
+    
+        <a href="/page/12/" class="label-pagination">12</a>
+    
+        <a href="/page/13/" class="label-pagination">13</a>
+    
+        <a href="/page/14/" class="label-pagination">14</a>
+    
+        <a href="/page/15/" class="label-pagination">15</a>
+    
+        <a href="/page/16/" class="label-pagination">16</a>
+    
+        <a href="/page/17/" class="label-pagination">17</a>
+    
+        <a href="/page/18/" class="label-pagination">18</a>
+    
+        <a href="/page/19/" class="label-pagination">19</a>
+    
+        <a href="/page/20/" class="label-pagination">20</a>
+    
+        <a href="/page/21/" class="label-pagination">21</a>
+    
+        <a href="/page/22/" class="label-pagination">22</a>
+    
+        <a href="/page/23/" class="label-pagination">23</a>
+    
+        <a href="/page/24/" class="label-pagination">24</a>
+    
+        <a href="/page/25/" class="label-pagination">25</a>
+    
+        <a href="/page/26/" class="label-pagination">26</a>
+    
+        <a href="/page/27/" class="label-pagination">27</a>
+    
+        <a href="/page/28/" class="label-pagination">28</a>
+    
+        <a href="/page/29/" class="label-pagination">29</a>
+    
+        <a href="/page/30/" class="label-pagination">30</a>
+    
+        <a href="/page/31/" class="label-pagination">31</a>
+    
+        <a href="/page/32/" class="label-pagination">32</a>
+    
+        <a href="/page/33/" class="label-pagination">33</a>
+    
+        <a href="/page/34/" class="label-pagination">34</a>
+    
+        <a href="/page/35/" class="label-pagination">35</a>
+    
+        <a href="/page/36/" class="label-pagination">36</a>
+    
+        <a href="/page/37/" class="label-pagination">37</a>
+    
+        <a href="/page/38/" class="label-pagination">38</a>
+    
+        <a href="/page/39/" class="label-pagination">39</a>
+    
+        <a href="/page/40/" class="label-pagination">40</a>
+    
+        <a href="/page/41/" class="label-pagination">41</a>
+    
+        <a href="/page/42/" class="label-pagination">42</a>
+    
+        <a href="/page/43/" class="label-pagination">43</a>
+    
+        <a href="/page/44/" class="label-pagination">44</a>
+    
+        <a href="/page/45/" class="label-pagination">45</a>
+    
+        <a href="/page/46/" class="label-pagination">46</a>
+    
+        <a href="/page/47/" class="label-pagination">47</a>
+    
+        <a href="/page/48/" class="label-pagination">48</a>
+    
+        <a href="/page/49/" class="label-pagination">49</a>
+    
+        <a href="/page/50/" class="label-pagination">50</a>
+    
+        <a href="/page/51/" class="label-pagination">51</a>
+    
+        <a href="/page/52/" class="label-pagination">52</a>
+    
+        <a href="/page/53/" class="label-pagination">53</a>
+    
+        <a href="/page/54/" class="label-pagination">54</a>
+    
+        <a href="/page/55/" class="label-pagination">55</a>
+    
+        <a href="/page/56/" class="label-pagination">56</a>
+    
+        <a href="/page/57/" class="label-pagination">57</a>
+    
+        <a href="/page/58/" class="label-pagination">58</a>
+    
+        <a href="/page/59/" class="label-pagination">59</a>
+    
+        <a href="/page/60/" class="label-pagination">60</a>
+    
+        <a href="/page/61/" class="label-pagination">61</a>
+    
+        <a href="/page/62/" class="label-pagination">62</a>
+    
+        <a href="/page/63/" class="label-pagination">63</a>
+    
+        <a href="/page/64/" class="label-pagination">64</a>
+    
+        <a href="/page/65/" class="label-pagination">65</a>
+    
+        <a href="/page/66/" class="label-pagination">66</a>
+    
+        <a href="/page/67/" class="label-pagination">67</a>
+    
+        <a href="/page/68/" class="label-pagination">68</a>
+    
+        <a href="/page/69/" class="label-pagination">69</a>
+    
+        <a href="/page/70/" class="label-pagination">70</a>
+    
+        <a href="/page/71/" class="label-pagination">71</a>
+    
+        <a href="/page/72/" class="label-pagination">72</a>
+    
+        <a href="/page/73/" class="label-pagination">73</a>
+    
+        <a href="/page/74/" class="label-pagination">74</a>
+    
+        <a href="/page/75/" class="label-pagination">75</a>
+    
+        <a href="/page/76/" class="label-pagination">76</a>
+    
+        <a href="/page/77/" class="label-pagination">77</a>
+    
+        <a href="/page/78/" class="label-pagination">78</a>
+    
+        <a href="/page/79/" class="label-pagination">79</a>
+    
+        <a href="/page/80/" class="label-pagination">80</a>
+    
+        <a href="/page/81/" class="label-pagination">81</a>
+    
+        <a href="/page/82/" class="label-pagination">82</a>
+    
+        <a href="/page/83/" class="label-pagination">83</a>
+    
+        <a href="/page/84/" class="label-pagination">84</a>
+    
+        <a href="/page/85/" class="label-pagination">85</a>
+    
+        <a href="/page/86/" class="label-pagination">86</a>
+    
+        <a href="/page/87/" class="label-pagination">87</a>
+    
+        <a href="/page/88/" class="label-pagination">88</a>
+    
+        <a href="/page/89/" class="label-pagination">89</a>
+    
+        <a href="/page/90/" class="label-pagination">90</a>
+    
+        <a href="/page/91/" class="label-pagination">91</a>
+    
+
+    
+    
+        <a href="/page/31/" aria-label="Next" class="label-pagination"><i class="fa fa-angle-right fa-lg"></i></a>
+    
+
+    
+    
+        <a href="/page/91/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
+    
+
+</div>
+
+  
+
+  </div>
+
+  
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+    
+ </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+   

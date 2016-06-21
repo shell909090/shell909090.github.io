@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>论linux引导过程</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         论linux引导过程 
+    </h1>
+    <p class="meta">Jul 13, 2006
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/308/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <div>keywords</div>
+<div>引导过程, initrd, init, rc</div>
+<div>copyright</div>
+<div>Shell.E.Xu撰写，按GPL发布。</div>
+<div>abstract</div>
+<div>简要介绍了引导流程的流转。</div>
+<div>main</div>
+<div>1.grub&amp;lilo</div>
+<div>引导的第一步，是启动引导管理器。这个种类非常复杂，从最早的MBR+专用引导扇区到现在的NTLDR,LILO,GRUB，大小和功能都有非常大的变化。但是主要来讲目的都是一样的。当今引导程序一般都分两个部分，引导扇区和主引导模块。NTLDR来说，C:NTLDR文件即是主引导模块。GRUB的主引导模块在/boot/grub/stage2，至于引导扇区，不用太过关心的。</div>
+<div>主引导模块在加载后都会读取引导配置文件，当代流行引导管理器其实都有命令交互功能，可是你总不能指望每次启动都先敲堆命令吧。GRUB来说，配置文件是/boot/grub/menu.lst。注意，GRUB是在启动的时候读取配置的，但是LILO是根据配置来安装的。所以LILO在改变配置的时候需要重新安装。</div>
+<div>2.vmlinuz&amp;initrd</div>
+<div>引导管理器会自动的将vmlinuz安置在内存中，然后寻找initrd传给vmlinuz。在没有initrd的情况下也可以引导，不过当下的趋势是将引导过程用脚本管理，放置在initrd中。这样引导参数解析，模块加载，设备管理都纳入了脚本的范围内。用linux哪能不会脚本，因此linux引导就有非常强的可以定制特性。</div>
+<div>initrd分两种，cpio-initrd和ramfs。这里主要介绍 cpio-initrd。cpio-initrd的建立方法很简单，我上篇文章中有介绍。大致来说，就是把一些内容打包备份而已。vmlinuz会启动根下面的init脚本，我下篇文章会专门解析debian中配置的initrd.img的init脚本。现在大致说下。</div>
+<div>init首先建立两个目录，建立/dev系统，并且建立null和console文件，否则udev的运做会出错。然后解析引导参数，解析到每个变量。而后依次运作init-top,init-premount,init-bottom（这些目录内的文件）。在init-bottom运行前会运行包含指定的脚本，这个脚本由BOOT参数指定，并且内部包含mount函数。这样可以通过指定BOOT参数定制mountroot的过程。最后是迁移大部分的系统过去（主要是/sys和/proc），最后通过run-init直接chroot和init。<br /></div>
+<div>3.init&amp;rc<br />init运行的开始，会寻找inittab。其中指定了系统的很多特性，最主要的是runlevel。首先是寻找/etc/init.d/rc并且运行，并且把运行级别作为第一参数传递。然后rc会寻找/etc/init.d/rcS和/etc/default/rcS，如果有的话则包含或者运行。然后rc会以参数S运行自身，过程和正常启动一样。这个作为基础启动参数，无论你以何种级别运行都会运行rcS.d里面的脚本。</div>
+<div>4.service<br />service启动的时候，是用rc?.d的脚本启动的。多数会用start-stop-daemon作为另外一个身份启动成守护进程。<br /></div>
+<div>5.bash&amp;gdm</div>
+<div>6.conf files</div>
+<div>reference:</div>
+<div>[1].</div>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Jul 13, 2006</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/bash">bash</a>  <a class="category" href="https://shell909090.github.io/tags/linux">linux</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/307/" title="debian live">debian live</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/309/" title="删除无赖">删除无赖</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

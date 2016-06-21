@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>利用API插接替换破解软件</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         利用API插接替换破解软件 
+    </h1>
+    <p class="meta">Jun 2, 2005
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/171/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>刚刚在看软件破解教程，看到一个人说怎么怎么破解软件。然后突然想到，许多软件破解其实不用修改出flag或者找注册算法。只要对话框不出来，软件照常好用就可以了。OK，基于这个原理，试试用DLL注入插接API的方法RIP破解软件。</p>
+
+<p>首先是对话框弹出机理。先写了个MFC程序，然后跑一跑，在运行中按着DoModel()一路F11下去，跟进了CWnd::CreateDialogIndirectPreamA云云的一个函数里面（名字忘记了）。然后就是一个API调用了。（<strong>IMP</strong>Creat&hellip;肯定是调用别的DLL的函数了）API内容看不到……我晕。编译一个Release版的出来，然后上Ollydbg。经过跟踪，确定了窗体句柄是在USER32.CreateDialogIndirectPreamAorW里面生成的。如果没有窗体句柄呢？</p>
+
+<p>貌似有两种可能，一种是没事，对话框没了。一种是报错。按照试验，Readbook至少是没事情的。哈哈，这样简单多了。整理下顺序，基本就可以做RIP破解了。</p>
+
+<p>首先是用OllyDbg等等软件定位USER32.CreateDialogIndirectPreamAorW（其实USER32.CreateDialogIndirectPreamA更好，如果只用这个的话比较好确定参数类型）。然后下断点，跑到软件里面触发窗口广告……然后记录对话框的模板位置，调试的任务就结束了。因为没有啥要判断的东西，这个应该说简单到顶点了。</p>
+
+<p>然后写一个DLL注入程序，运行目标程序并且Suspend。然后注入DLL，挂接API。详细参看windows核心编程，现在我们假定挂接了USER32.CreateDialogIndirectPreamA。现在有了一个自主的处理函数，只要在里面判断模板是否为特定模板就好……这个是module的一个res，理论上不是动态生成的，所以位置不变。而且一个对话框一个模板，很好认不会出错。如果是特定模板就返回NULL，否则正常调用。这样程序的提示框就永远弹不出来了。</p>
+
+<p>这个其实是将软件的对话框禁止技术搬到了API层去实现，由于API层代码相对稳定，通用性强，所以破解相对简单。不过也是有代价的。如果软件无法生成对话框会导致出错……这个就没戏了。而且要写注入程序（可以写个注入的模板，或者一次写好可以多次用……），毕竟不是直接运行程序，使用不大方便。而且速度会受影响，如果程序里面对话框满天飞的话……</p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Jun 2, 2005</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/api">api</a>  <a class="category" href="https://shell909090.github.io/tags/windows">windows</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/170/" title="首次面试">首次面试</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/172/" title="病毒编年史-前言">病毒编年史-前言</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

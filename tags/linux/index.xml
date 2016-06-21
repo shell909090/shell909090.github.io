@@ -1,0 +1,2336 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Linux on Shell&#39;s Home</title>
+    <link>https://shell909090.github.io/tags/linux/</link>
+    <description>Recent content in Linux on Shell&#39;s Home</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 20 Nov 2014 10:38:30 +0800</lastBuildDate>
+    <atom:link href="https://shell909090.github.io/tags/linux/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>上下文切换技术</title>
+      <link>https://shell909090.github.io/blog/archives/2703/</link>
+      <pubDate>Thu, 20 Nov 2014 10:38:30 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2703/</guid>
+      <description>&lt;h1&gt;上下文切换技术&lt;/h1&gt;
+
+&lt;h2&gt;简述&lt;/h2&gt;
+
+&lt;p&gt;在进一步之前，让我们先回顾一下各种上下文切换技术。&lt;/p&gt;
+
+&lt;p&gt;不过首先说明一点术语。当我们说“上下文”的时候，指的是程序在执行中的一个状态。通常我们会用调用栈来表示这个状态——栈记载了每个调用层级执行到哪里，还有执行时的环境情况等所有有关的信息。&lt;/p&gt;
+
+&lt;p&gt;当我们说“上下文切换”的时候，表达的是一种从一个上下文切换到另一个上下文执行的技术。而“调度”指的是决定哪个上下文可以获得接下去的CPU时间的方法。&lt;/p&gt;
+
+&lt;h2&gt;进程&lt;/h2&gt;
+
+&lt;p&gt;进程是一种古老而典型的上下文系统，每个进程有独立的地址空间，资源句柄，他们互相之间不发生干扰。&lt;/p&gt;
+
+&lt;p&gt;每个进程在内核中会有一个数据结构进行描述，我们称其为进程描述符。这些描述符包含了系统管理进程所需的信息，并且放在一个叫做任务队列的队列里面。&lt;/p&gt;
+
+&lt;p&gt;很显然，当新建进程时，我们需要分配新的进程描述符，并且分配新的地址空间(和父地址空间的映射保持一致，但是两者同时进入COW状态)。这些过程需要一定的开销。&lt;/p&gt;
+
+&lt;h2&gt;进程状态&lt;/h2&gt;
+
+&lt;p&gt;忽略去linux内核复杂的状态转移表，我们实际上可以把进程状态归结为三个最主要的状态：就绪态，运行态，睡眠态。这就是任何一本系统书上都有的三态转换图。&lt;/p&gt;
+
+&lt;p&gt;就绪和执行可以互相转换，基本这就是调度的过程。而当执行态程序需要等待某些条件(最典型就是IO)时，就会陷入睡眠态。而条件达成后，一般会自动进入就绪。&lt;/p&gt;
+
+&lt;h2&gt;阻塞&lt;/h2&gt;
+
+&lt;p&gt;当进程需要在某个文件句柄上做IO，这个fd又没有数据给他的时候，就会发生阻塞。具体来说，就是记录XX进程阻塞在了XX fd上，然后将进程标记为睡眠态，并调度出去。当fd上有数据时(例如对端发送的数据到达)，就会唤醒阻塞在fd上的进程。进程会随后进入就绪队列，等待合适的时间被调度。&lt;/p&gt;
+
+&lt;p&gt;阻塞后的唤醒也是一个很有意思的话题。当多个上下文阻塞在一个fd上(虽然不多见，但是后面可以看到一个例子)，而且fd就绪时，应该唤醒多少个上下文呢？传统上应当唤醒所有上下文，因为如果仅唤醒一个，而这个上下文又不能消费所有数据时，就会使得其他上下文处于无谓的死锁中。&lt;/p&gt;
+
+&lt;p&gt;但是有个著名的例子——accept，也是使用读就绪来表示收到的。如果试图用多个线程来accept会发生什么？当有新连接时，所有上下文都会就绪，但是只有第一个可以实际获得fd，其他的被调度后又立刻阻塞。这就是惊群问题&lt;a href=&#34;http://en.wikipedia.org/wiki/Thundering_herd_problem&#34;&gt;thundering herd problem&lt;/a&gt;。&lt;/p&gt;
+
+&lt;p&gt;现代linux内核已经解决了这个问题，方法惊人的简单——accept方法加锁。(inet_connection_sock.c:inet_csk_wait_for_connect)&lt;/p&gt;
+
+&lt;h2&gt;线程&lt;/h2&gt;
+
+&lt;p&gt;线程是一种轻量进程，实际上在linux内核中，两者几乎没有差别，除了一点——线程并不产生新的地址空间和资源描述符表，而是复用父进程的。&lt;/p&gt;
+
+&lt;p&gt;但是无论如何，线程的调度和进程一样，必须陷入内核态。&lt;/p&gt;
+
+&lt;h1&gt;传统网络服务模型&lt;/h1&gt;
+
+&lt;h2&gt;进程模型&lt;/h2&gt;
+
+&lt;p&gt;为每个客户分配一个进程。优点是业务隔离，在一个进程中出现的错误不至于影响整个系统，甚至其他进程。Oracle传统上就是进程模型。&lt;/p&gt;
+
+&lt;p&gt;缺点是进程的分配和释放有非常高的成本。因此Oracle需要连接池来保持连接减少新建和释放，同时尽量复用连接而不是随意的新建连接。&lt;/p&gt;
+
+&lt;h2&gt;线程模型&lt;/h2&gt;
+
+&lt;p&gt;为每客户分配一个线程。优点是更轻量，建立和释放速度更快，而且多个上下文间的通讯速度非常快。&lt;/p&gt;
+
+&lt;p&gt;缺点是一个线程出现问题容易将整个系统搞崩溃。&lt;/p&gt;
+
+&lt;h2&gt;一个例子&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://gitcafe.com/shell909090/context/blob/master/py_http_fork_thread.py&#34;&gt;py_http_fork_thread.py&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;在这个例子中，线程模式和进程模式可以轻易的互换。&lt;/p&gt;
+
+&lt;h2&gt;如何工作的&lt;/h2&gt;
+
+&lt;ol&gt;
+&lt;li&gt;父进程监听服务端口&lt;/li&gt;
+&lt;li&gt;在有新连接建立的时候，父进程执行fork，产生一个子进程副本&lt;/li&gt;
+&lt;li&gt;如果子进程需要的话，可以exec(例如CGI)&lt;/li&gt;
+&lt;li&gt;父进程执行(理论上应当先执行子进程，因为exec执行的快可以避免COW)到accept后，发生阻塞&lt;/li&gt;
+&lt;li&gt;上下文调度，内核调度器选择下一个上下文，如无意外，应当就是刚刚派生的子进程&lt;/li&gt;
+&lt;li&gt;子进程进程进入读取处理状态，阻塞在read调用上，所有上下文均进入睡眠态&lt;/li&gt;
+&lt;li&gt;随着SYN或者数据报文到来，CPU会唤醒对应fd上阻塞的上下文(wait_queue)，切换到就绪态，并加入调度队列&lt;/li&gt;
+&lt;li&gt;上下文继续执行到下一个阻塞调用，或者因为时间片耗尽被挂起&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;关于更多细节，可以看&lt;a href=&#34;http://www.slideshare.net/llj098/epoll-from-the-kernel-side&#34;&gt;这里&lt;/a&gt;。这篇文章里还介绍了epoll的工作细节。&lt;/p&gt;
+
+&lt;h2&gt;评价&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;同步模型，编写自然，每个上下文可以当作其他上下文不存在一样的操作，每次读取数据可以当作必然能读取到。&lt;/li&gt;
+&lt;li&gt;进程模型自然的隔离了连接。即使程序复杂且易崩溃，也只影响一个连接而不是在整个系统。&lt;/li&gt;
+&lt;li&gt;生成和释放开销很大(效率测试的进程fork和线程模式开销测试)，需要考虑复用。&lt;/li&gt;
+&lt;li&gt;进程模式的多客户通讯比较麻烦，尤其在共享大量数据的时候。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1&gt;C10K问题&lt;/h1&gt;
+
+&lt;h2&gt;描述&lt;/h2&gt;
+
+&lt;p&gt;当同时连接数在10K左右时，传统模型就不再适用。实际上在效率测试报告的线程切换开销一节可以看到，超过1K后性能就差的一塌糊涂了。&lt;/p&gt;
+
+&lt;p&gt;更细节描述，可以看&lt;a href=&#34;http://www.kegel.com/c10k.html&#34;&gt;这里&lt;/a&gt;。&lt;/p&gt;
+
+&lt;h2&gt;进程模型的问题&lt;/h2&gt;
+
+&lt;p&gt;在C10K的时候，启动和关闭这么多进程是不可接受的开销。事实上单纯的进程fork模型在C1K时就应当抛弃了。&lt;/p&gt;
+
+&lt;p&gt;Apache的prefork模型，是使用预先分配(pre)的进程池。这些进程是被复用的。但即便是复用，本文所描述的很多问题仍不可避免。&lt;/p&gt;
+
+&lt;h2&gt;线程模式的问题&lt;/h2&gt;
+
+&lt;p&gt;从任何测试都可以表明，线程模式比进程模式更耐久一些，性能更好。但是在面对C10K还是力不从心的。问题是，线程模式的问题出在哪里呢？&lt;/p&gt;
+
+&lt;h2&gt;内存？&lt;/h2&gt;
+
+&lt;p&gt;有些人可能认为线程模型的失败首先在于内存。如果你这么认为，一定是因为你查阅了非常老的资料，并且没仔细思考过。&lt;/p&gt;
+
+&lt;p&gt;你可能看到资料说，一个线程栈会消耗8M内存(linux默认值，ulimit可以看到)，512个线程栈就会消耗4G内存，而10K个线程就是80G。所以首先要考虑调整栈深度，并考虑爆栈问题。&lt;/p&gt;
+
+&lt;p&gt;听起来很有道理，问题是——linux的栈是通过缺页来分配内存的(&lt;a href=&#34;http://unix.stackexchange.com/questions/145557/how-does-stack-allocation-work-in-linux&#34;&gt;How does stack allocation work in Linux?&lt;/a&gt;)，不是所有栈地址空间都分配了内存。因此，8M是&lt;em&gt;最大&lt;/em&gt;消耗，实际的内存消耗只会略大于实际需要的内存(内部损耗，每个在4k以内)。但是内存一旦被分配，就很难回收(除非线程结束)，这是线程模式的缺陷。&lt;/p&gt;
+
+&lt;p&gt;这个问题提出的前提是，32位下地址空间有限。虽然10K个线程不一定会耗尽内存，但是512个线程一定会耗尽地址空间。然而这个问题对于目前已经成为主流的64位系统来说根本不存在。&lt;/p&gt;
+
+&lt;h2&gt;内核陷入开销？&lt;/h2&gt;
+
+&lt;p&gt;所谓内核陷入开销，就是指CPU从非特权转向特权，并且做输入检查的一些开销。这些开销在不同的系统上差异很大。&lt;/p&gt;
+
+&lt;p&gt;线程模型主要通过陷入切换上下文，因此陷入开销大听起来有点道理。&lt;/p&gt;
+
+&lt;p&gt;实际上，这也是不成立的。线程在什么时候发生陷入切换？正常情况下，应当是IO阻塞的时候。同样的IO量，难道其他模型就不需要陷入了么？只是非阻塞模型有很大可能直接返回，并不发生上下文切换而已。&lt;/p&gt;
+
+&lt;p&gt;效率测试报告的基础调用开销一节，证实了当代操作系统上内核陷入开销是非常惊人的小的(10个时钟周期这个量级)。&lt;/p&gt;
+
+&lt;p&gt;EDIT: 受内核陷入效率测试的修正影响，这部分需要改正一下。&lt;/p&gt;
+
+&lt;p&gt;效率测试报告的基础调用开销一节，测量了当代操作系统上内核陷入开销。在样机上，典型的内核陷入开销在50ns这个量级。这个开销不算太小，但是却不足以说明缓慢。如果把内核陷入跑满一颗CPU，这颗CPU可以执行20M次陷入。每次陷入吞吐500字节数据的话，可以满足10G吞吐。何况在大流量的情况下，必然是大颗粒IO。大粒度IO陷入次数更少，也更节约CPU。&lt;/p&gt;
+
+&lt;h2&gt;线程模型的问题在于切换成本高&lt;/h2&gt;
+
+&lt;p&gt;熟悉linux内核的应该知道，近代linux调度器经过几个阶段的发展。&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;linux2.4的调度器。&lt;/li&gt;
+&lt;li&gt;O(1)调度器。&lt;/li&gt;
+&lt;li&gt;CFS。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;实际上直到O(1)，调度器的调度复杂度才和队列长度无关。在此之前，过多的线程会使得开销随着线程数增长(不保证线性)。&lt;/p&gt;
+
+&lt;p&gt;O(1)调度器看起来似乎是完全不随着线程的影响。但是这个调度器有显著的缺点——难于理解和维护，并且在一些情况下会导致交互式程序响应缓慢。&lt;/p&gt;
+
+&lt;p&gt;CFS使用红黑树管理就绪队列。每次调度，上下文状态转换，都会查询或者变更红黑树。红黑树的开销大约是O(logm)，其中m大约为活跃上下文数(准确的说是同优先级上下文数)，大约和活跃的客户数相当。&lt;/p&gt;
+
+&lt;p&gt;因此，每当线程试图读写网络，并遇到阻塞时，都会发生O(logm)级别的开销。而且每次收到报文，唤醒阻塞在fd上的上下文时，同样要付出O(logm)级别的开销。&lt;/p&gt;
+
+&lt;p&gt;这里参考了&lt;a href=&#34;http://www.ibm.com/developerworks/cn/linux/l-cn-scheduler/&#34;&gt;这篇文章&lt;/a&gt;，在此表示感谢。这篇文章里面清楚的介绍了各种linux调度器技术(不包括bfs)。&lt;/p&gt;
+
+&lt;h2&gt;分析&lt;/h2&gt;
+
+&lt;p&gt;O(logm)的开销看似并不大，但是却是一个无法接受的开销。因为IO阻塞是一个经常发生的事情。每次IO阻塞，都会发生开销。而且决定活跃线程数的是用户，这不是我们可控制的。更糟糕的是，当性能下降，响应速度下降时。同样的用户数下，活跃上下文会上升(因为响应变慢了)。这会进一步拉低性能。&lt;/p&gt;
+
+&lt;p&gt;问题的关键在于，http服务并不需要对每个用户完全公平，偶尔某个用户的响应时间大大的延长了是可以接受的。在这种情况下，使用红黑树去组织待处理fd列表（其实是上下文列表），并且反复计算和调度，是无谓的开销。&lt;/p&gt;
+
+&lt;h1&gt;多路复用&lt;/h1&gt;
+
+&lt;h2&gt;简述&lt;/h2&gt;
+
+&lt;p&gt;要突破C10K问题，必须减少系统内活跃上下文数(其实未必，例如换一个调度器，例如使用RT的SCHED_RR)，因此就要求一个上下文同时处理多个链接。而要做到这点，就必须在每次系统调用读取或写入数据时立刻返回。否则上下文持续阻塞在调用上，如何能够复用？这要求fd处于非阻塞状态，或者数据就绪。&lt;/p&gt;
+
+&lt;p&gt;上文所说的所有IO操作，其实都特指了他的阻塞版本。所谓阻塞，就是上下文在IO调用上等待直到有合适的数据为止。这种模式给人一种“只要读取数据就必定能读到”的感觉。而非阻塞调用，就是上下文立刻返回。如果有数据，带回数据。如果没有数据，带回错误(EAGAIN)。因此，“虽然发生错误，但是不代表出错”。&lt;/p&gt;
+
+&lt;p&gt;但是即使有了非阻塞模式，依然绕不过就绪通知问题。如果没有合适的就绪通知技术，我们只能在多个fd中盲目的重试，直到碰巧读到一个就绪的fd为止。这个效率之差可想而知。&lt;/p&gt;
+
+&lt;p&gt;在就绪通知技术上，有两种大的模式——就绪事件通知和异步IO。其差别简要来说有两点。就绪通知维护一个状态，由用户读取。而异步IO由系统调用用户的回调函数。就绪通知在数据就绪时就生效，而异步IO直到数据IO完成才发生回调。&lt;/p&gt;
+
+&lt;p&gt;linux下的主流方案一直是就绪通知，其内核态异步IO方案甚至没有被封装到glibc里去。围绕就绪通知，linux总共提出过三种解决方案。我们绕过select和poll方案，看看epoll方案的特性。&lt;/p&gt;
+
+&lt;p&gt;另外提一点。有趣的是，当使用了epoll后(更准确说只有在LT模式下)，fd是否为非阻塞其实已经不重要了。因为epoll保证每次去读取的时候都能读到数据，因此不会阻塞在调用上。&lt;/p&gt;
+
+&lt;h2&gt;epoll&lt;/h2&gt;
+
+&lt;p&gt;用户可以新建一个epoll文件句柄，并且将其他fd和这个&#34;epoll fd&#34;关联。此后可以通过epoll fd读取到所有就绪的文件句柄。&lt;/p&gt;
+
+&lt;p&gt;epoll有两大模式，ET和LT。LT模式下，每次读取就绪句柄都会读取出完整的就绪句柄。而ET模式下，只给出上次到这次调用间新就绪的句柄。换个说法，如果ET模式下某次读取出了一个句柄，这个句柄从未被读取完过——也就是从没有从就绪变为未就绪。那么这个句柄就永远不会被新的调用返回，哪怕上面其实充满了数据——因为句柄无法经历从非就绪变为就绪的过程。&lt;/p&gt;
+
+&lt;p&gt;类似CFS，epoll也使用了红黑树——不过是用于组织加入epoll的所有fd。epoll的就绪列表使用的是双向队列。这方便系统将某个fd加入队列中，或者从队列中解除。&lt;/p&gt;
+
+&lt;p&gt;要进一步了解epoll的具体实现，可以参考这篇&lt;a href=&#34;http://www.slideshare.net/donghao/linuxpollepoll-2173984&#34;&gt;linux下poll和epoll内核源码剖析&lt;/a&gt;。&lt;/p&gt;
+
+&lt;h2&gt;性能&lt;/h2&gt;
+
+&lt;p&gt;如果使用非阻塞函数，就不存在阻塞IO导致上下文切换了，而是变为时间片耗尽被抢占（大部分情况下如此），因此读写的额外开销被消除。而epoll的常规操作，都是O(1)量级的。而epoll wait的复制动作，则和当前需要返回的fd数有关(在LT模式下几乎就等同于上面的m，而ET模式下则会大大减少)。&lt;/p&gt;
+
+&lt;p&gt;但是epoll存在一点细节问题。epoll fd的管理使用红黑树，因此在加入和删除时需要O(logn)复杂度(n为总连接数)，而且关联操作还必须每个fd调用一次。因此在大连接量下频繁建立和关闭连接仍然有一定性能问题(超短连接)。不过关联操作调用毕竟比较少。如果确实是超短连接，tcp连接和释放开销就很难接受了，所以对总体性能影响不大。&lt;/p&gt;
+
+&lt;h2&gt;固有缺陷&lt;/h2&gt;
+
+&lt;p&gt;原理上说，epoll实现了一个wait_queue的回调函数，因此原理上可以监听任何能够激活wait_queue的对象。但是epoll的最大问题是无法用于普通文件，因为普通文件始终是就绪的——虽然在读取的时候不是这样。&lt;/p&gt;
+
+&lt;p&gt;这导致基于epoll的各种方案，一旦读到普通文件上下文仍然会阻塞。golang为了解决这个问题，在每次调用syscall的时候，会独立的启动一个线程，在独立的线程中进行调用。因此golang在IO普通文件的时候网络不会阻塞。&lt;/p&gt;
+
+&lt;p&gt;推测libaio解决了这个问题(TODO: test)。&lt;/p&gt;
+
+&lt;h1&gt;事件通知机制下的几种程序设计模型&lt;/h1&gt;
+
+&lt;h2&gt;简述&lt;/h2&gt;
+
+&lt;p&gt;使用通知机制的一大缺憾就是，用户进行IO操作后会陷入茫然——IO没有完成，所以当前上下文不能继续执行。但是由于复用线程的要求，当前线程还需要接着执行。所以，在如何进行异步编程上，又分化出数种方案。&lt;/p&gt;
+
+&lt;h2&gt;用户态调度&lt;/h2&gt;
+
+&lt;p&gt;首先需要知道的一点就是，异步编程大多数情况下都伴随着用户态调度问题——即使不使用上下文技术。&lt;/p&gt;
+
+&lt;p&gt;因为系统不会自动根据fd的阻塞状况来唤醒合适的上下文了，所以这个工作必须由其他人——一般就是某种框架——来完成。&lt;/p&gt;
+
+&lt;p&gt;你可以想像一个fd映射到对象的大map表，当我们从epoll中得知某个fd就绪后，需要唤醒某种对象，让他处理fd对应的数据。&lt;/p&gt;
+
+&lt;p&gt;当然，实际情况会更加复杂一些。原则上所有不占用CPU时间的等待都需要中断执行，陷入睡眠，并且交由某种机构管理，等待合适的机会被唤醒。例如sleep，或是文件IO，还有lock。更精确的说，所有在内核里面涉及到wait_queue的，在框架里面都需要做这种机制——也就是把内核的调度和等待搬到用户态来。&lt;/p&gt;
+
+&lt;p&gt;当然，其实也有反过来的方案——就是把程序扔到内核里面去。其中最著名的实例大概是微软的http服务器了。&lt;/p&gt;
+
+&lt;p&gt;这个所谓的“可唤醒可中断对象”，用的最多的就是协程。&lt;/p&gt;
+
+&lt;h2&gt;协程&lt;/h2&gt;
+
+&lt;p&gt;协程是一种编程组件，可以在不陷入内核的情况进行上下文切换。如此一来，我们就可以把协程上下文对象关联到fd，让fd就绪后协程恢复执行。&lt;/p&gt;
+
+&lt;p&gt;当然，由于当前地址空间和资源描述符的切换无论如何需要内核完成，因此协程所能调度的，只有在同一进程中的不同上下文而已。&lt;/p&gt;
+
+&lt;h2&gt;如何做到&lt;/h2&gt;
+
+&lt;p&gt;这是如何做到的呢？&lt;/p&gt;
+
+&lt;p&gt;我们在内核里实行上下文切换的时候，其实是将当前所有寄存器保存到内存中，然后从另一块内存中载入另一组已经被保存的寄存器。对于图灵机来说，当前状态寄存器意味着机器状态——也就是整个上下文。其余内容，包括栈上内存，堆上对象，都是直接或者间接的通过寄存器来访问的。&lt;/p&gt;
+
+&lt;p&gt;但是请仔细想想，寄存器更换这种事情，似乎不需要进入内核态么。事实上我们在用户态切换的时候，就是用了类似方案。&lt;/p&gt;
+
+&lt;p&gt;C coroutine的实现，基本大多是保存现场和恢复之类的过程。python则是保存当前thread的top frame(greenlet)。&lt;/p&gt;
+
+&lt;p&gt;但是非常悲剧的，纯用户态方案(setjmp/longjmp)在多数系统上执行的效率很高，但是并不是为了协程而设计的。setjmp并没有拷贝整个栈(大多数的coroutine方案也不应该这么做)，而是只保存了寄存器状态。这导致新的寄存器状态和老寄存器状态共享了同一个栈，从而在执行时互相破坏。而完整的coroutine方案应当在特定时刻新建一个栈。&lt;/p&gt;
+
+&lt;p&gt;而比较好的方案(makecontext/swapcontext)则需要进入内核(sigprocmask)，这导致整个调用的性能非常低。&lt;/p&gt;
+
+&lt;p&gt;关于setjmp/longjmp，你可以参考&lt;a href=&#34;http://web.eecs.utk.edu/~huangj/cs360/360/notes/Setjmp/lecture.html&#34;&gt;CS360 Lecture notes -- Setjmp&lt;/a&gt;，和&lt;a href=&#34;http://blog.codingnow.com/2010/05/setjmp.html&#34;&gt;setjmp 的正确使用 | 云风的 BLOG&lt;/a&gt;。&lt;/p&gt;
+
+&lt;h2&gt;协程与线程的关系&lt;/h2&gt;
+
+&lt;p&gt;首先我们可以明确，协程不能调度其他进程中的上下文。而后，每个协程要获得CPU，都必须在线程中执行。因此，协程所能利用的CPU数量，和用于处理协程的线程数量直接相关。&lt;/p&gt;
+
+&lt;p&gt;作为推论，在单个线程中执行的协程，可以视为单线程应用。这些协程，在未执行到特定位置(基本就是阻塞操作)前，是不会被抢占，也不会和其他CPU上的上下文发生同步问题的。因此，一段协程代码，中间没有可能导致阻塞的调用，执行在单个线程中。那么这段内容可以被视为同步的。&lt;/p&gt;
+
+&lt;p&gt;我们经常可以看到某些协程应用，一启动就是数个进程。这并不是跨进程调度协程。一般来说，这是将一大群fd分给多个进程，每个进程自己再做fd-协程对应调度。&lt;/p&gt;
+
+&lt;h2&gt;基于就绪通知的协程框架&lt;/h2&gt;
+
+&lt;ol&gt;
+&lt;li&gt;首先需要包装read/write，在发生read的时候检查返回。如果是EAGAIN，那么将当前协程标记为阻塞在对应fd上，然后执行调度函数。&lt;/li&gt;
+&lt;li&gt;调度函数需要执行epoll(或者从上次的返回结果缓存中取数据，减少内核陷入次数)，从中读取一个就绪的fd。如果没有，上下文应当被阻塞到至少有一个fd就绪。&lt;/li&gt;
+&lt;li&gt;查找这个fd对应的协程上下文对象，并调度过去。&lt;/li&gt;
+&lt;li&gt;当某个协程被调度到时，他多半应当在调度器返回的路上——也就是read/write读不到数据的时候。因此应当再重试读取，失败的话返回1。&lt;/li&gt;
+&lt;li&gt;如果读取到数据了，直接返回。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;这样，异步的数据读写动作，在我们的想像中就可以变为同步的。而我们知道同步模型会极大降低我们的编程负担。&lt;/p&gt;
+
+&lt;h2&gt;CPS模型&lt;/h2&gt;
+
+&lt;p&gt;其实这个模型有个更流行的名字——回调模型。之所以扯上CPS这么高大上的玩意，主要是里面涉及不少有趣的话题。&lt;/p&gt;
+
+&lt;p&gt;首先是回调模型的大致过程。在IO调用的时候，同时传入一个函数，作为返回函数。当IO结束时，调用传入的函数来处理下面的流程。这个模型听起来挺简单的。&lt;/p&gt;
+
+&lt;p&gt;然后是&lt;a href=&#34;http://en.wikipedia.org/wiki/Continuation-passing_style&#34;&gt;CPS&lt;/a&gt;。用一句话来描述这个模型——他把一切操作都当作了IO，无论干什么，结果要通过回调函数来返回。从这个角度来说，IO回调模型只能被视作CPS的一个特例。&lt;/p&gt;
+
+&lt;p&gt;例如，我们需要计算1+2*3，在cps里面就需要这么写：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;mul(lambda x: add(pprint.pprint, x, 1), 2, 3)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;其中mul和add在python里面如下定义：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;add = lambda f, *nums: f(sum(nums))
+mul = lambda f, *nums: f(reduce(lambda x,y: x*y, nums))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;而且由于python没有TCO，所以这样的写法会产生非常多的frame。&lt;/p&gt;
+
+&lt;p&gt;但是要正确理解这个模型，你需要仔细思考一下以下几个问题：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;函数的调用过程为什么必须是一个栈？&lt;/li&gt;
+&lt;li&gt;IO过程在什么时间发生？调用发生时，还是回调时？&lt;/li&gt;
+&lt;li&gt;回调函数从哪里调用？如果当时利用工具去看上下文的话，调用栈是什么样子的？&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;函数组件和返回值&lt;/h2&gt;
+
+&lt;p&gt;不知道你是否思考过为什么函数调用层级(上下文栈)会被表述为一个栈——是否有什么必要性，必须将函数调用的过程定义为一个栈呢？&lt;/p&gt;
+
+&lt;p&gt;原因就是返回值和同步顺序。对于大部分函数，我们需要得到函数计算的返回值。而要得到返回值，调用者就必须阻塞直到被调用者返回为止。因此调用者的执行状态就必须被保存，等到被调用者返回后继续——从这点来说，调用其实是最朴素的上下文切换手段。而对于少部分无需返回的函数，我们又往往需要他的顺序外部效应——例如干掉了某个进程，开了一个灯，或者仅仅是在环境变量里面添加了一项内容。而顺序外部效应同样需要等待被调用者返回以表明这个外部效应已经发生。&lt;/p&gt;
+
+&lt;p&gt;那么，如果我们不需要返回值也不需要顺序的外部效应呢？例如启动一个背景程序将数据发送到对端，无需保证发送成功的情况下。或者是开始一个数据抓取行为，无需保证抓取的成功。&lt;/p&gt;
+
+&lt;p&gt;通常这种需求我们就凑合着用一个同步调用混过去了——反正问题也不严重。但是对于阻塞相当严重的情况而言，很多人还是会考虑到将这个行为做成异步过程。目前最流行的异步调用分解工具就是mq——不仅异步，而且分布。当然，还有一个更简单的非分布方案——开一个coroutine。&lt;/p&gt;
+
+&lt;p&gt;而CPS则是另一个方向——函数的返回值可以不返回调用者，而是返回给第三者。&lt;/p&gt;
+
+&lt;h2&gt;IO过程在什么时间发生&lt;/h2&gt;
+
+&lt;p&gt;其实这个问题的核心在于——整个回调模型是基于多路复用的还是基于异步IO的？&lt;/p&gt;
+
+&lt;p&gt;原则上两者都可以。你可以监听fd就绪，也可以监听IO完成。当然，即使监听IO完成，也不代表使用了内核态异步接口。很可能只是用epoll封装的而已。&lt;/p&gt;
+
+&lt;h2&gt;回调函数的上下文环境&lt;/h2&gt;
+
+&lt;p&gt;这个问题则需要和上面提到的“用户态调度框架”结合起来说。IO回调注册的实质是将回调函数绑定到某个fd上——就如同将coroutine绑定上去那样。只是coroutine允许你顺序的执行，而callback则会切碎函数。当然，大部分实现中，使用callback也有好处——coroutine的最小切换开销也在50ns，而call本身则只有2ns。&lt;/p&gt;
+
+&lt;h2&gt;状态机模型&lt;/h2&gt;
+
+&lt;p&gt;状态机模型是一个更难于理解和编程的模型，其本质是每次重入。&lt;/p&gt;
+
+&lt;p&gt;想像你是一个周期失忆的病人(就像“一周的朋友”那样)。那么你如何才能完成一项需要跨越周期的工作呢？例如刺绣，种植作物，或者——交一个男朋友。&lt;/p&gt;
+
+&lt;p&gt;当然，类比到失忆病人的例子上必须有一点限制。正常的生活技能，还有一些常识性的东西必须不能在周期失忆范围内。例如重新学习认字什么的可没人受的了。&lt;/p&gt;
+
+&lt;p&gt;答案就是——做笔记。每次重复失忆后，你需要阅读自己的笔记，观察上次做到哪个步骤，下一个步骤是什么。这需要将一个工作分解为很多步骤，在每个步骤内“重入”直到步骤完成，转移到下一个状态。&lt;/p&gt;
+
+&lt;p&gt;同理，在状态机模型解法里，每次执行都需要推演合适的状态，直到工作完成。这个模型已经很少用到了，因为相比回调函数来说，状态机模型更难理解和使用，性能差异也不大。&lt;/p&gt;
+
+&lt;p&gt;最后顺带一提，交一个男友的方案和其他几个略有不同，主要靠颜好高冷反差萌，一般人就不要尝试挑战了。。。当然一般人也不会一周失忆一次，毕竟生活不是韩剧也不是日本动漫。。。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>上下文切换测试总结报告</title>
+      <link>https://shell909090.github.io/blog/archives/2700/</link>
+      <pubDate>Tue, 18 Nov 2014 16:15:16 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2700/</guid>
+      <description>&lt;h1&gt;效率测试&lt;/h1&gt;
+
+&lt;h2&gt;测试环境&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Intel(R) Pentium(R) CPU G2030 @ 3.00GHz&lt;/li&gt;
+&lt;li&gt;8G内存&lt;/li&gt;
+&lt;li&gt;debian jessie&lt;/li&gt;
+&lt;li&gt;Linux 3.16-2-amd64&lt;/li&gt;
+&lt;li&gt;2014年10月27日&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;附注一下，该CPU有2核心，无HT，1ns3个时钟周期。&lt;/p&gt;
+
+&lt;h2&gt;测试方法&lt;/h2&gt;
+
+&lt;p&gt;测试代码如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;time -f &#34;%e,%S,%c,%r,%s,%K,%P&#34; ./perf_fork
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;数据的意义分别为: 总时间，内核CPU时间，context switch次数，读/写次数，内存耗用，CPU使用百分比。&lt;/p&gt;
+
+&lt;p&gt;数据处理方法如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;import numpy as np
+p = lambda s: [float(line.strip().split(&#39;,&#39;)[0]) for line in s.splitlines()]
+q = lambda s: [float(line.strip().split(&#39;,&#39;)[1]) for line in s.splitlines()]
+np.array(p(s)).mean()
+np.array(p(s)).var()
+np.array(q(s)).mean()
+np.array(q(s)).var()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1&gt;基础开销测试&lt;/h1&gt;
+
+&lt;h2&gt;函数调用开销&lt;/h2&gt;
+
+&lt;p&gt;使用&lt;a href=&#34;https://gitcafe.com/shell909090/context/blob/master/s_call.c&#34;&gt;s_call&lt;/a&gt;来测试性能，循环1G次。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;2.35,0.00,17,0,0,0,99%
+2.34,0.00,13,0,0,0,99%
+2.34,0.00,10,0,0,0,100%
+2.35,0.00,10,0,0,0,99%
+2.34,0.00,14,0,0,0,99%
+2.34,0.00,6,0,0,0,99%
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;统计结果如下：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;time mean = 2.34&lt;/li&gt;
+&lt;li&gt;time var = 0.000022&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;每次call的开销为2.34ns，约7个指令周期。当然，这些并没有考虑调用压栈和数据返回。&lt;/p&gt;
+
+&lt;h2&gt;内核调用开销&lt;/h2&gt;
+
+&lt;p&gt;使用&lt;a href=&#34;https://gitcafe.com/shell909090/context/blob/master/s_syscall.c&#34;&gt;s_syscall&lt;/a&gt;来测试性能，循环1G次。这里特意选用了一个不可能失败的内核函数，getpid，来衡量每次进入getpid的开销。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;4.37,0.00,76,0,0,0,99%
+4.34,0.00,43,0,0,0,99%
+4.37,0.00,124,0,0,0,99%
+4.37,0.00,63,0,0,0,99%
+4.36,0.00,48,0,0,0,99%
+4.36,0.00,47,0,0,0,99%
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;统计结果如下：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;time mean = 4.36&lt;/li&gt;
+&lt;li&gt;time var = 0.00011&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;这里可以看到，纯粹的内核进入开销小到非常惊人，只有4.36ns，约合13个指令周期，而且这里还要进行数据的查询和返回。所以内核调用开销在下面的测试中全部忽略不计。&lt;/p&gt;
+
+&lt;h2&gt;内核调用开销（修正）&lt;/h2&gt;
+
+&lt;p&gt;上面的测试被指出了问题，因此我重做了测试，结论有所变化。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;49.61,28.72,891,0,0,0,99%
+49.12,28.57,3582,0,0,0,99%
+49.21,29.66,5813,0,0,0,99%
+49.81,31.04,6076,0,0,0,99%
+49.48,28.59,749,0,0,0,99%
+49.63,29.76,6224,0,0,0,99%
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;统计结果如下：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;time mean = 49.47&lt;/li&gt;
+&lt;li&gt;time var = 0.0585&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;这里可以看到，单次内核陷入的开销在50ns左右，约150个指令周期。内核进入开销比函数调用开销大了一个数量级不止，大约20倍左右。&lt;/p&gt;
+
+&lt;h1&gt;系统上下文测试&lt;/h1&gt;
+
+&lt;h2&gt;进程fork开销&lt;/h2&gt;
+
+&lt;p&gt;使用&lt;a href=&#34;https://gitcafe.com/shell909090/context/blob/master/s_fork.c&#34;&gt;s_fork&lt;/a&gt;程序(注释语句关闭模式)，循环1M次，重复6次，原始数据如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;49.04,26.83,29784,0,0,0,55%
+51.53,26.38,32057,0,0,0,52%
+49.88,26.02,30892,0,0,0,53%
+51.39,27.13,37573,0,0,0,54%
+52.89,28.12,37924,0,0,0,54%
+51.19,27.02,35880,0,0,0,54%
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;统计结果如下：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;time mean = 50.98&lt;/li&gt;
+&lt;li&gt;time var = 1.52&lt;/li&gt;
+&lt;li&gt;kernel mean = 26.92&lt;/li&gt;
+&lt;li&gt;kernel var = 0.43&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;从数据上，我们可以简单得到结论。在测试设备上，每次fork的开销为51us，内核开销为27us，精确级别在1-2us左右。粗略换算一下，一次fork大约消耗了150k个时钟周期。&lt;/p&gt;
+
+&lt;p&gt;注意，这个数据并不代表fork本身的速度。因为除去fork之外，我们还有子进程退出的开销，父进程wait的开销。甚至严格来说，还包括了至少一次的context switch(有趣的是，这个取决于fork后是优先执行子进程还是父进程)。&lt;/p&gt;
+
+&lt;p&gt;但是作为进程模式的服务程序，这些开销都是预料中必须付出的。不过我们并没有模拟signal对性能的影响(简单测试表明，性能也会显著的变差)。&lt;/p&gt;
+
+&lt;p&gt;另外cs次数比产生的进程数远小，可能被第二颗核心执行掉了部分。看来要做精确的测试需要使用单核处理器。&lt;/p&gt;
+
+&lt;h2&gt;fork模式强制优先执行子进程&lt;/h2&gt;
+
+&lt;p&gt;在&lt;a href=&#34;https://gitcafe.com/shell909090/context/blob/master/s_fork.c&#34;&gt;s_fork&lt;/a&gt;中，注意那句注释。当优先执行子进程时，会发生什么现象？&lt;/p&gt;
+
+&lt;p&gt;预期来说，应当不发生变化，或者轻微的变慢。因为我们预期系统优先执行子进程(以减少exec前的page cow)。如果发生变化，那么说明这个假定是不正确的。真实情况是优先执行父进程或者无保证。&lt;/p&gt;
+
+&lt;p&gt;如果发生变化，首先是一次context switch会变为两次。因为如果在产生了大量子进程后再依次cs，那么需要N+1次cs来结束所有子进程并返回父进程，平均每个子进程一次cs(N足够大的情况下基本近似，例如在标准配置下30000以上)。而如果每次产生子进程就切换，那么会变为每个子进程两次cs。&lt;/p&gt;
+
+&lt;p&gt;其次，先执行父进程导致在每次调度时的活跃进程数更高，因此调度器的每次执行开销更高。按照算法量级估计，大约是4倍以上。但是实际复杂度的估量比平均值更加麻烦——因为活跃数总是在不停的变化中。大约是Sum(logn)/n=log(n!)/n。因此，虽然在cs次数上减少，但是每次cs的开销会增加。&lt;/p&gt;
+
+&lt;p&gt;最后，先执行子进程会导致上下文描述符表项被频繁的重用，从而提高命中率。当然，在我们的测试程序中做不到这点，因为每次都是开满才开始回收的。因为直接回收会导致父进程等待子进程结束，从而导致缓慢。所以至少应当需要执行相当的数量才进行回收。&lt;/p&gt;
+
+&lt;p&gt;而我们摒弃了使用信号响应的方式进行回收，因为信号的速度比fork更慢，这会导致测试不准。&lt;/p&gt;
+
+&lt;p&gt;下面是实际原始数据：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;45.19,22.42,399890,0,0,0,51%
+47.66,22.46,414808,0,0,0,48%
+45.51,23.12,376053,0,0,0,52%
+46.35,22.10,401536,0,0,0,49%
+48.28,22.82,415162,0,0,0,48%
+47.44,22.34,413285,0,0,0,48%
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;统计结果如下：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;time mean = 46.73&lt;/li&gt;
+&lt;li&gt;time var = 1.29&lt;/li&gt;
+&lt;li&gt;kernel mean = 22.54&lt;/li&gt;
+&lt;li&gt;kernel var = 0.11&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;解读上可以发现，每10次fork产生四次cs(这可能是因为第二颗核心执行了部分的子进程)，但是每次fork的开销降低为47us，内核CPU降为23us(用户态时间几乎不发生变化)，精确级别在1us左右。&lt;/p&gt;
+
+&lt;p&gt;这说明真实情况确实是先执行父进程或无保证。&lt;/p&gt;
+
+&lt;h2&gt;线程建立销毁开销&lt;/h2&gt;
+
+&lt;p&gt;使用&lt;a href=&#34;https://gitcafe.com/shell909090/context/blob/master/t_thread.c&#34;&gt;t_thread&lt;/a&gt;程序，循环1M次，重复6次，原始数据如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;9.57,8.22,21098,0,0,0,104%
+9.77,8.40,29704,0,0,0,104%
+9.36,8.17,10390,0,0,0,106%
+9.56,8.50,14514,0,0,0,107%
+9.35,8.34,7244,0,0,0,108%
+9.57,8.43,26351,0,0,0,106%
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;统计结果如下：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;time mean = 9.53&lt;/li&gt;
+&lt;li&gt;time var = 0.02&lt;/li&gt;
+&lt;li&gt;kernel mean = 8.34&lt;/li&gt;
+&lt;li&gt;kernel var = 0.013&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;解读数据可以看到，thread模式的开销为9530ns(已经降到纳秒级了)，CPU将为8340ns，精确级别在20ns级别。粗略换算一下每次create的开销大约是30k个时钟周期。简单对比可以看出，thread模式比fork模式大约快了5倍。&lt;/p&gt;
+
+&lt;h2&gt;纯线程切换开销&lt;/h2&gt;
+
+&lt;p&gt;使用&lt;a href=&#34;https://gitcafe.com/shell909090/context/blob/master/t_yield.c&#34;&gt;t_yield.c&lt;/a&gt;程序研究线程切换开销。具体过程单独整理了一个文件，下面只贴出结论：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/shell909090/slides/master/context/t_yield.png&#34; alt=&#34;t_yield.png&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;首先注意到一点，受内核陷入开销的影响，这里所有数据都需要扣除50ns。因此图像需要向下移动50ns的距离。&lt;/p&gt;
+
+&lt;p&gt;基本可以看到，随着上下文数的增加，每次调度开销是随之增加的。而且两者近似的呈一条直线(虽然看起来比较扭曲)。这证明调度复杂度为O(logm)的推论基本是正确的。&lt;/p&gt;
+
+&lt;p&gt;另外，在1-2线程时性能特别优秀。这可能是线程数小于核数，导致大部分情况下根本未执行调度。对此作出的一点推论是。很多时候，我们为了充分利用CPU会作出worker = N+1的设定。如果IO并不是特别密集，可能性能反而比worker = N更差。&lt;/p&gt;
+
+&lt;h2&gt;sleep切换开销&lt;/h2&gt;
+
+&lt;p&gt;使用&lt;a href=&#34;https://gitcafe.com/shell909090/context/blob/master/t_sleep.c&#34;&gt;t_sleep.c&lt;/a&gt;程序来测试usleep(0)的性能。100线程，1M次循环。下面是结论：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;66.55,90.62,4160,0,0,0,149%
+65.60,87.08,3238,0,0,0,145%
+65.28,83.95,2570,0,0,0,139%
+65.59,85.98,2366,0,0,0,143%
+65.67,86.79,1715,0,0,0,143%
+65.84,87.70,1896,0,0,0,145%
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;统计结果如下：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;time mean = 65.75&lt;/li&gt;
+&lt;li&gt;time var = 0.1539&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;计算结果来说，1315ns。比同样的单纯调度，开销增加了916.8ns。但是在此期间请特别留意CPU利用率曲线。该曲线呈现出明显的先达峰后下降趋势。说明某些线程的sleep比另一些线程的优先得到调度，导致最后CPU利用率不足。从循环次数和下降趋势来说，很难说调度是“近似公平”的。&lt;/p&gt;
+
+&lt;p&gt;另外特别注意，我们针对1线程1M次循环得到的结论。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;53.81,2.52,20,0,0,0,4%
+53.88,2.47,22,0,0,0,4%
+53.79,2.48,16,0,0,0,4%
+55.09,2.35,49,0,0,0,4%
+56.19,2.27,50,0,0,0,4%
+55.71,2.43,62,0,0,0,4%
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;统计结果如下：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;time mean = 54.74&lt;/li&gt;
+&lt;li&gt;time var = 0.945&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;这个结果表明，usleep后会导致很长(50us以上)的延迟，在这个时间段内不会有CPU消耗，哪怕usleep(0)。这是由于任务被标记为TASK_INTERRUPTIBLE，然后挂到timer队列上。timer队列调度是有频率限制的，低于这个时间片的sleep不会得到及时响应。这导致usleep测试CPU和调度性能实际上是个很没意义的行为。&lt;/p&gt;
+
+&lt;h2&gt;lock切换开销&lt;/h2&gt;
+
+&lt;p&gt;使用&lt;a href=&#34;https://gitcafe.com/shell909090/context/blob/master/t_lock.c&#34;&gt;t_lock.c&lt;/a&gt;来研究pthread mutex的性能。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/shell909090/slides/master/context/t_lock.png&#34; alt=&#34;t_lock.png&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;可以看到，mutex几乎不随着并发数的上升而上升。难道是我们的推论有误？&lt;/p&gt;
+
+&lt;p&gt;我详细的看了下源码。在glibc中，使用的是futex而非mutex实现的锁。前者会把系统置于TASK_UNINTERRUPTIBLE而后者会置于TASK_INTERRUPTIBLE。在ps中一望便知。而TASK_INTERRUPTIBLE是未就绪状态，并不在调度范围内。因此，仅仅在某个上下文执行了unlock后，未进入lock时的短暂时间内，系统有两个可调度上下文。在进入lock后，系统又变为一个可调度上下文。因此，系统在大多数时候都在1-2个可调度上下文间浮动。&lt;/p&gt;
+
+&lt;p&gt;而且请注意，这里还是换出-换入两次(所有锁类代码都是这样)。&lt;/p&gt;
+
+&lt;p&gt;而read/write中，活跃上下文数是受客户影响的。当某个fd收到用户数据的时候，对应上下文就会从TASK_INTERRUPTIBLE转变为就绪，而且在下一个阻塞(或处理完成)前始终占据调度队列。&lt;/p&gt;
+
+&lt;h1&gt;python性能测试&lt;/h1&gt;
+
+&lt;h2&gt;yield模式性能测试&lt;/h2&gt;
+
+&lt;p&gt;python下的测试就不用time了，我们改用python的timeit，循环100M次。具体可以看&lt;a href=&#34;https://gitcafe.com/shell909090/context/blob/master/py_yield.py&#34;&gt;py_yield.py&lt;/a&gt;。数据结果如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;7.64262938499 9.2919304393e-06
+5.41777145863 4.94284924931e-06
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;从结果来看，100M次循环的平均时间是5.4s，平均每次大约54ns。使用yield后变为76ns，增加了22ns。&lt;/p&gt;
+
+&lt;h2&gt;greenlet模式性能测试&lt;/h2&gt;
+
+&lt;p&gt;这次代码在&lt;a href=&#34;https://gitcafe.com/shell909090/context/blob/master/py_greenlet.py&#34;&gt;py_greenlet.py&lt;/a&gt;，循环10M次。数据结果如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;5.35270996888 7.44085846125e-05
+5.31448976199 5.82336765673e-05
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;单次循环时间消耗为535ns。比最初的54ns，增加了481ns。基本来说，时间增长了10倍率。&lt;/p&gt;
+
+&lt;p&gt;这是预料中的，因为greenlet早就声明自己通过堆栈拷贝来实现上下文切换。这会消耗大量CPU时间。从原理上说，栈越深，消耗越大。但是测试结果表明两者几乎没有差异，栈深反而性能更加优异。&lt;/p&gt;
+
+&lt;h2&gt;yield from性能测试&lt;/h2&gt;
+
+&lt;p&gt;这次代码在&lt;a href=&#34;https://gitcafe.com/shell909090/context/blob/master/py_yield_from.py&#34;&gt;py_yield_from.py&lt;/a&gt;，循环100M次。数据结果如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;11.3753386545 2.05564687993e-05
+8.83233247434 7.92599097725e-05
+6.31597025133 0.00346735863271
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;单次循环时间消耗为113.7ns。比最初的63.2ns，增加了50.5ns。单纯的yield为88.3ns，增加了25.1ns。&lt;/p&gt;
+
+&lt;p&gt;yield from需要在python3下执行，从数据上看，python3下执行循环加的过程比python2下更缓慢，而且yield也同样比python2下的缓慢(这也是python3经常被诟病的一个问题，经常比python2慢)。&lt;/p&gt;
+
+&lt;p&gt;但是针对2/3速度对比问题，我特别声明一下。这个测试没有针对2/3速度对比做定制，也没有经过精细分析。所以不能保证其他人在其他环境下执行出相反的结果。总之，目前我可以做出的简单结论是。python3和python2速度相仿，python2略快。&lt;/p&gt;
+
+&lt;p&gt;而yield from比yield更慢，这完全可以理解。在python2中，yield from需要用for来表达，这样的结果一个是难看，一个也未必快过yield from。&lt;/p&gt;
+
+&lt;p&gt;下面我们想要知道一下，随着yield的深度增加，速度是否减慢。用同一个程序里的test_all代码进行了简单的测试后，结果如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/shell909090/slides/master/context/py_yield_from.png&#34; alt=&#34;py_yield_from.png&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;结论是，随着递归深度的增加，yield from的上下文切换速度是会减慢的。两者呈明显的线性关系。&lt;/p&gt;
+
+&lt;h1&gt;golang性能测试&lt;/h1&gt;
+
+&lt;h2&gt;goroutine创建开销&lt;/h2&gt;
+
+&lt;p&gt;下面是一组golang有关的测试，首先使用&lt;a href=&#34;https://gitcafe.com/shell909090/context/blob/master/g_goroutine.go&#34;&gt;g_goroutine.go&lt;/a&gt;来测试goroutine创建和销毁开销，执行10M次：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;5.70,0.11,598,0,0,0,99%
+5.70,0.12,77,0,0,0,99%
+5.66,0.14,334,0,0,0,99%
+5.66,0.10,271,0,0,0,99%
+5.57,0.16,47,0,0,0,99%
+5.77,0.10,521,0,0,0,99%
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;统计结果如下：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;time mean = 5.68&lt;/li&gt;
+&lt;li&gt;time var = 0.0036&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;大致结果为创建开销568ns，大约是线程创建开销的1/20。注意代码没有保证goroutine执行完毕，所以可能会有一定误差。&lt;/p&gt;
+
+&lt;h2&gt;调度开销&lt;/h2&gt;
+
+&lt;p&gt;我们使用&lt;a href=&#34;https://gitcafe.com/shell909090/context/blob/master/g_sched.go&#34;&gt;g_sched.go&lt;/a&gt;来研究golang的调度。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/shell909090/slides/master/context/g_sched.png&#34; alt=&#34;g_sched.png&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;可以看到，在很大范围内，延迟虽然随着并发升高而升高，但是升高的幅度并不大。即使是16K这个级别的并发，也只有250ns左右的延迟而已。&lt;/p&gt;
+
+&lt;h2&gt;chan开销&lt;/h2&gt;
+
+&lt;p&gt;我们使用&lt;a href=&#34;https://gitcafe.com/shell909090/context/blob/master/g_chan.go&#34;&gt;g_chan.go&lt;/a&gt;来研究chan上的调度。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/shell909090/slides/master/context/g_chan.png&#34; alt=&#34;g_chan.png&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;可以看到，chan的性能更加优秀，而且不随着并发的增长而增长，在所有的范围内基本都是60-70ns。这主要是因为chan并不需要“调度”，而只需要上下文切换。所以这个切换是非公平的。chan唤醒上下文的顺序并不一定按照在chan上阻塞的顺序。&lt;/p&gt;
+
+&lt;h2&gt;lock开销&lt;/h2&gt;
+
+&lt;p&gt;我们使用&lt;a href=&#34;https://gitcafe.com/shell909090/context/blob/master/g_lock.go&#34;&gt;g_lock.go&lt;/a&gt;来研究chan上的调度。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/shell909090/slides/master/context/g_lock.png&#34; alt=&#34;g_lock.png&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;让我颇为困惑的是，lock的性能居然比chan更优秀。在初始阶段都是30ns多点，在256并发上下遇到了剧烈的波动，以上就减少到了20ns。原理上说，lock同样也是不做出顺序假定，无调度的。但是这并不能说明为什么chan比lock性能更差。也许是chan内部做了一些额外工作。而且这些工作应当和并发无关，也就是局部(local)工作。&lt;/p&gt;
+
+&lt;h1&gt;C语言上下文调度&lt;/h1&gt;
+
+&lt;h2&gt;setjmp/longjmp测试&lt;/h2&gt;
+
+&lt;p&gt;使用&lt;a href=&#34;https://gitcafe.com/shell909090/context/blob/master/s_jmp.c&#34;&gt;s_jmp&lt;/a&gt;程序来测试setjmp的性能。1G次循环。下面是结论：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;5.77,0.00,29,0,0,0,99%
+5.70,0.00,30,0,0,0,99%
+5.71,0.00,22,0,0,0,99%
+5.71,0.00,23,0,0,0,99%
+5.70,0.00,30,0,0,0,100%
+5.70,0.00,23,0,0,0,99%
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;统计结果如下：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;time mean = 5.715&lt;/li&gt;
+&lt;li&gt;time var = 0.000625&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;单次调度开销只有5.7ns，在所有测试中性能最优。(glibc-2.19/sysdeps/x86_64/setjmp.S)&lt;/p&gt;
+
+&lt;h2&gt;makecontext/swapcontext测试&lt;/h2&gt;
+
+&lt;p&gt;使用&lt;a href=&#34;https://gitcafe.com/shell909090/context/blob/master/s_context.c&#34;&gt;s_context&lt;/a&gt;程序来测试ucontext的性能。100M次循环。下面是结论：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;33.42,13.08,163,0,0,0,99%
+33.43,13.40,147,0,0,0,99%
+33.39,13.24,143,0,0,0,99%
+33.41,13.25,156,0,0,0,99%
+33.70,13.41,328,0,0,0,99%
+33.42,13.18,290,0,0,0,99%
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;统计结果如下：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;time mean = 33.46&lt;/li&gt;
+&lt;li&gt;time var = 0.0115&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;单次调度开销高达167.3ns，仅比系统的sched在高线程下略快。这事很奇怪，因为根据我看到的源码(glibc-2.19/sysdeps/unix/sysv/linux/x86_64/setcontext.S)，getcontext/setcontext在glibc中是用汇编实现的。其中陷入内核只是为了设定signal mask。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>context切换测试——线程创建有关部分请求review</title>
+      <link>https://shell909090.github.io/blog/archives/2693/</link>
+      <pubDate>Fri, 31 Oct 2014 14:49:09 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2693/</guid>
+      <description>&lt;h2&gt;线程模式开销&lt;/h2&gt;
+
+&lt;p&gt;使用&lt;a href=&#34;https://gitcafe.com/shell909090/context/blob/master/t_thread.c&#34;&gt;t_thread&lt;/a&gt;程序，循环1M次，重复6次，原始数据如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;9.57,8.22,21098,0,0,0,104%
+9.77,8.40,29704,0,0,0,104%
+9.36,8.17,10390,0,0,0,106%
+9.56,8.50,14514,0,0,0,107%
+9.35,8.34,7244,0,0,0,108%
+9.57,8.43,26351,0,0,0,106%
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;统计结果如下：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;time mean = 9.53&lt;/li&gt;
+&lt;li&gt;time var = 0.02&lt;/li&gt;
+&lt;li&gt;kernel mean = 8.34&lt;/li&gt;
+&lt;li&gt;kernel var = 0.013&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;解读数据可以看到，thread模式的开销为9530ns(已经降到纳秒级了)，CPU将为8340ns，精确级别在20ns级别。粗略换算一下每次create的开销大约是30k个时钟周期。简单对比可以看出，thread模式比fork模式大约快了5倍。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>context切换测试——进程有关部分请求review</title>
+      <link>https://shell909090.github.io/blog/archives/2682/</link>
+      <pubDate>Tue, 28 Oct 2014 12:57:04 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2682/</guid>
+      <description>&lt;h2&gt;测试环境&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Intel(R) Pentium(R) CPU G2030 @ 3.00GHz&lt;/li&gt;
+&lt;li&gt;8G内存&lt;/li&gt;
+&lt;li&gt;debian jessie&lt;/li&gt;
+&lt;li&gt;Linux 3.16-2-amd64&lt;/li&gt;
+&lt;li&gt;2014年10月27日&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;附注一下，该CPU有2核心，无HT，1ns3个时钟周期。&lt;/p&gt;
+
+&lt;h2&gt;测试方法&lt;/h2&gt;
+
+&lt;p&gt;测试代码如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;time -f &#34;%e,%S,%c,%r,%s,%K,%P&#34; ./perf_fork
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;数据的意义分别为: 总时间，占用CPU时间，context switch次数，读/写次数，内存耗用，CPU使用百分比。&lt;/p&gt;
+
+&lt;p&gt;数据处理方法如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;import numpy as np
+p = lambda s: [float(line.strip().split(&#39;,&#39;)[0]) for line in s.splitlines()]
+q = lambda s: [float(line.strip().split(&#39;,&#39;)[1]) for line in s.splitlines()]
+np.array(p(s)).mean()
+np.array(p(s)).var()
+np.array(q(s)).mean()
+np.array(q(s)).var()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2&gt;进程fork开销&lt;/h2&gt;
+
+&lt;p&gt;使用&lt;a href=&#34;https://gitcafe.com/shell909090/context/blob/master/s_fork.c&#34;&gt;s_fork&lt;/a&gt;程序(注释语句关闭模式)，粒度1M次，重复6次，原始数据如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;49.04,26.83,29784,0,0,0,55%
+51.53,26.38,32057,0,0,0,52%
+49.88,26.02,30892,0,0,0,53%
+51.39,27.13,37573,0,0,0,54%
+52.89,28.12,37924,0,0,0,54%
+51.19,27.02,35880,0,0,0,54%
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;统计结果如下：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;time mean = 50.98&lt;/li&gt;
+&lt;li&gt;time var = 1.52&lt;/li&gt;
+&lt;li&gt;cpu mean = 26.92&lt;/li&gt;
+&lt;li&gt;cpu var = 0.43&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;从数据上，我们可以简单得到结论。在测试设备上，每次fork的开销为51us，CPU开销为27us，精确级别在1-2us左右。粗略换算一下，一次fork大约消耗了150k个时钟周期。&lt;/p&gt;
+
+&lt;p&gt;注意，这个数据并不代表fork本身的速度。因为除去fork之外，我们还有子进程退出的开销，父进程wait的开销。甚至严格来说，还包括了至少一次的context switch(有趣的是，这个取决于fork后是优先执行子进程还是父进程)。&lt;/p&gt;
+
+&lt;p&gt;但是作为进程模式的服务程序，这些开销都是预料中必须付出的。&lt;/p&gt;
+
+&lt;p&gt;另外cs次数比产生的进程数远小(TODO: why?)。&lt;/p&gt;
+
+&lt;h2&gt;fork模式强制优先执行子进程&lt;/h2&gt;
+
+&lt;p&gt;在&lt;a href=&#34;https://gitcafe.com/shell909090/context/blob/master/s_fork.c&#34;&gt;s_fork&lt;/a&gt;中，注意那句注释。当优先执行子进程时，会发生什么现象？&lt;/p&gt;
+
+&lt;p&gt;预期来说，应当不发生变化，或者轻微的变慢。因为我们预期系统优先执行子进程(以减少exec前的page cow)。如果发生变化，那么说明这个假定是不正确的。真实情况是优先执行父进程或者无保证。&lt;/p&gt;
+
+&lt;p&gt;如果发生变化，首先是一次context switch会变为两次。因为如果在产生了大量子进程后再依次cs，那么需要N+1次cs来结束所有子进程并返回父进程，平均每个子进程一次cs(N足够大的情况下基本近似，例如在标准配置下30000以上)。而如果每次产生子进程就切换，那么会变为每个子进程两次cs。&lt;/p&gt;
+
+&lt;p&gt;其次，先执行父进程导致在每次调度时的活跃进程数更高，因此调度器的每次执行开销更高。按照算法量级估计，大约是4倍以上。但是实际复杂度的估量比平均值更加麻烦——因为活跃数总是在不停的变化中。大约是Sum(logn)/n=log(n!)/n。因此，虽然在cs次数上减少，但是每次cs的开销会增加。&lt;/p&gt;
+
+&lt;p&gt;最后，先执行子进程会导致上下文描述符表项被频繁的重用，从而提高命中率。当然，在我们的测试程序中做不到这点，因为每次都是开满才开始回收的。&lt;/p&gt;
+
+&lt;p&gt;下面是实际原始数据：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;45.19,22.42,399890,0,0,0,51%
+47.66,22.46,414808,0,0,0,48%
+45.51,23.12,376053,0,0,0,52%
+46.35,22.10,401536,0,0,0,49%
+48.28,22.82,415162,0,0,0,48%
+47.44,22.34,413285,0,0,0,48%
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;统计结果如下：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;time mean = 46.73&lt;/li&gt;
+&lt;li&gt;time var = 1.29&lt;/li&gt;
+&lt;li&gt;cpu mean = 22.54&lt;/li&gt;
+&lt;li&gt;cpu var = 0.11&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;解读上可以发现，每10次fork产生四次cs(TODO: 为什么？)，但是每次fork的开销降低为47us，CPU降为23us(用户态时间几乎不发生变化)，精确级别在1us左右。&lt;/p&gt;
+
+&lt;p&gt;这提示我们至少一件事情——如果要用进程模式，记得先执行子进程。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>bash严重漏洞</title>
+      <link>https://shell909090.github.io/blog/archives/2680/</link>
+      <pubDate>Thu, 25 Sep 2014 14:36:10 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2680/</guid>
+      <description>&lt;p&gt;今天估计各大消息都在报这个漏洞，可能有些人看到有修复就放松了。目前来看，事情没那么简单。&lt;/p&gt;
+
+&lt;h1&gt;CVE-2014-6271&lt;/h1&gt;
+
+&lt;p&gt;第一个漏洞，编号为&lt;a href=&#34;http://web.nvd.nist.gov/view/vuln/detail?vulnId=CVE-2014-6271&#34;&gt;CVE-2014-6271&lt;/a&gt;。相应的&lt;a href=&#34;https://www.debian.org/security/2014/dsa-3032&#34;&gt;dsa&lt;/a&gt;和&lt;a href=&#34;http://www.ubuntu.com/usn/usn-2362-1&#34;&gt;usn&lt;/a&gt;。&lt;/p&gt;
+
+&lt;p&gt;具体的文章可以看&lt;a href=&#34;https://securityblog.redhat.com/2014/09/24/bash-specially-crafted-environment-variables-code-injection-attack/&#34;&gt;这里&lt;/a&gt;。&lt;/p&gt;
+
+&lt;p&gt;简单来说，当bash执行时看到有变量定义了一个函数，函数尾部又剩余了部分代码。会直接把剩余代码执行了。导致简单的变量定义动作有机会执行任意代码。&lt;/p&gt;
+
+&lt;p&gt;对于未修补的系统，执行以下代码出现以下提示：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ env x=&#39;() { :;}; echo vulnerable&#39; bash -c &#34;echo this is a test&#34;
+vulnerable
+this is a test
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;注意echo vulnerable应当不被执行的。&lt;/p&gt;
+
+&lt;p&gt;修复的系统则是以下表现：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ env x=&#39;() { :;}; echo vulnerable&#39; bash -c &#34;echo this is a test&#34;
+bash: warning: x: ignoring function definition attempt
+bash: error importing function definition for `x&#39;
+this is a test
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1&gt;CVE-2014-7169&lt;/h1&gt;
+
+&lt;p&gt;第二个漏洞，编号为&lt;a href=&#34;http://web.nvd.nist.gov/view/vuln/detail?vulnId=CVE-2014-7169&#34;&gt;CVE-2014-7169&lt;/a&gt;。&lt;/p&gt;
+
+&lt;p&gt;这个漏洞是第一个漏洞没有修复完全导致的，最麻烦的是，这个漏洞没有修复，细节却满天飞了。&lt;/p&gt;
+
+&lt;p&gt;表现如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ env X=&#39;() { (a)=&amp;gt;\&#39; sh -c &#34;echo date&#34;; cat echo
+sh: X: line 1: syntax error near unexpected token `=&#39;
+sh: X: line 1: `&#39;
+sh: error importing function definition for `X&#39;
+Wed Sep 24 23:25:58 PDT 2014
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1&gt;结论和建议&lt;/h1&gt;
+
+&lt;p&gt;尽量不要暴露bash，能关就关，不行的自求多福吧。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>服务器操作系统的选择</title>
+      <link>https://shell909090.github.io/blog/archives/2671/</link>
+      <pubDate>Thu, 14 Aug 2014 16:25:32 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2671/</guid>
+      <description>&lt;p&gt;今天被LTN问了一下怎么看一个知乎问题：&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;http://www.zhihu.com/question/19599986&#34;&gt;服务器操作系统应该选择 Debian/Ubuntu 还是 CentOS？&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;其实我觉得他的大部分说法都没有错。如果你需要装一个服务器，确实首选是RH系的。&lt;/p&gt;
+
+&lt;p&gt;但是。。。&lt;/p&gt;
+
+&lt;h1&gt;选用RH系的主要理由&lt;/h1&gt;
+
+&lt;p&gt;其实你把回复从头看到尾，主要论点就一点：&lt;/p&gt;
+
+&lt;p&gt;哪个发行版，可以在长达7-10年的时间里，始终保持硬件稳定性的同时，又持续的升级补丁？&lt;/p&gt;
+
+&lt;p&gt;结论当然是RH！这是RH的主要卖点。&lt;/p&gt;
+
+&lt;h1&gt;我们真的需要长达7年的硬件稳定性支持？&lt;/h1&gt;
+
+&lt;p&gt;咳咳，今年上半年，蔽厂的运维碰到了这么一件尴尬事。&lt;/p&gt;
+
+&lt;p&gt;他们进货，去机房装系统，配置网络结构，加入运维管理系统，添加监控，交付。除去采购外，整个一套流程大概是一周。&lt;/p&gt;
+
+&lt;p&gt;我们在机房里面原本大约有10个机柜，那么一般扩充的时候，一次扩充一个机柜。&lt;/p&gt;
+
+&lt;p&gt;结果今年上半年的某一段时间，一周一个机柜的事情持续了两个月。运维同学辛辛苦苦装好一个机柜，周末打算轻松一下。被老大通知，又来客户了，机柜又不够用了，下周继续。&lt;/p&gt;
+
+&lt;p&gt;是的，我们现在20个机柜不止。机房有多少机柜我不知道，不过照这个趋势来看，我们快把机房包下来了。现在我们的带宽已经没有限制了，每个月月底按照合同秋后算账。&lt;/p&gt;
+
+&lt;p&gt;我们有一些有三年历史的服务器，台数不多。现在来看，性能已经远远不够。CPU不够快，也没有SSD，硬盘读写次数也太多。这些机器的下场，多数会被换下来折旧卖掉，或者作为测试服务器，搬去测试机房。而现在机房里面大半机器，都是两年以下历史的。而且至少一半服务器历史不超过半年（。。。）。从现状上看，把老服务器留在机房，其性价比并不合算。因为机房有机架密度问题，限制着我们的单机房极限，这相当于变相的租金。&lt;/p&gt;
+
+&lt;p&gt;如果考虑到这点，我们的线上服务器生命周期大概也就三年。最多。很多时候甚至还不到。&lt;/p&gt;
+
+&lt;p&gt;比我们更极端的是页游。他们的一组服务器生命周期一般是半年。半年内，要赚钱的也赚完了，不赚钱的也死完了。所以他们甚至不会新采购硬件服务器，而是直接使用虚拟机。&lt;/p&gt;
+
+&lt;p&gt;当然，虚拟机内的系统，支持时间是一年还是十年，对他们一点意义都没有。&lt;/p&gt;
+
+&lt;h1&gt;为什么我们不喜欢三年以上的系统？&lt;/h1&gt;
+
+&lt;p&gt;RH系的提供10年级别的维护性，我换个说法，也就是最近的软件在RH的官方库里面找不到。当然，装最新的RH是有的，但是在安装了三年的一个系统上？肯定没戏。&lt;/p&gt;
+
+&lt;p&gt;怎么办？编译呗。&lt;/p&gt;
+
+&lt;p&gt;这大概就是国内谈到RH必编译的由来。&lt;/p&gt;
+
+&lt;p&gt;可是，我引用文内的一段话。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;如果我今天告诉大家，我要做一个 http 的服务器，我不用 apache 不用 nginx，
+为了性能我要用 xxx 为基础重写一套出来。我相信绝大多数人会问同样的问题，
+“你觉得你写的能比 ng 好么？”
+再回头看看那时候你们自己吧。
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;同样，自己编译的软件，补丁维护速度，能和新系统比么？而且我们还得扔一个人下去搞补丁维护。&lt;/p&gt;
+
+&lt;p&gt;所以，正解是什么？&lt;/p&gt;
+
+&lt;p&gt;装一套新的，把数据导过去用呗。&lt;/p&gt;
+
+&lt;p&gt;我们的”数据“，都是装载在磁盘上的。而换”系统“并不需要更新这些数据，只要把系统盘擦掉重部署一遍，然后配置好deploy系统就OK。在开发之初，”环境“，”程序“和”数据“分离，就是一项基本原则。而且即使是”数据“，丢掉一台机器上的所有”数据“也不会构成问题。这应当是运维基础中的基础。只有少数几台服务器，既不能直接更换也不能停机。这些机器我们做特别的管理。&lt;/p&gt;
+
+&lt;h1&gt;为什么蔽厂使用Ubuntu？&lt;/h1&gt;
+
+&lt;p&gt;很简单。因为最初的开发希望在Linux上进行。直接在Linux上开发和测试，对于startup的快速开发是非常重要的。而开发用什么版本，服务器跟什么版本，这是最省事和好办的。如果你硬要和我争，说开发在Mac上，跑在Linux上一点事都没有。或者说开发一个发行，服务器一个发行也OK。&lt;/p&gt;
+
+&lt;p&gt;我至少得说这对于golang和python都不是事实。除非不用cgo，也不用python的C扩展。&lt;/p&gt;
+
+&lt;p&gt;先不提Mac下和Linux下的差异。我们今年在升14.04的时候就发现，12.04和14.04的编译互不通行。所以现在12.04的编译可以程序员自己编译了本地测，14.04的就必须在测试环境里干。一帮程序员远程tcpdump出结果，拷回本地wireshark一把。。。&lt;/p&gt;
+
+&lt;p&gt;看看就蛋疼。&lt;/p&gt;
+
+&lt;p&gt;当然，这也有个问题。就是上面”我们不喜欢三年以上的系统“。所以呢。明年我们的系统大概会轮换重装，14.04。。。&lt;/p&gt;
+
+&lt;p&gt;也很蛋疼。&lt;/p&gt;
+
+&lt;h1&gt;Debian系的补丁不靠谱么？&lt;/h1&gt;
+
+&lt;p&gt;那要看和谁比。这里有HeartBleed事件的统计。虽然不普遍，但是我觉得这种大漏洞比较有代表性。&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;http://blog.gcos.me/2014-04-10_openssl-cve-2014-0160-security-issue.html&#34;&gt;CVE-2014-0160 - OpenSSL 安全漏洞的非技術事件&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;我引用他的重点整理：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;RedHat 修復的速度比 OpenSSL 官方還快。
+RedHat 派系的修復時間，除了 RedHat 外都算慢，如 Fedora 及 CentOS、Scentific，
+他們都比 RedHat 慢 16 小時以上。
+Debian 派系的修復時間，如 Debian 及 Ubuntu，都比 RedHat 慢上至少 12 小時以上。
+Scentific 是列表中修復最慢的。
+若以資安黃金 6 小時來說，Fedora、CentOS、OpenSUSE、Gentoo
+及 Scentific 都不及格。
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;如果和RH比，Debian的修复速度是不及格，但是和CentOS比。。。怎么说呢？6个小时对10个小时，有种五十步笑百步的味道？&lt;/p&gt;
+
+&lt;p&gt;换你你愿意走几步？&lt;/p&gt;
+
+&lt;p&gt;另外，我也不知道原文说的升级一大包是怎么回事。我在Debian stable上查询ssl：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ dpkg -s libssl1.0.0
+Version: 1.0.1e-2+deb7u12
+Depends: libc6 (&amp;gt;= 2.7), zlib1g (&amp;gt;= 1:1.1.4), debconf (&amp;gt;= 0.5) | debconf-2.0
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;但是同时。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ dpkg -l | grep libc6
+ii  libc6:i386                           2.13-38+deb7u3                i386         Embedded GNU C Library: Shared libraries
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;libc的依赖早就满足到不能再满足了。直到今天为止，openssl在debian上的升级还不需要你强制跟随升级libc6。而kernel根本没有依赖。&lt;/p&gt;
+
+&lt;h1&gt;纠正原文的一点理解错误&lt;/h1&gt;
+
+&lt;pre&gt;&lt;code&gt;Debian 是由社区维护、贡献的发行版本，其从选包、打包、都是由社区组织，分散行动的。
+Debian 是没有真正意义的 release 概念的。Debian 有众多仓库，stable，testing，
+unstable ,experimental. Debian 组织系统的方式是，一个软件先进入 experimental, 
+放一段时间，有 bug 修 bug，没 bug 了，过段时间挪入 unstable,
+如此循环最终挪到 stable 里面。
+所以在这种情况下，Debian 的系统中，是没有一个稳定版本的概念。
+今天你用 kernel 3.2.1-87 , 明天就给你更新到 kernel 3.3.2-5 。
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Debian是由社区维护，这没错。但是选包并不是社区组织。Debian中，如果没有特定理由（例如dsfg）阻止你打一个包，那么只要有maintainer，就可以打包。哪怕这个包的用户其实不是很多（很多包甚至统计上只有1X个用户），这也是Debian那么一大堆包的原因。&lt;/p&gt;
+
+&lt;p&gt;Debian包的管理方式是，先进入unstable（是的，除了少数情况，一般不是进入experimental）。在一周后，看看没问题，就进入testing。没问题的指标是，这个包和依赖的包没有RC bug，就是致命性bug。&lt;/p&gt;
+
+&lt;p&gt;所以很多在unstable里面有的东西，testing里面反而没有。因为unstable里面的某个基础依赖包的RC bug并没有被修复。而且testing修漏洞的速度是最慢的。因为一出问题，unstable会直接引入新的版本。而stable会要求maintainer修复。可怜的testing只能等一个礼拜。。。&lt;/p&gt;
+
+&lt;p&gt;那什么时候进入stable？他不会随着你的循环进入stable。而是每1.5-2年（预期1.5年，但是RC冻结周期往往会超标，根据历史数据统计，一般两年）做一次发布，这个发布会冻结所有新包，并修正RC bug。等大家觉得差不多稳定了，OK，原本的testing就成为stable，而原本的unstable就fork出新的unstable和testing。&lt;/p&gt;
+
+&lt;p&gt;所以现在的testing代号就会成为下一个stable代号，而每次fork的时候，我们都是决定testing代号——就是下个发行的发行代号。&lt;/p&gt;
+
+&lt;p&gt;所以你看BTS的追踪，会发现每1.5年有一段时间，RC bug的数量会锐减，而新包的数量也锐减。这不是大家都冬眠了，只是新发行周期而已。&lt;/p&gt;
+
+&lt;p&gt;作为证据，下面是我的&lt;a href=&#34;https://qa.debian.org/developer.php?login=shell909090%40gmail.com&#34;&gt;Packages overview&lt;/a&gt;。大家可以看到，python-snappy（这是我唯一维护的包了，python-formalchemy已经RFA了）在stable里面是0.4，而新的两个里面是0.5。我没有明确理由把stable里面的版本升级到0.5。&lt;/p&gt;
+
+&lt;h1&gt;那debian怎么修bug？&lt;/h1&gt;
+
+&lt;p&gt;这个看maintainer。一般的原则是，如果不是无法保持版本，一般直接打补丁升级。这也是原文的一点理解错误。如果用的真的是Debian stable，没有特殊理由的话，内核是不会升级到3.3的。作为证据，大家可以看一下现在stable的官配内核版本号。目前是linux-image-amd64 (3.2+46)，依赖应该是linux-image-3.2.0-4-amd64 (3.2.60-1+deb7u3)。也就是说，版本号应该是3.2.60-1+deb7u3。而3.2在&lt;a href=&#34;https://www.kernel.org/&#34;&gt;kernel.org&lt;/a&gt;上的longterm对应版本号是62。&lt;/p&gt;
+
+&lt;p&gt;原作者这个理解，怎么说呢。我怀疑他要么没仔细用过debian，要么用的是testing。&lt;/p&gt;
+
+&lt;p&gt;但是如果新老版本差异太大，老版本又拒绝提供补丁，那么逼不得已的情况下，需要评估是不是能升。例如某一段时间，mysql的版本号是5.0XXreal5.5XXX（这个是听本厂DD说的）。至于原本的兼容性问题，我也不知道他们是怎么想的，大概是认为mysql server没啥依赖性问题吧。&lt;/p&gt;
+
+&lt;p&gt;但是这种情况下，RH一般也没办法吧——除非他们自己出程序员给老版本做一遍补丁。不过如果这样的话，oracle一般会merge back回去，debian就跟着沾光了。&lt;/p&gt;
+
+&lt;h1&gt;Ubuntu的误解&lt;/h1&gt;
+
+&lt;pre&gt;&lt;code&gt;Ubuntu 8.04 LTS April 24, 2008
+Ubuntu 8.04.4 LTS January 28, 2010
+1年9个月
+你说好的 LTS 呢？？？
+Ubuntu 10.04 LTS April 29, 2010
+Ubuntu 10.04.4 LTS February 16, 2012
+说好的 LTS 呢？
+说 End of the Date 是3年整就是一个笑话，
+只要下个 release 一出，上个 release 收到的更新数量就可怜。
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;作者大概是RH用多了，没搞明白Ubuntu“维护”的本质。&lt;/p&gt;
+
+&lt;p&gt;Debian和Debian基础的系统，主要的发行方式是网络。光盘只是给你个安装的机会。这点debian更加明显——他有种光盘叫做netinst。里面只有基础包的安装包。在不联网的情况下，你只能装出一个用于联网升级的系统。没有gui，没有openssh，啥都没有。&lt;/p&gt;
+
+&lt;p&gt;所以，LTS归LTS，修改不够多是不够打新光盘的。&lt;/p&gt;
+
+&lt;p&gt;谁会持续5年，一年给你弄张新光盘出来啊——尤其是里面没几个包改了。&lt;/p&gt;
+
+&lt;p&gt;而LTS的维护怎么样？我们来看&lt;a href=&#34;http://www.ubuntu.com/usn/lucid/&#34;&gt;usn&lt;/a&gt;的维护情况。&lt;/p&gt;
+
+&lt;p&gt;在2014年6-7月，总共有26个USN涉及ubuntu lucid。&lt;/p&gt;
+
+&lt;p&gt;所以装好ubuntu，第一件事是去repository上面打一遍安全补丁!&lt;/p&gt;
+
+&lt;h1&gt;”维护“的本质问题&lt;/h1&gt;
+
+&lt;p&gt;上面说了半天，根本问题是，”维护“是个什么东西？&lt;/p&gt;
+
+&lt;p&gt;主要就是bug修复。尤其是一类特殊bug修复——安全补丁。&lt;/p&gt;
+
+&lt;p&gt;一旦一个程序基本成型，就一定会形成”接口“。API是接口，调用的程序，参数，顺序，环境变量，一样是接口。有接口就有接口兼容性。如果不考虑兼容性，一律使用最新版本的话。。。&lt;/p&gt;
+
+&lt;p&gt;bang。不知哪天程序就跑不动了。因为作者改了接口。&lt;/p&gt;
+
+&lt;p&gt;不要以为这很扯，我在实际里多次碰到这种问题。python-mongo多次修改接口，sqlalchemy0.6时写的程序，经我反复修改终于上到了0.7，却死也上不到0.8。至于docker，也是个版本号刚刚过1.0的家伙。在1.0前面，我们就作大死的做了二次开发。结果惨不忍睹。&lt;/p&gt;
+
+&lt;p&gt;所以我们用一种被称为“发行”的方案。即一段时间，将稳定的代码固定下来，形成某个版本的发行。例如linux-kernel-3.2.0。而后新功能在3.3上面渐进，原本使用3.2的并不受到干扰。&lt;/p&gt;
+
+&lt;p&gt;这本来挺完美，可惜有一个问题。bug并不一定出在最新版上面，他有可能在14年前就已经存在了。这样会使得bug横跨多个版本。而这个bug又不能不修的时候——例如安全漏洞。&lt;/p&gt;
+
+&lt;p&gt;这时候就蛋疼了。&lt;/p&gt;
+
+&lt;p&gt;上游会修多少个发行的漏洞？如果上游不修，这个发行的漏洞怎么办？大部分漏洞只是几行就可以完成修正，但是有些发行甚至要动架构，怎么办？&lt;/p&gt;
+
+&lt;p&gt;没有研发力量，是不能保证修复的。&lt;/p&gt;
+
+&lt;p&gt;在代码里面，主要有三件事情，功能发展性，接口稳定性，代码安全性。&lt;/p&gt;
+
+&lt;p&gt;如果我们可以去掉一件事情，那么世界很完美。&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;去掉接口稳定性，每次都用最新的就好了，bug肯定修光的。&lt;/li&gt;
+&lt;li&gt;去掉功能发展性，软件不再推进就好了，就修修bug。&lt;/li&gt;
+&lt;li&gt;去掉代码安全性，单纯发行就好了，发了就不用管了。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;可惜，三者一般都需要。有些很古典的程序已经进入了2的情况，例如TeX。至于大部分互联网公司线上系统，则比较偏向1。但是大部分发行版内的包，可是要三者都满足的。&lt;/p&gt;
+
+&lt;h1&gt;RH和Debian的开发差异&lt;/h1&gt;
+
+&lt;p&gt;其实还是很大的。RH的开发是真的开发。Debian的&#34;Developer&#34;，其实只管开发debian打包用脚本，维护版本，补丁，仓库。而RH的开发，别的不说，你就看内核补丁贡献数吧。&lt;/p&gt;
+
+&lt;p&gt;这也是社区和公司不同取向的差别。社区不管商业能处理的一些问题，而且他们也管不了。先不提RH有多少人，Debian社区有多少人。我就吐槽一下中国DD数量吧。我查询了一下，总共8个（&lt;a href=&#34;https://db.debian.org/&#34;&gt;db&lt;/a&gt;）。其中我认识5个，超过一半。某次emfox来开会，lidaobing和zigo也在。我们开玩笑说，这次会议集中了中国近一半的DD。。。其实整个会场里面人数都没超过20。。。&lt;/p&gt;
+
+&lt;p&gt;也只有RH这种级别的公司，才有大量人力去折腾内核，驱动之类的事情。因为debian就算想折腾，也折腾不动啊。从某种意义上说，所有linux发行的蓬勃发展，都得益于RH的大量收入。&lt;/p&gt;
+
+&lt;p&gt;所以真想支持开源的，不全买，买一套RHEL也好啊。别老叫着CentOS免费，免费还说个JB的支持开源。&lt;/p&gt;
+
+&lt;h1&gt;什么情况下用RH，什么情况下不一定&lt;/h1&gt;
+
+&lt;p&gt;虽然在上面数了原作者的一堆问题，但是我得说，他的结论没啥错误。&lt;/p&gt;
+
+&lt;p&gt;除非你明白自己在干什么，否则RHEL一定是你的第一选择。&lt;/p&gt;
+
+&lt;p&gt;这是废话。出钱让人帮你解决问题，和你自己解决问题，哪个更专业？&lt;/p&gt;
+
+&lt;p&gt;凡是你干了这活，打算三五年内就上去升级升级安全补丁，此外啥都不想干的。用RHEL准没错。&lt;/p&gt;
+
+&lt;p&gt;如果上面这种情况会让你失业的，换Gentoo准没错。&lt;/p&gt;
+
+&lt;p&gt;至于什么叫做“明白自己在干什么”，其实没一个统一的标准。很多时候选择开发版有点“如人饮水，冷暖自知”。例如我们选Ubuntu，解决了发布同环境问题，却引入了运维滚动升级问题。但是经过权衡，发布和调试环境不同会导致研发效率的大幅下降，而我们的研发是不能靠花钱招的（广告：长期招聘靠谱golang研发），但是我们的运维是可以靠花钱招的。这个时候痛苦也得滚动着上了。当然，也许若干年后，发现其实我们错了。可是错的理由我们现在看不到也想不到。当然，像我们，或者页游这种奇葩公司，也不总是出现。所以大部分情况下，用RHEL都是对的（当然，原作者说的太绝对化了一点）。&lt;/p&gt;
+
+&lt;h1&gt;用Debian用什么&lt;/h1&gt;
+
+&lt;p&gt;Debian是非常强调dsfg的，具有非常强的开源原教旨主义的味道。&lt;/p&gt;
+
+&lt;p&gt;传统的开源认为，如果只有商业公司掌握发行，那么他们就会扼住我们的命脉，并以此作恶。&lt;/p&gt;
+
+&lt;p&gt;不得不说，老外对垄断和权威的恶和理解一点都不比我们差。&lt;/p&gt;
+
+&lt;p&gt;所以debian的衍生发行一点都不比RH逊色（&lt;a href=&#34;http://zh.wikipedia.org/wiki/Linux%E5%8F%91%E8%A1%8C%E7%89%88%E5%88%97%E8%A1%A8&#34;&gt;Linux发行版列表&lt;/a&gt;）。最大的就是得益于dsfg规定，凡是允许进入debian的，不能仅仅授权给debian——而是必须授权给整个公有领域。因此对debian的衍生是非常安全而没有法律风险的——DD们在这个领域的专业程度非常高。&lt;/p&gt;
+
+&lt;p&gt;而且，由于强调自由，因此debian内所有非核心包，都具有非二进制定制性。简单来说，就是除了核心包和打包参数，其他大部分结构都是可以更改而且应当是自己更改配置的。&lt;/p&gt;
+
+&lt;p&gt;想用lxde换掉gnome，可以。搭配着kde的软件使？也可以。上面用什么输入法？自己配。&lt;/p&gt;
+
+&lt;p&gt;这是debian的强大和灵活所在，也是debian非常高的一个门槛。相比起来，Ubuntu更强调“开箱即用”。所以里面的随附配置是最完备的。但是要用lxde，推荐就是Lubuntu了。&lt;/p&gt;
+
+&lt;h1&gt;CentOS不是RH&lt;/h1&gt;
+
+&lt;p&gt;我上面提到的RH，大部分指的都是RHEL。至于Cent——他也是社区系统，只是背靠RH，胳膊更粗一些而已。这不代表Cent因此就靠谱了。&lt;/p&gt;
+
+&lt;p&gt;例如这个维基页面&lt;a href=&#34;http://en.wikipedia.org/wiki/CentOS&#34;&gt;CentOS&lt;/a&gt;，里面提到说。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;In July 2009, it was reported[by whom?] that CentOS&#39;s founder,
+Lance Davis, had disappeared in 2008. Davis had ceased contribution
+to the project, but continued to hold the registration for
+the CentOS domain and PayPal account. In August 2009,
+the CentOS team reportedly made contact with Davis and
+obtained the centos.info and centos.org domains.[12]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;那哥们直接失踪了近一年，而且捏着域名和PayPal账户不放。我记得当年这事直接导致CentOS的其他开发者出来放话，再不出来把你丫按照失踪申报。&lt;/p&gt;
+
+&lt;p&gt;这也直接导致我上家公司的基系统选择从CentOS改成了Scentific（是的，就是上面修复最慢的那家）。&lt;/p&gt;
+
+&lt;p&gt;其次，CentOS是不签合同的，所以出了事是运维自己兜着。&lt;/p&gt;
+
+&lt;p&gt;CentOS出了问题你能和领导交代么？这得看你们领导的SB程度。反正要是有人告诉我，他用CentOS出了事。我的第一反应都是，RHEL是不是可以避免。可以的，那就是决定用的人自己找事。&lt;/p&gt;
+
+&lt;h1&gt;如果用RH，至少应该用RHEL，并且买订阅&lt;/h1&gt;
+
+&lt;p&gt;我们没有用RHEL，都买了RH的订阅。RH的订阅非常有指导意义。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>docker的原理和类比</title>
+      <link>https://shell909090.github.io/blog/archives/2650/</link>
+      <pubDate>Mon, 30 Jun 2014 12:32:08 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2650/</guid>
+      <description>&lt;h1&gt;从虚拟化的种类和层级说起&lt;/h1&gt;
+
+&lt;ul&gt;
+&lt;li&gt;cpu虚拟化：可以模拟不同CPU，例如bochs&lt;/li&gt;
+&lt;li&gt;完全虚拟化：只能模拟同样CPU，但是可以执行不同系统，例如vmware&lt;/li&gt;
+&lt;li&gt;半虚拟化：guest必须打补丁，例如Xen&lt;/li&gt;
+&lt;li&gt;硬件虚拟化：可以当作获得硬件加速的完全虚拟化&lt;/li&gt;
+&lt;li&gt;系统虚拟化：host和guest共享一样的内核，例如Openvz&lt;/li&gt;
+&lt;li&gt;语言沙盒：只能在语言的范围内使用&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;虚拟化的级别越偏底层，速度越慢，用户越难察觉到虚拟化的存在。
+虚拟化的级别越偏上层，速度越快，用户越容易感知。&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;cpu虚拟化和完全虚拟化时，用户几乎可以不察觉到虚拟化的存在&lt;/li&gt;
+&lt;li&gt;半虚拟化时，guest内核必须存在补丁&lt;/li&gt;
+&lt;li&gt;系统虚拟化时，用户不能控制自己的内核&lt;/li&gt;
+&lt;li&gt;语言沙盒时，用户没有使用api的自由&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1&gt;docker的实现结构&lt;/h1&gt;
+
+&lt;ul&gt;
+&lt;li&gt;docker
+
+&lt;ul&gt;
+&lt;li&gt;lxc&lt;/li&gt;
+&lt;li&gt;namespace: 仅沙盒隔离，不限制资源。&lt;/li&gt;
+&lt;li&gt;cgroup: 仅限制资源，不沙盒隔离。&lt;/li&gt;
+&lt;li&gt;aufs&lt;/li&gt;
+&lt;li&gt;image管理&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;当然，还有很多细节的东西，里面就不一一列举了。例如veth。&lt;/p&gt;
+
+&lt;h2&gt;docker不是虚拟机&lt;/h2&gt;
+
+&lt;p&gt;docker不是虚拟机，因为lxc已经是虚拟机。如果两者功能一样，那么docker就没有存在的必要。&lt;/p&gt;
+
+&lt;p&gt;你可以把docker当虚拟机用，但是当虚拟机用的话，他的完备程度远远不及现在的种种虚拟机。相比之下，就会觉得很不好用。这不是docker的错，只能说被不正确的使用了。&lt;/p&gt;
+
+&lt;h2&gt;docker是什么&lt;/h2&gt;
+
+&lt;p&gt;docker就是环境。&lt;/p&gt;
+
+&lt;p&gt;docker实际上只做了一件事情——镜像管理。负责将可执行的镜像导入导出，在不同设备上迁移。&lt;/p&gt;
+
+&lt;p&gt;原本我们发布软件有两种方法，源码发布和二进制发布。二进制发布又有两种方案，静态链接和动态链接。最早的时候，我们发布软件都喜欢动态链接，因为小。但是随着网络和存储的升级，软件越来越喜欢静态链接，或者把动态库打包到发布里。因为系统情况越来越复杂，依赖关系一旦出错，系统就无法启动。&lt;/p&gt;
+
+&lt;p&gt;将这个思路推到极限，就是虚拟机发布。早些年有人发过一些Oracle的linux安装镜像，算的上是先驱。因为Oracle早些年的安装程序很难用，对系统的依赖复杂。公司做测试用装一套Oracle还不够麻烦的。相比起来，下载一个虚拟机直接跑起来就可以用就方便了很多。即使性能差一些，测试而已也不是特别在意。&lt;/p&gt;
+
+&lt;p&gt;docker再进了一步。不但提供一个镜像，可以在系统间方便的迁移。而且连镜像的升级都能做掉。更爽的是，升级只用传输差量数据。当然，有好处就有牺牲。&lt;/p&gt;
+
+&lt;h2&gt;docker的镜像是只读的&lt;/h2&gt;
+
+&lt;p&gt;其实不是，docker的镜像当然可以写入。但是写的时候有几个问题。&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;如果对镜像进行写入，aufs会将原始文件复制一次，再进行写入。这样性能比较低。&lt;/li&gt;
+&lt;li&gt;更直接的问题是，一旦对镜像做了写入，就无法从docker这里获得更新支持——docker不能将你的写入和上游的更新合并。因此，整个系统就退化成了一个完全的虚拟机。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;所以，我个人认为，docker的镜像本身应当是只读的——如同EC2里面一样。数据的写入应当通过远程文件系统或者数据库服务来解决。&lt;/p&gt;
+
+&lt;h1&gt;vagrant&lt;/h1&gt;
+
+&lt;p&gt;提到镜像管理，我们可以提一下同样属于镜像管理的一个软件——vagrant。&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;可以将vbox的镜像打包导入导出&lt;/li&gt;
+&lt;li&gt;提供了一个cloud，允许镜像的分享/更新&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;为什么vagrant不如docker出名&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;快，系统级虚拟化使得docker的虚拟化开销降低到百分级别以下。&lt;/li&gt;
+&lt;li&gt;可以在虚拟机内使用的虚拟机，例如云主机内。&lt;/li&gt;
+&lt;li&gt;资源调度灵活，不需要将资源预先划定给不同的实例，在不同资源的机器上也不用调整参数。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1&gt;成功案例&lt;/h1&gt;
+
+&lt;h2&gt;编译系统/打包系统/集成测试环境&lt;/h2&gt;
+
+&lt;p&gt;典型的搭建一次，执行一次，销毁一次。不需要对image做更改（准确说的需要做更改，但是不需要保存）。&lt;/p&gt;
+
+&lt;h2&gt;公司内部应用&lt;/h2&gt;
+
+&lt;p&gt;在IaaS的比拼中，以Openvz为代表的系统化虚拟化方案几乎完败于完全虚拟化/半虚拟化系列技术。就我和朋友的讨论，这里面最主要的因素在于。完全虚拟化技术可以比较好的隔离实例和实例间的资源使用，而系统虚拟化技术更偏向于将资源充分利用。这使得系统虚拟化更容易超售。&lt;/p&gt;
+
+&lt;p&gt;然而，在公司内部应用中，这一缺陷就变成了优势。企业的诸多系统，只要在同一个优先级，其可用性应当是一致的。几个联动系统中，一个资源不足陷于濒死的情况下，保持其他几个系统资源充足并无意义。而且总资源是否足够应当是得到充分保证的事情，企业自己“超售”自己的资源，使得业务系统陷入运行缓慢的境地一点意义都没有。&lt;/p&gt;
+
+&lt;p&gt;因此，系统虚拟化可以为企业级云计算提供可以灵活调度的资源，和非常低的额外开销。&lt;/p&gt;
+
+&lt;p&gt;当然，云计算在企业化中原本就面临一些问题。原本提供软-硬件统一解决方案的集成商，需要如何重新组织解决方案。如何协调节约资源和高性能，高可用。云计算在企业级应用中还有很长的路要走。&lt;/p&gt;
+
+&lt;h1&gt;短板&lt;/h1&gt;
+
+&lt;ol&gt;
+&lt;li&gt;太新。目前成功案例还是不足，而且围绕docker的工具链还不完备。&lt;/li&gt;
+&lt;li&gt;适用范围比较窄。需求需要集中在“环境迁移”领域，而且image本身不应被写入。&lt;/li&gt;
+&lt;li&gt;生不逢时。rvm和virtualenv已经在前面了。&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>cgroup限定内存</title>
+      <link>https://shell909090.github.io/blog/archives/2642/</link>
+      <pubDate>Fri, 06 Jun 2014 14:34:45 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2642/</guid>
+      <description>&lt;h1&gt;机器配置&lt;/h1&gt;
+
+&lt;p&gt;ubuntu 12.04&lt;/p&gt;
+
+&lt;p&gt;内核版本：3.11.0-20-generic&lt;/p&gt;
+
+&lt;h1&gt;ulimit的限制效果&lt;/h1&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;ulimit -m 8192
+当内存突破8M时，什么事情都没有发生。直到38M都没任何反应。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;ulimit -v 65536
+python抛出MemoryError&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h1&gt;cgroup的限制效果&lt;/h1&gt;
+
+&lt;ol&gt;
+&lt;li&gt;echo 8388608 &gt; memory.limit_in_bytes&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;大小不对，cgroup的内存量计算方法和ps/status不一致。因此限制计数需要根据具体情况调整。&lt;/p&gt;
+
+&lt;h1&gt;内核计数&lt;/h1&gt;
+
+&lt;h2&gt;/proc/[pid]/statm&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code&gt;size       (1) total program size
+(same as VmSize in /proc/[pid]/status)
+resident   (2) resident set size
+(same as VmRSS in /proc/[pid]/status)
+share      (3) shared pages (i.e., backed by a file)
+text       (4) text (code)
+lib        (5) library (unused in Linux 2.6)
+data       (6) data + stack
+dt         (7) dirty pages (unused in Linux 2.6)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2&gt;/proc/[pid]/status&lt;/h2&gt;
+
+&lt;p&gt;statm的size和resident分别乘以pagesize等于VmSize和VmRSS。&lt;/p&gt;
+
+&lt;h2&gt;pmap&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code&gt;pmap -p [pid]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;可以看到某个进程内部，用户地址空间分配情况。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;pmap -d [pid] | grep &#39;rw&#39; | awk &#39;{a += $2} END {print a}&#39;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;可以看到所有可写入的内存大小，应当正好等于正常显示的writeable/private。&lt;/p&gt;
+
+&lt;p&gt;这个值，应当等于status的VmHWM+VmStk。不知为何，VmStk和pmap里面显示的stack正好差了一个4k。怀疑是关于目前在正在使用的页的计算差异。&lt;/p&gt;
+
+&lt;p&gt;而high water mark，从分析上说，即是某个进程内部，不是stack的，所有可写的地址空间。当然，这些页并不一定立刻映射了物理内存。因此VmHWM &gt; VmRSS应当没什么问题。&lt;/p&gt;
+
+&lt;h2&gt;ps&lt;/h2&gt;
+
+&lt;p&gt;ps和top都是读的status，不废话。&lt;/p&gt;
+
+&lt;h1&gt;资源限制实践&lt;/h1&gt;
+
+&lt;h2&gt;准备&lt;/h2&gt;
+
+&lt;p&gt;安装cgroup-bin&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;aptitude install cgroup-bin
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2&gt;setup cgroup-bin&lt;/h2&gt;
+
+&lt;p&gt;修改/etc/cgconfig.conf:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;mount {
+        cpu = /sys/fs/cgroup/cpu;
+        cpuacct = /sys/fs/cgroup/cpuacct;
+        devices = /sys/fs/cgroup/devices;
+        memory = /sys/fs/cgroup/memory;
+        freezer = /sys/fs/cgroup/freezer;
+}
+
+group memimage {
+        perm {
+                admin {
+                        gid = root;
+                }
+                task {
+                        uid = user;
+                }
+        }
+        memory {
+                memory.swappiness = 0;
+                memory.limit_in_bytes = 2048000000;
+        }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;限定内存用量2G。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;service cgconfig start
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2&gt;执行效果&lt;/h2&gt;
+
+&lt;p&gt;头部加入&lt;code&gt;nice -n 19 cgexec -g memory:memimage&lt;/code&gt;。&lt;/p&gt;
+
+&lt;p&gt;注意：使用内存限制，务必配置&lt;strong&gt;OOM日志告警通知&lt;/strong&gt;。当重启时，管理者必须知道。当重复发生时，必须重新考虑内存限制问题。&lt;/p&gt;
+
+&lt;h2&gt;监测&lt;/h2&gt;
+
+&lt;p&gt;查看group内存状态&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;watch cat /sys/fs/cgroup/memory/memimage/memory.stat
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>为什么running不高但是load很高</title>
+      <link>https://shell909090.github.io/blog/archives/2640/</link>
+      <pubDate>Tue, 03 Jun 2014 14:43:11 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2640/</guid>
+      <description>&lt;p&gt;很多初学者会混淆几个概念。CPU繁忙程度，load。两者的区别在于，一个秘书是真的忙着抄抄写写，另一个么，反正领导只检查桌子上堆的文件数。只要桌子上准备一堆文件，在文件里换来换去就好了，没必要真的很忙。当然，大多数时候桌子上堆着很多文件的理由还是因为秘书手不够了，不过少数时候也有例外。例如fork boom，CPU很空但是load奇高。&lt;/p&gt;
+
+&lt;p&gt;我们就遇到了一个例外的例外。&lt;/p&gt;
+
+&lt;p&gt;症状是这样的。系统经常出现偶发性的load过高。例如有那么几分钟，load会高到100-200，然后就快速下降。但是检查后发现，即使在load极高的时候，cpu占用率也并不高，大概在10-20左右。磁盘吞吐也一般。那么load为什么会这么高呢？&lt;/p&gt;
+
+&lt;p&gt;我的第一怀疑当然是超多数量的小线程，在那里搞切换调度。所以我第一反应就是看了/proc/loadavg的当前活跃线程数——结果居然只有1-5。为了确认，我特意的持续观察了数次，在我观测期间load的1分钟计数还升高了——这说明当前实际队列比1分钟平均还要高，而活跃线程却是3。&lt;/p&gt;
+
+&lt;p&gt;怎么可能？交通系统报警说北三环大赛车，平均堵塞长度500辆。去一辆警车到现场回报说只看到塞了两辆，再去一辆说算上我们自己三辆。去了十多次都如此。任何脑子清楚的人都会毫无疑问的喊出——黑箱政治，政府不作为，我们要占领国会——不好意思，我们好像没有这个东西。&lt;/p&gt;
+
+&lt;p&gt;OK，言归正转。为了解释这个疑惑，我特意的去看了一下内核源码——我擦，loadavg的平均值计算中，是把uninterruptible算在一起的。而活跃上下文中，只算了nr_running！&lt;/p&gt;
+
+&lt;p&gt;——你丫敢再精神分裂点么？&lt;/p&gt;
+
+&lt;p&gt;为了确认，我还特意man proc，结果发现里面确实有说，平均值是R和D两者去算的。但是在活跃上下文那里，只说了the number of currently runnable kernel scheduling entities——看看清楚，这里可从没有说有D。脑子清楚的仔细想想就知道，D是不可调度的。&lt;/p&gt;
+
+&lt;p&gt;——问题是咱脑子不清不楚的就没想这差异，而且咱连man proc都没查。。。&lt;/p&gt;
+
+&lt;p&gt;另外顺便说一句，内核也告诉了我们一点东西——load计算的时候是连内核线程一起算的。&lt;/p&gt;
+
+&lt;p&gt;清楚这点差异后，问题的原因也很清楚了——肯定是哪里有很高的D。用&lt;code&gt;ps -e Hl | grep -e R -e D&lt;/code&gt;扫了一下，再用&lt;code&gt;wc -l&lt;/code&gt;做了一下统计。214个线程在D(或者R，或者只是不小心被grep到，但是实际上大部分都是D)。系统当前的loadavg正好长这样：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;214.12 156.63 82.25 7/4629 10027
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;7个执行中线程(R)，207个uninterruptible。&lt;/p&gt;
+
+&lt;p&gt;——所有的谜都解开了。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>系统内存有富裕但是syslog中持续报告内存耗尽</title>
+      <link>https://shell909090.github.io/blog/archives/2594/</link>
+      <pubDate>Mon, 17 Mar 2014 14:01:13 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2594/</guid>
+      <description>&lt;h1&gt;现象&lt;/h1&gt;
+
+&lt;p&gt;ubuntu12.04，3.5.0-23的内核。在syslog里面持续看到内存耗尽，用free去查看却是内存还有80G左右。检查系统没有cgroup或者ulimit限制。log如下:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Mar 11 14:45:34 nb81 kernel: [7352493.081026] swapper/0: page allocation failure: order:4, mode:0x4020
+Mar 11 14:45:34 nb81 kernel: [7352493.081035] Pid: 0, comm: swapper/0 Tainted: G        W    3.5.0-23-generic #35~precise1-Ubuntu
+Mar 11 14:45:34 nb81 kernel: [7352493.081038] Call Trace:
+Mar 11 14:45:34 nb81 kernel: [7352493.081040]  &amp;lt;IRQ&amp;gt;  [&amp;lt;ffffffff8112d1b6&amp;gt;] warn_alloc_failed+0xf6/0x150
+Mar 11 14:45:34 nb81 kernel: [7352493.081065]  [&amp;lt;ffffffff81139a51&amp;gt;] ? wakeup_kswapd+0x101/0x160
+Mar 11 14:45:34 nb81 kernel: [7352493.081071]  [&amp;lt;ffffffff81130ffb&amp;gt;] __alloc_pages_nodemask+0x6db/0x930
+Mar 11 14:45:34 nb81 kernel: [7352493.081079]  [&amp;lt;ffffffff815c80df&amp;gt;] ? tcp_new_space+0xbf/0xd0
+Mar 11 14:45:34 nb81 kernel: [7352493.081086]  [&amp;lt;ffffffff816895e2&amp;gt;] kmalloc_large_node+0x57/0x85
+Mar 11 14:45:34 nb81 kernel: [7352493.081092]  [&amp;lt;ffffffff811766f5&amp;gt;] __kmalloc_node_track_caller+0x1a5/0x1f0
+Mar 11 14:45:34 nb81 kernel: [7352493.081099]  [&amp;lt;ffffffff81574b8b&amp;gt;] ? __alloc_skb+0x4b/0x230
+Mar 11 14:45:34 nb81 kernel: [7352493.081103]  [&amp;lt;ffffffff81574ee5&amp;gt;] ? skb_copy+0x45/0xb0
+Mar 11 14:45:34 nb81 kernel: [7352493.081108]  [&amp;lt;ffffffff81574bb8&amp;gt;] __alloc_skb+0x78/0x230
+Mar 11 14:45:34 nb81 kernel: [7352493.081113]  [&amp;lt;ffffffff81574ee5&amp;gt;] skb_copy+0x45/0xb0
+Mar 11 14:45:34 nb81 kernel: [7352493.081135]  [&amp;lt;ffffffffa00181e5&amp;gt;] tigon3_dma_hwbug_workaround+0x205/0x270 [tg3]
+Mar 11 14:45:34 nb81 kernel: [7352493.081142]  [&amp;lt;ffffffff8134d359&amp;gt;] ? swiotlb_unmap_page+0x9/0x10
+Mar 11 14:45:34 nb81 kernel: [7352493.081151]  [&amp;lt;ffffffffa0019e25&amp;gt;] tg3_start_xmit+0x445/0x990 [tg3]
+Mar 11 14:45:34 nb81 kernel: [7352493.081157]  [&amp;lt;ffffffff815848b6&amp;gt;] dev_hard_start_xmit+0x256/0x550
+Mar 11 14:45:34 nb81 kernel: [7352493.081165]  [&amp;lt;ffffffff815a09c6&amp;gt;] sch_direct_xmit+0xf6/0x1c0
+Mar 11 14:45:34 nb81 kernel: [7352493.081170]  [&amp;lt;ffffffff815a0b36&amp;gt;] __qdisc_run+0xa6/0x130
+Mar 11 14:45:34 nb81 kernel: [7352493.081175]  [&amp;lt;ffffffff81583786&amp;gt;] net_tx_action+0xe6/0x200
+Mar 11 14:45:34 nb81 kernel: [7352493.081183]  [&amp;lt;ffffffff8105ba88&amp;gt;] __do_softirq+0xa8/0x210
+Mar 11 14:45:34 nb81 kernel: [7352493.081191]  [&amp;lt;ffffffff8169e7de&amp;gt;] ? _raw_spin_lock+0xe/0x20
+Mar 11 14:45:34 nb81 kernel: [7352493.081196]  [&amp;lt;ffffffff816a841c&amp;gt;] call_softirq+0x1c/0x30
+Mar 11 14:45:34 nb81 kernel: [7352493.081204]  [&amp;lt;ffffffff81016245&amp;gt;] do_softirq+0x65/0xa0
+Mar 11 14:45:34 nb81 kernel: [7352493.081209]  [&amp;lt;ffffffff8105be6e&amp;gt;] irq_exit+0x8e/0xb0
+Mar 11 14:45:34 nb81 kernel: [7352493.081214]  [&amp;lt;ffffffff816a8c73&amp;gt;] do_IRQ+0x63/0xe0
+Mar 11 14:45:34 nb81 kernel: [7352493.081220]  [&amp;lt;ffffffff8169ec6a&amp;gt;] common_interrupt+0x6a/0x6a
+Mar 11 14:45:34 nb81 kernel: [7352493.081222]  &amp;lt;EOI&amp;gt;  [&amp;lt;ffffffff81040af9&amp;gt;] ? default_spin_lock_flags+0x9/0x10
+Mar 11 14:45:34 nb81 kernel: [7352493.081236]  [&amp;lt;ffffffff813992da&amp;gt;] ? intel_idle+0xea/0x150
+Mar 11 14:45:34 nb81 kernel: [7352493.081241]  [&amp;lt;ffffffff813992bc&amp;gt;] ? intel_idle+0xcc/0x150
+Mar 11 14:45:34 nb81 kernel: [7352493.081247]  [&amp;lt;ffffffff81535509&amp;gt;] cpuidle_enter+0x19/0x20
+Mar 11 14:45:34 nb81 kernel: [7352493.081252]  [&amp;lt;ffffffff81535b2c&amp;gt;] cpuidle_idle_call+0xac/0x2a0
+Mar 11 14:45:34 nb81 kernel: [7352493.081258]  [&amp;lt;ffffffff8101d89f&amp;gt;] cpu_idle+0xcf/0x120
+Mar 11 14:45:34 nb81 kernel: [7352493.081266]  [&amp;lt;ffffffff81661f8e&amp;gt;] rest_init+0x72/0x74
+Mar 11 14:45:34 nb81 kernel: [7352493.081274]  [&amp;lt;ffffffff81cf3c45&amp;gt;] start_kernel+0x3c5/0x3d2
+Mar 11 14:45:34 nb81 kernel: [7352493.081280]  [&amp;lt;ffffffff81cf3801&amp;gt;] ? pass_bootoption.constprop.3+0xd3/0xd3
+Mar 11 14:45:34 nb81 kernel: [7352493.081286]  [&amp;lt;ffffffff81cf3397&amp;gt;] x86_64_start_reservations+0x131/0x135
+Mar 11 14:45:34 nb81 kernel: [7352493.081292]  [&amp;lt;ffffffff81cf3120&amp;gt;] ? early_idt_handlers+0x120/0x120
+Mar 11 14:45:34 nb81 kernel: [7352493.081298]  [&amp;lt;ffffffff81cf3468&amp;gt;] x86_64_start_kernel+0xcd/0xdc
+Mar 11 14:45:34 nb81 kernel: [7352493.081300] Mem-Info:
+Mar 11 14:45:34 nb81 kernel: [7352493.081303] Node 0 DMA per-cpu:
+Mar 11 14:45:34 nb81 kernel: [7352493.081307] CPU    0: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081309] CPU    1: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081312] CPU    2: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081314] CPU    3: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081317] CPU    4: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081319] CPU    5: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081321] CPU    6: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081324] CPU    7: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081326] CPU    8: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081329] CPU    9: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081331] CPU   10: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081333] CPU   11: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081336] CPU   12: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081338] CPU   13: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081340] CPU   14: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081343] CPU   15: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081345] CPU   16: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081347] CPU   17: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081350] CPU   18: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081352] CPU   19: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081354] CPU   20: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081357] CPU   21: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081359] CPU   22: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081361] CPU   23: hi:    0, btch:   1 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081363] Node 0 DMA32 per-cpu:
+Mar 11 14:45:34 nb81 kernel: [7352493.081367] CPU    0: hi:  186, btch:  31 usd: 155
+Mar 11 14:45:34 nb81 kernel: [7352493.081369] CPU    1: hi:  186, btch:  31 usd:  63
+Mar 11 14:45:34 nb81 kernel: [7352493.081372] CPU    2: hi:  186, btch:  31 usd: 135
+Mar 11 14:45:34 nb81 kernel: [7352493.081374] CPU    3: hi:  186, btch:  31 usd: 170
+Mar 11 14:45:34 nb81 kernel: [7352493.081377] CPU    4: hi:  186, btch:  31 usd:  79
+Mar 11 14:45:34 nb81 kernel: [7352493.081379] CPU    5: hi:  186, btch:  31 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081381] CPU    6: hi:  186, btch:  31 usd: 118
+Mar 11 14:45:34 nb81 kernel: [7352493.081384] CPU    7: hi:  186, btch:  31 usd: 176
+Mar 11 14:45:34 nb81 kernel: [7352493.081386] CPU    8: hi:  186, btch:  31 usd:  53
+Mar 11 14:45:34 nb81 kernel: [7352493.081389] CPU    9: hi:  186, btch:  31 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081391] CPU   10: hi:  186, btch:  31 usd: 183
+Mar 11 14:45:34 nb81 kernel: [7352493.081393] CPU   11: hi:  186, btch:  31 usd:   1
+Mar 11 14:45:34 nb81 kernel: [7352493.081396] CPU   12: hi:  186, btch:  31 usd: 168
+Mar 11 14:45:34 nb81 kernel: [7352493.081398] CPU   13: hi:  186, btch:  31 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081401] CPU   14: hi:  186, btch:  31 usd: 180
+Mar 11 14:45:34 nb81 kernel: [7352493.081403] CPU   15: hi:  186, btch:  31 usd: 156
+Mar 11 14:45:34 nb81 kernel: [7352493.081406] CPU   16: hi:  186, btch:  31 usd:  55
+Mar 11 14:45:34 nb81 kernel: [7352493.081408] CPU   17: hi:  186, btch:  31 usd: 183
+Mar 11 14:45:34 nb81 kernel: [7352493.081410] CPU   18: hi:  186, btch:  31 usd: 138
+Mar 11 14:45:34 nb81 kernel: [7352493.081413] CPU   19: hi:  186, btch:  31 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081415] CPU   20: hi:  186, btch:  31 usd: 174
+Mar 11 14:45:34 nb81 kernel: [7352493.081418] CPU   21: hi:  186, btch:  31 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081420] CPU   22: hi:  186, btch:  31 usd:  62
+Mar 11 14:45:34 nb81 kernel: [7352493.081422] CPU   23: hi:  186, btch:  31 usd:   0
+Mar 11 14:45:34 nb81 kernel: [7352493.081424] Node 0 Normal per-cpu:
+Mar 11 14:45:34 nb81 kernel: [7352493.081428] CPU    0: hi:  186, btch:  31 usd: 131
+Mar 11 14:45:34 nb81 kernel: [7352493.081431] CPU    1: hi:  186, btch:  31 usd: 177
+Mar 11 14:45:34 nb81 kernel: [7352493.081433] CPU    2: hi:  186, btch:  31 usd: 157
+Mar 11 14:45:34 nb81 kernel: [7352493.081436] CPU    3: hi:  186, btch:  31 usd: 176
+Mar 11 14:45:34 nb81 kernel: [7352493.081438] CPU    4: hi:  186, btch:  31 usd:  88
+Mar 11 14:45:34 nb81 kernel: [7352493.081440] CPU    5: hi:  186, btch:  31 usd: 177
+Mar 11 14:45:34 nb81 kernel: [7352493.081443] CPU    6: hi:  186, btch:  31 usd: 159
+Mar 11 14:45:34 nb81 kernel: [7352493.081445] CPU    7: hi:  186, btch:  31 usd: 157
+Mar 11 14:45:34 nb81 kernel: [7352493.081447] CPU    8: hi:  186, btch:  31 usd: 152
+Mar 11 14:45:34 nb81 kernel: [7352493.081450] CPU    9: hi:  186, btch:  31 usd: 183
+Mar 11 14:45:34 nb81 kernel: [7352493.081452] CPU   10: hi:  186, btch:  31 usd: 145
+Mar 11 14:45:34 nb81 kernel: [7352493.081454] CPU   11: hi:  186, btch:  31 usd: 169
+Mar 11 14:45:34 nb81 kernel: [7352493.081457] CPU   12: hi:  186, btch:  31 usd: 182
+Mar 11 14:45:34 nb81 kernel: [7352493.081459] CPU   13: hi:  186, btch:  31 usd:  11
+Mar 11 14:45:34 nb81 kernel: [7352493.081462] CPU   14: hi:  186, btch:  31 usd: 145
+Mar 11 14:45:34 nb81 kernel: [7352493.081464] CPU   15: hi:  186, btch:  31 usd: 173
+Mar 11 14:45:34 nb81 kernel: [7352493.081467] CPU   16: hi:  186, btch:  31 usd: 153
+Mar 11 14:45:34 nb81 kernel: [7352493.081469] CPU   17: hi:  186, btch:  31 usd: 177
+Mar 11 14:45:34 nb81 kernel: [7352493.081471] CPU   18: hi:  186, btch:  31 usd:  54
+Mar 11 14:45:34 nb81 kernel: [7352493.081474] CPU   19: hi:  186, btch:  31 usd: 161
+Mar 11 14:45:34 nb81 kernel: [7352493.081476] CPU   20: hi:  186, btch:  31 usd:  76
+Mar 11 14:45:34 nb81 kernel: [7352493.081479] CPU   21: hi:  186, btch:  31 usd: 178
+Mar 11 14:45:34 nb81 kernel: [7352493.081481] CPU   22: hi:  186, btch:  31 usd: 153
+Mar 11 14:45:34 nb81 kernel: [7352493.081483] CPU   23: hi:  186, btch:  31 usd: 178
+Mar 11 14:45:34 nb81 kernel: [7352493.081486] Node 1 Normal per-cpu:
+Mar 11 14:45:34 nb81 kernel: [7352493.081489] CPU    0: hi:  186, btch:  31 usd: 168
+Mar 11 14:45:34 nb81 kernel: [7352493.081491] CPU    1: hi:  186, btch:  31 usd: 156
+Mar 11 14:45:34 nb81 kernel: [7352493.081493] CPU    2: hi:  186, btch:  31 usd: 177
+Mar 11 14:45:34 nb81 kernel: [7352493.081495] CPU    3: hi:  186, btch:  31 usd:  65
+Mar 11 14:45:34 nb81 kernel: [7352493.081498] CPU    4: hi:  186, btch:  31 usd: 163
+Mar 11 14:45:34 nb81 kernel: [7352493.081500] CPU    5: hi:  186, btch:  31 usd: 110
+Mar 11 14:45:34 nb81 kernel: [7352493.081502] CPU    6: hi:  186, btch:  31 usd: 179
+Mar 11 14:45:34 nb81 kernel: [7352493.081505] CPU    7: hi:  186, btch:  31 usd:  39
+Mar 11 14:45:34 nb81 kernel: [7352493.081507] CPU    8: hi:  186, btch:  31 usd: 181
+Mar 11 14:45:34 nb81 kernel: [7352493.081509] CPU    9: hi:  186, btch:  31 usd: 107
+Mar 11 14:45:34 nb81 kernel: [7352493.081511] CPU   10: hi:  186, btch:  31 usd: 159
+Mar 11 14:45:34 nb81 kernel: [7352493.081514] CPU   11: hi:  186, btch:  31 usd: 113
+Mar 11 14:45:34 nb81 kernel: [7352493.081516] CPU   12: hi:  186, btch:  31 usd: 167
+Mar 11 14:45:34 nb81 kernel: [7352493.081518] CPU   13: hi:  186, btch:  31 usd: 125
+Mar 11 14:45:34 nb81 kernel: [7352493.081521] CPU   14: hi:  186, btch:  31 usd: 164
+Mar 11 14:45:34 nb81 kernel: [7352493.081523] CPU   15: hi:  186, btch:  31 usd:  68
+Mar 11 14:45:34 nb81 kernel: [7352493.081525] CPU   16: hi:  186, btch:  31 usd: 169
+Mar 11 14:45:34 nb81 kernel: [7352493.081528] CPU   17: hi:  186, btch:  31 usd: 152
+Mar 11 14:45:34 nb81 kernel: [7352493.081530] CPU   18: hi:  186, btch:  31 usd: 160
+Mar 11 14:45:34 nb81 kernel: [7352493.081532] CPU   19: hi:  186, btch:  31 usd: 129
+Mar 11 14:45:34 nb81 kernel: [7352493.081535] CPU   20: hi:  186, btch:  31 usd: 156
+Mar 11 14:45:34 nb81 kernel: [7352493.081537] CPU   21: hi:  186, btch:  31 usd:  56
+Mar 11 14:45:34 nb81 kernel: [7352493.081539] CPU   22: hi:  186, btch:  31 usd: 183
+Mar 11 14:45:34 nb81 kernel: [7352493.081542] CPU   23: hi:  186, btch:  31 usd: 161
+Mar 11 14:45:34 nb81 kernel: [7352493.081548] active_anon:2011479 inactive_anon:465423 isolated_anon:0
+Mar 11 14:45:34 nb81 kernel: [7352493.081548]  active_file:8441358 inactive_file:12481139 isolated_file:8
+Mar 11 14:45:34 nb81 kernel: [7352493.081548]  unevictable:0 dirty:223271 writeback:7577 unstable:0
+Mar 11 14:45:34 nb81 kernel: [7352493.081548]  free:105270 slab_reclaimable:1002710 slab_unreclaimable:35112
+Mar 11 14:45:34 nb81 kernel: [7352493.081548]  mapped:7298 shmem:370 pagetables:10455 bounce:0
+Mar 11 14:45:34 nb81 kernel: [7352493.081552] Node 0 DMA free:15904kB min:12kB low:12kB high:16kB active_anon:0kB inactive_anon:0kB active_file:0kB inactive_file:0kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:15648kB mlocked:0kB dirty:0kB writeback:0kB mapped:0kB shmem:0kB slab_reclaimable:0kB slab_unreclaimable:0kB kernel_stack:0kB pagetables:0kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? yes
+Mar 11 14:45:34 nb81 kernel: [7352493.081561] lowmem_reserve[]: 0 2947 48307 48307
+Mar 11 14:45:34 nb81 kernel: [7352493.081567] Node 0 DMA32 free:190008kB min:2744kB low:3428kB high:4116kB active_anon:30588kB inactive_anon:56160kB active_file:200180kB inactive_file:1256876kB unevictable:0kB isolated(anon):0kB isolated(file):12kB present:3017920kB mlocked:0kB dirty:19992kB writeback:4092kB mapped:4kB shmem:0kB slab_reclaimable:1213128kB slab_unreclaimable:45256kB kernel_stack:3528kB pagetables:408kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
+Mar 11 14:45:34 nb81 kernel: [7352493.081575] lowmem_reserve[]: 0 0 45360 45360
+Mar 11 14:45:34 nb81 kernel: [7352493.081580] Node 0 Normal free:83784kB min:42264kB low:52828kB high:63396kB active_anon:3823788kB inactive_anon:923604kB active_file:19944584kB inactive_file:19948720kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:46448640kB mlocked:0kB dirty:459668kB writeback:14692kB mapped:16260kB shmem:1456kB slab_reclaimable:1234664kB slab_unreclaimable:43432kB kernel_stack:2856kB pagetables:21028kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
+Mar 11 14:45:34 nb81 kernel: [7352493.081589] lowmem_reserve[]: 0 0 0 0
+Mar 11 14:45:34 nb81 kernel: [7352493.081593] Node 1 Normal free:131384kB min:45084kB low:56352kB high:67624kB active_anon:4191540kB inactive_anon:881928kB active_file:13620668kB inactive_file:28718960kB unevictable:0kB isolated(anon):0kB isolated(file):20kB present:49545216kB mlocked:0kB dirty:413424kB writeback:11524kB mapped:12928kB shmem:24kB slab_reclaimable:1563048kB slab_unreclaimable:51760kB kernel_stack:3560kB pagetables:20384kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
+Mar 11 14:45:34 nb81 kernel: [7352493.081601] lowmem_reserve[]: 0 0 0 0
+Mar 11 14:45:34 nb81 kernel: [7352493.081606] Node 0 DMA: 0*4kB 0*8kB 0*16kB 1*32kB 2*64kB 1*128kB 1*256kB 0*512kB 1*1024kB 1*2048kB 3*4096kB = 15904kB
+Mar 11 14:45:34 nb81 kernel: [7352493.081619] Node 0 DMA32: 20628*4kB 12963*8kB 195*16kB 20*32kB 0*64kB 0*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 189976kB
+Mar 11 14:45:34 nb81 kernel: [7352493.081631] Node 0 Normal: 19369*4kB 378*8kB 0*16kB 2*32kB 2*64kB 1*128kB 2*256kB 0*512kB 1*1024kB 1*2048kB 0*4096kB = 84404kB
+Mar 11 14:45:34 nb81 kernel: [7352493.081643] Node 1 Normal: 21441*4kB 3184*8kB 1142*16kB 5*32kB 6*64kB 3*128kB 4*256kB 1*512kB 1*1024kB 0*2048kB 0*4096kB = 132996kB
+Mar 11 14:45:34 nb81 kernel: [7352493.081674] 20923024 total pagecache pages
+Mar 11 14:45:34 nb81 kernel: [7352493.081676] 736 pages in swap cache
+Mar 11 14:45:34 nb81 kernel: [7352493.081679] Swap cache stats: add 17169, delete 16433, find 241775/241891
+Mar 11 14:45:34 nb81 kernel: [7352493.081681] Free swap  = 911316kB
+Mar 11 14:45:34 nb81 kernel: [7352493.081682] Total swap = 975868kB
+Mar 11 14:45:34 nb81 kernel: [7352493.576101] 25165808 pages RAM
+Mar 11 14:45:34 nb81 kernel: [7352493.576105] 425876 pages reserved
+Mar 11 14:45:34 nb81 kernel: [7352493.576107] 18906312 pages shared
+Mar 11 14:45:34 nb81 kernel: [7352493.576108] 5736141 pages non-shared
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;内存不足报警是个非常严重的问题，但是又不能对内存做调整，所以需要快速的对这个问题给出一个方案。当然，这个问题最后就到我头上了。&lt;/p&gt;
+
+&lt;h1&gt;处理&lt;/h1&gt;
+
+&lt;p&gt;找了半天的类似错误，找到的原因乱七八糟。有说是网络问题的，有说是硬盘swap有问题导致的，还有说是numa造成的。运维组调整了&lt;code&gt;min_free_bytes&lt;/code&gt;，从结果来看，问题倒是减轻了不少。于是分开尝试。&lt;/p&gt;
+
+&lt;h2&gt;swap&lt;/h2&gt;
+
+&lt;p&gt;这个其实最好验证，关掉swap就知道了，反正我们内存也够。可惜golang1.1以前有个bug，在amd64上关闭swap会导致程序crush。所以不能关闭swap，只能替换。&lt;/p&gt;
+
+&lt;p&gt;运维组的老大做的实验，换个盘新建swap。用swapon启用新的swap，swapoff关闭原来的swap。然后系统没有变化，因此排除swap导致问题的可能性。&lt;/p&gt;
+
+&lt;h2&gt;numa和内存分配碎片化问题&lt;/h2&gt;
+
+&lt;p&gt;检查出问题设备的/proc/buddyinfo文件，可以看到所有出问题设备的DMA32大块都被耗尽了。在大部分的系统上，最大的块不过是32K。64K的块只有一两块或者根本没有。这个假设可以解释&lt;code&gt;min_free_bytes&lt;/code&gt;调整能够减轻问题的理由。&lt;/p&gt;
+
+&lt;p&gt;但是经过扫描，不少没有问题的机器上也存在非常严重的内存碎片化效应。只能说碎片化属于相关现象，而不是决定性差异。而且是单向相关——报警必然伴随碎片化内存，但是内存碎片化却并不一定导致报警。&lt;/p&gt;
+
+&lt;p&gt;对于这个问题，我试过内核参数迫使其回收内存。使用&lt;code&gt;zone_reclaim_mode&lt;/code&gt;改变内存回收模型(尽管解说中这个对某些业务非常有害)。但是始终没有彻底解决问题。&lt;/p&gt;
+
+&lt;h2&gt;网络问题&lt;/h2&gt;
+
+&lt;p&gt;我找到了某个朋友的&lt;a href=&#34;https://gist.github.com/jaseywang/800560&#34;&gt;gist&lt;/a&gt;，发现和我们的错误堆栈非常接近。经过询问，他有篇文章&lt;a href=&#34;http://jaseywang.me/2014/03/11/%E4%B8%8D%E5%90%8C%E4%B8%9A%E5%8A%A1%E5%AF%B9%E7%BD%91%E7%BB%9C%E7%9A%84%E8%A6%81%E6%B1%82/&#34;&gt;不同业务对网络的要求&lt;/a&gt;，里面猜测是交换机丢包导致的问题。&lt;/p&gt;
+
+&lt;p&gt;我找运维组的同事帮忙，检查了一下出问题的设备所连接的交换机。结果是，虽然这些设备的丢包非常多，但是其他没出问题的设备丢包也不少。两者的比例没有决定性的差异。&lt;/p&gt;
+
+&lt;p&gt;另一个是在设备上用&lt;code&gt;netstat -s&lt;/code&gt;来查看丢包率。但是不是每个设备都有丢包率。所以也可以排除网络问题。&lt;/p&gt;
+
+&lt;h1&gt;定向&lt;/h1&gt;
+
+&lt;p&gt;在上面三种假说里，我首先可以否定swap。因为两块磁盘同时损坏的概率基本是0。其他两个假说很难区分。我始终觉得两者都不能解释很多问题。例如内存碎片化假说无法说明为什么不是每个内存碎片化的系统都出现问题。网络假说也无法说明为什么问题只出现在某些设备上。&lt;/p&gt;
+
+&lt;p&gt;看来再找下去也是白费，于是我改用了其他方法——根据堆栈阅读源码。&lt;/p&gt;
+
+&lt;h1&gt;内核源码&lt;/h1&gt;
+
+&lt;p&gt;参阅lxr的结果。堆栈如下所列：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;http://lxr.linux.no/#linux+v3.5/drivers/net/ethernet/broadcom/tg3.c#L6843&#34;&gt;tg3_start_xmit&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://lxr.linux.no/#linux+v3.5/drivers/net/ethernet/broadcom/tg3.c#L6743&#34;&gt;tigon3_dma_hwbug_workaround&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://lxr.linux.no/#linux+v3.5/net/core/skbuff.c#L859&#34;&gt;skb_copy&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://lxr.linux.no/#linux+v3.5/net/core/skbuff.c#L169&#34;&gt;_alloc_skb&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://lxr.linux.no/#linux+v3.5/mm/slub.c#L3365&#34;&gt;kmalloc_large_node&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://lxr.linux.no/#linux+v3.5/mm/page_alloc.c#L2474&#34;&gt;_alloc_pages_nodemask&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://lxr.linux.no/#linux+v3.5/mm/page_alloc.c#L2278&#34;&gt;__alloc_pages_slowpath&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://lxr.linux.no/#linux+v3.5/mm/page_alloc.c#L1923&#34;&gt;warn_alloc_failed&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;这个问题发生在&lt;code&gt;tigon3_dma_hwbug_workaround&lt;/code&gt;中，以下调用使用的是GFP_ATOMIC。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;new_skb = skb_copy(skb, GFP_ATOMIC);
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这导致问题被报告。但是在最下方，如果没有内存，函数只是不做处理，增加丢包计数，并返回成功。这使我怀疑这个报警本身只是一个警告，不需要认真处理。&lt;/p&gt;
+
+&lt;p&gt;在有点数之后，我修改了关键词又去google了一把。得到了以下bug：&lt;/p&gt;
+
+&lt;p&gt;https://bugzilla.kernel.org/show_bug.cgi?id=12135&lt;/p&gt;
+
+&lt;h1&gt;结论&lt;/h1&gt;
+
+&lt;p&gt;这是一种在tigon3上才出现的问题，由于网络传输速率大于内存回收速率，内核不停报警。本质上这个报警可以被忽略，或者调整&lt;code&gt;min_free_bytes&lt;/code&gt;来减轻。内核组暂时不对这个问题做出任何修正。&lt;/p&gt;
+
+&lt;p&gt;OK，问题解决，洗洗睡吧。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>利用cgroups隔离多个进程资源消耗的尝试</title>
+      <link>https://shell909090.github.io/blog/archives/2561/</link>
+      <pubDate>Wed, 19 Feb 2014 10:14:23 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2561/</guid>
+      <description>&lt;h1&gt;setup&lt;/h1&gt;
+
+&lt;p&gt;Add to /etc/fstab.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;cgroup                  /sys/fs/cgroup  cgroup  defaults        0       2
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Then &lt;code&gt;sudo mount -a&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Change directory to /sys/fs/cgroup/. Use mkdir to create a new group, and initalize it like those.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;echo 0-3 &amp;gt;&amp;gt; cpuset.cpus
+echo 0 &amp;gt; cpuset.mems
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Without those two step, next operator will failure.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;echo 0 &amp;gt; memory.swappiness
+echo 52428800 &amp;gt; memory.limit_in_bytes
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Set memory limit 50M, and forbidden swap.&lt;/p&gt;
+
+&lt;h1&gt;python test code&lt;/h1&gt;
+
+&lt;pre&gt;&lt;code&gt;import os, sys, time, random, string
+def main():
+    l = []
+    random.seed()
+    raw_input()
+    for i in xrange(1000000):
+        for j in xrange(1000):
+            t = list(string.letters)
+            random.shuffle(t)
+            s = &#39;&#39;.join(t)
+            l.append(s)
+        time.sleep(0.01)
+
+if __name__ == &#39;__main__&#39;: main()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Finally, it triggered OOM.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>openvpn auth with google authentication</title>
+      <link>https://shell909090.github.io/blog/archives/2545/</link>
+      <pubDate>Fri, 24 Jan 2014 12:33:39 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2545/</guid>
+      <description>&lt;h1&gt;client config&lt;/h1&gt;
+
+&lt;pre&gt;&lt;code&gt;# base config
+client
+dev tun
+proto udp
+remote 192.168.1.122 1194
+nobind
+user nobody
+group nogroup
+persist-key
+persist-tun
+mute-replay-warnings
+comp-lzo
+
+# authentication config
+ca ca.crt
+cert shell.crt
+key shell.key
+ns-cert-type server
+tls-auth ta.key 1
+auth-user-pass
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Group should be nogroup, not nobody in debian.&lt;/p&gt;
+
+&lt;p&gt;auth-user-pass is needed for google auth.&lt;/p&gt;
+
+&lt;h1&gt;pam config&lt;/h1&gt;
+
+&lt;pre&gt;&lt;code&gt;account [success=2 new_authtok_reqd=done default=ignore]    pam_unix.so
+account [success=1 new_authtok_reqd=done default=ignore]    pam_winbind.so
+account requisite           pam_deny.so
+account required            pam_permit.so
+auth required pam_google_authenticator.so
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;In /etc/pam.d/openvpn.&lt;/p&gt;
+
+&lt;h1&gt;server config&lt;/h1&gt;
+
+&lt;pre&gt;&lt;code&gt;# base config
+port 1194
+proto udp
+dev tun
+comp-lzo
+user nobody
+group nogroup
+persist-key
+persist-tun
+status openvpn-status.log
+log-append  openvpn.log
+
+# authentication config
+ca ca.crt
+cert server.crt
+key server.key
+dh dh2048.pem
+tls-auth ta.key 0
+plugin /usr/lib/openvpn/openvpn-plugin-auth-pam.so openvpn
+
+# network config
+server 10.55.66.0 255.255.255.0
+ifconfig-pool-persist ipp.txt
+client-to-client
+duplicate-cn
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Plugin should be /usr/lib/openvpn/openvpn-plugin-auth-pam.so in debian, &#34;openvpn&#34; behind is fit for the filename in /etc/pam.d/openvpn.&lt;/p&gt;
+
+&lt;h1&gt;google authentication config&lt;/h1&gt;
+
+&lt;p&gt;Look at this &lt;a href=&#34;http://shell909090.org/blog/2014/01/%E5%9C%A8pam%E4%B8%AD%E4%BD%BF%E7%94%A8google-authentication/&#34;&gt;在PAM中使用google authentication&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h1&gt;startup&lt;/h1&gt;
+
+&lt;pre&gt;&lt;code&gt;shell@debws0:~$ sudo openvpn --config shell.conf
+Fri Jan 24 11:17:17 2014 OpenVPN 2.3.2 x86_64-pc-linux-gnu [SSL (OpenSSL)] [LZO] [EPOLL] [PKCS11] [eurephia] [MH] [IPv6] built on Nov 28 2013
+Enter Auth Username:username
+Enter Auth Password:
+Enter Private Key Password:
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The user you used to config google authentication is the username put into Auth Username.&lt;/p&gt;
+
+&lt;p&gt;Put verification code as Password, and you may have Private Key Password in your private key.&lt;/p&gt;
+
+&lt;p&gt;Have a fun.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>lxc和virtualbox和物理机的简单性能测试和对比</title>
+      <link>https://shell909090.github.io/blog/archives/2542/</link>
+      <pubDate>Thu, 23 Jan 2014 11:04:34 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2542/</guid>
+      <description>&lt;h1&gt;说明&lt;/h1&gt;
+
+&lt;p&gt;测试各种虚拟化系统下的虚拟机性能。&lt;/p&gt;
+
+&lt;p&gt;测试使用sysbench。&lt;/p&gt;
+
+&lt;p&gt;CPU采用如下指令测试。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sysbench --test=cpu --num-threads=2 --cpu-max-prime=50000 run
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;文件IO采用如下指令测试。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sysbench --test=fileio --file-total-size=10G prepare
+sysbench --test=fileio --file-total-size=10G --file-test-mode=rndrw --init-rng=on --max-time=300 --max-requests=0 run
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;内存采用如下指令测试。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sysbench --test=memory --num-threads=2 --memory-access-mode=seq run
+sysbench --test=memory --num-threads=2 --memory-access-mode=rnd run
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;线程采用如下指令。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sysbench --test=threads --num-threads=2 run
+sysbench --test=mutex --num-threads=2 --mutex-locks=1000000 run
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;裸硬盘测试采用如下指令。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;hdparm -tT &amp;lt;dev&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;物理机上有三个文件系统，ext4/xfs/btrfs，前两者仅做fileio测试以对比性能。&lt;/p&gt;
+
+&lt;p&gt;另外做两个特殊文件系统对比，aufs带复制和aufs无复制。前者在只读层上准备好测试文件，而后进行随机读写测试。其中就附带了文件复制开销。后者在aufs建立后初始化测试文件，因此消除了文件复制开销。&lt;/p&gt;
+
+&lt;p&gt;所有测试都是测试数次，取最高者（因为低者可能受到各种干扰）。一般是2-3次。&lt;/p&gt;
+
+&lt;p&gt;物理机是一台DELL Intel 64位桌面系统，支持硬件虚拟化，有4G内存。系统采用debian jessie，测试于2014年1月17日-20日执行，内核3.12.6-2 (2013-12-29) x86_64。&lt;/p&gt;
+
+&lt;p&gt;虚拟机lxc是使用lxc切分的一台虚拟机，没有做资源限制。&lt;/p&gt;
+
+&lt;p&gt;虚拟机vbox是使用virtualbox切分的一台虚拟机，分配了所有CPU，打开了硬件虚拟化，分配了1G内存。&lt;/p&gt;
+
+&lt;h1&gt;文件系统&lt;/h1&gt;
+
+&lt;h2&gt;ext4&lt;/h2&gt;
+
+&lt;p&gt;Operations performed: 21311 Read, 14207 Write, 45440 Other = 80958 Total Read 332.98Mb Written 221.98Mb Total transferred 554.97Mb (1.8499Mb/sec) 118.39 Requests/sec executed&lt;/p&gt;
+
+&lt;p&gt;Test execution summary: total time: 300.0044s total number of events: 35518 total time taken by event execution: 168.4761 per-request statistics: min: 0.00ms avg: 4.74ms max: 118.67ms approx. 95 percentile: 12.48ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 35518.0000/0.00 execution time (avg/stddev): 168.4761/0.00&lt;/p&gt;
+
+&lt;h2&gt;xfs&lt;/h2&gt;
+
+&lt;p&gt;Operations performed: 20789 Read, 13859 Write, 44288 Other = 78936 Total Read 324.83Mb Written 216.55Mb Total transferred 541.38Mb (1.8046Mb/sec) 115.49 Requests/sec executed&lt;/p&gt;
+
+&lt;p&gt;Test execution summary: total time: 300.0018s total number of events: 34648 total time taken by event execution: 172.0475 per-request statistics: min: 0.00ms avg: 4.97ms max: 96.11ms approx. 95 percentile: 12.30ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 34648.0000/0.00 execution time (avg/stddev): 172.0475/0.00&lt;/p&gt;
+
+&lt;h2&gt;btrfs&lt;/h2&gt;
+
+&lt;p&gt;Operations performed: 6180 Read, 4120 Write, 13105 Other = 23405 Total Read 96.562Mb Written 64.375Mb Total transferred 160.94Mb (549.23Kb/sec) 34.33 Requests/sec executed&lt;/p&gt;
+
+&lt;p&gt;Test execution summary: total time: 300.0556s total number of events: 10300 total time taken by event execution: 65.8914 per-request statistics: min: 0.00ms avg: 6.40ms max: 337.28ms approx. 95 percentile: 17.01ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 10300.0000/0.00 execution time (avg/stddev): 65.8914/0.00&lt;/p&gt;
+
+&lt;h2&gt;aufs透明&lt;/h2&gt;
+
+&lt;p&gt;Operations performed: 5340 Read, 3560 Write, 11279 Other = 20179 Total Read 83.438Mb Written 55.625Mb Total transferred 139.06Mb (474.65Kb/sec) 29.67 Requests/sec executed&lt;/p&gt;
+
+&lt;p&gt;Test execution summary: total time: 300.0084s total number of events: 8900 total time taken by event execution: 32.3634 per-request statistics: min: 0.00ms avg: 3.64ms max: 1037.04ms approx. 95 percentile: 0.02ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 8900.0000/0.00 execution time (avg/stddev): 32.3634/0.00&lt;/p&gt;
+
+&lt;h2&gt;aufs非透明&lt;/h2&gt;
+
+&lt;p&gt;Operations performed: 20320 Read, 13546 Write, 43264 Other = 77130 Total Read 317.5Mb Written 211.66Mb Total transferred 529.16Mb (1.7638Mb/sec) 112.88 Requests/sec executed&lt;/p&gt;
+
+&lt;p&gt;Test execution summary: total time: 300.0054s total number of events: 33866 total time taken by event execution: 170.7252 per-request statistics: min: 0.00ms avg: 5.04ms max: 143.86ms approx. 95 percentile: 12.62ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 33866.0000/0.00 execution time (avg/stddev): 170.7252/0.00&lt;/p&gt;
+
+&lt;h1&gt;物理机&lt;/h1&gt;
+
+&lt;h2&gt;hdparm&lt;/h2&gt;
+
+&lt;p&gt;Timing cached reads: 11980 MB in 2.00 seconds = 5992.56 MB/sec Timing buffered disk reads: 366 MB in 3.01 seconds = 121.52 MB/sec&lt;/p&gt;
+
+&lt;h2&gt;cpu&lt;/h2&gt;
+
+&lt;p&gt;Test execution summary: total time: 51.4463s total number of events: 10000 total time taken by event execution: 102.8828 per-request statistics: min: 9.93ms avg: 10.29ms max: 36.11ms approx. 95 percentile: 11.29ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 5000.0000/30.00 execution time (avg/stddev): 51.4414/0.00&lt;/p&gt;
+
+&lt;h2&gt;memory&lt;/h2&gt;
+
+&lt;p&gt;Operations performed: 104857600 (4545662.48 ops/sec)&lt;/p&gt;
+
+&lt;p&gt;102400.00 MB transferred (4439.12 MB/sec)&lt;/p&gt;
+
+&lt;p&gt;Test execution summary: total time: 23.0676s total number of events: 104857600 total time taken by event execution: 34.1991 per-request statistics: min: 0.00ms avg: 0.00ms max: 18.05ms approx. 95 percentile: 0.00ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 52428800.0000/69790.00 execution time (avg/stddev): 17.0995/0.01&lt;/p&gt;
+
+&lt;p&gt;Operations performed: 104857600 (5407739.22 ops/sec)&lt;/p&gt;
+
+&lt;p&gt;102400.00 MB transferred (5281.00 MB/sec)&lt;/p&gt;
+
+&lt;p&gt;Test execution summary: total time: 19.3903s total number of events: 104857600 total time taken by event execution: 26.8579 per-request statistics: min: 0.00ms avg: 0.00ms max: 22.46ms approx. 95 percentile: 0.00ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 52428800.0000/7211.00 execution time (avg/stddev): 13.4289/0.14&lt;/p&gt;
+
+&lt;h2&gt;threads&lt;/h2&gt;
+
+&lt;p&gt;Test execution summary: total time: 1.0112s total number of events: 10000 total time taken by event execution: 2.0210 per-request statistics: min: 0.15ms avg: 0.20ms max: 11.19ms approx. 95 percentile: 0.24ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 5000.0000/3.00 execution time (avg/stddev): 1.0105/0.00&lt;/p&gt;
+
+&lt;p&gt;Test execution summary: total time: 0.1665s total number of events: 2 total time taken by event execution: 0.3238 per-request statistics: min: 157.39ms avg: 161.90ms max: 166.41ms approx. 95 percentile: 10000000.00ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 1.0000/0.00 execution time (avg/stddev): 0.1619/0.00&lt;/p&gt;
+
+&lt;h2&gt;nginx&lt;/h2&gt;
+
+&lt;p&gt;Concurrency Level: 10000 Time taken for tests: 5.745 seconds Complete requests: 100000 Failed requests: 0 Write errors: 0 Total transferred: 172100000 bytes HTML transferred: 160000000 bytes Requests per second: 17404.93 &amp;#91;#/sec&amp;#93; (mean) Time per request: 574.550 &amp;#91;ms&amp;#93; (mean) Time per request: 0.057 &amp;#91;ms&amp;#93; (mean, across all concurrent requests) Transfer rate: 29251.85 [Kbytes/sec] received&lt;/p&gt;
+
+&lt;h1&gt;lxc&lt;/h1&gt;
+
+&lt;h2&gt;cpu&lt;/h2&gt;
+
+&lt;p&gt;Test execution summary: total time: 51.4368s total number of events: 10000 total time taken by event execution: 102.8619 per-request statistics: min: 9.92ms avg: 10.29ms max: 35.08ms approx. 95 percentile: 11.68ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 5000.0000/5.00 execution time (avg/stddev): 51.4310/0.00&lt;/p&gt;
+
+&lt;h2&gt;fileio&lt;/h2&gt;
+
+&lt;p&gt;Operations performed: 5548 Read, 3698 Write, 11776 Other = 21022 Total Read 86.688Mb Written 57.781Mb Total transferred 144.47Mb (493.07Kb/sec) 30.82 Requests/sec executed&lt;/p&gt;
+
+&lt;p&gt;Test execution summary: total time: 300.0294s total number of events: 9246 total time taken by event execution: 84.4687 per-request statistics: min: 0.01ms avg: 9.14ms max: 394.13ms approx. 95 percentile: 36.20ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 9246.0000/0.00 execution time (avg/stddev): 84.4687/0.00&lt;/p&gt;
+
+&lt;h2&gt;memory&lt;/h2&gt;
+
+&lt;p&gt;Operations performed: 104857600 (4456398.83 ops/sec)&lt;/p&gt;
+
+&lt;p&gt;102400.00 MB transferred (4351.95 MB/sec)&lt;/p&gt;
+
+&lt;p&gt;Test execution summary: total time: 23.5297s total number of events: 104857600 total time taken by event execution: 34.8417 per-request statistics: min: 0.00ms avg: 0.00ms max: 20.22ms approx. 95 percentile: 0.00ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 52428800.0000/155952.00 execution time (avg/stddev): 17.4208/0.06&lt;/p&gt;
+
+&lt;p&gt;Operations performed: 104857600 (5327923.43 ops/sec)&lt;/p&gt;
+
+&lt;p&gt;102400.00 MB transferred (5203.05 MB/sec)&lt;/p&gt;
+
+&lt;p&gt;Test execution summary: total time: 19.6808s total number of events: 104857600 total time taken by event execution: 27.3010 per-request statistics: min: 0.00ms avg: 0.00ms max: 16.48ms approx. 95 percentile: 0.00ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 52428800.0000/297738.00 execution time (avg/stddev): 13.6505/0.09&lt;/p&gt;
+
+&lt;h2&gt;threads&lt;/h2&gt;
+
+&lt;p&gt;Test execution summary: total time: 1.2490s total number of events: 10000 total time taken by event execution: 2.4954 per-request statistics: min: 0.21ms avg: 0.25ms max: 7.39ms approx. 95 percentile: 0.28ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 5000.0000/7.00 execution time (avg/stddev): 1.2477/0.00&lt;/p&gt;
+
+&lt;p&gt;Test execution summary: total time: 0.1222s total number of events: 2 total time taken by event execution: 0.2275 per-request statistics: min: 107.53ms avg: 113.77ms max: 120.02ms approx. 95 percentile: 10000000.00ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 1.0000/0.00 execution time (avg/stddev): 0.1138/0.01&lt;/p&gt;
+
+&lt;h2&gt;nginx&lt;/h2&gt;
+
+&lt;p&gt;Concurrency Level: 10000 Time taken for tests: 16.976 seconds Complete requests: 100000 Failed requests: 0 Write errors: 0 Total transferred: 1551500000 bytes HTML transferred: 1539400000 bytes Requests per second: 5890.69 &amp;#91;#/sec&amp;#93; (mean) Time per request: 1697.594 &amp;#91;ms&amp;#93; (mean) Time per request: 0.170 &amp;#91;ms&amp;#93; (mean, across all concurrent requests) Transfer rate: 89252.02 [Kbytes/sec] received&lt;/p&gt;
+
+&lt;h1&gt;vbox&lt;/h1&gt;
+
+&lt;h2&gt;hdparm&lt;/h2&gt;
+
+&lt;p&gt;Timing cached reads: 10122 MB in 1.99 seconds = 5088.70 MB/sec Timing buffered disk reads: 300 MB in 3.00 seconds = 99.87 MB/sec&lt;/p&gt;
+
+&lt;h2&gt;cpu&lt;/h2&gt;
+
+&lt;p&gt;Test execution summary: total time: 54.0469s total number of events: 10000 total time taken by event execution: 108.0595 per-request statistics: min: 9.03ms avg: 10.81ms max: 61.39ms approx. 95 percentile: 14.87ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 5000.0000/87.00 execution time (avg/stddev): 54.0297/0.00&lt;/p&gt;
+
+&lt;h2&gt;fileio&lt;/h2&gt;
+
+&lt;p&gt;Operations performed: 68153 Read, 45435 Write, 145280 Other = 258868 Total Read 1.0399Gb Written 709.92Mb Total transferred 1.7332Gb (5.916Mb/sec) 378.62 Requests/sec executed&lt;/p&gt;
+
+&lt;p&gt;Test execution summary: total time: 300.0045s total number of events: 113588 total time taken by event execution: 177.2314 per-request statistics: min: 0.01ms avg: 1.56ms max: 579.66ms approx. 95 percentile: 13.10ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 113588.0000/0.00 execution time (avg/stddev): 177.2314/0.00&lt;/p&gt;
+
+&lt;h2&gt;memory&lt;/h2&gt;
+
+&lt;p&gt;一直报错，测试不出来。&lt;/p&gt;
+
+&lt;h2&gt;threads&lt;/h2&gt;
+
+&lt;p&gt;Test execution summary: total time: 16.0377s total number of events: 10000 total time taken by event execution: 32.0421 per-request statistics: min: 1.19ms avg: 3.20ms max: 38.39ms approx. 95 percentile: 5.74ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 5000.0000/15.00 execution time (avg/stddev): 16.0210/0.00&lt;/p&gt;
+
+&lt;p&gt;Test execution summary: total time: 0.3023s total number of events: 2 total time taken by event execution: 0.5990 per-request statistics: min: 297.52ms avg: 299.50ms max: 301.47ms approx. 95 percentile: 10000000.00ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 1.0000/0.00 execution time (avg/stddev): 0.2995/0.00&lt;/p&gt;
+
+&lt;h2&gt;nginx&lt;/h2&gt;
+
+&lt;p&gt;Concurrency Level: 5000 Time taken for tests: 41.758 seconds Complete requests: 50000 Failed requests: 0 Write errors: 0 Keep-Alive requests: 0 Total transferred: 890350000 bytes HTML transferred: 884250000 bytes Requests per second: 1197.38 &amp;#91;#/sec&amp;#93; (mean) Time per request: 4175.799 &amp;#91;ms&amp;#93; (mean) Time per request: 0.835 &amp;#91;ms&amp;#93; (mean, across all concurrent requests) Transfer rate: 20821.94 [Kbytes/sec] received&lt;/p&gt;
+
+&lt;h1&gt;vbox on lvm&lt;/h1&gt;
+
+&lt;p&gt;在物理机上开辟一个lvm卷，然后用vmdk引用物理卷的功能挂到vbox上使用，格式化为ext4文件格式。&lt;/p&gt;
+
+&lt;h2&gt;hdparm&lt;/h2&gt;
+
+&lt;p&gt;Timing cached reads: 10034 MB in 1.99 seconds = 5044.30 MB/sec Timing buffered disk reads: 270 MB in 3.01 seconds = 89.73 MB/sec&lt;/p&gt;
+
+&lt;h2&gt;fileio&lt;/h2&gt;
+
+&lt;p&gt;Operations performed: 22765 Read, 15176 Write, 48512 Other = 86453 Total Read 355.7Mb Written 237.12Mb Total transferred 592.83Mb (1.976Mb/sec) 126.47 Requests/sec executed&lt;/p&gt;
+
+&lt;p&gt;Test execution summary: total time: 300.0080s total number of events: 37941 total time taken by event execution: 286.5402 per-request statistics: min: 0.01ms avg: 7.55ms max: 336.67ms approx. 95 percentile: 20.49ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 37941.0000/0.00 execution time (avg/stddev): 286.5402/0.00&lt;/p&gt;
+
+&lt;h1&gt;vbox on vdi&lt;/h1&gt;
+
+&lt;p&gt;基本同vbox on lvm，不过使用vdi作为存储。和vbox测试相比，内部系统换为主系统同样的debian。&lt;/p&gt;
+
+&lt;h2&gt;hdparm&lt;/h2&gt;
+
+&lt;p&gt;Timing cached reads: 9152 MB in 1.99 seconds = 4598.80 MB/sec Timing buffered disk reads: 352 MB in 3.00 seconds = 117.16 MB/sec&lt;/p&gt;
+
+&lt;h2&gt;fileio&lt;/h2&gt;
+
+&lt;p&gt;Operations performed: 151020 Read, 100680 Write, 322060 Other = 573760 Total Read 2.3044Gb Written 1.5363Gb Total transferred 3.8406Gb (13.109Mb/sec) 839.00 Requests/sec executed&lt;/p&gt;
+
+&lt;p&gt;Test execution summary: total time: 300.0011s total number of events: 251700 total time taken by event execution: 60.6296 per-request statistics: min: 0.01ms avg: 0.24ms max: 106.94ms approx. 95 percentile: 0.26ms&lt;/p&gt;
+
+&lt;p&gt;Threads fairness: events (avg/stddev): 251700.0000/0.00 execution time (avg/stddev): 60.6296/0.00&lt;/p&gt;
+
+&lt;h1&gt;分析&lt;/h1&gt;
+
+&lt;h2&gt;计算&lt;/h2&gt;
+
+&lt;p&gt;从CPU上说，vbox的消耗大约是5%，而lxc的消耗基本是0%。&lt;/p&gt;
+
+&lt;p&gt;内存测试上，vbox无法测量。lxc的性能和物理机十分相近，两者的差异在1.5%-2%之间。&lt;/p&gt;
+
+&lt;p&gt;在threads测试和mutex测试上，vbox显示出远远低于lxc的性能。这些基本都是内核陷入类的事务，也是预期vbox会发生性能下降的地方。&lt;/p&gt;
+
+&lt;h2&gt;IO&lt;/h2&gt;
+
+&lt;p&gt;从硬件设备IO上来分析，lxc和主机是共用一套物理设备的。vbox的裸设备IO比物理机低了15-18%。但是文件系统IO则表现出完全相反的景象。&lt;/p&gt;
+
+&lt;p&gt;lxc底层使用的是btrfs，因此性能和物理机上的btrfs性能十分相近，误差在10%以内。这一性能比物理机上的ext4/xfs低了70%以上。这个表现出btrfs的性能和ext4/xfs性能的差异(注：怎么会差这么多？)。&lt;/p&gt;
+
+&lt;p&gt;如果使用aufs的话，则要视复制特性而定。如果引发复制，性能会跌到和btrfs相近。而不引发复制的话，则和aufs下面的文件系统相近(误差在5%以内)。&lt;/p&gt;
+
+&lt;p&gt;而vbox内只有ext4，其性能高达物理机的220%。怎么可能？&lt;/p&gt;
+
+&lt;h2&gt;network&lt;/h2&gt;
+
+&lt;p&gt;从nginx的rps来说，lxc的性能只有物理机的1/3，vbox的更只有7%。而且vbox连10000并发都无法支撑，只能用5000并发测试。&lt;/p&gt;
+
+&lt;p&gt;这里固然有因为物理机目录中文件比较少的原因，但是vbox和lxc的文件数是一样的，两者性能比高达1:5是个不争的事实。&lt;/p&gt;
+
+&lt;h2&gt;加测&lt;/h2&gt;
+
+&lt;p&gt;因为vbox内的ext4性能太好，怀疑有鬼，所以加测了一下。果然，使用vdi后fileio性能比物理机还好（我用的是新的vdi）。这个结论在大规模读写和老的vdi上很可能退化成一点都不靠谱，否则所有的设备都应该先装一堆虚拟机做vdi。&lt;/p&gt;
+
+&lt;h1&gt;结论&lt;/h1&gt;
+
+&lt;h2&gt;虚拟化层级&lt;/h2&gt;
+
+&lt;p&gt;从虚拟化的深度来说，CPU虚拟化最深，完全虚拟化次之，半虚拟化其后，硬件虚拟化和半虚拟化难分伯仲，操作系统虚拟化已经很浅了。下面是简单解说。&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;CPU虚拟化：使用CPU仿真另一块CPU的每个指令。速度最慢（大约是真实CPU的1/60），可以仿真其他CPU。bochs为其代表，qemu亦支持。&lt;/li&gt;
+&lt;li&gt;完全虚拟化：对另一个系统的部分核心调用进行处理。速度次之（大约一半略快）。必须是同种CPU，但可以是不同系统。vmware早期的虚拟机都是此种。&lt;/li&gt;
+&lt;li&gt;半虚拟化：修改另一个系统的核心代码，使其与hypervisor交互以提高性能（大约5-10%）。必须同种CPU，但是guest系统必须可以修改（排除了windows）。Xen为其代表。&lt;/li&gt;
+&lt;li&gt;硬件虚拟化：利用硬件加速完全虚拟化，使其性能接近半虚拟化，但是不需要修改内核。必须同种CPU，可以为不同系统。目前大部分虚拟机都支持。&lt;/li&gt;
+&lt;li&gt;系统虚拟化：在系统上完成另一个系统的特性。必须是同种CPU同种内核，但可以是不同系统（例如debian和centos）。linux上的lxc/openvz，bsd上的jail，windows上的Virtuozzo为其代表。&lt;/li&gt;
+&lt;li&gt;用户隔离：在同一个系统上，利用用户分割权限和限制配额。必须在同一个系统内。DAE为其代表。&lt;/li&gt;
+&lt;li&gt;沙盒：在语言内部搭建隔离平台，对API进行鉴定和抽象。GAE为其代表。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2&gt;性能和隔离性的取舍&lt;/h2&gt;
+
+&lt;p&gt;上面显然可见，隔离性越好，性能越差。使用硬件虚拟化后，nginx的rps只有原本的1/10。lxc的overload明明很低，但是因为用了虚拟网卡，所以rps下降到1/3。从效率上说，当然不希望为了虚拟化而消耗大量的资源。所以，如果服务原本可以用户隔离，就不要用系统虚拟化，如果可以系统虚拟化，就不要硬件虚拟化。所以在大规模使用虚拟化之前，不妨考虑一下是不是先好用户权限级隔离比较合适。&lt;/p&gt;
+
+&lt;h2&gt;文件系统&lt;/h2&gt;
+
+&lt;p&gt;从上面可以看出，对于lxc这种小消耗的虚拟方案，与其在意虚拟机的性能消耗，不如更在意文件系统的性能消耗。但是比较倒霉的是，lxc是不能在虚拟机内自行配置文件系统的，需要从主机内分配挂载。&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;ext4：适用于大部分情况，iops很高，小文件下吞吐量很不错。大部分虚拟化场景都是小系统简单服务的时候适合。&lt;/li&gt;
+&lt;li&gt;xfs：适用于大设备内部的大虚拟机。每个虚机的服务复杂，或者是有大文件。&lt;/li&gt;
+&lt;li&gt;btrfs：这个东西性能很低，但是写时复制的能力对快速clone很重要。适合用于产生一堆临时生成的环境，用于程序员测试或者测试工程师搭环境，测试完了就删除的。&lt;/li&gt;
+&lt;li&gt;aufs：和btrfs情况差不多，快速clone不错。不过安全起见，clone后原image不可以启动实例或者修改image。在没有COW写入时性能很高，这点比btrfs好。而在COW时瞬时开销很高。&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>lxc简单介绍</title>
+      <link>https://shell909090.github.io/blog/archives/2533/</link>
+      <pubDate>Thu, 02 Jan 2014 12:48:17 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2533/</guid>
+      <description>&lt;h1&gt;基本安装&lt;/h1&gt;
+
+&lt;p&gt;安装lxc包。&lt;/p&gt;
+
+&lt;p&gt;注意修改/bin/sh，链接到/bin/bash。lxc在某些版本上有一个bug，声明为/bin/sh却使用bash语法，导致不如此链接会出现错误。&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://wiki.debian.org/LXC&#34;&gt;lxc on debian wiki&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1&gt;镜像和设定&lt;/h1&gt;
+
+&lt;p&gt;使用&lt;code&gt;lxc-create -n name -t template&lt;/code&gt;生成镜像。&lt;/p&gt;
+
+&lt;p&gt;在/usr/share/lxc/templates可以看到可用的模板。&lt;/p&gt;
+
+&lt;p&gt;在/var/cache/lxc/debian会缓存生成过程的临时文件。&lt;/p&gt;
+
+&lt;p&gt;生成的镜像需要在镜像内安装lxc，否则无法使用lxc-execute。&lt;/p&gt;
+
+&lt;h1&gt;资源限制&lt;/h1&gt;
+
+&lt;p&gt;在config文件内，写入cgroup限定规则。注意，使用内存限定的话，需要在内核参数中加入cgroup_enable=memory。&lt;/p&gt;
+
+&lt;p&gt;在debian下，可以修改/etc/default/grub文件，使用update-grub重新生成规则。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;GRUB_CMDLINE_LINUX_DEFAULT=&#34;cgroup_enable=memory quiet&#34;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;在config文件中可以如下限定。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;lxc.cgroup.memory.limit_in_bytes = 512M # 限定内存
+lxc.cgroup.cpuset.cpus = 0 # 限定可以使用的核
+lxc.cgroup.blkio.throttle.read_bps_device = 8:0 100 # 读取速率限定
+lxc.cgroup.blkio.throttle.write_bps_device = 8:0 100 # 写入速率限定
+lxc.cgroup.blkio.throttle.read_iops_device = 8:0 100 # 读取频率限定
+lxc.cgroup.blkio.throttle.write_iops_device = 8:0 100 # 写入频率限定
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.kernel.org/doc/Documentation/cgroups/&#34;&gt;cgroups&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.kernel.org/doc/Documentation/cgroups/blkio-controller.txt&#34;&gt;blkio-controller&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.kernel.org/doc/Documentation/cgroups/cpusets.txt&#34;&gt;cpusets&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.kernel.org/doc/Documentation/cgroups/memory.txt&#34;&gt;memory&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1&gt;执行&lt;/h1&gt;
+
+&lt;pre&gt;&lt;code&gt;lxc-start -n name /bin/echo hello
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;还可以用以下指令，在已经启动的container里执行进程。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;lxc-attach -n name /bin/echo hello
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;以下指令是用来在未启动的container里执行进程的。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;lxc-execute -n name /bin/echo hello
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;** 注意，虽然系统初始化了所有资源，但是由于sysv-init没有执行，因此系统内初始化并没完成。这导致系统不完整，例如网络部分不可用。 **&lt;/p&gt;
+
+&lt;h1&gt;网络隔离&lt;/h1&gt;
+
+&lt;h2&gt;自行设定的网络&lt;/h2&gt;
+
+&lt;p&gt;lxc采用veth技术，每次虚拟机建立时，都会产生一对veth。虚拟机内的一般叫做eth0，虚拟机外的叫做vethXXX。这张网卡可以以任何linux许可的方式进行配置。&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;dnsmasq所产生的dhcp封包无法被debian guest的dhcp client承认，因此无法使用dnsmasq自动部署网络。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;使用iptables配置访问&lt;/h2&gt;
+
+&lt;p&gt;在开启br-nf后，所有bridge的包都会经过iptables的过滤。因而可以用iptables的FORWARD规则限制guest堆外网的访问。&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;http://serverfault.com/questions/162366/iptables-bridge-and-forward-chain&#34;&gt;bridge-nf&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1&gt;参考&lt;/h1&gt;
+
+&lt;ul&gt;
+&lt;li&gt;http://lxc.teegra.net/&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>lxc的double NAT模式无法使用dnsmasq的分析</title>
+      <link>https://shell909090.github.io/blog/archives/2517/</link>
+      <pubDate>Mon, 25 Nov 2013 16:40:01 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2517/</guid>
+      <description>&lt;p&gt;系统debian testing，lxc-0.9。&lt;/p&gt;
+
+&lt;p&gt;在笔记本上做lxc，网络是wifi，AP会drop不同MAC发出的报文，所以无法做网桥。一个办法是用ebtables做规则，我嫌麻烦。另一个是配置多头主机，double NAT。当然，还有路由器模式。不过大多数网络环境中我搞不到default gateway的权限来添加子网的路由规则。所以就选了double NAT。&lt;/p&gt;
+
+&lt;p&gt;问题出在dnsmasq作为dhcp和dns服务器上。整个网络都搭好了，通的。完了我在host上启动dnsmasq，在guest里就是硬生生无法获得IP。&lt;/p&gt;
+
+&lt;p&gt;首先host上vi /var/log/syslog，看到dnsmasq把dhcp offer发出去了。在guest里tcpdump，看到有报文收到。那就奇怪该死的dhclient不工作了。dhclient版本4.2.4，和主系统一致。网桥环境中这个版本可以工作。&lt;/p&gt;
+
+&lt;p&gt;所以把网桥环境中的报文也tcpdump了一遍，加上刚刚不成功的dumpout一起看——什么都看不出来。&lt;/p&gt;
+
+&lt;p&gt;偶然dhclient -v -d -4 eth0了一下，看到bad udp checksums，顿时一愣。跑到wireshark下面看了一下——还真是没有计算checksum。打开checksum计算可以看到double NAT里的checksum算错了。提示是maybe checksum offload。&lt;/p&gt;
+
+&lt;p&gt;我找到这个链接：http://www.wireshark.org/docs/wsug_html_chunked/ChAdvChecksums.html&lt;/p&gt;
+
+&lt;p&gt;里面提到，checksum可能是由网卡或驱动计算的。这就难怪——没问题的dhcp offer的udp checksum是由openwrt的网卡发出，而有问题的则是由bridge和virtual ethernet发出。&lt;/p&gt;
+
+&lt;p&gt;那见鬼，别人是怎么成功的？&lt;/p&gt;
+
+&lt;p&gt;一番搜索，看来lxc还不是第一个中招的：http://lists.xen.org/archives/html/xen-devel/2011-12/msg01770.html&lt;/p&gt;
+
+&lt;p&gt;dhcp-4.2.2可以打这个补丁，使得dhcp-client不去校验udp checksum：http://pkgs.fedoraproject.org/cgit/dhcp.git/plain/dhcp-4.2.2-xen-checksum.patch?id2=HEAD&lt;/p&gt;
+
+&lt;p&gt;当然，也有各种坑爹补丁（例如这个：http://marc.info/?l=kvm&amp;amp;m=121882968407525&amp;amp;w=2）来修复虚拟驱动上的问题，计算出正确的checksum。&lt;/p&gt;
+
+&lt;p&gt;在debian下，他被报为bts671707(http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=671707)。已经报了一年半，尚未处理。&lt;/p&gt;
+
+&lt;p&gt;网上很多教程能够跑通的原因，大概是因为他们的guest基于08年以后的rh系系统。rh在08年就对dhclient出了一个补丁（4.2.2那个），用于暂时修复这个问题。&lt;/p&gt;
+
+&lt;p&gt;所有基于debian系的系统都无法从offloading不处理的系统上获得dhcp offer。&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

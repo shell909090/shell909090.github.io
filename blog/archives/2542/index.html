@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>lxc和virtualbox和物理机的简单性能测试和对比</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         lxc和virtualbox和物理机的简单性能测试和对比 
+    </h1>
+    <p class="meta">Jan 23, 2014
+         - 7 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2542/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <h1>说明</h1>
+
+<p>测试各种虚拟化系统下的虚拟机性能。</p>
+
+<p>测试使用sysbench。</p>
+
+<p>CPU采用如下指令测试。</p>
+
+<pre><code>sysbench --test=cpu --num-threads=2 --cpu-max-prime=50000 run
+</code></pre>
+
+<p>文件IO采用如下指令测试。</p>
+
+<pre><code>sysbench --test=fileio --file-total-size=10G prepare
+sysbench --test=fileio --file-total-size=10G --file-test-mode=rndrw --init-rng=on --max-time=300 --max-requests=0 run
+</code></pre>
+
+<p>内存采用如下指令测试。</p>
+
+<pre><code>sysbench --test=memory --num-threads=2 --memory-access-mode=seq run
+sysbench --test=memory --num-threads=2 --memory-access-mode=rnd run
+</code></pre>
+
+<p>线程采用如下指令。</p>
+
+<pre><code>sysbench --test=threads --num-threads=2 run
+sysbench --test=mutex --num-threads=2 --mutex-locks=1000000 run
+</code></pre>
+
+<p>裸硬盘测试采用如下指令。</p>
+
+<pre><code>hdparm -tT &lt;dev&gt;
+</code></pre>
+
+<p>物理机上有三个文件系统，ext4/xfs/btrfs，前两者仅做fileio测试以对比性能。</p>
+
+<p>另外做两个特殊文件系统对比，aufs带复制和aufs无复制。前者在只读层上准备好测试文件，而后进行随机读写测试。其中就附带了文件复制开销。后者在aufs建立后初始化测试文件，因此消除了文件复制开销。</p>
+
+<p>所有测试都是测试数次，取最高者（因为低者可能受到各种干扰）。一般是2-3次。</p>
+
+<p>物理机是一台DELL Intel 64位桌面系统，支持硬件虚拟化，有4G内存。系统采用debian jessie，测试于2014年1月17日-20日执行，内核3.12.6-2 (2013-12-29) x86_64。</p>
+
+<p>虚拟机lxc是使用lxc切分的一台虚拟机，没有做资源限制。</p>
+
+<p>虚拟机vbox是使用virtualbox切分的一台虚拟机，分配了所有CPU，打开了硬件虚拟化，分配了1G内存。</p>
+
+<h1>文件系统</h1>
+
+<h2>ext4</h2>
+
+<p>Operations performed: 21311 Read, 14207 Write, 45440 Other = 80958 Total Read 332.98Mb Written 221.98Mb Total transferred 554.97Mb (1.8499Mb/sec) 118.39 Requests/sec executed</p>
+
+<p>Test execution summary: total time: 300.0044s total number of events: 35518 total time taken by event execution: 168.4761 per-request statistics: min: 0.00ms avg: 4.74ms max: 118.67ms approx. 95 percentile: 12.48ms</p>
+
+<p>Threads fairness: events (avg/stddev): 35518.0000/0.00 execution time (avg/stddev): 168.4761/0.00</p>
+
+<h2>xfs</h2>
+
+<p>Operations performed: 20789 Read, 13859 Write, 44288 Other = 78936 Total Read 324.83Mb Written 216.55Mb Total transferred 541.38Mb (1.8046Mb/sec) 115.49 Requests/sec executed</p>
+
+<p>Test execution summary: total time: 300.0018s total number of events: 34648 total time taken by event execution: 172.0475 per-request statistics: min: 0.00ms avg: 4.97ms max: 96.11ms approx. 95 percentile: 12.30ms</p>
+
+<p>Threads fairness: events (avg/stddev): 34648.0000/0.00 execution time (avg/stddev): 172.0475/0.00</p>
+
+<h2>btrfs</h2>
+
+<p>Operations performed: 6180 Read, 4120 Write, 13105 Other = 23405 Total Read 96.562Mb Written 64.375Mb Total transferred 160.94Mb (549.23Kb/sec) 34.33 Requests/sec executed</p>
+
+<p>Test execution summary: total time: 300.0556s total number of events: 10300 total time taken by event execution: 65.8914 per-request statistics: min: 0.00ms avg: 6.40ms max: 337.28ms approx. 95 percentile: 17.01ms</p>
+
+<p>Threads fairness: events (avg/stddev): 10300.0000/0.00 execution time (avg/stddev): 65.8914/0.00</p>
+
+<h2>aufs透明</h2>
+
+<p>Operations performed: 5340 Read, 3560 Write, 11279 Other = 20179 Total Read 83.438Mb Written 55.625Mb Total transferred 139.06Mb (474.65Kb/sec) 29.67 Requests/sec executed</p>
+
+<p>Test execution summary: total time: 300.0084s total number of events: 8900 total time taken by event execution: 32.3634 per-request statistics: min: 0.00ms avg: 3.64ms max: 1037.04ms approx. 95 percentile: 0.02ms</p>
+
+<p>Threads fairness: events (avg/stddev): 8900.0000/0.00 execution time (avg/stddev): 32.3634/0.00</p>
+
+<h2>aufs非透明</h2>
+
+<p>Operations performed: 20320 Read, 13546 Write, 43264 Other = 77130 Total Read 317.5Mb Written 211.66Mb Total transferred 529.16Mb (1.7638Mb/sec) 112.88 Requests/sec executed</p>
+
+<p>Test execution summary: total time: 300.0054s total number of events: 33866 total time taken by event execution: 170.7252 per-request statistics: min: 0.00ms avg: 5.04ms max: 143.86ms approx. 95 percentile: 12.62ms</p>
+
+<p>Threads fairness: events (avg/stddev): 33866.0000/0.00 execution time (avg/stddev): 170.7252/0.00</p>
+
+<h1>物理机</h1>
+
+<h2>hdparm</h2>
+
+<p>Timing cached reads: 11980 MB in 2.00 seconds = 5992.56 MB/sec Timing buffered disk reads: 366 MB in 3.01 seconds = 121.52 MB/sec</p>
+
+<h2>cpu</h2>
+
+<p>Test execution summary: total time: 51.4463s total number of events: 10000 total time taken by event execution: 102.8828 per-request statistics: min: 9.93ms avg: 10.29ms max: 36.11ms approx. 95 percentile: 11.29ms</p>
+
+<p>Threads fairness: events (avg/stddev): 5000.0000/30.00 execution time (avg/stddev): 51.4414/0.00</p>
+
+<h2>memory</h2>
+
+<p>Operations performed: 104857600 (4545662.48 ops/sec)</p>
+
+<p>102400.00 MB transferred (4439.12 MB/sec)</p>
+
+<p>Test execution summary: total time: 23.0676s total number of events: 104857600 total time taken by event execution: 34.1991 per-request statistics: min: 0.00ms avg: 0.00ms max: 18.05ms approx. 95 percentile: 0.00ms</p>
+
+<p>Threads fairness: events (avg/stddev): 52428800.0000/69790.00 execution time (avg/stddev): 17.0995/0.01</p>
+
+<p>Operations performed: 104857600 (5407739.22 ops/sec)</p>
+
+<p>102400.00 MB transferred (5281.00 MB/sec)</p>
+
+<p>Test execution summary: total time: 19.3903s total number of events: 104857600 total time taken by event execution: 26.8579 per-request statistics: min: 0.00ms avg: 0.00ms max: 22.46ms approx. 95 percentile: 0.00ms</p>
+
+<p>Threads fairness: events (avg/stddev): 52428800.0000/7211.00 execution time (avg/stddev): 13.4289/0.14</p>
+
+<h2>threads</h2>
+
+<p>Test execution summary: total time: 1.0112s total number of events: 10000 total time taken by event execution: 2.0210 per-request statistics: min: 0.15ms avg: 0.20ms max: 11.19ms approx. 95 percentile: 0.24ms</p>
+
+<p>Threads fairness: events (avg/stddev): 5000.0000/3.00 execution time (avg/stddev): 1.0105/0.00</p>
+
+<p>Test execution summary: total time: 0.1665s total number of events: 2 total time taken by event execution: 0.3238 per-request statistics: min: 157.39ms avg: 161.90ms max: 166.41ms approx. 95 percentile: 10000000.00ms</p>
+
+<p>Threads fairness: events (avg/stddev): 1.0000/0.00 execution time (avg/stddev): 0.1619/0.00</p>
+
+<h2>nginx</h2>
+
+<p>Concurrency Level: 10000 Time taken for tests: 5.745 seconds Complete requests: 100000 Failed requests: 0 Write errors: 0 Total transferred: 172100000 bytes HTML transferred: 160000000 bytes Requests per second: 17404.93 &#91;#/sec&#93; (mean) Time per request: 574.550 &#91;ms&#93; (mean) Time per request: 0.057 &#91;ms&#93; (mean, across all concurrent requests) Transfer rate: 29251.85 [Kbytes/sec] received</p>
+
+<h1>lxc</h1>
+
+<h2>cpu</h2>
+
+<p>Test execution summary: total time: 51.4368s total number of events: 10000 total time taken by event execution: 102.8619 per-request statistics: min: 9.92ms avg: 10.29ms max: 35.08ms approx. 95 percentile: 11.68ms</p>
+
+<p>Threads fairness: events (avg/stddev): 5000.0000/5.00 execution time (avg/stddev): 51.4310/0.00</p>
+
+<h2>fileio</h2>
+
+<p>Operations performed: 5548 Read, 3698 Write, 11776 Other = 21022 Total Read 86.688Mb Written 57.781Mb Total transferred 144.47Mb (493.07Kb/sec) 30.82 Requests/sec executed</p>
+
+<p>Test execution summary: total time: 300.0294s total number of events: 9246 total time taken by event execution: 84.4687 per-request statistics: min: 0.01ms avg: 9.14ms max: 394.13ms approx. 95 percentile: 36.20ms</p>
+
+<p>Threads fairness: events (avg/stddev): 9246.0000/0.00 execution time (avg/stddev): 84.4687/0.00</p>
+
+<h2>memory</h2>
+
+<p>Operations performed: 104857600 (4456398.83 ops/sec)</p>
+
+<p>102400.00 MB transferred (4351.95 MB/sec)</p>
+
+<p>Test execution summary: total time: 23.5297s total number of events: 104857600 total time taken by event execution: 34.8417 per-request statistics: min: 0.00ms avg: 0.00ms max: 20.22ms approx. 95 percentile: 0.00ms</p>
+
+<p>Threads fairness: events (avg/stddev): 52428800.0000/155952.00 execution time (avg/stddev): 17.4208/0.06</p>
+
+<p>Operations performed: 104857600 (5327923.43 ops/sec)</p>
+
+<p>102400.00 MB transferred (5203.05 MB/sec)</p>
+
+<p>Test execution summary: total time: 19.6808s total number of events: 104857600 total time taken by event execution: 27.3010 per-request statistics: min: 0.00ms avg: 0.00ms max: 16.48ms approx. 95 percentile: 0.00ms</p>
+
+<p>Threads fairness: events (avg/stddev): 52428800.0000/297738.00 execution time (avg/stddev): 13.6505/0.09</p>
+
+<h2>threads</h2>
+
+<p>Test execution summary: total time: 1.2490s total number of events: 10000 total time taken by event execution: 2.4954 per-request statistics: min: 0.21ms avg: 0.25ms max: 7.39ms approx. 95 percentile: 0.28ms</p>
+
+<p>Threads fairness: events (avg/stddev): 5000.0000/7.00 execution time (avg/stddev): 1.2477/0.00</p>
+
+<p>Test execution summary: total time: 0.1222s total number of events: 2 total time taken by event execution: 0.2275 per-request statistics: min: 107.53ms avg: 113.77ms max: 120.02ms approx. 95 percentile: 10000000.00ms</p>
+
+<p>Threads fairness: events (avg/stddev): 1.0000/0.00 execution time (avg/stddev): 0.1138/0.01</p>
+
+<h2>nginx</h2>
+
+<p>Concurrency Level: 10000 Time taken for tests: 16.976 seconds Complete requests: 100000 Failed requests: 0 Write errors: 0 Total transferred: 1551500000 bytes HTML transferred: 1539400000 bytes Requests per second: 5890.69 &#91;#/sec&#93; (mean) Time per request: 1697.594 &#91;ms&#93; (mean) Time per request: 0.170 &#91;ms&#93; (mean, across all concurrent requests) Transfer rate: 89252.02 [Kbytes/sec] received</p>
+
+<h1>vbox</h1>
+
+<h2>hdparm</h2>
+
+<p>Timing cached reads: 10122 MB in 1.99 seconds = 5088.70 MB/sec Timing buffered disk reads: 300 MB in 3.00 seconds = 99.87 MB/sec</p>
+
+<h2>cpu</h2>
+
+<p>Test execution summary: total time: 54.0469s total number of events: 10000 total time taken by event execution: 108.0595 per-request statistics: min: 9.03ms avg: 10.81ms max: 61.39ms approx. 95 percentile: 14.87ms</p>
+
+<p>Threads fairness: events (avg/stddev): 5000.0000/87.00 execution time (avg/stddev): 54.0297/0.00</p>
+
+<h2>fileio</h2>
+
+<p>Operations performed: 68153 Read, 45435 Write, 145280 Other = 258868 Total Read 1.0399Gb Written 709.92Mb Total transferred 1.7332Gb (5.916Mb/sec) 378.62 Requests/sec executed</p>
+
+<p>Test execution summary: total time: 300.0045s total number of events: 113588 total time taken by event execution: 177.2314 per-request statistics: min: 0.01ms avg: 1.56ms max: 579.66ms approx. 95 percentile: 13.10ms</p>
+
+<p>Threads fairness: events (avg/stddev): 113588.0000/0.00 execution time (avg/stddev): 177.2314/0.00</p>
+
+<h2>memory</h2>
+
+<p>一直报错，测试不出来。</p>
+
+<h2>threads</h2>
+
+<p>Test execution summary: total time: 16.0377s total number of events: 10000 total time taken by event execution: 32.0421 per-request statistics: min: 1.19ms avg: 3.20ms max: 38.39ms approx. 95 percentile: 5.74ms</p>
+
+<p>Threads fairness: events (avg/stddev): 5000.0000/15.00 execution time (avg/stddev): 16.0210/0.00</p>
+
+<p>Test execution summary: total time: 0.3023s total number of events: 2 total time taken by event execution: 0.5990 per-request statistics: min: 297.52ms avg: 299.50ms max: 301.47ms approx. 95 percentile: 10000000.00ms</p>
+
+<p>Threads fairness: events (avg/stddev): 1.0000/0.00 execution time (avg/stddev): 0.2995/0.00</p>
+
+<h2>nginx</h2>
+
+<p>Concurrency Level: 5000 Time taken for tests: 41.758 seconds Complete requests: 50000 Failed requests: 0 Write errors: 0 Keep-Alive requests: 0 Total transferred: 890350000 bytes HTML transferred: 884250000 bytes Requests per second: 1197.38 &#91;#/sec&#93; (mean) Time per request: 4175.799 &#91;ms&#93; (mean) Time per request: 0.835 &#91;ms&#93; (mean, across all concurrent requests) Transfer rate: 20821.94 [Kbytes/sec] received</p>
+
+<h1>vbox on lvm</h1>
+
+<p>在物理机上开辟一个lvm卷，然后用vmdk引用物理卷的功能挂到vbox上使用，格式化为ext4文件格式。</p>
+
+<h2>hdparm</h2>
+
+<p>Timing cached reads: 10034 MB in 1.99 seconds = 5044.30 MB/sec Timing buffered disk reads: 270 MB in 3.01 seconds = 89.73 MB/sec</p>
+
+<h2>fileio</h2>
+
+<p>Operations performed: 22765 Read, 15176 Write, 48512 Other = 86453 Total Read 355.7Mb Written 237.12Mb Total transferred 592.83Mb (1.976Mb/sec) 126.47 Requests/sec executed</p>
+
+<p>Test execution summary: total time: 300.0080s total number of events: 37941 total time taken by event execution: 286.5402 per-request statistics: min: 0.01ms avg: 7.55ms max: 336.67ms approx. 95 percentile: 20.49ms</p>
+
+<p>Threads fairness: events (avg/stddev): 37941.0000/0.00 execution time (avg/stddev): 286.5402/0.00</p>
+
+<h1>vbox on vdi</h1>
+
+<p>基本同vbox on lvm，不过使用vdi作为存储。和vbox测试相比，内部系统换为主系统同样的debian。</p>
+
+<h2>hdparm</h2>
+
+<p>Timing cached reads: 9152 MB in 1.99 seconds = 4598.80 MB/sec Timing buffered disk reads: 352 MB in 3.00 seconds = 117.16 MB/sec</p>
+
+<h2>fileio</h2>
+
+<p>Operations performed: 151020 Read, 100680 Write, 322060 Other = 573760 Total Read 2.3044Gb Written 1.5363Gb Total transferred 3.8406Gb (13.109Mb/sec) 839.00 Requests/sec executed</p>
+
+<p>Test execution summary: total time: 300.0011s total number of events: 251700 total time taken by event execution: 60.6296 per-request statistics: min: 0.01ms avg: 0.24ms max: 106.94ms approx. 95 percentile: 0.26ms</p>
+
+<p>Threads fairness: events (avg/stddev): 251700.0000/0.00 execution time (avg/stddev): 60.6296/0.00</p>
+
+<h1>分析</h1>
+
+<h2>计算</h2>
+
+<p>从CPU上说，vbox的消耗大约是5%，而lxc的消耗基本是0%。</p>
+
+<p>内存测试上，vbox无法测量。lxc的性能和物理机十分相近，两者的差异在1.5%-2%之间。</p>
+
+<p>在threads测试和mutex测试上，vbox显示出远远低于lxc的性能。这些基本都是内核陷入类的事务，也是预期vbox会发生性能下降的地方。</p>
+
+<h2>IO</h2>
+
+<p>从硬件设备IO上来分析，lxc和主机是共用一套物理设备的。vbox的裸设备IO比物理机低了15-18%。但是文件系统IO则表现出完全相反的景象。</p>
+
+<p>lxc底层使用的是btrfs，因此性能和物理机上的btrfs性能十分相近，误差在10%以内。这一性能比物理机上的ext4/xfs低了70%以上。这个表现出btrfs的性能和ext4/xfs性能的差异(注：怎么会差这么多？)。</p>
+
+<p>如果使用aufs的话，则要视复制特性而定。如果引发复制，性能会跌到和btrfs相近。而不引发复制的话，则和aufs下面的文件系统相近(误差在5%以内)。</p>
+
+<p>而vbox内只有ext4，其性能高达物理机的220%。怎么可能？</p>
+
+<h2>network</h2>
+
+<p>从nginx的rps来说，lxc的性能只有物理机的1/3，vbox的更只有7%。而且vbox连10000并发都无法支撑，只能用5000并发测试。</p>
+
+<p>这里固然有因为物理机目录中文件比较少的原因，但是vbox和lxc的文件数是一样的，两者性能比高达1:5是个不争的事实。</p>
+
+<h2>加测</h2>
+
+<p>因为vbox内的ext4性能太好，怀疑有鬼，所以加测了一下。果然，使用vdi后fileio性能比物理机还好（我用的是新的vdi）。这个结论在大规模读写和老的vdi上很可能退化成一点都不靠谱，否则所有的设备都应该先装一堆虚拟机做vdi。</p>
+
+<h1>结论</h1>
+
+<h2>虚拟化层级</h2>
+
+<p>从虚拟化的深度来说，CPU虚拟化最深，完全虚拟化次之，半虚拟化其后，硬件虚拟化和半虚拟化难分伯仲，操作系统虚拟化已经很浅了。下面是简单解说。</p>
+
+<ol>
+<li>CPU虚拟化：使用CPU仿真另一块CPU的每个指令。速度最慢（大约是真实CPU的1/60），可以仿真其他CPU。bochs为其代表，qemu亦支持。</li>
+<li>完全虚拟化：对另一个系统的部分核心调用进行处理。速度次之（大约一半略快）。必须是同种CPU，但可以是不同系统。vmware早期的虚拟机都是此种。</li>
+<li>半虚拟化：修改另一个系统的核心代码，使其与hypervisor交互以提高性能（大约5-10%）。必须同种CPU，但是guest系统必须可以修改（排除了windows）。Xen为其代表。</li>
+<li>硬件虚拟化：利用硬件加速完全虚拟化，使其性能接近半虚拟化，但是不需要修改内核。必须同种CPU，可以为不同系统。目前大部分虚拟机都支持。</li>
+<li>系统虚拟化：在系统上完成另一个系统的特性。必须是同种CPU同种内核，但可以是不同系统（例如debian和centos）。linux上的lxc/openvz，bsd上的jail，windows上的Virtuozzo为其代表。</li>
+<li>用户隔离：在同一个系统上，利用用户分割权限和限制配额。必须在同一个系统内。DAE为其代表。</li>
+<li>沙盒：在语言内部搭建隔离平台，对API进行鉴定和抽象。GAE为其代表。</li>
+</ol>
+
+<h2>性能和隔离性的取舍</h2>
+
+<p>上面显然可见，隔离性越好，性能越差。使用硬件虚拟化后，nginx的rps只有原本的1/10。lxc的overload明明很低，但是因为用了虚拟网卡，所以rps下降到1/3。从效率上说，当然不希望为了虚拟化而消耗大量的资源。所以，如果服务原本可以用户隔离，就不要用系统虚拟化，如果可以系统虚拟化，就不要硬件虚拟化。所以在大规模使用虚拟化之前，不妨考虑一下是不是先好用户权限级隔离比较合适。</p>
+
+<h2>文件系统</h2>
+
+<p>从上面可以看出，对于lxc这种小消耗的虚拟方案，与其在意虚拟机的性能消耗，不如更在意文件系统的性能消耗。但是比较倒霉的是，lxc是不能在虚拟机内自行配置文件系统的，需要从主机内分配挂载。</p>
+
+<ul>
+<li>ext4：适用于大部分情况，iops很高，小文件下吞吐量很不错。大部分虚拟化场景都是小系统简单服务的时候适合。</li>
+<li>xfs：适用于大设备内部的大虚拟机。每个虚机的服务复杂，或者是有大文件。</li>
+<li>btrfs：这个东西性能很低，但是写时复制的能力对快速clone很重要。适合用于产生一堆临时生成的环境，用于程序员测试或者测试工程师搭环境，测试完了就删除的。</li>
+<li>aufs：和btrfs情况差不多，快速clone不错。不过安全起见，clone后原image不可以启动实例或者修改image。在没有COW写入时性能很高，这点比btrfs好。而在COW时瞬时开销很高。</li>
+</ul>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Jan 23, 2014</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/benchmark">benchmark</a>  <a class="category" href="https://shell909090.github.io/tags/linux">linux</a>  <a class="category" href="https://shell909090.github.io/tags/lvm">lvm</a>  <a class="category" href="https://shell909090.github.io/tags/lxc">lxc</a>  <a class="category" href="https://shell909090.github.io/tags/virtualbox">virtualbox</a>  <a class="category" href="https://shell909090.github.io/tags/vm">vm</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/2539/" title="在PAM中使用google authentication">在PAM中使用google authentication</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/2545/" title="openvpn auth with google authentication">openvpn auth with google authentication</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

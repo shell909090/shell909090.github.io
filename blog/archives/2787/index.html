@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>使用tmate和mdp做培训</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         使用tmate和mdp做培训 
+    </h1>
+    <p class="meta">Sep 17, 2015
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2787/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p><h1>
+ tmate
+</h1>
+<p>
+ 其实很简单。有个大家都玩过tmux对吧。有个x炸天的工具，叫做tmate，是tmux的分支。地址在
+ <a rel="nofollow external" href="http://tmate.io/">
+  这里
+ </a>
+ 。
+</p>
+<p>
+ 这个工具能做什么呢？开一个tmux的窗口，连接一台服务器，得到一个ssh指令。然后，其他人可以用这条ssh指令直接查看你的tmux，只读或共享操作都可以(我建议只读)。
+</p>
+<p>
+ 这个工具进入了debian的testing和sid，但是没有进stable。所以要装一堆依赖编译一下。总之，最后是一个静态的binary文件，复制去bin目录下结束，没什么好废话的。
+</p>
+<h1>
+ 自建服务器
+</h1>
+<p>
+ tmate官方提供了一组公开服务器，供大家使用。当然，这些对我等大局域网居民来说是没用的。所以follow the guide(官方主页上有)，在自己的vps上搭建一个服务器。当然，22端口要改成其他端口。
+</p>
+<p>
+ 然后填一个设定文件(也在官方主页上)，你就能使用tmate连接自己的服务器了。fingerprint的扫描方法大概是，在tmate-slave目录下执行：
+</p>
+<pre><code>ssh-keygen -lf keys/ssh_host_dsa_key
+ssh-keygen -lf keys/ssh_host_rsa_key
+ssh-keygen -lf keys/ssh_host_ecdsa_key
+</code></pre>
+<p>
+ 会得到三个fingerprint，写到客户端的配置里去。
+</p>
+<p>
+ 唯一需要注意的是，除了tmate的配置文件里面需要设定三个fingerprint，你还得用ssh连接一下自己的这些服务器，并同意将fp添加到~/.ssh/known_host。不然也会有错误。
+</p>
+<p>
+ 然后tmate，就能看到ssh指令了。
+</p>
+<h1>
+ 客户的连接
+</h1>
+<p>
+ 在tmate的窗口里，敲
+ <code>
+  tmate show-message
+ </code>
+ ，你能够看到只读和读写ssh指令。这条指令里会有一个非常复杂的username，这个username是用作客户的身份验证的。虽然信息量并不是很大，但是作为临时的会话共享安全手段足够了。
+</p>
+<p>
+ 注意如果你使用只读指令分享了屏幕，那么在操作过程中不应该再敲这条指令。否则别人就能看到读写ssh指令。
+</p>
+<p>
+ 后面的事情就非常简单了，客户自己用ssh工具来连就行了。tmate对客户端没有任何要求。
+</p>
+<h1>
+ mdp
+</h1>
+<p>
+ tmate解决了pair work和屏幕分享的问题。但是要用于培训的话，我们还缺一个slide手段。
+</p>
+<p>
+ <a href="https://github.com/visit1985/mdp">
+  mdp
+ </a>
+ 是一个命令行的slide工具(当然你也可以用tpp)。基本是基于markdown的。你可以按照官方文档来做一个slide，然后就可以很happy的和小伙伴们分享屏幕操作了。
+</p>
+<h1>
+ 还缺什么
+</h1>
+<p>
+ 其实最好还要有一个语音共享机制的，例如YY语音。
+</p>
+<h1>
+ 性能如何
+</h1>
+<p>
+ 还没测。我在同组的三个人之间试了一回，非常好用。大量的用户还没测。等测下来再写一篇。
+</p></p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Sep 17, 2015</time>
+    <span class="categories">
+      Tags:
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/2783/" title="关于vpn的一些话">关于vpn的一些话</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/2789/" title="从xcode说起——开发中的那些傻逼事">从xcode说起——开发中的那些傻逼事</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

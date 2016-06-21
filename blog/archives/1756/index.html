@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>python源码解析读书笔记（一）——内置对象</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         python源码解析读书笔记（一）——内置对象 
+    </h1>
+    <p class="meta">Mar 27, 2011
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1756/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p><span class="Apple-style-span" style="font-size: large;">1.类型的类型 </span><div>    obj int(10).ob_type -&gt; PyInt_Type</div><div>    PyInt_Type.ob_type -&gt; PyType_Type</div><div>    PyInt_Type.tp_base -&gt; PyBaseObject_Type</div><div>    PyBaseObject_Type.ob_type -&gt; PyType_Type</div></p>
+
+<div>
+
+
+
+
+
+
+
+
+
+    PyType_Type.ob_type -&gt; PyType_Type</div><div>更精确的参考源码解析262页图。</div><div><br /></div><div><span class="Apple-style-span" style="font-size: large;">2.小整数对象</span></div><div>    if (-NSMALLNEGINTS &lt;= ival &amp;&amp; ival &lt; NSMALLPOSINTS) {</div>
+
+<div>        v = small_ints[ival + NSMALLNEGINTS];</div>
+
+<p><div>        Py_INCREF(v);</div></p>
+
+<p><div>    }</div><div><br /></div><div><span class="Apple-style-span" style="font-size: large;">3.大整数对象，空对象池，对象缓存</span></div><div><div>&gt;&gt;&gt; a = 1000000</div><div>&gt;&gt;&gt; b = 2000000</div><div>&gt;&gt;&gt; id(a) == id(1000000)</div></p>
+
+<div>False</div><div><div>&gt;&gt;&gt; id(100000) == id(100000)</div>
+
+<div>True</div><div>最后一个是因为python解析器在解析对象的时候，对前后生成的对象进行了缓存。经过测试，对文件也有效。</div><div><br /></div><div><span class="Apple-style-span" style="font-size: large;">4.字符串对象复用和缓存</span></div><div><div>&gt;&gt;&gt; c = &#39;qazwsxedcrfvt&#39;</div>
+
+<div>&gt;&gt;&gt; c += &#39;gbyhnujmikolp&#39;</div><div>&gt;&gt;&gt; a = &#39;qazwsxedcrfvtgbyhnujmikolp&#39;</div>
+
+<p><div>&gt;&gt;&gt; id(a) == id&copy;</div><div>False</div><div><div>&gt;&gt;&gt; a = &#39;abc&#39;</div><div>&gt;&gt;&gt; b = &#39;def&#39;</div><div>&gt;&gt;&gt; c = &#39;abc&#39;</div><div>&gt;&gt;&gt; id(a) == id&copy;</div></p>
+
+<div> True</div><div><div>&gt;&gt;&gt; b = &#39;abcde&#39;</div><div>&gt;&gt;&gt; id(b[1]) == id(c[1])</div><div>True</div><div>缓存原理同上，对于长度为0, 1的小字符串，永久缓存。</div><div><br /></div><div><span class="Apple-style-span" style="font-size: large;">5.free_list对象缓存的机制</span></div>
+
+<div>每个类别有自己的free_list对象，用于缓存已经被销毁的对象。目前尚不清楚GC是否会定时释放这部分内存，但是python在对象引用到0时是不释放对象的，而且多数情况下表现为内存泄漏。而且多种对象的free_list不能互相通用，继承子类也不适用。</div><div><br /></div>
+
+<p><div><span class="Apple-style-span" style="font-size: large;">6.list对象的行为</span></div><div>list对象用一种vector等同的方法处理对象池。因此随机插入（尤其是头部插入）一个对象超长队列会引发大量的内存复制行为。</div><div><br /></div><div><span class="Apple-style-span" style="font-size: large;">7.dict对象的索引方案</span></div></p>
+
+<div>dict对象的索引方案使用的是哈希表，而且是开放地址法的哈希表。当装载率达到一定规模后，会新申请一块内存，将有效数据复制过去。最小的表空间为8个对象，当装载率超过2/3时，会扩大规模到当前active的4倍（超过50000个对象为2倍）。目前为止，在对象被删除后，其表空间并不释放。因此曾经增长的非常大的dict对象，可以定期复制以回收空间。</div><div><br /></div>
+
+<div><span class="Apple-style-span" style="font-size: large;">8.dict的用法注释</span></div><div><div>从序列中移除重复对象</div><div>    dict.fromkeys(seqn).keys()</div><div>计算序列中元素出现次数</div><div>    for e in seqn: d[e] = d.get(e,0) + 1</div>
+
+<div><div>词典中移除大量元素</div><div>    d = dict([(k, v) for k, v in d.items() if k != xxx])</div>
+
+<div>词典中访问可能不存在的元素（当不存在的风险高于5%时）</div><div>    o = d.get(k, default)</div><div>词典中访问可能不存在的元素（当不存在的风险低于5%时）</div><div>    try: o = d[k]</div><div>    except KeyError: o = default</div></div></div>
+
+<p></div></div></div></div></div></p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Mar 27, 2011</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/program">program</a>  <a class="category" href="https://shell909090.github.io/tags/python">python</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/1755/" title="豆瓣九点的认领功能">豆瓣九点的认领功能</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/1757/" title="python源码解析读书笔记（二）——函数特性">python源码解析读书笔记（二）——函数特性</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

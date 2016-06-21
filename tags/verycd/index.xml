@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Verycd on Shell&#39;s Home</title>
+    <link>https://shell909090.github.io/tags/verycd/</link>
+    <description>Recent content in Verycd on Shell&#39;s Home</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 02 Dec 2011 15:00:11 +0800</lastBuildDate>
+    <atom:link href="https://shell909090.github.io/tags/verycd/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>从网页中爬链接的一个小技巧</title>
+      <link>https://shell909090.github.io/blog/archives/2000/</link>
+      <pubDate>Fri, 02 Dec 2011 15:00:11 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/2000/</guid>
+      <description>&lt;div&gt;    没啥好多说的，从verycd中爬所有的ed2k链接。&lt;/div&gt;lynx -dump -listonly -nonumbers &lt;a href=&#34;http://www.verycd.com/topics/XXX/&#34; target=&#34;_blank&#34;&gt;http://www.verycd.com/topics/XXX/&lt;/a&gt; | grep ed2k &amp;gt;&amp;gt; ed2k.txt&lt;div&gt;    要看到ed2k未转码的内容也不难。&lt;/div&gt;
+
+&lt;div&gt;&lt;div&gt; import sys, urllib&lt;/div&gt;&lt;div&gt;with open(sys.argv[1], &amp;#39;r&amp;#39;) as fi: print urllib.unquote(fi.read())&lt;/div&gt; &lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>VeryCD版电驴(eMule)存在封锁</title>
+      <link>https://shell909090.github.io/blog/archives/38/</link>
+      <pubDate>Wed, 24 Sep 2008 17:11:00 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/38/</guid>
+      <description>&lt;p&gt;eMule是一个GPL程序，所以VeryCD的改版必须公开源码。今天听说VeryCD版有封锁的现象，所以贝壳抓源码来看看。如果大家认为老调重弹的话，不妨把文章拉到最后。
+源码从此处下载：&lt;a href=&#34;http://www.emule.org.cn/download/&#34;&gt;http://www.emule.org.cn/download/&lt;/a&gt;
+最下方链接：&lt;a href=&#34;http://download.verycd.com/eMule-VeryCD-src.rar&#34;&gt;http://download.verycd.com/eMule-VeryCD-src.rar&lt;/a&gt;
+贝壳下到的文件大小13,703,064字节，打包时间2008-09-11。经过贝壳查找，在eMule-VeryCD-srcsrc WordFilter发现两个文件，WordFilter.cpp 2008-03-12 09:57 13374和WordFilter.h
+2007-11-20 17:56 1009。仔细阅读里面，发现有以下内容。
+void    CWordFilter::Init()
+{
+HANDLE    hFile;
+DWORD    dwRead;
+int        nLen;
+BOOL    bResult;
+CStringList list;&lt;/p&gt;
+
+&lt;p&gt;//m_count = 0;&lt;/p&gt;
+
+&lt;p&gt;CString saaa = thePrefs.GetMuleDirectory(EMULE_EXECUTEABLEDIR) + FLITER_FILE;
+CString sbbb = thePrefs.GetMuleDirectory(EMULE_CONFIGDIR) + FLITER_FILE;&lt;/p&gt;
+
+&lt;p&gt;// 如果文件目录不对，程序移动一下，到config目录下 added by kernel1983 2006.07.31
+if (PathFileExists(thePrefs.GetMuleDirectory(EMULE_EXECUTEABLEDIR) + FLITER_FILE))
+MoveFile(thePrefs.GetMuleDirectory(EMULE_EXECUTEABLEDIR) + FLITER_FILE, thePrefs.GetMuleDirectory(EMULE_CONFIGDIR) + FLITER_FILE);&lt;/p&gt;
+
+&lt;p&gt;if (!PathFileExists(thePrefs.GetMuleDirectory(EMULE_CONFIGDIR) + FLITER_FILE))
+{
+// 不存在，所有的都过滤 added by kernel1983 2006.08.08
+m_filterall = true;
+return;
+}&lt;/p&gt;
+
+&lt;p&gt;// Open file for read
+hFile = CreateFile(thePrefs.GetMuleDirectory(EMULE_CONFIGDIR) + FLITER_FILE, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+//AddLogLine(false,_T(&amp;rdquo;:%sn&amp;rdquo;),thePrefs.GetConfigDir() + FLITER_FILE);
+if(hFile == NULL || hFile == INVALID_HANDLE_VALUE)
+{
+// 读取错误，所有的都过滤 added by kernel1983 2006.08.08
+m_filterall = true;
+return;
+}&lt;/p&gt;
+
+&lt;p&gt;DWORD dwSize = GetFileSize(hFile, NULL);&lt;/p&gt;
+
+&lt;p&gt;TCHAR * pszData = new TCHAR[(dwSize / sizeof(TCHAR)) + 1];            // 申请空间
+bResult = ReadFile(hFile, pszData, dwSize, &amp;amp;dwRead, NULL);        // 读入文件1
+CloseHandle(hFile);
+pszData[(dwSize / sizeof(TCHAR))] = 0;&lt;/p&gt;
+
+&lt;p&gt;if(bResult)
+{
+// 加入解码算法
+{
+std::string tempstr( (char*)pszData + 1 , ((int)dwSize - 1) &amp;gt; 0 ? dwSize -1 : 0 );&lt;/p&gt;
+
+&lt;p&gt;// 查看是否是老格式
+char * pszData_a = (char*) pszData;&lt;/p&gt;
+
+&lt;p&gt;if( pszData_a[0] != 0x15 ) {
+// 老格式，进行转换
+CUnicodeToMultiByte wc2mb( thePrefs.GetMuleDirectory(EMULE_CONFIGDIR) + FLITER_FILE );
+tempstr.assign( (char*)pszData , dwSize );
+InternalBase64::encode2file( tempstr , std::string((LPCSTR)wc2mb , wc2mb.GetLength()) );&lt;/p&gt;
+
+&lt;p&gt;delete [] pszData;
+// 重新载入
+return Init();
+}&lt;/p&gt;
+
+&lt;p&gt;vector vec = InternalBase64::decode( tempstr );
+char * pszt = (char*) pszData;
+for( size_t i = 0; i &amp;lt; vec.size() ; i++ ) {
+pszt[i] = vec[i];
+}
+dwSize = vec.size();
+}&lt;/p&gt;
+
+&lt;p&gt;TCHAR * pszTemp = wcstok(pszData + 1, _T(&amp;ldquo;rn&amp;rdquo;));
+while(pszTemp != NULL)
+{
+nLen = wcslen(pszTemp);
+while(pszTemp[nLen - 1] == &amp;rsquo;t&amp;rsquo; || pszTemp[nLen - 1] == &amp;lsquo; &amp;lsquo;)
+{
+nLen &amp;ndash;;
+pszTemp[nLen] = 0;
+}
+while(*pszTemp == &amp;rsquo;t&amp;rsquo; || &lt;em&gt;pszTemp == &amp;lsquo; &amp;lsquo;)
+{
+pszTemp ++;
+nLen &amp;ndash;;
+}
+//AddLogLine(false,_T(&amp;ldquo;pszTemp:%s&amp;rdquo;),pszTemp);
+//AddLogLine(false,_T(&amp;ldquo;nLen:%d&amp;rdquo;),nLen);
+if(nLen &amp;gt; 0)list.AddTail(pszTemp);
+//if(nLen == 8)AddLogLine(false,_T(&amp;rdquo;:%d %d %d %d &amp;ldquo;),((char&lt;/em&gt;)pszTemp)[0],((char&lt;em&gt;)pszTemp)[1],((char&lt;/em&gt;)pszTemp)[2],((char*)pszTemp)[3]);
+pszTemp = wcstok(NULL, _T(&amp;ldquo;rn&amp;rdquo;));
+}
+}&lt;/p&gt;
+
+&lt;p&gt;delete[] pszData;&lt;/p&gt;
+
+&lt;p&gt;m_count = list.GetCount();
+//AddLogLine(false,_T(&amp;ldquo;m_count:%d&amp;rdquo;),m_count);&lt;/p&gt;
+
+&lt;p&gt;if(bResult &amp;amp;&amp;amp; m_count &amp;gt; 0)
+{
+m_filterwords = new TCHAR&lt;em&gt;[m_count+1];
+m_kmpvalue = new int&lt;/em&gt;[m_count+1];
+ZeroMemory(m_filterwords, sizeof(TCHAR *) * m_count);
+ZeroMemory(m_kmpvalue, sizeof(int *) * m_count);
+}&lt;/p&gt;
+
+&lt;p&gt;for(int i = 0; bResult &amp;amp;&amp;amp; (i &amp;lt; m_count); i ++)
+{
+CString s = list.GetAt(list.FindIndex(i));
+s.MakeLower();
+nLen = s.GetLength();
+//AddLogLine(false,_T(&amp;ldquo;nLen:%d&amp;rdquo;),nLen);
+m_filterwords[i] = new TCHAR[nLen + 1];
+m_filterwords[i][nLen] = 0;    // 最后一个字节设为0
+m_kmpvalue[i] = new int[nLen];
+//AddLogLine(false,_T(&amp;ldquo;nLen:%d&amp;rdquo;),nLen);
+_tcscpy(m_filterwords[i],s);
+//AddLogLine(false,_T(&amp;ldquo;m_filterwords[i]:%s&amp;rdquo;),m_filterwords[i]);
+KMP_GetNext(m_filterwords[i], m_kmpvalue[i]);    // 得到一个与内容有关的数值m_kmpvalue[i]
+}&lt;/p&gt;
+
+&lt;p&gt;if(m_count == 0 || !bResult)
+{
+Free();
+//m_filterall = true;
+}
+}&lt;/p&gt;
+
+&lt;p&gt;bool    CWordFilter::VerifyString(const CString &amp;amp; sString)    // 验证字符是否合法
+{
+bool bIsRm = sString.Right(3)==_T(&amp;ldquo;.rm&amp;rdquo;);
+CString sReduceString=sString;
+CString sInterpunctionString = _T(&amp;ldquo;（），().。·；：－《》『』～　“”〓！【】★×┇&amp;rdquo;);
+try // VC-Huby[2007-03-20]:满足中国国情特色,加强过滤
+{
+int j=0;
+for( int i=0; i&amp;lt; sString.GetLength(); i++ )
+{
+if( sString.GetAt(i)&amp;lt;=_T(&amp;lsquo;/&amp;rsquo;) &amp;amp;&amp;amp; sString.GetAt(i)&amp;gt;=_T(&amp;rsquo; &amp;lsquo;) ) //从空格到&amp;rsquo;/&amp;lsquo;之间的字符减掉后再过滤
+{
+continue;
+}
+else if( sString.GetAt(i)&amp;lt;=_T(&amp;lsquo;@&amp;rsquo;) &amp;amp;&amp;amp; sString.GetAt(i)&amp;gt;=_T(&amp;rsquo;:&amp;lsquo;) )
+{
+continue;
+}
+else if( sString.GetAt(i)&amp;lt;=_T(&amp;rsquo;`&amp;lsquo;) &amp;amp;&amp;amp; sString.GetAt(i)&amp;gt;=_T(&amp;rsquo;[&amp;lsquo;) )
+{
+continue;
+}
+else if( sString.GetAt(i)&amp;lt;=_T(&amp;rsquo;~&amp;lsquo;) &amp;amp;&amp;amp; sString.GetAt(i)&amp;gt;=_T(&amp;lsquo;{&amp;rsquo;) )
+{
+continue;
+}
+else if( sInterpunctionString.Find(sString.GetAt(i))&amp;gt;=0 )
+{
+continue;
+}
+else
+{
+sReduceString.SetAt(j,sString.GetAt(i));
+j++;
+}
+}
+if( j&amp;lt; sString.GetLength() )
+sReduceString.SetAt(j,_T(&amp;ldquo;));
+}
+catch (&amp;hellip;)
+{
+}&lt;/p&gt;
+
+&lt;p&gt;if(m_filterall){
+//AddLogLine(false,_T(&amp;ldquo;m_filterall&amp;rdquo;));
+return true;    // 检测不到文件，或者读取错误的情况下放弃过滤
+}
+if(m_count == 0){
+//AddLogLine(false,_T(&amp;ldquo;m_count == 0&amp;rdquo;));
+return true;    // 文件是空的时候，放弃过滤功能
+}
+CString strSearch = ((CString)sReduceString).MakeLower();&lt;/p&gt;
+
+&lt;p&gt;//vc-huby: 过滤中文字符超过15字符
+//CString sReduceString2=strSearch;
+int k=0;
+for( int i=0; i&amp;lt; strSearch.GetLength(); i++ )
+{
+if( strSearch.GetAt(i)&amp;lt;=_T(&amp;lsquo;9&amp;rsquo;) &amp;amp;&amp;amp; strSearch.GetAt(i)&amp;gt;=_T(&amp;lsquo;0&amp;rsquo;) )
+{
+continue;
+}
+if( strSearch.GetAt(i)&amp;lt;=_T(&amp;lsquo;z&amp;rsquo;) &amp;amp;&amp;amp; strSearch.GetAt(i)&amp;gt;=_T(&amp;lsquo;a&amp;rsquo;) )
+{
+continue;
+}
+else
+{
+k++;
+}
+}&lt;/p&gt;
+
+&lt;p&gt;if( k&amp;gt;=20 &amp;amp;&amp;amp; bIsRm )
+return false;
+//int m = sReduceString2.GetLength();
+/*
+if( k&amp;gt;=60 )
+return false;*/&lt;/p&gt;
+
+&lt;p&gt;/&lt;em&gt;if (strSearch.GetLength() &amp;gt; 20)
+{
+return false;
+}&lt;/em&gt;/&lt;/p&gt;
+
+&lt;p&gt;for(int i = 0; i &amp;lt; m_count; i ++)
+{
+if(KMP_Match(strSearch, m_filterwords[i], m_kmpvalue[i]))
+{
+//AddLogLine(false,_T(&amp;ldquo;KMP_Match&amp;rdquo;));
+return false;    // 关键词命中了，被fliter了
+}
+}
+//AddLogLine(false,_T(&amp;ldquo;漏掉的&amp;rdquo;));
+return true;&lt;/p&gt;
+
+&lt;p&gt;}&lt;/p&gt;
+
+&lt;p&gt;void CWordFilter::Free()    //
+{
+for(int i = 0; i &amp;lt; m_count; i ++)
+{
+if(m_filterwords[i])
+delete[] m_filterwords[i];
+if(m_kmpvalue[i])
+delete[] m_kmpvalue[i];
+}
+delete[] m_filterwords;
+delete[] m_kmpvalue;
+}&lt;/p&gt;
+
+&lt;p&gt;CWordFilter::~CWordFilter()
+{
+Free();
+}
+其中WordFilter.h的第17行有以下定义。
+#define FLITER_FILE _T(&amp;ldquo;wordfilter.txt&amp;rdquo;)
+于是贝壳查看了C:Program FileseMuleconfig目录，在下面发现了wordfilter.txt 2007-09-30 12:58 10788。大家有兴趣自己看看里面的内容，贝壳就不贴了，贴出来绝对被封，死1090次。
+下面说一点起效方式，也许大家很奇怪，这些内容是可以搜索的。贝壳仔细查看了代码，类在两处被引用了，一个是MFC初始化系统的时候初始化类，载入词典。另外一个是在SearchList.cpp 2007-11-20 17:56 22505，351行AddToList函数，第360行，内容如下。
+// WordFilter added by kernel1983 2006.07.31
+if(!WordFilter.VerifyString(toadd-&amp;gt;GetFileName()))
+{
+delete toadd;
+return false;
+}
+这个封锁手法尤其狠毒，并非封锁你的搜索，而是如果你的文件信息内有这些关键词，那么文件共享消息就不会被发送到服务器上，如同这个文件没有被共享一样。这样既没有用户会发现被封锁的事实(因为有少量其他客户端的数据会被检索出来)，又能达到封锁的目地。
+当然，贝壳理解VeryCD这帮人的苦心，毕竟他们还住在中国，不过估计从此后，贝壳和朋友的机器上不会装VeryCD了。&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

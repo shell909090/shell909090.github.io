@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>avast4 collide with ext2ifs</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         avast4 collide with ext2ifs 
+    </h1>
+    <p class="meta">Jul 31, 2008
+         - 2 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/27/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          
+
+<p>Affected Product:
+Avast4 home edition
+ext2ifs 1.10c
+ext2ifs 1.11
+Description:
+avast4 home edition is a free anti-virus tools. In 2008-07-30 it update some files, include some file called &lsquo;aswSP.sys&rsquo;. According infomation in autoruns, it&rsquo;s avast self protection module.
+[Here is info from autoruns.]
+aswSPavast! self protection module    ALWIL Software    c:windowssystem32driversaswsp.sys
+[Here is info from update-log]
+2008-7-30 7:36:14    file        Direct move of file: C:Program FilesAlwil SoftwareAvast4SetupINFAMD64aswSP.sys
+2008-7-30 7:36:14    file        Installed file:C:Program FilesAlwil SoftwareAvast4SetupINFAMD64aswSP.sys
+2008-7-30 7:36:14    file        Direct move of file: C:Program FilesAlwil SoftwareAvast4SetupINFaswSP.sys
+2008-7-30 7:36:59    system        Reboot set by changed resident C:WINDOWSsystem32driversaswSP.sys
+2008-7-30 7:36:59    system        Driver file copied: C:WINDOWSsystem32driversaswSP.sys
+If u use ext2ifs in system for share date with linux, it&rsquo;ll cause system crash with code BAD_POOL_CALLER. There is not evidence show it has connections with ext2ifs, but the crash always happen when I try to access data in a disk use ext2ifs. When I copy data to ntfs disk, it&rsquo;ll be all right. Here is dump analyze.</p>
+
+<hr />
+
+<ul>
+<li>*</li>
+<li>Bugcheck Analysis                                    *</li>
+<li>*
+*******************************************************************************</li>
+</ul>
+
+<p>BAD_POOL_CALLER (c2)
+The current thread is making a bad pool request.  Typically this is at a bad IRQL level or double freeing the same allocation, etc.
+Arguments:
+Arg1: 00000007, Attempt to free pool which was already freed
+Arg2: 00000cd4, (reserved)
+Arg3: 04030401, Memory contents of the pool block
+Arg4: e13a7258, Address of the block of pool being deallocated</p>
+
+<h2 id="debugging-details">Debugging Details:</h2>
+
+<p>POOL_ADDRESS:  e13a7258</p>
+
+<p>FREED_POOL_TAG:  pSsA</p>
+
+<p>BUGCHECK_STR:  0xc2_7_pSsA</p>
+
+<p>CUSTOMER_CRASH_COUNT:  1</p>
+
+<p>DEFAULT_BUCKET_ID:  DRIVER_FAULT</p>
+
+<p>PROCESS_NAME:  _uninst.exe</p>
+
+<p>LAST_CONTROL_TRANSFER:  from 80544e86 to 804f9aef</p>
+
+<p>STACK_TEXT:
+eb364b68 80544e86 000000c2 00000007 00000cd4 nt!KeBugCheckEx+0x1b
+eb364bb8 ee072a0a e13a7258 00000000 8055a584 nt!ExFreePoolWithTag+0x2a0
+WARNING: Stack unwind information not available. Following frames may be wrong.
+eb364be4 805c5e1c 00000730 0000016c eb364cdc aswSP+0x5a0a
+eb364c04 80639346 e3986008 0000016c eb364cdc nt!PsCallImageNotifyRoutines+0x36
+eb364d08 805c5bcd 7c810665 00000000 00000000 nt!DbgkCreateThread+0xa2
+eb364d50 805421c2 00000000 7c810665 00000001 nt!PspUserThreadStartup+0x9d
+00000000 00000000 00000000 00000000 00000000 nt!KiThreadStartup+0x16</p>
+
+<p>STACK_COMMAND:  kb</p>
+
+<p>FOLLOWUP_IP:
+aswSP+5a0a
+ee072a0a ??              ???</p>
+
+<p>SYMBOL_STACK_INDEX:  2</p>
+
+<p>SYMBOL_NAME:  aswSP+5a0a</p>
+
+<p>FOLLOWUP_NAME:  MachineOwner</p>
+
+<p>MODULE_NAME: aswSP</p>
+
+<p>IMAGE_NAME:  aswSP.SYS</p>
+
+<p>DEBUG_FLR_IMAGE_TIMESTAMP:  4881fba3</p>
+
+<p>FAILURE_BUCKET_ID:  0xc2_7_pSsA_aswSP+5a0a</p>
+
+<p>BUCKET_ID:  0xc2_7_pSsA_aswSP+5a0a</p>
+
+<p>Followup: MachineOwner</p>
+
+<p>The crash happened in aswSP+5a0a.</p>
+
+<p>Resolve solution:
+There is not solution to resolve now. Uninstall avast, or uninstall ext2ifs.</p>
+
+<p>以上内容的中文注释：
+不要同时使用avast4和ext2ifs，尤其在今天的更新后。
+会使用ext2ifs的，上面的东西应该也看得懂了，其余不翻译。</p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Jul 31, 2008</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/aswsp">aswsp</a>  <a class="category" href="https://shell909090.github.io/tags/avast">avast</a>  <a class="category" href="https://shell909090.github.io/tags/computer">computer</a>  <a class="category" href="https://shell909090.github.io/tags/ext2ifs">ext2ifs</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/26/" title="今天25岁">今天25岁</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/28/" title="程序员入门的12个问题">程序员入门的12个问题</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

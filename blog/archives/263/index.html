@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>C&#43;&#43;语言跨系统编程</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         C&#43;&#43;语言跨系统编程 
+    </h1>
+    <p class="meta">Nov 23, 2005
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/263/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <div>&nbsp;&nbsp;&nbsp; 首先我们给这个话题增加一个基础，就是您的C++代码没有用到native的部分。具体哪些部分我会列出让你慢慢检查的，不过用到了还想跨平台，你做梦去吧……</div>
+<div>&nbsp;&nbsp;&nbsp; 我们假定你代码是在windows的VC++下面写的，因为VC++的转换过去有点麻烦，反向的转换基本可以自动生成。</div>
+<div>&nbsp;&nbsp;&nbsp; 首先请检查你的头文件依赖性，如果是引用了标准的头文件，那么不需要额外的设定。一般g++的设置中都会自动设定标准的头文件和库。如果引用了某个自己写的文件，那么请检查相对路径是否正确。尤其请着重检查大小写。因为windows不会管大小写的，但是却会将大小写带入*nix。</div>
+<div>&nbsp;&nbsp;&nbsp; 另外VC++中有一个头文件预编译的加速选项，默认是开启的。将stdafx.cpp(which is empty)预编译次，就得到了stdafx.h的编译结果。在*nix里面我目前还不知道怎么支持，所以stdafx.cpp可以不用理会。</div>
+<div>&nbsp;&nbsp;&nbsp; 然后请检查标准函数，部分VC++声明在STDLIB.H中的函数其实是VC自带的。用这种函数的结果就是编译100%的失败。遇到这种函数可以自己写一个代替，反正一般都不是特别麻烦。</div>
+<div>&nbsp;&nbsp;&nbsp; 另外一般不需要关心数据类型和端点型，多数库文件中都会自动处理。不过两种情况需要手工干预。一个是程序中使用了windows特有类型例如DWORD或者linux特有类型le32。这样用typedef重新定义就好了。还有就是跨平台的时候连同芯片类别一起跨过去。这样就要手工确定所有库文件会自动处理数据类型，并且人工定义一组会使用的数据类型扩展宏来处理跨平台的问题。最明显的例子就是int在不同平台的大小问题，对此还有一个特殊的建议就是使用char short long来代替，这三者在所有系统上的长度是相同的。</div>
+<div>&nbsp;&nbsp;&nbsp; 下面是使用sh脚本来编译代码。其实可以使用make文件来做的，不过俺不会。所以用sh来做好了，反正一般跨平台的程序都不会过于复杂，凑合下就过去了。</div>
+<div>&nbsp;&nbsp;&nbsp; g++的编译对象一般是cpp文件，如果是一般的可执行文件，那么编译的指令是g++ *.cpp -o oufile。我这次编译的对象是共享库，所以指令是g++ -shared&nbsp;*.cpp -o outfile。</div>
+<div>&nbsp;&nbsp;&nbsp; g++处理extren的比较特殊。如果extren在编译成目标文件时还没有指定链接到哪个符号，那么g++就自动将这个定义为从动态库中引入。不过多数情况下，这应该会出错的。所以要多个cpp文件一起编译，或者使用-c编译到.o文件后再ld起来。否则单个cpp的编译结果根本无法使用。</div>
+<div>&nbsp;&nbsp;&nbsp; 如果需要使用少量native的方法，也可以按下面说的方法跨平台。</div>
+<div>&nbsp;&nbsp;&nbsp; 在VC++中定义一个win.cpp，其中将native的方法封装成函数。在主程序中使用C++标准函数和这些函数。</div>
+<div>&nbsp;&nbsp;&nbsp; 在linux中定义一个linux.cpp，然后用linux的native函数实现对应的函数。在编译的时候略过win.cpp。</div>
+<div>&nbsp;&nbsp;&nbsp; VC++中工程引入的时候不要加入linux.cpp。</div>
+<div>&nbsp;&nbsp;&nbsp; 这样可以保证在两个系统下分别对应不同的函数，当然更好的方法是使用平台相关宏。</div>
+<div>&nbsp;</div>
+<div>附录1，windows下的专有编程技巧：</div>
+<div>&nbsp;&nbsp;&nbsp; 使用了nativeAPI的绝对无法移植，它们有的甚至无法跨越2000/XP的差异。</div>
+<div>&nbsp;&nbsp;&nbsp; 使用windowsAPI的，一般不可以移植。这类API多数声明在windows.h中。</div>
+<div>&nbsp;&nbsp;&nbsp; 使用winsock的没有希望啦，要用socket2才可以。winsock的特征是WSAStartup。</div>
+<div>&nbsp;&nbsp;&nbsp; 使用了__try{的无法移植，而try{可以。前者是SEH的捕获模块，后者是C++异常捕获模块，在windows下异常捕获是用SEH实现的，不过linux下面不是。linux根本没有SEH。</div>
+<div>&nbsp;&nbsp;&nbsp; 使用了windows或者VC专用宏的无法移植。</div>
+<div>&nbsp;&nbsp;&nbsp; 使用C++库和std库的可以移植，包括cout。</div>
+<div>&nbsp;&nbsp;&nbsp; 使用STL可以移植，不过注意平台差异性。</div>
+<div>&nbsp;</div>
+<div>附录2，linux项目在VC++中引入的方法。</div>
+<div>&nbsp;&nbsp;&nbsp; 新建一个工程，然后copy所有源代码到工程下面。再然后添加文件到工程，然后F7编译。over</div>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Nov 23, 2005</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/c">c</a>  <a class="category" href="https://shell909090.github.io/tags/computer">computer</a>  <a class="category" href="https://shell909090.github.io/tags/linux">linux</a>  <a class="category" href="https://shell909090.github.io/tags/windows">windows</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/262/" title="Debian GNU/Linux下安装Oracle 9i">Debian GNU/Linux下安装Oracle 9i</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/264/" title="Linux内存计数详解">Linux内存计数详解</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

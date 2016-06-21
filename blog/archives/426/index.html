@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>Process Explorer的潜在内存泄漏</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         Process Explorer的潜在内存泄漏 
+    </h1>
+    <p class="meta">Jan 31, 2008
+         - 2 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/426/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p><p>    贝壳最近碰到一个郁闷到死的问题。机器经常出现硬盘狂转，系统响应延迟。系统弹出一个错误，然后死机。贝壳开始猜测是硬盘驱动问题，升级驱动N次，无效。然后再猜测是ext2fs的问题(贝壳用这个驱动挂载linux下面的盘的)，看来看去，不是。最后，贝壳确定了，这是内存泄漏了～～～<br />    问题是，这时候可没人跳出来推荐喝什么口服液的。贝壳系统中永远挂着一个procexp，看内存状态的。这东西是sysinternals的产品，后来被微软收购了。功能强大，很多系统调试，杀马都需要用到。于是贝壳就用这个工具看哪个程序的内存泄漏，可是看来看去看不到。准确说，是没等贝壳看到，系统就先死透了。最后贝壳多次尝试，发现了一个死机的规律。当mysql开启的时候，procexp就会随时发生异常死机。这是一个重要的提示，要么mysql内存泄漏了，要么procexp内存泄漏了。究竟是哪个呢？贝壳用了同属于sysinternals开发的pstools系列工具，仔细检查了异常发生时候的内存状态，确定，Process Explorer存在内存泄漏的风险！<br />    看来sysinternals被微软收购后，旗下的工具也出现了微软的一贯特色。以下是一次内存泄漏后，终止mysql服务后抓下来的内存状态输出。如果不终止mysql，不等我抓系统就挂了。<br />Process memory detail for HOME-B2326348D0:
+<p>Name                Pid      VM      WS    Priv Priv Pk   Faults   NonP Page<br />Idle                  0       0      28       0       0        0      0    0<br />System                4     800      52       0       0    10120      0    0<br />smss                772    3748      48     172    1648      223      0    5<br />csrss               828   68132    1464    2304    3768    13748      6  144<br />winlogon            856   61528     580    8536    8684     5143     39   96<br />services            900   37724     804    2256    2404     2740      7   65<br />lsass               912   44848     352    2684    2860     7332      7   80<br />svchost            1060   36904     200    1500    1544     1028      3   68<br />svchost            1136   39256     456    1984    2004     1437     13   72<br />svchost            1216  118756    2564   19236   28112    24221     93  197<br />svchost            1292   31728     192    1472    1512     1123      4   55<br />aswUpdSv           1536   18748      52     652     652      557      2   31<br />ashServ            1592  120428    6704   16628   41168  1076043      8  128<br />explorer           1884  119644    1908   19128   20552  4364782     16  177<br />spoolsv             288   50072     224    3564    3828     1502      5   85<br />TSVNCache           544   48008     700    6968    7068    21580      4   67<br />mobmeter            620   41116     588    4940    5044    14266      3   63<br />procexp             628  605756   15532  549068  549068  4776417      8  109<br />ashDisp             636   54468     928    6992    7016    28399      5   80<br />ctfmon              664   39064     380    4816    4840    15588      4   66<br />googletalk          720   76420    2852    8540    9036   428030     13  108<br />mdm                 832   30008     440    1088    1100      860      3   49<br />svchost            1244   40704     208    2640    2708     1896      3   73<br />svnserve           1264   16612     124     904     920      652      3   29<br />svchost             232   37936     536    1592    1636     1330      4   70<br />alg                 600   35664     200    1312    1352     1018      5   69<br />TTPlayer           3208   65672    3688   10920   13924   169533      8   86<br />thunderbird        3240  109016    2272   28832   31344    64167     14  112<br />conime             3284   42564     404    5184    5184    17612      3   68<br />firefox            1944  270920   11108  118720  132648  1233696     14  135<br />flashget           2836  108756   11248   19472   29636   117115     30  146<br />pyintau            2080   45004     172    4720    4788     1848      3   62<br />wuauclt            1068   67012     396    6580    6600     2167      7  115<br />cmd                3540   32764     920    3308    3372    15075      2   60<br />pslist             3048   32124    3108    2440    2956    10890      2   49<br />    我们可以看到，procexp这个进程的虚拟内存空间只有60M，工作集更只有15M，可私有内存高达549M！贝壳的机器只有768M内存，不死机还等啥？<br />    贝壳试验了mysql5.0.45，mysql5.0.51a，mysql5.1.22，procexp11.01，procexp11.04。确定在贝壳的本本上全都会造成上述问题。但是同样的环境在家里的2G内存机器上模拟的时候，全都不出现上述问题。从测试角度讲，这个属于和环境相关的隐性危险，严重级别是重。
+<div></div></p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Jan 31, 2008</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/memory-leak">memory-leak</a>  <a class="category" href="https://shell909090.github.io/tags/windows">windows</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/425/" title="弄死MSN的共享文件夹">弄死MSN的共享文件夹</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/427/" title="找女朋友就像招聘">找女朋友就像招聘</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

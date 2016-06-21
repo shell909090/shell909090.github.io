@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Performance on Shell&#39;s Home</title>
+    <link>https://shell909090.github.io/tags/performance/</link>
+    <description>Recent content in Performance on Shell&#39;s Home</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 27 Aug 2008 22:18:00 +0800</lastBuildDate>
+    <atom:link href="https://shell909090.github.io/tags/performance/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>python的性能问题</title>
+      <link>https://shell909090.github.io/blog/archives/31/</link>
+      <pubDate>Wed, 27 Aug 2008 22:18:00 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/31/</guid>
+      <description>&lt;p&gt;贝壳最近在一个朋友的网站上看到了关于SICP零钱兑换问题的python求解，使用了记忆机制，然后他给出了代码。然而他的代码计时上有点小问题，也没有用包装器(奇怪的是，有写)，而且python的栈深度有限。因此贝壳做了几个修改的版本，需要测试下性能，下面就是关于性能的几个问题和过程。
+本文详细论述了python语言下和C++语言下使用各种方法测试代码性能的方法，以及粗略的关于两种语言不同算法性能对比。
+原始的python代码是这样的：
+def change_coins(money):
+first_denomination = {
+1:1,  2:5,
+3:10, 4:25,
+5:50,
+}
+def cc((amount, kinds_of_coins)):
+if amount == 0:
+return 1
+elif amount &amp;lt; 0 or kinds_of_coins == 0:
+return 0
+else:
+return     cc((amount, kinds_of_coins - 1))
++ cc((amount - first_denomination[kinds_of_coins], kinds_of_coins))
+print &amp;ldquo;change_coins return %s&amp;rdquo; % cc((money, 5));
+return ;
+利用记忆原理包装后是这样的：
+def memoiza(fun):
+cache = {}
+def proc ( *arg ):
+if cache.has_key(arg):
+return cache[arg]
+else:
+x = fun( *arg )
+cache[arg] = x
+return x
+return proc&lt;/p&gt;
+
+&lt;p&gt;def decorator_change_coins(money):
+first_denomination = {
+1:1,  2:5,
+3:10, 4:25,
+5:50,
+}
+@memoiza
+def cc(amount, kinds_of_coins):
+if amount == 0:
+return 1
+elif amount &amp;lt; 0 or kinds_of_coins == 0:
+return 0
+else:
+return cc(amount, kinds_of_coins - 1)
++ cc(amount - first_denomination[kinds_of_coins], kinds_of_coins)
+print &amp;ldquo;decorator_change_coins return %s&amp;rdquo; % cc(money, 5);
+return ;
+不记忆，利用栈模拟递归展开是这样的：
+def native_change_coins(money):
+first_denomination = {
+1:1,  2:5,
+3:10, 4:25,
+5:50,
+}
+stack = [(money, 5)];
+rslt = 0;
+while len (stack) &amp;gt; 0:
+param = stack.pop ();
+if param[0] == 0:
+rslt += 1;
+continue;
+elif param[0] &amp;lt; 0 or param[1] == 0:
+continue;
+else:
+stack.append ((param[0], param[1] - 1));
+stack.append ((param[0] - first_denomination[param[1]], param[1]));
+continue;
+print &amp;ldquo;native_change_coins return %s&amp;rdquo; % rslt;
+return ;&lt;/p&gt;
+
+&lt;p&gt;贝壳主要需要测试上面三个代码的执行效率和瓶颈，所以贝壳用的主代码是这样的：
+import time
+import timeit
+import profile&lt;/p&gt;
+
+&lt;p&gt;def test_func(f):
+f (300);&lt;/p&gt;
+
+&lt;p&gt;if &lt;strong&gt;name&lt;/strong&gt; == &amp;ldquo;&lt;strong&gt;main&lt;/strong&gt;&amp;ldquo;:
+t = timeit.Timer(&amp;ldquo;test_func (change_coins)&amp;ldquo;, &amp;ldquo;from &lt;strong&gt;main&lt;/strong&gt; import *&amp;ldquo;);
+print min(t.repeat (5, 1));&lt;/p&gt;
+
+&lt;p&gt;t = timeit.Timer(&amp;ldquo;test_func (decorator_change_coins)&amp;ldquo;, &amp;ldquo;from &lt;strong&gt;main&lt;/strong&gt; import *&amp;ldquo;);
+print min(t.repeat (5, 1));&lt;/p&gt;
+
+&lt;p&gt;t = timeit.Timer(&amp;ldquo;test_func (native_change_coins)&amp;ldquo;, &amp;ldquo;from &lt;strong&gt;main&lt;/strong&gt; import *&amp;ldquo;);
+print min(t.repeat (5, 1));&lt;/p&gt;
+
+&lt;p&gt;profile.run(&amp;ldquo;test_func (change_coins)&amp;ldquo;);
+profile.run(&amp;ldquo;test_func (decorator_change_coins)&amp;ldquo;);
+profile.run(&amp;ldquo;test_func (native_change_coins)&amp;ldquo;);&lt;/p&gt;
+
+&lt;p&gt;下面是部分结果：
+change_coins return 9590
+1.22809910198
+decorator_change_coins return 9590
+0.00217178440277
+native_change_coins return 9590
+2.69215193551&lt;/p&gt;
+
+&lt;p&gt;以上是时间测试结果，使用timeit模块来测试运行时间，重复5次，取最小值。具体原理可以看dive into python，详细请看上面的代码。从结果中我们可以看到，使用记忆技术后，性能提升了500多倍，这是符合规律的。然而使用了集合模拟栈之后，性能大幅下降。下面我们看看为什么。&lt;/p&gt;
+
+&lt;p&gt;change_coins return 9590
+1292596 function calls (6 primitive calls) in 13.591 CPU seconds&lt;/p&gt;
+
+&lt;p&gt;Ordered by: standard name&lt;/p&gt;
+
+&lt;p&gt;ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+1    0.059    0.059    0.059    0.059 :0(setprofile)
+1    0.000    0.000   13.533   13.533 :1()
+1    0.000    0.000   13.533   13.533 amount.py:102(test_func)
+&lt;sup&gt;1292591&lt;/sup&gt;&amp;frasl;&lt;sub&gt;1&lt;/sub&gt;   13.531    0.000   13.531   13.531 amount.py:11(cc)
+1    0.001    0.001   13.533   13.533 amount.py:5(change_coins)
+0    0.000             0.000          profile:0(profiler)
+1    0.000    0.000   13.591   13.591 profile:0(test_func (change_coins))&lt;/p&gt;
+
+&lt;p&gt;decorator_change_coins return 9590
+2494 function calls (881 primitive calls) in 0.027 CPU seconds&lt;/p&gt;
+
+&lt;p&gt;Ordered by: standard name&lt;/p&gt;
+
+&lt;p&gt;ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+873    0.004    0.000    0.004    0.000 :0(has_key)
+1    0.000    0.000    0.000    0.000 :0(setprofile)
+1    0.000    0.000    0.027    0.027 :1()
+1    0.000    0.000    0.027    0.027 amount.py:102(test_func)
+1    0.000    0.000    0.000    0.000 amount.py:51(memoiza)
+&lt;sup&gt;873&lt;/sup&gt;&amp;frasl;&lt;sub&gt;1&lt;/sub&gt;    0.013    0.000    0.026    0.026 amount.py:53(proc)
+1    0.001    0.001    0.027    0.027 amount.py:62(decorator_change_coins)
+&lt;sup&gt;742&lt;/sup&gt;&amp;frasl;&lt;sub&gt;1&lt;/sub&gt;    0.009    0.000    0.026    0.026 amount.py:68(cc)
+0    0.000             0.000          profile:0(profiler)
+1    0.000    0.000    0.027    0.027 profile:0(test_func (decorator_change_coins))&lt;/p&gt;
+
+&lt;p&gt;native_change_coins return 9590
+3877778 function calls in 38.798 CPU seconds&lt;/p&gt;
+
+&lt;p&gt;Ordered by: standard name&lt;/p&gt;
+
+&lt;p&gt;ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+1292590    5.824    0.000    5.824    0.000 :0(append)
+1292592    5.960    0.000    5.960    0.000 :0(len)
+1292591    6.076    0.000    6.076    0.000 :0(pop)
+1    0.000    0.000    0.000    0.000 :0(setprofile)
+1    0.000    0.000   38.798   38.798 :1()
+1    0.000    0.000   38.798   38.798 amount.py:102(test_func)
+1   20.938   20.938   38.798   38.798 amount.py:80(native_change_coins)
+0    0.000             0.000          profile:0(profiler)
+1    0.000    0.000   38.798   38.798 profile:0(test_func (native_change_coins))
+以上是白盒分析结果，使用profile测试，主要分析函数的调用花费。具体可以参考&lt;a href=&#34;http://www.sqlite.com.cn&#34;&gt;http://www.sqlite.com.cn&lt;/a&gt; /MySqlite/11/480.Html。从上面的报表中，我们可以看出，最初的函数执行时间全消耗在了cc上。而记忆后，则是proc和cc基本对半，有的时候has_key测试也花点时间。这表示cc花费的时间大幅下降，记忆技术则花了比较多的时间。而模拟的呢？大部分时间都花在了 append,len,pop这三个函数上！这说明原始集合的效率严重制约了模拟效率。如果要提升性能的话，使用其他的集合吧。
+另外贝壳又用C++写了一个，如下：&lt;/p&gt;
+
+&lt;p&gt;const int coin_map[] = {
+1, 5, 10, 25, 50
+};
+const int coin_count = 5;&lt;/p&gt;
+
+&lt;p&gt;int cc (int amount, int kind_of_coins)
+{
+if (amount == 0)
+return 1;
+if (amount &amp;lt; 0 || kind_of_coins &amp;lt;= 0)
+return 0;
+return cc (amount, kind_of_coins - 1) + cc (amount - coin_map[kind_of_coins - 1], kind_of_coins);
+}&lt;/p&gt;
+
+&lt;p&gt;int dd (int amount, int kind_of_coins)
+{
+if (amount == 0)
+return 1;
+if (amount &amp;lt; 0 || kind_of_coins &amp;lt;= 0)
+return 0;
+int rslt = 0;
+for (int i = 0; i &amp;lt;= amount / coin_map[kind_of_coins - 1]; ++i)
+rslt += dd (amount - i * coin_map[kind_of_coins - 1], kind_of_coins - 1);
+return rslt;
+}&lt;/p&gt;
+
+&lt;p&gt;class keys{
+public:
+int amount;
+int kind_of_coins;
+keys (int amount_p, int kind_of_coins_p):
+amount(amount_p), kind_of_coins(kind_of_coins_p)
+{}
+bool operator == (const keys &amp;amp; k) const{
+return (amount == k.amount &amp;amp;&amp;amp; kind_of_coins == k.kind_of_coins);
+}
+bool operator &amp;lt; (const keys &amp;amp; k) const{
+if (kind_of_coins == k.kind_of_coins)
+return amount &amp;lt; k.amount;
+return kind_of_coins &amp;lt; k.kind_of_coins;
+}
+};&lt;/p&gt;
+
+&lt;p&gt;map mCache;&lt;/p&gt;
+
+&lt;p&gt;int ee (int amount, int kind_of_coins)
+{
+if (amount == 0)
+return 1;
+if (amount &amp;lt; 0 || kind_of_coins &amp;lt;= 0)
+return 0;
+keys k (amount, kind_of_coins);
+map::iterator iter = mCache.find(k);
+if (iter != mCache.end ())
+return iter-&amp;gt;second;
+int rslt = 0;
+for (int i = 0; i &amp;lt;= amount / coin_map[kind_of_coins - 1]; ++i)
+rslt += dd (amount - i * coin_map[kind_of_coins - 1], kind_of_coins - 1);
+mCache.insert(pair(k, rslt));
+return rslt;
+}&lt;/p&gt;
+
+&lt;p&gt;int _tmain(int argc, _TCHAR* argv[])
+{
+const int loop_times = 300;
+clock_t s = clock();
+printf (&amp;ldquo;kind of coins: %dn&amp;rdquo;, cc (loop_times, coin_count));
+printf (&amp;ldquo;times:%dn&amp;rdquo;, clock () - s);&lt;/p&gt;
+
+&lt;p&gt;s = clock();
+printf (&amp;ldquo;kind of coins: %dn&amp;rdquo;, dd (loop_times, coin_count));
+printf (&amp;ldquo;times:%dn&amp;rdquo;, clock () - s);&lt;/p&gt;
+
+&lt;p&gt;s = clock();
+printf (&amp;ldquo;kind of coins: %dn&amp;rdquo;, ee (loop_times, coin_count));
+printf (&amp;ldquo;times:%dn&amp;rdquo;, clock () - s);
+return 0;
+}
+注意到主函数中，使用的是clock来计量时间。如果C++下要做白盒性能测试就比较麻烦，需要用精确计时函数和宏。需要的可以单独和我联系。下面是部分计算结果，cc的和ee的，没有dd的。
+300的计算结果
+kind of coins: 9590
+times:62
+kind of coins: 9590
+times:46
+1000的计算结果
+kind of coins: 801451
+times:15953
+kind of coins: 801451
+times:11000
+单位，ms。
+原生的效率差异是20倍，用了缓存后性能只有略略上升？！反而是python比较快？
+看来C++下的map效率也不高，要用hash_map才好。
+倒是栈长度好很多，贝壳估计是131072次调用，大约是16384分。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>EPS转BMP和代码优化</title>
+      <link>https://shell909090.github.io/blog/archives/340/</link>
+      <pubDate>Fri, 22 Dec 2006 17:53:13 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/340/</guid>
+      <description>&lt;div&gt;    EPS转BMP(我用的是PNG，不过还是一回事情)。EPS内部有两种图片，一个是TIF，位置和大小在头32个字节中描述。具体可以看EPS文档，在lp[5]保存位置，lp[6]保存大小。还有就是%%BeginBinary: 后面跟一个大小，然后跟beginimagex0D。在前文中应当有大小，自己找找看去，最后是一堆数据。存放方法是一位一位的像素连续存放，先存放一行C，然后是一行M，然后是Y，然后是K。当这4者全部存放完后，向后跳空一端区域，到本行开始的4字节对齐处，开始下一行的存放。&lt;/div&gt;
+&lt;div&gt;    例如3个像素宽的图片(好简单——)存放方法就是，在0字节的最高三位(7,6,5位)，存放了这三个像素的C值。次三位(4,3,2位)，存放了M值。然后Y值存放在0字节的两位(1,0位)和1字节的一位(7位)。最后K值存放在1字节的次三位(6,5,4位)。然后跳空对齐，在4字节的位置开始描述下一行。&lt;/div&gt;
+&lt;div&gt;    了解这个过程了，就应该发现，要转换到BMP需要大量的位操作。前置过程不说了，假定数据在内存里面(我当然不会用读取这种方法，用的是文件内存映射啦)，然后目标是GDI+的BitmapData对象。&lt;/div&gt;
+&lt;div&gt;BYTE getBit (PBYTE lpInData, int bit)&lt;br /&gt;{&lt;/div&gt;
+&lt;div&gt; bit*=n;&lt;br /&gt; BYTE            rslt;&lt;br /&gt; rslt = lpInData[bit / 8];&lt;br /&gt; rslt &amp;gt;&amp;gt;= (7 - bit % 8);&lt;br /&gt; return rslt &amp;amp; 0x1;&lt;br /&gt;}&lt;br /&gt; for (y = 0; y &amp;lt; tgtData.Height; y++) {&lt;br /&gt;  line_start = lpOut + l * n * Stride;&lt;br /&gt;  for (x = 0; x &amp;lt; tgtData.Width; x++) {&lt;br /&gt;   c = 1 - getBit (line_start, x);&lt;br /&gt;   m = 1 - getBit (line_start, x + tgtData.Width);&lt;br /&gt;   yy = 1 - getBit (line_start, x + 2 * tgtData.Width);&lt;br /&gt;   k = getBit (line_start, x + 3 * tgtData.Width);&lt;br /&gt;   r = 1 - min (1, c * (1 - k) + k);&lt;br /&gt;   g = 1 - min (1, m * (1 - k) + k);&lt;br /&gt;   b = 1 - min (1, yy * (1 - k) + k);&lt;br /&gt;   if (x % 2) {&lt;br /&gt;    *((PBYTE) tgtData.Scan0 + l * tgtData.Stride + x / 2) |=&lt;br /&gt;     (g &amp;lt;&amp;lt; 6) + (r &amp;lt;&amp;lt; 5) + (b &amp;lt;&amp;lt; 4);&lt;br /&gt;   } else {&lt;br /&gt;    *((PBYTE) tgtData.Scan0 + l * tgtData.Stride + x / 2) |=&lt;br /&gt;     (m &amp;lt;&amp;lt; 2) + (c &amp;lt;&amp;lt; 1) + yy;&lt;/div&gt;
+&lt;div&gt;   }&lt;/div&gt;
+&lt;div&gt;  }&lt;/div&gt;
+&lt;div&gt; }&lt;/div&gt;
+&lt;div&gt;    贴上来的代码格式都不怎么样，拿indent格一下就好了。&lt;/div&gt;
+&lt;div&gt;    原本来说，CMYK转RGM是有一个算法的。在这里，CMKY都是非1即0。我们可以运算出，当K等于1的时候，结果就是RGB=0;所以当K为1的时候无需进行取值运算写入操作。这是第一步优化。当K等于0的时候，RGB等于CMY求反。所以无需多三个变量，不用1-运算就可以了，这是第二步优化。&lt;/div&gt;
+&lt;div&gt; for (y = 0; y &amp;lt; tgtData.Height; y++) {&lt;br /&gt;  line_start = lpOut + l * n * Stride;&lt;br /&gt;  for (x = 0; x &amp;lt; tgtData.Width; x++) {&lt;br /&gt;   k = getBit (line_start, x + 3 * tgtData.Width);&lt;br /&gt;   if(k){&lt;br /&gt;    c = getBit (line_start, x);&lt;br /&gt;    m = getBit (line_start, x + tgtData.Width);&lt;br /&gt;    yy = getBit (line_start, x + 2 * tgtData.Width);&lt;br /&gt;    if (x % 2) {&lt;br /&gt;     *((PBYTE) tgtData.Scan0 + l * tgtData.Stride + x / 2) |=&lt;br /&gt;      (c &amp;lt;&amp;lt; 6) + (m &amp;lt;&amp;lt; 5) + (yy &amp;lt;&amp;lt; 4);&lt;br /&gt;    } else {&lt;br /&gt;     *((PBYTE) tgtData.Scan0 + l * tgtData.Stride + x / 2) |=&lt;br /&gt;      (c &amp;lt;&amp;lt; 2) + (m &amp;lt;&amp;lt; 1) + yy;&lt;br /&gt;    }&lt;br /&gt;   }&lt;br /&gt;  }&lt;br /&gt; }&lt;/div&gt;
+&lt;div&gt;    然后是获得CMKY的过程。我原先是使用一个函数来获得的，但是函数获得的时候会出现一个问题。在循环中使用函数会打断循环的流水，造成效率下降，因此改成内嵌。内联函数(inline faction)理论上可以，但是有两个问题。一个是有的编译器理解内联为建议关键字，是否执行要看编译器的心情。还有一个是使用内联就无法使用register关键字来优化，虽然这个也是建议关键字。内嵌写起来很长，因此使用宏来解决。这是第三步优化。&lt;/div&gt;
+&lt;div&gt;    再然后是减少循环中计算的规模，降低计算难度。这是细节优化，本质上是空间换时间，不过空间消耗很小而时间加速明显。首先是将Width1和Width3计算出来备用，减少核心循环中乘法次数(双循环内减少了三次乘法)。将pic_line_start的计算从内层循环提到外层(单循环减少内循环数目减一次乘法和加法。乘法是主要目的，加法可以到内核循环中做，不怎么费时，不过没必要在能优化的地方放过，还弄的程序更复杂就是了)。bit计算的时候本来是x*n+分别的Width1-Width3，可以改成减Width1(减少内核两次乘法)。这是第四步优化。&lt;/div&gt;
+&lt;div&gt;    最后是细节，例如bit/8改成bit&amp;gt;&amp;gt;3，bit%8改成bit&amp;amp;0x07，x%2改成x&amp;amp;0x01。尽量使用使用+= -= &amp;gt;&amp;gt;=操作，减少运算目数。这是第五步优化。&lt;/div&gt;
+&lt;div&gt;    最后结果&lt;/div&gt;
+&lt;div&gt;
+&lt;div&gt;#define GETBIT(byte) byte = line_start[bit &amp;gt;&amp;gt; 3];byte &amp;gt;&amp;gt;= ~bit &amp;amp; 0x07;byte &amp;amp;= 0x01;&lt;/div&gt;
+&lt;div&gt;int eps2gdip::DataProcess (BitmapData &amp;amp; tgtData)&lt;br /&gt;{&lt;br /&gt; BYTE c, m, y, k;&lt;br /&gt; UINT x, l, Width1, Width3;&lt;br /&gt; register ULONG bit;&lt;br /&gt; BYTE RGB;&lt;br /&gt; PBYTE line_start, pic_line_start;&lt;br /&gt; Width1 = n * tgtData.Width;&lt;br /&gt; Width3 = n * tgtData.Width * 3;&lt;/div&gt;
+&lt;div&gt; for (l = 0; l &amp;lt; tgtData.Height; l++) {&lt;br /&gt;  line_start = lpOut + l * n * Stride;&lt;br /&gt;  pic_line_start = (PBYTE) tgtData.Scan0 + l * tgtData.Stride;&lt;br /&gt;  for (x = 0; x &amp;lt; tgtData.Width; x++) {&lt;br /&gt;   bit = Width3 + x * n;&lt;br /&gt;   GETBIT (k);&lt;br /&gt;   if (k) {&lt;br /&gt;    bit -= Width3;&lt;br /&gt;    GETBIT (c);&lt;br /&gt;    bit += Width1;&lt;br /&gt;    GETBIT (m);&lt;br /&gt;    bit += Width1;&lt;br /&gt;    GETBIT (y);&lt;br /&gt;    RGB = (c &amp;lt;&amp;lt; 2) | (m &amp;lt;&amp;lt; 1) | (y);&lt;br /&gt;    if (x &amp;amp; 0x01)&lt;br /&gt;     *(pic_line_start + x / 2) |= (RGB &amp;lt;&amp;lt; 4);&lt;br /&gt;    else&lt;br /&gt;     *(pic_line_start + x / 2) |= RGB;&lt;br /&gt;   }&lt;br /&gt;  }&lt;br /&gt; }&lt;br /&gt; return 0;&lt;br /&gt;}&lt;/div&gt;
+&lt;div&gt;&lt;/div&gt;
+&lt;div&gt;    结果测试，在100M文件的完全运算中，处理时间从83秒降低到35秒。其中结果保存等动作耗费20秒，即核心运算从63秒降低到15秒。效率增加了300%。&lt;/div&gt;&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>网络性能测试和标准</title>
+      <link>https://shell909090.github.io/blog/archives/324/</link>
+      <pubDate>Sat, 30 Sep 2006 22:46:28 +0800</pubDate>
+      
+      <guid>https://shell909090.github.io/blog/archives/324/</guid>
+      <description>&lt;p&gt;&lt;font size=2&gt;    前两天弄有线通的事情弄的郁闷了，所以就研究了网络性能测试。以后不用也是浪费，大家需要就看看吧。&lt;br /&gt;1.目标&lt;br /&gt;    测试目的往往是测试清楚几个值，包括:IP包传输往返时延(RTT)，IP包时延变化(抖动)，IP包丢失率(Lost rate)，IP业务可用性，还有带宽(Bandwidth)。&lt;br /&gt;2.&lt;/font&gt;&lt;font size=2&gt;适用标准&lt;br /&gt;    RFC 1242， RFC1944， RFC2285， RFC2432。&lt;br /&gt;&lt;strong style=&#34;font-weight:normal&#34;&gt;    中华人民共和国信息产业部令第36号(&lt;a href=&#34;http://www.chinanetcom.com.cn/mj/dxsc.asp?Unid=3810&#34;&gt;http://www.chinanetcom.com.cn/mj/dxsc.asp?Unid=3810&lt;/a&gt;)&lt;br /&gt;&lt;/strong&gt;&lt;/font&gt;&lt;font size=2&gt;    IP网络技术要求&amp;ndash; 网络性能参数与指标&lt;/font&gt;&lt;font size=2&gt;(YD/T &lt;font style=&#34;color:rgb(0,0,0)&#34; color=&#34;#cc0033&#34;&gt;1171-2001)&lt;br /&gt;3.测试平台和工具&lt;br /&gt;    我们假定基于POSIX兼容平台测试，演示用的例子来自Debian Etch/Kernel 2.6.17-2-686。Windows下所需要工具可以参考移植工具。&lt;br /&gt;    iperf 网络带宽测试工具&lt;br /&gt;    paratrace 被动路由测试工具&lt;br /&gt;    hping2 网络联通和时延测试工具&lt;br /&gt;    wireshark(ethereal) 抓包分析工具&lt;br /&gt;    p0f 被动指纹分析工具&lt;br /&gt;4.测试对象，方法，和结果分析&lt;br /&gt;    以下为实例测试，参数需要根据具体情况变化。&lt;br /&gt;    4.1.测试网络带宽&lt;br /&gt;        在服务器端运行iperf -s。&lt;br /&gt;        在客户端运行iperf -c 192.168.0.2&lt;br /&gt;        100Mbps网络环境下，得到结果为92.6Mbps，折合为11.5MB/s。即数据极限传输速度。&lt;br /&gt;&lt;/font&gt;&lt;/font&gt;&lt;font size=2&gt;&lt;font style=&#34;color:rgb(0,0,0)&#34; color=&#34;#cc0033&#34;&gt;    4.2.测试网络&lt;/font&gt;IP包传输往返时延(RTT)和IP包时延变化(抖动)&lt;br /&gt;        分主动被动方法，被动方法用wireshark抓包分析。下面主要介绍主动方法：&lt;br /&gt;        运行hping2 www.google.com -p 80。得到&lt;br /&gt;&lt;/font&gt;&lt;font size=2&gt;&lt;font style=&#34;color:rgb(0,0,0)&#34; color=&#34;#cc0033&#34;&gt;56 packets transmitted, 56 packets received, 0% packet loss&lt;br /&gt;round-trip min/avg/max = 242.&lt;sup&gt;5&lt;/sup&gt;&amp;frasl;&lt;sub&gt;269&lt;/sub&gt;.&lt;sup&gt;9&lt;/sup&gt;&amp;frasl;&lt;sub&gt;381&lt;/sub&gt;.1 ms&lt;br /&gt;        即在主动建立的到&lt;/font&gt;www.google.com的TCP连接中(默认为TCP，可以使用UDP，ICMP，IP，具体请看hping2 &amp;ndash;help)，丢包率为0。平均传输延迟为269.9，抖动为138.6。&lt;br /&gt;        注：按照《&lt;/font&gt;&lt;font size=2&gt;&lt;strong style=&#34;font-weight:normal&#34;&gt;中华人民共和国信息产业部令第36号》，&lt;/strong&gt;往返时延平均值≤200毫秒，时延变化平均值≤80毫秒。此处已经超标。但因为测试环境和适用条件不完全吻合，因此无法作为有效证据。&lt;br /&gt;    4.3.IP包丢失率(Lost rate)&lt;br /&gt;        也分主动方法和被动方法，主动方法见上。被动方法是用wireshark抓包后，通过tpc.analysis.lost_segment标志分析丢包数量和总体数量。具体为。&lt;br /&gt;        用wireshark抓包。&lt;br /&gt;        用( tcp.srcport == 7007 || tcp.dstport == 7007 )&amp;amp;&amp;amp;(tcp.analysis.retransmission||tcp.analysis.lost_segment||tcp.analysis.ack_lost_segment)过滤。7007为aMule端口。&lt;br /&gt;        另存，其中会显示丢包和总体数目。此处一般都3%-9%。&lt;br /&gt;        用( tcp.srcport != 7007 &amp;amp;&amp;amp; tcp.dstport != 7007 )&amp;amp;&amp;amp;(tcp.analysis.retransmission||tcp.analysis.lost_segment||tcp.analysis.ack_lost_segment)过滤。&lt;br /&gt;        另存，此时是非7007端口丢包和总体数目。此处一般是0.18%-0.32%。&lt;br /&gt;        主动方法在测试网络硬性联通上比较方便，但是对于特殊封锁造成的丢包(例如BT/ED封锁)。由于主动TCP测试不会被封锁，因此无法得到有效数据。需要在实际环境中使用被动方法测试。&lt;br /&gt;        此处丢包率总体值一般都超过了3%，根据《&lt;/font&gt;&lt;font size=2&gt;&lt;strong style=&#34;font-weight:normal&#34;&gt;中华人民共和国信息产业部令第36号》，&lt;/strong&gt;IP包丢失率平均值≤2％。此处已经超标，但基于和上文同样理由，无法作为有效证据。&lt;br /&gt;    4.4.IP业务可用性&lt;br /&gt;        如果在测试中，连续5分钟平均丢包超过75%，则可以认定为无效。&lt;br /&gt;    4.5.问题出现点定位&lt;br /&gt;        假定出现问题，那么我们可以假设，问题应当出现在从当前机器到目标机器中的某个路由器上。&lt;br /&gt;        如果多个目标机器通讯出现问题，我们可以猜测，问题很大可能出现在这些机器共同经过的某个路由器上。&lt;br /&gt;        所以，我们需要跟踪每个IP的连接。windows下是tracert。&lt;br /&gt;$traceroute www.google.com&lt;br /&gt;1 192.168.0.1 (192.168.0.1) 2 ms 1 ms 0 ms&lt;br /&gt;2 10.119.16.1 (10.119.16.1) 23 ms 25 ms 13 ms&lt;br /&gt;3 reserve.cableplus.com.cn (219.233.244.141) 15 ms 11 ms 16 ms&lt;br /&gt;4 * * *&lt;br /&gt;5 reserve.cableplus.com.cn (219.233.238.205) 14 ms 10 ms 18 ms&lt;br /&gt;6 202.96.222.77 (202.96.222.77) 13 ms 15 ms 14 ms&lt;br /&gt;7 202.101.63.226 (202.101.63.226) 32 ms 19 ms 17 ms&lt;br /&gt;8 202.97.33.38 (202.97.33.38) 84 ms 78 ms 82 ms&lt;br /&gt;9 202.97.33.178 (202.97.33.178) 61 ms 65 ms 69 ms&lt;br /&gt;10 202.97.4.46 (202.97.4.46) 106 ms 103 ms 104 ms&lt;br /&gt;11 216.239.47.232 (216.239.47.232) 94 ms 99 ms 112 ms&lt;br /&gt;12 216.239.47.237 (216.239.47.237) 224 ms 195 ms 196 ms&lt;br /&gt;13 72.14.233.53 (72.14.233.53) 185 ms 181 ms 195 ms&lt;br /&gt;14 72.14.232.139 (72.14.232.139) 208 ms 213 ms 240 ms&lt;br /&gt;15 72.14.233.129 (72.14.233.129) 205 ms 66.249.94.227 (66.249.94.227) 193 ms 209 ms&lt;br /&gt;16 72.14.233.131 (72.14.233.131) 193 ms 195 ms 202 ms&lt;br /&gt;17 216.239.49.66 (216.239.49.66) 209 ms 204 ms 244 ms&lt;br /&gt;18 66.102.7.99 (66.102.7.99) 198 ms 193 ms 195 ms&lt;br /&gt;        当然，如果是禁止了ICMP TTL超时的死报文回复。就会测定不出路由，这时候需要用paratrace。结果是一样的，不过没有被封锁的危险。&lt;br /&gt;&lt;br /&gt;&lt;br /&gt;&lt;/font&gt;&lt;br /&gt;&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

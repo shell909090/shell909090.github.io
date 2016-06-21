@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>用python实现webserver(一)――Prefork</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         用python实现webserver(一)――Prefork 
+    </h1>
+    <p class="meta">Oct 21, 2009
+         - 2 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/80/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>要实现webserver，首先需要一个tcp server。作为python的设计原则，最好是使用SocketServer或者封装更好的BaseHTTPServer来复用。不过既然我们的目的 是为了学习，那么就不能用这两个内置对象。我们先实现一个最古典的每进程模式实现。而我们标题上的Prefork，则是apache服务器对这个模式的称 呼。
+每进程模式，顾名思义，就是每个新连接开启一个进程进行处理。首先创建一个socket，bind到一个套接字上。当有请求时，accept。(好多英 文，不是我有意cheglish，全是api的名称)accept会返回一个通讯用的socket，这时fork出一个新的进程，处理这个socket。 主进程在每次进入accept后阻塞，子进程在每次进入recv后阻塞。这样会带来几方面的好处。首先是模型分离，即使一个子进程崩溃，也不会影响到其他 子进程。其次是身份分离，当你需要让http server以高于常规运行(常规都是以apache, www-data, nobody运行的)用户的权限进行工作时，每进程模式是唯一安全的模式。其他模式都会造成同一进程内的其他session也暂时获得这个权限的问题。但 是同样，这样有几方面的问题，主要就是性能问题。
+由于每个连接都需要fork出一个新进程去处理。因此针对大量小连接的时候，fork和exit消耗了大量CPU。问题更严重的是，由于用户进程总数是有 限的(PEM或者ulimit都会限制这个数量)，因此压力大到一定程度时(通常是1024或者2048)，就会出现无法创建连接的情况。而对小型服务器 而言，在压力还没大道这个程度以前，服务器就会由于性能达到限制而造成段错误。以下是实际试验指令和结果：
+测试指令： ab -n 10000 -c 100 <a href="http://localhost:8000/py-web-server">http://localhost:8000/py-web-server</a>
+服务器报错：
+<a href=":">20090924 05:51:18</a>: Traceback (most recent call last):
+<a href=":">20090924 05:51:18</a>:   File &ldquo;main.py&rdquo;, line 19, in &lt;module&gt;
+<a href=":">20090924 05:51:18</a>:
+<a href=":">20090924 05:51:18</a>: sock.run ();
+<a href=":">20090924 05:51:18</a>:   File &ldquo;/home/shell/py-web-server/server.py&rdquo;, line 30, in run
+<a href=":">20090924 05:51:18</a>:
+<a href=":">20090924 05:51:18</a>: while loop_func (): pass
+<a href=":">20090924 05:51:18</a>:   File &ldquo;/home/shell/py-web-server/server.py&rdquo;, line 56, in do_loop
+<a href=":">20090924 05:51:18</a>:
+<a href=":">20090924 05:51:18</a>: if os.fork () == 0:</p>
+
+<p><a href=":">20090924 05:51:18</a>: [Errno 11] Resource temporarily unavailable</p>
+
+<p>测试指令： ab -n 1000 -c 100 <a href="http://localhost:8000/py-web-server">http://localhost:8000/py-web-server</a>
+返回结果：
+Document Path:          /py-web-server
+Document Length:        1320 bytes</p>
+
+<p>Concurrency Level:      100
+Time taken for tests:   14.189 seconds
+Complete requests:      1000
+Failed requests:        0
+Write errors:           0
+Total transferred:      1361000 bytes
+HTML transferred:       1320000 bytes
+Requests per second:    70.48 <a href="mean">#/sec</a>
+Time per request:       1418.851 <a href="mean">ms</a>
+Time per request:       14.189 <a href="mean, across all concurrent requests">ms</a>
+Transfer rate:          93.67 [Kbytes/sec] received</p>
+
+<p>Connection Times (ms)
+min  mean[+/-sd] median   max
+Connect:        0   18 328.4      0    9000
+Processing:     4  109 211.0     95    3335
+Waiting:        4  100 211.1     86    3324
+Total:          8  127 498.3     95   12332</p>
+
+<p>为什么只有100并发？因为200并发的时候测试机上的服务器已经崩溃了。而且我们看到服务器的效率大约是70req/sec。等过两天，讲到 Thread模式的时候，大家可以对比一下Thread模式的效率。基本上说，针对普通服务器，个人觉得Prefork模式并发数量尽量控制在 100-800这个级别比较合适。更高的也许能承受，可是就可能发生不稳定(原因上面有说，就是进程数量限制)。那么Prefork模式通常用在哪里呢？ 数据库！Oracle和Postgresql全是Prefork模式的(其中Oracle的Prefork模式还经过一次分发，更复杂一些)。压力通常在 100-200这个级别，连接基本不断开，连接的请求和销毁开销很小，但是处理的过程开销很大。并且，由于处理过程复杂，一个链接的处理错误不能殃及整个 系统。对于这种问题，最好采用Prefork模式进行处理。同类的问题还有一些EJB服务器，复杂中间件等等。
+那么反过来，作为客户，我在面对Prefork模式的时候，如何才能高效处理呢？——对，大家都想到了，连接池模式。通过连接池存放空闲连接，避免连接的建立和释放开销，从而增加服务器性能。
+另外，python实现其实性能是很有问题的，我们对比一下apache2的测试结果：
+测试指令： ab -n 1000 -c 100 <a href="http://localhost:8000/py-web-server">http://localhost:8000/py-web-server</a>
+返回结果：
+Document Path:          /
+Document Length:        45 bytes</p>
+
+<p>Concurrency Level:      1000
+Time taken for tests:   7.914 seconds
+Complete requests:      10000
+Failed requests:        0
+Write errors:           0
+Total transferred:      3204355 bytes
+HTML transferred:       452025 bytes
+Requests per second:    1263.56 <a href="mean">#/sec</a>
+Time per request:       791.413 <a href="mean">ms</a>
+Time per request:       0.791 <a href="mean, across all concurrent requests">ms</a>
+Transfer rate:          395.40 [Kbytes/sec] received</p>
+
+<p>Connection Times (ms)
+min  mean[+/-sd] median   max
+Connect:        0   70 432.8      3    3028
+Processing:     0  193 733.0     88    6629
+Waiting:        0  190 732.4     85    6621
+Total:         46  263 950.7     93    7895</p>
+
+<p>&ndash;
+与其相濡以沫，不如相忘于江湖</p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Oct 21, 2009</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/asynchronous">asynchronous</a>  <a class="category" href="https://shell909090.github.io/tags/coroutine">coroutine</a>  <a class="category" href="https://shell909090.github.io/tags/program">program</a>  <a class="category" href="https://shell909090.github.io/tags/python">python</a>  <a class="category" href="https://shell909090.github.io/tags/webserver">webserver</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/79/" title="用python实现webserver(零)――导言">用python实现webserver(零)――导言</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/81/" title="MSN强制升级">MSN强制升级</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

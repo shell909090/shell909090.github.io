@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>EPS转BMP和代码优化</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         EPS转BMP和代码优化 
+    </h1>
+    <p class="meta">Dec 22, 2006
+         - 3 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/340/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <div>    EPS转BMP(我用的是PNG，不过还是一回事情)。EPS内部有两种图片，一个是TIF，位置和大小在头32个字节中描述。具体可以看EPS文档，在lp[5]保存位置，lp[6]保存大小。还有就是%%BeginBinary: 后面跟一个大小，然后跟beginimagex0D。在前文中应当有大小，自己找找看去，最后是一堆数据。存放方法是一位一位的像素连续存放，先存放一行C，然后是一行M，然后是Y，然后是K。当这4者全部存放完后，向后跳空一端区域，到本行开始的4字节对齐处，开始下一行的存放。</div>
+<div>    例如3个像素宽的图片(好简单——)存放方法就是，在0字节的最高三位(7,6,5位)，存放了这三个像素的C值。次三位(4,3,2位)，存放了M值。然后Y值存放在0字节的两位(1,0位)和1字节的一位(7位)。最后K值存放在1字节的次三位(6,5,4位)。然后跳空对齐，在4字节的位置开始描述下一行。</div>
+<div>    了解这个过程了，就应该发现，要转换到BMP需要大量的位操作。前置过程不说了，假定数据在内存里面(我当然不会用读取这种方法，用的是文件内存映射啦)，然后目标是GDI+的BitmapData对象。</div>
+<div>BYTE getBit (PBYTE lpInData, int bit)<br />{</div>
+<div> bit*=n;<br /> BYTE            rslt;<br /> rslt = lpInData[bit / 8];<br /> rslt &gt;&gt;= (7 - bit % 8);<br /> return rslt &amp; 0x1;<br />}<br /> for (y = 0; y &lt; tgtData.Height; y++) {<br />  line_start = lpOut + l * n * Stride;<br />  for (x = 0; x &lt; tgtData.Width; x++) {<br />   c = 1 - getBit (line_start, x);<br />   m = 1 - getBit (line_start, x + tgtData.Width);<br />   yy = 1 - getBit (line_start, x + 2 * tgtData.Width);<br />   k = getBit (line_start, x + 3 * tgtData.Width);<br />   r = 1 - min (1, c * (1 - k) + k);<br />   g = 1 - min (1, m * (1 - k) + k);<br />   b = 1 - min (1, yy * (1 - k) + k);<br />   if (x % 2) {<br />    *((PBYTE) tgtData.Scan0 + l * tgtData.Stride + x / 2) |=<br />     (g &lt;&lt; 6) + (r &lt;&lt; 5) + (b &lt;&lt; 4);<br />   } else {<br />    *((PBYTE) tgtData.Scan0 + l * tgtData.Stride + x / 2) |=<br />     (m &lt;&lt; 2) + (c &lt;&lt; 1) + yy;</div>
+<div>   }</div>
+<div>  }</div>
+<div> }</div>
+<div>    贴上来的代码格式都不怎么样，拿indent格一下就好了。</div>
+<div>    原本来说，CMYK转RGM是有一个算法的。在这里，CMKY都是非1即0。我们可以运算出，当K等于1的时候，结果就是RGB=0;所以当K为1的时候无需进行取值运算写入操作。这是第一步优化。当K等于0的时候，RGB等于CMY求反。所以无需多三个变量，不用1-运算就可以了，这是第二步优化。</div>
+<div> for (y = 0; y &lt; tgtData.Height; y++) {<br />  line_start = lpOut + l * n * Stride;<br />  for (x = 0; x &lt; tgtData.Width; x++) {<br />   k = getBit (line_start, x + 3 * tgtData.Width);<br />   if(k){<br />    c = getBit (line_start, x);<br />    m = getBit (line_start, x + tgtData.Width);<br />    yy = getBit (line_start, x + 2 * tgtData.Width);<br />    if (x % 2) {<br />     *((PBYTE) tgtData.Scan0 + l * tgtData.Stride + x / 2) |=<br />      (c &lt;&lt; 6) + (m &lt;&lt; 5) + (yy &lt;&lt; 4);<br />    } else {<br />     *((PBYTE) tgtData.Scan0 + l * tgtData.Stride + x / 2) |=<br />      (c &lt;&lt; 2) + (m &lt;&lt; 1) + yy;<br />    }<br />   }<br />  }<br /> }</div>
+<div>    然后是获得CMKY的过程。我原先是使用一个函数来获得的，但是函数获得的时候会出现一个问题。在循环中使用函数会打断循环的流水，造成效率下降，因此改成内嵌。内联函数(inline faction)理论上可以，但是有两个问题。一个是有的编译器理解内联为建议关键字，是否执行要看编译器的心情。还有一个是使用内联就无法使用register关键字来优化，虽然这个也是建议关键字。内嵌写起来很长，因此使用宏来解决。这是第三步优化。</div>
+<div>    再然后是减少循环中计算的规模，降低计算难度。这是细节优化，本质上是空间换时间，不过空间消耗很小而时间加速明显。首先是将Width1和Width3计算出来备用，减少核心循环中乘法次数(双循环内减少了三次乘法)。将pic_line_start的计算从内层循环提到外层(单循环减少内循环数目减一次乘法和加法。乘法是主要目的，加法可以到内核循环中做，不怎么费时，不过没必要在能优化的地方放过，还弄的程序更复杂就是了)。bit计算的时候本来是x*n+分别的Width1-Width3，可以改成减Width1(减少内核两次乘法)。这是第四步优化。</div>
+<div>    最后是细节，例如bit/8改成bit&gt;&gt;3，bit%8改成bit&amp;0x07，x%2改成x&amp;0x01。尽量使用使用+= -= &gt;&gt;=操作，减少运算目数。这是第五步优化。</div>
+<div>    最后结果</div>
+<div>
+<div>#define GETBIT(byte) byte = line_start[bit &gt;&gt; 3];byte &gt;&gt;= ~bit &amp; 0x07;byte &amp;= 0x01;</div>
+<div>int eps2gdip::DataProcess (BitmapData &amp; tgtData)<br />{<br /> BYTE c, m, y, k;<br /> UINT x, l, Width1, Width3;<br /> register ULONG bit;<br /> BYTE RGB;<br /> PBYTE line_start, pic_line_start;<br /> Width1 = n * tgtData.Width;<br /> Width3 = n * tgtData.Width * 3;</div>
+<div> for (l = 0; l &lt; tgtData.Height; l++) {<br />  line_start = lpOut + l * n * Stride;<br />  pic_line_start = (PBYTE) tgtData.Scan0 + l * tgtData.Stride;<br />  for (x = 0; x &lt; tgtData.Width; x++) {<br />   bit = Width3 + x * n;<br />   GETBIT (k);<br />   if (k) {<br />    bit -= Width3;<br />    GETBIT (c);<br />    bit += Width1;<br />    GETBIT (m);<br />    bit += Width1;<br />    GETBIT (y);<br />    RGB = (c &lt;&lt; 2) | (m &lt;&lt; 1) | (y);<br />    if (x &amp; 0x01)<br />     *(pic_line_start + x / 2) |= (RGB &lt;&lt; 4);<br />    else<br />     *(pic_line_start + x / 2) |= RGB;<br />   }<br />  }<br /> }<br /> return 0;<br />}</div>
+<div></div>
+<div>    结果测试，在100M文件的完全运算中，处理时间从83秒降低到35秒。其中结果保存等动作耗费20秒，即核心运算从63秒降低到15秒。效率增加了300%。</div></div>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Dec 22, 2006</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/c">c</a>  <a class="category" href="https://shell909090.github.io/tags/performance">performance</a>  <a class="category" href="https://shell909090.github.io/tags/program">program</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/339/" title="正则表达式解析文本">正则表达式解析文本</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/341/" title="getline的效率问题">getline的效率问题</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

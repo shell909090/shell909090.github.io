@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>vpn转代理</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         vpn转代理 
+    </h1>
+    <p class="meta">Mar 19, 2013
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2339/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <h1>背景</h1>
+
+<p>贝壳自己的vps蒙难，不能正常工作了。所以贝壳买了一个vpn。是pptp/l2tp系列的。用起来很好用，但是这类ip-based vpn有几个不便。</p>
+
+<ul>
+<li>不能自动设定客户端路由表，实现智能翻墙选择。</li>
+<li>每个需要翻墙的设备均需要拨号，而目标设备有容量极限。</li>
+<li>不能实现非侵入式翻墙，打开之后连p2p都翻了。</li>
+</ul>
+
+<p>与此相反，代理式翻墙可以比较有效的解决这些问题。一个点拨号，其他点可以共享代理。不需要翻墙的直接访问不设定代理就好。唯路由表没有办法。实际上，为了使得代理可以使用路由表选择，贝壳还是花了一番功夫做了antigfw项目的。</p>
+
+<p>闲话少说。这次贝壳就展示一下如何在debian下设定pptp vpn，并且利用代理无缝共享的。</p>
+
+<h1>linux下的vpn设定</h1>
+
+<p>安装pptp-linux这个包，然后按照说明使用即可。</p>
+
+<pre><code>pptpsetup --create &lt;TUNNEL&gt; --server &lt;SERVER&gt; [--domain &lt;DOMAIN&gt;] --username &lt;USERNAME&gt; [--password &lt;PASSWORD&gt;] [--encrypt] [--start]
+</code></pre>
+
+<p>自己填充用户名密码服务器，就会在/etc/ppp/peers/下面生成对应的文件。使用pon tunnelname就可以拨号了。</p>
+
+<h1>路由设定</h1>
+
+<p>初始设定好的vpn不具有智能路由，因此必须添加一些内容。</p>
+
+<p>首先使用<a href="https://github.com/fivesheep/chnroutes">chnroutes.py</a>这个程序，得到ovpn下常规用的路由表。当然，我们可以用linux下的路由表，但是他的old gateway存放在了/tmp下面，对此我并不是很喜欢。所以我只用了他的路由
+表信息，其余自己处理。如果你不确定自己执行时的默认路由，理论上也应当需要下面的一些配置。</p>
+
+<p>使用下面这个topptp.sh，可以将输出的routes.txt转换为pptpup和pptpdown两个文件。</p>
+
+<pre><code>#!/bin/bash
+
+ETHGW=192.168.1.1
+
+cat &gt; pptpup &lt;&lt;EOF
+#!/bin/bash
+export PATH="/bin:/sbin:/usr/sbin:/usr/bin"
+
+EOF
+
+cat &gt; pptpdown &lt;&lt;EOF
+#!/bin/bash
+export PATH="/bin:/sbin:/usr/sbin:/usr/bin"
+
+EOF
+
+sed "s:route (S*) (S*) net_gateway 5:route add -net 1 netmask 2 gw $ETHGW:g" routes.txt &gt;&gt; pptpup
+sed "s:route (S*) (S*) net_gateway 5:route del -net 1 netmask 2:g" routes.txt &gt;&gt; pptpdown
+
+chmod 755 pptpup pptpdown
+</code></pre>
+
+<p>再将这两个文件复制到/etc/ppp下面，然后将如下内容添加到/etc/ppp/peers/xxx文件，具体就是你刚刚生成的配置。 </p>
+
+<pre><code>defaultroute
+replacedefaultroute
+connect /etc/ppp/pptpup
+disconnect /etc/ppp/pptpdown
+</code></pre>
+
+<p>第一二行，配置了替代默认路由。三四行，配置了启动时某些路由表项使用直连。</p>
+
+<h1>代理</h1>
+
+<p>什么废话都不用多说，直接在设备上安装polipo。然后加入以下两行，赋予其他用户访问权限。</p>
+
+<pre><code>proxyAddress = "0.0.0.0" # IPv4 only
+allowedClients = 192.168.1.0/24
+</code></pre>
+
+<p>这就齐活了。</p>
+
+<p>如果你开了防火墙，不要忘记打开8123端口。</p>
+
+<h1>效果</h1>
+
+<p>在其他设备上，设定代理，然后直接访问，发现是不是国内外的网站都可以直接使用了？</p>
+
+<p>当然，这个的缺陷就是需要一台机器始终开启翻墙，而且这台机器不能用做p2p下载了。因为上面的流量会被翻掉。</p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Mar 19, 2013</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/computer">computer</a>  <a class="category" href="https://shell909090.github.io/tags/vpn">vpn</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/2334/" title="lxc的文件共享映射和严重安全隐患">lxc的文件共享映射和严重安全隐患</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/2344/" title="python插件技巧">python插件技巧</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

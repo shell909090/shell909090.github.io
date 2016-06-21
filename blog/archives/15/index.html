@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>C&#43;&#43;继承,虚,转换规则探究</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         C&#43;&#43;继承,虚,转换规则探究 
+    </h1>
+    <p class="meta">May 2, 2008
+         - 3 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/15/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>以下讨论的东西都是在VS2005下跑出来的，如果想知道别的编译器规则，请照跑一遍。以下是类定义，函数内容为打印出当前函数名称，所以就不再贴了。
+class Base
+{
+public:
+Base();
+Base(const Base &amp; o);
+virtual ~Base();
+virtual Base &amp; operator = (const Base &amp; o);</p>
+
+<p>void function1();
+virtual void function2();
+void function3();
+virtual void function4();
+//virtual void function5();
+virtual void function6();
+};
+class Derive : public Base
+{
+public:
+Derive();
+Derive(const Derive &amp; o);
+virtual ~Derive();
+virtual Derive &amp; operator = (const Derive &amp; o);</p>
+
+<p>void function1();
+virtual void function2();
+virtual void function3();
+void function4();
+//compiler error
+//int function5();
+protected:
+virtual void function6();
+public:
+};
+首先我们讨论继承下的构造/析构顺序。
+pa = dynamic_cast(new Derive ());
+delete pa;
+Base::Base
+Derive::Derive
+Derive::~Derive
+Base::~Base
+关于这段代码多说两句，如果我们把class Derive : public Base中的public删除，就会出现C2243错误，看来默认是私有继承。
+先是基类构造，然后是继承类构造。先是继承类析够，然后是基类析够。然后我们将virtual ~Base();的virtual删除，结果就变成了。
+Base::Base
+Derive::Derive
+Base::~Base
+注意继承类的析构没了。所以如果你打算让人继承你的类，记得将类的析构改成virtual，否则他怎么写析构都不会被调用的。
+然后是虚函数继承。
+pa-&gt;function1 ();
+pa-&gt;function2 ();
+pa-&gt;function3 ();
+pa-&gt;function4 ();
+结果是这样。
+Base::function1
+Derive::function2
+Base::function3
+Derive::function4
+Derive::function6
+看来，虚特性出来不出来完全看基类。注意到上面的function5么？假设你继承了一个类，打算写一个函数，和基类里面的某个虚函数具有一样的名称和参数，但是返回不一样。嘟嘟～～抱歉，编译器错误。而且注意function6，即使在继承类中声明说这是保护函数，也可以通过公开的基类函数的虚特性进行调用。
+下面我们要说一下拷贝构造函数，这不可避免的要说到定义。
+Derive::Derive(const Derive &amp; o)
+{
+printf (&ldquo;Derive::Derive copy constructern&rdquo;);
+}
+猜猜这个会出什么结果？
+Base::Base
+Derive::Derive copy constructer
+要是经常看我blog的人就不会意外，继承类的拷贝构造函数调用的是基类的普通构造函数。如果你打算让基类也拷贝构造，那这么做。
+Derive::Derive(const Derive &amp; o):Base (o)
+{
+printf (&ldquo;Derive::Derive copy constructern&rdquo;);
+}
+然后是拷贝构造函数的使用时机。运行代码如下，我们逐步分析。
+Base ta = *pa;
+Base::Base copy constructer
+Base::~Base
+当对象声明时，如果加一个=，则以=后的对象来构造当前对象，这是拷贝构造的第一个用法。
+Derive tb = *static_cast(pa);
+Base::Base copy constructer
+Derive::Derive copy constructer
+Derive::~Derive
+Base::~Base
+当然，如果我们声明继承类的时候，一样拷贝构造。
+//compiler error
+//Derive tc = ta;
+当我们试图用基类构造继承类的时候，理所当然的，出错了。
+void test1 (Base &amp;)
+{
+printf (&ldquo;test1n&rdquo;);
+}
+test1(*pa);
+输出：test1
+如果我们以一个对象调用的时候，如果是引用，当然是不拷贝的。
+void test2 (Base)
+{
+printf (&ldquo;test2n&rdquo;);
+}
+test2(*pa);
+Base::Base copy constructer
+test2
+Base::~Base
+如果是直接调用，首先是拷贝构造，然后调用，最后析构。
+Base&amp; test3 ()
+{
+printf (&ldquo;test3n&rdquo;);
+return Base ();
+}
+pb = &amp;test3();
+test3
+Base::Base
+Base::~Base
+当返回对象引用的时候，只有很正常的构造和析构。
+Base test4 ()
+{
+printf (&ldquo;test4n&rdquo;);
+return Base ();
+}
+pb = &amp;test4();
+test4
+Base::Base
+Base::~Base
+返回对象本身的话，哎，怎么会这样？
+熟悉语言的应该看出来了，return Base ();的时候，先跑了一次构造，建立在栈里面，返回的时候要copy到堆中。拷贝构造呢？
+这就是传说中的返回构造优化拉，直接构造在堆上面，省掉一次copy，下面我们看看原始的状态。
+Base&amp; test5 ()
+{
+Base b;
+printf (&ldquo;test5n&rdquo;);
+return b;
+}
+pb = &amp;test5();
+Base test6 ()
+{
+Base b;
+printf (&ldquo;test6n&rdquo;);
+return b;
+}
+pb = &amp;test6();
+Base::Base
+test5
+Base::~Base
+Base::Base
+test6
+Base::Base copy constructer
+Base::~Base
+Base::~Base
+大家看到了？5的时候先构造，再传回，和返回对象引用的时候行为一致。6的时候可没有返回构造优化，于是先构造，然后拷贝。删除的时候先删除原始对象，再删除拷贝对象，大家可以自行证实这点。
+我们再修改上面的调用为下面的。
+Base td = test5();
+Base::Base
+test5
+Base::~Base
+Base::Base copy constructer
+Base::~Base
+首先是5的构造，析构，然后才是td的拷贝构造，析构。这个顺序，熟悉语言的人应该感觉到奇怪了吧。按照推论，应当是先拷贝再析构的。如果你这么觉得，还是先看完下面的东西吧。
+Base te = test6();
+Base::Base
+test6
+Base::Base copy constructer
+Base::~Base
+Base::~Base
+这才是预计的顺序。注意，这里并没有调用两次拷贝构造。虽然贝壳并不了解机制，不过估计又是一种返回构造优化。
+5中例子觉得迷惑的人，不妨在拷贝构造里面打个断点，看看你copy的对象是什么，无效对象！！！！
+返回引用的情况下，一旦返回对象的生命周期结束了，返回的数据就无法保证有效。因此返回局部对象是非常危险的，唯一的里外就是3例子中在返回的时候构造一个新的对象而引发的返回构造优化。
+下面是拷贝构造和operator =的区别和调用时间。
+Base ya = *pa;
+Base yb;
+yb = <em>pa;
+Base::Base copy constructer
+Base::Base
+Base::operator =
+Base::~Base
+Base::~Base
+上面一个是拷贝构造，下面一个是普通构造加operator =。
+最后是全部的定义和源码，类的定义参考最上面的。
+void test1 (Base &amp;)
+{
+printf (&ldquo;test1n&rdquo;);
+}
+void test2 (Base)
+{
+printf (&ldquo;test2n&rdquo;);
+}
+Base&amp; test3 ()
+{
+printf (&ldquo;test3n&rdquo;);
+return Base ();
+}
+Base test4 ()
+{
+printf (&ldquo;test4n&rdquo;);
+return Base ();
+}
+Base&amp; test5 ()
+{
+Base b;
+printf (&ldquo;test5n&rdquo;);
+return b;
+}
+Base test6 ()
+{
+Base b;
+printf (&ldquo;test6n&rdquo;);
+return b;
+}
+int _tmain(int argc, _TCHAR</em> argv[])
+{
+Base *pa, *pb;</p>
+
+<p>pa = dynamic_cast(new Derive ());</p>
+
+<p>// test inherit function rule
+//pa-&gt;function1 ();
+//pa-&gt;function2 ();
+//pa-&gt;function3 ();
+//pa-&gt;function4 ();
+//pa-&gt;function6 ();</p>
+
+<p>//test copy constructer
+//pb = dynamic_cast(new Derive (*static_cast(pa)));
+//delete pb;
+//Base ta = *pa;
+//Derive tb = *static_cast(pa);
+//compiler error
+//Derive tc = ta;
+//test1(*pa);
+//test2(*pa);
+//pb = &amp;test3();
+//pb = &amp;test4();
+//pb = &amp;test5();
+//pb = &amp;test6();
+//Base td = test5();
+//Base te = test6();</p>
+
+<p>//diffrence between copy cotr and operator =
+//Base ya = *pa;
+//Base yb;
+//yb = *pa;</p>
+
+<p>delete pa;
+return 0;
+}</p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>May 2, 2008</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/c">c</a>  <a class="category" href="https://shell909090.github.io/tags/oo">oo</a>  <a class="category" href="https://shell909090.github.io/tags/program">program</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/14/" title="无条件的爱国和无聊的自尊">无条件的爱国和无聊的自尊</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/16/" title="反射的几个类型">反射的几个类型</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

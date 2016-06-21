@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>简易debian livecd打造手册</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         简易debian livecd打造手册 
+    </h1>
+    <p class="meta">Feb 16, 2012
+         - 2 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2094/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>    废话不说，上干货。先装一下syslinux，genisoimage，kvm，debootstrap，squashfs-tools。</p> <p>$ mkdir debcd</p> <p>$ cd debcd</p> <p>$ mkdir isoroot</p> <p>$ cp /usr/lib/syslinux/isolinux.bin isoroot/</p> <p>$ cat &gt; isoroot/isolinux.cfg &lt;&lt; &quot;EOF&quot;</p> <p>prompt 0</p> <p>default linux<br /></p> <p>label linux</p> <p>    kernel vmlinuz</p> <p>    append initrd=initrd.img</p> <p>EOF</p> <p>$ cp /boot/vmlinuz-3.2.0-1-amd64 isoroot/vmlinuz</p> <p>    完成上述步骤后，你就准备好了一个基础的iso镜像文件系统，并有了一个基础的引导模块和内核。现在，我们尝试把这玩意烧到iso上，并且测试一下。</p> <p>$ genisoimage -o output.iso -b isolinux.bin -c <a href="http://boot.cat">boot.cat</a> -no-emul-boot -boot-load-size 4 -boot-info-table isoroot/</p> <p>$ sudo kvm -cdrom output.iso -m 512</p> <p>    如果没法装kvm，换成qemu。屏幕会停在内核引导过程中——因为你没有initrd.img，所以在isolinux.cfg中指定的initrd就不正确。下面我们会设法弄一个initrd.img。</p> <p>$ cp -a /etc/initramfs-tools/ initramfs</p> <p>$ mkinitramfs -d initramfs -o isoroot/initrd.img</p> <p>$ genisoimage -o output.iso -b isolinux.bin -c <a href="http://boot.cat">boot.cat</a> -no-emul-boot -boot-load-size 4 -boot-info-table isoroot/</p> <p>$ sudo kvm -cdrom output.iso -m 512</p> <p>    现在看看？你应该能看到有initrd被加载上去了，但是很可惜，没有root，因此也无法启动。所以下一步，我们需要弄一个root。</p> <p>$ mkdir sysroot</p> <p>$ sudo debootstrap --arch amd64 stable sysroot/ <a href="http://localhost:9999/debian/">http://localhost:9999/debian/</a></p> <p>$ sudo chown -R user.user sysroot</p> <p>$ mksquashfs sysroot isoroot/rootfs -all-root</p> <p>    把上面的源换成你喜欢的——我用approx做了一个缓存，所以一直使用这个缓存进行加速。在脚本执行完后，你会有一个压缩为squash格式的rootfs，可以作为root。但是这个root有两个缺陷。1.不能直接mount。2.即使mount了，启动的时候也会因为只读而挂掉。所以你需要做一点调整</p> <p>$ cat &gt;&gt; initramfs/modules &lt;&lt; &quot;EOF&quot;</p> <p>squashfs</p> <p>aufs</p> <p>EOF</p> <p>$ cat &gt; initramfs/scripts/local-premount/iso &lt;&lt; &quot;EOF&quot;</p> <p>#!/bin/sh</p> <p>case &quot;${1}&quot; in</p> <p>    prereqs)</p> <p>        echo &#39;iso script run&#39;</p> <p>        exit 0</p> <p>        ;;</p> <p>esac</p> <p>mkdir /cdrom</p> <p>mount -t iso9660 /dev/sr0 /cdrom</p> <p>mkdir /cdroot</p> <p>mount -t squashfs /cdrom/rootfs /cdroot</p> <p>mkdir /shadow</p> <p>mount -t tmpfs -o size=128m none /shadow</p> <p>mount -t aufs -o br:/shadow=rw:/cdroot=ro none /root</p> <p>EOF</p> <p>$ chmod +x initramfs/scripts/local-premount/iso</p> <p>$ mkinitramfs -d initramfs -o isoroot/initrd.img</p> <p>$ genisoimage -o output.iso -b isolinux.bin -c <a href="http://boot.cat">boot.cat</a> -no-emul-boot -boot-load-size 4 -boot-info-table isoroot/</p> <p>$ sudo kvm -cdrom output.iso -m 512</p> <p>    好，现在再make clean，make test，光盘基本就OK了。</p> <p>    root密码多少？我怎么知道你的root密码呢？用sudo chroot sysroot切换到自己的系统里面去改。另外，你可能需要安装一些软件，这时候记得把/sys /proc挂到chroot里面。还有记得调整一下/etc/udev/rules.d/70-persistent-net.rules，把主机里面的记录删掉（或者干脆删掉文件）。调整/etc/network/interfaces，把以下内容加进去。</p> <p>auto lo</p> <p>iface lo inet loopback<br /></p> <p># The primary network interface</p> <p>auto eth0</p> <p>iface eth0 inet dhcp</p> <p>    基本来说，可定制的引导系统就是这样。不过这个系统有以下几点需要注意：</p> <p>1.可写入数量只有128M，如果写多了就完蛋。</p> <p>2.128M全在内存中，内存不足完蛋。</p> <p>3.一次一次生成很麻烦，我用的是make。</p> <p>TARGETS=isoroot/initrd.img isoroot/rootfs<br /></p> <p>all: output.iso<br /></p> <p>test: output.iso</p> <p>  sudo kvm -cdrom $^ -m 512<br /></p> <p>clean:</p> <p>   rm -f output.iso $(TARGETS)<br /></p> <p>output.iso: isoroot/isolinux.cfg isoroot/vmlinuz $(TARGETS)</p> <p>    genisoimage -o $@ -b isolinux.bin -c <a href="http://boot.cat">boot.cat</a> -no-emul-boot -boot-load-size 4 -boot-info-table isoroot/<br /></p> <p>isoroot/initrd.img: initramfs</p> <p>    mkinitramfs -d $^ -o $@<br /></p> <p>isoroot/rootfs: sysroot</p> <p>    mksquashfs $^ $@ -all-root</p> <p>4.可以用一个dsvc保存中间结果，我用的是git。下面是gitignore。</p> <p>*.iso</p> <p>isoroot/vmlinuz*</p> <p>isoroot/initrd*</p> <p>isoroot/rootfs*</p> <p>sysroot</p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Feb 16, 2012</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/debian">debian</a>  <a class="category" href="https://shell909090.github.io/tags/linux">linux</a>  <a class="category" href="https://shell909090.github.io/tags/vm">vm</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/2092/" title="Progress Linux">Progress Linux</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/2096/" title="最新一期的freenas测试报告">最新一期的freenas测试报告</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>以nginx作为subversion前端的一些细节</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         以nginx作为subversion前端的一些细节 
+    </h1>
+    <p class="meta">Apr 2, 2010
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/108/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          
+
+<p>本文系电脑资料，同步到blog上。小黄姐姐不必看了，可以帮我留个言。
+nginx性能不错，可惜不支持WebDAV，因此没法拿来作为subversion的http服务。于是考虑开一个nginx作为前端，后端就跑一个apache来作为容器。配置这么写的(节选)：
+=========/etc/nginx/sites-enabled/default=========
+server {
+listen   443;
+server_name  OOXX</p>
+
+<p>ssl  on;
+ssl_certificate  keys/server.crt;
+ssl_certificate_key  keys/server.key;</p>
+
+<p>ssl_session_timeout  5m;</p>
+
+<p>ssl_protocols  SSLv2 SSLv3 TLSv1;
+ssl_ciphers  ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP;
+ssl_prefer_server_ciphers   on;</p>
+
+<p>access_log  /var/log/nginx/localhost.access.log;
+include             /etc/nginx/mapping-ssl;
+error_page   500 502 503 504  /50x.html;
+location = /50x.html {
+root   /var/www/nginx-default;
+}</p>
+
+<h1 id="toc_0">}</h1>
+
+<p>打开了一个https的服务，这是当然的，svn传输的数据使用http很危险。
+===========/etc/nginx/mapping-ssl=============
+location ^~ /svn {
+proxy_set_header    Destination $http_destination;
+proxy_pass          <a href="http://apache_svr">http://apache_svr</a>;</p>
+
+<p>proxy_set_header    Host            $host;
+proxy_set_header    X-Real-IP       $remote_addr;
+proxy_set_header    X-Forwarded-Host $host;
+proxy_set_header    X-Forwarded-Proto https;
+proxy_set_header    X-Forwarded-Server $host;
+proxy_set_header    X-Forwarded-For $proxy_add_x_forwarded_for;</p>
+
+<h1 id="toc_1">}</h1>
+
+<p>将/svn下面的所有请求交给apache2。
+=====/etc/apache2/mods-enabled/dav_svn.conf=====
+&lt;Location /svn/main&gt;
+DAV svn</p>
+
+<p>SVNPath /var/web/svn/main
+AuthType Basic
+AuthName &ldquo;Subversion Repository&rdquo;
+Require valid-user
+AuthUserFile /var/web/svn/main/conf/passwd</p>
+
+<p>AuthzSVNAccessFile /var/web/svn/main/conf/authz</p>
+
+<h1 id="lt-location-gt">&lt;/Location&gt;</h1>
+
+<p>看起来很美，但是在使用中会发生502错误，原因是来自文件移动后，svn会使用COPY作为Verb去请求服务器端，这时候发生了这样一条日志：
+==========/var/log/apache2/access.log==========</p>
+
+<h1 id="127-0-0-1-user-02-apr-2010-11-07-31-0800-copy-path-http-1-0-502-546-svn-1-5-4-r33841-tortoisesvn-1-5-5-14361-neon-0-28-3">127.0.0.1 - {user} [02/Apr/2010:11:07:31 +0800] &ldquo;COPY {path} HTTP/1.0&rdquo; 502 546 &ldquo;-&rdquo; &ldquo;SVN/1.5.4 (r33841)/TortoiseSVN-1.5.5.14361 neon/0.28.3&rdquo;</h1>
+
+<p>搜索了一下，这是因为使用https作为http服务的前端造成的，这里(<a href="https://secure.bonkabonka.com/blog/2008/01/04/nginx_fronting_for_subversion.html)">https://secure.bonkabonka.com/blog/2008/01/04/nginx_fronting_for_subversion.html)</a>提到了解决方案，而它又引用了另一个网页(<a href="http://silmor.de/49)">http://silmor.de/49)</a>解释细节。不幸的是，这个细节是错误的。关键在于这句上
+LoadModule headers_module /usr/lib/apache2/modules/mod_headers_too.so
+仔细看一下就会发现，mod_headers_too应当是mod_headers。在debian下，应当执行这几条指令。
+cd /etc/apache2/mods-enabled
+ln -s ../mods-available/headers.load headers.load
+然后，在/etc/apache2/httpd.conf中写入以下内容：
+RequestHeader edit Destination ^https http early
+问题解决，Q.E.D。</p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Apr 2, 2010</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/apache">apache</a>  <a class="category" href="https://shell909090.github.io/tags/linux">linux</a>  <a class="category" href="https://shell909090.github.io/tags/nginx">nginx</a>  <a class="category" href="https://shell909090.github.io/tags/subversion">subversion</a>  <a class="category" href="https://shell909090.github.io/tags/versioncontrol">versioncontrol</a>  <a class="category" href="https://shell909090.github.io/tags/webserver">webserver</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/107/" title="翻旧blog">翻旧blog</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/1665/" title="Re: [shlug] 以nginx作为subversion前端的一些细节">Re: [shlug] 以nginx作为subversion前端的一些细节</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

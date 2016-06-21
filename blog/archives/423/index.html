@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>libxml使用中的编码问题</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         libxml使用中的编码问题 
+    </h1>
+    <p class="meta">Dec 27, 2007
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/423/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p><p>    libxml是gnome的XML解析库，具有强大的解析能力，支持DOM和SAX解析模型，属于验证型解析器。其内部是使用utf-8编码工作的，因此gbk之类编码的XML无法解析。为了解决这个问题，我们可以使用一个很简单的小窍门。<br />    libxml是要和iconv一并使用的，头文件引用一般类似以下形式。<br />#include &lt;iconv.h&gt;<br />#pragma comment(lib, &quot;iconv&quot;)<br />#include &lt;libxml/tree.h&gt;<br />#include &lt;libxml/parser.h&gt;<br />#pragma comment(lib, &quot;libxml2&quot;)<br />    这样的话，我们向libxml注册一个处理句柄，对其他编码的xml先执行一次转换，再进行解析。<br />iconv_t         iconv_utf8_gbk = NULL;<br />iconv_t         iconv_gbk_utf8 = NULL;<br />int gbk_input (unsigned char *out, int *outlen, const unsigned char *in,<br />      int *inlen)<br />{<br /> char           *outbuf = (char *) out;<br /> char           *inbuf = (char *) in;<br /> size_t          rslt;<br /> rslt =<br />  iconv (iconv_utf8_gbk, (const char **) &amp;inbuf, (size_t *) inlen,<br />      &amp;outbuf, (size_t *) outlen);<br /> if (rslt &lt; 0)<br />  return rslt;<br /> *outlen = ((unsigned char *) outbuf - out);<br /> *inlen = ((unsigned char *) inbuf - in);<br /> return *outlen;<br />}
+<p>int gbk_output (unsigned char *out,<br />    int *outlen, const unsigned char *in, int *inlen)<br />{<br /> char           *outbuf = (char *) out;<br /> char           *inbuf = (char *) in;<br /> size_t          rslt;<br /> rslt =<br />  iconv (iconv_gbk_utf8, (const char **) &amp;inbuf, (size_t *) inlen,<br />      &amp;outbuf, (size_t *) outlen);<br /> if (rslt &lt; 0)<br />  return rslt;<br /> *outlen = ((unsigned char *) outbuf - out);<br /> *inlen = ((unsigned char *) inbuf - in);<br /> return *outlen;<br />}<br />    初始化的时候运行以下代码进行句柄注册。<br />{<br /> if (iconv_utf8_gbk == NULL)<br />  iconv_utf8_gbk = iconv_open (&quot;utf-8&quot;, &quot;gbk&quot;);<br /> if (iconv_gbk_utf8 == NULL)<br />  iconv_gbk_utf8 = iconv_open (&quot;gbk&quot;, &quot;utf-8&quot;);<br /> LIBXML_TEST_VERSION;<br /> xmlNewCharEncodingHandler (&quot;gb2312&quot;, gbk_input, gbk_output);<br /> xmlNewCharEncodingHandler (&quot;gbk&quot;, gbk_input, gbk_output);<br />}<br />    经过试验，这样我们就可以解析编码类型为gbk和gb2312的xml文件了。可以进行输入和输出，不过输出的utf-8形式让人觉得有点难过……<br />
+<div></div></p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Dec 27, 2007</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/codec">codec</a>  <a class="category" href="https://shell909090.github.io/tags/program">program</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/422/" title="继承函数的拷贝构造">继承函数的拷贝构造</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/424/" title="财务数据库">财务数据库</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

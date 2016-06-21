@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>KMP</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         KMP 
+    </h1>
+    <p class="meta">Jan 16, 2007
+         - 3 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/349/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>KMP是一个给人捧滥了的算法，其实单看同时有三个发明人这点，就知道这个算法是自古华山一条路，没别的想法的。KMP的算法每步虽然难想但是自然有道理，没有别的方法的。不像排序算法，一嘟噜的算法还没完。根据各种侧重点不同有不同的算法可用。<br />    KMP的比较算法核心在于不回朔。我们先看一个正常的例子。<br />SSSSSSSSSSSSSS<br />TTTTT            i=0, j=1,2,3&hellip;<br />  TTTTT          i=1, j=1,2,3&hellip;<br />    TTTTT        i=2, j=1,2,3&hellip;<br />    我们用T去匹配S，先对齐T和S的头部，然后对比T和S。如果T的范围内，TS内容一致，则匹配成功。不成功的话就将T向后移动一个字符。再次匹配T范围内TS的内容是否一致。ij的范围最大会在0&lt;=i&lt;=&quot;j    KMP算法的核心在于，如果T范围内TS的内容不一致，那么T向后移动不是一个字符，而是多个。<span style="font-weight:bold">而当前比较位置永远不向前移动。</span>如果您写出来的算法当前比较位置向前移动了，那么肯定是写错了。<br />    我们假定T范围内第i个字符匹配失败(0&lt;=i<br />    为什么能移动一个以上呢？Next[i]怎么确定呢？我们看一个抽象的例子：M代表匹配，N不匹配，U不知道。<br />MMMMMNUUUUU<br />TTTTTTTTTTTTTTT<br />  TTTTTTTTTTTTTTT<br />    我们可以看到，向后移动字符的时候，T自身有重合的部分。这时候有三种状况，我们先假定一种重合的状况。假定T向后移动了一些字符，P代表当前比较位置。在这个位置上TS出现了不匹配。<br />..MMMNUUU..<br />..TTTTTPTTTT..<br />..MMNTTTTTT..<br />    在这个T向后移动一些距离后，在当前比较位置前已经出现了自身和自身不匹配的状况。根据上面我们知道，当前位置以前的T和S是匹配的。那么就是说，移动了这些字符后。T当前的位置上不可能取得匹配。我们称这种情况为这个位置的自身完全不匹配。<br />    然后是另外一种匹配状况，符号和上面一致。<br />..MMMNUUU..<br />..TTTTTPTTTT..<br />..MMMNTTTT..<br />    这个时候，T在当前匹配位置上自身不匹配，前面位置都匹配。同理可以知道，T在滑移到这个位置后可能取得匹配。我们称这种情况为这个位置的自身部分不匹配。<br />    最后一种匹配情况是。<br />..MMMNUUU..<br />..TTTTTPTTTT..<br />..MMMMUUU..<br />    这个时候，T在在前面和当前位置都匹配。我们知道前面是匹配的，然而当前既然已经被证明了和S不匹配。那么滑移这些位置后，新的位置上T也不可能和S取得匹配。我们称这种情况为这个位置的自身完全匹配。<br />    然后我们可以回头看看比较过程了。当我们对齐TS，然后进行比较的过程中。出现了不匹配。<br />    注意一个问题，我们回朔是为了知道移动后的T是否仍旧匹配。所以如果我们知道T匹配不匹配，就不用回朔。<br />    这个时候我们不移动一次T，然后回朔。而是将T滑移一下，先滑移1位好了。假设出现了当前比较位置的自身完全不匹配或者自身完全匹配，那么滑动1位肯定也无法获得一个有效的匹配。那么就继续滑动，直到出现了自身部分不匹配，或者T已经完全的滑动到了当前位置的后面。这时候T的位置才是有可能获得匹配的位置，其余的位置就没必要浪费时间了。<br />    也就是说，滑移距离Next[i]是i这个位置上滑动距离逐渐增加的时候，首次出现自身部分不匹配情况的位置。如果这情况不出现，那么就设定为&lt;1的值。操作上将整个T滑动到当前位置的后面，并且从下一个位置开始比较起。<br />    然后附上初始版的代码和比较过程。<br />int            *cul_next (char *lpTpl)<br />{<br />    unsigned int    i = 0, j = 0, l = 0;<br />    int            *next;<br /><br />    l = strlen (lpTpl);<br />    next = new int[l];<br />    memset (next, 0, l * sizeof (int));<br /><br />    for (i = 1; i &lt; l; i++) {<br />        for (j = 0; j &lt; l - i &amp;&amp; lpTpl[j] == lpTpl[j + i]; j++);<br />        if (j &lt; l - i &amp;&amp; next[j + i] == 0)<br />            next[j + i] = i;<br />    }<br /><br />    for (i = 0; i &lt; l; i++)<br />        printf (&quot;%dt&quot;, next[i]);<br />    printf (&quot;n&quot;);<br /><br />    return next;<br />}<br />int kmp (char *lpSrc, char *lpTpl)<br />{<br />    char           *lpSrc_now = lpSrc;<br />    char           *lpTpl_now = lpTpl;<br />    int            *next = cul_next (lpTpl);<br />    if (next == NULL)<br />        return -1;<br /><br />    while (*lpSrc_now != &ldquo;) {<br />        if (*lpSrc_now == *lpTpl_now) {<br />            lpSrc_now++;<br />            lpTpl_now++;<br />        } else {<br />            if (next[lpTpl_now - lpTpl] != 0) {<br />                lpTpl_now -= next[lpTpl_now - lpTpl];<br />            } else {<br />                lpSrc_now++;<br />                lpTpl_now = lpTpl;<br />            }<br />        }<br />        if (*lpTpl_now == &ldquo;)<br />            break;<br />        printf (&quot;%sn%sn&quot;, lpSrc_now, lpTpl_now);<br />    }<br />    delete          next;<br />    if (*lpTpl_now != &ldquo;)<br />        return 0;<br />    return lpSrc_now - lpSrc - strlen (lpTpl);<br />}<br />&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;<br />0       0       0       0       0       0       0       1<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />aaaaaab<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />aaaaab<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />aaaab<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />aaab<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />aab<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />b<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />b<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />b<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />b<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />b<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />b<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />b<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />b<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />b<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />b<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />b<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />b<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />b<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />b<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />b<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />b<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;
+br /&gt;b<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />b<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />b<br />aaaaaaaaaaaaaaaaaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaaaaaaaaaaaaaaaaab<br />b<br />aaaaaaaaaaaaaaaaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaaaaaaaaaaaaaaaab<br />b<br />aaa
+aaaaaaaaaaaaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaaaaaaaaaaaaaaab<br />b<br />aaaaaaaaaaaaaaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaaaaaaaaaaaaaab<br />b<br />aaaaaaaaaaaaaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaaaaaaaaaaaaab<br />b<br />aaaaaaaaaaaaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaaaaaaaaaaaab<br />b<br />aaaaaaaaaaaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaaaaaaaaaaab<br />b<br />aaaaaaaaaaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaaaaaaaaaab<br />b<br />aaaaaaaaaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaaaaaaaaab<br />b<br />aaaaaaaaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaaaaaaaab<br />b<br />aaaaaaaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaaaaaaab<br />b<br />aaaaaaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaaaaaab<br />b<br />aaaaaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaaaaab<br />b<br />aaaaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaaaab<br />b<br />aaaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaaab<br />b<br />aaaaaaaaaaaaab<br />ab<br />aaaaaaaaaaaab<br />b<br />aaaaaaaaaaaab<br />ab<br />aaaaaaaaaaab<br />b<br />aaaaaaaaaaab<br />ab<br />aaaaaaaaaab<br />b<br />aaaaaaaaaab<br />ab<br />aaaaaaaaab<br />b<br />aaaaaaaaab<br />ab<br />aaaaaaaab<br />b<br />aaaaaaaab<br />ab<br />aaaaaaab<br />b<br />aaaaaaab<br />ab<br />aaaaaab<br />b<br />aaaaaab<br />ab<br />aaaaab<br />b<br />aaaaab<br />ab<br />aaaab<br />b<br />aaaab<br />ab<br />aaab<br />b<br />aaab<br />ab<br />aab<br />b<br />aab<br />ab<br />ab<br />b<br />ab<br />ab<br />b<br />b<br />46<br /></p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Jan 16, 2007</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/algorithm">algorithm</a>  <a class="category" href="https://shell909090.github.io/tags/program">program</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/348/" title="查找重复文件">查找重复文件</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/350/" title="全局初始化">全局初始化</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

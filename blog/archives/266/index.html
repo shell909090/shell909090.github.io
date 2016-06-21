@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>debian上配置基于apache2的resin</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         debian上配置基于apache2的resin 
+    </h1>
+    <p class="meta">Nov 29, 2005
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/266/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <div>&nbsp;&nbsp;&nbsp; 别的不说了，先用debian自带的apt安装apache2,记得安装dev部分，还有libapr0,libapr-dev,libapr0-dev。千万别忘记安装后面的部分，否则你在下面编译的时候就要出现问题。</div>
+<div>&nbsp;&nbsp;&nbsp; 拿到resin，放在目标目录下面，然后tar -jxvf。完成后用ln -s做一个链接上去，使用resin的名字，这样可以方便的替换版本。然后在主目录下面运行./configure，make一下。一般来说，会出不少错误，最后生成一个libresin.so放到libexec下面，并且更新了resin的主执行程序。这个so很具有迷惑性，开始贝壳就被他骗了。这个so貌似是resin在本地平台下的加速程序，而不是嵌入到apache系列服务器中的整合插件。其中最大的差异是没有caucho_module导出符号，在apache加载的时候肯定会失败。</div>
+<div>&nbsp;&nbsp;&nbsp; 跑到src/c/plugins/apache2下面运行make。可能会报错，可能没有。贝壳这里报了错，不过贝壳运行configure的时候没有加任何参数，也许加了参数就正常了。如果不正常，出错的代码可能分别是httpd.h找不到或者apr_time.h找不到。运行vi Makefile，看到有INCLUDE的目录吗？那里面要包含/usr/include/apache2和/usr/include/apr-0两个目录，没有就肯定出错。好了，修改然后重新make。得到的文件是mod_caucho.so。将它cp到$RESIN_HOME/libexec下面，这个动态库导出了caucho_module符号。</div>
+<div>&nbsp;&nbsp;&nbsp; 在/etc/apache2/httpd.conf里面编辑一下，添加这个内容。</div>
+<div>LoadModule caucho_module /usr/resin/libexec/mod_caucho.so</div>
+<div>&lt;IfModule mod_caucho.c&gt;<br />&nbsp; CauchoConfigFile ......../resin.conf<br />&nbsp; &lt;Location /caucho-status&gt;<br />&nbsp;&nbsp;&nbsp; SetHandler caucho-status<br />&nbsp; &lt;/Location&gt;<br />&lt;/IfModule&gt;</div>
+<div>&nbsp;&nbsp;&nbsp; 在/usr/resin/conf/resin.conf里面，添加这些内容。</div>
+<div>&lt;doc-dir&gt;/var/www/htdocs&lt;/doc-dir&gt;<br />&lt;war-dir id='/var/www/htdocs'/&gt;</div>
+<div>&nbsp;&nbsp;&nbsp; 在/etc/apache2/sites-available/default中可能要修改如下配置。</div>
+<div>DocumentRoot /var/www/htdocs/</div>
+<div>&lt;Directory /var/www/htdocs/&gt;</div>
+<div>然后注销</div>
+<div>RedirectMatch ^/$ /apache2-default/</div>
+<div>&nbsp;&nbsp;&nbsp; OK，这样就基本完成了整个系统的整合配置。</div>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Nov 29, 2005</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/apache">apache</a>  <a class="category" href="https://shell909090.github.io/tags/debian">debian</a>  <a class="category" href="https://shell909090.github.io/tags/linux">linux</a>  <a class="category" href="https://shell909090.github.io/tags/resin">resin</a>  <a class="category" href="https://shell909090.github.io/tags/webserver">webserver</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/265/" title="quiz tree">quiz tree</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/267/" title="临安青山湖，浙西大峡谷。一">临安青山湖，浙西大峡谷。一</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

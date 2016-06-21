@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>python内存不释放原理</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         python内存不释放原理 
+    </h1>
+    <p class="meta">Sep 28, 2011
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/1921/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>在maillist里面看到无数次的有人问，python速度为什么这么慢，python内存管理很差。实话说，我前面已经说过了。如果你在意内存/CPU，不要用python，改用C吧。就算C不行，起码也用个go或者java。不过今天还是说说，python的内存为什么不释放。<div>    首先，python的初始内存消耗比C大，而且大很多。这个主要来自python解释器的开销，没什么好解释的。用解释器，就得承担解释器运行开销。然后，python中的每个对象，都有一定的对象描述成本。因此一个long为例，在C下面一般是4个字节（不用int是因为int在不同平台下是变长的），而python下面至少是16个字节。如果你生成100W个对象，那么C的内存消耗是4M，python的是16M。这些都是常规内存消耗，搞不明白的就别问了，不再解释。</div></p>
+
+<p><div>    下面解释一下python的内存释放情况。</div><div>    如果是C，通常是用long array[1024 * 1024]的方法来生成1M个对象空间。当然，实际这样是不一定能运行的。因为linux的默认栈空间是8M，而Windows默认栈空间只有1M。所以代码在linux下可以通过，而windows下会跑爆掉。怎么办？下面说。当这个函数执行完毕后，当RET的时候，会自动退栈，空间就会自动释放掉（虽然在逻辑上这部分空间还是保留没有释放的，然而空间不活跃了，不过统计的时候还是占用的）。当然，更好的办法是使用malloc。malloc会从系统中自动提取和管理空间，free自动释放。这样无论是linux还是windows，都没有栈空间不足的问题。free后就会自动交还系统（4M已经超过了交还的最大阀值，一般glibc不会自己闷掉不交给系统的）。如果你忘记free，这部分内存就会一直占用，直到进程退出未知，这就是很有名的内存泄露。</div></p>
+
+<p><div>    python下的情况更加复杂一些，python没有直接使用malloc为对象分配细粒度内存，而是使用了三层堆结构，加上三色标记进行回收。所谓三层堆，细节我们不说了，在源码阅读笔记里面写的比较详细。但是有一点需要我们记住的——当我们分配某个大小的内存的时候，内存管理器实际上是向上对齐到8字节，然后去对应的内存池中切一块出来用的。也就是说，如果我们运气比较差，申请了10个对象，偏偏每个对象大小差8字节。这样系统就要给我们分配10个堆，而不是刚刚好。如果你的对象粒度都比较散，那么内存开销比较大也不奇怪。</div></p>
+
+<p><div>    python下还有一个更坑爹的事情，也是大部分内存不释放的根本原因。在int/str等对象的模块中，有个模块级别的对象缓存链表，static PyObject * free_list。当对象释放的时候，压根不会还到池中，而是直接在free_list中缓存。根据我的搜索，python内部没有地方对此进行干预。就是说，一旦你真的生成了1M个数字对象，然后释放。这1M个对象会在free_list链表中等待重用，直到天荒地老，这16M内存压根不会返还。而且，int的对象缓存链表和str的还不通用。如果你又做了1M个str对象，他的开销还是会继续上涨。几乎所有的内建对象都有这种机制，因此对于大规模对象同时生成，python会消耗大量内存，并且永不释放。</div></p>
+
+<p><div>    解决的机制，基本只有用yield来将列表对象转换为生成器对象。列表对象会同时生成所有元素，从而直接分配所有内存。而生成器则是一次生成一个元素，比较节约内存。</div></p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Sep 28, 2011</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/c">c</a>  <a class="category" href="https://shell909090.github.io/tags/program">program</a>  <a class="category" href="https://shell909090.github.io/tags/python">python</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/1919/" title="uwsgi under debian">uwsgi under debian</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/1923/" title="又撞了">又撞了</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

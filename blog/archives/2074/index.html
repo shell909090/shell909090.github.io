@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>tcp连接的建立和释放</title>
+
+  
+  
+  <link rel="stylesheet" href="https://shell909090.github.io/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="https://shell909090.github.io/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="https://shell909090.github.io/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         tcp连接的建立和释放 
+    </h1>
+    <p class="meta">Jan 29, 2012
+         - 1 minute read 
+         - <a href="https://shell909090.github.io/blog/archives/2074/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <div>    大家新年好，新年第一博，我们来写一点干货。</div><div><br /></div>    建立tcp为什么是三次握手？<div>    从两军问题说起太远了，三次握手的假定是一条双工线路的每个方向，要么持续通，要么持续不通。就好比一个电话，你和对方可以同时说话，所以是双工线路。你说了对方能听到，这叫单方向。单方向上，要么通，要么不通。</div><div>    如果从一个不保证稳定的电话线上（例如移动电话，这是典型例子），你怎么确定你们通话是正常的？</div>
+
+<div>    假如你首先说“喂”，这时候你什么都不知道，对方能听到，他就知道你到他这里的电话是好的。他会说“喂，我听到了”。你听到了，会知道他到你这里的电话是好的。</div>
+
+<div>    事情结束了么？没有呢，他还不知道你能听到他讲的东西，所以你还要回“我听到了”，然后开始说正事。</div><div>    回想一下自己打电话的经历，是不是往往漏掉了最后一个“我听到了”呢？这样会使得对方无法确认你能听到他说的东西。不过一般来说，当你开始滔滔不绝的时候，他会假定你听到了那句“喂，我听到了”。因为通常没有人会没听到对方的回应就开始说话说个不停。这个模式在tcp中也是可以做到的，在最后一个ack上附加数据。</div>
+
+<div>    为什么由发起方开始？因为我们必须要假定有一个方向开始，任意开始就需要处理碰撞问题（就是同时开始）。接通socket总是由发起方开始传输第一个包，你不觉得直接在这个包上面开始测试连通会比较合理一些么？</div><div>    电话为什么由被叫方开始说话？因为主叫方打电话后，被叫方决定了电话什么时候接通。电话接通的时候，被叫直接就可以说话了（假如电话稳定的话），而主叫要等到下一个“嘟”不出现才能有所反应。所以通常都是被叫先开口。当然，也有被叫方接起电话来等着主叫说话的情况。</div>
+
+<p><div>    另外提一句，如果你使用手机拨打的话，当听到对方“喂，这里是XX，您好”之类的信息的时候，应当先说“喂，我是XX，您好”。等对方确认能听到了，再开口说正事。因为手机有不算太小的几率，双方都听不到，或者单方向听不到。如果不巧是后者，很容易引起不必要的误会和麻烦。例如你滔滔不绝的说，对方作为反应，说了几句。然后你什么都听不到，继续说。对方当然会生气，对不对？</div><div><br /></div><div>    OK，现在我们来说说挂电话。</div></p>
+
+<div>    tcp的fin机制，其实是要解决这么一个问题。当你说“再见”后，能够马上把电话放下么？</div>
+
+<div>    不行的，因为对方可能还有一些重要的事情还没说。你一说再见就挂断，这个会造成问题。从简单的思考上，我们会得出一个结论。当你说了“再见”后，对方可能还需要说一些事情。当对方也说了“再见”后，你就可以挂电话了。</div><div>    可是且慢，对电话而言这个模型成立，我们得稍作修改才符合网络——当你挂下电话机后，对方不会出现忙音。于是，当你说再见，对方说再见，你必须再说一次再见，对方才能确定你听见了再见。而且这次，事情非常符合两军问题——你们永远也无法就什么时候挂机达成一致。这个问题再折衷回来，也是一个三次模型，对方说再见，你说完你要说的话，然后说再见，对方再见，挂机。</div>
+
+<p><div>    被动关闭上，这个模型基本是正确的。当你收到“再见”后，把你要说的事情说完，然后再见。这时候不能挂电话，因为你不确认对方听到你的“再见”了。如果你的“再见“对方没收到，那么对方会死等到天荒地老。至于为什么对方可以肯定你收到了他的再见，是因为刚刚你说的那堆废话里，应该已经包含了“我知道你要挂电话了，我会尽快说完”的意思。所以，你需要等对方的“再见”回来。</div> <div>    当然，在tcp的实现上说，所有对对方的回应，都在ack里面。所以是FIN FIN-ACK ACK，关闭。最后一个ACK前，叫做LAST ACK状态。如果ACK丢失，会造成被动方挂断有问题，因此这里需要一个超时机制。用电话术语来说，就是最后一个再见没听见，你就要等到天荒地老，因此当对方首次再见完成的时候，你说再见，如果一定的时间等对方的最后一个再见等不到，就别等了，直接挂机。这个时间比等不到对方任何消息而挂机，要来的短。tcp标准设定为两倍最大生存周期，即2MSL。当然，如果等到了最后一个ACK，就直接删除连接数据结构。</div></p>
+
+<div>    主动关闭的时候，情况会更加复杂一点。为什么？因为刚刚的超时机制。我们从你说再见之前开始说起，这次你是主动告别一方。</div><div>    你首先说了一个再见，然后进入FIN_WAIT1状态，换成电话术语，就是等对方说再见。tcp机制上，对方的ACK先到，就是FIN_WAIT2。对方的FIN先到，就是CLOSING——这种情况不多见，只在双方同时想挂断的时候发生。如果对方的FIN-ACK一起发送，那就直接保送上TIMED_WAIT。无论是哪种先，最后会收到一个ACK和一个FIN，并且发送一个ACK。换成电话术语，就是你说了再见，对方一定会说知道了和再见，并且你会说知道了。差别在于tcp需要用多个状态来表示哪个事情先，哪个事情后，打电话就不要这么麻烦了。</div>
+
+<div>    最复杂的事情，在于说了最后一个再见之后。当你说完最后一个再见，就可以直接挂电话么？电话可以，但是作为tcp，却不可以。因为某些情况下，对方的FIN包没有到就会进入TIMED_WAIT状态。另外一些情况下，对方的LAST_ACK等不到你的ACK，会把他的FIN重发一遍。如果直接销毁连接结构，那么最后一个FIN包可能对新的连接造成干扰，而且会阻碍对方关闭连接。所以，作为主动挂断一方，你有一点很不利的是，无论如何，你必须等这个2MSL的时间。这个值在linux中一般是60s，更进一步可以查看<a href="http://www.faqs.org/rfcs/rfc1337.html" target="_blank">rfc1337</a>。</div>
+
+<p><div><br /></div><div>    刚刚解说的最后一个情况，就是很多机器TIME_WAIT很高的原因——因为你的服务器主动关闭了连接。作为本质解决方案，你需要理解为什么会发生这件事情，服务器端关闭连接是否正常。如果正常，那么加一些内存，并且启用tcp_tw_recycle来减缓这个问题。注意，这个参数不应当在NAT后的机器上被启用。具体可以查看<a href="http://www.ietf.org/rfc/rfc1323.txt" target="_blank">rfc1323</a>。</div></p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Jan 29, 2012</time>
+    <span class="categories">
+      Tags:
+        
+        
+          <a class="category" href="https://shell909090.github.io/tags/computer">computer</a>  <a class="category" href="https://shell909090.github.io/tags/network">network</a>  
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="https://shell909090.github.io/blog/archives/2072/" title="龙年新年">龙年新年</a>
+    
+
+    
+      <a class="basic-alignment right" href="https://shell909090.github.io/blog/archives/2076/" title="PXE模式使用openwrt网络安装debian">PXE模式使用openwrt网络安装debian</a>
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    
+    
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2804/">印度游记-4</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="https://shell909090.github.io/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+
