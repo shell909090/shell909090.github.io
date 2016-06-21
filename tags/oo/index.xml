@@ -2,19 +2,19 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Oo on Shell&#39;s Home</title>
-    <link>https://shell909090.org/tags/oo/</link>
+    <link>http://shell909090.org/tags/oo/</link>
     <description>Recent content in Oo on Shell&#39;s Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Fri, 02 May 2008 19:03:00 +0800</lastBuildDate>
-    <atom:link href="https://shell909090.org/tags/oo/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://shell909090.org/tags/oo/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>C&#43;&#43;继承,虚,转换规则探究</title>
-      <link>https://shell909090.org/blog/archives/15/</link>
+      <link>http://shell909090.org/blog/archives/15/</link>
       <pubDate>Fri, 02 May 2008 19:03:00 +0800</pubDate>
       
-      <guid>https://shell909090.org/blog/archives/15/</guid>
+      <guid>http://shell909090.org/blog/archives/15/</guid>
       <description>&lt;p&gt;以下讨论的东西都是在VS2005下跑出来的，如果想知道别的编译器规则，请照跑一遍。以下是类定义，函数内容为打印出当前函数名称，所以就不再贴了。
 class Base
 {
@@ -262,10 +262,10 @@ return 0;
     
     <item>
       <title>继承函数的拷贝构造</title>
-      <link>https://shell909090.org/blog/archives/422/</link>
+      <link>http://shell909090.org/blog/archives/422/</link>
       <pubDate>Tue, 25 Dec 2007 23:49:53 +0800</pubDate>
       
-      <guid>https://shell909090.org/blog/archives/422/</guid>
+      <guid>http://shell909090.org/blog/archives/422/</guid>
       <description>&lt;div dir=ltr style=&#34;margin-right:0px&#34;&gt;    从基类继承一个子类，基类有一个拷贝构造函数，子类重载了一个。那么在子类拷贝构造的时候会自动调用基类的拷贝构造函数吗？&lt;/div&gt;
 &lt;div dir=ltr style=&#34;margin-right:0px&#34;&gt;    答案是不会，自动调用的是基类的构造函数。&lt;/div&gt;
 &lt;div dir=ltr style=&#34;margin-right:0px&#34;&gt;    子类中如果需要调用基类的拷贝构造函数，需要这样用。&lt;/div&gt;
@@ -275,30 +275,30 @@ return 0;
     
     <item>
       <title>RTTI的几个应用</title>
-      <link>https://shell909090.org/blog/archives/369/</link>
+      <link>http://shell909090.org/blog/archives/369/</link>
       <pubDate>Mon, 02 Apr 2007 23:39:23 +0800</pubDate>
       
-      <guid>https://shell909090.org/blog/archives/369/</guid>
+      <guid>http://shell909090.org/blog/archives/369/</guid>
       <description>&lt;p&gt;贝壳最近研究了下RTTI，发现几个有意思的事情。&lt;br /&gt;    dynamic_cast的应用。&lt;br /&gt;    dynamic_cast可以将一个指针的类型试图转换为指定的类型，是否能转换要看当前指针的动态类型是否是指定类型的子类，而不管指针的声明类型。当失败时返回NULL，因此可以用来识别一个指针的动态类型是否是某个类的子类。&lt;br /&gt;    typeid的应用。&lt;br /&gt;    typeid可以获得某个类的类型信息，最主要的就是name。指明了当前是哪个类，这在串行化中是必要的信息。当判断一个指针的动态类型是否就是某个类的时候可以这样typeid(*p)==typeid(class)。&lt;br /&gt;&lt;/p&gt;
 </description>
     </item>
     
     <item>
       <title>继承类静态对象虚拟化</title>
-      <link>https://shell909090.org/blog/archives/357/</link>
+      <link>http://shell909090.org/blog/archives/357/</link>
       <pubDate>Fri, 02 Feb 2007 17:36:35 +0800</pubDate>
       
-      <guid>https://shell909090.org/blog/archives/357/</guid>
+      <guid>http://shell909090.org/blog/archives/357/</guid>
       <description>&lt;p&gt;其实这个标题不准确，准确的说，应该是继承类拥有自己的基类静态对象。&lt;br /&gt;    我们知道，类中的静态对象本质上是全局变量，不过名字在类命名空间里面。如果类B有静态对象S，D继承了B(先按照public继承讨论，其他其实也一样)。那么在D里面访问S的时候，其实是访问的B命名空间里面的静态对象S。验证代码如下：&lt;br /&gt;class           B {&lt;br /&gt;  protected:&lt;br /&gt;    static int      S;&lt;br /&gt;};&lt;br /&gt;int B::S = 0;&lt;br /&gt;class D:public B {&lt;br /&gt;  public:&lt;br /&gt;    void print () {&lt;br /&gt;        printf (&amp;quot;%dn&amp;quot;, S);&lt;br /&gt;    };&lt;br /&gt;};&lt;br /&gt;class E:public B {&lt;br /&gt;  public:&lt;br /&gt;    static void rewrite () {&lt;br /&gt;        S = 1;&lt;br /&gt;    };&lt;br /&gt;};&lt;br /&gt;int _tmain (int argc, _TCHAR * argv[]){&lt;br /&gt;    D d;&lt;br /&gt;    d.print ();&lt;br /&gt;    E::rewrite ();&lt;br /&gt;    d.print ();&lt;br /&gt;    return 0;&lt;br /&gt;}&lt;br /&gt;    上例中可以看到，两个继承类，其实都是将父类的命名空间导入而已。假定我们要使得每类专有一个静态成员，例如我们要计算每个类的生成对象个数，怎么办呢？&lt;br /&gt;    如果不用继承，我们可以在每个类里面加一个静态成员。然后在构造函数中加1，析构中减1。但是如果我们想把这个功能放到基类中，事情就麻烦了。因为所有类从同一个基类派生，我们算出来的其实是所有从基类继承的类的总对象生成个数。&lt;br /&gt;    当然，我们可以用实现的方法来做。把所需要的功能抽离出来，放到一个单独的计数类中。然后构造的时候调用加1，析构的时候减1。听起来很蠢，那是因为例子容易的关系。比较复杂的时候，这样抽象相对简单的。计数类可以用于多个类，实现了代码重用。但是仍旧没有解决关键问题，怎么让继承类特化基类的静态对象？(虚拟化和特化的意思差不多，就是针对具体对象使用具体方法)&lt;br /&gt;    答案最后被我在More Effective C++中找到了，正确的方法不是寻找一个特化的方法，而是继承不同的基类，使用同一套代码。既然是不同基类，怎么具备同一套代码呢？想到了吧，模版。&lt;br /&gt;template &lt;br /&gt;class           B {&lt;br /&gt;  protected:&lt;br /&gt;    static int      S;&lt;br /&gt;};&lt;br /&gt;class D:public B {&lt;br /&gt;  public:&lt;br /&gt;    void print () {&lt;br /&gt;        printf (&amp;quot;%dn&amp;quot;, S);&lt;br /&gt;    };&lt;br /&gt;};&lt;br /&gt;int B::S = 0;&lt;br /&gt;&lt;br /&gt;class E:public B {&lt;br /&gt;  public:&lt;br /&gt;    static void rewrite () {&lt;br /&gt;        S = 1;&lt;br /&gt;    };&lt;br /&gt;};&lt;br /&gt;int B::S = 0;&lt;br /&gt;&lt;br /&gt;int _tmain (int argc, _TCHAR * argv[])&lt;br /&gt;{&lt;br /&gt;    D d;&lt;br /&gt;    d.print ();&lt;br /&gt;    E::rewrite ();&lt;br /&gt;    d.print ();&lt;br /&gt;    return 0;&lt;br /&gt;}&lt;br /&gt;    看到了？每个继承类拥有了自己的静态成员。如果我们把上面的例子中，S改成ID。就可以做到RTTI了(只是还需要很多技巧)。&lt;br /&gt;&lt;/p&gt;
 </description>
     </item>
     
     <item>
       <title>基础类</title>
-      <link>https://shell909090.org/blog/archives/354/</link>
+      <link>http://shell909090.org/blog/archives/354/</link>
       <pubDate>Fri, 26 Jan 2007 18:28:28 +0800</pubDate>
       
-      <guid>https://shell909090.org/blog/archives/354/</guid>
+      <guid>http://shell909090.org/blog/archives/354/</guid>
       <description>&lt;div&gt;    设计程序的时候，往往觉得怎么这么困难，基础类为什么不多提供些能力。现在风水轮流转，我开始设计基础类了。&lt;/div&gt;
 &lt;div&gt;    站着说话不腰疼，设计基础类才发现基础类这东西真不是人做的。调用上讲究非常多。要返回引用呢？还是值？是需要const呢，还是不能const。返回的时候是一次拷贝构造呢？还是两次。算子需要不需要设计成friend，重复代码能不能消除。着重效率还是安全性，线程安全不安全。这些问题真是活活逼死人啊。&lt;/div&gt;
 &lt;div&gt;    现在正在设计实现一下几个类，有兴趣的可以一起来研究。&lt;/div&gt;
@@ -311,20 +311,20 @@ return 0;
     
     <item>
       <title>关于Java和C&#43;&#43;的一点争论</title>
-      <link>https://shell909090.org/blog/archives/353/</link>
+      <link>http://shell909090.org/blog/archives/353/</link>
       <pubDate>Fri, 26 Jan 2007 07:00:15 +0800</pubDate>
       
-      <guid>https://shell909090.org/blog/archives/353/</guid>
+      <guid>http://shell909090.org/blog/archives/353/</guid>
       <description>&lt;p&gt;不知道为什么，大家好像都喜欢争来争去。关于Java和C++的优劣不知道听了多少。碰巧我两者都会，怎么说也算是公平了吧。我就大着胆子，比较下两者的情况。&lt;br /&gt;    对程序而言，速度不是最终要素。否则我们都应该去用汇编不是？一个程序有六个特性，易学，易用，安全，高效，可变，成本低。然而他们一般都是两两冲突的，好学了，就不好用。强大了，就不好学。安全了，自然要执行很多检查，高效了，自然不安全。针对某个平添优化了，可变性就很差，又不能移植，又不好修改。成本低了，自然什么都差。&lt;br /&gt;    往往我们写企业应用的时候，都看重可变，低成本，安全，易用。高效呢？企业有钱买大服务器啊，这样的话效率差的不是太多也能接受。易学呢？企业有钱搞推广培训啊，只要有什么功能就加什么功能，不用考虑学不会。写用户应用的时候，则是看重安全，高效，然后易学易用里面要占据一样。可变呢？用户应用有多大？不行重写一个。低成本呢？这就是比较吊诡的事情了，没有啥经济效益的用户程序，往往是写起来最不怕费时最不管经济效益的。&lt;br /&gt;    首先从性能角度来说。也许C++程序员说到这里就得意了，不过先别高兴。如果单论速度，汇编语言还在C之上呢。现在网络上很多人讲C优化好了比汇编快，Java优化好了比C快。听听都要笑掉大牙的。C再怎么快，完成同样的步骤，都需要这些汇编代码。Java再怎么快，完成一个动作，底下C代码也不会少的。所谓Java优化好了能快过C，不过是一个Java高手一门心思搞优化，加上碰到一个C语言白痴而已。&lt;br /&gt;    我们先不讨论上面问题，就一般Java程序员和C++程序员而言(注意为啥我没说是C程序员，因为能自称纯C程序员的人要么非常精通语言，不会使用C++特性，要么就根本是个白痴)，Java程序员编写出的代码效率比C++大约慢5倍上下。这个数据是我个人写两个程序，一个运算，一个读取处理，对比出来的。都是没有优化的代码。经过极端的优化后，C++的代码我大概提高了4-8倍的速度。可惜我不是个很好的Java程序员，Java代码的速度大概提升了一倍还不足。就是说，最终C++代码比Java快了将近15倍。&lt;br /&gt;    但是C++程序员们先别乐，首先我Java语言并不好，这还不是最终的速度比。其次我牺牲了C++的很多特性。运算上几乎就是在写汇编了，接口都直接用了WIN32SDKAPI。没有移植性，没有可维护性，还需要特殊的技巧，怎么想都是牺牲重大。如果要真的这么追求速度，相信汇编会是更好的选择。我们在速度相差5倍左右的情况下就可以使用C++而不用汇编，为什么不能在速度相差5倍的情况下选择Java呢？&lt;br /&gt;    然后我们再看性能的另外一个方面，存储管理。说简单点，就是外围设备吞吐管理和内存管理。这方面上C++也是远远超越了Java。不需要的内存就不要，不必须的吞吐就不吐。C++是门培养人的语言，没有很好的功底是无法驾驭的。C++是门程序员负责一切的语言，任何错误都是程序员的错误。然而对于Java来说，就不必处理复杂而没有意义的内存管理了。假设一个Java程序员需要传一个对象给子函数，他只要传递就可以了。然而如果C++程序员直接传递，那么就会出现参数拷贝过程。不但效率差，还可能出现错误。单单一个参数传递，就有三种方式。传值，传址，引用。又分成四类，静态动态，常量非常量。交叉起来，总共是12种情况，需要量材选用。如此烦琐的管理方式，我们可以想想对于内存来说是很有好处的。嵌入系统中大型程序设计绝对是C的天下。然而这么困难的使用方式，需要多大的人力成本才能做到呢？这明显的违反了低成本的原则。&lt;br /&gt;    Java的内存管理从C++的角度看绝对是具有瑕疵的，内存释放了不管，直到没有空间了才收集。然而很多C++程序高手在特殊情况下，会重载operator new算子。其中的行为就很类似这个，Java只是将特殊情况下的应用放到了一般情况。这样对于速度的后果就是，很多的缓存会被持续的从物理内存中挤压出去，导致磁盘吞吐效率降低。对于Java程序，我猜测提升效率的瓶颈将会在和系统交互以取得最佳的垃圾收集时间上。&lt;br /&gt;    下面的论题就可能是C++程序员所不高兴看到的了，安全性和可变性。&lt;br /&gt;    就语言来说，用户输入的检查这种安全性是一点意义都没有的。我们所说的基本包括几个方面，非正常用法安全，线程安全，异常过程安全。就语言来说，分为了解释型和编译型。那么怎么区分呢？我这里有个很简单的方法，如果程序本身能被本身修改，就是编译型的，否则是解释型。注意，不是让你修改了磁盘上的源码再运行。这个能力赋予了C++强大的功能，例如修改游戏，检查病毒，都需要这个能力。但是不可否认的，比起无法修改自身的程序，安全性就差太多了。线程安全性上讲，Java的所有对象都是系统管理的，也就很容易的可以管理互斥。用过C++的都知道，C++自身是没有互斥的，全靠系统的函数库或者第三方库支撑。好用不好用不说，无法移植是一定的！最后是异常过程安全，C++的异常过程是很恐怖的。关键在于C++的异常传递有三种办法，传值，传址，引用。而且在异常过程中还又涉及回了内存管理啥的。天啊，要是异常都不能专心处理异常，我还要异常干嘛？&lt;br /&gt;    至于可变性，那就更别说了。连处理异常都要小心内存泄露的家伙，你指望在修改代码的时候轻松到哪里去？C++是具备了强大的可变性，然而处于效率考虑，很多增强可变性的东西是选项的。例如RTTI，居然要开编译器选项的说。需要使用可变性就要牺牲性能，而且还要你小心的使用。如果使用不小心，抱歉，你又陷入效率和安全的问题里面去了。&lt;br /&gt;    如果你有很好的系统功底，准备往计算机领域发展(注意不是计算领域)。那么C++是门很好的语言，只是非常费时而已。而且建议你学C#，VB或者Java作为第二语言，选择Bash或者Perl作为第三语言。这样在处理问题上可以事半功倍。如果你打算增加自己的计算机能力，方便日常的电脑使用，而不准备深入学习这个领域。那么只学C#，VB或者Java就足够了。&lt;br /&gt;    最后要提到的是易学和易用，这两个特性都是软件设计所赋予的。也就是说，即使是以简单著称的VB.NET，也可以写很好用的程序。以复杂著称的汇编，也可以写很友好的界面。这就不在本文的论题以内了。&lt;br /&gt;&lt;/p&gt;
 </description>
     </item>
     
     <item>
       <title>构造过程</title>
-      <link>https://shell909090.org/blog/archives/347/</link>
+      <link>http://shell909090.org/blog/archives/347/</link>
       <pubDate>Sat, 13 Jan 2007 22:12:10 +0800</pubDate>
       
-      <guid>https://shell909090.org/blog/archives/347/</guid>
+      <guid>http://shell909090.org/blog/archives/347/</guid>
       <description>&lt;p&gt;&lt;span&gt;
 &lt;div&gt;    在进入正题前，我们首先回顾下我们的基础C++常识。如果调用某个对象的某个方法，那么会调用到什么？&lt;br /&gt;    一般来说，如果这个方法是普通函数，则按照这个对象的声明类型去调用。就好像(&amp;amp;obj)-&amp;gt;obj_type::function(param&amp;hellip;);。而如果是虚函数，则是按照这个对象的构造类型去调用。就好像(&amp;amp;obj)-&amp;gt;((&amp;amp;obj)-&amp;gt;_v_ptr[n])&lt;span&gt;(param&amp;hellip;);。或者说简单点，一个是按照这个类看起来像是哪个类来调用，一个是按照这个类实际是哪个类来调用。&lt;br /&gt;    那么，如果在一个基类的某个成员里面调用这个类的另外一个虚函数，调用的是哪个呢？&lt;br /&gt;    任何正常人来说，都应该说是，按照这个类的构造类型来确定。基本上没错，不过有一个函数例外。&lt;br /&gt;    那么先看一个问题。&lt;br /&gt;&lt;/span&gt;class           B {&lt;br /&gt;public:&lt;br /&gt;    B(){test ();}&lt;br /&gt;    virtual void test (){printf (&amp;quot;parentn&amp;quot;);}&lt;br /&gt;    void out (){test ();}&lt;br /&gt;};&lt;/div&gt;
 &lt;div&gt;class D:public B {&lt;br /&gt;public:&lt;br /&gt;    virtual void test (){printf (&amp;quot;childn&amp;quot;);}&lt;br /&gt;};&lt;/div&gt;

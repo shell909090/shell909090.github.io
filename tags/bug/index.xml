@@ -2,19 +2,19 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Bug on Shell&#39;s Home</title>
-    <link>https://shell909090.org/tags/bug/</link>
+    <link>http://shell909090.org/tags/bug/</link>
     <description>Recent content in Bug on Shell&#39;s Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Wed, 17 Aug 2011 16:03:11 +0800</lastBuildDate>
-    <atom:link href="https://shell909090.org/tags/bug/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://shell909090.org/tags/bug/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>除虫故事（三）</title>
-      <link>https://shell909090.org/blog/archives/1887/</link>
+      <link>http://shell909090.org/blog/archives/1887/</link>
       <pubDate>Wed, 17 Aug 2011 16:03:11 +0800</pubDate>
       
-      <guid>https://shell909090.org/blog/archives/1887/</guid>
+      <guid>http://shell909090.org/blog/archives/1887/</guid>
       <description>&lt;p&gt;第三个bug是刚出的，贝壳刚刚从现场回来，提交了bug系统关闭申请。 &lt;div&gt;    问题是这样的，我们有一套系统，为客户提供从web访问某台windows的能力，作为管理系统使用。这个系统的后台使用了三四个不同的程序，通过管道通讯。目标设备上有一个组件，要适应2000/2003/2008的32位和64位环境，非常复杂。最近，贝壳将这套系统的目标设备的组件进行了重编译，提供了64位版本。然后测试发现，32位系统不工作了，64位系统正常。&lt;/div&gt;&lt;div&gt;    第一反应是什么？一定是组件有问题？贝壳在服务器上，直接使用连接程序去连接，结果是成功的。这个表明组件应当是正常的，或者部分正常。问题就在web页面到连接程序的过程中某处。&lt;/div&gt;&lt;/p&gt;
 
 &lt;div&gt;    负责web界面到连接程序的工程师同事接手了下一步排查，他也是一头雾水。系统看来一切正常，连接程序明明可以工作，为什么从web页面调用就会失败呢？而且只有32位会失败。web页面对CPU字长（而且是目标设备的CPU字长）并不敏感阿，这个听起来不合理。&lt;/div&gt;&lt;div&gt;    测试过程中，测试部门的同事偶然的看了一下日志系统，发现了问题。我们的连接程序会写出日志，默认情况下这个日志的属主应当是web.web的，而当时的日志是root.root的，而且权限是644。所以当连接程序被直接调用，当前id是root，就可以连接成功。而连接程序被web调用，当前id是apache，日志写出就会失败，程序就挂了，目标设备会失去反应。&lt;/div&gt;
@@ -27,10 +27,10 @@
     
     <item>
       <title>除虫故事（二）</title>
-      <link>https://shell909090.org/blog/archives/1869/</link>
+      <link>http://shell909090.org/blog/archives/1869/</link>
       <pubDate>Tue, 02 Aug 2011 15:16:56 +0800</pubDate>
       
-      <guid>https://shell909090.org/blog/archives/1869/</guid>
+      <guid>http://shell909090.org/blog/archives/1869/</guid>
       <description>&lt;p&gt;第二个故事，是一次oracle数据库的紧急损坏抢修问题。 &lt;div&gt;    当时客户紧急保修，系统无法继续工作，重启后无效。我们就找了DBA赶快飞去客户那里。客户有两台应用服务器和两台数据库，应用服务器组成热备的态势，数据库组成RAC。数据保存在一个SAN盘阵上，LogFile放本地，ArchivedLog使用备份脚本复制到备份服务器后删除。听起来是挺靠谱的方案，没想到就坏了。&lt;/div&gt;&lt;div&gt;    去了后，客户说暂时恢复了运作。然而我们还是要出具详细的报告，因此赶快去了机房。贝壳第一眼看的东西，就是/var/log。里面的报告是err9，也就是文件读写错误。oracle一切正常，应用发布服务器一切正常。&lt;/div&gt;&lt;/p&gt;
 
 &lt;p&gt;&lt;div&gt;    这下有点抓瞎了，难不成要出具一份报告说SAN盘阵损坏？可是损坏也得有厂商来维修，说坏得有真凭实据阿。现在SAN一切正常，这个报告怎么写呢？&lt;/div&gt;&lt;div&gt;    说来算巧合，贝壳检查磁盘的时候，顺手打了一句df -h进去，看到磁盘空间已经用掉了80%以上，顺口问了句DBA，如果空间耗尽会如何。DBA说会挂起，和目前状况一致。贝壳顿觉狐疑，是不是空间耗尽呢？是的话，为什么会神秘的恢复呢？&lt;/div&gt;&lt;div&gt;    Oralce的运作非常精巧，也非常复杂。当一条SQL语句执行的时候，先写LOG，然后操作数据，最后再将结果写入LOG。当出现问题需要复原的时候，根据某个时间点的数据备份，和整个运作过程中的所有Log，就可以复原。但是LOG写出的时候量非常大，没有无限的空间给他写阿。所以LogFile的设计是文件循环，当写满一个文件，切换下一个文件。一个文件写满后，就会有一个服务，趁着磁盘空闲，将Log压缩备份为ArchivedLog，然后再将这个文件的状态变为Empty。&lt;/div&gt;&lt;/p&gt;
@@ -47,10 +47,10 @@
     
     <item>
       <title>除虫故事（一）</title>
-      <link>https://shell909090.org/blog/archives/1867/</link>
+      <link>http://shell909090.org/blog/archives/1867/</link>
       <pubDate>Mon, 01 Aug 2011 14:46:25 +0800</pubDate>
       
-      <guid>https://shell909090.org/blog/archives/1867/</guid>
+      <guid>http://shell909090.org/blog/archives/1867/</guid>
       <description>&lt;p&gt;汽车对冰淇淋过敏的传说都听说过吧，贝壳也说几件故事。寓意什么的就别提了，当个故事听吧。 &lt;div&gt;    第一个故事，是一个传奇的问题。贝壳早在02年的时候，就在家里弄了两台电脑。互相用网线一连，组成局域网打游戏。当时流行的游戏还是Diablo II，当然，这东西的III已经叫了10年，还没出来，接近永远的毁灭公爵。两台机器之间的游戏打的很流畅，一点异常都没有。&lt;/div&gt;&lt;div&gt;    当年文件共享还是有很多问题的，尤其是连续的几个蠕虫，有志一同的使用了windows的samba系统。所以安全上说，贝壳舍弃了windows文件共享，使用ftp方案。当年还流行用ftp开自己的文件资料共享站，贝壳就用雷电自己开了一个。现在基本看不到了，基本都是用网盘或者p2p。问题就出现在这个文件传输上。&lt;/div&gt;&lt;/p&gt;
 
 &lt;p&gt;&lt;div&gt;    文件传输的速度常常限制在1-3K之间，速度死活上不去。结合Diablo II可以正常工作的事实，贝壳的初步结论是ftp系统问题。然而从外网测试的结果，ftp站点一切正常。那么ftp客户端呢？经过测试，这个客户端软件和配置在外网上访问贝壳自己的站点是正常的。&lt;/div&gt;&lt;div&gt;    那么从表象上看，问题就在客户端所在的机器上了。贝壳检查了机器的网卡和系统驱动，又重装了系统，问题仍旧没有消除——似乎有点奇怪吧。而且推理上说，如果机器有问题，Diablo II也不会运行的如此流畅的。&lt;/div&gt;&lt;/p&gt;
@@ -63,10 +63,10 @@
     
     <item>
       <title>twip在hawkhost上问题的解决</title>
-      <link>https://shell909090.org/blog/archives/1604/</link>
+      <link>http://shell909090.org/blog/archives/1604/</link>
       <pubDate>Wed, 03 Nov 2010 17:39:00 +0800</pubDate>
       
-      <guid>https://shell909090.org/blog/archives/1604/</guid>
+      <guid>http://shell909090.org/blog/archives/1604/</guid>
       <description>&lt;p&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;这两天twip的api不正常，跑上去看看，有个错误。&lt;div&gt;&lt;span class=&#34;Apple-style-span&#34; style=&#34;font-family: Simsun; font-size: medium; &#34;&gt;&lt;b&gt;Fatal error&lt;/b&gt;: Cannot redeclare class OAuthException in&amp;nbsp;&lt;b&gt;/home/shellcom/public_html/apis/include/OAuth.php&lt;/b&gt;&amp;nbsp;on line&amp;nbsp;&lt;b&gt;8&lt;/b&gt;&lt;/span&gt;&lt;br /&gt;  &lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;这时候，找到include/OAuth.php，改成这样。&lt;/div&gt;&lt;div&gt;&lt;div&gt;#class OAuthException extends Exception {&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;// pass&lt;/div&gt;&lt;div&gt;#}&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;问题就暂时解决了。&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;这是因为主机上新装了什么库，这个库自己也定义了OAuthException（会定义这种异常的，估计是OAuth库）。所以，把这个自定义的异常移除，问题就暂时解决了。&lt;/div&gt;  &lt;/div&gt;&lt;/div&gt;&lt;/p&gt;
 </description>
     </item>

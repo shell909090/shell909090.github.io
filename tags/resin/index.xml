@@ -2,19 +2,19 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Resin on Shell&#39;s Home</title>
-    <link>https://shell909090.org/tags/resin/</link>
+    <link>http://shell909090.org/tags/resin/</link>
     <description>Recent content in Resin on Shell&#39;s Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Tue, 06 Dec 2005 17:17:59 +0800</lastBuildDate>
-    <atom:link href="https://shell909090.org/tags/resin/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://shell909090.org/tags/resin/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>AS3下安装resin出错</title>
-      <link>https://shell909090.org/blog/archives/270/</link>
+      <link>http://shell909090.org/blog/archives/270/</link>
       <pubDate>Tue, 06 Dec 2005 17:17:59 +0800</pubDate>
       
-      <guid>https://shell909090.org/blog/archives/270/</guid>
+      <guid>http://shell909090.org/blog/archives/270/</guid>
       <description>&lt;div&gt;&amp;nbsp;make不通过
 &lt;p&gt;出错如下&lt;br /&gt;clude/linux -I../common -DCPU=&amp;quot;i386&amp;quot; -DOS= -c -o ssl.o ssl.c&lt;br /&gt;In file included from /usr/include/openssl/ssl.h:179,&lt;br /&gt;from ssl.c:62:&lt;br /&gt;/usr/include/openssl/kssl.h:72:18: krb5.h: No such file or directory&lt;br /&gt;In file included from /usr/include/openssl/ssl.h:179,&lt;br /&gt;from ssl.c:62:&lt;/p&gt;
 &lt;p&gt;解决方法：&lt;/p&gt;
@@ -28,10 +28,10 @@
     
     <item>
       <title>debian上配置基于apache2的resin</title>
-      <link>https://shell909090.org/blog/archives/266/</link>
+      <link>http://shell909090.org/blog/archives/266/</link>
       <pubDate>Tue, 29 Nov 2005 00:26:52 +0800</pubDate>
       
-      <guid>https://shell909090.org/blog/archives/266/</guid>
+      <guid>http://shell909090.org/blog/archives/266/</guid>
       <description>&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp; 别的不说了，先用debian自带的apt安装apache2,记得安装dev部分，还有libapr0,libapr-dev,libapr0-dev。千万别忘记安装后面的部分，否则你在下面编译的时候就要出现问题。&lt;/div&gt;
 &lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp; 拿到resin，放在目标目录下面，然后tar -jxvf。完成后用ln -s做一个链接上去，使用resin的名字，这样可以方便的替换版本。然后在主目录下面运行./configure，make一下。一般来说，会出不少错误，最后生成一个libresin.so放到libexec下面，并且更新了resin的主执行程序。这个so很具有迷惑性，开始贝壳就被他骗了。这个so貌似是resin在本地平台下的加速程序，而不是嵌入到apache系列服务器中的整合插件。其中最大的差异是没有caucho_module导出符号，在apache加载的时候肯定会失败。&lt;/div&gt;
 &lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp; 跑到src/c/plugins/apache2下面运行make。可能会报错，可能没有。贝壳这里报了错，不过贝壳运行configure的时候没有加任何参数，也许加了参数就正常了。如果不正常，出错的代码可能分别是httpd.h找不到或者apr_time.h找不到。运行vi Makefile，看到有INCLUDE的目录吗？那里面要包含/usr/include/apache2和/usr/include/apr-0两个目录，没有就肯定出错。好了，修改然后重新make。得到的文件是mod_caucho.so。将它cp到$RESIN_HOME/libexec下面，这个动态库导出了caucho_module符号。&lt;/div&gt;

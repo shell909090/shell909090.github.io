@@ -2,19 +2,19 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Emacs on Shell&#39;s Home</title>
-    <link>https://shell909090.org/tags/emacs/</link>
+    <link>http://shell909090.org/tags/emacs/</link>
     <description>Recent content in Emacs on Shell&#39;s Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Tue, 10 Apr 2012 06:50:56 +0800</lastBuildDate>
-    <atom:link href="https://shell909090.org/tags/emacs/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://shell909090.org/tags/emacs/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>如何用tabbar插件做emacs的tab定位切换</title>
-      <link>https://shell909090.org/blog/archives/2134/</link>
+      <link>http://shell909090.org/blog/archives/2134/</link>
       <pubDate>Tue, 10 Apr 2012 06:50:56 +0800</pubDate>
       
-      <guid>https://shell909090.org/blog/archives/2134/</guid>
+      <guid>http://shell909090.org/blog/archives/2134/</guid>
       <description>&lt;p&gt;说明一下，定位切换的意思，是像chromium那样，用Atl-1-9直接切换tab。而不是用上一个下一个慢慢换。另外，是切换buffer，不是切换frame。&lt;div&gt;    以下是实现部分：&lt;/div&gt;&lt;div&gt;;; 全部的buffer都分一组，否则这个修改是没任何意思的&lt;/div&gt;&lt;div&gt;&lt;div&gt;(setq tabbar-buffer-groups-function&lt;/div&gt;&lt;div&gt;      (lambda () (list &amp;quot;All Buffers&amp;quot;)))&lt;/div&gt;&lt;/p&gt;
 
 &lt;p&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;;; 去掉emacs自带的几个buffer&lt;/div&gt;&lt;div&gt;(setq tabbar-buffer-list-function&lt;/div&gt;&lt;div&gt;      (lambda ()&lt;/div&gt;&lt;div&gt;        (remove-if&lt;/div&gt;&lt;div&gt;&lt;span style=&#34;white-space:pre-wrap&#34;&gt;  &lt;/span&gt; (lambda(buffer)&lt;/div&gt; &lt;div&gt;&lt;span style=&#34;white-space:pre-wrap&#34;&gt;  &lt;/span&gt;   (find (aref (buffer-name buffer) 0) &amp;quot; &lt;em&gt;&amp;quot;))&lt;/div&gt;&lt;div&gt;&lt;span style=&#34;white-space:pre-wrap&#34;&gt;    &lt;/span&gt; (buffer-list))))&lt;/div&gt;&lt;div&gt; &lt;br /&gt;&lt;/div&gt;&lt;div&gt;;; 切换到第N个buffer，1为第一个，负数表示从后数，注意0会出错，这里就不处理了&lt;/div&gt;&lt;div&gt;&lt;div&gt;(defun switch-tabbar (num)&lt;/div&gt;&lt;div&gt;  (let&lt;/em&gt; ((tabs (tabbar-tabs (tabbar-get-tabset &amp;quot;All Buffers&amp;quot;)))&lt;/div&gt;&lt;div&gt;         (tab (nth&lt;/div&gt;&lt;/p&gt;
@@ -31,20 +31,20 @@
     
     <item>
       <title>elisp的简单介绍</title>
-      <link>https://shell909090.org/blog/archives/1661/</link>
+      <link>http://shell909090.org/blog/archives/1661/</link>
       <pubDate>Sat, 25 Dec 2010 20:16:00 +0800</pubDate>
       
-      <guid>https://shell909090.org/blog/archives/1661/</guid>
+      <guid>http://shell909090.org/blog/archives/1661/</guid>
       <description>&lt;p&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;emacs是利用elisp写成的，而elisp是lisp的一个方言。lisp语言是出名的优美和晦涩，当然，更出名的是括号。。。 &lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;emacs利用elisp作为上层抽象。首先，emacs提供了基本的编辑器框架，包括文件操作函数API，buffer，frame，windows的API。而后，emacs附带了很多函数实现，并且和按键一一绑定。例如Ctrl+N（简写为C-N）就被绑定到&amp;ldquo;换到下一行&amp;rdquo;这个API上。于是，我们按下Ctrl+N的时候，就会触发&amp;ldquo;换到下一行&amp;rdquo;这个函数的执行。dired等插件也是基于类似的原理写成。&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;我们可以用类似的方法，来编写自己的函数，扩充emacs的功能。下面我们看一个例子：&lt;/div&gt;    &lt;div&gt;&lt;div&gt;(defun popup-term ()&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;(interactive)&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;(apply &amp;#39;start-process &amp;quot;terminal&amp;quot; nil popup-terminal-command)&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;)&lt;/div&gt;&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;首先先说明一下，elisp的基于规则是利用括号匹配的s表达式，通过特定规则计算表达式。每个表达式由多个原子构成，一个原子可以是符号，对象（数字或者字符串），序对，表（包括空表），树，以及他们的嵌套。求值的时候，第一个原子做动词，先求值第一个原子，直到得到一个对象，再根据第一个原子的特性决定正则序和应用序。应用序的先对每个后续原子求值，再调用第一个原子对应的对象。正则序直接交给第一个原子对应对象处理。上文那个表达式，最外层的是(defun)列表，defun是函数定义函数，popup-term是符号。这部分混合起来，就是定义(interactive)&amp;nbsp;(apply &amp;#39;start-process &amp;quot;terminal&amp;quot; nil popup-terminal-command)为一个函数，并在上层框架空间内把内容赋值给popup-term这个符号。说的更直白一点，就是定义函数。&lt;/div&gt;    &lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;当我们执行popup-term这个函数的时候（M-x加上函数名就可以手工调用），首先执行interactive过程。这个函数可以在这里（&lt;a href=&#34;http://www.gnu.org/software/emacs/manual/html_node/elisp/index.html&#34; target=&#34;_blank&#34;&gt;&lt;a href=&#34;http://www.gnu.org/software/emacs/manual/html_node/elisp/index.html&#34;&gt;http://www.gnu.org/software/emacs/manual/html_node/elisp/index.html&lt;/a&gt;&lt;/a&gt;）查到，基本上，可以认为执行了这个函数，才能够和前台交互。而后是apply函数，这个函数将后面的几个值作用于紧跟着的那个符号所对应的函数。用python语言来描述，大概是这个样子。&lt;/div&gt;    &lt;div&gt;def apply(func, *param): return&amp;nbsp;globals()&lt;a href=&#34;*param&#34;&gt;func&lt;/a&gt;&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;这个函数真正的部分，是从start-process到括号结束。其意义是启动一个子进程，名为terminal，没有对应的buffer（熟悉emacs的应该知道这是什么），命令为popup-terminal-command。这个命令在windows下和linux下有不同定义，所以我将这个定义放在了emacs-win.el和emacs-linux.el里面。在linux下，他是这么定义的。&lt;/div&gt;    &lt;div&gt;(setq popup-terminal-command &amp;#39;(&amp;quot;x-terminal-emulator&amp;quot;))&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;setq是设定一个全局变量。整句合起来的意思是，在执行popup-term的时候，启动一个子进程，执行x-terminal-emulator。最后，将popup-term绑定到keymap上。&lt;/div&gt;&lt;div&gt;(global-set-key [(control c) (s)] &amp;#39;popup-term)&lt;/div&gt;    &lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;现在，在任何一个buffer中按下C-c s，就可以弹出当前目录对应的term了。&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;我们在emacs中所做的所有配置，插件安装，其实本质上是写代码控制其他代码的载入，变更环境变量。只要有合适的文档，或者有时间阅读源码，我们就可以对其他程序进行扩充。下面介绍一个对dired进行扩充的例子，我们向dired中加入copy-from和rename-from，还有dired-open功能。dired的copy和rename必须在源目录中，选择文件，按C，输入目标路径。有的时候我们在某个目录工作到一半，突然需要从另外一个目录复制一个文件过来。这时候打开对方目录进行复制动作太繁琐，因此我编写了两个函数，分别绑定到r和c上。dired-open则是另外一个文件，有时我们需要通过其他程序打开某个文件，例如播放电影。在dired中直接用&amp;amp;可以实现这个目标，但是需要自行输入播放命令，而且会新开一个buffer。以下是代码。&lt;/div&gt;    &lt;div&gt;&lt;div&gt;(defun dired-open-file (&amp;amp;optional arg)&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;(interactive)&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;(apply &amp;#39;start-process &amp;quot;dired-open&amp;quot; nil&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; (append (split-string&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;(read-shell-command&lt;/div&gt;    &lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;quot;command: &amp;quot; (dired-guess-cmd (dired-get-filename))))&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;(list (dired-get-filename)))))&lt;/div&gt;&lt;div&gt;(defun dired-copy-from (&amp;amp;optional arg)&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;(interactive)&lt;/div&gt;    &lt;div&gt;&amp;nbsp;&amp;nbsp;(let ((source-path (read-file-name &amp;quot;filepath: &amp;quot;)))&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;(copy-file source-path (file-name-nondirectory source-path))))&lt;/div&gt;&lt;div&gt;(defun dired-rename-from (&amp;amp;optional arg)&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;(interactive)&lt;/div&gt;    &lt;div&gt;&amp;nbsp;&amp;nbsp;(let ((source-path (read-file-name &amp;quot;filepath: &amp;quot;)))&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;(rename-file source-path (file-name-nondirectory source-path))))&lt;/div&gt;&lt;div&gt;(add-hook &amp;#39;dired-mode-hook&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;(lambda ()&lt;/div&gt;    &lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;(define-key dired-mode-map &amp;quot;b&amp;quot; &amp;#39;dired-open-file)&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;(define-key dired-mode-map &amp;quot;c&amp;quot; &amp;#39;dired-copy-from)&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;(define-key dired-mode-map &amp;quot;r&amp;quot; &amp;#39;dired-rename-from)&lt;/div&gt;    &lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;(define-key dired-mode-map [(control c) (g)] &amp;#39;dired-etags-tables)&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;))&lt;/div&gt;&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;如上文一样，我们定义了dired-open-file函数，这个函数的核心部分是start-process，但是在命令上，我们的命令是这个。&lt;/div&gt;&lt;div&gt;&lt;div&gt;(append (split-string&lt;/div&gt;    &lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;(read-shell-command&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;quot;command: &amp;quot; (dired-guess-cmd (dired-get-filename))))&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;(list (dired-get-filename)))&lt;/div&gt;&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;这段代码，是将两个表进行混合。第一个是从mini-buffer读取入一个命令行，而后分解为列表，读取时的默认值由dired-guess-cmd这个函数确定。第二个表是当前光标所在的文件名。两者合起来，在执行的时候就会变成命令行后加上文件名的执行效果。而dired-guess-cmd这个函数，接受当前文件名作为参数，猜测一个正确的命令行。在windows下，大多数时候等于start，linux下则是大多数时候等于xdg-open。&lt;/div&gt;    &lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;下面的dired-copy-from和dired-rename-from函数非常简单，大家可以自行分析。不明白的函数可以查阅上文那份elisp的参考手册。&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;最后，我们把这些函数绑定到键上。由于不是全局绑定，因此不能使用global-set-key。非常幸运的，dired在加载的时候会调用dired-mode-hook。我们将一个lambda函数加入这个函数调用中，这个lambda函数中，使用define-key定义了键和函数的对应关系。于是，我们在dired模式下，通过b c r就可以调用以上三个我们编写的功能了。&lt;/div&gt;    &lt;div&gt;&amp;nbsp;&amp;nbsp; &amp;nbsp;elisp可以通过pymacs和python进行混编调用，但是通常并不需要这么复杂而强大&lt;/p&gt;
 </description>
     </item>
     
     <item>
       <title>在各个平台上启动emacs的技巧</title>
-      <link>https://shell909090.org/blog/archives/103/</link>
+      <link>http://shell909090.org/blog/archives/103/</link>
       <pubDate>Fri, 12 Mar 2010 23:06:00 +0800</pubDate>
       
-      <guid>https://shell909090.org/blog/archives/103/</guid>
+      <guid>http://shell909090.org/blog/archives/103/</guid>
       <description>&lt;p&gt;今天在推上，一帮人讨论了emacs如何启动的问题。这个问题我是这么解决的。
 这个配置针对三个上下文起作用。Windows，Linux图形，Linux+SSH。在Windows下，不使用alias，因为emacsclient会在找不到server的时候自动启动一个新的emacs。将emacsclient加入到注册表中，就可以对任意文件“使用emacs打开”。
 Linux和Linux+SSH中，需要使用alias技巧，因为emacsclient不会在没有server的时候自动启动emacs。过程如下：
@@ -57,10 +57,10 @@ alias emacsclient=&amp;ldquo;emacsclient -a emacs&amp;rdquo;
     
     <item>
       <title>emacs配置系统</title>
-      <link>https://shell909090.org/blog/archives/100/</link>
+      <link>http://shell909090.org/blog/archives/100/</link>
       <pubDate>Wed, 03 Mar 2010 16:51:00 +0800</pubDate>
       
-      <guid>https://shell909090.org/blog/archives/100/</guid>
+      <guid>http://shell909090.org/blog/archives/100/</guid>
       <description>&lt;p&gt;emacs是个超级复杂的程序，尤其在配置问题上。贝壳的emacs要跨越三个环境。环境一，WindowsXP+Emacs23。环境二，Debian Testing + Xfce4。环境三，CentOS + Ssh。而整个的操作方式，个性设定需要保持一致。因此，引出一个问题。配置如何设置，跨平台，同步。
 首先解决配置的同步问题，贝壳建立了一个svn仓库，用于存储该配置系统。然后在各个系统中co出这个仓库，当有需要调整时ci就可以保持同步了。Linux下可以使用ln连接文件，Windows下比较麻烦点，NTFS格式(大多都是NTFS格式了吧)可以去sysinternals下一个叫做junction的工具，以建立目录的工具链接，当然，.emacs文件只能手工拷贝了。
 然后是配置的切分问题，如果只有一个文件，即使使用了版本控制，意义也不大。同时，将配置切割成不同的部分，控制载入过程，也可以跨平台和加速。以下是贝壳的.emacs文件。
@@ -132,10 +132,10 @@ for i in $(DEPENDS); do $(MAKE) -C $$i clean || exit 1; done
     
     <item>
       <title>emacs简介</title>
-      <link>https://shell909090.org/blog/archives/48/</link>
+      <link>http://shell909090.org/blog/archives/48/</link>
       <pubDate>Wed, 17 Dec 2008 11:14:00 +0800</pubDate>
       
-      <guid>https://shell909090.org/blog/archives/48/</guid>
+      <guid>http://shell909090.org/blog/archives/48/</guid>
       <description>&lt;p&gt;emacs一定是我梦想中的编辑器，设计者一定是个超级的混蛋。
 emacs是一种多平台的编辑器，具有非常古老的历史，和vi一起并称为黑客常用两大编辑器（在贝壳学习linux后，就“顺带”学习了vi——因为根本没有其他选择）。作为编辑器来说，他只接受文本编辑，但是却具有收发邮件，编译软件，调试程序，甚至煮咖啡等各种诡异的非正经功能。很多人疯狂的热爱他，认为他是人工智能的结晶，化妆成编辑器的操作系统。但也有人疯狂的咒骂他，认为这东西纯粹就是折磨人用的。贝壳这次的blog，就是侃侃emacs到底是什么。
 说emacs是人工智能平台，其实这个说法并没有错。emacs的运作机理和我们通常的编辑器都有不同。通常来说，一个编辑器可能有多个windows 啦，frame啦什么的，但是最终作用于一个文本。你可以添加，删除，修改，或者标记一段文本，进行剪切，复制，粘贴等动作。设计比较完善的还有回退和重做。让我们专注于其中一个任务，例如，删除，看看我们的编辑器是如何工作的。

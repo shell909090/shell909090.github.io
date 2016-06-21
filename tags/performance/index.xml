@@ -2,19 +2,19 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Performance on Shell&#39;s Home</title>
-    <link>https://shell909090.org/tags/performance/</link>
+    <link>http://shell909090.org/tags/performance/</link>
     <description>Recent content in Performance on Shell&#39;s Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Wed, 27 Aug 2008 22:18:00 +0800</lastBuildDate>
-    <atom:link href="https://shell909090.org/tags/performance/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://shell909090.org/tags/performance/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>python的性能问题</title>
-      <link>https://shell909090.org/blog/archives/31/</link>
+      <link>http://shell909090.org/blog/archives/31/</link>
       <pubDate>Wed, 27 Aug 2008 22:18:00 +0800</pubDate>
       
-      <guid>https://shell909090.org/blog/archives/31/</guid>
+      <guid>http://shell909090.org/blog/archives/31/</guid>
       <description>&lt;p&gt;贝壳最近在一个朋友的网站上看到了关于SICP零钱兑换问题的python求解，使用了记忆机制，然后他给出了代码。然而他的代码计时上有点小问题，也没有用包装器(奇怪的是，有写)，而且python的栈深度有限。因此贝壳做了几个修改的版本，需要测试下性能，下面就是关于性能的几个问题和过程。
 本文详细论述了python语言下和C++语言下使用各种方法测试代码性能的方法，以及粗略的关于两种语言不同算法性能对比。
 原始的python代码是这样的：
@@ -265,10 +265,10 @@ times:11000
     
     <item>
       <title>EPS转BMP和代码优化</title>
-      <link>https://shell909090.org/blog/archives/340/</link>
+      <link>http://shell909090.org/blog/archives/340/</link>
       <pubDate>Fri, 22 Dec 2006 17:53:13 +0800</pubDate>
       
-      <guid>https://shell909090.org/blog/archives/340/</guid>
+      <guid>http://shell909090.org/blog/archives/340/</guid>
       <description>&lt;div&gt;    EPS转BMP(我用的是PNG，不过还是一回事情)。EPS内部有两种图片，一个是TIF，位置和大小在头32个字节中描述。具体可以看EPS文档，在lp[5]保存位置，lp[6]保存大小。还有就是%%BeginBinary: 后面跟一个大小，然后跟beginimagex0D。在前文中应当有大小，自己找找看去，最后是一堆数据。存放方法是一位一位的像素连续存放，先存放一行C，然后是一行M，然后是Y，然后是K。当这4者全部存放完后，向后跳空一端区域，到本行开始的4字节对齐处，开始下一行的存放。&lt;/div&gt;
 &lt;div&gt;    例如3个像素宽的图片(好简单——)存放方法就是，在0字节的最高三位(7,6,5位)，存放了这三个像素的C值。次三位(4,3,2位)，存放了M值。然后Y值存放在0字节的两位(1,0位)和1字节的一位(7位)。最后K值存放在1字节的次三位(6,5,4位)。然后跳空对齐，在4字节的位置开始描述下一行。&lt;/div&gt;
 &lt;div&gt;    了解这个过程了，就应该发现，要转换到BMP需要大量的位操作。前置过程不说了，假定数据在内存里面(我当然不会用读取这种方法，用的是文件内存映射啦)，然后目标是GDI+的BitmapData对象。&lt;/div&gt;
@@ -295,10 +295,10 @@ times:11000
     
     <item>
       <title>网络性能测试和标准</title>
-      <link>https://shell909090.org/blog/archives/324/</link>
+      <link>http://shell909090.org/blog/archives/324/</link>
       <pubDate>Sat, 30 Sep 2006 22:46:28 +0800</pubDate>
       
-      <guid>https://shell909090.org/blog/archives/324/</guid>
+      <guid>http://shell909090.org/blog/archives/324/</guid>
       <description>&lt;p&gt;&lt;font size=2&gt;    前两天弄有线通的事情弄的郁闷了，所以就研究了网络性能测试。以后不用也是浪费，大家需要就看看吧。&lt;br /&gt;1.目标&lt;br /&gt;    测试目的往往是测试清楚几个值，包括:IP包传输往返时延(RTT)，IP包时延变化(抖动)，IP包丢失率(Lost rate)，IP业务可用性，还有带宽(Bandwidth)。&lt;br /&gt;2.&lt;/font&gt;&lt;font size=2&gt;适用标准&lt;br /&gt;    RFC 1242， RFC1944， RFC2285， RFC2432。&lt;br /&gt;&lt;strong style=&#34;font-weight:normal&#34;&gt;    中华人民共和国信息产业部令第36号(&lt;a href=&#34;http://www.chinanetcom.com.cn/mj/dxsc.asp?Unid=3810&#34;&gt;http://www.chinanetcom.com.cn/mj/dxsc.asp?Unid=3810&lt;/a&gt;)&lt;br /&gt;&lt;/strong&gt;&lt;/font&gt;&lt;font size=2&gt;    IP网络技术要求&amp;ndash; 网络性能参数与指标&lt;/font&gt;&lt;font size=2&gt;(YD/T &lt;font style=&#34;color:rgb(0,0,0)&#34; color=&#34;#cc0033&#34;&gt;1171-2001)&lt;br /&gt;3.测试平台和工具&lt;br /&gt;    我们假定基于POSIX兼容平台测试，演示用的例子来自Debian Etch/Kernel 2.6.17-2-686。Windows下所需要工具可以参考移植工具。&lt;br /&gt;    iperf 网络带宽测试工具&lt;br /&gt;    paratrace 被动路由测试工具&lt;br /&gt;    hping2 网络联通和时延测试工具&lt;br /&gt;    wireshark(ethereal) 抓包分析工具&lt;br /&gt;    p0f 被动指纹分析工具&lt;br /&gt;4.测试对象，方法，和结果分析&lt;br /&gt;    以下为实例测试，参数需要根据具体情况变化。&lt;br /&gt;    4.1.测试网络带宽&lt;br /&gt;        在服务器端运行iperf -s。&lt;br /&gt;        在客户端运行iperf -c 192.168.0.2&lt;br /&gt;        100Mbps网络环境下，得到结果为92.6Mbps，折合为11.5MB/s。即数据极限传输速度。&lt;br /&gt;&lt;/font&gt;&lt;/font&gt;&lt;font size=2&gt;&lt;font style=&#34;color:rgb(0,0,0)&#34; color=&#34;#cc0033&#34;&gt;    4.2.测试网络&lt;/font&gt;IP包传输往返时延(RTT)和IP包时延变化(抖动)&lt;br /&gt;        分主动被动方法，被动方法用wireshark抓包分析。下面主要介绍主动方法：&lt;br /&gt;        运行hping2 www.google.com -p 80。得到&lt;br /&gt;&lt;/font&gt;&lt;font size=2&gt;&lt;font style=&#34;color:rgb(0,0,0)&#34; color=&#34;#cc0033&#34;&gt;56 packets transmitted, 56 packets received, 0% packet loss&lt;br /&gt;round-trip min/avg/max = 242.&lt;sup&gt;5&lt;/sup&gt;&amp;frasl;&lt;sub&gt;269&lt;/sub&gt;.&lt;sup&gt;9&lt;/sup&gt;&amp;frasl;&lt;sub&gt;381&lt;/sub&gt;.1 ms&lt;br /&gt;        即在主动建立的到&lt;/font&gt;www.google.com的TCP连接中(默认为TCP，可以使用UDP，ICMP，IP，具体请看hping2 &amp;ndash;help)，丢包率为0。平均传输延迟为269.9，抖动为138.6。&lt;br /&gt;        注：按照《&lt;/font&gt;&lt;font size=2&gt;&lt;strong style=&#34;font-weight:normal&#34;&gt;中华人民共和国信息产业部令第36号》，&lt;/strong&gt;往返时延平均值≤200毫秒，时延变化平均值≤80毫秒。此处已经超标。但因为测试环境和适用条件不完全吻合，因此无法作为有效证据。&lt;br /&gt;    4.3.IP包丢失率(Lost rate)&lt;br /&gt;        也分主动方法和被动方法，主动方法见上。被动方法是用wireshark抓包后，通过tpc.analysis.lost_segment标志分析丢包数量和总体数量。具体为。&lt;br /&gt;        用wireshark抓包。&lt;br /&gt;        用( tcp.srcport == 7007 || tcp.dstport == 7007 )&amp;amp;&amp;amp;(tcp.analysis.retransmission||tcp.analysis.lost_segment||tcp.analysis.ack_lost_segment)过滤。7007为aMule端口。&lt;br /&gt;        另存，其中会显示丢包和总体数目。此处一般都3%-9%。&lt;br /&gt;        用( tcp.srcport != 7007 &amp;amp;&amp;amp; tcp.dstport != 7007 )&amp;amp;&amp;amp;(tcp.analysis.retransmission||tcp.analysis.lost_segment||tcp.analysis.ack_lost_segment)过滤。&lt;br /&gt;        另存，此时是非7007端口丢包和总体数目。此处一般是0.18%-0.32%。&lt;br /&gt;        主动方法在测试网络硬性联通上比较方便，但是对于特殊封锁造成的丢包(例如BT/ED封锁)。由于主动TCP测试不会被封锁，因此无法得到有效数据。需要在实际环境中使用被动方法测试。&lt;br /&gt;        此处丢包率总体值一般都超过了3%，根据《&lt;/font&gt;&lt;font size=2&gt;&lt;strong style=&#34;font-weight:normal&#34;&gt;中华人民共和国信息产业部令第36号》，&lt;/strong&gt;IP包丢失率平均值≤2％。此处已经超标，但基于和上文同样理由，无法作为有效证据。&lt;br /&gt;    4.4.IP业务可用性&lt;br /&gt;        如果在测试中，连续5分钟平均丢包超过75%，则可以认定为无效。&lt;br /&gt;    4.5.问题出现点定位&lt;br /&gt;        假定出现问题，那么我们可以假设，问题应当出现在从当前机器到目标机器中的某个路由器上。&lt;br /&gt;        如果多个目标机器通讯出现问题，我们可以猜测，问题很大可能出现在这些机器共同经过的某个路由器上。&lt;br /&gt;        所以，我们需要跟踪每个IP的连接。windows下是tracert。&lt;br /&gt;$traceroute www.google.com&lt;br /&gt;1 192.168.0.1 (192.168.0.1) 2 ms 1 ms 0 ms&lt;br /&gt;2 10.119.16.1 (10.119.16.1) 23 ms 25 ms 13 ms&lt;br /&gt;3 reserve.cableplus.com.cn (219.233.244.141) 15 ms 11 ms 16 ms&lt;br /&gt;4 * * *&lt;br /&gt;5 reserve.cableplus.com.cn (219.233.238.205) 14 ms 10 ms 18 ms&lt;br /&gt;6 202.96.222.77 (202.96.222.77) 13 ms 15 ms 14 ms&lt;br /&gt;7 202.101.63.226 (202.101.63.226) 32 ms 19 ms 17 ms&lt;br /&gt;8 202.97.33.38 (202.97.33.38) 84 ms 78 ms 82 ms&lt;br /&gt;9 202.97.33.178 (202.97.33.178) 61 ms 65 ms 69 ms&lt;br /&gt;10 202.97.4.46 (202.97.4.46) 106 ms 103 ms 104 ms&lt;br /&gt;11 216.239.47.232 (216.239.47.232) 94 ms 99 ms 112 ms&lt;br /&gt;12 216.239.47.237 (216.239.47.237) 224 ms 195 ms 196 ms&lt;br /&gt;13 72.14.233.53 (72.14.233.53) 185 ms 181 ms 195 ms&lt;br /&gt;14 72.14.232.139 (72.14.232.139) 208 ms 213 ms 240 ms&lt;br /&gt;15 72.14.233.129 (72.14.233.129) 205 ms 66.249.94.227 (66.249.94.227) 193 ms 209 ms&lt;br /&gt;16 72.14.233.131 (72.14.233.131) 193 ms 195 ms 202 ms&lt;br /&gt;17 216.239.49.66 (216.239.49.66) 209 ms 204 ms 244 ms&lt;br /&gt;18 66.102.7.99 (66.102.7.99) 198 ms 193 ms 195 ms&lt;br /&gt;        当然，如果是禁止了ICMP TTL超时的死报文回复。就会测定不出路由，这时候需要用paratrace。结果是一样的，不过没有被封锁的危险。&lt;br /&gt;&lt;br /&gt;&lt;br /&gt;&lt;/font&gt;&lt;br /&gt;&lt;/p&gt;
 </description>
     </item>

@@ -2,19 +2,19 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Coroutine on Shell&#39;s Home</title>
-    <link>https://shell909090.org/tags/coroutine/</link>
+    <link>http://shell909090.org/tags/coroutine/</link>
     <description>Recent content in Coroutine on Shell&#39;s Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Mon, 07 Dec 2009 09:58:00 +0800</lastBuildDate>
-    <atom:link href="https://shell909090.org/tags/coroutine/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://shell909090.org/tags/coroutine/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>用python实现webserver(二)――Thread</title>
-      <link>https://shell909090.org/blog/archives/82/</link>
+      <link>http://shell909090.org/blog/archives/82/</link>
       <pubDate>Mon, 07 Dec 2009 09:58:00 +0800</pubDate>
       
-      <guid>https://shell909090.org/blog/archives/82/</guid>
+      <guid>http://shell909090.org/blog/archives/82/</guid>
       <description>&lt;p&gt;&lt;span style=&#34;font-family: Verdana; font-size: 13px;&#34;&gt; 我们上面说过，Prefork模式有着先天的缺陷。针对http这种大量短请求的应用(当然，http1.1以来，有不少客户端使用了长连接)，Prefork的最高并发很让人不满。并且，无论是否高并发，Prefork的性能都非常不好。现在我们介绍一下Thread模式。
 和Prefork非常类似，每Thread模式通过新建的线程来控制对象的传输。和Prefork模式不同的是，一个用户能够建立多少个线程并没有限制。在系统上似乎有限制，65535个，但是同样，文件句柄最高也就能打开65535个，因此通常而言一个服务器最高也就能顶50000并发，无法再高了(nginx就能够支撑5W并发，再高要使用一些特殊手法来均衡负载)。而且线程的建立和销毁的开销非常小——没有独立的空间，不用复制句柄，只要复制一份栈和上下文对象就可以。但是，由于所有线程运行在同一个进程空间中，因此每线程模式有几个非常麻烦的瓶颈。
 首先是对象锁定和同步，在每进程模式中，由于进程空间独立，因此一个对象被两个进程使用的时候，他们使用了两个完全不同的对象。而线程模式下，他们访问的是同一个对象。如果两个线程需要进行排他性访问，就必须使用锁，或者其他线程同步工具来进行线程同步。其次，由于使用同一个进程空间，因此一旦有一个连接处理的时候发生错误，整个程序就会崩溃。对于这一问题，可以通过watchdog方式来进行部分规避。原理是通过一个父进程启动子进程，子进程使用每线程处理请求。如果子进程崩溃，父进程的wait就会返回结果。此时父进程重启子进程。使用了watchdog后，服务不会中断，但是程序崩溃时正在处理的连接会全部丢失。最后，是python特有的问题——GIL。由于GIL的存在，因此无论多少线程，实际上只有一个线程可以处理请求，这无形中降低了效率。下面我们看一下Thread模式的测试结果：
@@ -132,10 +132,10 @@ Total:         78  237 423.1    175    3691&lt;/p&gt;
     
     <item>
       <title>用python实现webserver(一)――Prefork</title>
-      <link>https://shell909090.org/blog/archives/80/</link>
+      <link>http://shell909090.org/blog/archives/80/</link>
       <pubDate>Wed, 21 Oct 2009 10:31:00 +0800</pubDate>
       
-      <guid>https://shell909090.org/blog/archives/80/</guid>
+      <guid>http://shell909090.org/blog/archives/80/</guid>
       <description>&lt;p&gt;要实现webserver，首先需要一个tcp server。作为python的设计原则，最好是使用SocketServer或者封装更好的BaseHTTPServer来复用。不过既然我们的目的 是为了学习，那么就不能用这两个内置对象。我们先实现一个最古典的每进程模式实现。而我们标题上的Prefork，则是apache服务器对这个模式的称 呼。
 每进程模式，顾名思义，就是每个新连接开启一个进程进行处理。首先创建一个socket，bind到一个套接字上。当有请求时，accept。(好多英 文，不是我有意cheglish，全是api的名称)accept会返回一个通讯用的socket，这时fork出一个新的进程，处理这个socket。 主进程在每次进入accept后阻塞，子进程在每次进入recv后阻塞。这样会带来几方面的好处。首先是模型分离，即使一个子进程崩溃，也不会影响到其他 子进程。其次是身份分离，当你需要让http server以高于常规运行(常规都是以apache, www-data, nobody运行的)用户的权限进行工作时，每进程模式是唯一安全的模式。其他模式都会造成同一进程内的其他session也暂时获得这个权限的问题。但 是同样，这样有几方面的问题，主要就是性能问题。
 由于每个连接都需要fork出一个新进程去处理。因此针对大量小连接的时候，fork和exit消耗了大量CPU。问题更严重的是，由于用户进程总数是有 限的(PEM或者ulimit都会限制这个数量)，因此压力大到一定程度时(通常是1024或者2048)，就会出现无法创建连接的情况。而对小型服务器 而言，在压力还没大道这个程度以前，服务器就会由于性能达到限制而造成段错误。以下是实际试验指令和结果：
@@ -212,10 +212,10 @@ Total:         46  263 950.7     93    7895&lt;/p&gt;
     
     <item>
       <title>用python实现webserver(零)――导言</title>
-      <link>https://shell909090.org/blog/archives/79/</link>
+      <link>http://shell909090.org/blog/archives/79/</link>
       <pubDate>Fri, 09 Oct 2009 16:01:00 +0800</pubDate>
       
-      <guid>https://shell909090.org/blog/archives/79/</guid>
+      <guid>http://shell909090.org/blog/archives/79/</guid>
       <description>&lt;p&gt;本系列文章的所有代码，都发布在&lt;a href=&#34;http://code.google.com/p/py-web-server/%E3%80%82&#34;&gt;&lt;a href=&#34;http://code.google.com/p/py-web-server/。&#34;&gt;http://code.google.com/p/py-web-server/。&lt;/a&gt;&lt;/a&gt;项目的目的，是通过写作一个可用的http web server，学习服务器程序编写中的一些方法，以及http协议的细节。
 如同我在项目介绍中说的，项目遵循以下几个设计原则。
 &lt;ol&gt;

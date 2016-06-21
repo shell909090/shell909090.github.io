@@ -2,19 +2,19 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Bash on Shell&#39;s Home</title>
-    <link>https://shell909090.org/tags/bash/</link>
+    <link>http://shell909090.org/tags/bash/</link>
     <description>Recent content in Bash on Shell&#39;s Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Tue, 04 Dec 2007 05:44:52 +0800</lastBuildDate>
-    <atom:link href="https://shell909090.org/tags/bash/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://shell909090.org/tags/bash/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>wc、sort介绍</title>
-      <link>https://shell909090.org/blog/archives/421/</link>
+      <link>http://shell909090.org/blog/archives/421/</link>
       <pubDate>Tue, 04 Dec 2007 05:44:52 +0800</pubDate>
       
-      <guid>https://shell909090.org/blog/archives/421/</guid>
+      <guid>http://shell909090.org/blog/archives/421/</guid>
       <description>&lt;div&gt;    首先声明一点，我介绍的小软件系列都是Linux下的，在Windows下可以找Gnuwin32里面提供的移植包。因此多数人都是可以使用的，只是高兴不高兴用的问题而已。&lt;/div&gt;
 &lt;div&gt;    其次我得道歉。本来说好了每周介绍一些小软件的，结果MSN空间不稳定，加上贝壳又忙。所以现在才介绍第二个，大家理解理解吧。&lt;/div&gt;
 &lt;div&gt;    这次介绍的对象是wc，不是厕所，也不是世界杯，而是一个字符统计软件。这个软件的目的是统计出一个文件内的行数，单词数，字符数。行数是按照硬回车来统计的，单词是按照分割符号来统计的，字符么就不说了。这个和Word的字符统计很像，不过用起来并不那么方便。也许有人奇怪，这种软件有什么用呢？主要是在脚本程序内使用来统计一些数据，也有用来统计程序的代码行数的。平时大家一般都是分开统计行数，这次可以wc -l *.cpp *.h。就可以得到所有文件的行数和总行数。&lt;/div&gt;
@@ -24,50 +24,50 @@
     
     <item>
       <title>查找重复文件</title>
-      <link>https://shell909090.org/blog/archives/348/</link>
+      <link>http://shell909090.org/blog/archives/348/</link>
       <pubDate>Mon, 15 Jan 2007 07:39:52 +0800</pubDate>
       
-      <guid>https://shell909090.org/blog/archives/348/</guid>
+      <guid>http://shell909090.org/blog/archives/348/</guid>
       <description>&lt;p&gt;算是介绍一个奇淫巧技吧。查找重复的文件，这个应该有很多软件都可以做的。不过在Linux里面，利用系统工具，一句语句查找应该就比较少见了。&lt;br /&gt;$find . -name &amp;quot;&lt;em&gt;&amp;quot; -type f -size +0 -exec md5sum {} ; | sort | uniq -d -w 32&lt;br /&gt;    原理是这样的，先用find查找当前所有文件。我们加上限定类型必须是文件，目录不要。限定大小不为0，空文件不要。然后对所有满足条件的执行md5sum，获得md5和文件的列表。然后排序，再针对md5的部分做唯一限定。就得到了所有md5相同的文件的列表。&lt;br /&gt;    问题是，这时候我们得到的还只是一堆重复的文件的md5。我们可以把以上步骤拆开来获得完整的输出。&lt;br /&gt;$find . -name &amp;quot;&lt;/em&gt;&amp;quot; -type f -size +0 -exec md5sum {} ; | sort &amp;gt; file_md5&lt;br /&gt;$cat file_md5 | uniq -d -w 32&lt;br /&gt;$grep &amp;quot;&amp;hellip;&amp;quot; file_md5&lt;br /&gt;    相信大家都看出是怎么回事情了，就不赘言了。&lt;br /&gt;    Windows下以前我总是执行不出，原因在于要这么写。&lt;br /&gt;&amp;gt;find . -type f -size +0 -exec md5sum {} ; | sort &amp;gt; report.txt&lt;br /&gt;    差一个转义，因为不需要。&lt;br /&gt;&lt;br /&gt;    总结一下，我们可以用一个脚本来处理这些问题。&lt;br /&gt;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;ndash;fine_rep&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&lt;br /&gt;find $1 -type f -size +0 -exec md5sum {} ; | sort &amp;gt; &amp;quot;file_md5&amp;quot;&lt;br /&gt;cat &amp;quot;file_md5&amp;quot; | uniq -d -w 32 | cut -d&amp;quot; &amp;quot; -f1 | while read x&lt;br /&gt;do&lt;br /&gt;    grep &amp;quot;$x&amp;quot; file_md5&lt;br /&gt;    echo &amp;quot;&amp;quot;&lt;br /&gt;done&lt;br /&gt;echo &amp;quot;done&amp;quot;&lt;br /&gt;rm &amp;quot;file_md5&amp;quot;&lt;br /&gt;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&lt;/p&gt;
 </description>
     </item>
     
     <item>
       <title>X system 配置文件执行流程分析</title>
-      <link>https://shell909090.org/blog/archives/319/</link>
+      <link>http://shell909090.org/blog/archives/319/</link>
       <pubDate>Mon, 11 Sep 2006 21:47:55 +0800</pubDate>
       
-      <guid>https://shell909090.org/blog/archives/319/</guid>
+      <guid>http://shell909090.org/blog/archives/319/</guid>
       <description>&lt;p&gt;1.startx启动流程&lt;br /&gt;/usr/bin/startx     +-&amp;gt;/etc/X11/xinit/xinitrc        -&amp;gt;/etc/X11/Xsession&lt;br /&gt;                            |-&amp;gt;~/.xinitrc&lt;br /&gt;                            |-&amp;gt;/etc/X11/xinit/xserverrc    -&amp;gt;/usr/bin/X11/X&lt;br /&gt;                            -&amp;gt;~/.xserverrc&lt;br /&gt;    startx脚本会分析用户主目录下是否存在特殊配置文件，如果不存在则使用系统默认脚本。默认脚本分两个部份，xinitrc启动客户端部份，xserverrc启动服务器端部份。&lt;br /&gt;    xserverrc内容仅为启动X。xinitrc会执行/etc/X11/Xsession，而后进入session分析。&lt;br /&gt;2.Xsession&lt;br /&gt;/etc/X11/Xsession    -&amp;gt;/etc/X11/Xsession.d/*&lt;br /&gt;    /etc/X11/Xsession和/etc/init.d/rc很类似，是用来循环依次启动其他脚本的控制脚本。他负责启动/etc/X11/Xsession.d/下的所有文件。其中50xfree86-common_determine-startup文件会依次检测以下3个文件，并且设置到STARTUP变量中。x-session-manager;x-window-manager;x-terminal-emulator;最后99xfree86-common_start文件会执行exec $STARTUP;完成整个系统的启动过程。&lt;br /&gt;3.gdm&lt;br /&gt;    gdm服务被/etc/init.d/gdm启动，而后读取/etc/gdm/gdm.conf配置自身。后面是基于理论分析，没有加以验证。&lt;br /&gt;     |-gdm&amp;mdash;gdm-+-Xorg&lt;br /&gt;     |                   &lt;code&gt;-x-session-manag-+-scim&amp;lt;br /&amp;gt;     |                                                &lt;/code&gt;-ssh-agent&lt;br /&gt;    上面是pstree的结果，第1个gdm是/etc/init.d/gdm，第2个gdm是/usr/bin/gdm。gdm先启动一个X作为服务端，否则自身也无法以图形方式显示登录界面。而后gdm成为此X界面的唯一用户，显示登录系统。在用户登录后，gdm启动/etc/gdm/Xsession。这个脚本的内容和/etc/X11/Xsession非常类似，我怀疑为什么他们不用链接的方式(可能是因为包的关系？)。这时整个启动活动就结束了。&lt;/p&gt;
 </description>
     </item>
     
     <item>
       <title>Linux配置文件测序</title>
-      <link>https://shell909090.org/blog/archives/318/</link>
+      <link>http://shell909090.org/blog/archives/318/</link>
       <pubDate>Mon, 11 Sep 2006 06:44:44 +0800</pubDate>
       
-      <guid>https://shell909090.org/blog/archives/318/</guid>
+      <guid>http://shell909090.org/blog/archives/318/</guid>
       <description>&lt;p&gt;CopyRight:&lt;br /&gt;    Written by Shell.E.Xu. Published under GPL.&lt;br /&gt;KeyWord:&lt;br /&gt;    Linux bash profile 配置文件。&lt;br /&gt;Abstract:&lt;br /&gt;    利用变量声明次序测定多个配置文件是否被调用以及调用的次序。&lt;br /&gt;环境：&lt;br /&gt;    Debian/GNU Linux starg 3.1&lt;br /&gt;    Kernel:2.6.16-686-2&lt;br /&gt;    测定方法，加入变量TEST=XXX。此方法可能被某些变量解除函数解除，因此不予执行的反应未必是真，不过执行次序一般假不了。&lt;br /&gt;1.tty登录时&lt;br /&gt;    /etc/environment;/etc/profile;~/.bash_profile-&amp;gt;~/.bashrc-&amp;gt;/etc/bashrc;&lt;br /&gt;    /etc/environment;/etc/profile;~/.bash_login&lt;br /&gt;    /etc/environment;/etc/profile;~/.profile&lt;br /&gt;    当上级启动过程中文件不存在时，才进行下面的过程。&lt;br /&gt;2.GDM登录时&lt;br /&gt;    /etc/environment&lt;br /&gt;3.新启动bash时&lt;br /&gt;    /etc/bash.bashrc;~/.bashrc-&amp;gt;/etc/bashrc;&lt;br /&gt;4.~/.inputrc&lt;br /&gt;    根据文档，这个函数在readline函数初始化时启用。&lt;br /&gt;5.结论&lt;br /&gt;    如果需要有效执行命令，需要同时修改/etc/profile和/etc/bash.bashrc。因为GDM登录的时候不执行登录脚本顺序，所以仅仅修改/etc/profile会造成对GUI下面开的term无效。虽然/etc/bashrc在理论上也有效，但是一旦~/.bashrc中没有引用，则无效(例如Debian中的root，由于安装系统的时候没有copy skel，所以缺少很多.XX文件)。如果仅仅是设定变量，可以用/etc/environment。该文件没有找到资料，其中仅可以设定变量(不用export，应当是被某程序作为配置读取而非脚本执行)，据分析是登录时当即起效。&lt;br /&gt;&lt;/p&gt;
 </description>
     </item>
     
     <item>
       <title>音乐文件转换技巧和脚本</title>
-      <link>https://shell909090.org/blog/archives/316/</link>
+      <link>http://shell909090.org/blog/archives/316/</link>
       <pubDate>Fri, 08 Sep 2006 01:50:47 +0800</pubDate>
       
-      <guid>https://shell909090.org/blog/archives/316/</guid>
+      <guid>http://shell909090.org/blog/archives/316/</guid>
       <description>&lt;p&gt;好久没动手写啥东西了，最近在准备LPIC1考试。Will everyone keep finger cross 4 me?嘿嘿——&lt;br /&gt;    这个题目是个大家伙，反正每天写一点，也不忙在一时。大家有啥需要了解的，也可以问在下面。我会更新的。&lt;br /&gt;copyright:&lt;br /&gt;    本文所提到各种软件版权归各个软件开发者所有。文章内容及所有附属脚本为独创，按照GPL发布。&lt;br /&gt;keyword:&lt;br /&gt;    音乐 格式 转换 脚本 标签 bash shell script mp3 midi ape flac cue toc&lt;br /&gt;directory:&lt;br /&gt;    1.文件格式解说&lt;br /&gt;        1.1.mp3/ogg&lt;br /&gt;        1.2.midi&lt;br /&gt;        1.3.ape&lt;br /&gt;        1.4.flac&lt;br /&gt;        1.5.cue/toc&lt;br /&gt;        1.6.wav&lt;br /&gt;        1.7.iso&lt;br /&gt;    2.文件转换&lt;br /&gt;        2.1.wav/mp3&lt;br /&gt;        2.2.wav/ape&lt;br /&gt;        2.3.wav/flac&lt;br /&gt;        2.4.midi2wav&lt;br /&gt;        2.5.iso/wav&lt;br /&gt;    3.转换细节问题&lt;br /&gt;        3.1.按照cue切割&lt;br /&gt;content:&lt;br /&gt;    1.1.mp3/ogg&lt;br /&gt;        这两个是非常有名的音乐压缩文件，其中MP3是mepg II layer 3。不要以为是mpeg III。一般来说，MP3都被认为是一种小巧但是音质比较差的格式。不过事实上，要指摘MP3的音质前，你先自己找找是否满足了一定条件。周围是否安静，没有噪音。音源是否高清晰（拿MP3还原出来的CD是没意义的）。声音设备是否足够好（至少也要是高质量的音响或者高档耳机，耳塞或者200－300的所谓音箱根本不用说）。如果没有上述条件，那么MP3的音质也算过的去的。MP3格式的压缩比值大约是10：1，和wav相比。另外，如果有CD的话，最好使用lame进行适当压缩。而不要为了方便随便使用一个压缩工具。压缩最好使用VBR格式。这种格式本质上没有什么变化，只是在信息流高的地方使用高的编码格式，以获得最高的质量/空间比值。ogg具体情况没有研究，不过使用上和MP3没有区别。&lt;br /&gt;    1.2.midi&lt;br /&gt;        midi是所有格式中唯一不记录音频数据的音乐格式。midi记录的实质上是发声事件，简单来说就是什么时候鼓响了一下，什么时候钢琴的哪个键被按下了。因此midi也是没有立体声效果的。除非你使用特殊的软件指定某个乐器演奏时候的位置，然后根据环境生成出相应的音乐文件。midi文件在当前主要是两个用途。一个是midi记录了乐手演奏时候的指法细节，也记录了曲子的曲谱。midi本质上就是谱子。另外一个是midi的超小体积使得在某些嵌入系统（例如手机）上面可以作为背景音乐。&lt;br /&gt;    1.3.ape&lt;br /&gt;        ape是一种无损压缩格式，你可以把ape看成是一种只能对wav作用的zip文件。压缩比一般是2:1。&lt;br /&gt;    1.4.flac&lt;br /&gt;        flac和ape基本差不多。&lt;br /&gt;    1.5.cue/toc&lt;br /&gt;        cue/toc不是音乐文件，他们是用于flac/ape等光盘的音轨定义。一个CD可以有多个音轨，iso会记录下音轨的切分方式。但是ape就不行了。于是eac等抓轨软件生成cue来切分音乐文件。往往看到ape的发行方式是一个ape和一个cue，直接打开ape往往是一首非常长的歌曲。其实切分信息在cue里面。虚拟光驱使用的bin文件也是一样，会有配套的cue文件。两者可以用cuetools和mkcue互相转换。&lt;br /&gt;    1.6.wav&lt;br /&gt;        wav文件又叫做PCM编码格式。这是一切音乐的基础。无论你是哪种格式，最后都会被还原成wav的某种格式或者变形，才能够从声卡中播放出去。当然，midi的情况特殊，不在此列。&lt;br /&gt;    1.7.iso&lt;br /&gt;        iso也不是音乐文件，但是和音乐的关系非常密切。大家都知道iso是光盘的镜像，其实说的还不确切。iso本身就是光盘内容严格1字节比1字节复制的结果。至于有的为什么有其他格式。那就涉及光驱设备工作和数据流／加解密的问题了。&lt;br /&gt;        另外说一个iso的问题，大家知道linux下面挂载iso的指令是&lt;br /&gt;#mount -t iso9660 -o loop file /mnt&lt;br /&gt;        这其实是两个步骤，一个是&lt;br /&gt;#losetup /dev/loop0 file&lt;br /&gt;        这是用来将文件虚拟成为设备。另外一个是&lt;br /&gt;#mount -t iso9660 /dev/loop0 /mnt&lt;br /&gt;        这才是真的挂载指令。如果我们需要读取设备文件，当然是去读取/dev/loop0（或者其他loop设备）。&lt;br /&gt;    2.1.wav/mp3&lt;br /&gt;        格式转换的基础是wav，只要你转换的过去，任何格式可以通过wav进行无损转换。但是在转换到/从wav的时候是有损失的，因此转换次数越少越好。其中mp3和wav的转换是最简单基础的，但是也是最复杂的。因为lame为了优化音质，有非常多的选项。在这里就不逐渐讲述了。不过最简单的你可以用选项-h直接转换，而用&amp;ndash;decode反向转换（除非需要转换到其他格式，否则是没有意义的，这样转换出来的wav不会比原来的mp3更清晰！严格定义来说，他们是同等清晰的，wav没有遗失任何信息）。&lt;br /&gt;        lame可以在这里找到：&lt;a href=&#34;http://lame.sourceforge.net/&#34;&gt;http://lame.sourceforge.net/&lt;/a&gt;&lt;br /&gt;    2.2.wav/ape&lt;br /&gt;        ape的转换需要使用mac，参数非常简单。 Compress (high): &amp;lsquo;-c3000&amp;rsquo; Decompress: &amp;lsquo;-d&amp;rsquo;。有其他选项，不过注意压缩选项不关系到清晰度，只和大小有关。&lt;br /&gt;        mac可以在这里下载。&lt;a href=&#34;http://supermmx.org/linux/mac/&#34;&gt;http://supermmx.org/linux/mac/&lt;/a&gt;&lt;br /&gt;        这里也可以，&lt;a href=&#34;http://sourceforge.net/projects/mac-port/&#34;&gt;http://sourceforge.net/projects/mac-port/&lt;/a&gt;&lt;br /&gt;        注意有两个部分，mac port是真正的转换程序，xmms-mac只是xmms的调用插件，动态的转换ape文件到wav用来播放（我上面说过的～）。&lt;br /&gt;    2.3.wav/flac&lt;br /&gt;        和上面一样，To encode:&lt;br /&gt;        flac [-#] [INPUTFILE [&amp;hellip;]]&lt;br /&gt;        -# is -0 (fastest compression) to -8 (highest compression); -5 is the default&lt;br /&gt;        To decode:&lt;br /&gt;        flac -d [INPUTFILE [&amp;hellip;]]&lt;br /&gt;        To test:&lt;br /&gt;        flac -t [INPUTFILE [&amp;hellip;]]&lt;br /&gt;        flac在debian里面已经附带了，大家开aptitude找找就有了。&lt;br /&gt;    2.4.midi2wav&lt;br /&gt;    2.5.iso/wav&lt;br /&gt;        是不是看不明白了？其实就是抓轨和刻录啦。抓轨的话，windows下面推荐eac，不过记得要有管理员帐户才可以用哦。这东西直接操作设备的。linux下面用cdparanoia好了，据说不错。刻录的话——看大家喜欢了&lt;br /&gt;    3.1.按照cue切割&lt;br /&gt;        其实这才是我写这个文档的核心意义，使用cue来切割音乐文件。一个大音乐文件当然不爽，所以我们要拿来切割一下。具体来说有两个切割方法，cue切割wav系列文件，cue切割mp3系列文件。&lt;br /&gt;        cue切割wav系列文件需要借助两个包，cuetools和shntool。&lt;br /&gt;$cuebreakpoints disc.cue | shnsplit disc.wav&lt;br /&gt;        这个方法可以用来切割很多文件，未必是wav而已。根据shntool的说明，只要支持的格式，加个插件全可以切割。只是切割出来的文件会被很傻的命名成split-trackXXX.wav。需要根据cue再次重命名。如果你高兴，可以写一个脚本干这个事情，不过毕竟很傻。&lt;br /&gt;        而cue切割mp3系列文件则方便很多，只需要mp3splt一个包。&lt;br /&gt;$mp3splt -ac cue mp3&lt;br /&gt;        最后各个按照音轨描述命名好的mp3就会自动生成，并且会自动生成mp3tag。这是我推荐的使用方法。&lt;br /&gt;最后附上我写的脚本，可以自动识别ape或者flac文件，自动转换成mp3。并且判断是否有cue文件，存在的话自动给予切割。你可以放置在/usr/local/bin下&lt;/p&gt;
 </description>
     </item>
     
     <item>
       <title>论linux引导过程</title>
-      <link>https://shell909090.org/blog/archives/308/</link>
+      <link>http://shell909090.org/blog/archives/308/</link>
       <pubDate>Thu, 13 Jul 2006 23:36:57 +0800</pubDate>
       
-      <guid>https://shell909090.org/blog/archives/308/</guid>
+      <guid>http://shell909090.org/blog/archives/308/</guid>
       <description>&lt;div&gt;keywords&lt;/div&gt;
 &lt;div&gt;引导过程, initrd, init, rc&lt;/div&gt;
 &lt;div&gt;copyright&lt;/div&gt;
