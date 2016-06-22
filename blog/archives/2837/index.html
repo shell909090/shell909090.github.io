@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>更换blog声明</title>
+
+  
+  
+  <link rel="stylesheet" href="http://shell909090.org/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="http://shell909090.org/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="http://shell909090.org/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         更换blog声明 
+    </h1>
+    <p class="meta">Jun 22, 2016
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/2837/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>在看blog的同学们应该发现了，Shell&rsquo;s home整个变了个样子。</p>
+
+<p>这个主要是因为，我的wordpress被黑了。</p>
+
+<p>我的wordpress本来是托管在香港的一台主机上面，加上cdn之后，对国内外的访问效果都不错。我也一直挺满意的。在周一，我本来想把周末写好的关于潜水的blog贴出来。结果无法登录。所以我登录了cPanel去数据库里面修改密码，结果发现。。。</p>
+
+<p>我的数据库，整。个。都。不。见。了。</p>
+
+<p>WTF，这是三小？</p>
+
+<p>首先可以肯定，这里出了什么问题。经过对options表的检查后，我基本确定，这个blog已经不是我原来那个了。但是在数天内我没有发现这件事，而且事发时浏览一切正常。我猜测是因为我加了cache插件，而新的blog没有这个插件。所以一直没有刷cache，导致入口始终是缓存。因此只看首页一点现象都没有，在点击登录按钮后才出现问题。作为验证，我点了一下三年前的记录，结果404了。另一个朋友也验证了这个现象。所以估计推论是对的。</p>
+
+<p>然后是why。</p>
+
+<p>首先可以排除弱密码。我在wordpress上启用了24位大小写数字符号混合密码（反正是自动填写），再加上了yubikey的U2F功能，实话说我真不觉得有什么攻击者能找到我的密码进去。</p>
+
+<p>因此，我从cPanel里面搞到了原始浏览日志。日志显示六月八号早上8点的时候，访问帖子还是200。在某个时间点后就302了。而302是wordpress尚未安装时的标准做法，会转跳到install.php去引导你完成设定流程。也就是说，在8点多的时候，整个wordpress被突然重置。然后对照新的wordpress的初始记录，大约在9点多的时候，有人来完成了install流程。这两者之间可能有关联，也可能是重置者什么都没管就走了。我的某个读者跑过来发现这个wordpress居然没有初始化！就手欠来初始化一把。完了发现首页为什么啥反应都没有，以为自己进了蜜罐然后跑了。</p>
+
+<p>所以先不用参考后面wordpress的初始化信息（我也不觉得里面能找到什么有效信息，哪怕是攻击者初始化的），先查看出问题的时间点的操作。</p>
+
+<p>结果是一条install.php的访问，回应是200。</p>
+
+<p>也就是说，貌似有人绕过了install.php的锁定，重新“安装”了整个系统。</p>
+
+<p>当然，其中还有一点需要排除的，就是我的webhosting供应商没被黑。但是我觉得如果供应商被黑了，攻击者应该已经拿到了我的DNS管理权限，从而在乱搞我的域名了。从这点来说，wordpress有问题的概率更高。</p>
+
+<p>问题是，wordpress也很不应该啊。入口已经加了最严格限制，每次有更新都及时升级。而且最关键是，install.php这个文件在完成安装后就被我删除了。后面怎么又出来了？</p>
+
+<p>有朋友提醒，可能是我使用的某个plugin有漏洞。我想想确实是，plugin这个事情我很难去控制，有漏洞也没什么好奇怪的。</p>
+
+<p>然而这个安全性让我很不放心。</p>
+
+<p>其实前面已经在搞blog迁移到github的事了。但是因为github在中国访问很不方便，而且jekyll搞起来有点麻烦，所以一直没太大动力搞。结果被搞了这么一出，那就顺手迁了吧。反正现在还在中国的，应该已经很少用blog，更多用微信了。</p>
+
+<p>这里感谢adieu推荐的hugo，这个系统是golang写的，所以编译安装我很熟悉。非常容易就搞了起来。下面就是适配问题了。</p>
+
+<p>首先是评论。我已经把评论迁移到了disqus上面，所以不需要考虑评论问题。只要新的blog的url和老的差不多就行。同时，这样也会对前面索引了我的blog的搜索引擎比较友好。</p>
+
+<p>然后是原始数据。我有一份去年2月时的备份，但是没有wordpress去运行它。（试过安装，非常麻烦）很幸运的，我在网上找到了<a href="https://mtik00.com/2015/07/wordpress-xml-to-hugo-md/">某篇</a>如何将备份数据转换为hugo数据的文章。脚本是python的，就是非常简单的xml解析转换到文件写出。所以用他的脚本做了一下简单的修改，基本就做到了保持url一致。在hugo转换后，基本就像原来的blog一样了。</p>
+
+<p>只有一个小问题。我的文档转换出来后是/结尾的，而原来的url最后没有/。这对搜索引擎不是什么大事——反正会自动跳过去。但是disqus就不认了。所以我做了另一个小脚本，对disqus的url做了一次mapping。</p>
+
+<p>最后就是把整个内容部署到github上了。这里基本没什么技巧，除了我需要用CNAME文件来让github接受我的域名。</p>
+
+<p>好了，现在blog就先这么放着吧。</p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Jun 22, 2016</time>
+    <span class="categories">
+      Tags:
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="http://shell909090.org/blog/archives/2836/" title="Pulau Perhentian">Pulau Perhentian</a>
+    
+
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2837/">更换blog声明</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2836/">Pulau Perhentian</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2809/">说说密码和安全设计</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="http://shell909090.org/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

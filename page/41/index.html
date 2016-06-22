@@ -89,6 +89,37 @@
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/1775/">python解0-1背包问题</a>
+    </h1>
+    <p class="meta">Apr 14, 2011
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/1775/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>&nbsp;&nbsp; &nbsp;女朋友的单位需要解一个背包问题，说白了就是算票。通过有限的票，凑出最接近一个数字的组合来。 &nbsp;&nbsp; &nbsp;这个是经典问题，不过票数比较多，我本来用随机划分，然后一次优化一步的随机算法，凑出一个接近的数字。这样算法比较快，不过不是很准。 &nbsp;&nbsp; &nbsp;女朋友领导发话了，时间长点可以接受，但是最好准点。 &nbsp;&nbsp; &nbsp;照做吧，幸好这个算法算100张票子也就是10秒不到，这还是mini-itx。 &nbsp;&nbsp; &nbsp;下面上算法，具体算法猛击这里（http://www.oiers.cn/pack/Index.html&nbsp;）和这里（http://zh.wikipedia.org/wiki/%E8%83%8C%E5%8C%85%E9%97%AE%E9%A2%98&nbsp;）。输入是数字列表和目标，输出是组合和误差。f[i]是目前为止，最大代价为i所能获得的最高收益，以及组合方式。numlist是二维数组，分别是代价和收益。 def resolv_dym(numlist, target): &nbsp;&nbsp; &nbsp;f = [[0, []] for i in xrange(0, target + 1)] &nbsp;&nbsp; &nbsp;for c, w in numlist: &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;for v in xrange(target, c - 1, -1): &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if f[v - c][0] + w &gt; f[v][0]: &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;f[v][0] = f[v - c][0] + w &nbsp;&nbsp;</p>
+
+          
+              <footer>
+                  <a href="http://shell909090.org/blog/archives/1775/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/1773/">论不同系统和客户端的证书管理</a>
     </h1>
     <p class="meta">Apr 13, 2011
@@ -322,37 +353,6 @@
           
               <footer>
                   <a href="http://shell909090.org/blog/archives/1759/" rel="full-article">Read On &rarr;</a>
-              </footer>
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/1757/">python源码解析读书笔记（二）——函数特性</a>
-    </h1>
-    <p class="meta">Mar 29, 2011
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/1757/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>1.函数的性质&gt;&gt;&gt; def outer(o1, o2):... def inner(i1 = 10, i2 = []): ... return i1+o1+o2... return inner...&gt;&gt;&gt; a1 = outer(50, 30)&gt;&gt;&gt; a2 = outer(50, 30)&gt;&gt;&gt; a1.func_closure(&lt;cell at 0xb75454f4: int object at 0x8455ddc&gt;, &lt;cell at 0xb7545524: int object at 0x8455cec&gt;) &gt;&gt;&gt; a2.func_closure(&lt;cell at 0xb754541c: int object at 0x8455ddc&gt;, &lt;cell at 0xb75453a4: int object at 0x8455cec&gt;)两次生成的函数对象拥有不同的闭包空间。&gt;&gt;&gt; a1.func_defaults (10, [])&gt;&gt;&gt; a2.func_defaults(10, [])&gt;&gt;&gt; a1.func_defaults[1].append(10)&gt;&gt;&gt; a1.func_defaults(10, [10])&gt;&gt;&gt; a2.func_defaults (10, [])也拥有不同的默认值空间。&gt;&gt;&gt; def default_test(d = []):&hellip; print d&hellip;&gt;&gt;&gt; default_test.func_defaults([],)&gt;&gt;&gt; default_test.func_defaults[0].append(10) &gt;&gt;&gt; default_test()[10]然而同一次生成的默认值空间是共享的，哪怕多次运行。 2.参数传递&gt;&gt;&gt; def f(a,b,c,d): return a,b,c,d&hellip; &gt;&gt;&gt; f(1,2,3,4)(1, 2, 3, 4)&gt;&gt;&gt; f(1,2,a=3,b=4)Traceback (most recent call last): File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;TypeError: f() got multiple values for keyword argument &#39;a&#39; &gt;&gt;&gt; f(1,2,c=3,d=4)(1, 2, 3, 4)参数分两种，位置参数和键值参数。具体如何传递是由调用时决定而非编译时。调用时参数必须先以位置参方式传递，再以键值参方式传递。一旦出现键值传递，再出现位置传递即出现编译时非法。调用时会先入栈所有参数，一个位置参占一个对象，一个键值参占两个对象（这是当然）。解析的时候按照先位置后键值的方式赋值，先将所有位置参依次赋值给所有参数名。如果位置参有多，而没有扩展位置参来接收，则报错TypeError: %s expected at %s %d arguments, got %d。而后将所有键值参赋值给未赋值的参数，如果这个参数名已经赋值，则如上文，报错。如果键值参数有多，又没有扩展键值参来接受，也报错。 最后，如果有参数名尚未赋值，查看这些参数名是否有默认值。如果没有，报错。另外，在字节码中访问本地（locals）命名空间的时候，是不通过命名空间查询的方式进行的。因为编译时可以明确一个名称是否在locals空间中，而不用理会代码段在名称空间中的位置结构。而一旦明确其在locals命名空间中，则可以直接堆栈访问位置，这样使得locals名称查询速度远高于普通名称空间。对于一个函数内频繁使用的符号，建议做一次赋值，将其引入locals命名空间。 3.调用堆栈 python的调用堆栈是通过PyFrameObject来实现的，每一次调用，python会产生一个新的PyFrameObject加入到栈中。而每个PyFrameObject自带一个小数据区域，用于接收参数，处理局部变量。python字节码指令中的LOAD_FAST，STORE_FAST就是操作的这个区域。 4.层级闭包的实现 &gt;&gt;&gt; def f1(): ...</p>
-
-          
-              <footer>
-                  <a href="http://shell909090.org/blog/archives/1757/" rel="full-article">Read On &rarr;</a>
               </footer>
           
 
@@ -624,6 +624,10 @@
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2837/">更换blog声明</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2836/">Pulau Perhentian</a>
           </li>
         
@@ -657,10 +661,6 @@
         
           <li class="post">
             <a href="/blog/archives/2809/">说说密码和安全设计</a>
-          </li>
-        
-          <li class="post">
-            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
           </li>
         
       </ul>

@@ -89,6 +89,37 @@
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/1859/">重分区和lvm</a>
+    </h1>
+    <p class="meta">Jul 20, 2011
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/1859/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>上篇btrfs会导致虚拟机慢死的blog都看到了吧？看到了就不多解释。 首先，删除掉cache数据，还有冗余数据，使得数据可备份化。然后执行rsync -av /home /mnt/mdisk/sync，将数据同步到备份的移动硬盘上。之所以用rsync，是因为我在备份的时候还能看看网页什么的。等第一次备份完成，关闭所有X程序，退出shell这个用户的所有进程，然后再次执行rsync，就可以保证同步。同步完成后，注销/etc/fstab下面的/home和swap项目，重启。 系统启动后，先登入root用户，因为此时/home已经恢复到了/下面，所有shell用户的home路径不存在。建立/home/shell目录，并且复制/etc/skel配置，修改owner后，shell就可以登入了。当然，此时是系统默认环境，并没有定制化。没有关系，我们只需要terminal。在terminal中执行gparted，会出现图形的分区管理工具。当然，理论上说，如果你够熟悉，使用fdisk完成全部操作也是可以的，这免除了初始化shell用户和登入图形界面的麻烦。删除原先的/home所在分区和swap所在分区，切割一个ntfs分区用于将来安装windows(回头可以打游戏)，剩余的全部切割，而后开启lvm标记。当然，这一步贝壳当时不知道，而是创立了一个未知分区，再用fdisk调整分区类型为8E。而后系统会提示你，不能保证内核数据结构更新，需要执行kpartx /dev/sda。无论如何，此时我们已经有了一个lvm分区。 lvm的结构是pv -&gt; pg -&gt; lv，也就是物理卷-&gt;物理组-&gt;逻辑卷。物理的各个分区首先被组织成物理组，再被划分为逻辑卷。这样设计是因为可能有多个磁盘上的空间，被划分为多个逻辑卷。在不改变逻辑的情况下，lvm的默认组织构型是raid0的。不过这对我不是个问题，我只有一个磁盘。 首先创建pv，使用命令pvcreate，没什么好多说的。然后是产生vg，使用vgcreate main /dev/sda7，之所以需要main，是因为需要一个vg命名。而后我们需要从这个vg中创建出一个lv来，执行指令lvcreate -L150G -nhome main，设定lv的名字叫做main-home，大小150G。此时在/dev/mapper/main-home，就产生了一个设备文件，大小150G，可以当作/dev/sda1之类的设备一样使用。不过，这个设备没有经过任何格式化过程，所以还需要mkfs.ext3 /dev/mapper/main-home。在这个指令后，我很习惯的跟了一个tune2fs -c 0 /dev/mapper/main-home来关闭重启检测。使用blkid，发现这个设备已经成功创立，并且有了ID。把UUID复制进（这时就知道X的好处了，console下面比较绕路）/etc/fstab，并且修改刚刚被注释掉的/home一行，更改UUID和分区格式。贝壳当时光记得复制，忘记改分区格式，导致系统进不去。不过也不困难，修改/etc/fstab后mount -a一下就可以了。 此时我们已经建立了有效的逻辑卷，并且正确配置。下面要创建一个交换分区，并且挂上去。废话不多说，lvcreate -L6G -nswap main，mkswap /dev/mapper/main-swap。而后一样blkid和vi /etc/fstab。系统就基本配置好了。验证一下看看。 shell-deb:~# pvs PV VG Fmt Attr PSize PFree /dev/sda7 main lvm2 a- 229.19g 73.19g shell-deb:~# lvs LV VG Attr LSize Origin Snap% Move Log Copy% Convert home main -wi-ao 150.00g swap main -wi-ao 6.00g 而后就是新系统的启用过程，首先要退出X，注销shell用户的所有进程，然后以root删除/home下的所有数据。如果不删除的话，重启后，这里的数据无法访问，变成垃圾。而后重启，就可以看到正确结果了。不过还不要着急登入shell。首先执行rsync -av /mnt/mdisk/sync/home /home，将备份同步回去。这样我们登入shell的时候就可以看到有效的定制化界面了。另外一点细节是，mdisk使用了ntfs格式，所以导致数据恢复后属性混乱。使用find . -type d -exec chmod 755 {} ;和find .</p>
+
+          
+              <footer>
+                  <a href="http://shell909090.org/blog/archives/1859/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/1858/">btrfs上使用虚拟机效率很差</a>
     </h1>
     <p class="meta">Jul 19, 2011
@@ -318,33 +349,6 @@
 
         
           <p>阿宅最近很幸福—— 亲爱的，起床了么？ 起床啦。 记得昨天我提到的电影么？我下载了高清版，等会一起看？ 好阿。 我去写个程序，我们等会再聊？ 恩恩，回头见 ——恩，这个bot做的真不错，NLP研究完了，下一个课题做啥呢？</p>
-
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/1844/">阿宅程序员的故事——买笔记本</a>
-    </h1>
-    <p class="meta">Jun 28, 2011
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/1844/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>阿宅最近很困惑，照某些多情MM的观点，这是因为有了意中人。其实要这么说也没有错，阿宅看上了一台笔记本，但是却犹豫不决不知道该不该买下来。 其实不关钱的问题，阿宅这么和朋友说。我只是因为有了三台笔记本，再加一台好像没什么用。这就好比一个男人，家里明明有一妻三妾，却还想沾花惹草一样。 哦？一妻三妾？三台笔记本？那一妻是什么？ 不是还有台台式机呢么。一台台式机跑服务器，一台笔记本写程序，一台笔记本打游戏，还有台笔记本带着装样子。再买一台来打游戏，正好可以让打游戏那台去写程序，写程序那台去装样子，装样子那台给别人装样子。好像也不是非常必要，可是这个配置真的很不错啊，硬盘还是SSD的。啊呀呀，真是烦恼啊。 其实阿宅折腾电脑算比较省钱的，因为程序员折腾软件的时候多过折腾硬件的时候。往往是折腾到忍无可忍了，才去折腾折腾硬件。但是多下来的硬件又不知该怎么处理，卖掉不舍得，扔掉也可惜。大致就相当于老爹嫁女儿，总要找个知道女儿好处的托付终身。可这年头懂行的都去买新电脑了，谁会在一台老电脑上折腾来折腾去啊——尤其还是程序员都折腾到忍无可忍的。至于什么送到老区支援孩子的蠢话，阿宅听都不想听。先不说怎么监管，设备能不能真的到孩子手里。就说一台设备的运输费，就比设备本身还高了。</p>
 
           
 
@@ -616,6 +620,10 @@
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2837/">更换blog声明</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2836/">Pulau Perhentian</a>
           </li>
         
@@ -649,10 +657,6 @@
         
           <li class="post">
             <a href="/blog/archives/2809/">说说密码和安全设计</a>
-          </li>
-        
-          <li class="post">
-            <a href="/blog/archives/2806/">从青蒿素得奖说现代医学里的方法论</a>
           </li>
         
       </ul>
