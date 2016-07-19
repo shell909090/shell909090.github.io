@@ -89,6 +89,33 @@
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/369/">RTTI的几个应用</a>
+    </h1>
+    <p class="meta">Apr 2, 2007
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/369/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>贝壳最近研究了下RTTI，发现几个有意思的事情。 dynamic_cast的应用。 dynamic_cast可以将一个指针的类型试图转换为指定的类型，是否能转换要看当前指针的动态类型是否是指定类型的子类，而不管指针的声明类型。当失败时返回NULL，因此可以用来识别一个指针的动态类型是否是某个类的子类。 typeid的应用。 typeid可以获得某个类的类型信息，最主要的就是name。指明了当前是哪个类，这在串行化中是必要的信息。当判断一个指针的动态类型是否就是某个类的时候可以这样typeid(*p)==typeid(class)。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/368/">烟台出差7</a>
     </h1>
     <p class="meta">Mar 19, 2007
@@ -319,37 +346,6 @@
         
           <p>这次被公司派去广州出差了，又去了次广州。没啥好说的，挑几个有意思的事情写写吧。 公司给订了一个旅馆，我住进去，当然不花我的钱咯。然后累了，换上拖鞋，也是免费的。(拖鞋篮里面有张纸，免费擦鞋——)然后看旁边有烧水的，下面居然还有小冰箱，可乐啤酒一应俱全。哇——不愧是专业的。拿了罐可乐刚刚想开，发现旁边有张纸。《如果您用了小吧台中的饮料，请填写本单，费用会结算到您的房费中。》后面赫然是，可乐10块。 不知道是公司付费还是我付费，干脆放回去了。 后来刘凯知道这事情，说随便喝好了。一个人住宿是300的额度，我们三个才676，平均一人226。没问题，喝。后面又跟了句，回头让李胜昊从外面带一罐回来补上就得了。 我靠—— 不过后来发现可乐包装挺特殊，怕补不上。我当时也不渴了，没试试看。 回上海的时候，从对方公司出来，立刻叫车，然后往白云山机场跑。我坐前排右边，车窗开着的。我看风大就没拿相机出来照相。过一个立交桥的时候，发现桥那里有个雕像。两腿叉开，双手插腰，挺有气势的。我心说这年头了这里还有这种雕像，不容易。车开近点看看，好像是个活人哎，而且还是裸的——OGM——绝对是传说中的裸奔—— 啊，相机啊相机——来不及了—— 过去了—— 你看到了吗？ 打电话给南方，又有新闻了。 别傻了，人家说不定已经看习惯了，还笑话我们没见过市面。 那怎么办？ 你不想学的话就当不存在了。 嗯，都是幻觉，吓不倒我的。</p>
 
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/359/">内存泄露检测简说</a>
-    </h1>
-    <p class="meta">Feb 7, 2007
-         - 2 minute read 
-         - <a href="http://shell909090.org/blog/archives/359/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>我们首先从一段代码说起。 #define _CRTDBG_MAP_ALLOC #include #include class test { public: test () { lpBuffer = new char[0x1000]; }; ~test () { delete lpBuffer; }; void *operator new (size_t s) { return malloc (s); }; void operator delete (void *pvMem) { if (pvMem != NULL) free (pvMem); }; void *operator new[] (size_t s) { return malloc (s); }; void operator delete[] (void *pvMem) { if (pvMem != NULL) free (pvMem); }; char *lpBuffer; }; test &amp; tt () { static test t; return t; } //test t; void process () { test tf; // _CrtDumpMemoryLeaks (); } int _tmain (int argc, _TCHAR * argv[]) { // test tf; test* tp=new test(); _CrtSetReportMode (_CRT_WARN, _CRTDBG_MODE_FILE); _CrtSetReportFile (_CRT_WARN, _CRTDBG_FILE_STDERR); _CrtSetDbgFlag (_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF); process (); // printf(&quot;hello, world.n&quot;, t.lpBuffer); printf (&quot;hello, world.n&quot;, tt ().lpBuffer); // _CrtDumpMemoryLeaks (); // printf(&quot;hello, world.n&quot;, t.lpBuffer); return 0; } 以上代码，大家可以分别注释不同位置，来查看不同效果。不过我们还是从最基础的如何检测开始说起吧。 首先在头中引入。 #define _CRTDBG_MAP_ALLOC #include #include 在引入后，程序结束的时候调用_CrtDumpMemoryLeaks ();就可以打印出来内存泄露的情况。不过有几个问题，首先，打印出来的位置是在调试中。也就是说，如果不使用调试信息查看工具，是看不到信息的。这个问题不难解决。我们可以在程序开始的时候设定。 _CrtSetReportMode (_CRT_WARN, _CRTDBG_MODE_FILE); _CrtSetReportFile (_CRT_WARN, _CRTDBG_FILE_STDERR); 将出错信息打印到Console输出中。当然如果程序是BCB或者是MFC，也大可打印到文件中。 其次，打印出来的出错信息可能是这样的。 Detected memory leaks!</p>
-
-          
-              <footer>
-                  <a href="http://shell909090.org/blog/archives/359/" rel="full-article">Read On &rarr;</a>
-              </footer>
           
 
         
@@ -620,6 +616,10 @@
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2838/">gpg pubkey ID碰撞</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2837/">更换blog声明</a>
           </li>
         
@@ -653,10 +653,6 @@
         
           <li class="post">
             <a href="/blog/archives/2813/">云计算的成本计算</a>
-          </li>
-        
-          <li class="post">
-            <a href="/blog/archives/2809/">说说密码和安全设计</a>
           </li>
         
       </ul>

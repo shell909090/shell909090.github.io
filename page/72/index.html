@@ -89,6 +89,37 @@
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/359/">内存泄露检测简说</a>
+    </h1>
+    <p class="meta">Feb 7, 2007
+         - 2 minute read 
+         - <a href="http://shell909090.org/blog/archives/359/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>我们首先从一段代码说起。 #define _CRTDBG_MAP_ALLOC #include #include class test { public: test () { lpBuffer = new char[0x1000]; }; ~test () { delete lpBuffer; }; void *operator new (size_t s) { return malloc (s); }; void operator delete (void *pvMem) { if (pvMem != NULL) free (pvMem); }; void *operator new[] (size_t s) { return malloc (s); }; void operator delete[] (void *pvMem) { if (pvMem != NULL) free (pvMem); }; char *lpBuffer; }; test &amp; tt () { static test t; return t; } //test t; void process () { test tf; // _CrtDumpMemoryLeaks (); } int _tmain (int argc, _TCHAR * argv[]) { // test tf; test* tp=new test(); _CrtSetReportMode (_CRT_WARN, _CRTDBG_MODE_FILE); _CrtSetReportFile (_CRT_WARN, _CRTDBG_FILE_STDERR); _CrtSetDbgFlag (_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF); process (); // printf(&quot;hello, world.n&quot;, t.lpBuffer); printf (&quot;hello, world.n&quot;, tt ().lpBuffer); // _CrtDumpMemoryLeaks (); // printf(&quot;hello, world.n&quot;, t.lpBuffer); return 0; } 以上代码，大家可以分别注释不同位置，来查看不同效果。不过我们还是从最基础的如何检测开始说起吧。 首先在头中引入。 #define _CRTDBG_MAP_ALLOC #include #include 在引入后，程序结束的时候调用_CrtDumpMemoryLeaks ();就可以打印出来内存泄露的情况。不过有几个问题，首先，打印出来的位置是在调试中。也就是说，如果不使用调试信息查看工具，是看不到信息的。这个问题不难解决。我们可以在程序开始的时候设定。 _CrtSetReportMode (_CRT_WARN, _CRTDBG_MODE_FILE); _CrtSetReportFile (_CRT_WARN, _CRTDBG_FILE_STDERR); 将出错信息打印到Console输出中。当然如果程序是BCB或者是MFC，也大可打印到文件中。 其次，打印出来的出错信息可能是这样的。 Detected memory leaks!</p>
+
+          
+              <footer>
+                  <a href="http://shell909090.org/blog/archives/359/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/358/">CPUID</a>
     </h1>
     <p class="meta">Feb 5, 2007
@@ -327,37 +358,6 @@
         
           <p>大家写代码的时候，假如写了一个组件，自身需要开一个线程的。那么多数是在初始化代码中直接写开线程的。如果要求这个类不在初始化代码中添加函数，怎么做？ MSDN中有个例子，不是解决这个问题的，但是可以用。 class DialogWindow{ public: static short GetTextHeight(){ return 1; }; private: static short nTextHeight; }; short DialogWindow :: nTextHeight = GetTextHeight(); int main(){} 在这里，把GetTextHeight里面添加上你需要的代码就可以了。 但是注意，这些代码的运行时间要早于main(准确的说，是在wmainCRTStartup里面运行的_c_init函数)。所以很多自然而然就有的初始化没做，你自己在main里面调用的初始化(例如WSAStartup啦，GDI+初始化啦)更是没做。所以必须严格测试。</p>
 
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/349/">KMP</a>
-    </h1>
-    <p class="meta">Jan 16, 2007
-         - 3 minute read 
-         - <a href="http://shell909090.org/blog/archives/349/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>KMP是一个给人捧滥了的算法，其实单看同时有三个发明人这点，就知道这个算法是自古华山一条路，没别的想法的。KMP的算法每步虽然难想但是自然有道理，没有别的方法的。不像排序算法，一嘟噜的算法还没完。根据各种侧重点不同有不同的算法可用。 KMP的比较算法核心在于不回朔。我们先看一个正常的例子。 SSSSSSSSSSSSSS TTTTT i=0, j=1,2,3&hellip; TTTTT i=1, j=1,2,3&hellip; TTTTT i=2, j=1,2,3&hellip; 我们用T去匹配S，先对齐T和S的头部，然后对比T和S。如果T的范围内，TS内容一致，则匹配成功。不成功的话就将T向后移动一个字符。再次匹配T范围内TS的内容是否一致。ij的范围最大会在0&lt;=i&lt;=&quot;j KMP算法的核心在于，如果T范围内TS的内容不一致，那么T向后移动不是一个字符，而是多个。而当前比较位置永远不向前移动。如果您写出来的算法当前比较位置向前移动了，那么肯定是写错了。 我们假定T范围内第i个字符匹配失败(0&lt;=i 为什么能移动一个以上呢？Next[i]怎么确定呢？我们看一个抽象的例子：M代表匹配，N不匹配，U不知道。 MMMMMNUUUUU TTTTTTTTTTTTTTT TTTTTTTTTTTTTTT 我们可以看到，向后移动字符的时候，T自身有重合的部分。这时候有三种状况，我们先假定一种重合的状况。假定T向后移动了一些字符，P代表当前比较位置。在这个位置上TS出现了不匹配。 ..MMMNUUU.. ..TTTTTPTTTT.. ..MMNTTTTTT.. 在这个T向后移动一些距离后，在当前比较位置前已经出现了自身和自身不匹配的状况。根据上面我们知道，当前位置以前的T和S是匹配的。那么就是说，移动了这些字符后。T当前的位置上不可能取得匹配。我们称这种情况为这个位置的自身完全不匹配。 然后是另外一种匹配状况，符号和上面一致。 ..MMMNUUU.. ..TTTTTPTTTT.. ..MMMNTTTT.. 这个时候，T在当前匹配位置上自身不匹配，前面位置都匹配。同理可以知道，T在滑移到这个位置后可能取得匹配。我们称这种情况为这个位置的自身部分不匹配。 最后一种匹配情况是。 ..MMMNUUU.. ..TTTTTPTTTT.. ..MMMMUUU.. 这个时候，T在在前面和当前位置都匹配。我们知道前面是匹配的，然而当前既然已经被证明了和S不匹配。那么滑移这些位置后，新的位置上T也不可能和S取得匹配。我们称这种情况为这个位置的自身完全匹配。 然后我们可以回头看看比较过程了。当我们对齐TS，然后进行比较的过程中。出现了不匹配。 注意一个问题，我们回朔是为了知道移动后的T是否仍旧匹配。所以如果我们知道T匹配不匹配，就不用回朔。 这个时候我们不移动一次T，然后回朔。而是将T滑移一下，先滑移1位好了。假设出现了当前比较位置的自身完全不匹配或者自身完全匹配，那么滑动1位肯定也无法获得一个有效的匹配。那么就继续滑动，直到出现了自身部分不匹配，或者T已经完全的滑动到了当前位置的后面。这时候T的位置才是有可能获得匹配的位置，其余的位置就没必要浪费时间了。 也就是说，滑移距离Next[i]是i这个位置上滑动距离逐渐增加的时候，首次出现自身部分不匹配情况的位置。如果这情况不出现，那么就设定为&lt;1的值。操作上将整个T滑动到当前位置的后面，并且从下一个位置开始比较起。 然后附上初始版的代码和比较过程。 int *cul_next (char *lpTpl) { unsigned int i = 0, j = 0, l = 0; int *next; l = strlen (lpTpl); next = new int[l]; memset (next, 0, l *</p>
-
-          
-              <footer>
-                  <a href="http://shell909090.org/blog/archives/349/" rel="full-article">Read On &rarr;</a>
-              </footer>
           
 
         
@@ -628,6 +628,10 @@
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2838/">gpg pubkey ID碰撞</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2837/">更换blog声明</a>
           </li>
         
@@ -661,10 +665,6 @@
         
           <li class="post">
             <a href="/blog/archives/2813/">云计算的成本计算</a>
-          </li>
-        
-          <li class="post">
-            <a href="/blog/archives/2809/">说说密码和安全设计</a>
           </li>
         
       </ul>

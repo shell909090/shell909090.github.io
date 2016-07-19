@@ -89,6 +89,37 @@
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/329/">上海电信ADSL宽带测试报告</a>
+    </h1>
+    <p class="meta">Oct 25, 2006
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/329/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>总算把该死的有线通换成ADSL了——现在我们看看电信的宽带质量。 我做了几项测试，因为时间关系(我要吃饭了——)，没有做的很足，回头补个详细的。 1.tcp连接丢包率 根据我的测试，有一次出现了4%的丢包率，其余时间是0。 2.网络时延测试 www.google.com的测试结果是 平均/抖动=295.3&frasl;591.7 www.sina.com.cn的测试接过是 平均/抖动=435.1&frasl;714.3 3.TTL状态 平均TTL大约在12-18左右，略略好于有线通1-2个路由器。 4.动态丢包测试 P2P/HTTP混合实际使用下1分钟8863个包，丢包2.7%。 5.网络压力测试 未进行。 从以上参数中可以看出，电信的质量略略好于有线通的。但是网络时延大，带有数据丢包。这个要去检查是否是信号线上的问题。 下午仔细检测了ADSL的详细状况，然后得出了一个更详细的表，附录如下： 1.tcp连接丢包率&amp;网络时延测试 #hping -p 80 www.sina.com.cn #hping -p 80 www.google.com 2.TTL状态 NTOP测定，平均TTL大约在12-18左右，略略好于有线通1-2个路由器。 3.动态丢包测试 wireshark测定。 1.无网络压力状态下测试 双机器自然负荷，仅仅开启MSN等IM软件。 &mdash; www.google.com hping statistic &mdash; 96 packets transmitted, 95 packets received, 2% packet loss round-trip min/avg/max = 36.1&frasl;39.3&frasl;57.6 ms 平均/抖动=39.3&frasl;21.5 &mdash; www.sina.com.cn hping statistic &mdash; 96 packets transmitted, 96 packets received, 0% packet loss round-trip min/avg/max = 10.6&frasl;13.1&frasl;16.7</p>
+
+          
+              <footer>
+                  <a href="http://shell909090.org/blog/archives/329/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/328/">通过LPIC1</a>
     </h1>
     <p class="meta">Oct 21, 2006
@@ -326,33 +357,6 @@
 
         
           <p>OK，今天贝壳稍微辛苦了点。给用有线通的朋友们准备了份礼物。 贝壳今天解析了有线通的抓包，发现了有线通限制P2P的方法，那就是，丢包。 TCP传输的时候，会有一定几率的丢失部分或者全部传输的数据，对方会根据你的SEQ和checksum来分析是否接收到了所有的包，并且返回一个包，告诉你报文状况。一般来说，丢包率都是很小的，大约是0.1%以下。丢包太多往往意味着各种网络异常，例如抢占MAC的sniffer方式就会有大量的丢包。这里是丢包率的详细解释。 贝壳刚刚截取了32秒的数据，总共传输3082个，丢包率是ED数据丢失119个，其余总共丢失2个，总丢包率3.9%。图片内有相应的截图，并且贝壳可以提供多次的抓包分析证明。 贝壳又做了一次分析，这次贝壳从skycn.com上面下载directx9c，同时保持ED通信。ED是7K上传40K下载的样子，HTTP是15K的样子。在60秒内总共是16763个包，其中ED相关丢包321个，非ED相关丢包13个，丢包率1.99%。 通过这个就可以证明，即使不说有线通封锁P2P的问题，有线通的网络服务质量也存在硬性问题。</p>
-
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/319/">X system 配置文件执行流程分析</a>
-    </h1>
-    <p class="meta">Sep 11, 2006
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/319/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>1.startx启动流程 /usr/bin/startx +-&gt;/etc/X11/xinit/xinitrc -&gt;/etc/X11/Xsession |-&gt;~/.xinitrc |-&gt;/etc/X11/xinit/xserverrc -&gt;/usr/bin/X11/X -&gt;~/.xserverrc startx脚本会分析用户主目录下是否存在特殊配置文件，如果不存在则使用系统默认脚本。默认脚本分两个部份，xinitrc启动客户端部份，xserverrc启动服务器端部份。 xserverrc内容仅为启动X。xinitrc会执行/etc/X11/Xsession，而后进入session分析。 2.Xsession /etc/X11/Xsession -&gt;/etc/X11/Xsession.d/* /etc/X11/Xsession和/etc/init.d/rc很类似，是用来循环依次启动其他脚本的控制脚本。他负责启动/etc/X11/Xsession.d/下的所有文件。其中50xfree86-common_determine-startup文件会依次检测以下3个文件，并且设置到STARTUP变量中。x-session-manager;x-window-manager;x-terminal-emulator;最后99xfree86-common_start文件会执行exec $STARTUP;完成整个系统的启动过程。 3.gdm gdm服务被/etc/init.d/gdm启动，而后读取/etc/gdm/gdm.conf配置自身。后面是基于理论分析，没有加以验证。 |-gdm&mdash;gdm-+-Xorg | -x-session-manag-+-scim&lt;br /&gt; | -ssh-agent 上面是pstree的结果，第1个gdm是/etc/init.d/gdm，第2个gdm是/usr/bin/gdm。gdm先启动一个X作为服务端，否则自身也无法以图形方式显示登录界面。而后gdm成为此X界面的唯一用户，显示登录系统。在用户登录后，gdm启动/etc/gdm/Xsession。这个脚本的内容和/etc/X11/Xsession非常类似，我怀疑为什么他们不用链接的方式(可能是因为包的关系？)。这时整个启动活动就结束了。</p>
 
           
 
@@ -624,6 +628,10 @@
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2838/">gpg pubkey ID碰撞</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2837/">更换blog声明</a>
           </li>
         
@@ -657,10 +665,6 @@
         
           <li class="post">
             <a href="/blog/archives/2813/">云计算的成本计算</a>
-          </li>
-        
-          <li class="post">
-            <a href="/blog/archives/2809/">说说密码和安全设计</a>
           </li>
         
       </ul>

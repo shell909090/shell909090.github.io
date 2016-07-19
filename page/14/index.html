@@ -89,6 +89,33 @@
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/2389/">关于微信信令问题的补充说明</a>
+    </h1>
+    <p class="meta">Apr 15, 2013
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/2389/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>上次说的扯淡，不是指技术细节，而是商业讨论。技术细节上，我相信心跳一定是会对网络带来负担的。 空口无凭，我们就用上文给出的几个数据来计算一下。按照用户花10元计算，看看商业上他可以得到什么，得到了什么。 ayanamist告诉我，他们那里流量计费大约是10元30M，上海这里我用的比较多的是8元80M，我们按照10元100M计。我找到联通数据流量的最低购入费用是35元/1G，合10元250M。 假定我用10元100M套餐，在手机上使用微信。微信的心跳相当于5分钟连接一次服务器。这个比联网使用当然消耗更大。但是，请思考一下这个问题。移动运营商可以接受10元250M的用户，但是无法接受10元100M的用户一天连接300次服务器？也就是说，一天连接300次服务器的成本比2.5倍流量带来的负担还重？ 我的判断是，还是2.5倍流量的负担更重。微信真正的问题，还在于他动了利润更加高的业务——短信。也就是说，我认为，移动运营商可以忍受一天连接300次服务器，但是无法忍受高收入业务被边缘化。 作为佐证，我提出了下面一个概念验证。如果我们使用数据网络打电话如何？ 当我们需要给对方打电话时，使用短信呼叫对方上线（作为thomas提出的体验问题的回答。app自动发送短信和接收回信，用户无须手工），然后利用数据网络拨打电话。这样每次接通双方都需要0.1元短信费用，和每小时2元的数据流量费用。当然，对于某些特殊区域，有电话无网络的时候，或者紧急情况下，使用普通电话呼叫。 我测试了微信的语音通话功能在3G下的效果，比普通电话略差，但是基本可以接受。如果我们可以如此操作，就可以免长途和漫游费用，低成本的进行语音通话。这个模型没有任何心跳压力，流量的使用也和普通3G类似。移动运营商可能接受这样的一种方案么？ 怎么可能。真发生这种事，移动连讨论都没有就直接禁用这套服务了。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/2369/">从微信和移动的官司说多网融合</a>
     </h1>
     <p class="meta">Apr 11, 2013
@@ -322,33 +349,6 @@
 
         
           <p>问题1 以下代码。 int main() { fork(); fork(); fork(); printf("---n"); return 0; } 编译后执行./a.out | wc -l，输出多少？ 问题2 以下代码。 int main() { fork(); printf("b"); if (fork() == 0) { write(1, "a", 1); }else{ write(1, "c", 1); } return 0; } 编译后执行./a.out，输出多少？ 答案 第一个是8，因为pipe会继承。 第二个是cabcbbab，结果不恒定，原因比较复杂。至少应当能看懂2个a2个c4个b，c先出ab后出最后一个是b。</p>
-
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/2329/">修正问题，让debian testing使用lxc</a>
-    </h1>
-    <p class="meta">Jan 23, 2013
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/2329/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>目前debian testing里面的lxc是无法运作的。原因是live-debconfig这个包只在sid中存在，而lxc是借助这个包来做系统初始化设定的。没有设定就结束初始化会挂掉系统。 解决方法如下： dget -x http://ftp.de.debian.org/debian/pool/main/l/lxc/lxc_0.9.0~alpha2-4.dsc 可能因为没有key而无法解压，用dpkg-source -x解压开内容即可。 aptitude install autotools-dev docbook2x libapparmor-dev libcap-dev linux-libc-dev 然后进入目录，dpkg-buildpackage -rfakeroot -d进行编译。 退出目录，dpkg -i lxc&hellip;进行安装。 到/usr/share/lxc/packages/，wget http://ftp.cn.debian.org/debian/pool/main/l/live-debconfig/live-debconfig_4.0~a15-1_all.deb。 然后再执行常规操作。 lxc-create -n vm0 -t debian lxc-start -n vm0 启动正常了。 在debian wheezy 3.2.0-4-686-pae下测试通过。</p>
 
           
 
@@ -620,6 +620,10 @@
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2838/">gpg pubkey ID碰撞</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2837/">更换blog声明</a>
           </li>
         
@@ -653,10 +657,6 @@
         
           <li class="post">
             <a href="/blog/archives/2813/">云计算的成本计算</a>
-          </li>
-        
-          <li class="post">
-            <a href="/blog/archives/2809/">说说密码和安全设计</a>
           </li>
         
       </ul>

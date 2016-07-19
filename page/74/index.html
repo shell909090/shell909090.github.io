@@ -89,6 +89,37 @@
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/339/">正则表达式解析文本</a>
+    </h1>
+    <p class="meta">Dec 21, 2006
+         - 5 minute read 
+         - <a href="http://shell909090.org/blog/archives/339/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>最近碰到这么个问题，一个文本，每行都是乱糟糟的东西，要从里面解析出东西来。行匹配铁定是用正则表达式，我用了Boost，不会的看我前两天的blog去。 下面是按行解析问题。简单来说，写一个类继承Lister，然后实现里面的三个纯虚方法。maxSeqence返回最大可以支持的表达式，registe_regex返回表达式文本，seqenceProcess返回相应函数的指针。其实可以写成直接调用seqenceProcess加上匹配序号，然后让用户在函数内部做switch-case的。不过这样用户代码量稍微有点多，所以干脆玩一把技术。然后是几个非纯虚函数，nextSeqence可以根据当前状态来控制下一个要匹配的表达式，默认是+1，一个一个全部匹配。beforeProcess和afterProcess分别是处理前后，可以调整输入流。noMatch是一个比较常用的虚函数，用于响应没有匹配时的状态。 匹配的结果在cmatch &amp; what中，详细请看boost::regex。不过what[0].str()可以获得整句的string型返回，what[1]开始就是正则的匹配结果。 ---------2006-12-25--------------- 原来的结果删除，我重写了一个。 主要有两个问题，一个是getline的效率问题，我会撰文说明的。还有就是两处细节不大好。 为了修正这两个问题，我突然发现整个的构架不大好了——怎么办？重写吧—— 下面是新的，一个类line_regex，直接继承就好。line_buffer是用于解决getline效率不高的问题的，当然我偷了个懒，实现代码用了WIN32API，所以是不可移植的。而且数据是一次读取，最多256M。不过相信这种级别的问题还难不倒大家。line_buffer类中的函数都很清晰明了，就不介绍了。 Process (tistream &amp; is)和Process (line_buffer &amp; lb)是两大入口，同时支持自有的输入方法和流输入。当然流输入清晰明了标准化程度高。不过效率差的一塌糊涂。继承类初始化的时候，记得设置pfTable为入口列表，然后调用注册函数完成注册。nextSeqence和上面一样，可以定制下一个匹配式。noMatch用于无匹配的时候。beforeProcess和afterProcess分别会在某行开始和结束匹配后用，返回-1结束运行。其中beforeProcess返回正数会导致本行跳过，可以作为过滤器。 ---------------------LineRegex.h-------------------- #include #include #include #include #include #include #include using namespace std; using namespace boost; typedef basic_string tstring; typedef basic_regex tregex; typedef match_results tmatch; typedef basic_istream &gt; tistream; #ifndef _LINE_REGEX_H_ #define _LINE_REGEX_H_ class line_regex; typedef int (line_regex::*ProcessFunction) (const tmatch &amp; what, int line); class line_buffer { public: line_buffer(); ~line_buffer(); int open(LPCTSTR lpPath); void close();</p>
+
+          
+              <footer>
+                  <a href="http://shell909090.org/blog/archives/339/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/338/">windows service的C&#43;&#43;封装实现</a>
     </h1>
     <p class="meta">Dec 20, 2006
@@ -323,37 +354,6 @@
         
           <p>今天老妈跑到我租的房子里面的时候，在门口看到一个小狗。(关于我租房子的事情后面再说，我很懒，就这样)脖子上有个牌子，看来是有主人的狗。看上去很乖巧很可怜的一个小狗，趴在我家门口附近。不知道哪里来的。老妈看看可爱，又看看有主人的，放心的喂了块肉。结果，麻烦大了。 到中午我去吃饭，把早饭时候的锅子带回去。结果出门发现，它还在那里。看到我出来，一下子站起来。有没有搞错，别说我可不是老妈。就算是，也不能在空锅子里面变出肉来阿。赶紧给老妈打了个电话，老妈还说我大惊小怪。好好好，见怪不怪。我出去看到它注意力正被邻居引开了，干脆一溜烟跑下去。 晚上去吃饭，发现还在——有没有搞错阿——就算黑猫叔叔也要休息的好吧。没办法，和老妈说了，你喂的肉，你搞定。老妈想想也没办法，吃了晚饭到我哪里准备抱下去。结果路上看到一个邻居的狗，也跟我们上来了。 两个狗见面了非常有意思，互相闻来闻去。然后邻居的狗居然想骑那个可怜的狗了。它(或者应该叫她？)到处跑。我赶快跑到屋子里面，省得看狗打架。老妈赶快把狗抱到下面去，结果发现110来了。看来是刚刚他们打架的声音太大，吓到谁了。邻居的狗应该没事，不过这只可怜的小狗就麻烦了。虽然有狗牌，但是不能用来查找主人。(狠狠鄙视下中国的动物管理制度，收了钱不管理的么)派出所的人看看也很可怜，问我妈说要不要养。养的话省下1000来挂狗牌，不养的话回去他们也是处理了。(其实就是人道毁灭)我妈听了也很想，问题是这狗可带不回北京阿——即使带回去也没法养。原来的狗就是一个证明。所以很无奈的看着给接走了。</p>
 
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/329/">上海电信ADSL宽带测试报告</a>
-    </h1>
-    <p class="meta">Oct 25, 2006
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/329/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>总算把该死的有线通换成ADSL了——现在我们看看电信的宽带质量。 我做了几项测试，因为时间关系(我要吃饭了——)，没有做的很足，回头补个详细的。 1.tcp连接丢包率 根据我的测试，有一次出现了4%的丢包率，其余时间是0。 2.网络时延测试 www.google.com的测试结果是 平均/抖动=295.3&frasl;591.7 www.sina.com.cn的测试接过是 平均/抖动=435.1&frasl;714.3 3.TTL状态 平均TTL大约在12-18左右，略略好于有线通1-2个路由器。 4.动态丢包测试 P2P/HTTP混合实际使用下1分钟8863个包，丢包2.7%。 5.网络压力测试 未进行。 从以上参数中可以看出，电信的质量略略好于有线通的。但是网络时延大，带有数据丢包。这个要去检查是否是信号线上的问题。 下午仔细检测了ADSL的详细状况，然后得出了一个更详细的表，附录如下： 1.tcp连接丢包率&amp;网络时延测试 #hping -p 80 www.sina.com.cn #hping -p 80 www.google.com 2.TTL状态 NTOP测定，平均TTL大约在12-18左右，略略好于有线通1-2个路由器。 3.动态丢包测试 wireshark测定。 1.无网络压力状态下测试 双机器自然负荷，仅仅开启MSN等IM软件。 &mdash; www.google.com hping statistic &mdash; 96 packets transmitted, 95 packets received, 2% packet loss round-trip min/avg/max = 36.1&frasl;39.3&frasl;57.6 ms 平均/抖动=39.3&frasl;21.5 &mdash; www.sina.com.cn hping statistic &mdash; 96 packets transmitted, 96 packets received, 0% packet loss round-trip min/avg/max = 10.6&frasl;13.1&frasl;16.7</p>
-
-          
-              <footer>
-                  <a href="http://shell909090.org/blog/archives/329/" rel="full-article">Read On &rarr;</a>
-              </footer>
           
 
         
@@ -624,6 +624,10 @@
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2838/">gpg pubkey ID碰撞</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2837/">更换blog声明</a>
           </li>
         
@@ -657,10 +661,6 @@
         
           <li class="post">
             <a href="/blog/archives/2813/">云计算的成本计算</a>
-          </li>
-        
-          <li class="post">
-            <a href="/blog/archives/2809/">说说密码和安全设计</a>
           </li>
         
       </ul>

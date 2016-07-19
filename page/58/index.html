@@ -89,6 +89,33 @@
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/62/">debian testing下的ibus安装</a>
+    </h1>
+    <p class="meta">Apr 8, 2009
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/62/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>贝壳经过N个人的宣传，决定试用一下传说中的Ibus，下面是试用安装手记。文章参考了后面的参考1，特此鸣谢。 apt-get install git-core python-gtk2-dev cvs libtool automake python-enchant libgtk2.0-dev libdbus-1-dev libdbus-glib-1-dev python-xdg 在安装以上依赖后，运行。 安装ibus git clone git://github.com/phuang/ibus.git ibus cd ibus ./autogen.sh chmod +x debian/rules dpkg-buildpackage 安装ibus-pinyin git clone git://github.com/phuang/ibus-pinyin.git ibus-pinyin cd ibus-pinyin ./autogen.sh chmod +x debian/rules dpkg-buildpackage 而后，在根目录会生成两个文件。贝壳的是ibus_0.1.1.20080908-1_amd64.deb ibus-pinyin_0.1.1.20080901-1amd64.deb。名字比较旧，但是查看git log的话，是2009年4月8日的版本。先安装前者，再安装后者(顺序不要弄错)。而后就是设定部分。 设定的话，请不要按照参考文去设定。这是贝壳血的教训，足足弄了4个小时。正确的做法是用root用户im-switch -c。而后选择ibus作为输入法。 而后，稍等，先不要着急重启。在两个包里面还有个bug？？ 在ibus包中，有这么一个文件。 /usr/etc/xdg/autostart/ibus.desktop 在debian testing中，这个位置的自启动是无效的！ 正确的做法是，cp /usr/etc/xdg/autostart/ibus.desktop /etc/xdg/autostart/ibus.desktop 如果不按照上文修正，结果就是ibus会正确启动，但是没有托盘区和输入条，全凭感觉选字(汗--|||)。 其实这应当是一个bug，scim可以在/etc/X11/xinit/xinput.d/scim中设定好守护进程，而后在系统界面出现后自动出现(这 也是为什么每次启动的时候scim总是先看到的原因)。而ibus尚不支持界面出现后再去注册托盘区，因此必须试用autostart来启动守护进程。 总体感觉而言，ibus比scim更加漂亮干净，据说对kde的支持也更好。不过试用过程中还是有点问题，主要是以下几个(2009年04月08日列表)： 1.�字没有！我相信，其实是很多字没有！ 2.firefox就在贝壳写这篇文章的时候，崩溃了一次。以前贝壳的firefox很稳定的，从来没有崩溃过—— 参考： [1].debian 5.0 安装 ibus中文输入法.http://hi.baidu.com/cvwolf/blog/item/3d812b4e8c4fe201b3de0591.html</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/61/">移动时代的一个应用预测</a>
     </h1>
     <p class="meta">Apr 5, 2009
@@ -323,37 +350,6 @@
         
           <p>这是篇广告文。 不知道你有没有听说过GTD？我长话短说介绍一下，如果你每天都有成堆的事情要做，经常忘记做什么事情，每天都在焦虑是否有什么被忘记了。或者你经常被意外的事情打断，无法顺利工作，甚至忘记正在做什么，那么你真的需要好好看一下Get Things Done这本书。这本书的主旨在于推荐你一种生活方式，一种不需要焦虑是否忘记了什么的生活方式。他的步骤很简单，最少只需要纸和笔就可以进行(当然，贝壳推荐用电脑)。如果你需要做什么，用纸记录下来。做好一件事情，用笔划掉。每隔一段时间，回顾一下，什么事情还没做，什么事情拖沓了，哪些事情应该先做，哪些事情应该后做。简单来说，就是Todo List。 那么Remember The Milk(下面简称RTM)好在哪里，值得贝壳特意推荐呢？事实上，贝壳在GTD上换过不少工具。Mozilla Sunbird，太庞大，要用的时候老去开笔记本？gtodo，很小巧，问题大同小异。Rainlendar，很漂亮，显示还不错，Todo List就碰到了一样的问题，贝壳总不能天天开着笔记本走路吧(虽然实际情况差不多)。Google Calendar，倒是非常好，行事历丰富，支持短信提醒，同步选项众多。Outlook，Sunbird，Rainlendar，甚至可以直接同步到手机上(不知道的同学，请参考GooSync)。但是有个致命缺陷，无法将事件标记为完成。这样要表示完成就只有删除事件，导致无法回顾。因此，贝壳最终选择了RTM，配合Google Calendar使用。 贝壳已经将RTM设定为主页，这是贝壳的第二个主页，头一个是iGoogle，可惜做到后来太杂乱无章，废弃。每天贝壳空下来了，跑到RTM上，看看今天需要完成什么事情。如果有突发事件(例如你在写论文的时候突然需要找一些资料，有人突然说贝壳来一下)，那么评估一下突发事件的状态。一般来说，如果突发事件没有上下依赖关系，没有回顾的必要，没有突发中的突发(这是最主要的)，那么完全可以不用记录。否则你需要先记录突发事件，将他标记为最优先。如果不这么做，当再次发生突发事件的时候，你要么补充记录上一个的，要么就会忘记事情。一般来说，10分钟以内可以处理掉的事情是很少被再次打断的。当然，如果可行，贝壳推荐突发-延后的处理方式。就是说，当突发发生后，将突发要处理的目标记录下来(例如，12点前去客户那里一下)，标记为最优先，然后接着处理当前的事务。这样一般只会中断1分钟的思考，不会造成记忆的混乱，你的工作可以顺利的继续下去，不会受到各种因素的干扰(当然，必须先处理例外，例如：贝壳来一下)，也不需要担忧忘记事情。 如果在不能开机的状况下，例如路上，贝壳优先考虑使用RTM的mobile版本。如果不行，那只有记录在写字本里面，回去补充。而后，每天晚上，贝壳会翻看一下今天的记录，看看明天有什么需要做的事情，哪些优先，哪些可以推迟。如果有空，可以做什么计划好的事情。等等等等。那么同学们会问了，Google Calendar呢？ GC可以和RTM结合，从而看到RTM的事件列表(方法就自己gg吧，贝壳不废话了)。当然，这只是有限的结合，意义并不大。GC真正的意义在于方便的和手机同步，从而对固定议程，重复议程有很好的显示和提醒作用。例如记忆生日，提醒周报，记忆飞机等等。这个和RTM的GTD并不冲突和重复。</p>
 
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/52/">磁盘对倒迁移</a>
-    </h1>
-    <p class="meta">Feb 12, 2009
-         - 5 minute read 
-         - <a href="http://shell909090.org/blog/archives/52/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>贝壳的本本坏了。 Acer的质量真不怎么的，只是正常使用而已，买来不到一个月就返修。费时费力不说，还差点因为IWT的问题无法修理而要付钱。结果刚刚过保半年，总共买了一年半后，坏了。 趁机问老板要了一台ThinkPad，虽说联想的做工不如IBM，不过依旧非常舒服，不愧是商务王者。但是，贝壳原来在笔记本上配置的复杂到死的系统，要是在新机器上一一重装的话，费力先不说，项目肯定是无法按期完工了。 贝壳修旧机器的时候，拆下了硬盘和电池。这里顺便提醒送修笔记本的同志们，记得拆下硬盘和电池。硬盘是你机要数据的所在，将来要恢复系统就全靠他了。而电池——到时候要是发现电量少了，这种东西谁都说不清楚。所以还是拆下来的好。那么，最低限度的，要从旧硬盘上读出数据，否则很多东西完全无法运作了。所以——贝壳找人借了一个移动硬盘盒。嘿嘿，这种东西可以将笔记本的SATA转换成USB使用，从而在新电脑上直接读取旧电脑数据。 为了不重装电脑，贝壳决定在新电脑上直接使用旧电脑的系统。将旧电脑的数据整个复制到新电脑上，就是俗称的磁盘对倒。下面是一个关键的问题，是重建文件系统，然后复制数据好呢？还是直接镜像整个系统？如果是复制数据，相对的数据清晰干净，但是容易发生一些莫名其妙的错误。如果是整个镜像，对了错一并带入新系统。贝壳在这里选择比较保守的方案，镜像整个磁盘。 首先贝壳从U盘启动(刚刚做了U live debian，冲着拯救去的系统，不知道是说幸运呢，还是乌鸦嘴呢)，而后删除原有磁盘的所有分区，输入dd if=/dev/sdc of=/dev/sda，将整个磁盘复制到新电脑上。这里注意，贝壳没有设定区块大小，因此速度比较慢，正确的设定大小有助于加速复制。贝壳的数据是 120G(因此向公司申请的电脑最低是120G硬盘)，复制速度是10M/s多一点，复制时间大约是3小时15分钟。从晚上9点一刻一直到晚上12点半。在完成复制后，直接重启，从硬盘启动Linux，成功！ 在几乎没有任何干预的情况下，Linux就可以开机成功，不得不说这给了我很大信心。然后我去启动windows——不动。 贝壳被迫回到了Linux，仔细调试驱动，设法最快的弄出一个可用的系统。下面详细记录了ThinkPadT61上安装Debian的全过程，有兴趣的可以看看。至于六牙四皂和某猫小姐就可以跳过了。 首先贝壳调整了复制后的硬盘上的分区。由于分区表是按照120G的时候计算的，因此新硬盘上的分区使用不足。启动gparted调整大小后，sda6占用了全部新增空间，暴增到200G。而后贝壳开始查看pci设备和驱动。 lspci -nn 00:00.0 Host bridge [0600]: Intel Corporation Mobile PM965/GM965/GL960 Memory Controller Hub 8086:2a00 00:02.0 VGA compatible controller [0300]: Intel Corporation Mobile GM965/GL960 Integrated Graphics Controller 8086:2a02 00:02.1 Display controller [0380]: Intel Corporation Mobile GM965/GL960 Integrated Graphics Controller 8086:2a03 00:19.0 Ethernet controller [0200]: Intel Corporation 82566MM Gigabit Network Connection 8086:1049 00:1a.0 USB Controller [0c03]: Intel Corporation</p>
-
-          
-              <footer>
-                  <a href="http://shell909090.org/blog/archives/52/" rel="full-article">Read On &rarr;</a>
-              </footer>
           
 
         
@@ -624,6 +620,10 @@
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2838/">gpg pubkey ID碰撞</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2837/">更换blog声明</a>
           </li>
         
@@ -657,10 +657,6 @@
         
           <li class="post">
             <a href="/blog/archives/2813/">云计算的成本计算</a>
-          </li>
-        
-          <li class="post">
-            <a href="/blog/archives/2809/">说说密码和安全设计</a>
           </li>
         
       </ul>
