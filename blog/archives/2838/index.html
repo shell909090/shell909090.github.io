@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>gpg pubkey ID碰撞</title>
+
+  
+  
+  <link rel="stylesheet" href="http://shell909090.org/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="http://shell909090.org/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="http://shell909090.org/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         gpg pubkey ID碰撞 
+    </h1>
+    <p class="meta">Jul 20, 2016
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/2838/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>昨天和朋友碰了个头，然后做了交叉签署。</p>
+
+<p>朋友签署完了，还没上传签署的时候。我手贱（幸好手贱）去server上update了一下我的key。结果发现多出一支key回来。</p>
+
+<p>纳尼？</p>
+
+<p>上pgp.mit.edu去搜我的邮箱，一堆key。我废弃过不少key，这就算了。有一支2014年签署的key引起了我的注意，因为ID和我的KeyID完全一致，UserID也一样。显然这是撞出来的，不过我不记得自己有做过这样的事情。</p>
+
+<p>下面是我的真实key的fp：</p>
+
+<blockquote>
+<p>2276 57F3 6E16 9B90 4186  2EBF 29A9 7386 0914 A01A</p>
+</blockquote>
+
+<p>这是有问题的那支key的fp：</p>
+
+<blockquote>
+<p>875D 447A E720 9037 84A0  7888 909F 2614 0914 A01A</p>
+</blockquote>
+
+<p>可以看到，两者最后部分完全一致，这导致两者有同样的KeyID。</p>
+
+<p>我点进去看了一下，后面一支key完全不是我的，签的情况也乱七八糟。但是UserID显然一致。然后汗毛一竖赶紧通知朋友。朋友看了一眼，果然签错成那支假的了。</p>
+
+<p>我擦，我给你写我的fp是签名留念用的吗？</p>
+
+<p>一般来说，签名很难吊销。他要是签错了，那就麻烦大了。幸好他没上传。整个删除后重新签署，这个问题总算是顺利解决。</p>
+
+<p>我继续追踪，发现有趣的事来了。</p>
+
+<p>这个key被很多人签署，其中有个人和我的签署人KeyID和UserID又和我互相签署的某人一致。这相当于攻击者不但碰撞伪造了我和他的外观一样的Key，而且连我们的互相签署关系都伪造出来了。。。</p>
+
+<p>我OO了个XX的，这是想干嘛？</p>
+
+<p>然后，某位朋友给了我这个站点：<a href="http://gwolf.org/node/4070">Stop it with those short PGP key IDs!</a></p>
+
+<p>里面提到了这种伪造碰撞的现象。</p>
+
+<p>同时，里面也提到了解决方法。</p>
+
+<p>首先，向你的gpg.conf里面加入<code>keyid-format 0xlong</code>，这样可以使你的ID变为64位的长ID。碰撞难度更高，当然，也更难一眼看明白谁是谁。</p>
+
+<p>其次，在写程序的时候，不要使用ShortID来指明身份了，因为这种方法显然受到了攻击。继续使用ShortID可能为你程序未来的安全性埋下隐患。</p>
+
+<p>最后，验证fp的时候一定要用纸质传递，签署的时候一定要验证完整fp。</p>
+
+<p>验证fp的时候一定要用纸质传递，签署的时候一定要验证完整fp。</p>
+
+<p>验证fp的时候一定要用纸质传递，签署的时候一定要验证完整fp。</p>
+
+<p>因为很重要所以说三遍。</p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Jul 20, 2016</time>
+    <span class="categories">
+      Tags:
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="http://shell909090.org/blog/archives/2837/" title="更换blog声明">更换blog声明</a>
+    
+
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2838/">gpg pubkey ID碰撞</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2837/">更换blog声明</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2836/">Pulau Perhentian</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2813/">云计算的成本计算</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="http://shell909090.org/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+
