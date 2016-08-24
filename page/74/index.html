@@ -99,6 +99,37 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/340/">EPS转BMP和代码优化</a>
+    </h1>
+    <p class="meta">Dec 22, 2006
+         - 3 minute read 
+         - <a href="http://shell909090.org/blog/archives/340/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>EPS转BMP(我用的是PNG，不过还是一回事情)。EPS内部有两种图片，一个是TIF，位置和大小在头32个字节中描述。具体可以看EPS文档，在lp[5]保存位置，lp[6]保存大小。还有就是%%BeginBinary: 后面跟一个大小，然后跟beginimagex0D。在前文中应当有大小，自己找找看去，最后是一堆数据。存放方法是一位一位的像素连续存放，先存放一行C，然后是一行M，然后是Y，然后是K。当这4者全部存放完后，向后跳空一端区域，到本行开始的4字节对齐处，开始下一行的存放。 例如3个像素宽的图片(好简单——)存放方法就是，在0字节的最高三位(7,6,5位)，存放了这三个像素的C值。次三位(4,3,2位)，存放了M值。然后Y值存放在0字节的两位(1,0位)和1字节的一位(7位)。最后K值存放在1字节的次三位(6,5,4位)。然后跳空对齐，在4字节的位置开始描述下一行。 了解这个过程了，就应该发现，要转换到BMP需要大量的位操作。前置过程不说了，假定数据在内存里面(我当然不会用读取这种方法，用的是文件内存映射啦)，然后目标是GDI+的BitmapData对象。 BYTE getBit (PBYTE lpInData, int bit) { bit*=n; BYTE rslt; rslt = lpInData[bit / 8]; rslt &gt;&gt;= (7 - bit % 8); return rslt &amp; 0x1; } for (y = 0; y &lt; tgtData.Height; y++) { line_start = lpOut + l * n * Stride; for (x = 0; x &lt; tgtData.Width; x++) { c = 1 - getBit (line_start, x); m = 1 - getBit</p>
+
+          
+              <footer>
+                  <a href="http://shell909090.org/blog/archives/340/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/339/">正则表达式解析文本</a>
     </h1>
     <p class="meta">Dec 21, 2006
@@ -336,33 +367,6 @@ ga('send', 'pageview');
 
         
           <p>最近碰到朋友——老问我，你最近如何。我说还行，就是头发剪了。然后就被要求照片。好，现在特此公告。照片如下。 别说我没说过。</p>
-
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/330/">一只小狗</a>
-    </h1>
-    <p class="meta">Nov 6, 2006
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/330/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>今天老妈跑到我租的房子里面的时候，在门口看到一个小狗。(关于我租房子的事情后面再说，我很懒，就这样)脖子上有个牌子，看来是有主人的狗。看上去很乖巧很可怜的一个小狗，趴在我家门口附近。不知道哪里来的。老妈看看可爱，又看看有主人的，放心的喂了块肉。结果，麻烦大了。 到中午我去吃饭，把早饭时候的锅子带回去。结果出门发现，它还在那里。看到我出来，一下子站起来。有没有搞错，别说我可不是老妈。就算是，也不能在空锅子里面变出肉来阿。赶紧给老妈打了个电话，老妈还说我大惊小怪。好好好，见怪不怪。我出去看到它注意力正被邻居引开了，干脆一溜烟跑下去。 晚上去吃饭，发现还在——有没有搞错阿——就算黑猫叔叔也要休息的好吧。没办法，和老妈说了，你喂的肉，你搞定。老妈想想也没办法，吃了晚饭到我哪里准备抱下去。结果路上看到一个邻居的狗，也跟我们上来了。 两个狗见面了非常有意思，互相闻来闻去。然后邻居的狗居然想骑那个可怜的狗了。它(或者应该叫她？)到处跑。我赶快跑到屋子里面，省得看狗打架。老妈赶快把狗抱到下面去，结果发现110来了。看来是刚刚他们打架的声音太大，吓到谁了。邻居的狗应该没事，不过这只可怜的小狗就麻烦了。虽然有狗牌，但是不能用来查找主人。(狠狠鄙视下中国的动物管理制度，收了钱不管理的么)派出所的人看看也很可怜，问我妈说要不要养。养的话省下1000来挂狗牌，不养的话回去他们也是处理了。(其实就是人道毁灭)我妈听了也很想，问题是这狗可带不回北京阿——即使带回去也没法养。原来的狗就是一个证明。所以很无奈的看着给接走了。</p>
 
           
 
@@ -634,6 +638,10 @@ ga('send', 'pageview');
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2839/">CentOS 6下安装Python2.7</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2838/">gpg pubkey ID碰撞</a>
           </li>
         
@@ -667,10 +675,6 @@ ga('send', 'pageview');
         
           <li class="post">
             <a href="/blog/archives/2816/">关于程序员和产品经理两大世界体系的对话——论快播庭审</a>
-          </li>
-        
-          <li class="post">
-            <a href="/blog/archives/2813/">云计算的成本计算</a>
           </li>
         
       </ul>
