@@ -16,9 +16,7 @@
       <pubDate>Wed, 24 Aug 2016 15:30:59 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2839/</guid>
-      <description>
-
-&lt;p&gt;我以为只有我不知道，不过看来大家都不知道。&lt;/p&gt;
+      <description>&lt;p&gt;我以为只有我不知道，不过看来大家都不知道。&lt;/p&gt;
 
 &lt;p&gt;很多时候，我们还得维护CentOS 6的设备。这件事很大程度上不是我们能决定的。但是CentOS 6的默认Python是2.6，很多最新的代码无法执行。例如Django，必须使用Python2.&lt;sup&gt;7&lt;/sup&gt;&amp;frasl;&lt;sub&gt;3&lt;/sub&gt;.&lt;sup&gt;4&lt;/sup&gt;&amp;frasl;&lt;sub&gt;3&lt;/sub&gt;.5。ansible好像也要求新版本Python。&lt;/p&gt;
 
@@ -28,25 +26,19 @@
 
 &lt;p&gt;RHSCL的全称是Red Hat Software Collections。旨在于在长期支持版本中提供最新版本的动态语言和数据库支持。&lt;a href=&#34;https://access.redhat.com/support/policy/updates/rhscl&#34;&gt;这里&lt;/a&gt;是RHSCL支持的基础工具和版本。&lt;a href=&#34;https://www.softwarecollections.org/en/scls/rhscl/python27/&#34;&gt;这里&lt;/a&gt;是说明性文档。具体方法如下：&lt;/p&gt;
 
-&lt;blockquote&gt;
-&lt;h1 id=&#34;1-install-a-package-with-repository-for-your-system&#34;&gt;1. Install a package with repository for your system:&lt;/h1&gt;
+&lt;pre&gt;&lt;code&gt;# 1. Install a package with repository for your system:
+# On CentOS, install package centos-release-scl available in CentOS repository:
+$ sudo yum install centos-release-scl
+ 
+# On RHEL, enable RHSCL repository for you system:
+$ sudo yum-config-manager --enable rhel-server-rhscl-7-rpms
 
-&lt;h1 id=&#34;on-centos-install-package-centos-release-scl-available-in-centos-repository&#34;&gt;On CentOS, install package centos-release-scl available in CentOS repository:&lt;/h1&gt;
+# 2. Install the collection:
+$ sudo yum install python27
 
-&lt;p&gt;$ sudo yum install centos-release-scl&lt;/p&gt;
-
-&lt;h1 id=&#34;on-rhel-enable-rhscl-repository-for-you-system&#34;&gt;On RHEL, enable RHSCL repository for you system:&lt;/h1&gt;
-
-&lt;p&gt;$ sudo yum-config-manager &amp;ndash;enable rhel-server-rhscl-7-rpms&lt;/p&gt;
-
-&lt;h1 id=&#34;2-install-the-collection&#34;&gt;2. Install the collection:&lt;/h1&gt;
-
-&lt;p&gt;$ sudo yum install python27&lt;/p&gt;
-
-&lt;h1 id=&#34;3-start-using-software-collections&#34;&gt;3. Start using software collections:&lt;/h1&gt;
-
-&lt;p&gt;$ scl enable python27 bash&lt;/p&gt;
-&lt;/blockquote&gt;
+# 3. Start using software collections:
+$ scl enable python27 bash
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;一定要注意最后一条指令。RHSCL并没有将Python安装到系统路径下，因此需要用特别的指令来配置环境，启用python2.7。&lt;/p&gt;
 </description>

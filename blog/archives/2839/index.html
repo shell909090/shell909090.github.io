@@ -112,9 +112,7 @@ ga('send', 'pageview');
           
           
           
-          
-
-<p>我以为只有我不知道，不过看来大家都不知道。</p>
+          <p>我以为只有我不知道，不过看来大家都不知道。</p>
 
 <p>很多时候，我们还得维护CentOS 6的设备。这件事很大程度上不是我们能决定的。但是CentOS 6的默认Python是2.6，很多最新的代码无法执行。例如Django，必须使用Python2.<sup>7</sup>&frasl;<sub>3</sub>.<sup>4</sup>&frasl;<sub>3</sub>.5。ansible好像也要求新版本Python。</p>
 
@@ -124,25 +122,19 @@ ga('send', 'pageview');
 
 <p>RHSCL的全称是Red Hat Software Collections。旨在于在长期支持版本中提供最新版本的动态语言和数据库支持。<a href="https://access.redhat.com/support/policy/updates/rhscl">这里</a>是RHSCL支持的基础工具和版本。<a href="https://www.softwarecollections.org/en/scls/rhscl/python27/">这里</a>是说明性文档。具体方法如下：</p>
 
-<blockquote>
-<h1 id="1-install-a-package-with-repository-for-your-system">1. Install a package with repository for your system:</h1>
+<pre><code># 1. Install a package with repository for your system:
+# On CentOS, install package centos-release-scl available in CentOS repository:
+$ sudo yum install centos-release-scl
+ 
+# On RHEL, enable RHSCL repository for you system:
+$ sudo yum-config-manager --enable rhel-server-rhscl-7-rpms
 
-<h1 id="on-centos-install-package-centos-release-scl-available-in-centos-repository">On CentOS, install package centos-release-scl available in CentOS repository:</h1>
+# 2. Install the collection:
+$ sudo yum install python27
 
-<p>$ sudo yum install centos-release-scl</p>
-
-<h1 id="on-rhel-enable-rhscl-repository-for-you-system">On RHEL, enable RHSCL repository for you system:</h1>
-
-<p>$ sudo yum-config-manager &ndash;enable rhel-server-rhscl-7-rpms</p>
-
-<h1 id="2-install-the-collection">2. Install the collection:</h1>
-
-<p>$ sudo yum install python27</p>
-
-<h1 id="3-start-using-software-collections">3. Start using software collections:</h1>
-
-<p>$ scl enable python27 bash</p>
-</blockquote>
+# 3. Start using software collections:
+$ scl enable python27 bash
+</code></pre>
 
 <p>一定要注意最后一条指令。RHSCL并没有将Python安装到系统路径下，因此需要用特别的指令来配置环境，启用python2.7。</p>
 
