@@ -112,66 +112,71 @@ ga('send', 'pageview');
           
           
           
-          
+          <p>不多说了，上脚本。
+    &mdash;&mdash;&mdash;&ndash;/etc/init.d/sshtunnel&mdash;&mdash;&mdash;&mdash;</p>
 
-<p>不多说了，上脚本。
-&mdash;&mdash;&mdash;&ndash;/etc/init.d/sshtunnel&mdash;&mdash;&mdash;&mdash;
-#!/bin/bash</p>
+<pre><code>#!/bin/bash
 
-<p>PATH=/bin:/sbin:/usr/bin:/usr/sbin
-CONF=&ldquo;/etc/default/sshtunnel&rdquo;
-source $CONF</p>
+PATH=/bin:/sbin:/usr/bin:/usr/sbin
+CONF=&quot;/etc/default/sshtunnel&quot;
+source $CONF
 
-<p>if ! [ -x /usr/bin/ssh ]; then
+if ! [ -x /usr/bin/ssh ]; then
 exit 0
-fi</p>
+fi
 
-<p>start ()
+start ()
 {
-echo -n &ldquo;Starting tunnel..&rdquo;
-ssh -CNq -D &ldquo;$PROXYPORT&rdquo; &ldquo;$USERNAME@$SSHHOST&rdquo; -p $SSHPORT -o ServerAliveInterval=30 &amp;
-echo &ldquo;done.&rdquo;
-}</p>
+    echo -n &quot;Starting tunnel..&quot;
+    ssh -CNq -D &quot;$PROXYPORT&quot; &quot;$USERNAME@$SSHHOST&quot; -p $SSHPORT -o ServerAliveInterval=30 &amp;
+    echo &quot;done.&quot;
+}
 
-<p>stop ()
+stop ()
 {
-echo -n &ldquo;Stopping tunnel..&rdquo;
-PID=$(netstat -nlp -4 | grep &ldquo;:$PROXYPORT&rdquo;)
-PID=$(echo $PID | sed &ldquo;s/.<em>LISTENs</em>(.*)/1/&rdquo; | cut -f1 -d/)
-kill -9 $PID
-echo &ldquo;done.&rdquo;
-}</p>
+    echo -n &quot;Stopping tunnel..&quot;
+    PID=$(netstat -nlp -4 | grep &quot;:$PROXYPORT&quot;)
+    PID=$(echo $PID | sed &quot;s/.*LISTENs*(.*)/1/&quot; | cut -f1 -d/)
+    kill -9 $PID
+    echo &quot;done.&quot;
+}
 
-<p>case &ldquo;$1&rdquo; in
-start|restart)
-start
-;;
-stop)
-stop
-;;
-restart)
-stop
-start
-;;
-*)
-echo &ldquo;Usage: $0 {start|stop|restart|clear}&rdquo;
-exit 1
-;;
+case &quot;$1&quot; in
+    start|restart)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart)
+        stop
+        start
+        ;;
+    *)
+        echo &quot;Usage: $0 {start|stop|restart|clear}&quot;
+        exit 1
+        ;;
 esac
 exit 0
-&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;end of file&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;
-&mdash;&mdash;&mdash;/etc/default/sshtunnel&mdash;&mdash;&mdash;-
+
+-----------------end of file------------------
+
+
+---------/etc/default/sshtunnel----------
 PROXYPORT=7777
 USERNAME=abc
 SSHHOST=abc
 SSHPORT=22
-&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;end of file&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;
-首先准备一个远程服务器，获得域名端口，用户名密码。而后将上述脚本放置于指定位置，修改/etc/default/sshtunnel的值，即完成配置。但是上述脚本并没有解决自动登录问题，因此，请生成一个没有密码的密钥，将公钥导入远程服务器。
-在完成配置后，可用update-rc.d sshtunnel start 90 2 .进行自动启动服务的安装，其中的2请替换成服务器的默认启动级别。如果不知道可以用以下方法查询。</p>
+-----------------end of file------------------
+</code></pre>
 
-<h1 id="cat-inittab-grep-id">cat inittab | grep ^id</h1>
+<p>首先准备一个远程服务器，获得域名端口，用户名密码。而后将上述脚本放置于指定位置，修改/etc/default/sshtunnel的值，即完成配置。但是上述脚本并没有解决自动登录问题，因此，请生成一个没有密码的密钥，将公钥导入远程服务器。</p>
 
-<p>id:2:initdefault:</p>
+<p>在完成配置后，可用update-rc.d sshtunnel start 90 2 .进行自动启动服务的安装，其中的2请替换成服务器的默认启动级别。如果不知道可以用以下方法查询。</p>
+
+<pre><code># cat inittab | grep ^id
+id:2:initdefault:
+</code></pre>
 
         </div>
         

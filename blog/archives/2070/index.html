@@ -112,27 +112,358 @@ ga('send', 'pageview');
           
           
           
-          <p>今天文章被人纠了错，就跑去人家主页上逛。结果看到有篇文章说字符串相加速度的，看看结论很奇怪。就做了一下实验。原文可以看<a href="http://www.keakon.net/2011/10/19/%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%9B%B8%E5%8A%A0%E5%B9%B6%E4%B8%8D%E6%85%A2" target="_blank">这里</a>。我们只讨论python部分的行为。首先是论证我观点的测试，无关部分就跳过了，大家应当可以自行补上。 <div><div><div>def f():</div><div>    s = &#39;&#39;</div><div>    for i in xrange(3):</div><div>        s += &#39;123&#39;</div><div>        print id(s)</div><div>    return s</div></div></div><div>f()</div><div>f()</div></p>
+          <p>今天文章被人纠了错，就跑去人家主页上逛。结果看到有篇文章说字符串相加速度的，看看结论很奇怪。就做了一下实验。原文可以看<a href="http://www.keakon.net/2011/10/19/%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%9B%B8%E5%8A%A0%E5%B9%B6%E4%B8%8D%E6%85%A2">这里</a>。我们只讨论python部分的行为。首先是论证我观点的测试，无关部分就跳过了，大家应当可以自行补上。
+<div></p>
 
-<p><div>输出：</div><div><div><div><div>138190216</div><div>138276992</div><div>138276992</div><div>138190216</div><div>138276992</div><div>138276992</div></div></div></div><div>    至少在几十的规模，这个结论还是成立的。说明对象确实被缓存了，这导致了字符串相加的多次测试中，后续次数都没有实际的执行字符串分配动作。召dis来问之。</div></p>
+<div>
 
-<p><div><div> 11           0 LOAD_CONST               1 (&#39;&#39;)</div><div>              3 STORE_FAST               0 (s)</div><div><br /></div><div> 12           6 SETUP_LOOP              41 (to 50)</div><div>              9 LOAD_GLOBAL              0 (xrange)</div></p>
+<div>
 
-<p><div>             12 LOAD_CONST               2 (3)</div><div>             15 CALL_FUNCTION            1</div><div>             18 GET_ITER            </div><div>        &gt;&gt;   19 FOR_ITER                27 (to 49)</div></p>
+def f():
 
-<p><div>             22 STORE_FAST               1 (i)</div><div><br /></div><div> 13          25 LOAD_FAST                0 (s)</div><div>             28 LOAD_CONST               3 (&#39;123&#39;)</div><div>             31 INPLACE_ADD         </div></p>
+</div>
 
-<p><div>             32 STORE_FAST               0 (s)</div><div><br /></div><div> 14          35 LOAD_GLOBAL              1 (id)</div><div>             38 LOAD_FAST                0 (s)</div><div>             41 CALL_FUNCTION            1</div></p>
+<div>
 
-<p><div>             44 PRINT_ITEM          </div><div>             45 PRINT_NEWLINE       </div><div>             46 JUMP_ABSOLUTE           19</div><div>        &gt;&gt;   49 POP_BLOCK           </div><div><br /></div><div></p>
+    s = ''
 
-<p> 15     &gt;&gt;   50 LOAD_FAST                0 (s)</div> <div>             53 RETURN_VALUE             </div></div><div>    我们看到s是local变量，这个符合我们的预期。但是后续确实发生了add，而string的+算法，我们可以参考Objects/stringobject.c:1015这里，string_concat函数的内容。这里没有加速过程，即使有，也只有发生在len(a) == 0 or len(b) == 0的情况下。对于123的求和无法说明原因。</div></p>
+</div>
 
-<p><div>    这里我只能做一个假定，我们发现的id相等，其实可能是由于内存重分配的结果。一个对象被回收后，是存放在对象池中的，再分配的时候，可能按照规则被重新分配。当然这只能是一个推测，实际证明必须在python源码中修改并且重编译，我就不找这个麻烦了。</div><div>    另一个问题，实验的时候，只是把固定字符串更换为随机字符串而已，长度也没有发生变化。预期的结果应当是+=的速度变慢，结果+=速度不变。问题是join的速度加快算是怎么回事？关于join，我们可以参考Objects/stringobject.c:1574，这里说明了join的工作流程，也没有任何加速！</div></p>
+<div>
 
-<p><div>    唯一的解释，就是append的工作速度慢到超乎正常人类的想像，实验证明了这点。</div><div><div>def g():</div><div>    a = []</div><div>    for i in xrange(1000):</div><div>        a.append(&#39;1234567890&#39;)</div><div>    # s = &#39;&#39;.join(a)</div></p>
+    for i in xrange(3):
 
-<p></div><div>print Timer(&#39;g()&#39;, &#39;from <strong>main</strong> import g&#39;).timeit(10000)</div><div>    结果是0.91，append动作比join慢10倍。</div></p>
+</div>
+
+<div>
+
+        s += '123'
+
+</div>
+
+<div>
+
+        print id(s)
+
+</div>
+
+<div>
+
+    return s
+
+</div>
+
+<p></div></p>
+
+<p></div></p>
+
+<div>
+
+f()
+
+</div>
+
+<div>
+
+f()
+
+</div>
+
+<div>
+
+输出：
+
+</div>
+
+<div>
+
+<div>
+
+<div>
+
+<div>
+
+138190216
+
+</div>
+
+<div>
+
+138276992
+
+</div>
+
+<div>
+
+138276992
+
+</div>
+
+<div>
+
+138190216
+
+</div>
+
+<div>
+
+138276992
+
+</div>
+
+<div>
+
+138276992
+
+</div>
+
+<p></div></p>
+
+<p></div></p>
+
+<p></div></p>
+
+<div>
+
+   
+至少在几十的规模，这个结论还是成立的。说明对象确实被缓存了，这导致了字符串相加的多次测试中，后续次数都没有实际的执行字符串分配动作。召dis来问之。
+
+</div>
+
+<div>
+
+<div>
+
+ 11           0 LOAD\_CONST               1 ('')
+
+</div>
+
+<div>
+
+              3 STORE\_FAST               0 (s)
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+ 12           6 SETUP\_LOOP              41 (to 50)
+
+</div>
+
+<div>
+
+              9 LOAD\_GLOBAL              0 (xrange)
+
+</div>
+
+<div>
+
+             12 LOAD\_CONST               2 (3)
+
+</div>
+
+<div>
+
+             15 CALL\_FUNCTION            1
+
+</div>
+
+<div>
+
+             18 GET\_ITER            
+
+</div>
+
+<div>
+
+        &gt;&gt;   19 FOR\_ITER                27 (to 49)
+
+</div>
+
+<div>
+
+             22 STORE\_FAST               1 (i)
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+ 13          25 LOAD\_FAST                0 (s)
+
+</div>
+
+<div>
+
+             28 LOAD\_CONST               3 ('123')
+
+</div>
+
+<div>
+
+             31 INPLACE\_ADD         
+
+</div>
+
+<div>
+
+             32 STORE\_FAST               0 (s)
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+ 14          35 LOAD\_GLOBAL              1 (id)
+
+</div>
+
+<div>
+
+             38 LOAD\_FAST                0 (s)
+
+</div>
+
+<div>
+
+             41 CALL\_FUNCTION            1
+
+</div>
+
+<div>
+
+             44 PRINT\_ITEM          
+
+</div>
+
+<div>
+
+             45 PRINT\_NEWLINE       
+
+</div>
+
+<div>
+
+             46 JUMP\_ABSOLUTE           19
+
+</div>
+
+<div>
+
+        &gt;&gt;   49 POP\_BLOCK           
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+ 15     &gt;&gt;   50 LOAD\_FAST                0 (s)
+
+</div>
+
+<div>
+
+             53 RETURN\_VALUE             
+
+</div>
+
+<p></div></p>
+
+<div>
+
+   
+我们看到s是local变量，这个符合我们的预期。但是后续确实发生了add，而string的+算法，我们可以参考Objects/stringobject.c:1015这里，string\_concat函数的内容。这里没有加速过程，即使有，也只有发生在len(a)
+== 0 or len(b) == 0的情况下。对于123的求和无法说明原因。
+
+</div>
+
+<div>
+
+   
+这里我只能做一个假定，我们发现的id相等，其实可能是由于内存重分配的结果。一个对象被回收后，是存放在对象池中的，再分配的时候，可能按照规则被重新分配。当然这只能是一个推测，实际证明必须在python源码中修改并且重编译，我就不找这个麻烦了。
+
+</div>
+
+<div>
+
+   
+另一个问题，实验的时候，只是把固定字符串更换为随机字符串而已，长度也没有发生变化。预期的结果应当是+=的速度变慢，结果+=速度不变。问题是join的速度加快算是怎么回事？关于join，我们可以参考Objects/stringobject.c:1574，这里说明了join的工作流程，也没有任何加速！
+
+</div>
+
+<div>
+
+   
+唯一的解释，就是append的工作速度慢到超乎正常人类的想像，实验证明了这点。
+
+</div>
+
+<div>
+
+<div>
+
+def g():
+
+</div>
+
+<div>
+
+    a = \[\]
+
+</div>
+
+<div>
+
+    for i in xrange(1000):
+
+</div>
+
+<div>
+
+        a.append('1234567890')
+
+</div>
+
+<div>
+
+    \# s = ''.join(a)
+
+</div>
+
+<p></div></p>
+
+<div>
+
+print Timer('g()', 'from \_\_main\_\_ import g').timeit(10000)
+
+</div>
+
+<div>
+
+    结果是0.91，append动作比join慢10倍。
+
+</div>
 
         </div>
         

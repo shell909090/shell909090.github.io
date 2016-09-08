@@ -122,15 +122,16 @@ brctl创立出来的网桥就是这么工作的。
 system &ndash; eth0 &ndash; network
 接入网桥这个假的交换机后，eth0依然负责向外通讯，但是没有自己的IP了。网桥和宿主所在的机器的连接叫做br0（或者br1，以此类推）。
 system &ndash; br0 &ndash; eth0 &ndash; network
-然后，我们可以为这个交换机接入很多的设备。
-<pre>
-system &ndash; br0 &ndash; eth0 &ndash; network
+然后，我们可以为这个交换机接入很多的设备。</p>
+
+<pre><code>system -- br0 -- eth0 -- network
                   |
                vethXX
                   |
-virtual &ndash; eth0   /
-</pre>
-其中，eth0和vethXX是一对设备。一个在宿主里，一个在虚拟机里。互相连通。
+virtual -- eth0   /
+</code></pre>
+
+<p>其中，eth0和vethXX是一对设备。一个在宿主里，一个在虚拟机里。互相连通。
 所以，当虚拟机发生通讯时，eth0上可以看到数据流，但是br0上看不到。而如果虚拟机和宿主通讯时，eth0看不到数据流，br0上可以。</p>
 
         </div>

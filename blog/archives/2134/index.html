@@ -112,17 +112,234 @@ ga('send', 'pageview');
           
           
           
-          <p>说明一下，定位切换的意思，是像chromium那样，用Atl-1-9直接切换tab。而不是用上一个下一个慢慢换。另外，是切换buffer，不是切换frame。<div>    以下是实现部分：</div><div>;; 全部的buffer都分一组，否则这个修改是没任何意思的</div><div><div>(setq tabbar-buffer-groups-function</div><div>      (lambda () (list &quot;All Buffers&quot;)))</div></p>
+          <p>说明一下，定位切换的意思，是像chromium那样，用Atl-1-9直接切换tab。而不是用上一个下一个慢慢换。另外，是切换buffer，不是切换frame。
+<div></p>
 
-<p><div><br /></div><div>;; 去掉emacs自带的几个buffer</div><div>(setq tabbar-buffer-list-function</div><div>      (lambda ()</div><div>        (remove-if</div><div><span style="white-space:pre-wrap">  </span> (lambda(buffer)</div> <div><span style="white-space:pre-wrap">  </span>   (find (aref (buffer-name buffer) 0) &quot; <em>&quot;))</div><div><span style="white-space:pre-wrap">    </span> (buffer-list))))</div><div> <br /></div><div>;; 切换到第N个buffer，1为第一个，负数表示从后数，注意0会出错，这里就不处理了</div><div><div>(defun switch-tabbar (num)</div><div>  (let</em> ((tabs (tabbar-tabs (tabbar-get-tabset &quot;All Buffers&quot;)))</div><div>         (tab (nth</div></p>
+<p>    以下是实现部分：</p>
 
-<div>               (if (&gt; num 0) (- num 1) (+ (length tabs) num))</div><div>               tabs)))</div><div>    (if tab (switch-to-buffer (car tab)))</div><div>    ))</div></div><div><br /></div><div>;; 不说废话，绑热键</div> <div> <div>(global-set-key [(meta 1)] (lambda () (interactive) (switch-tabbar 1)))</div> <div>(global-set-key [(meta 2)] (lambda () (interactive) (switch-tabbar 2)))</div><div>(global-set-key [(meta 3)] (lambda () (interactive) (switch-tabbar 3)))</div><div>(global-set-key [(meta 4)] (lambda () (interactive) (switch-tabbar 4)))</div>
+<p></div></p>
 
-<p><div>(global-set-key <a href="lambda () (interactive) (switch-tabbar 5)">(meta 5)</a>)</div><div>(global-set-key <a href="lambda () (interactive) (switch-tabbar 6)">(meta 6)</a>)</div><div>(global-set-key <a href="lambda () (interactive) (switch-tabbar 7)">(meta 7)</a>)</div></p>
+<div>
 
-<p><div>(global-set-key <a href="lambda () (interactive) (switch-tabbar 8)">(meta 8)</a>)</div><div>(global-set-key <a href="lambda () (interactive) (switch-tabbar 9)">(meta 9)</a>)</div><div>(global-set-key <a href="lambda () (interactive) (switch-tabbar -1)">(meta )</a>)</div></p>
+;; 全部的buffer都分一组，否则这个修改是没任何意思的
 
-<p></div><div><br /></div> </div></p>
+</div>
+
+<div>
+
+<div>
+
+(setq tabbar-buffer-groups-function
+
+</div>
+
+<div>
+
+      (lambda () (list "All Buffers")))
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+;; 去掉emacs自带的几个buffer
+
+</div>
+
+<div>
+
+(setq tabbar-buffer-list-function
+
+</div>
+
+<div>
+
+      (lambda ()
+
+</div>
+
+<div>
+
+        (remove-if
+
+</div>
+
+<div>
+
+<span style="white-space:pre-wrap"> </span> (lambda(buffer)
+
+</div>
+
+<div>
+
+<span style="white-space:pre-wrap"> </span>   (find (aref (buffer-name
+buffer) 0) " \*"))
+
+</div>
+
+<div>
+
+<span style="white-space:pre-wrap"> </span> (buffer-list))))
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+;;
+切换到第N个buffer，1为第一个，负数表示从后数，注意0会出错，这里就不处理了
+
+</div>
+
+<div>
+
+<div>
+
+(defun switch-tabbar (num)
+
+</div>
+
+<div>
+
+  (let\* ((tabs (tabbar-tabs (tabbar-get-tabset "All Buffers")))
+
+</div>
+
+<div>
+
+         (tab (nth
+
+</div>
+
+<div>
+
+               (if (&gt; num 0) (- num 1) (+ (length tabs) num))
+
+</div>
+
+<div>
+
+               tabs)))
+
+</div>
+
+<div>
+
+    (if tab (switch-to-buffer (car tab)))
+
+</div>
+
+<div>
+
+    ))
+
+</div>
+
+<p></div></p>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+;; 不说废话，绑热键
+
+</div>
+
+<div>
+
+<div>
+
+(global-set-key \[(meta 1)\] (lambda () (interactive) (switch-tabbar
+1)))
+
+</div>
+
+<div>
+
+(global-set-key \[(meta 2)\] (lambda () (interactive) (switch-tabbar
+2)))
+
+</div>
+
+<div>
+
+(global-set-key \[(meta 3)\] (lambda () (interactive) (switch-tabbar
+3)))
+
+</div>
+
+<div>
+
+(global-set-key \[(meta 4)\] (lambda () (interactive) (switch-tabbar
+4)))
+
+</div>
+
+<div>
+
+(global-set-key \[(meta 5)\] (lambda () (interactive) (switch-tabbar
+5)))
+
+</div>
+
+<div>
+
+(global-set-key \[(meta 6)\] (lambda () (interactive) (switch-tabbar
+6)))
+
+</div>
+
+<div>
+
+(global-set-key \[(meta 7)\] (lambda () (interactive) (switch-tabbar
+7)))
+
+</div>
+
+<div>
+
+(global-set-key \[(meta 8)\] (lambda () (interactive) (switch-tabbar
+8)))
+
+</div>
+
+<div>
+
+(global-set-key \[(meta 9)\] (lambda () (interactive) (switch-tabbar
+9)))
+
+</div>
+
+<div>
+
+(global-set-key \[(meta )\] (lambda () (interactive) (switch-tabbar
+-1)))
+
+</div>
+
+<p></div></p>
+
+<div>
+
+\
+
+</div>
+
+<p></div></p>
 
         </div>
         

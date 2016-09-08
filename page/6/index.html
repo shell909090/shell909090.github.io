@@ -192,7 +192,7 @@ ga('send', 'pageview');
 
 
         
-          <p>测试环境 Intel(R) Pentium(R) CPU G2030 @ 3.00GHz 8G内存 debian jessie Linux 3.16-2-amd64 2014年10月27日 附注一下，该CPU有2核心，无HT，1ns3个时钟周期。 测试方法 测试代码如下： time -f "%e,%S,%c,%r,%s,%K,%P" ./perf_fork 数据的意义分别为: 总时间，占用CPU时间，context switch次数，读/写次数，内存耗用，CPU使用百分比。 数据处理方法如下： import numpy as np p = lambda s: [float(line.strip().split(',')[0]) for line in s.splitlines()] q = lambda s: [float(line.strip().split(',')[1]) for line in s.splitlines()] np.array(p(s)).mean() np.array(p(s)).var() np.array(q(s)).mean() np.array(q(s)).var() 进程fork开销 使用s_fork程序(注释语句关闭模式)，粒度1M次，重复6次，原始数据如下： 49.04,26.83,29784,0,0,0,55% 51.53,26.38,32057,0,0,0,52% 49.88,26.02,30892,0,0,0,53% 51.39,27.13,37573,0,0,0,54% 52.89,28.12,37924,0,0,0,54% 51.19,27.02,35880,0,0,0,54% 统计结果如下： time mean = 50.98 time var = 1.52 cpu mean =</p>
+          <p>测试环境 Intel&reg; Pentium&reg; CPU G2030 @ 3.00GHz 8G内存 debian jessie Linux 3.16-2-amd64 2014年10月27日 附注一下，该CPU有2核心，无HT，1ns3个时钟周期。 测试方法 测试代码如下： time -f &quot;%e,%S,%c,%r,%s,%K,%P&quot; ./perf_fork 数据的意义分别为: 总时间，占用CPU时间，context switch次数，读/写次数，内存耗用，CPU使用百分比。 数据处理方法如下： import numpy as np p = lambda s: [float(line.strip().split(',')[0]) for line in s.splitlines()] q = lambda s: [float(line.strip().split(',')[1]) for line in s.splitlines()] np.array(p(s)).mean() np.array(p(s)).var() np.array(q(s)).mean() np.array(q(s)).var() 进程fork开销 使用s_fork程序(注释语句关闭模式)，粒度1M次，重复6次，原始数据如下： 49.04,26.83,29784,0,0,0,55% 51.53,26.38,32057,0,0,0,52% 49.88,26.02,30892,0,0,0,53% 51.39,27.13,37573,0,0,0,54% 52.89,28.12,37924,0,0,0,54% 51.19,27.02,35880,0,0,0,54% 统计结果如下： time mean = 50.98 time var = 1.52 cpu mean =</p>
 
           
               <footer>
@@ -223,7 +223,7 @@ ga('send', 'pageview');
 
 
         
-          <p>今天估计各大消息都在报这个漏洞，可能有些人看到有修复就放松了。目前来看，事情没那么简单。 CVE-2014-6271 第一个漏洞，编号为CVE-2014-6271。相应的dsa和usn。 具体的文章可以看这里。 简单来说，当bash执行时看到有变量定义了一个函数，函数尾部又剩余了部分代码。会直接把剩余代码执行了。导致简单的变量定义动作有机会执行任意代码。 对于未修补的系统，执行以下代码出现以下提示： $ env x='() { :;}; echo vulnerable' bash -c "echo this is a test" vulnerable this is a test 注意echo vulnerable应当不被执行的。 修复的系统则是以下表现： $ env x='() { :;}; echo vulnerable' bash -c "echo this is a test" bash: warning: x: ignoring function definition attempt bash: error importing function definition for `x' this is a test CVE-2014-7169 第二个漏洞，编号为CVE-2014-7169。 这个漏洞是第一个漏洞没有修复完全导致的，最麻烦的是，这个漏洞没有修复，细节却满天飞了。 表现如下： $ env X='() { (a)=&gt;\' sh</p>
+          <p>今天估计各大消息都在报这个漏洞，可能有些人看到有修复就放松了。目前来看，事情没那么简单。 CVE-2014-6271 第一个漏洞，编号为CVE-2014-6271。相应的dsa和usn。 具体的文章可以看这里。 简单来说，当bash执行时看到有变量定义了一个函数，函数尾部又剩余了部分代码。会直接把剩余代码执行了。导致简单的变量定义动作有机会执行任意代码。 对于未修补的系统，执行以下代码出现以下提示： $ env x='() { :;}; echo vulnerable' bash -c &quot;echo this is a test&quot; vulnerable this is a test 注意echo vulnerable应当不被执行的。 修复的系统则是以下表现： $ env x='() { :;}; echo vulnerable' bash -c &quot;echo this is a test&quot; bash: warning: x: ignoring function definition attempt bash: error importing function definition for `x' this is a test CVE-2014-7169 第二个漏洞，编号为CVE-2014-7169。 这个漏洞是第一个漏洞没有修复完全导致的，最麻烦的是，这个漏洞没有修复，细节却满天飞了。 表现如下： $ env X='() { (a)=&gt;\' sh</p>
 
           
               <footer>

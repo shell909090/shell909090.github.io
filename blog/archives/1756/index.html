@@ -112,49 +112,396 @@ ga('send', 'pageview');
           
           
           
-          <p><span class="Apple-style-span" style="font-size: large;">1.类型的类型 </span><div>    obj int(10).ob_type -&gt; PyInt_Type</div><div>    PyInt_Type.ob_type -&gt; PyType_Type</div><div>    PyInt_Type.tp_base -&gt; PyBaseObject_Type</div><div>    PyBaseObject_Type.ob_type -&gt; PyType_Type</div></p>
+          <p><span class="Apple-style-span" style="font-size: large;">1.类型的类型
+</span>
+<div></p>
+
+<p>    obj int(10).ob_type -&gt; PyInt_Type</p>
+
+<p></div></p>
 
 <div>
 
+    PyInt\_Type.ob\_type -&gt; PyType\_Type
 
+</div>
 
+<div>
 
+    PyInt\_Type.tp\_base -&gt; PyBaseObject\_Type
 
+</div>
 
+<div>
 
+    PyBaseObject\_Type.ob\_type -&gt; PyType\_Type
 
+</div>
 
-    PyType_Type.ob_type -&gt; PyType_Type</div><div>更精确的参考源码解析262页图。</div><div><br /></div><div><span class="Apple-style-span" style="font-size: large;">2.小整数对象</span></div><div>    if (-NSMALLNEGINTS &lt;= ival &amp;&amp; ival &lt; NSMALLPOSINTS) {</div>
+<div>
 
-<div>        v = small_ints[ival + NSMALLNEGINTS];</div>
+    PyType\_Type.ob\_type -&gt; PyType\_Type
 
-<p><div>        Py_INCREF(v);</div></p>
+</div>
 
-<p><div>    }</div><div><br /></div><div><span class="Apple-style-span" style="font-size: large;">3.大整数对象，空对象池，对象缓存</span></div><div><div>&gt;&gt;&gt; a = 1000000</div><div>&gt;&gt;&gt; b = 2000000</div><div>&gt;&gt;&gt; id(a) == id(1000000)</div></p>
+<div>
 
-<div>False</div><div><div>&gt;&gt;&gt; id(100000) == id(100000)</div>
+更精确的参考源码解析262页图。
 
-<div>True</div><div>最后一个是因为python解析器在解析对象的时候，对前后生成的对象进行了缓存。经过测试，对文件也有效。</div><div><br /></div><div><span class="Apple-style-span" style="font-size: large;">4.字符串对象复用和缓存</span></div><div><div>&gt;&gt;&gt; c = &#39;qazwsxedcrfvt&#39;</div>
+</div>
 
-<div>&gt;&gt;&gt; c += &#39;gbyhnujmikolp&#39;</div><div>&gt;&gt;&gt; a = &#39;qazwsxedcrfvtgbyhnujmikolp&#39;</div>
+<div>
 
-<p><div>&gt;&gt;&gt; id(a) == id&copy;</div><div>False</div><div><div>&gt;&gt;&gt; a = &#39;abc&#39;</div><div>&gt;&gt;&gt; b = &#39;def&#39;</div><div>&gt;&gt;&gt; c = &#39;abc&#39;</div><div>&gt;&gt;&gt; id(a) == id&copy;</div></p>
+\
 
-<div> True</div><div><div>&gt;&gt;&gt; b = &#39;abcde&#39;</div><div>&gt;&gt;&gt; id(b[1]) == id(c[1])</div><div>True</div><div>缓存原理同上，对于长度为0, 1的小字符串，永久缓存。</div><div><br /></div><div><span class="Apple-style-span" style="font-size: large;">5.free_list对象缓存的机制</span></div>
+</div>
 
-<div>每个类别有自己的free_list对象，用于缓存已经被销毁的对象。目前尚不清楚GC是否会定时释放这部分内存，但是python在对象引用到0时是不释放对象的，而且多数情况下表现为内存泄漏。而且多种对象的free_list不能互相通用，继承子类也不适用。</div><div><br /></div>
+<div>
 
-<p><div><span class="Apple-style-span" style="font-size: large;">6.list对象的行为</span></div><div>list对象用一种vector等同的方法处理对象池。因此随机插入（尤其是头部插入）一个对象超长队列会引发大量的内存复制行为。</div><div><br /></div><div><span class="Apple-style-span" style="font-size: large;">7.dict对象的索引方案</span></div></p>
+<span class="Apple-style-span"
+style="font-size: large;">2.小整数对象</span>
 
-<div>dict对象的索引方案使用的是哈希表，而且是开放地址法的哈希表。当装载率达到一定规模后，会新申请一块内存，将有效数据复制过去。最小的表空间为8个对象，当装载率超过2/3时，会扩大规模到当前active的4倍（超过50000个对象为2倍）。目前为止，在对象被删除后，其表空间并不释放。因此曾经增长的非常大的dict对象，可以定期复制以回收空间。</div><div><br /></div>
+</div>
 
-<div><span class="Apple-style-span" style="font-size: large;">8.dict的用法注释</span></div><div><div>从序列中移除重复对象</div><div>    dict.fromkeys(seqn).keys()</div><div>计算序列中元素出现次数</div><div>    for e in seqn: d[e] = d.get(e,0) + 1</div>
+<div>
 
-<div><div>词典中移除大量元素</div><div>    d = dict([(k, v) for k, v in d.items() if k != xxx])</div>
+    if (-NSMALLNEGINTS &lt;= ival && ival &lt; NSMALLPOSINTS) {
 
-<div>词典中访问可能不存在的元素（当不存在的风险高于5%时）</div><div>    o = d.get(k, default)</div><div>词典中访问可能不存在的元素（当不存在的风险低于5%时）</div><div>    try: o = d[k]</div><div>    except KeyError: o = default</div></div></div>
+</div>
 
-<p></div></div></div></div></div></p>
+<div>
+
+        v = small\_ints\[ival + NSMALLNEGINTS\];
+
+</div>
+
+<div>
+
+        Py\_INCREF(v);
+
+</div>
+
+<div>
+
+    }
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+<span class="Apple-style-span"
+style="font-size: large;">3.大整数对象，空对象池，对象缓存</span>
+
+</div>
+
+<div>
+
+<div>
+
+&gt;&gt;&gt; a = 1000000
+
+</div>
+
+<div>
+
+&gt;&gt;&gt; b = 2000000
+
+</div>
+
+<div>
+
+&gt;&gt;&gt; id(a) == id(1000000)
+
+</div>
+
+<div>
+
+False
+
+</div>
+
+<div>
+
+<div>
+
+&gt;&gt;&gt; id(100000) == id(100000)
+
+</div>
+
+<div>
+
+True
+
+</div>
+
+<div>
+
+最后一个是因为python解析器在解析对象的时候，对前后生成的对象进行了缓存。经过测试，对文件也有效。
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+<span class="Apple-style-span"
+style="font-size: large;">4.字符串对象复用和缓存</span>
+
+</div>
+
+<div>
+
+<div>
+
+&gt;&gt;&gt; c = 'qazwsxedcrfvt'
+
+</div>
+
+<div>
+
+&gt;&gt;&gt; c += 'gbyhnujmikolp'
+
+</div>
+
+<div>
+
+&gt;&gt;&gt; a = 'qazwsxedcrfvtgbyhnujmikolp'
+
+</div>
+
+<div>
+
+&gt;&gt;&gt; id(a) == id(c)
+
+</div>
+
+<div>
+
+False
+
+</div>
+
+<div>
+
+<div>
+
+&gt;&gt;&gt; a = 'abc'
+
+</div>
+
+<div>
+
+&gt;&gt;&gt; b = 'def'
+
+</div>
+
+<div>
+
+&gt;&gt;&gt; c = 'abc'
+
+</div>
+
+<div>
+
+&gt;&gt;&gt; id(a) == id(c)
+
+</div>
+
+<div>
+
+True
+
+</div>
+
+<div>
+
+<div>
+
+&gt;&gt;&gt; b = 'abcde'
+
+</div>
+
+<div>
+
+&gt;&gt;&gt; id(b\[1\]) == id(c\[1\])
+
+</div>
+
+<div>
+
+True
+
+</div>
+
+<div>
+
+缓存原理同上，对于长度为0, 1的小字符串，永久缓存。
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+<span class="Apple-style-span"
+style="font-size: large;">5.free\_list对象缓存的机制</span>
+
+</div>
+
+<div>
+
+每个类别有自己的free\_list对象，用于缓存已经被销毁的对象。目前尚不清楚GC是否会定时释放这部分内存，但是python在对象引用到0时是不释放对象的，而且多数情况下表现为内存泄漏。而且多种对象的free\_list不能互相通用，继承子类也不适用。
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+<span class="Apple-style-span"
+style="font-size: large;">6.list对象的行为</span>
+
+</div>
+
+<div>
+
+list对象用一种vector等同的方法处理对象池。因此随机插入（尤其是头部插入）一个对象超长队列会引发大量的内存复制行为。
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+<span class="Apple-style-span"
+style="font-size: large;">7.dict对象的索引方案</span>
+
+</div>
+
+<div>
+
+dict对象的索引方案使用的是哈希表，而且是开放地址法的哈希表。当装载率达到一定规模后，会新申请一块内存，将有效数据复制过去。最小的表空间为8个对象，当装载率超过2/3时，会扩大规模到当前active的4倍（超过50000个对象为2倍）。目前为止，在对象被删除后，其表空间并不释放。因此曾经增长的非常大的dict对象，可以定期复制以回收空间。
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+<span class="Apple-style-span"
+style="font-size: large;">8.dict的用法注释</span>
+
+</div>
+
+<div>
+
+<div>
+
+从序列中移除重复对象
+
+</div>
+
+<div>
+
+    dict.fromkeys(seqn).keys()
+
+</div>
+
+<div>
+
+计算序列中元素出现次数
+
+</div>
+
+<div>
+
+    for e in seqn: d\[e\] = d.get(e,0) + 1
+
+</div>
+
+<div>
+
+<div>
+
+词典中移除大量元素
+
+</div>
+
+<div>
+
+    d = dict(\[(k, v) for k, v in d.items() if k != xxx\])
+
+</div>
+
+<div>
+
+词典中访问可能不存在的元素（当不存在的风险高于5%时）
+
+</div>
+
+<div>
+
+    o = d.get(k, default)
+
+</div>
+
+<div>
+
+词典中访问可能不存在的元素（当不存在的风险低于5%时）
+
+</div>
+
+<div>
+
+    try: o = d\[k\]
+
+</div>
+
+<div>
+
+    except KeyError: o = default
+
+</div>
+
+<p></div></p>
+
+<p></div></p>
+
+<p></div></p>
+
+<p></div></p>
+
+<p></div></p>
+
+<p></div></p>
+
+<p></div></p>
 
         </div>
         

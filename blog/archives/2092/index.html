@@ -112,25 +112,87 @@ ga('send', 'pageview');
           
           
           
-          <p>别紧张，我不是要progress Linux，这是一种新的distribution（算是吧）。 <a href="http://progress-linux.org" target="_blank"><a href="http://progress-linux.org">http://progress-linux.org</a></a>，是一个基于Debian的dist。<br />    为什么要有这个dist？其实严格意义上说，这不是一个完整的dist。不同于Ubuntu，这个dist可以完全的寄生在Debian stable(squeeze)上面。你不需要真的去官网上下载一个ISO，然后安装。只需要安装Debian stable，然后加入 Progress-Linux的source就好了。如果你胆敢在Ubuntu上这么干，只会把系统弄的一团糟。当然，直接下载Progress-Linux的安装ISO也是可以的，这个ISO基于Debian Live，作者(Daniel Baumann)本人也是DD，是Debian Live的主要作者之一。<br /></p>
+          <p>别紧张，我不是要progress Linux，这是一种新的distribution（算是吧）。 <a href="http://progress-linux.org">http://progress-linux.org</a>，是一个基于Debian的dist。<br />
+   
+为什么要有这个dist？其实严格意义上说，这不是一个完整的dist。不同于Ubuntu，这个dist可以完全的寄生在Debian stable(squeeze)上面。你不需要真的去官网上下载一个ISO，然后安装。只需要安装Debian stable，然后加入
+Progress-Linux的source就好了。如果你胆敢在Ubuntu上这么干，只会把系统弄的一团糟。当然，直接下载Progress-Linux的安装ISO也是可以的，这个ISO基于Debian
+Live，作者(Daniel Baumann)本人也是DD，是Debian Live的主要作者之一。<br />
+   
+为什么要这样？因为Debian是以严谨到变态而闻名的系统。例如，mdadm这个包有一个很小的不便。每个月当检查RAID的时候，会发一封mail。如果你有一堆电脑需要管理，这件事情就非常烦人了。要修正这个问题，只需要在其中一个脚本中加入参数-q。但是Debian修这个bug修了9个月。因为具体的包维护者并不是很关心这个事情（低优先级），而Release
+Term需要确保这个bug必须先在Sid中修复，确认没事了（基本是没问题的，只加一个-q而已），再修复testing的，最后修复stable的。于是，你的邮箱要被一堆垃圾持续淹没9个月。<br />
+    Progress-Linux就快多了。<br />
+    但是为什么要做成dist呢？<br />
+   
+Debian的模式设计，是方便fork，而严格控制release的。Debian的版本库更新要很多条件，例如符合DSFG（也就意味着符合一系列的开源授权协议），更新的时候首先作用于SID，Release
+Term说了算等等。DD也没有权利要求更新Debian
+stable中的包，他必须申请Release
+Term批准。想想也能明白，如果真的每个DD都能直接更新包，那才天下大乱了。我们不能绕过Release
+Term去解决问题，也不想让这些问题留着。<br />
+   
+那么怎么办？只有自己做一个仓库。Debian鼓励这么做（有很多dist就是这么做的），但是这时就不能用Debian的名字，因此作者才做了一个新的dist。DSFG这时变成了一个优势，Debian的所有包，都满足DSFG的第8条，“不仅仅对Debian授权”，可以直接应用。<br />
+    因此，其实Progress-Linux是一个基于Debian的改进。更快的bug
+fix，更多的backport，更少考虑版权问题。当然，限于作者关心的包。另一个激动人心的特点是，
+Progress-Linux的包和backport包不会碰撞，因此使得stable可以简单的安装很多新的包。如果你喜欢，可以在安装系统后加入他的source，作为系统的改进。但是不要指望有什么实质性变化，都是一些细节改进而已。如果你希望知道几个例子，可以看这个页面（<a href="http://www.progress-linux.org/project/about/">http://www.progress-linux.org/project/about/</a>）。
+<div></p>
 
-<p>    为什么要这样？因为Debian是以严谨到变态而闻名的系统。例如，mdadm这个包有一个很小的不便。每个月当检查RAID的时候，会发一封mail。如果你有一堆电脑需要管理，这件事情就非常烦人了。要修正这个问题，只需要在其中一个脚本中加入参数-q。但是Debian修这个bug修了9个月。因为具体的包维护者并不是很关心这个事情（低优先级），而Release Term需要确保这个bug必须先在Sid中修复，确认没事了（基本是没问题的，只加一个-q而已），再修复testing的，最后修复stable的。于是，你的邮箱要被一堆垃圾持续淹没9个月。<br /></p>
+<p>   
+也许你希望使用一个中国区的mirror来做这个事情（这样更快，也省去中间的一些其他麻烦），<a href="http://mirrors.ustc.edu.cn">http://mirrors.ustc.edu.cn</a>是debian中国区域的主镜像(即<a href="http://ftp.cn.debian.org">http://ftp.cn.debian.org</a>)，这个节点已经完成Progress-Linux的镜像。<br />
+<br />
+    Relax, I don&rsquo;t mean to progress Linux, it&rsquo;s a new distribution (kind
+of).  <a href="http://progress-linux.org">http://progress-linux.org</a>, a new dist based on Debian.<br />
+    Why people made this dist? Technically, it is no a fully dist.
+Unlike Ubuntu, this dist can totally on the top of Debian
+stable(squeeze). You don&rsquo;t need to download a ISO from website and
+install. Just install Debian stable, and add source of Progress-Linux.
+It will be done. If you do something like that under Ubuntu, it
+will destroy your system. Even though that&rsquo;s possible: 
+Progress-Linux install CD is based on the Debian Live (the main author
+of  Progress-Linux, Daniel Baumann, is a Debian Developer, and he is
+the main person behind Debian Live).<br />
+    Why? Because Debian is a preciseness dist. For example, the package
+mdadm had a little tiny inconveniences. It will send you a Email When
+check RAID every month. So if there are huge amounts of computers, it
+will be annoying. To fix it, one of the scripts need to be added a extra
+parameter &lsquo;-q&rsquo;. But it toke 9 months to fix it. Because maintainer don&rsquo;t
+care much about this issue, and Release Term insist this bug MUST be
+fixed in Sid first, then testing, finally stable. So your mailbox will
+be submerged under log reports for 9 months.<br />
+    Progress-Linux is faster.<br />
+    But why new dist?<br />
+    The design of Debian, is easy to fork, but strictly in release.
+There are many of conditions to be met to upgrade some package, like
+DSFG (which means a series of open source license), upgrade in Sid
+first, Release Term make the decision, etc. Never, a DD can update a
+package in Debian stable directly. He has to ask approval from the
+Release Term. If every DDs can update package in stable directly, that
+will be the hell. DD can&rsquo;t cut through the Release Term, and we can&rsquo;t
+wait for the issues.<br />
+    What&rsquo;s gonna do? Make a new repository! The Debian project encourage
+you to do so (and many dist do), but new repository can&rsquo;t use the name
+of Debian. So the author of  Progress-Linux made a new dist. Now, DSFG
+is a advantage. Every package in Debian is meet No.8 rule of
+DSFG, License Must Not Be Specific to Debian.<br />
+    So, Progress-Linux is a improvement based on Debian. Faster bug fix,
+more backport packages, less license considering. Of course, that only
+work for the packages author care. Another exciting fact is, all the
+packages in Progress-Linux and it&rsquo;s backport will not clashing. It help
+stable to install many new software easily. If you like, you can add
+it&rsquo;s source for an enhance. But don&rsquo;t expect too much, it all above
+details. If you wanna know some of them, try this page
+(<a href="http://www.progress-linux.org/project/about/">http://www.progress-linux.org/project/about/</a>).</p>
 
-<p>    Progress-Linux就快多了。<br />    但是为什么要做成dist呢？<br />    Debian的模式设计，是方便fork，而严格控制release的。Debian的版本库更新要很多条件，例如符合DSFG（也就意味着符合一系列的开源授权协议），更新的时候首先作用于SID，Release Term说了算等等。DD也没有权利要求更新Debian stable中的包，他必须申请Release Term批准。想想也能明白，如果真的每个DD都能直接更新包，那才天下大乱了。我们不能绕过Release Term去解决问题，也不想让这些问题留着。<br /></p>
+<p></div></p>
 
-<p>    那么怎么办？只有自己做一个仓库。Debian鼓励这么做（有很多dist就是这么做的），但是这时就不能用Debian的名字，因此作者才做了一个新的dist。DSFG这时变成了一个优势，Debian的所有包，都满足DSFG的第8条，“不仅仅对Debian授权”，可以直接应用。<br />    因此，其实Progress-Linux是一个基于Debian的改进。更快的bug fix，更多的backport，更少考虑版权问题。当然，限于作者关心的包。另一个激动人心的特点是， Progress-Linux的包和backport包不会碰撞，因此使得stable可以简单的安装很多新的包。如果你喜欢，可以在安装系统后加入他的source，作为系统的改进。但是不要指望有什么实质性变化，都是一些细节改进而已。如果你希望知道几个例子，可以看这个页面（<a href="http://www.progress-linux.org/project/about/" target="_blank"><a href="http://www.progress-linux.org/project/about/">http://www.progress-linux.org/project/about/</a></a>）。<div></p>
+<div>
 
-<p>    也许你希望使用一个中国区的mirror来做这个事情（这样更快，也省去中间的一些其他麻烦），<a href="http://mirrors.ustc.edu.cn" target="_blank"><a href="http://mirrors.ustc.edu.cn">http://mirrors.ustc.edu.cn</a></a>是debian中国区域的主镜像(即<a href="http://ftp.cn.debian.org" target="_blank"><a href="http://ftp.cn.debian.org">http://ftp.cn.debian.org</a></a>)，这个节点已经完成Progress-Linux的镜像。<br /></p>
+<div>
 
-<p><br />    Relax, I don&#39;t mean to progress Linux, it&#39;s a new distribution (kind of).  <a href="http://progress-linux.org" target="_blank"><a href="http://progress-linux.org">http://progress-linux.org</a></a>, a new dist based on Debian.<br />    Why people made this dist? Technically, it is no a fully dist. Unlike Ubuntu, this dist can totally on the top of Debian stable(squeeze). You don&#39;t need to download a ISO from website and install. Just install Debian stable, and add source of Progress-Linux. It will be done. If you do something like that under Ubuntu, it will destroy your system. Even though that&#39;s possible:  Progress-Linux install CD is based on the Debian Live (the main author of  Progress-Linux, Daniel Baumann, is a Debian Developer, and he is the main person behind Debian Live).<br /></p>
+    Maybe you wanna a mirror in China to run update(which faster, and
+less trouble).  <http://mirrors.ustc.edu.cn> is the
+primary Debian mirror of China(alias to <http://ftp.cn.debian.org>),
+which has a mirror of Progress-Linux.
 
-<p>    Why? Because Debian is a preciseness dist. For example, the package mdadm had a little tiny inconveniences. It will send you a Email When check RAID every month. So if there are huge amounts of computers, it will be annoying. To fix it, one of the scripts need to be added a extra parameter &#39;-q&#39;. But it toke 9 months to fix it. Because maintainer don&#39;t care much about this issue, and Release Term insist this bug MUST be fixed in Sid first, then testing, finally stable. So your mailbox will be submerged under log reports for 9 months.<br /></p>
-
-<p>    Progress-Linux is faster.<br />    But why new dist?<br />    The design of Debian, is easy to fork, but strictly in release. There are many of conditions to be met to upgrade some package, like DSFG (which means a series of open source license), upgrade in Sid first, Release Term make the decision, etc. Never, a DD can update a package in Debian stable directly. He has to ask approval from the Release Term. If every DDs can update package in stable directly, that will be the hell. DD can&#39;t cut through the Release Term, and we can&#39;t wait for the issues.<br />    What&#39;s gonna do? Make a new repository! The Debian project encourage you to do so (and many dist do), but new repository can&#39;t use the name of Debian. So the author of  Progress-Linux made a new dist. Now, DSFG is a advantage. Every package in Debian is meet No.8 rule of DSFG, License Must Not Be Specific to Debian.<br /></p>
-
-<p>    So, Progress-Linux is a improvement based on Debian. Faster bug fix, more backport packages, less license considering. Of course, that only work for the packages author care. Another exciting fact is, all the packages in Progress-Linux and it&#39;s backport will not clashing. It help stable to install many new software easily. If you like, you can add it&#39;s source for an enhance. But don&#39;t expect too much, it all above details. If you wanna know some of them, try this page (<a href="http://www.progress-linux.org/project/about/" target="_blank"><a href="http://www.progress-linux.org/project/about/">http://www.progress-linux.org/project/about/</a></a>).</div></p>
-
-<p><div><div>    Maybe you wanna a mirror in China to run update(which faster, and less trouble).  <a href="http://mirrors.ustc.edu.cn" target="_blank"><a href="http://mirrors.ustc.edu.cn">http://mirrors.ustc.edu.cn</a></a> is the primary Debian mirror of China(alias to <a href="http://ftp.cn.debian.org" target="_blank"><a href="http://ftp.cn.debian.org">http://ftp.cn.debian.org</a></a>), which has a mirror of Progress-Linux.</div></p>
+</div>
 
 <p></div></p>
 

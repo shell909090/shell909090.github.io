@@ -112,11 +112,14 @@ ga('send', 'pageview');
           
           
           
-          <h1>说明</h1>
+          
+
+<h1 id="说明">说明</h1>
 
 <p>测试都是ab做的，中等并发量，统一采用10000并发，100000个请求。都是本机请求本机，避免公司内网IDS的干扰。</p>
 
-<p>机器是一台双核CPU的DELL：Intel(R) Pentium(R) CPU G2030 @ 3.00GHz。配4G内存。</p>
+<p>机器是一台双核CPU的DELL：Intel&reg; Pentium&reg; CPU G2030 @
+3.00GHz。配4G内存。</p>
 
 <p>第一组数据是ab测试nginx，nginx的配置如下：</p>
 
@@ -141,10 +144,10 @@ http {
 
 <p>第三组是ab测试golang，返回某个目录或文件。</p>
 
-<pre><code>err := http.ListenAndServe(":8080", http.FileServer(http.Dir("/home/shell/photo")))
+<pre><code>err := http.ListenAndServe(&quot;:8080&quot;, http.FileServer(http.Dir(&quot;/home/shell/photo&quot;)))
 </code></pre>
 
-<h1>nginx</h1>
+<h1 id="nginx">nginx</h1>
 
 <pre><code>Concurrency Level:      10000
 Time taken for tests:   5.720 seconds
@@ -177,7 +180,7 @@ Percentage of the requests served within a certain time (ms)
  100%   3558 (longest request)
 </code></pre>
 
-<h1>golang with string</h1>
+<h1 id="golang-with-string">golang with string</h1>
 
 <pre><code>Concurrency Level:      10000
 Time taken for tests:   5.147 seconds
@@ -210,7 +213,7 @@ Percentage of the requests served within a certain time (ms)
  100%   4653 (longest request)
 </code></pre>
 
-<h1>golang with file</h1>
+<h1 id="golang-with-file">golang with file</h1>
 
 <pre><code>Concurrency Level:      10000
 Time taken for tests:   8.122 seconds
@@ -244,7 +247,7 @@ Percentage of the requests served within a certain time (ms)
  100%   8086 (longest request)
 </code></pre>
 
-<h1>分析</h1>
+<h1 id="分析">分析</h1>
 
 <p>从rps来看，三者都达到了10Krps的级别以上，而且差距很小。golang在没有逻辑的情况下比nginx还要快11%，但是加入逻辑后反而落后30%（这不奇怪）。三者差距都在50%以内，基本属于同一个数量级。</p>
 

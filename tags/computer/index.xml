@@ -16,15 +16,18 @@
       <pubDate>Wed, 04 Feb 2015 15:07:42 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2724/</guid>
-      <description>&lt;h1&gt;vpn的原始模式&lt;/h1&gt;
+      <description>
 
-&lt;p&gt;vpn的最简模型，相当于在两台机器上插一块虚拟网卡，然后中间连一根虚拟网线连通。因此vpn才得名vpn(virtual private network)。&lt;/p&gt;
+&lt;h1 id=&#34;vpn的原始模式&#34;&gt;vpn的原始模式&lt;/h1&gt;
+
+&lt;p&gt;vpn的最简模型，相当于在两台机器上插一块虚拟网卡，然后中间连一根虚拟网线连通。因此vpn才得名vpn(virtual
+private network)。&lt;/p&gt;
 
 &lt;p&gt;其复杂之处在于，这块虚拟网卡如何配置网络，和别的网卡是什么关系。再加上多个节点间如何通讯。种种都够新手喝一壶。&lt;/p&gt;
 
 &lt;p&gt;虽然openvpn在科学上网上是废了，但是在不出国的网络上用来保护通讯，还是非常好用的。&lt;/p&gt;
 
-&lt;h1&gt;tap模式&lt;/h1&gt;
+&lt;h1 id=&#34;tap模式&#34;&gt;tap模式&lt;/h1&gt;
 
 &lt;p&gt;tap模式的特点是二层打通。典型场景是从外部打一条隧道到本地网络。进来的机器就像本地的机器一样参与通讯，你分毫看不出这些机器是在远程。&lt;/p&gt;
 
@@ -49,45 +52,36 @@
 
 &lt;p&gt;你需要先在当前网络中，为vpn预留一些地址。这些地址应该足够拨入用户使用，不应和dhcp撞车，不应有其他人使用。&lt;/p&gt;
 
-&lt;p&gt;而后，建立一个br，将当前工作的eth迁移过去。(具体细节就不说了，每个系统小有差别)再建立一个tap vpn，在启动脚本中指定加入这个br。&lt;/p&gt;
+&lt;p&gt;而后，建立一个br，将当前工作的eth迁移过去。(具体细节就不说了，每个系统小有差别)再建立一个tap
+vpn，在启动脚本中指定加入这个br。&lt;/p&gt;
 
-&lt;h2&gt;example&lt;/h2&gt;
+&lt;h2 id=&#34;example&#34;&gt;example&lt;/h2&gt;
 
 &lt;p&gt;假定内网地址为172.19.0.0/24，其中保留172.19.0.16-172.19.0.31供vpn使用。&lt;/p&gt;
 
 &lt;p&gt;服务器配置:&lt;/p&gt;
 
-&lt;p&gt;port [port num]
-proto udp ; 参考我上一篇&lt;a href=&#34;http://shell909090.org/blog/archives/2722&#34;&gt;vpn不要走tcp协议&lt;/a&gt;
-dev tap
-ca ca.crt
-cert server.crt
-key server.key
-server-bridge 172.19.0.16 255.255.255.0 172.19.0.17 172.19.0.31
-; 或者可以采用这句
-; server 172.19.0.16 255.255.255.240
-; 注意掩码实际上等于/28，做掩码运算后，这段地址和上面的保留地址重合
-script-security 2
-up vpn-start ; 建议使用绝对路径，避免版本坑
-down vpn-stop&lt;/p&gt;
+&lt;p&gt;port [port num] proto udp ;
+参考我上一篇&lt;a href=&#34;http://shell909090.org/blog/archives/2722&#34;&gt;vpn不要走tcp协议&lt;/a&gt;
+dev tap ca ca.crt cert server.crt key server.key server-bridge
+172.19.0.16 255.255.255.0 172.19.0.17 172.19.0.31 ; 或者可以采用这句 ;
+server 172.19.0.16 255.255.255.240 ;
+注意掩码实际上等于/28，做掩码运算后，这段地址和上面的保留地址重合
+script-security 2 up vpn-start ; 建议使用绝对路径，避免版本坑 down
+vpn-stop&lt;/p&gt;
 
 &lt;p&gt;vpn-start:&lt;/p&gt;
 
-&lt;p&gt;brctl add br0 $dev&lt;/p&gt;
+&lt;p&gt;brctl add br0 \$dev&lt;/p&gt;
 
 &lt;p&gt;vpn-stop:&lt;/p&gt;
 
-&lt;p&gt;brctl del br0 $dev&lt;/p&gt;
+&lt;p&gt;brctl del br0 \$dev&lt;/p&gt;
 
 &lt;p&gt;客户端配置:&lt;/p&gt;
 
-&lt;p&gt;client
-dev tap
-proto udp
-remote [server ip] [port num]
-ca ca.crt
-cert client.crt
-key client.key&lt;/p&gt;
+&lt;p&gt;client dev tap proto udp remote [server ip] [port num] ca ca.crt
+cert client.crt key client.key&lt;/p&gt;
 
 &lt;p&gt;测试:&lt;/p&gt;
 
@@ -99,11 +93,12 @@ key client.key&lt;/p&gt;
 
 &lt;p&gt;dh和tls-auth可以配，个人每次都是配的。但是懒的话也可以不搞。&lt;/p&gt;
 
-&lt;p&gt;user nobody和group nobody强烈建议配，注意debian上是nogroup。这个配置可以将openvpn的执行权搞低，如果openssl再出什么执行任意代码漏洞，那么问题就不是立刻致命。&lt;/p&gt;
+&lt;p&gt;user nobody和group
+nobody强烈建议配，注意debian上是nogroup。这个配置可以将openvpn的执行权搞低，如果openssl再出什么执行任意代码漏洞，那么问题就不是立刻致命。&lt;/p&gt;
 
 &lt;p&gt;注意使用了user和group后，要配置persist-key和persist-tun，避免出错。&lt;/p&gt;
 
-&lt;h1&gt;tun模式&lt;/h1&gt;
+&lt;h1 id=&#34;tun模式&#34;&gt;tun模式&lt;/h1&gt;
 
 &lt;p&gt;tun模式的特征是三层打通，你可以当作没有二层数据。因此从拨入用户那里去问内网IP的mac是多少，根本没人理你。你必须将包发到vpn网关上，交由网关转交。目标服务器还得知道回这个数据的时候，网关是vpn网关，而不是默认网关。当然，有的时候两者其实是一个，例如vpn网关在默认网关上。或者不修改每台机器配置，直接在网关上做第二跳指向。&lt;/p&gt;
 
@@ -127,26 +122,22 @@ key client.key&lt;/p&gt;
 
 &lt;p&gt;非常灵活，几乎无法总结。简单说说从外网拨入内网，打通两者间互访的配法吧。&lt;/p&gt;
 
-&lt;p&gt;配置一个tun vpn，连接到vpn网关上。配置中下发内网网段，走vpn。内网下发vpn路由，指向vpn网关。&lt;/p&gt;
+&lt;p&gt;配置一个tun
+vpn，连接到vpn网关上。配置中下发内网网段，走vpn。内网下发vpn路由，指向vpn网关。&lt;/p&gt;
 
-&lt;h2&gt;example&lt;/h2&gt;
+&lt;h2 id=&#34;example-1&#34;&gt;example&lt;/h2&gt;
 
 &lt;p&gt;假定内网地址为172.19.0.0/24，其中vpn网关在内网的地址为172.19.0.100。虚拟网络为172.19.1.0/24，其中vpn网管在虚拟网络的地址为172.19.0.1(默认)。&lt;/p&gt;
 
 &lt;p&gt;服务器配置:&lt;/p&gt;
 
-&lt;p&gt;port [port num]
-proto udp
-dev tun
-ca ca.crt
-cert server.crt
-key server.key
-server 172.19.1.0 255.255.255.0
-push &#34;route 172.19.0.0 255.255.255.0&#34;&lt;/p&gt;
+&lt;p&gt;port [port num] proto udp dev tun ca ca.crt cert server.crt key
+server.key server 172.19.1.0 255.255.255.0 push &amp;ldquo;route 172.19.0.0
+255.255.255.0&amp;rdquo;&lt;/p&gt;
 
 &lt;p&gt;在服务器上一定要打开:&lt;/p&gt;
 
-&lt;p&gt;sysctl -w &#39;net.ipv4.ip_forward=1&#39;&lt;/p&gt;
+&lt;p&gt;sysctl -w &amp;lsquo;net.ipv4.ip_forward=1&amp;rsquo;&lt;/p&gt;
 
 &lt;p&gt;在所有服务器上执行/在网关上执行:&lt;/p&gt;
 
@@ -158,25 +149,22 @@ push &#34;route 172.19.0.0 255.255.255.0&#34;&lt;/p&gt;
 
 &lt;p&gt;客户端配置:&lt;/p&gt;
 
-&lt;p&gt;client
-dev tun
-proto udp
-remote [server ip] [port num]
-ca ca.crt
-cert client.crt
-key client.key&lt;/p&gt;
+&lt;p&gt;client dev tun proto udp remote [server ip] [port num] ca ca.crt
+cert client.crt key client.key&lt;/p&gt;
 
 &lt;p&gt;测试:&lt;/p&gt;
 
-&lt;p&gt;在拨入设备上，使用mtr 172.19.0.1(内网网关)，来查看是否通过172.19.1.1和172.19.0.1。如果都到了，说明整个配置成功。否则看是否到vpn网关，再在网关上抓包。&lt;/p&gt;
+&lt;p&gt;在拨入设备上，使用mtr
+172.19.0.1(内网网关)，来查看是否通过172.19.1.1和172.19.0.1。如果都到了，说明整个配置成功。否则看是否到vpn网关，再在网关上抓包。&lt;/p&gt;
 
-&lt;h1&gt;多节点通过虚拟骨干网打通&lt;/h1&gt;
+&lt;h1 id=&#34;多节点通过虚拟骨干网打通&#34;&gt;多节点通过虚拟骨干网打通&lt;/h1&gt;
 
 &lt;p&gt;这个模式在很多地方很有用，例如多个办公室互通，多个机房互通，等等。当然，这也是有前提的，这些节点的网段不能出现互相重叠，不然路由表这一段该指给谁？&lt;/p&gt;
 
 &lt;p&gt;另一点细节在于，最好每个节点都在网关上做。不然如上面所说，在每台服务器上做一次配置，非常复杂。&lt;/p&gt;
 
-&lt;p&gt;方案基本和tun方案一致，但是在不同的客户端上，将其他节点的网段全部上行到vpn骨干网，分别交由这个内网对应的网关去路由。做这点在客户端配置上做可能会有麻烦，可以考虑使用ccd(client-config-dir ccd)。这样可以在服务器上设定，在客户端拨入的时候下发部分网络配置。&lt;/p&gt;
+&lt;p&gt;方案基本和tun方案一致，但是在不同的客户端上，将其他节点的网段全部上行到vpn骨干网，分别交由这个内网对应的网关去路由。做这点在客户端配置上做可能会有麻烦，可以考虑使用ccd(client-config-dir
+ccd)。这样可以在服务器上设定，在客户端拨入的时候下发部分网络配置。&lt;/p&gt;
 
 &lt;p&gt;更详细可以看&lt;a href=&#34;https://community.openvpn.net/openvpn/wiki/RoutedLans&#34;&gt;这篇文档&lt;/a&gt;。&lt;/p&gt;
 </description>
@@ -188,9 +176,11 @@ key client.key&lt;/p&gt;
       <pubDate>Tue, 19 Aug 2014 11:44:57 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2676/</guid>
-      <description>&lt;p&gt;老婆想去新疆玩，结果她居然从百度上搜了一下新疆国旅就联系开了。我一直不知道，直到她和我说，对方要求缴500元到一个支付宝帐号里。我立刻要求她不要付钱，然后开始查证真假。&lt;/p&gt;
+      <description>
 
-&lt;h1&gt;第一家网站&lt;/h1&gt;
+&lt;p&gt;老婆想去新疆玩，结果她居然从百度上搜了一下新疆国旅就联系开了。我一直不知道，直到她和我说，对方要求缴500元到一个支付宝帐号里。我立刻要求她不要付钱，然后开始查证真假。&lt;/p&gt;
+
+&lt;h1 id=&#34;第一家网站&#34;&gt;第一家网站&lt;/h1&gt;
 
 &lt;p&gt;她开始给我的是这家：&lt;a href=&#34;http://www.17xjly.net/&#34;&gt;http://www.17xjly.net/&lt;/a&gt;。&lt;/p&gt;
 
@@ -206,7 +196,7 @@ key client.key&lt;/p&gt;
 
 &lt;p&gt;CAO，这种网站给的支付宝，鬼知道打进去会发生什么。。。&lt;/p&gt;
 
-&lt;h1&gt;第二家网站&lt;/h1&gt;
+&lt;h1 id=&#34;第二家网站&#34;&gt;第二家网站&lt;/h1&gt;
 
 &lt;p&gt;百度上排名很高的是这家&lt;a href=&#34;http://www.yuyutrip.net/&#34;&gt;http://www.yuyutrip.net/&lt;/a&gt;和这家&lt;a href=&#34;http://www.yoyotrip.net/&#34;&gt;http://www.yoyotrip.net/&lt;/a&gt;。两家的页面很像，但是又明显有区别，不知道是竞争对手还是什么。&lt;/p&gt;
 
@@ -239,7 +229,7 @@ U旅商旅网
 
 &lt;p&gt;好玩的是，这家网站上面给出的地址，是真的（具体后面会说）。但是电话却不对。&lt;/p&gt;
 
-&lt;h1&gt;真的国旅&lt;/h1&gt;
+&lt;h1 id=&#34;真的国旅&#34;&gt;真的国旅&lt;/h1&gt;
 
 &lt;p&gt;google出手，马上就有。结果是这个&lt;a href=&#34;http://www.cits.com.cn&#34;&gt;http://www.cits.com.cn&lt;/a&gt;。&lt;/p&gt;
 
@@ -274,11 +264,11 @@ www.cits.net
 
 &lt;p&gt;事情到这里，我的基本判断是。和第二家网站做生意还是有点谱的，ICP是真的，地址国旅也认。最低限度，他至少是一家合法的旅行社——虽然不保证是国旅下属。第一家么，谁爱信谁信。&lt;/p&gt;
 
-&lt;h1&gt;上海国旅&lt;/h1&gt;
+&lt;h1 id=&#34;上海国旅&#34;&gt;上海国旅&lt;/h1&gt;
 
 &lt;p&gt;后面有点更好玩的事情。国旅在线上有上海，而google查询结果上也有不少上海国旅。那么谁是真的呢？&lt;/p&gt;
 
-&lt;h1&gt;上海国旅1&lt;/h1&gt;
+&lt;h1 id=&#34;上海国旅1&#34;&gt;上海国旅1&lt;/h1&gt;
 
 &lt;p&gt;例如这家&lt;a href=&#34;http://www.scits.com/&#34;&gt;http://www.scits.com/&lt;/a&gt;。&lt;/p&gt;
 
@@ -305,7 +295,7 @@ descr:          Science &amp;amp; Technology Network Communication Co., Ltd.
 
 &lt;p&gt;这TM哪里是国旅，分明是锦江国际。不过幸好，这也是家挺大的旅行社。只是为什么会打CITS的牌子呢？&lt;/p&gt;
 
-&lt;h1&gt;上海国旅2&lt;/h1&gt;
+&lt;h1 id=&#34;上海国旅2&#34;&gt;上海国旅2&lt;/h1&gt;
 
 &lt;p&gt;例如这家&lt;a href=&#34;http://www.citssh.com/&#34;&gt;http://www.citssh.com/&lt;/a&gt;。&lt;/p&gt;
 
@@ -327,7 +317,7 @@ descr:          Science &amp;amp; Technology Network Communication Co., Ltd.
 
 &lt;p&gt;不过上海国旅用阿里云？真心不怕死啊。&lt;/p&gt;
 
-&lt;h1&gt;验证方式&lt;/h1&gt;
+&lt;h1 id=&#34;验证方式&#34;&gt;验证方式&lt;/h1&gt;
 
 &lt;p&gt;好了，不光吐槽。无论是baidu还是google，都不保证结果的真假。只是baidu谁给钱就给谁排，google是计算引用数最高的。&lt;/p&gt;
 
@@ -341,17 +331,17 @@ descr:          Science &amp;amp; Technology Network Communication Co., Ltd.
 
 &lt;p&gt;另一个是工商行政登记。如果你找到公司名，一般就可以在工商行政登记上查找注册人，注册时间，登记地址等等。如果没有，或者不对头，那就有问题了。&lt;/p&gt;
 
-&lt;h2&gt;whois&lt;/h2&gt;
+&lt;h2 id=&#34;whois&#34;&gt;whois&lt;/h2&gt;
 
 &lt;p&gt;我推荐这家网站&lt;a href=&#34;https://who.is&#34;&gt;https://who.is&lt;/a&gt;。&lt;/p&gt;
 
 &lt;p&gt;直接把域名或者网站贴进去，就告诉你注册者是谁。&lt;/p&gt;
 
-&lt;h2&gt;dig&lt;/h2&gt;
+&lt;h2 id=&#34;dig&#34;&gt;dig&lt;/h2&gt;
 
 &lt;p&gt;在linux下dig xxx，windows下就是ping。能看到对应的ip。&lt;/p&gt;
 
-&lt;h2&gt;ICP登记&lt;/h2&gt;
+&lt;h2 id=&#34;icp登记&#34;&gt;ICP登记&lt;/h2&gt;
 
 &lt;p&gt;网址在此：&lt;a href=&#34;http://www.miitbeian.gov.cn/publish/query/indexFirst.action&#34;&gt;http://www.miitbeian.gov.cn/publish/query/indexFirst.action&lt;/a&gt;。&lt;/p&gt;
 
@@ -359,7 +349,7 @@ descr:          Science &amp;amp; Technology Network Communication Co., Ltd.
 
 &lt;p&gt;另外吐槽下ICP登记查询的傻验证码。真的忍不住，实在TMD太难输了。三四次成功一次。幸好我用到的机会也不多。&lt;/p&gt;
 
-&lt;h2&gt;工商行政登记&lt;/h2&gt;
+&lt;h2 id=&#34;工商行政登记&#34;&gt;工商行政登记&lt;/h2&gt;
 
 &lt;p&gt;这个没有统一网址，每个地方自己管理。例如上海的是这个：&lt;a href=&#34;https://www.sgs.gov.cn/shaic/&#34;&gt;https://www.sgs.gov.cn/shaic/&lt;/a&gt;。&lt;/p&gt;
 
@@ -367,7 +357,7 @@ descr:          Science &amp;amp; Technology Network Communication Co., Ltd.
 
 &lt;p&gt;真搞不懂政府这帮IT什么逻辑。12306也是。。。&lt;/p&gt;
 
-&lt;h1&gt;什么是危险的&lt;/h1&gt;
+&lt;h1 id=&#34;什么是危险的&#34;&gt;什么是危险的&lt;/h1&gt;
 
 &lt;ol&gt;
 &lt;li&gt;400电话给你打进来。有公司就有400，不需要全国知名。要靠谱，正确做法是你查114，然后打400过去。&lt;/li&gt;
@@ -383,11 +373,14 @@ descr:          Science &amp;amp; Technology Network Communication Co., Ltd.
       <pubDate>Tue, 08 Apr 2014 18:03:33 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2618/</guid>
-      <description>&lt;h1&gt;描述&lt;/h1&gt;
+      <description>
 
-&lt;p&gt;openssl 1.0.1系列中，1.0.1f以前的版本在实现上存在漏洞，未正确处理Heartbeat扩展，导致攻击者可以窃取服务器端敏感数据。&lt;/p&gt;
+&lt;h1 id=&#34;描述&#34;&gt;描述&lt;/h1&gt;
 
-&lt;h1&gt;对应&lt;/h1&gt;
+&lt;p&gt;openssl
+1.0.1系列中，1.0.1f以前的版本在实现上存在漏洞，未正确处理Heartbeat扩展，导致攻击者可以窃取服务器端敏感数据。&lt;/p&gt;
+
+&lt;h1 id=&#34;对应&#34;&gt;对应&lt;/h1&gt;
 
 &lt;ol&gt;
 &lt;li&gt;请立刻升级openssl到1.0.1g版以上，并重启整个系统，以保证不会遗漏某些已经启动的进程。&lt;/li&gt;
@@ -405,18 +398,19 @@ ldd /usr/sbin/nginx | grep ssl
 for i in $(ps aux | awk &#39;{print $2}&#39;); do echo $i; ldd /proc/$i/exe | grep ssl; done
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h1&gt;其他&lt;/h1&gt;
+&lt;h1 id=&#34;其他&#34;&gt;其他&lt;/h1&gt;
 
 &lt;p&gt;根据昨晚看到的信息，这个漏洞会泄漏服务器端的通讯数据。因此请将所有session清空，在受影响期间使用过的用户名和密码请务必在3-5天后再修改一次(具体看服务商什么时候补掉漏洞)。&lt;/p&gt;
 
-&lt;h1&gt;参考&lt;/h1&gt;
+&lt;h1 id=&#34;参考&#34;&gt;参考&lt;/h1&gt;
 
 &lt;ol&gt;
 &lt;li&gt;&lt;a href=&#34;https://web.nvd.nist.gov/view/vuln/detail?vulnId=CVE-2014-0160&#34;&gt;nvd&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://security-tracker.debian.org/tracker/CVE-2014-0160&#34;&gt;debian&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;http://www.ubuntu.com/usn/usn-2165-1/&#34;&gt;ubuntu&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;http://www.openssl.org/news/vulnerabilities.html&#34;&gt;openssl&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://www.reddit.com/r/netsec/comments/22gaar/heartbleed_attack_allows_for_stealing_server/cgmla8m&#34;&gt;Is OpenSSH affected by this as well?&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.reddit.com/r/netsec/comments/22gaar/heartbleed_attack_allows_for_stealing_server/cgmla8m&#34;&gt;Is OpenSSH affected by this as
+well?&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;
 </description>
     </item>
@@ -427,16 +421,19 @@ for i in $(ps aux | awk &#39;{print $2}&#39;); do echo $i; ldd /proc/$i/exe | gr
       <pubDate>Tue, 25 Mar 2014 17:14:14 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2611/</guid>
-      <description>&lt;p&gt;这篇文章谨献给某些特殊环境下奋斗的人士。其他人参考使用。&lt;/p&gt;
+      <description>
 
-&lt;h1&gt;物理设备&lt;/h1&gt;
+&lt;p&gt;这篇文章谨献给某些特殊环境下奋斗的人士。其他人参考使用。&lt;/p&gt;
+
+&lt;h1 id=&#34;物理设备&#34;&gt;物理设备&lt;/h1&gt;
 
 &lt;p&gt;物理设备上存储着相当多的个人资讯，所以所有的机密资讯要保密这是常识。&lt;/p&gt;
 
 &lt;p&gt;物理设备上可能拥有的机密资料：&lt;/p&gt;
 
 &lt;ul&gt;
-&lt;li&gt;各大站点的session token。借助这些，虽然不能抢走帐号，但是可以仿冒身份，发出假消息，或者诈骗。&lt;/li&gt;
+&lt;li&gt;各大站点的session
+token。借助这些，虽然不能抢走帐号，但是可以仿冒身份，发出假消息，或者诈骗。&lt;/li&gt;
 &lt;li&gt;浏览器启用了“保存密码”选项后，所有的密码都半明文存储在硬盘上。这些信息可以被用来抢走帐号。&lt;/li&gt;
 &lt;li&gt;个人的文档，照片，私密视频。万一笔电丢失就够倒霉了，再变陈老师岂不更痛苦？&lt;/li&gt;
 &lt;li&gt;浏览某些特别站点的记录。咳咳，大家懂。&lt;/li&gt;
@@ -464,7 +461,7 @@ for i in $(ps aux | awk &#39;{print $2}&#39;); do echo $i; ldd /proc/$i/exe | gr
 
 &lt;p&gt;磁盘加密10位以上，系统登录8位以上，包含大小写和数字。&lt;/p&gt;
 
-&lt;h1&gt;网络安全&lt;/h1&gt;
+&lt;h1 id=&#34;网络安全&#34;&gt;网络安全&lt;/h1&gt;
 
 &lt;p&gt;首先，请把系统的防火墙开到最大：&lt;/p&gt;
 
@@ -478,18 +475,22 @@ for i in $(ps aux | awk &#39;{print $2}&#39;); do echo $i; ldd /proc/$i/exe | gr
 
 &lt;p&gt;然后，如果在不安全的环境下使用网络，请使用vpn。这里请允许我广告一把朋友的网站&lt;a href=&#34;https://www.ytvpn.com/&#34;&gt;云梯&lt;/a&gt;。一般是用来大陆翻墙的，不过要用来绕过不安全的环境也可以。&lt;/p&gt;
 
-&lt;p&gt;有时间有条件的朋友可以自行架设vpn服务器，这里给出linux下架设pptp vpn的方法。客户端使用方法可以参考云梯的说明。&lt;/p&gt;
+&lt;p&gt;有时间有条件的朋友可以自行架设vpn服务器，这里给出linux下架设pptp
+vpn的方法。客户端使用方法可以参考云梯的说明。&lt;/p&gt;
 
 &lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;http://www.howtogeek.com/51237/setting-up-a-vpn-pptp-server-on-debian/&#34;&gt;How to Setup a VPN (PPTP) Server on Debian Linux&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.howtogeek.com/51237/setting-up-a-vpn-pptp-server-on-debian/&#34;&gt;How to Setup a VPN (PPTP) Server on Debian
+Linux&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://wiki.archlinux.org/index.php/PPTP_Server&#34;&gt;PPTP Server&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://coolerfeng.blog.51cto.com/133059/64630&#34;&gt;linux pptp vpn服务器的架设&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://www.server110.com/linux/201402/5905.html&#34;&gt;Debian系统快速搭建pptp VPN&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://coolerfeng.blog.51cto.com/133059/64630&#34;&gt;linux pptp
+vpn服务器的架设&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.server110.com/linux/201402/5905.html&#34;&gt;Debian系统快速搭建pptp
+VPN&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;p&gt;注意加密一定要使用128位，不要使用56位。&lt;/p&gt;
 
-&lt;h1&gt;网站访问&lt;/h1&gt;
+&lt;h1 id=&#34;网站访问&#34;&gt;网站访问&lt;/h1&gt;
 
 &lt;p&gt;如果可以选择，尽量使用https。下面有一些插件，使你可以尽可能的使用https访问站点。当然，如果站点没有https则无效。&lt;/p&gt;
 
@@ -518,7 +519,9 @@ for i in $(ps aux | awk &#39;{print $2}&#39;); do echo $i; ldd /proc/$i/exe | gr
       <pubDate>Tue, 28 Jan 2014 13:08:45 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2549/</guid>
-      <description>&lt;h1&gt;算法&lt;/h1&gt;
+      <description>
+
+&lt;h1 id=&#34;算法&#34;&gt;算法&lt;/h1&gt;
 
 &lt;ol&gt;
 &lt;li&gt;双方预先共享一对密码。&lt;/li&gt;
@@ -528,7 +531,7 @@ for i in $(ps aux | awk &#39;{print $2}&#39;); do echo $i; ldd /proc/$i/exe | gr
 
 &lt;p&gt;攻击者获得了数个时间和序列对，但是根据HMAC特性，他无法反向出密码。&lt;/p&gt;
 
-&lt;h1&gt;因此&lt;/h1&gt;
+&lt;h1 id=&#34;因此&#34;&gt;因此&lt;/h1&gt;
 
 &lt;ol&gt;
 &lt;li&gt;gauth不需要联网。但是双方时间必须同步。&lt;/li&gt;
@@ -549,14 +552,17 @@ for i in $(ps aux | awk &#39;{print $2}&#39;); do echo $i; ldd /proc/$i/exe | gr
       <pubDate>Wed, 22 Jan 2014 13:31:45 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2539/</guid>
-      <description>&lt;p&gt;PAM是linux系统身份验证的核心，在用户登录/ssh身份校验中均有很大用途。但是很少有人想到，其实这个东西还可以用google authentication来进行身份校验。&lt;/p&gt;
+      <description>
 
-&lt;h1&gt;安装&lt;/h1&gt;
+&lt;p&gt;PAM是linux系统身份验证的核心，在用户登录/ssh身份校验中均有很大用途。但是很少有人想到，其实这个东西还可以用google
+authentication来进行身份校验。&lt;/p&gt;
+
+&lt;h1 id=&#34;安装&#34;&gt;安装&lt;/h1&gt;
 
 &lt;pre&gt;&lt;code&gt;sudo apt-get install libpam-google-authenticator
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h1&gt;设定&lt;/h1&gt;
+&lt;h1 id=&#34;设定&#34;&gt;设定&lt;/h1&gt;
 
 &lt;p&gt;使用前，需要对用户做一个用户级配置，生成配置文件。这个文件就是这个用户的身份验证凭证。配置请使用用户执行&lt;code&gt;google-authenticator&lt;/code&gt;。&lt;/p&gt;
 
@@ -564,7 +570,9 @@ for i in $(ps aux | awk &#39;{print $2}&#39;); do echo $i; ldd /proc/$i/exe | gr
 
 &lt;p&gt;然后程序会给出一个url，还可能有QR码（真够不容易的，Console级别的QR码。。。）。记住，一定要用url去获得QR码给程序扫描。因为url获得的QR码算法是最新的，而直接生成的有可能不能跑。&lt;/p&gt;
 
-&lt;p&gt;下面是secret key和verification code，一般来说这两个不用关心。但是你需要记住emergency scratch codes。libpam-google-authenticator默认给你生成了5个，一般都够用了。通常用到3个就更新一遍吧。&lt;/p&gt;
+&lt;p&gt;下面是secret key和verification
+code，一般来说这两个不用关心。但是你需要记住emergency scratch
+codes。libpam-google-authenticator默认给你生成了5个，一般都够用了。通常用到3个就更新一遍吧。&lt;/p&gt;
 
 &lt;ul&gt;
 &lt;li&gt;是否生成配置，选是。&lt;/li&gt;
@@ -575,20 +583,25 @@ for i in $(ps aux | awk &#39;{print $2}&#39;); do echo $i; ldd /proc/$i/exe | gr
 
 &lt;p&gt;OK，你的配置就完成了。如果有多个用户，请多次配置。&lt;/p&gt;
 
-&lt;h1&gt;手机app&lt;/h1&gt;
+&lt;h1 id=&#34;手机app&#34;&gt;手机app&lt;/h1&gt;
 
 &lt;p&gt;按照系统安装以下app，下面以android版为例介绍。&lt;/p&gt;
 
 &lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;amp;hl=en_GB&#34;&gt;Google Authenticator Android&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://itunes.apple.com/gb/app/google-authenticator/id388497605?mt=8&#34;&gt;Google Authenticator iOS&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://www.windowsphone.com/en-gb/store/app/authenticator/e7994dbc-2336-4950-91ba-ca22d653759b&#34;&gt;Authenticator for Windows Phone&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;amp;hl=en_GB&#34;&gt;Google Authenticator
+Android&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://itunes.apple.com/gb/app/google-authenticator/id388497605?mt=8&#34;&gt;Google Authenticator
+iOS&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.windowsphone.com/en-gb/store/app/authenticator/e7994dbc-2336-4950-91ba-ca22d653759b&#34;&gt;Authenticator for Windows
+Phone&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;http://matthill.eu/linux/ssh-two-factor-authentication-google/m.google.com/authenticator&#34;&gt;Blackbarry&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;选择setup account，然后scan a barcode。程序会要求你使用barcode扫描软件扫描(推荐barcode scanner)。这时去扫描设定一节中访问url显示的那个qr码。&lt;/p&gt;
+&lt;p&gt;选择setup account，然后scan a
+barcode。程序会要求你使用barcode扫描软件扫描(推荐barcode
+scanner)。这时去扫描设定一节中访问url显示的那个qr码。&lt;/p&gt;
 
-&lt;h1&gt;pam配置&lt;/h1&gt;
+&lt;h1 id=&#34;pam配置&#34;&gt;pam配置&lt;/h1&gt;
 
 &lt;p&gt;对于ssh而言，请在/etc/pam.d/sshd的最后一行增加这句。&lt;/p&gt;
 
@@ -607,7 +620,7 @@ for i in $(ps aux | awk &#39;{print $2}&#39;); do echo $i; ldd /proc/$i/exe | gr
 
 &lt;p&gt;如果你希望增强sudo安全性，也可以把这句加入/etc/pam.d/sudo后面。如果同样不需要密码，请注释上面那句。&lt;/p&gt;
 
-&lt;h1&gt;sshd配置&lt;/h1&gt;
+&lt;h1 id=&#34;sshd配置&#34;&gt;sshd配置&lt;/h1&gt;
 
 &lt;p&gt;保证/etc/ssh/sshd_config里面，以下参数都处于正确的配置。&lt;/p&gt;
 
@@ -621,19 +634,23 @@ UsePAM yes
 &lt;pre&gt;&lt;code&gt;AuthenticationMethods publickey,keyboard-interactive
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h1&gt;sudo&lt;/h1&gt;
+&lt;h1 id=&#34;sudo&#34;&gt;sudo&lt;/h1&gt;
 
 &lt;p&gt;注意，如果是NOPASSWORD，则没有校验。&lt;/p&gt;
 
-&lt;h1&gt;参考和鸣谢&lt;/h1&gt;
+&lt;h1 id=&#34;参考和鸣谢&#34;&gt;参考和鸣谢&lt;/h1&gt;
 
 &lt;ol&gt;
-&lt;li&gt;&lt;a href=&#34;http://matthill.eu/linux/ssh-two-factor-authentication-google/&#34;&gt;Why enable SSH Two-Factor Authentication on your server?&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://scottlinux.com/2013/06/02/use-google-authenticator-for-two-factor-ssh-authentication-in-linux/&#34;&gt;Use Google Authenticator For Two-Factor SSH Authentication in Linux&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://www.linux.org/threads/google-authenticator-for-ssh.4590/&#34;&gt;Google Authenticator For SSH&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://matthill.eu/linux/ssh-two-factor-authentication-google/&#34;&gt;Why enable SSH Two-Factor Authentication on your
+server?&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://scottlinux.com/2013/06/02/use-google-authenticator-for-two-factor-ssh-authentication-in-linux/&#34;&gt;Use Google Authenticator For Two-Factor SSH Authentication in
+Linux&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.linux.org/threads/google-authenticator-for-ssh.4590/&#34;&gt;Google Authenticator For
+SSH&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p&gt;感谢Scott Miller在引用2中的回答，AuthenticationMethods这个细节在其他文献中没有提及。&lt;/p&gt;
+&lt;p&gt;感谢Scott
+Miller在引用2中的回答，AuthenticationMethods这个细节在其他文献中没有提及。&lt;/p&gt;
 </description>
     </item>
     
@@ -643,11 +660,14 @@ UsePAM yes
       <pubDate>Wed, 15 Jan 2014 10:53:20 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2536/</guid>
-      <description>&lt;h1&gt;说明&lt;/h1&gt;
+      <description>
+
+&lt;h1 id=&#34;说明&#34;&gt;说明&lt;/h1&gt;
 
 &lt;p&gt;测试都是ab做的，中等并发量，统一采用10000并发，100000个请求。都是本机请求本机，避免公司内网IDS的干扰。&lt;/p&gt;
 
-&lt;p&gt;机器是一台双核CPU的DELL：Intel(R) Pentium(R) CPU G2030 @ 3.00GHz。配4G内存。&lt;/p&gt;
+&lt;p&gt;机器是一台双核CPU的DELL：Intel&amp;reg; Pentium&amp;reg; CPU G2030 @
+3.00GHz。配4G内存。&lt;/p&gt;
 
 &lt;p&gt;第一组数据是ab测试nginx，nginx的配置如下：&lt;/p&gt;
 
@@ -672,10 +692,10 @@ http {
 
 &lt;p&gt;第三组是ab测试golang，返回某个目录或文件。&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;err := http.ListenAndServe(&#34;:8080&#34;, http.FileServer(http.Dir(&#34;/home/shell/photo&#34;)))
+&lt;pre&gt;&lt;code&gt;err := http.ListenAndServe(&amp;quot;:8080&amp;quot;, http.FileServer(http.Dir(&amp;quot;/home/shell/photo&amp;quot;)))
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h1&gt;nginx&lt;/h1&gt;
+&lt;h1 id=&#34;nginx&#34;&gt;nginx&lt;/h1&gt;
 
 &lt;pre&gt;&lt;code&gt;Concurrency Level:      10000
 Time taken for tests:   5.720 seconds
@@ -708,7 +728,7 @@ Percentage of the requests served within a certain time (ms)
  100%   3558 (longest request)
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h1&gt;golang with string&lt;/h1&gt;
+&lt;h1 id=&#34;golang-with-string&#34;&gt;golang with string&lt;/h1&gt;
 
 &lt;pre&gt;&lt;code&gt;Concurrency Level:      10000
 Time taken for tests:   5.147 seconds
@@ -741,7 +761,7 @@ Percentage of the requests served within a certain time (ms)
  100%   4653 (longest request)
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h1&gt;golang with file&lt;/h1&gt;
+&lt;h1 id=&#34;golang-with-file&#34;&gt;golang with file&lt;/h1&gt;
 
 &lt;pre&gt;&lt;code&gt;Concurrency Level:      10000
 Time taken for tests:   8.122 seconds
@@ -775,7 +795,7 @@ Percentage of the requests served within a certain time (ms)
  100%   8086 (longest request)
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h1&gt;分析&lt;/h1&gt;
+&lt;h1 id=&#34;分析&#34;&gt;分析&lt;/h1&gt;
 
 &lt;p&gt;从rps来看，三者都达到了10Krps的级别以上，而且差距很小。golang在没有逻辑的情况下比nginx还要快11%，但是加入逻辑后反而落后30%（这不奇怪）。三者差距都在50%以内，基本属于同一个数量级。&lt;/p&gt;
 
@@ -789,11 +809,13 @@ Percentage of the requests served within a certain time (ms)
       <pubDate>Thu, 12 Sep 2013 23:30:45 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2478/</guid>
-      <description>&lt;p&gt;本文不仅适用于青旅，还包括其他人员密集的场所，通过无线方式进行最低限度的上网。例如公司。&lt;/p&gt;
+      <description>
+
+&lt;p&gt;本文不仅适用于青旅，还包括其他人员密集的场所，通过无线方式进行最低限度的上网。例如公司。&lt;/p&gt;
 
 &lt;p&gt;会写这篇，主要是旅行过程中，发现网络状况实在无法接受。像阿里地区这种没信号的区域就算了，在很多青旅里也因为种种原因上网不畅，实在让人很不爽。所以写一篇guide出来，说明一下各种问题。&lt;/p&gt;
 
-&lt;h1&gt;容量估算&lt;/h1&gt;
+&lt;h1 id=&#34;容量估算&#34;&gt;容量估算&lt;/h1&gt;
 
 &lt;p&gt;首先，你必须估计在一定范围内需要联网的设备数。一般来说，就是某个无线覆盖范围的人员数乘以1.2到2不等的系数。如果是青旅，大概乘1.2就足够了。因为很多出来玩的人只带手机，偶尔会带ipad。但是在公司，一般至少到2。因为有很多人会将笔记本和手机同时连接上网络。&lt;/p&gt;
 
@@ -807,7 +829,7 @@ Percentage of the requests served within a certain time (ms)
 
 &lt;p&gt;例如，在某个青旅的大厅里，巅峰时刻可以坐下15个人。这时候，设备数估计是15*1.2=18台。带宽估计是720kbps，AP连接数18。&lt;/p&gt;
 
-&lt;h1&gt;限制&lt;/h1&gt;
+&lt;h1 id=&#34;限制&#34;&gt;限制&lt;/h1&gt;
 
 &lt;p&gt;容量估算有什么意义呢？主要就是决定你租用电信带宽的大小和选用路由器的质量和数量。带宽都懂，主要说一下路由器的质量和数量。&lt;/p&gt;
 
@@ -819,13 +841,14 @@ Percentage of the requests served within a certain time (ms)
 
 &lt;p&gt;继续上面的例子，大厅里18台设备，那么就可以用一台TL-WDR3320搞定。&lt;/p&gt;
 
-&lt;h1&gt;覆盖&lt;/h1&gt;
+&lt;h1 id=&#34;覆盖&#34;&gt;覆盖&lt;/h1&gt;
 
 &lt;p&gt;在计算完容量后，我们复杂的网络设计之路才刚刚开始。记得我上面强调过一个词，一定范围内需要联网的设备。这个词的意思是，如果人员分布在了各个角落，你需要独立计算无线覆盖。&lt;/p&gt;
 
 &lt;p&gt;很多青旅的问题在于，压根没有考虑无线的覆盖性，就在中央大厅拉了一个路由器了事。结果一帮驴子半夜三更不睡觉在大厅里刷手机刷明天的线路。。。&lt;/p&gt;
 
-&lt;p&gt;关于无线的覆盖，是一个挺复杂的问题。简单点的解法是在android手机上下一个wifi analyse软件。然后选个你觉得OK的点，把AP接上电（不用联网）。用软件可以看到AP的信号强度。然后来回走动一下，看看是不是每个位置都能保持70dbm左右的信号。如果不行，再换点。&lt;/p&gt;
+&lt;p&gt;关于无线的覆盖，是一个挺复杂的问题。简单点的解法是在android手机上下一个wifi
+analyse软件。然后选个你觉得OK的点，把AP接上电（不用联网）。用软件可以看到AP的信号强度。然后来回走动一下，看看是不是每个位置都能保持70dbm左右的信号。如果不行，再换点。&lt;/p&gt;
 
 &lt;p&gt;还是上面那个例子。大厅里面15个人，但是在住宿区域分为三个部分，每个部分三间房，第一，二部分每个房间4张床，第三部分每个房间6张床。&lt;/p&gt;
 
@@ -835,7 +858,7 @@ Percentage of the requests served within a certain time (ms)
 
 &lt;p&gt;其次，大厅，每个部分都要分别装一台TL-WDR3320，总共4台。其中第三部分的待机数略不足。好心的可以补一个WR703N补足，没这个闲功夫的就赌房间不会总是客满吧。&lt;/p&gt;
 
-&lt;h1&gt;频道分配&lt;/h1&gt;
+&lt;h1 id=&#34;频道分配&#34;&gt;频道分配&lt;/h1&gt;
 
 &lt;p&gt;这个就是更细节的问题了。&lt;/p&gt;
 
@@ -847,7 +870,7 @@ Percentage of the requests served within a certain time (ms)
 
 &lt;p&gt;刚刚的例子继续，把频道6分给离的最远的两台AP，就保证4台设备互相不冲突了。如果补了WR703N，那么就分配一个合适的频道吧。&lt;/p&gt;
 
-&lt;h1&gt;连接结构&lt;/h1&gt;
+&lt;h1 id=&#34;连接结构&#34;&gt;连接结构&lt;/h1&gt;
 
 &lt;p&gt;上面讲了半天如何计算需要几个AP，布在什么点。现在讲一下如何连接。&lt;/p&gt;
 
@@ -857,17 +880,18 @@ Percentage of the requests served within a certain time (ms)
 
 &lt;p&gt;插入WAN的路由被称为主路由。一般来说，如果用户数大于100，主路由需要足够强才行。如果TL-WDR3320不够，还是要一台WVR450G。&lt;/p&gt;
 
-&lt;h1&gt;配置&lt;/h1&gt;
+&lt;h1 id=&#34;配置&#34;&gt;配置&lt;/h1&gt;
 
 &lt;p&gt;一般路由器都是192.168.1.1，然后打开DHCP。当使用上面说的这种配置结构的时候，就不能这么配了。&lt;/p&gt;
 
-&lt;p&gt;你首先要将主路由配置为192.168.1.1，其他路由的LAN口依次配置为1.2 1.3等等。然后关闭其他路由器的DHCP功能，并为每个路由器分配合适的频道。&lt;/p&gt;
+&lt;p&gt;你首先要将主路由配置为192.168.1.1，其他路由的LAN口依次配置为1.2
+1.3等等。然后关闭其他路由器的DHCP功能，并为每个路由器分配合适的频道。&lt;/p&gt;
 
 &lt;p&gt;如果网络不需要保密，建议配置为随意连接，待机数还可以增加一些。但是一般这样会惹来大量蹭网的，所以一般需要将安全设定为WPA2。所有AP设定为一样的名字和密码，设备会自动寻找信号最强的那个。&lt;/p&gt;
 
 &lt;p&gt;如果用的是TL-WDR3320，那么还要注意分别配置2.4G和5G频段。建议2.4G和5G选用不同的名字，但是可以用一样的密码。这样用户可以自行选择是使用2.4G网络还是5G网络。&lt;/p&gt;
 
-&lt;h1&gt;细节&lt;/h1&gt;
+&lt;h1 id=&#34;细节&#34;&gt;细节&lt;/h1&gt;
 
 &lt;p&gt;有空的话，可以看一下我这篇&lt;a href=&#34;http://shell909090.org/blog/2011/09/%E5%90%88%E7%94%A8%E4%B8%A4%E4%B8%AA%E8%B7%AF%E7%94%B1%E5%99%A8%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E6%A1%88/&#34;&gt;合用两个路由器的几种方案&lt;/a&gt;&lt;/p&gt;
 </description>
@@ -879,17 +903,21 @@ Percentage of the requests served within a certain time (ms)
       <pubDate>Wed, 03 Jul 2013 10:39:27 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2438/</guid>
-      <description>&lt;p&gt;使用getmail备份imap(例如gmail)服务器上数据的方法。&lt;/p&gt;
+      <description>
 
-&lt;h1&gt;原因&lt;/h1&gt;
+&lt;p&gt;使用getmail备份imap(例如gmail)服务器上数据的方法。&lt;/p&gt;
 
-&lt;p&gt;随着7.1的到来，诸位geek最重要的事情就是备份google reader的数据了。很多人都在讨论gmail还要不要用。&lt;/p&gt;
+&lt;h1 id=&#34;原因&#34;&gt;原因&lt;/h1&gt;
+
+&lt;p&gt;随着7.1的到来，诸位geek最重要的事情就是备份google
+reader的数据了。很多人都在讨论gmail还要不要用。&lt;/p&gt;
 
 &lt;p&gt;废话，当然要。这么好的服务，为什么不用？&lt;/p&gt;
 
-&lt;p&gt;只是随着google reader的事，在用gmail的时候也得留个心眼。平时数据勤备份，不要所有的内容都绑定到这个邮箱上，否则有得你哭的。&lt;/p&gt;
+&lt;p&gt;只是随着google
+reader的事，在用gmail的时候也得留个心眼。平时数据勤备份，不要所有的内容都绑定到这个邮箱上，否则有得你哭的。&lt;/p&gt;
 
-&lt;h1&gt;安装和配置&lt;/h1&gt;
+&lt;h1 id=&#34;安装和配置&#34;&gt;安装和配置&lt;/h1&gt;
 
 &lt;p&gt;getmail是一个用于将远程数据取到本地的系统，和fetchmail是一类东西。废话不多说，先装getmail。&lt;/p&gt;
 
@@ -905,7 +933,7 @@ type = SimpleIMAPSSLRetriever
 server = imap.gmail.com
 username = [username]
 password = [password]
-mailboxes = (&#34;[Gmail]/所有邮件&#34;,)
+mailboxes = (&amp;quot;[Gmail]/所有邮件&amp;quot;,)
 [destination]
 type = Mboxrd
 path = ~/shell/gmail.mbox
@@ -917,11 +945,13 @@ verbose = 2
 message_log = ~/.getmail/gmail.log
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;username填你自己的用户名，普通用户不需要@gmail.com，企业用户需要@你的域名。password填密码，两次认证的需要分配一个Application-specific passwords。mailboxes里面不要照网络上的填写[Gmail]/All Mail，那是英文环境用的。&lt;/p&gt;
+&lt;p&gt;username填你自己的用户名，普通用户不需要@gmail.com，企业用户需要@你的域名。password填密码，两次认证的需要分配一个Application-specific
+passwords。mailboxes里面不要照网络上的填写[Gmail]/All
+Mail，那是英文环境用的。&lt;/p&gt;
 
 &lt;p&gt;~/shell/gmail.mbox是目标文件，你需要先touch出来。~/.getmail/gmail.log是log，建议和配置文件同名。&lt;/p&gt;
 
-&lt;h1&gt;执行&lt;/h1&gt;
+&lt;h1 id=&#34;执行&#34;&gt;执行&lt;/h1&gt;
 
 &lt;p&gt;把下面的gmail替换为你的配置文件名，注意不需要写.getmail/的前缀。&lt;/p&gt;
 
@@ -930,7 +960,7 @@ message_log = ~/.getmail/gmail.log
 
 &lt;p&gt;系统就会开始备份你的数据。像贝壳的gmail这种数据，量比较大，时间也会比较长。&lt;/p&gt;
 
-&lt;h1&gt;问题&lt;/h1&gt;
+&lt;h1 id=&#34;问题&#34;&gt;问题&lt;/h1&gt;
 
 &lt;p&gt;getmail是python写的，备份数据比较大的时候，内存消耗会很惊人。而且当处理巨量数目的文件时。在启动时会将目录全部下载到本地，然后计算一阵。这个耗时，网络消耗和CPU都比较大。要有点耐性。&lt;/p&gt;
 </description>
@@ -942,7 +972,9 @@ message_log = ~/.getmail/gmail.log
       <pubDate>Thu, 13 Jun 2013 15:19:31 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2430/</guid>
-      <description>&lt;h1&gt;用户友好的密码&lt;/h1&gt;
+      <description>
+
+&lt;h1 id=&#34;用户友好的密码&#34;&gt;用户友好的密码&lt;/h1&gt;
 
 &lt;p&gt;何谓用户友好的密码？我是指在密码中尽量不给自己找麻烦，又能正常使用。&lt;/p&gt;
 
@@ -958,15 +990,15 @@ message_log = ~/.getmail/gmail.log
 &lt;/ul&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h1&gt;手机上容易输入的符号&lt;/h1&gt;
+&lt;h1 id=&#34;手机上容易输入的符号&#34;&gt;手机上容易输入的符号&lt;/h1&gt;
 
 &lt;p&gt;在android上，以下符号可以在google输入法中直接输入。&lt;/p&gt;
 
-&lt;p&gt;@*+-=/#()&#39;&#34;:?!~&lt;/p&gt;
+&lt;p&gt;@*+-=/#()&amp;lsquo;&amp;rdquo;:?!~&lt;/p&gt;
 
 &lt;p&gt;总计15个。估计加上iphone后会更少。如果要用符号，建议从这些里面取，会减少你很多密码输入的烦恼。&lt;/p&gt;
 
-&lt;h1&gt;容易混淆的字母&lt;/h1&gt;
+&lt;h1 id=&#34;容易混淆的字母&#34;&gt;容易混淆的字母&lt;/h1&gt;
 
 &lt;ul&gt;
 &lt;li&gt;Il1&lt;/li&gt;
@@ -975,7 +1007,7 @@ message_log = ~/.getmail/gmail.log
 &lt;li&gt;连续的wv&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h1&gt;强度规范&lt;/h1&gt;
+&lt;h1 id=&#34;强度规范&#34;&gt;强度规范&lt;/h1&gt;
 
 &lt;p&gt;我把&lt;a href=&#34;http://shell909090.org/blog/2011/09/%E5%AF%86%E7%A0%81%E7%AE%A1%E7%90%86%E8%A7%84%E8%8C%83/&#34;&gt;密码管理规范&lt;/a&gt;里面的结论总结一下，略去推导，凑凑数，把密码级别排列成以下几个：&lt;/p&gt;
 
@@ -988,7 +1020,7 @@ message_log = ~/.getmail/gmail.log
 
 &lt;p&gt;每个级别之间大约差12bit的熵。初始熵强度至少20bit，低于这个水平就很难说这是一个密码了。&lt;/p&gt;
 
-&lt;h1&gt;强度估计&lt;/h1&gt;
+&lt;h1 id=&#34;强度估计&#34;&gt;强度估计&lt;/h1&gt;
 
 &lt;p&gt;以最容易使用的密码计算，符号应当最多包含26个字母+10个数字，排除l10这3个。每一位有33种可能，熵大约是5多一点。&lt;/p&gt;
 
@@ -1008,7 +1040,7 @@ message_log = ~/.getmail/gmail.log
 &lt;li&gt;本地密码：至少10位。&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h1&gt;建议&lt;/h1&gt;
+&lt;h1 id=&#34;建议&#34;&gt;建议&lt;/h1&gt;
 
 &lt;p&gt;网络：&lt;/p&gt;
 
@@ -1035,9 +1067,12 @@ message_log = ~/.getmail/gmail.log
       <pubDate>Tue, 19 Mar 2013 10:54:59 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2339/</guid>
-      <description>&lt;h1&gt;背景&lt;/h1&gt;
+      <description>
 
-&lt;p&gt;贝壳自己的vps蒙难，不能正常工作了。所以贝壳买了一个vpn。是pptp/l2tp系列的。用起来很好用，但是这类ip-based vpn有几个不便。&lt;/p&gt;
+&lt;h1 id=&#34;背景&#34;&gt;背景&lt;/h1&gt;
+
+&lt;p&gt;贝壳自己的vps蒙难，不能正常工作了。所以贝壳买了一个vpn。是pptp/l2tp系列的。用起来很好用，但是这类ip-based
+vpn有几个不便。&lt;/p&gt;
 
 &lt;ul&gt;
 &lt;li&gt;不能自动设定客户端路由表，实现智能翻墙选择。&lt;/li&gt;
@@ -1047,22 +1082,25 @@ message_log = ~/.getmail/gmail.log
 
 &lt;p&gt;与此相反，代理式翻墙可以比较有效的解决这些问题。一个点拨号，其他点可以共享代理。不需要翻墙的直接访问不设定代理就好。唯路由表没有办法。实际上，为了使得代理可以使用路由表选择，贝壳还是花了一番功夫做了antigfw项目的。&lt;/p&gt;
 
-&lt;p&gt;闲话少说。这次贝壳就展示一下如何在debian下设定pptp vpn，并且利用代理无缝共享的。&lt;/p&gt;
+&lt;p&gt;闲话少说。这次贝壳就展示一下如何在debian下设定pptp
+vpn，并且利用代理无缝共享的。&lt;/p&gt;
 
-&lt;h1&gt;linux下的vpn设定&lt;/h1&gt;
+&lt;h1 id=&#34;linux下的vpn设定&#34;&gt;linux下的vpn设定&lt;/h1&gt;
 
 &lt;p&gt;安装pptp-linux这个包，然后按照说明使用即可。&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;pptpsetup --create &amp;lt;TUNNEL&amp;gt; --server &amp;lt;SERVER&amp;gt; [--domain &amp;lt;DOMAIN&amp;gt;] --username &amp;lt;USERNAME&amp;gt; [--password &amp;lt;PASSWORD&amp;gt;] [--encrypt] [--start]
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;自己填充用户名密码服务器，就会在/etc/ppp/peers/下面生成对应的文件。使用pon tunnelname就可以拨号了。&lt;/p&gt;
+&lt;p&gt;自己填充用户名密码服务器，就会在/etc/ppp/peers/下面生成对应的文件。使用pon
+tunnelname就可以拨号了。&lt;/p&gt;
 
-&lt;h1&gt;路由设定&lt;/h1&gt;
+&lt;h1 id=&#34;路由设定&#34;&gt;路由设定&lt;/h1&gt;
 
 &lt;p&gt;初始设定好的vpn不具有智能路由，因此必须添加一些内容。&lt;/p&gt;
 
-&lt;p&gt;首先使用&lt;a href=&#34;https://github.com/fivesheep/chnroutes&#34;&gt;chnroutes.py&lt;/a&gt;这个程序，得到ovpn下常规用的路由表。当然，我们可以用linux下的路由表，但是他的old gateway存放在了/tmp下面，对此我并不是很喜欢。所以我只用了他的路由
+&lt;p&gt;首先使用&lt;a href=&#34;https://github.com/fivesheep/chnroutes&#34;&gt;chnroutes.py&lt;/a&gt;这个程序，得到ovpn下常规用的路由表。当然，我们可以用linux下的路由表，但是他的old
+gateway存放在了/tmp下面，对此我并不是很喜欢。所以我只用了他的路由
 表信息，其余自己处理。如果你不确定自己执行时的默认路由，理论上也应当需要下面的一些配置。&lt;/p&gt;
 
 &lt;p&gt;使用下面这个topptp.sh，可以将输出的routes.txt转换为pptpup和pptpdown两个文件。&lt;/p&gt;
@@ -1073,23 +1111,23 @@ ETHGW=192.168.1.1
 
 cat &amp;gt; pptpup &amp;lt;&amp;lt;EOF
 #!/bin/bash
-export PATH=&#34;/bin:/sbin:/usr/sbin:/usr/bin&#34;
+export PATH=&amp;quot;/bin:/sbin:/usr/sbin:/usr/bin&amp;quot;
 
 EOF
 
 cat &amp;gt; pptpdown &amp;lt;&amp;lt;EOF
 #!/bin/bash
-export PATH=&#34;/bin:/sbin:/usr/sbin:/usr/bin&#34;
+export PATH=&amp;quot;/bin:/sbin:/usr/sbin:/usr/bin&amp;quot;
 
 EOF
 
-sed &#34;s:route (S*) (S*) net_gateway 5:route add -net 1 netmask 2 gw $ETHGW:g&#34; routes.txt &amp;gt;&amp;gt; pptpup
-sed &#34;s:route (S*) (S*) net_gateway 5:route del -net 1 netmask 2:g&#34; routes.txt &amp;gt;&amp;gt; pptpdown
+sed &amp;quot;s:route (S*) (S*) net_gateway 5:route add -net 1 netmask 2 gw $ETHGW:g&amp;quot; routes.txt &amp;gt;&amp;gt; pptpup
+sed &amp;quot;s:route (S*) (S*) net_gateway 5:route del -net 1 netmask 2:g&amp;quot; routes.txt &amp;gt;&amp;gt; pptpdown
 
 chmod 755 pptpup pptpdown
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;再将这两个文件复制到/etc/ppp下面，然后将如下内容添加到/etc/ppp/peers/xxx文件，具体就是你刚刚生成的配置。 &lt;/p&gt;
+&lt;p&gt;再将这两个文件复制到/etc/ppp下面，然后将如下内容添加到/etc/ppp/peers/xxx文件，具体就是你刚刚生成的配置。&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;defaultroute
 replacedefaultroute
@@ -1099,11 +1137,11 @@ disconnect /etc/ppp/pptpdown
 
 &lt;p&gt;第一二行，配置了替代默认路由。三四行，配置了启动时某些路由表项使用直连。&lt;/p&gt;
 
-&lt;h1&gt;代理&lt;/h1&gt;
+&lt;h1 id=&#34;代理&#34;&gt;代理&lt;/h1&gt;
 
 &lt;p&gt;什么废话都不用多说，直接在设备上安装polipo。然后加入以下两行，赋予其他用户访问权限。&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;proxyAddress = &#34;0.0.0.0&#34; # IPv4 only
+&lt;pre&gt;&lt;code&gt;proxyAddress = &amp;quot;0.0.0.0&amp;quot; # IPv4 only
 allowedClients = 192.168.1.0/24
 &lt;/code&gt;&lt;/pre&gt;
 
@@ -1111,7 +1149,7 @@ allowedClients = 192.168.1.0/24
 
 &lt;p&gt;如果你开了防火墙，不要忘记打开8123端口。&lt;/p&gt;
 
-&lt;h1&gt;效果&lt;/h1&gt;
+&lt;h1 id=&#34;效果&#34;&gt;效果&lt;/h1&gt;
 
 &lt;p&gt;在其他设备上，设定代理，然后直接访问，发现是不是国内外的网站都可以直接使用了？&lt;/p&gt;
 
@@ -1125,171 +1163,171 @@ allowedClients = 192.168.1.0/24
       <pubDate>Sat, 29 Dec 2012 14:33:28 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2287/</guid>
-      <description>&lt;pre&gt;+------------+----------+-------------+------------+-------------+-------------+
-|bps         |B/s       |network      |storage     |port         |bus          |
-+------------+----------+-------------+------------+-------------+-------------+
-|56/48K      |5.6/4.8K  |Modem 56k    |            |             |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|57.6/28.8K  |7.2/3.6K  |GPRS         |            |             |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|236.8/236.8K|29.6/29.6K|EDGE (2.75G) |            |             |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|1M          |125K      |Bluetooth 1.1|            |             |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|1536K       |192K      |             |            |USB low speed|             |
-+------------+----------+-------------+------------+-------------+-------------+
-|1,536/512K  |192/64K   |ADSL (G.Lite)|            |             |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|3M          |375k      |Bluetooth 2.0|            |             |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|10M         |1.25M     |10BASE-T     |            |             |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|12M         |1.5M      |             |            |USB full     |             |
-|            |          |             |            |speed        |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|12.288M     |1.536M    |             |            |AC97         |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|13.98/5.760M|1,706/720k|HSDPA/HSUPA  |            |             |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|24M         |3M        |Bluetooth    |            |             |             |
-|            |          |3.0/4.0      |            |             |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|54M         |6.75M     |IEEE 802.11g |            |             |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|98.3M       |12.28M    |             |            |IEEE 1394 100|             |
-+------------+----------+-------------+------------+-------------+-------------+
-|100M        |12.5M     |100BASE-TX   |            |             |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|108M        |13.5M     |IEEE 802.11g |            |             |             |
-|            |          |with Super G |            |             |             |
-|            |          |by Atheros   |            |             |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|160M        |20M       |             |Ultra SCSI  |             |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|196.608M    |24.57M    |             |            |IEEE 1394 200|             |
-+------------+----------+-------------+------------+-------------+-------------+
-|264M        |33M       |             |UDMA33      |             |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|320M        |40M       |             |Ultra-2 SCSI|             |             |
-|            |          |             |40          |             |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|393.216M    |49.15M    |             |            |IEEE 1394 400|             |
-+------------+----------+-------------+------------+-------------+-------------+
-|480M        |60M       |             |            |USB 2.0      |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|533M        |66M       |             |UDMA66      |             |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|600M        |75M       |IEEE 802.11n |            |             |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|640M        |80M       |             |Ultra-2 wide|             |             |
-|            |          |             |SCSI        |             |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|786.432M    |98.3M     |             |            |IEEE 1394b   |             |
-|            |          |             |            |800          |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|800M        |100M      |             |UDMA100     |             |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|1G          |125M      |1000BASE-T   |            |             |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|1067M       |133M      |             |            |             |PCI-33 32bit |
-+------------+----------+-------------+------------+-------------+-------------+
-|1064M       |133M      |             |UDMA133     |             |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|1500M       |150M      |             |SATA1       |             |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|1280M       |160M      |             |Ultra-3 SCSI|             |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|1573M       |196M      |             |            |IEEE 1394b   |             |
-|            |          |             |            |1600         |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|2G          |250M      |             |            |             |PCI Express  |
-|            |          |             |            |             |1.0 (1 link) |
-+------------+----------+-------------+------------+-------------+-------------+
-|2.133G      |266M      |             |            |             |PCI-33 64bit |
-+------------+----------+-------------+------------+-------------+-------------+
-|2.133G      |266M      |             |            |             |PCI-66 32bit |
-+------------+----------+-------------+------------+-------------+-------------+
-|2.133G      |266M      |             |            |             |AGP 1x       |
-+------------+----------+-------------+------------+-------------+-------------+
-|2400M       |300M      |             |SAS         |             |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|3000M       |300M      |             |SATA2       |             |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|2560M       |320M      |             |Ultra-320   |             |             |
-|            |          |             |SCSI        |             |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|2.8G        |0.35G     |             |            |LVDS         |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|3145.7M     |393M      |             |            |IEEE 1394b   |             |
-|            |          |             |            |3200         |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|4G          |500M      |             |            |             |PCI Express  |
-|            |          |             |            |             |2.0 (1 link) |
-+------------+----------+-------------+------------+-------------+-------------+
-|5G          |500M      |             |            |USB 3.0      |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|4.266G      |533M      |             |            |             |PCI-66 64bit |
-+------------+----------+-------------+------------+-------------+-------------+
-|4.266G      |533M      |             |            |             |AGP 2x       |
-+------------+----------+-------------+------------+-------------+-------------+
-|4800M       |600M      |             |SAS2        |             |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|6000M       |600M      |             |SATA3       |             |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|4.95G       |0.619G    |             |            |HDMI v1.0    |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|5120M       |640M      |             |Ultra-640   |             |             |
-|            |          |             |SCSI        |             |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|6.48G       |0.81G     |             |            |DisplayPort  |             |
-|            |          |             |            |v1.0 (4-lane |             |
-|            |          |             |            |reduced rate)|             |
-+------------+----------+-------------+------------+-------------+-------------+
-|7.88G       |984.6M    |             |            |             |PCI Express  |
-|            |          |             |            |             |3.0 (1 link) |
-+------------+----------+-------------+------------+-------------+-------------+
-|8.533G      |1.067G    |             |            |             |AGP 4x       |
-+------------+----------+-------------+------------+-------------+-------------+
-|9600M       |1200M     |             |SAS3        |             |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|10G         |1.25G     |10GBASE-X    |            |             |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|10.2G       |1.275G    |             |            |HDMI v1.3    |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|10.8G       |1.35G     |             |            |DisplayPort  |             |
-|            |          |             |            |v1.0 (4-lane |             |
-|            |          |             |            |full rate)   |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|17.066G     |2.133G    |             |            |             |AGP 8x       |
-+------------+----------+-------------+------------+-------------+-------------+
-|21.6G       |2.7G      |             |            |DisplayPort  |             |
-|            |          |             |            |v1.2         |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|32G         |4G        |             |            |             |PCI Express  |
-|            |          |             |            |             |1.0 (16 link)|
-+------------+----------+-------------+------------+-------------+-------------+
-|34.133G     |4.266G    |             |            |             |AGP 8x 64bit |
-+------------+----------+-------------+------------+-------------+-------------+
-|40G         |5G        |40GBASE-X    |            |             |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|64G         |8G        |             |            |             |PCI Express  |
-|            |          |             |            |             |1.0 (32 link)|
-+------------+----------+-------------+------------+-------------+-------------+
-|64G         |8G        |             |            |             |PCI Express  |
-|            |          |             |            |             |2.0 (16 link)|
-+------------+----------+-------------+------------+-------------+-------------+
-|100G        |12.5G     |100GBASE-X   |            |             |             |
-+------------+----------+-------------+------------+-------------+-------------+
-|126.03G     |15.8G     |             |            |             |PCI Express  |
-|            |          |             |            |             |3.0 (16 link)|
-+------------+----------+-------------+------------+-------------+-------------+
-|128G        |16G       |             |            |             |PCI Express  |
-|            |          |             |            |             |2.0 (32 link)|
-+------------+----------+-------------+------------+-------------+-------------+
-|252.06G     |31.5G     |             |            |             |PCI Express  |
-|            |          |             |            |             |3.0 (32 link)|
-+------------+----------+-------------+------------+-------------+-------------+
-以上数据来自wikipedia&lt;/pre&gt;
+      <description>&lt;p&gt;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |bps         |B/s       |network      |storage     |port         |bus          |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |56/48K      |5.&lt;sup&gt;6&lt;/sup&gt;&amp;frasl;&lt;sub&gt;4&lt;/sub&gt;.8K  |Modem 56k    |            |             |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |57.&lt;sup&gt;6&lt;/sup&gt;&amp;frasl;&lt;sub&gt;28&lt;/sub&gt;.8K  |7.&lt;sup&gt;2&lt;/sup&gt;&amp;frasl;&lt;sub&gt;3&lt;/sub&gt;.6K  |GPRS         |            |             |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |236.&lt;sup&gt;8&lt;/sup&gt;&amp;frasl;&lt;sub&gt;236&lt;/sub&gt;.8K|29.&lt;sup&gt;6&lt;/sup&gt;&amp;frasl;&lt;sub&gt;29&lt;/sub&gt;.6K|EDGE (2.75G) |            |             |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |1M          |125K      |Bluetooth 1.1|            |             |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |1536K       |192K      |             |            |USB low speed|             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |1,536/512K  |192/64K   |ADSL (G.Lite)|            |             |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |3M          |375k      |Bluetooth 2.0|            |             |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |10M         |1.25M     |10BASE-T     |            |             |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |12M         |1.5M      |             |            |USB full     |             |
+    |            |          |             |            |speed        |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |12.288M     |1.536M    |             |            |AC97         |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |13.&lt;sup&gt;98&lt;/sup&gt;&amp;frasl;&lt;sub&gt;5&lt;/sub&gt;.760M|1,706/720k|HSDPA/HSUPA  |            |             |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |24M         |3M        |Bluetooth    |            |             |             |
+    |            |          |3.0/4.0      |            |             |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |54M         |6.75M     |IEEE 802.11g |            |             |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |98.3M       |12.28M    |             |            |IEEE 1394 100|             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |100M        |12.5M     |100BASE-TX   |            |             |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |108M        |13.5M     |IEEE 802.11g |            |             |             |
+    |            |          |with Super G |            |             |             |
+    |            |          |by Atheros   |            |             |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |160M        |20M       |             |Ultra SCSI  |             |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |196.608M    |24.57M    |             |            |IEEE 1394 200|             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |264M        |33M       |             |UDMA33      |             |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |320M        |40M       |             |Ultra-2 SCSI|             |             |
+    |            |          |             |40          |             |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |393.216M    |49.15M    |             |            |IEEE 1394 400|             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |480M        |60M       |             |            |USB 2.0      |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |533M        |66M       |             |UDMA66      |             |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |600M        |75M       |IEEE 802.11n |            |             |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |640M        |80M       |             |Ultra-2 wide|             |             |
+    |            |          |             |SCSI        |             |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |786.432M    |98.3M     |             |            |IEEE 1394b   |             |
+    |            |          |             |            |800          |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |800M        |100M      |             |UDMA100     |             |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |1G          |125M      |1000BASE-T   |            |             |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |1067M       |133M      |             |            |             |PCI-33 32bit |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |1064M       |133M      |             |UDMA133     |             |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |1500M       |150M      |             |SATA1       |             |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |1280M       |160M      |             |Ultra-3 SCSI|             |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |1573M       |196M      |             |            |IEEE 1394b   |             |
+    |            |          |             |            |1600         |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |2G          |250M      |             |            |             |PCI Express  |
+    |            |          |             |            |             |1.0 (1 link) |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |2.133G      |266M      |             |            |             |PCI-33 64bit |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |2.133G      |266M      |             |            |             |PCI-66 32bit |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |2.133G      |266M      |             |            |             |AGP 1x       |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |2400M       |300M      |             |SAS         |             |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |3000M       |300M      |             |SATA2       |             |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |2560M       |320M      |             |Ultra-320   |             |             |
+    |            |          |             |SCSI        |             |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |2.8G        |0.35G     |             |            |LVDS         |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |3145.7M     |393M      |             |            |IEEE 1394b   |             |
+    |            |          |             |            |3200         |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |4G          |500M      |             |            |             |PCI Express  |
+    |            |          |             |            |             |2.0 (1 link) |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |5G          |500M      |             |            |USB 3.0      |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |4.266G      |533M      |             |            |             |PCI-66 64bit |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |4.266G      |533M      |             |            |             |AGP 2x       |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |4800M       |600M      |             |SAS2        |             |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |6000M       |600M      |             |SATA3       |             |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |4.95G       |0.619G    |             |            |HDMI v1.0    |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |5120M       |640M      |             |Ultra-640   |             |             |
+    |            |          |             |SCSI        |             |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |6.48G       |0.81G     |             |            |DisplayPort  |             |
+    |            |          |             |            |v1.0 (4-lane |             |
+    |            |          |             |            |reduced rate)|             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |7.88G       |984.6M    |             |            |             |PCI Express  |
+    |            |          |             |            |             |3.0 (1 link) |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |8.533G      |1.067G    |             |            |             |AGP 4x       |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |9600M       |1200M     |             |SAS3        |             |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |10G         |1.25G     |10GBASE-X    |            |             |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |10.2G       |1.275G    |             |            |HDMI v1.3    |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |10.8G       |1.35G     |             |            |DisplayPort  |             |
+    |            |          |             |            |v1.0 (4-lane |             |
+    |            |          |             |            |full rate)   |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |17.066G     |2.133G    |             |            |             |AGP 8x       |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |21.6G       |2.7G      |             |            |DisplayPort  |             |
+    |            |          |             |            |v1.2         |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |32G         |4G        |             |            |             |PCI Express  |
+    |            |          |             |            |             |1.0 (16 link)|
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |34.133G     |4.266G    |             |            |             |AGP 8x 64bit |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |40G         |5G        |40GBASE-X    |            |             |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |64G         |8G        |             |            |             |PCI Express  |
+    |            |          |             |            |             |1.0 (32 link)|
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |64G         |8G        |             |            |             |PCI Express  |
+    |            |          |             |            |             |2.0 (16 link)|
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |100G        |12.5G     |100GBASE-X   |            |             |             |
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |126.03G     |15.8G     |             |            |             |PCI Express  |
+    |            |          |             |            |             |3.0 (16 link)|
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |128G        |16G       |             |            |             |PCI Express  |
+    |            |          |             |            |             |2.0 (32 link)|
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    |252.06G     |31.5G     |             |            |             |PCI Express  |
+    |            |          |             |            |             |3.0 (32 link)|
+    +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-+
+    以上数据来自wikipedia&lt;/p&gt;
 </description>
     </item>
     
@@ -1299,17 +1337,21 @@ allowedClients = 192.168.1.0/24
       <pubDate>Tue, 09 Oct 2012 15:38:44 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2249/</guid>
-      <description>&lt;h1&gt;不动点理论&lt;/h1&gt;
+      <description>
 
-&lt;p&gt;假定我们有一个函数f，例如，f(x) = x^2。对于某些点，f(x) = x。在这个例子里面，0和1很明显就是两个点。这样的点称为不动点。&lt;/p&gt;
+&lt;h1 id=&#34;不动点理论&#34;&gt;不动点理论&lt;/h1&gt;
+
+&lt;p&gt;假定我们有一个函数f，例如，f(x) = x\^2。对于某些点，f(x) =
+x。在这个例子里面，0和1很明显就是两个点。这样的点称为不动点。&lt;/p&gt;
 
 &lt;p&gt;不动点理论在各种领域有广泛应用，我记得其中之一就是在血型比例上。当ABO遗传规则固定后，存在一些ABO血型比例，这些比例的人随机通婚，生下来的孩子的血型比例亦保持不变。这是三种血型千百年来存在的基础，否则随着遗传规则比例转变，其中某些血型可能已经在地球上消失了。&lt;/p&gt;
 
-&lt;p&gt;也许你很好奇，当我们有了一个规则后，例如f(x) = x^2，或者ABO遗传规则（这也可以当作一个函数，将父代ABO比例转换为子代的），如何才能计算出函数的不动点。&lt;/p&gt;
+&lt;p&gt;也许你很好奇，当我们有了一个规则后，例如f(x) =
+x\^2，或者ABO遗传规则（这也可以当作一个函数，将父代ABO比例转换为子代的），如何才能计算出函数的不动点。&lt;/p&gt;
 
 &lt;p&gt;答案是不动点算子。&lt;/p&gt;
 
-&lt;h1&gt;高阶抽象函数的不动点&lt;/h1&gt;
+&lt;h1 id=&#34;高阶抽象函数的不动点&#34;&gt;高阶抽象函数的不动点&lt;/h1&gt;
 
 &lt;p&gt;我们先不继续讨论不动点算子，让我们先讨论一下抽象函数。上面，我们的f都是具体的演算规则，x是一个数（例如x），或者一个矩阵（例如ABO，也可以当作一种数来考虑）。如果x是一个函数会如何？&lt;/p&gt;
 
@@ -1322,20 +1364,24 @@ allowedClients = 192.168.1.0/24
 
 &lt;p&gt;这是一个典型的阶乘计算函数，没错。问题是，我们在lambda里面调用了fact。从语言层面上说，这样做合法。然而从语言的研究角度说，这难免会带来一个问题。函数的名字，到底是一个可有可无的别名，还是一个在递归中必须的东西。如果是前者，我们可以完全用lambda构造递归函数。而如果是后者，我们无论如何努力，也无法仅仅使用lambda来构造一个递归。&lt;/p&gt;
 
-&lt;p&gt;OK，这和不动点有什么关系？这时，我们先假定函数f，是真正的阶乘计算函数。即f(n) = n!。那么对于以下函数，((F f) n) = (f n)。&lt;/p&gt;
+&lt;p&gt;OK，这和不动点有什么关系？这时，我们先假定函数f，是真正的阶乘计算函数。即f(n)
+= n!。那么对于以下函数，((F f) n) = (f n)。&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;F = (lambda (h) (lambda (n) (if (&amp;lt; n 2) 1 (* n (h (- n 1))))))
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;看不懂为什么？这是一个柯里化函数。当我们传递真正的阶乘函数f给F的时候，在函数体内，他叫做h。而按照f(n-1)的定义，我们得到的值和(f n)没有区别。因此，我们有(F f) = f，你也可以写作F(f) = f。&lt;/p&gt;
+&lt;p&gt;看不懂为什么？这是一个柯里化函数。当我们传递真正的阶乘函数f给F的时候，在函数体内，他叫做h。而按照f(n-1)的定义，我们得到的值和(f
+n)没有区别。因此，我们有(F f) = f，你也可以写作F(f) = f。&lt;/p&gt;
 
 &lt;p&gt;是不是觉得眼熟？是的，f是函数F的一个不动点。要获得真正的阶乘函数f，我们只要对F计算不动点即可。&lt;/p&gt;
 
-&lt;h1&gt;Y算子&lt;/h1&gt;
+&lt;h1 id=&#34;y算子&#34;&gt;Y算子&lt;/h1&gt;
 
 &lt;p&gt;Y算子(或者叫做Y组合子)是另一种高阶函数，用于计算任意函数的不动点。&lt;/p&gt;
 
-&lt;p&gt;假定对于函数f，存在不动点x，有f(x) = x，那么Y(f) = x，这是Y算子的基础。按照上文代入，我们可以得到f(Y(f)) = Y(f)，或者可以写作scheme格式：(f (Y f)) = (Y f)，这就是Y算子。&lt;/p&gt;
+&lt;p&gt;假定对于函数f，存在不动点x，有f(x) = x，那么Y(f) =
+x，这是Y算子的基础。按照上文代入，我们可以得到f(Y(f)) =
+Y(f)，或者可以写作scheme格式：(f (Y f)) = (Y f)，这就是Y算子。&lt;/p&gt;
 
 &lt;p&gt;我们先跳过Y算子的推导过程，直接给出他的scheme表达式：&lt;/p&gt;
 
@@ -1346,7 +1392,7 @@ allowedClients = 192.168.1.0/24
       (g g))))
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h1&gt;验证&lt;/h1&gt;
+&lt;h1 id=&#34;验证&#34;&gt;验证&lt;/h1&gt;
 
 &lt;p&gt;对于上文的F，我们有他的scheme定义，而要获得真正的阶乘函数，只要用Y作用于F的原始定义即可。&lt;/p&gt;
 
@@ -1361,51 +1407,75 @@ allowedClients = 192.168.1.0/24
 &lt;p&gt;我们验证一下，看看事情是怎么走的。&lt;/p&gt;
 
 &lt;ol&gt;
-&lt;li&gt;&lt;p&gt;首先let需要计算f，而f = (Y F)。F为以下函数，在let之后，F的值被唯一确定(赋值)。&lt;/p&gt;
+&lt;li&gt;&lt;p&gt;首先let需要计算f，而f = (Y
+F)。F为以下函数，在let之后，F的值被唯一确定(赋值)。&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;(lambda (h)
   (lambda (n)
     (if (&amp;lt; n 2) 1 (* n (h (- n 1))))))
 &lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
 &lt;li&gt;&lt;p&gt;因此，我们考虑以参数F计算以下表达式。&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;(let ((g (lambda (h)
        (lambda (x) ((F (h h)) x)))))
   (g g))
 &lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
 &lt;li&gt;&lt;p&gt;这里，第二个let需要计算g，不过他已经很明显了。这很重要，因为在这个let中，g的值被唯一确定。他是一个lambda表达式，虽然这个表达式内有一些东西没被算出来(例如h)。&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;我们计算f = (g g) = (lambda (x) ((F (g g)) x))。在这个表达式内，f的值也被唯一确定，是一个lambda表达式。&lt;/li&gt;
-&lt;li&gt;现在，我们有了f，可以计算(f 10)了。&lt;/li&gt;
-&lt;li&gt;(f 10) = ((F (g g)) 10) = ((F f) 10)。看到没有，不动点。&lt;/li&gt;
-&lt;li&gt;上文真正需要计算的是((F (g g)) 10)，其中，(g g)需要被展开。而恰好，我们知道他的展开结果。&lt;/li&gt;
-&lt;li&gt;((F (lambda (x) ((F (g g)) x))) 10)，这时才会对F进行计算。&lt;/li&gt;
-&lt;li&gt;上面的展开结果是((lambda (n) (if (&amp;lt; n 2) 1 (* n ((lambda (x) ((F (g g)) x)) (- n 1))))) 10)。而这就是一个纯粹的计算问题了。结果很明确，是(* 10 ((lambda (x) ((F (g g)) x)) 9))。&lt;/li&gt;
-&lt;li&gt;这时((lambda (x) ((F (g g)) x)) 9)会被求值，结果应该是((F (g g)) 9)。&lt;/li&gt;
-&lt;li&gt;此时我们就跳回了步骤7。&lt;/li&gt;
-&lt;li&gt;直到n=1，递归会逐步退回（很遗憾，这还不是尾递归。不过看过sicp的人都应当能想到如何改为尾递归）。&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;我们计算f = (g g) = (lambda (x) ((F (g g))
+x))。在这个表达式内，f的值也被唯一确定，是一个lambda表达式。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;现在，我们有了f，可以计算(f 10)了。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;(f 10) = ((F (g g)) 10) = ((F f) 10)。看到没有，不动点。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;上文真正需要计算的是((F (g g)) 10)，其中，(g
+g)需要被展开。而恰好，我们知道他的展开结果。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;((F (lambda (x) ((F (g g)) x))) 10)，这时才会对F进行计算。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;上面的展开结果是((lambda (n) (if (&amp;lt; n 2) 1 (* n ((lambda (x) ((F
+(g g)) x)) (- n 1)))))
+10)。而这就是一个纯粹的计算问题了。结果很明确，是(* 10 ((lambda (x)
+((F (g g)) x)) 9))。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;这时((lambda (x) ((F (g g)) x)) 9)会被求值，结果应该是((F (g g))
+9)。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;此时我们就跳回了步骤7。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;直到n=1，递归会逐步退回（很遗憾，这还不是尾递归。不过看过sicp的人都应当能想到如何改为尾递归）。&lt;/p&gt;&lt;/li&gt;
 &lt;/ol&gt;
 
 &lt;p&gt;而这里就解决了一个有趣的问题。当lambda内没有自己的名字时，如何调用自身？方法是将函数体包装在另一个lambda内。外层的lambda接收一个参数，这个参数就是自身。而最后得到的整一个函数，又需要用Y算子运算过。这样会还原出原始的递归定义。或者你可以说，Y算子帮助lambda函数实现了无名字的递归。&lt;/p&gt;
 
-&lt;h1&gt;注意&lt;/h1&gt;
+&lt;h1 id=&#34;注意&#34;&gt;注意&lt;/h1&gt;
 
-&lt;p&gt;而我们也注意到，(lambda (x) ((f (h h)) x)) = (f (h h))。但是如果你胆敢这么写，就等着循环到溢出吧。我们可以看一下原因。&lt;/p&gt;
+&lt;p&gt;而我们也注意到，(lambda (x) ((f (h h)) x)) = (f (h
+h))。但是如果你胆敢这么写，就等着循环到溢出吧。我们可以看一下原因。&lt;/p&gt;
 
 &lt;ol&gt;
 &lt;li&gt;和上一节的1一样，略。&lt;/li&gt;
+
 &lt;li&gt;&lt;p&gt;我们修改一下表达式。&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;(let ((g (lambda (h) (F (h h)))))
   (g g))
 &lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
 &lt;li&gt;&lt;p&gt;同样，g是唯一确定的。&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;f = (g g) = (F (g g))。&lt;/li&gt;
-&lt;li&gt;和上面的4不一样，那时f是一个lambda表达式，可以延迟求值。这里的f可是一个表达式，必须先求值。但是对(g g)求值的结果是什么？死循环。&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;f = (g g) = (F (g g))。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;和上面的4不一样，那时f是一个lambda表达式，可以延迟求值。这里的f可是一个表达式，必须先求值。但是对(g
+g)求值的结果是什么？死循环。&lt;/p&gt;&lt;/li&gt;
 &lt;/ol&gt;
 
 &lt;p&gt;为什么？通常而言，第二种写法不可以，除非这个语言是应用序的。&lt;/p&gt;
 
-&lt;h1&gt;推导&lt;/h1&gt;
+&lt;h1 id=&#34;推导&#34;&gt;推导&lt;/h1&gt;
 
 &lt;p&gt;我们现在说一下Y算子的推导过程。&lt;/p&gt;
 
@@ -1416,12 +1486,14 @@ allowedClients = 192.168.1.0/24
   (lambda (n)
    (if (&amp;lt; n 2) 1 (* n (fact (- n 1))))))
 &lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
 &lt;li&gt;&lt;p&gt;你应当可以理解下面的手法，利用重复传入递归函数本身，避免自身引用的问题。&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;(let ((g (lambda (h n)
        (if (&amp;lt; n 2) 1 (* n (h h (- n 1)))))))
   (g g 10))
 &lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
 &lt;li&gt;&lt;p&gt;我们可以将上面的函数柯里化，转换为下面的函数。&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;(let ((g (lambda (h)
@@ -1429,6 +1501,7 @@ allowedClients = 192.168.1.0/24
         (if (&amp;lt; n 2) 1 (* n ((h h) (- n 1))))))))
   ((g g) 10))
 &lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
 &lt;li&gt;&lt;p&gt;我们可以将上面的函数转换为下面的样子。&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;(let ((g (lambda (h)
@@ -1438,6 +1511,7 @@ allowedClients = 192.168.1.0/24
            (f (h h) n))))))
   (display ((g g) 10)))
 &lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
 &lt;li&gt;&lt;p&gt;再柯里化一遍。&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;(let ((g (lambda (h)
@@ -1448,13 +1522,15 @@ allowedClients = 192.168.1.0/24
            ((f (h h)) n))))))
   (display ((g g) 10)))
 &lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
 &lt;li&gt;&lt;p&gt;是不是看着眼熟？Y的定义出来了吧？&lt;/p&gt;&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h1&gt;引用&lt;/h1&gt;
+&lt;h1 id=&#34;引用&#34;&gt;引用&lt;/h1&gt;
 
 &lt;ol&gt;
-&lt;li&gt;&lt;a href=&#34;http://www.dreamsongs.com/Files/WhyOfY.pdf#search=%22The%20Why%20of%20Y%22&#34;&gt;The Why of Y&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.dreamsongs.com/Files/WhyOfY.pdf#search=%22The%20Why%20of%20Y%22&#34;&gt;The Why of
+Y&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;
 </description>
     </item>
@@ -1466,15 +1542,68 @@ allowedClients = 192.168.1.0/24
       
       <guid>http://shell909090.org/blog/archives/2236/</guid>
       <description>&lt;p&gt;昨天翻了一下vpn的相关法律，结果是——没有。
-&lt;div&gt;    唯一一部接近的，还是《&lt;wbr&gt;境外组织和个人在华使用密码产品管理办法》。&lt;wbr&gt;但是这实际上有两个问题。&lt;/wbr&gt;&lt;/wbr&gt;&lt;/div&gt;
-&lt;div&gt;    首先，办法对含密码产品的限制太过严格，&lt;wbr&gt;而现在的密码学衍生领域又铺天盖地。这导致实际上有办法没管法。&lt;wbr&gt;例如我们公司的产品，为了升级，就在系统里面放置了升级系统。&lt;wbr&gt;为了防止升级系统升入非我们的代码破坏系统，&lt;wbr&gt;又要对升级系统做签名验证。&lt;wbr&gt;这实际上就一脚跨到了密码产品的范畴里面去。不过幸好，&lt;wbr&gt;我们的产品本身就是涉密产品，有公安部的认证。&lt;wbr&gt;但是其他需要在产品中包含了安全系统的产品怎么办？别的不说，&lt;wbr&gt;你想想有多少软件链接了openssl？&lt;wbr&gt;哪怕是python这种东西，都是链接着openssl的。&lt;wbr&gt;从某种意义上说，使用python也违法。&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/div&gt;
-&lt;div&gt;    其次，办法只限制使用密码产品，&lt;wbr&gt;可一字没提到提供密码服务和帐号。大家知道，&lt;wbr&gt;vpn实际上是帐号和服务，至于使用这些帐号和服务的具体“&lt;wbr&gt;产品”，那是windows，ssh客户端这种东西。&lt;wbr&gt;而windows是经过国家认证的。退一步说，即使没有，&lt;wbr&gt;也是使用者和软件发行者需要对此事负责，&lt;wbr&gt;而管不到账户提供者头上。&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/div&gt;
-&lt;div&gt;    另一个有关的，是《互联网信息服务管理办法》。&lt;wbr&gt;可办法开宗明义第一句，是在中国境内。要提供vpn服务，&lt;wbr&gt;你的服务器必须是境外的，境内没意义。但是相应的，&lt;wbr&gt;你不能在中国境内进行收费，否则就算违法。然而，&lt;wbr&gt;如果免费帐号漫天发，这条法律依据也是靠不住的。&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/div&gt;
-&lt;div&gt;    OK，我们常说中国立法远远落后于时代，我们又找到了一个例子。&lt;wbr&gt;实际上，你在看中国法律的时候，往往大疑不解，&lt;wbr&gt;为什么会有这种那种狗屁规定？&lt;wbr&gt;那是因为那些法律的制定年代往往都是上个世纪。例如地图法规定，&lt;wbr&gt;私自使用精度在一定范围以下（我记得是100米）&lt;wbr&gt;的地图是违法的。我找不到这条的出处，&lt;wbr&gt;不过测绘法是上个世纪颁布的。大概颁布测绘法的人不会想到，&lt;wbr&gt;在短短15年后，就会有大量个人手持的高精度（&amp;lt;10米）&lt;wbr&gt;定位工具出现。&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/div&gt;
-&lt;div&gt;    至于互联网，托这几年比较敏感的福，互联网立法始终是重中之重。&lt;wbr&gt;然而，大部分立法还是针对的web而言的。其中有条规定，&lt;wbr&gt;服务提供商必须进行备案，然后在网站上公布其备案号，&lt;wbr&gt;目的是方便公安机关管理。问题是，&lt;wbr&gt;目前很多网站是没有web界面的，直接通过手机使用。&lt;wbr&gt;有些网络服务连客户端界面都没有，例如vpn，你说怎么提供？&lt;wbr&gt;服务商倒是不会介意弄个网站，把备案号贴出来。&lt;wbr&gt;问题是公安机关怎么知道提供服务的供应商网站是哪个？&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/div&gt;
-&lt;div&gt;    再说法理基础吧，不仅是中国，在世界上，&lt;wbr&gt;对于网络和程序这块的法理都是一塌糊涂。&lt;wbr&gt;我们首先说一个简单问题，什么叫做引用，什么叫做使用？&lt;/wbr&gt;&lt;/wbr&gt;&lt;/div&gt;
-&lt;div&gt;    之所以在GPL之外还有个LGPL，就是因为，&lt;wbr&gt;如果你在编译时直接使用了某个GPL库，&lt;wbr&gt;就会被传染这个库的授权。为什么？这主要是针对C语言而言的。&lt;wbr&gt;因为C在编译时，需要引用对方的.h文件。而对方的.&lt;wbr&gt;h文件是基于GPL的，这就构成了引用。&lt;wbr&gt;而针对python程序，你可以很容易的反射和动态加载，&lt;wbr&gt;这又是否构成引用呢？如果编译时，&lt;wbr&gt;使用自己反推对方头文件构成的.h文件，是否需要被传染授权呢？&lt;wbr&gt;又例如，在kernel中的license中，&lt;wbr&gt;明确说明了内核调用不属于引用。&lt;wbr&gt;然而如果在程序内以变量形态包含了firmware，&lt;wbr&gt;又是否算是引用呢？别的我不清楚，&lt;wbr&gt;debian是严禁这类软件进入仓库的。&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/div&gt;
-&lt;div&gt;    当然，这些问题对于欧美法系不是太大问题，&lt;wbr&gt;因为一切都是来自判例，判例构成了法律。对于新出现的问题，&lt;wbr&gt;只要诉讼，就等于在进行立法。然而对大陆法系而言，&lt;wbr&gt;这就是个噩梦了。&lt;/wbr&gt;&lt;/wbr&gt;&lt;/wbr&gt;&lt;/div&gt;&lt;/p&gt;
+&lt;div&gt;&lt;/p&gt;
+
+&lt;p&gt;   
+唯一一部接近的，还是《境外组织和个人在华使用密码产品管理办法》。但是这实际上有两个问题。&lt;/p&gt;
+
+&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
+
+&lt;div&gt;
+
+   
+首先，办法对含密码产品的限制太过严格，而现在的密码学衍生领域又铺天盖地。这导致实际上有办法没管法。例如我们公司的产品，为了升级，就在系统里面放置了升级系统。为了防止升级系统升入非我们的代码破坏系统，又要对升级系统做签名验证。这实际上就一脚跨到了密码产品的范畴里面去。不过幸好，我们的产品本身就是涉密产品，有公安部的认证。但是其他需要在产品中包含了安全系统的产品怎么办？别的不说，你想想有多少软件链接了openssl？哪怕是python这种东西，都是链接着openssl的。从某种意义上说，使用python也违法。
+
+&lt;/div&gt;
+
+&lt;div&gt;
+
+   
+其次，办法只限制使用密码产品，可一字没提到提供密码服务和帐号。大家知道，vpn实际上是帐号和服务，至于使用这些帐号和服务的具体“产品”，那是windows，ssh客户端这种东西。而windows是经过国家认证的。退一步说，即使没有，也是使用者和软件发行者需要对此事负责，而管不到账户提供者头上。
+
+&lt;/div&gt;
+
+&lt;div&gt;
+
+   
+另一个有关的，是《互联网信息服务管理办法》。可办法开宗明义第一句，是在中国境内。要提供vpn服务，你的服务器必须是境外的，境内没意义。但是相应的，你不能在中国境内进行收费，否则就算违法。然而，如果免费帐号漫天发，这条法律依据也是靠不住的。
+
+&lt;/div&gt;
+
+&lt;div&gt;
+
+   
+OK，我们常说中国立法远远落后于时代，我们又找到了一个例子。实际上，你在看中国法律的时候，往往大疑不解，为什么会有这种那种狗屁规定？那是因为那些法律的制定年代往往都是上个世纪。例如地图法规定，私自使用精度在一定范围以下（我记得是100米）的地图是违法的。我找不到这条的出处，不过测绘法是上个世纪颁布的。大概颁布测绘法的人不会想到，在短短15年后，就会有大量个人手持的高精度（&amp;lt;10米）定位工具出现。
+
+&lt;/div&gt;
+
+&lt;div&gt;
+
+   
+至于互联网，托这几年比较敏感的福，互联网立法始终是重中之重。然而，大部分立法还是针对的web而言的。其中有条规定，服务提供商必须进行备案，然后在网站上公布其备案号，目的是方便公安机关管理。问题是，目前很多网站是没有web界面的，直接通过手机使用。有些网络服务连客户端界面都没有，例如vpn，你说怎么提供？服务商倒是不会介意弄个网站，把备案号贴出来。问题是公安机关怎么知道提供服务的供应商网站是哪个？
+
+&lt;/div&gt;
+
+&lt;div&gt;
+
+   
+再说法理基础吧，不仅是中国，在世界上，对于网络和程序这块的法理都是一塌糊涂。我们首先说一个简单问题，什么叫做引用，什么叫做使用？
+
+&lt;/div&gt;
+
+&lt;div&gt;
+
+   
+之所以在GPL之外还有个LGPL，就是因为，如果你在编译时直接使用了某个GPL库，就会被传染这个库的授权。为什么？这主要是针对C语言而言的。因为C在编译时，需要引用对方的.h文件。而对方的.h文件是基于GPL的，这就构成了引用。而针对python程序，你可以很容易的反射和动态加载，这又是否构成引用呢？如果编译时，使用自己反推对方头文件构成的.h文件，是否需要被传染授权呢？又例如，在kernel中的license中，明确说明了内核调用不属于引用。然而如果在程序内以变量形态包含了firmware，又是否算是引用呢？别的我不清楚，debian是严禁这类软件进入仓库的。
+
+&lt;/div&gt;
+
+&lt;div&gt;
+
+   
+当然，这些问题对于欧美法系不是太大问题，因为一切都是来自判例，判例构成了法律。对于新出现的问题，只要诉讼，就等于在进行立法。然而对大陆法系而言，这就是个噩梦了。
+
+&lt;/div&gt;
 </description>
     </item>
     
@@ -1484,12 +1613,17 @@ allowedClients = 192.168.1.0/24
       <pubDate>Fri, 31 Aug 2012 16:39:38 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2234/</guid>
-      <description>&lt;p&gt;家庭电脑，谁都会用。会来看我blog的人更应当是家里有一台，我知道有些还有不止一台的——别人家我不知道，我家里就算老妈和丈母娘一起来打游戏，我还能保证我和老婆人手一台的水平。
-一堆机器，有好处也有坏处。好处是，基本坏掉哪台都不怕，备用的比较多，随便来一台就能跑。坏处是，这些机器的配置不同，习惯不同，性能也不同。我们家里更特殊的情况是——连系统还不一样。我自己用的是linux，老婆是win7，老妈是XP。
-为了解决文件共享的问题，我采用了NAS，而且是自己组装的小型服务器。对于小型家庭网络，NAS是个很不错的主意。然而电脑不仅仅有文件而已，还有配置呢。老婆的win7是直接连接到电视上的，所以我经常需要和她抢电脑。然而chromium的绑定gmail只能有一个——用我的还是她的就是一个问题，这是两个人用一台电脑的配置共享问题。同时，我的小上网本则是另一个极端。我希望上网本上和主机能共享同一个配置，虽然chromium的同步能力很强，但是很多东西不是chromium能同步的掉的。包括emacs配置，bookmark，打开文件。ssh密钥，系统环境。这是另一个问题，一个人用两台电脑的共享配置。当然，说到这里同时还有一个问题，我不希望用自己的小上网本，毕竟atom的速度和主机没法比，io速度也慢，内存也少。
-所以，我最终的解决方案就是——虚拟化。在win7中装一台虚拟机，里面跑一个linux，再通过上网本远程控制这台linux，这样至少解决了我自己的问题。在小上网本上，可以高速的使用浏览器，和主机同一个配置。在主机上，和老婆分开配置。在老婆使用电脑的时候，和她分离的，不受干扰的使用电脑。
-实际上，要解决这个问题，最好的方案是基于linux的multiseat系统。由于是multiseat，所以我和老婆同时使用。由于linux是用户分离的系统，所以可以互不干扰。唯一的遗憾是，同一个用户不能同时登录两个X，Xauthority文件会互相覆盖，因此在用户登录的情况下不能使用vnc。
-当然，为什么不能用multiseat，你们懂。。。不懂的可以看我上一篇文章。&lt;/p&gt;
+      <description>&lt;p&gt;家庭电脑，谁都会用。会来看我blog的人更应当是家里有一台，我知道有些还有不止一台的——别人家我不知道，我家里就算老妈和丈母娘一起来打游戏，我还能保证我和老婆人手一台的水平。&lt;/p&gt;
+
+&lt;p&gt;一堆机器，有好处也有坏处。好处是，基本坏掉哪台都不怕，备用的比较多，随便来一台就能跑。坏处是，这些机器的配置不同，习惯不同，性能也不同。我们家里更特殊的情况是——连系统还不一样。我自己用的是linux，老婆是win7，老妈是XP。&lt;/p&gt;
+
+&lt;p&gt;为了解决文件共享的问题，我采用了NAS，而且是自己组装的小型服务器。对于小型家庭网络，NAS是个很不错的主意。然而电脑不仅仅有文件而已，还有配置呢。老婆的win7是直接连接到电视上的，所以我经常需要和她抢电脑。然而chromium的绑定gmail只能有一个——用我的还是她的就是一个问题，这是两个人用一台电脑的配置共享问题。同时，我的小上网本则是另一个极端。我希望上网本上和主机能共享同一个配置，虽然chromium的同步能力很强，但是很多东西不是chromium能同步的掉的。包括emacs配置，bookmark，打开文件。ssh密钥，系统环境。这是另一个问题，一个人用两台电脑的共享配置。当然，说到这里同时还有一个问题，我不希望用自己的小上网本，毕竟atom的速度和主机没法比，io速度也慢，内存也少。&lt;/p&gt;
+
+&lt;p&gt;所以，我最终的解决方案就是——虚拟化。在win7中装一台虚拟机，里面跑一个linux，再通过上网本远程控制这台linux，这样至少解决了我自己的问题。在小上网本上，可以高速的使用浏览器，和主机同一个配置。在主机上，和老婆分开配置。在老婆使用电脑的时候，和她分离的，不受干扰的使用电脑。&lt;/p&gt;
+
+&lt;p&gt;实际上，要解决这个问题，最好的方案是基于linux的multiseat系统。由于是multiseat，所以我和老婆同时使用。由于linux是用户分离的系统，所以可以互不干扰。唯一的遗憾是，同一个用户不能同时登录两个X，Xauthority文件会互相覆盖，因此在用户登录的情况下不能使用vnc。&lt;/p&gt;
+
+&lt;p&gt;当然，为什么不能用multiseat，你们懂。。。不懂的可以看我上一篇文章。&lt;/p&gt;
 </description>
     </item>
     

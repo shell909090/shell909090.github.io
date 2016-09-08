@@ -112,11 +112,112 @@ ga('send', 'pageview');
           
           
           
-          <div>    让其他人的设备无法使用网络。</div>opkg install arptables<div><br /> <div><div>--------/etc/init.d/arptables--------</div><div>#!/bin/sh /etc/rc.common</div><div><br /></div><div>start (){</div><div>        arptables -F INPUT</div><div>        arptables -A INPUT --src-mac aaa -j ACCEPT</div>
+          <div>
 
-<p><div>        arptables -P INPUT DROP</div><div>}</div><div><br /></div><div>stop (){</div><div>        arptables -F INPUT</div><div>        arptables -P INPUT ACCEPT</div><div>}</div></div><div>&mdash;&mdash;&ndash;end files&mdash;&mdash;&ndash;</div></p>
+    让其他人的设备无法使用网络。
 
-<p></div><div>    注意，千万把自己的mac地址写对了，否则一个/etc/init.d/arptables restart下去，你自己的机器就断线连不上了。不过一般来说，重启后arp限制会失效，因此可以重启来去掉限制。实在不行也可以拔下U盘，在电脑上进行mount和修改，然后再插回去启动设备。根据测试结果，内网还是可以访问的，不过路由器无法访问了。有一个链叫做FORWARD，也许改这个可以解决。但是我没有找到相关资料，因此没有下手。</div></p>
+</div>
+
+<p>opkg install arptables
+<div></p>
+
+<p><br />
+<div></p>
+
+<div>
+
+--------/etc/init.d/arptables--------
+
+</div>
+
+<div>
+
+\#!/bin/sh /etc/rc.common
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+start (){
+
+</div>
+
+<div>
+
+        arptables -F INPUT
+
+</div>
+
+<div>
+
+        arptables -A INPUT --src-mac aaa -j ACCEPT
+
+</div>
+
+<div>
+
+        arptables -P INPUT DROP
+
+</div>
+
+<div>
+
+}
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+stop (){
+
+</div>
+
+<div>
+
+        arptables -F INPUT
+
+</div>
+
+<div>
+
+        arptables -P INPUT ACCEPT
+
+</div>
+
+<div>
+
+}
+
+</div>
+
+<p></div></p>
+
+<div>
+
+--------end files--------
+
+</div>
+
+<p></div></p>
+
+<div>
+
+    注意，千万把自己的mac地址写对了，否则一个/etc/init.d/arptables
+restart下去，你自己的机器就断线连不上了。不过一般来说，重启后arp限制会失效，因此可以重启来去掉限制。实在不行也可以拔下U盘，在电脑上进行mount和修改，然后再插回去启动设备。根据测试结果，内网还是可以访问的，不过路由器无法访问了。有一个链叫做FORWARD，也许改这个可以解决。但是我没有找到相关资料，因此没有下手。
+
+</div>
 
         </div>
         

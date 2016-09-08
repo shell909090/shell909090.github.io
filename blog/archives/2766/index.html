@@ -112,57 +112,45 @@ ga('send', 'pageview');
           
           
           
-          <p>
- 不废话了，要装ldap。
-</p>
-<p>
- ubuntu下，最简单的方法是修改/etc/hosts，添加自己的域名，例如ldap.shell909090.org。然后安装包的时候，就会使用dc=shell909090,dc=org作为basedn。里面自动添加一个admin。
-</p>
-<p>
- 结果在某机器上，丫硬是一直管自己叫nodomain。
-</p>
-<p>
- 当然，内容可以后改。但是很麻烦。先要删除原始的，添加新的。还有一堆杂七杂八的问题。关键是，为啥TMD这么简单一个问题我居然搞不定。
-</p>
-<h1>
- 方法1
-</h1>
-<p>
- 绕过。
-</p>
-<p>
- 怎么绕？
-</p>
-<p>
- 经过检查发现，basedn这些东西，其实都是从debconf里读的，而不是直接来自系统。所以我可以重设debconf来修改配置。
-</p>
+          
+
+<p>不废话了，要装ldap。</p>
+
+<p>ubuntu下，最简单的方法是修改/etc/hosts，添加自己的域名，例如ldap.shell909090.org。然后安装包的时候，就会使用dc=shell909090,dc=org作为basedn。里面自动添加一个admin。</p>
+
+<p>结果在某机器上，丫硬是一直管自己叫nodomain。</p>
+
+<p>当然，内容可以后改。但是很麻烦。先要删除原始的，添加新的。还有一堆杂七杂八的问题。关键是，为啥TMD这么简单一个问题我居然搞不定。</p>
+
+<h1 id="方法1">方法1</h1>
+
+<p>绕过。</p>
+
+<p>怎么绕？</p>
+
+<p>经过检查发现，basedn这些东西，其实都是从debconf里读的，而不是直接来自系统。所以我可以重设debconf来修改配置。</p>
+
 <pre><code>echo slapd slapd/domain string shell909090.org | debconf-set-selections
 echo slapd shared/organization string shell909090.org | debconf-set-selections
 </code></pre>
-<p>
- 然后再安装，就全部正确了。
-</p>
-<h1>
- 方法2
-</h1>
-<p>
- 为什么？
-</p>
-<p>
- 检查同样发现了本质的原因。如果debconf里没有配，则去读取hostname -d。在一台机器上，这个配置没事，另一台就不行。
-</p>
-<p>
- 经过我反复测试，发现原因是这样的。
-</p>
-<p>
- hostname -d读取域名的时候，是寻找/etc/hostname对应的域名作为行尾的那行，而不是127.0.0.1所在的那行。。。
-</p>
-<p>
- 而出问题的那台机器，/etc/hosts配置和没问题的那台严格一致。包括机器编号！
-</p>
-<p>
- 谁TM抄卷子把名字也抄了？
-</p>
+
+<p>然后再安装，就全部正确了。</p>
+
+<h1 id="方法2">方法2</h1>
+
+<p>为什么？</p>
+
+<p>检查同样发现了本质的原因。如果debconf里没有配，则去读取hostname
+-d。在一台机器上，这个配置没事，另一台就不行。</p>
+
+<p>经过我反复测试，发现原因是这样的。</p>
+
+<p>hostname
+-d读取域名的时候，是寻找/etc/hostname对应的域名作为行尾的那行，而不是127.0.0.1所在的那行。。。</p>
+
+<p>而出问题的那台机器，/etc/hosts配置和没问题的那台严格一致。包括机器编号！</p>
+
+<p>谁TM抄卷子把名字也抄了？</p>
 
         </div>
         

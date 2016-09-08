@@ -113,37 +113,30 @@ ga('send', 'pageview');
           
           
           <p>有不少不折腾会死星人已经用上andriod了吧？有没有刷机过？有没有怕手机掉过？android的联系人是同步到gmail的，不用怕。但是信息就不同不了。所以，下面介绍几个信息导出的方法。
-1.aqq
-用adb shell去/data/data/com.android.aqq/databases/下面，把aqq.db复制出来，sqlite3格式，随便看吧。
-2.AnFetion
-用adb shell去/data/data/&hellip;..AnFetion2/databases/下面，把fetion.DB复制出来。
+1.aqq 用adb
+shell去/data/data/com.android.aqq/databases/下面，把aqq.db复制出来，sqlite3格式，随便看吧。
+2.AnFetion 用adb
+shell去/data/data/&hellip;..AnFetion2/databases/下面，把fetion.DB复制出来。
 3.信息
 这个是最麻烦的。去信息-&gt;Menu-&gt;设置-&gt;导出短信里面导出。但是别高兴的太早，贝壳发现一个bug。如果你的短信里面有西文引号，会导致xml格式错误，从而无法导入。解决方法是手工删除引号。
 应用，使用xsltproc，将xml转换为html来浏览。贝壳用的xslt比较简单，抄在下面。
-&lt;?xml version=&lsquo;1.0&rsquo; encoding=&ldquo;GBK&rdquo;?&gt;
-&lt;xsl:stylesheet version=&ldquo;1.0&rdquo; xmlns:xsl=&rdquo;<a href="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</a>&ldquo;&gt;
-&lt;xsl:template match=&ldquo;/&rdquo;&gt;
-&lt;html&gt;
-&lt;body&gt;
-&lt;xsl:for-each select=&ldquo;//smss/address&rdquo;&gt;
-Phone Number:&lt;xsl:value-of select=&ldquo;@data&rdquo;/&gt;&lt;br/&gt;
-&lt;table border=&ldquo;0&rdquo; class=&ldquo;rev_tab&rdquo; width=&ldquo;100%&rdquo;&gt;
-&lt;xsl:for-each select=&ldquo;sms&rdquo;&gt;
-&lt;tr&gt;
-&lt;td class=&ldquo;rev_tab_rev&rdquo;&gt;&lt;xsl:value-of select=&ldquo;date/@data&rdquo;/&gt;&lt;/td&gt;
-&lt;td class=&ldquo;rev_tab_rev&rdquo;&gt;&lt;xsl:choose&gt;
-&lt;xsl:when test=&ldquo;read/@data = 1&rdquo;&gt;read&lt;/xsl:when&gt;
-&lt;xsl:when test=&ldquo;read/@data = 0&rdquo;&gt;unread&lt;/xsl:when&gt;
-&lt;/xsl:choose&gt;&lt;/td&gt;
-&lt;td class=&ldquo;rev_tab_rev&rdquo;&gt;&lt;xsl:value-of select=&ldquo;body/@data&rdquo;/&gt;&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/xsl:for-each&gt;
-&lt;/table&gt;&lt;BR/&gt;
-&lt;/xsl:for-each&gt;
-&lt;/body&gt;
-&lt;/html&gt;
-&lt;/xsl:template&gt;
-&lt;/xsl:stylesheet&gt;
+&lt;?xml version=&lsquo;1.0&rsquo; encoding=&ldquo;GBK&rdquo;?&gt; &lt;xsl:stylesheet
+version=&ldquo;1.0&rdquo; xmlns:xsl=&rdquo;<a href="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</a>&ldquo;&gt;
+&lt;xsl:template match=&ldquo;/&rdquo;&gt; &lt;html&gt; &lt;body&gt;
+&lt;xsl:for-each select=&ldquo;//smss/address&rdquo;&gt; Phone
+Number:&lt;xsl:value-of select=&ldquo;@data&rdquo;/&gt;&lt;br/&gt; &lt;table
+border=&ldquo;0&rdquo; class=&ldquo;rev_tab&rdquo; width=&ldquo;100%&rdquo;&gt; &lt;xsl:for-each
+select=&ldquo;sms&rdquo;&gt; &lt;tr&gt; &lt;td
+class=&ldquo;rev_tab_rev&rdquo;&gt;&lt;xsl:value-of
+select=&ldquo;date/@data&rdquo;/&gt;&lt;/td&gt; &lt;td
+class=&ldquo;rev_tab_rev&rdquo;&gt;&lt;xsl:choose&gt; &lt;xsl:when
+test=&ldquo;read/@data = 1&rdquo;&gt;read&lt;/xsl:when&gt; &lt;xsl:when
+test=&ldquo;read/@data = 0&rdquo;&gt;unread&lt;/xsl:when&gt;
+&lt;/xsl:choose&gt;&lt;/td&gt; &lt;td
+class=&ldquo;rev_tab_rev&rdquo;&gt;&lt;xsl:value-of
+select=&ldquo;body/@data&rdquo;/&gt;&lt;/td&gt; &lt;/tr&gt; &lt;/xsl:for-each&gt;
+&lt;/table&gt;&lt;BR/&gt; &lt;/xsl:for-each&gt; &lt;/body&gt;
+&lt;/html&gt; &lt;/xsl:template&gt; &lt;/xsl:stylesheet&gt;
 为了美观，你还可以修改一下xslt。xsltproc在linux下直接有包，Windows可以来信问贝壳索要移植(其实去官网上就能下到)。</p>
 
         </div>

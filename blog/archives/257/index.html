@@ -112,45 +112,314 @@ ga('send', 'pageview');
           
           
           
-          <div>&nbsp;&nbsp;&nbsp; 近两天要用JIN做数据加密系统，所以特别写了这篇。省得以后忘记，顺便造福大家。</div>
-<div>&nbsp;&nbsp;&nbsp; 下面是核心编码：</div>
-<div>//CTX.java</div>
-<div>public abstract class CTX {<br />&nbsp;protected byte[] state = new byte[20];</div>
-<div>&nbsp;protected long count;</div>
-<div>&nbsp;protected byte[] buffer = new byte[0]; /* input buffer */</div>
-<div>&nbsp;protected byte[] PADDING = { -128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,<br />&nbsp;&nbsp;&nbsp;0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,<br />&nbsp;&nbsp;&nbsp;0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,<br />&nbsp;&nbsp;&nbsp;0, 0, 0, 0, 0, 0 };</div>
-<div>&nbsp;// 大端点序<br />&nbsp;protected static void putChar(byte[] b, int off, char val)&nbsp;;</div>
-<div>&nbsp;// 大端点序<br />&nbsp;protected static void putLong(byte[] b, int off, long val)&nbsp;;</div>
-<div>&nbsp;static {<br />&nbsp;&nbsp;System.loadLibrary(&quot;cryptogram_jni&quot;);<br />&nbsp;}</div>
-<div>&nbsp;public CTX();</div>
-<div>&nbsp;public void Update(String str);</div>
-<div>&nbsp;public void Update(char[] input)&nbsp;;</div>
-<div>&nbsp;public void Update(byte[] input);</div>
-<div>&nbsp;public void Update(byte[] input, int length) ;</div>
-<div>&nbsp;public byte[] Final()&nbsp;;</div>
-<div>&nbsp;public String GetHash()&nbsp;;</div>
-<div>&nbsp;protected abstract void init();</div>
-<div>&nbsp;protected abstract void Transform();<br />}</div>
-<div>//MD5_CTX.java</div>
-<div>public class MD5_CTX extends CTX {<br />&nbsp;protected native void init();<br />&nbsp;protected native void Transform();<br />}</div>
-<div>&nbsp;&nbsp;&nbsp; 然后导出h文件，在工程目录下执行这个。记得要先编译过代码，否则会说找不到。</div>
-<div>javah -jni com.XXX.MD5_CTX</div>
-<div>&nbsp;&nbsp;&nbsp; 如果要看Signature的话执行这个。同样需要先编译代码。</div>
-<div>javap -s -p com.XXX.MD5_CTX</div>
-<div>&nbsp;&nbsp;&nbsp; 把.h复制到c的工程目录，然后变换一下。</div>
-<div>extern &quot;C&quot;<br />JNIEXPORT<br />void<br />JNICALL<br />Java_com_anhorn_cryptogram_MD5_1CTX_init(<br />&nbsp;JNIEnv *env,<br />&nbsp;jobject obj<br />){<br />&nbsp;JavaCTX jctx(env, obj);<br />&nbsp;jctx.jl_count=0;</div>
-<div>&nbsp;jctx.pd_state[0] = 0x67452301L;<br />&nbsp;jctx.pd_state[1] = 0xefcdab89L;<br />&nbsp;jctx.pd_state[2] = 0x98badcfeL;<br />&nbsp;jctx.pd_state[3] = 0x10325476L;</div>
-<div>&nbsp;return ;<br />}</div>
-<div>&nbsp;&nbsp;&nbsp; 如果按照原来的数据，马上会出现导出函数变成乱码的乌龙场景。其中JavaCTX的定义是这样的。</div>
-<div>class JavaClass{<br />public:<br />&nbsp;JavaClass(JNIEnv *env, jobject obj){<br />&nbsp;&nbsp;this-&gt;env=env;<br />&nbsp;&nbsp;this-&gt;obj=obj;<br />&nbsp;&nbsp;this-&gt;cls=env-&gt;GetObjectClass(obj);<br />&nbsp;}<br />protected:<br />&nbsp;JNIEnv&nbsp;*env;<br />&nbsp;jobject&nbsp;obj;<br />&nbsp;jclass&nbsp;cls;<br />};</div>
-<div>class JavaCTX : public JavaClass{<br />public:<br />&nbsp;JavaCTX(JNIEnv *env, jobject obj);<br />&nbsp;~JavaCTX();<br />protected:<br />&nbsp;jbyteArray&nbsp;jba_state;<br />&nbsp;jbyteArray&nbsp;jba_buffer;<br />&nbsp;jfieldID&nbsp;jfid_count;<br />public:<br />&nbsp;jsize&nbsp;js_state_size;<br />&nbsp;PDWORD&nbsp;pd_state;<br />&nbsp;jlong&nbsp;jl_count;<br />&nbsp;jsize&nbsp;js_buffer_size;<br />&nbsp;PBYTE&nbsp;pb_buffer;<br />};</div>
-<div>JavaCTX::JavaCTX(JNIEnv *env, jobject obj):JavaClass(env, obj){<br />&nbsp;jfieldID jfid_state, jfid_buffer;</div>
-<div>&nbsp;cls=env-&gt;GetSuperclass(cls);<br />&nbsp;jfid_state=env-&gt;GetFieldID(cls, &quot;state&quot;, &quot;[B&quot;);<br />&nbsp;jba_state=(jbyteArray)env-&gt;GetObjectField(obj, jfid_state);<br />&nbsp;js_state_size=env-&gt;GetArrayLength(jba_state);<br />&nbsp;pd_state=(PDWORD)env-&gt;GetByteArrayElements(jba_state, JNI_FALSE);</div>
-<div>&nbsp;jfid_count=env-&gt;GetFieldID(cls, &quot;count&quot;, &quot;J&quot;);<br />&nbsp;jl_count=env-&gt;GetLongField(obj, jfid_count);</div>
-<div>&nbsp;jfid_buffer=env-&gt;GetFieldID(cls, &quot;buffer&quot;, &quot;[B&quot;);<br />&nbsp;jba_buffer=(jbyteArray)env-&gt;GetObjectField(obj, jfid_buffer);<br />&nbsp;js_buffer_size=env-&gt;GetArrayLength(jba_buffer);<br />&nbsp;pb_buffer=(PBYTE)env-&gt;GetByteArrayElements(jba_buffer, JNI_FALSE);</div>
-<div>&nbsp;return ;<br />}</div>
-<div>JavaCTX::~JavaCTX(){<br />&nbsp;env-&gt;ReleaseByteArrayElements(jba_buffer,<br />&nbsp;&nbsp;(jbyte*)pb_buffer, JNI_COMMIT);<br />&nbsp;env-&gt;SetLongField(obj, jfid_count, jl_count);<br />&nbsp;env-&gt;ReleaseByteArrayElements(jba_state,<br />&nbsp;&nbsp;(jbyte*)pd_state, JNI_COMMIT);<br />}</div>
-<div>&nbsp;&nbsp;&nbsp; 这样就将Java中的一个特定对象在C++里面读了出来，然后下面大家都知道了。关键的native void Transform();在C++中的实现是Java_com_anhorn_cryptogram_MD5_1CTX_Transform。这个调用了MD5_CTX_Transform, which是我做的一个MD5算法。</div>
+          <div>
+
+   
+近两天要用JIN做数据加密系统，所以特别写了这篇。省得以后忘记，顺便造福大家。
+
+</div>
+
+<div>
+
+    下面是核心编码：
+
+</div>
+
+<div>
+
+//CTX.java
+
+</div>
+
+<div>
+
+public abstract class CTX {\
+ protected byte\[\] state = new byte\[20\];
+
+</div>
+
+<div>
+
+ protected long count;
+
+</div>
+
+<div>
+
+ protected byte\[\] buffer = new byte\[0\]; /\* input buffer \*/
+
+</div>
+
+<div>
+
+ protected byte\[\] PADDING = { -128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+0, 0,\
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,\
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,\
+   0, 0, 0, 0, 0, 0 };
+
+</div>
+
+<div>
+
+ // 大端点序\
+ protected static void putChar(byte\[\] b, int off, char val) ;
+
+</div>
+
+<div>
+
+ // 大端点序\
+ protected static void putLong(byte\[\] b, int off, long val) ;
+
+</div>
+
+<div>
+
+ static {\
+  System.loadLibrary("cryptogram\_jni");\
+ }
+
+</div>
+
+<div>
+
+ public CTX();
+
+</div>
+
+<div>
+
+ public void Update(String str);
+
+</div>
+
+<div>
+
+ public void Update(char\[\] input) ;
+
+</div>
+
+<div>
+
+ public void Update(byte\[\] input);
+
+</div>
+
+<div>
+
+ public void Update(byte\[\] input, int length) ;
+
+</div>
+
+<div>
+
+ public byte\[\] Final() ;
+
+</div>
+
+<div>
+
+ public String GetHash() ;
+
+</div>
+
+<div>
+
+ protected abstract void init();
+
+</div>
+
+<div>
+
+ protected abstract void Transform();\
+}
+
+</div>
+
+<div>
+
+//MD5\_CTX.java
+
+</div>
+
+<div>
+
+public class MD5\_CTX extends CTX {\
+ protected native void init();\
+ protected native void Transform();\
+}
+
+</div>
+
+<div>
+
+   
+然后导出h文件，在工程目录下执行这个。记得要先编译过代码，否则会说找不到。
+
+</div>
+
+<div>
+
+javah -jni com.XXX.MD5\_CTX
+
+</div>
+
+<div>
+
+    如果要看Signature的话执行这个。同样需要先编译代码。
+
+</div>
+
+<div>
+
+javap -s -p com.XXX.MD5\_CTX
+
+</div>
+
+<div>
+
+    把.h复制到c的工程目录，然后变换一下。
+
+</div>
+
+<div>
+
+extern "C"\
+JNIEXPORT\
+void\
+JNICALL\
+Java\_com\_anhorn\_cryptogram\_MD5\_1CTX\_init(\
+ JNIEnv \*env,\
+ jobject obj\
+){\
+ JavaCTX jctx(env, obj);\
+ jctx.jl\_count=0;
+
+</div>
+
+<div>
+
+ jctx.pd\_state\[0\] = 0x67452301L;\
+ jctx.pd\_state\[1\] = 0xefcdab89L;\
+ jctx.pd\_state\[2\] = 0x98badcfeL;\
+ jctx.pd\_state\[3\] = 0x10325476L;
+
+</div>
+
+<div>
+
+ return ;\
+}
+
+</div>
+
+<div>
+
+   
+如果按照原来的数据，马上会出现导出函数变成乱码的乌龙场景。其中JavaCTX的定义是这样的。
+
+</div>
+
+<div>
+
+class JavaClass{\
+public:\
+ JavaClass(JNIEnv \*env, jobject obj){\
+  this-&gt;env=env;\
+  this-&gt;obj=obj;\
+  this-&gt;cls=env-&gt;GetObjectClass(obj);\
+ }\
+protected:\
+ JNIEnv \*env;\
+ jobject obj;\
+ jclass cls;\
+};
+
+</div>
+
+<div>
+
+class JavaCTX : public JavaClass{\
+public:\
+ JavaCTX(JNIEnv \*env, jobject obj);\
+ \~JavaCTX();\
+protected:\
+ jbyteArray jba\_state;\
+ jbyteArray jba\_buffer;\
+ jfieldID jfid\_count;\
+public:\
+ jsize js\_state\_size;\
+ PDWORD pd\_state;\
+ jlong jl\_count;\
+ jsize js\_buffer\_size;\
+ PBYTE pb\_buffer;\
+};
+
+</div>
+
+<div>
+
+JavaCTX::JavaCTX(JNIEnv \*env, jobject obj):JavaClass(env, obj){\
+ jfieldID jfid\_state, jfid\_buffer;
+
+</div>
+
+<div>
+
+ cls=env-&gt;GetSuperclass(cls);\
+ jfid\_state=env-&gt;GetFieldID(cls, "state", "\[B");\
+ jba\_state=(jbyteArray)env-&gt;GetObjectField(obj, jfid\_state);\
+ js\_state\_size=env-&gt;GetArrayLength(jba\_state);\
+ pd\_state=(PDWORD)env-&gt;GetByteArrayElements(jba\_state, JNI\_FALSE);
+
+</div>
+
+<div>
+
+ jfid\_count=env-&gt;GetFieldID(cls, "count", "J");\
+ jl\_count=env-&gt;GetLongField(obj, jfid\_count);
+
+</div>
+
+<div>
+
+ jfid\_buffer=env-&gt;GetFieldID(cls, "buffer", "\[B");\
+ jba\_buffer=(jbyteArray)env-&gt;GetObjectField(obj, jfid\_buffer);\
+ js\_buffer\_size=env-&gt;GetArrayLength(jba\_buffer);\
+ pb\_buffer=(PBYTE)env-&gt;GetByteArrayElements(jba\_buffer,
+JNI\_FALSE);
+
+</div>
+
+<div>
+
+ return ;\
+}
+
+</div>
+
+<div>
+
+JavaCTX::\~JavaCTX(){\
+ env-&gt;ReleaseByteArrayElements(jba\_buffer,\
+  (jbyte\*)pb\_buffer, JNI\_COMMIT);\
+ env-&gt;SetLongField(obj, jfid\_count, jl\_count);\
+ env-&gt;ReleaseByteArrayElements(jba\_state,\
+  (jbyte\*)pd\_state, JNI\_COMMIT);\
+}
+
+</div>
+
+<div>
+
+   
+这样就将Java中的一个特定对象在C++里面读了出来，然后下面大家都知道了。关键的native
+void
+Transform();在C++中的实现是Java\_com\_anhorn\_cryptogram\_MD5\_1CTX\_Transform。这个调用了MD5\_CTX\_Transform,
+which是我做的一个MD5算法。
+
+</div>
 
         </div>
         

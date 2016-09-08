@@ -112,27 +112,69 @@ ga('send', 'pageview');
           
           
           
-          <p>中国这网络，越来越没法上了。现在你访问国外禁网，就会中断连接10分钟。问题是我也不知道哪个网是禁止的&hellip;<br />    现在教大家一招，基本能够永久套上翻墙。理论上你就没有中招的可能，尤其适用于公司使用。<br />    首先是squid，这个是流量分离和缓存的关键部件。你可以用pac替代，但是这只局限于某台具体的机器，并且代理用户支持pac。squid的好处是，任何http访问都可以分流，而且无须客户端支持。甚至如果你精通squid配置，你可以配置成透明代理（cache拦截），从而避免在每台机器上修改代理配置。当然，cache拦截是有技术问题的，具体请参考这篇（<a href="http://home.arcor.de/pangj/squid/chap09.html#a6" target="_blank"><a href="http://home.arcor.de/pangj/squid/chap09.html#a6">http://home.arcor.de/pangj/squid/chap09.html#a6</a></a>）。<br /></p>
-
-<p>   squid的配置如下：<br />include /etc/squid3/gfw.conf<br />acl localnet src <a href="http://192.168.0.0/16" target="_blank">192.168.0.0/16</a><br />http_access allow localnet<br />http_access allow localhost<br />cache_peer 127.0.0.1 parent 8123 0 no-delay no-query<br /></p>
-
-<p>cache_peer_access 127.0.0.1 allow gfw<br />always_direct deny gfw<br />never_direct allow gfw<br />   以上配置是允许192.168.0.0的C类内部子网访问本机，所有gfw规则的域名必须通过8123端口的上层代理，而其他的直接访问。注意以上不是完整配置，不保证可以独立运行，只保证在debian的标准配置文件的基础上，修改以上内容就可以工作。独立配置你可能还需要加入以下两句。<br /></p>
-
-<p>http_access deny all<br />http_port 3128<br />    配置中的gfw.conf是gfw这个规则的定义文件，这个文件是由程序生成的，程序如下。注意，你系统上的python版本应当在2.5以上。<br />#!/usr/bin/python<br />from <strong>future</strong> import with_statement<br />with open(&#39;gfw&#39;, &#39;r&#39;) as fi:<br /></p>
-
-<p>   for line in fi: print &#39;acl gfw dstdomain .%s&#39; % line.strip()<br />    以上内容，保存为平文本，赋予执行权限后，直接执行即可。同目录下必须有一个gfw文件，平文本，里面一行保存一个域名。域名不以.开头，可以使用泛域名（例如<a href="http://google.com" target="_blank">google.com</a>匹配<a href="http://www.google.com" target="_blank">www.google.com</a>）。执行后打印出内容，所以你还需要重定向。./gfw2squid &gt; /etc/squid3/gfw.conf。当每次gfw文件升级时，你都需要重新生成，并且迫使squid加载。方法是squid -k reconfigure。<br /></p>
-
-<p>   OK，现在你有一台配置了分流的squid，然后你需要一个可以翻墙的代理。由于我的目标是看youtube，所以我采取了一个非常复杂而高性能高可靠的方案。<br />   我配置了一台polipo作为http socks5协议转换。由于squid的特性，不能直接使用socks5，因此还是做了一重转换的。polipo这个代理的性能和稳定性也相当不错，用来做缓存代理也是可以的。不过我们用了更强大的squid，就没必要用polipo了。因此启用以下几句来减少polipo的性能消耗，同时，将本地8123端口的http代理服务转向到7777端口的socks5代理。<br /></p>
-
-<p>socksParentProxy = &quot;localhost:7777&quot;<br />socksProxyType = socks5<br />chunkHighMark = 819200<br />objectHighMark = 128<br />diskCacheRoot = &quot;&quot;<br />    在polipo之后的，是一个负载均衡系统。http是一种无状态协议，对不对？所以同一个session可以分布在不同的服务器上处理。也是同样理由，我们可以把后端的socks5连接分布到多个socks5服务器上。以下是haproxy.cfg的简单配置，由于提取出时做了部分删节，我不保证一定能在所有系统上跑通，但是同样的，debian问题应当不大。<br /></p>
-
-<p>global<br />        log 127.0.0.1   local0<br />        log 127.0.0.1   local1 notice<br />        maxconn 4096<br />        user haproxy<br />        group haproxy<br />        daemon<br />frontend socks5<br />        bind    <a href="http://0.0.0.0:7777" target="_blank">0.0.0.0:7777</a><br /></p>
-
-<p>        default_backend ssh-balance<br />backend ssh-balance<br />        balance roundrobin<br />        server  ssh1 <a href="http://0.0.0.0:7778" target="_blank">0.0.0.0:7778</a> maxconn 20 weight 20<br />        server  ssh2 <a href="http://0.0.0.0:7779" target="_blank">0.0.0.0:7779</a> maxconn 10 weight 10<br /></p>
-
-<p>        srvtimeout      20000<br />    最后是一个核心问题，7778和7779是真实的socks5翻墙代理服务器，具体是什么呢？很简单，多台ssh服务器。当然，如果你用别的方案，只要是提供socks5的，都可以混用。<br />    整个系统运转起来后，一个公司内十多号人的访问可以全部通过这个系统。具体需要多少个ssh，多少性能够用要看翻墙的频率。但是由于做了负载均衡和本地缓存，所以性能是相当可以的。单人使用的时候可以看youtube，十多人同时使用的时候还能正常的访问google搜索，邮箱服务等。而且不翻墙没有ssh压力，节约流量，也方便使用。后端的方案可以做其他变化，例如如果你是多台vps，你可以在上面部署polipo，然后用ssh做端口转发，本地用haproxy做负载均衡。同理，如果你使用别的方案，只要是提供http代理的，也可以省去polipo，用haproxy群集。<br /></p>
-
-<p>    至于另一个核心问题，gfwlist的获得，你可以从autoproxy中提取一个，自己处理，过程很是繁琐哦。贝壳已经处理好了一个，做了签名压缩，你可以找我要。<br /></p>
+          <p>中国这网络，越来越没法上了。现在你访问国外禁网，就会中断连接10分钟。问题是我也不知道哪个网是禁止的&hellip;<br />
+ 
+ 现在教大家一招，基本能够永久套上翻墙。理论上你就没有中招的可能，尤其适用于公司使用。<br />
+ 
+ 首先是squid，这个是流量分离和缓存的关键部件。你可以用pac替代，但是这只局限于某台具体的机器，并且代理用户支持pac。squid的好处是，任何http访问都可以分流，而且无须客户端支持。甚至如果你精通squid配置，你可以配置成透明代理（cache拦截），从而避免在每台机器上修改代理配置。当然，cache拦截是有技术问题的，具体请参考这篇（<a href="http://home.arcor.de/pangj/squid/chap09.html#a6">http://home.arcor.de/pangj/squid/chap09.html#a6</a>）。<br />
+   squid的配置如下：<br />
+include /etc/squid3/gfw.conf<br />
+acl localnet src <a href="http://192.168.0.0/16">192.168.0.0/16</a><br />
+http_access allow localnet<br />
+http_access allow localhost<br />
+cache_peer 127.0.0.1 parent 8123 0 no-delay no-query<br />
+cache_peer_access 127.0.0.1 allow gfw<br />
+always_direct deny gfw<br />
+never_direct allow gfw<br />
+  
+以上配置是允许192.168.0.0的C类内部子网访问本机，所有gfw规则的域名必须通过8123端口的上层代理，而其他的直接访问。注意以上不是完整配置，不保证可以独立运行，只保证在debian的标准配置文件的基础上，修改以上内容就可以工作。独立配置你可能还需要加入以下两句。<br />
+http_access deny all<br />
+http_port 3128<br />
+   
+配置中的gfw.conf是gfw这个规则的定义文件，这个文件是由程序生成的，程序如下。注意，你系统上的python版本应当在2.5以上。<br />
+#!/usr/bin/python<br />
+from __future__ import with_statement<br />
+with open(&lsquo;gfw&rsquo;, &lsquo;r&rsquo;) as fi:<br />
+   for line in fi: print &lsquo;acl gfw dstdomain .%s&rsquo; % line.strip()<br />
+ 
+ 以上内容，保存为平文本，赋予执行权限后，直接执行即可。同目录下必须有一个gfw文件，平文本，里面一行保存一个域名。域名不以.开头，可以使用泛域名（例如<a href="http://google.com">google.com</a>匹配<a href="http://www.google.com">www.google.com</a>）。执行后打印出内容，所以你还需要重定向。./gfw2squid
+&gt;
+/etc/squid3/gfw.conf。当每次gfw文件升级时，你都需要重新生成，并且迫使squid加载。方法是squid
+-k reconfigure。<br />
+  
+OK，现在你有一台配置了分流的squid，然后你需要一个可以翻墙的代理。由于我的目标是看youtube，所以我采取了一个非常复杂而高性能高可靠的方案。<br />
+   我配置了一台polipo作为http
+socks5协议转换。由于squid的特性，不能直接使用socks5，因此还是做了一重转换的。polipo这个代理的性能和稳定性也相当不错，用来做缓存代理也是可以的。不过我们用了更强大的squid，就没必要用polipo了。因此启用以下几句来减少polipo的性能消耗，同时，将本地8123端口的http代理服务转向到7777端口的socks5代理。<br />
+socksParentProxy = &ldquo;localhost:7777&rdquo;<br />
+socksProxyType = socks5<br />
+chunkHighMark = 819200<br />
+objectHighMark = 128<br />
+diskCacheRoot = &ldquo;&rdquo;<br />
+   
+在polipo之后的，是一个负载均衡系统。http是一种无状态协议，对不对？所以同一个session可以分布在不同的服务器上处理。也是同样理由，我们可以把后端的socks5连接分布到多个socks5服务器上。以下是haproxy.cfg的简单配置，由于提取出时做了部分删节，我不保证一定能在所有系统上跑通，但是同样的，debian问题应当不大。<br />
+global<br />
+        log 127.0.0.1   local0<br />
+        log 127.0.0.1   local1 notice<br />
+        maxconn 4096<br />
+        user haproxy<br />
+        group haproxy<br />
+        daemon<br />
+frontend socks5<br />
+        bind    <a href="http://0.0.0.0:7777">0.0.0.0:7777</a><br />
+        default_backend ssh-balance<br />
+backend ssh-balance<br />
+        balance roundrobin<br />
+        server  ssh1 <a href="http://0.0.0.0:7778">0.0.0.0:7778</a> maxconn 20
+weight 20<br />
+        server  ssh2 <a href="http://0.0.0.0:7779">0.0.0.0:7779</a> maxconn 10
+weight 10<br />
+        srvtimeout      20000<br />
+   
+最后是一个核心问题，7778和7779是真实的socks5翻墙代理服务器，具体是什么呢？很简单，多台ssh服务器。当然，如果你用别的方案，只要是提供socks5的，都可以混用。<br />
+   
+整个系统运转起来后，一个公司内十多号人的访问可以全部通过这个系统。具体需要多少个ssh，多少性能够用要看翻墙的频率。但是由于做了负载均衡和本地缓存，所以性能是相当可以的。单人使用的时候可以看youtube，十多人同时使用的时候还能正常的访问google搜索，邮箱服务等。而且不翻墙没有ssh压力，节约流量，也方便使用。后端的方案可以做其他变化，例如如果你是多台vps，你可以在上面部署polipo，然后用ssh做端口转发，本地用haproxy做负载均衡。同理，如果你使用别的方案，只要是提供http代理的，也可以省去polipo，用haproxy群集。<br />
+   
+至于另一个核心问题，gfwlist的获得，你可以从autoproxy中提取一个，自己处理，过程很是繁琐哦。贝壳已经处理好了一个，做了签名压缩，你可以找我要。</p>
 
         </div>
         

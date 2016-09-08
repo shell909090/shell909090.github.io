@@ -100,7 +100,7 @@ ga('send', 'pageview');
          语言的效率差异2 
     </h1>
     <p class="meta">May 18, 2012
-         - 4 minute read 
+         - 5 minute read 
          - <a href="http://shell909090.org/blog/archives/2174/#disqus_thread">Comments</a>
 
         
@@ -112,125 +112,1290 @@ ga('send', 'pageview');
           
           
           
-          <div># 问题 #</div><div>为了更深入的测试语言，我做了一个经典问题——24点。</div><div>这个问题主要是测试递归，循环效率，还有数组和树的复制性能。</div><div>为了简化问题，方便测试，我的问题是这样描述的：</div><div><br /></div><div>&gt; 有一个数组，里面有多个正整数。有一个操作数组，其中每个都是双目操作符。找出以两者构成算式，其值等于给定值的所有表达式组合。</div><div>
+          <div>
 
-&gt; 要求不得遗漏，可以有少量重复。例如可交换算符的交换同构暂不做排重。</div><div><br /></div><div>实际运行的时候，取+-*/和3 4 6 8，运行100次，查看时间消耗。正确的单次输出结果应当是这样的。</div><div><br /></div><div>&gt; (((8 + 4) / 3) * 6) = 24</div><div>&gt; (6 / (3 / (8 + 4))) = 24</div><div>
+\# 问题 \#
 
-&gt; (((8 + 4) * 6) / 3) = 24</div><div>&gt; (((8 / 4) + 6) * 3) = 24</div><div>&gt; (((8 - 6) * 3) * 4) = 24</div><div>&gt; (((8 - 6) * 4) * 3) = 24</div><div>&gt; (((3 * 4) - 8) * 6) = 24</div><div>&gt; ((8 - (6 / 3)) * 4) = 24</div>
+</div>
 
-<div>&gt; (((4 + 8) / 3) * 6) = 24</div><div>&gt; (6 / (3 / (4 + 8))) = 24</div><div>&gt; (((4 + 8) * 6) / 3) = 24</div><div>&gt; (((8 / 4) + 6) * 3) = 24</div><div>&gt; (((4 * 3) - 8) * 6) = 24</div><div>&gt; (((8 - 6) * 3) * 4) = 24</div>
+<div>
 
-<div>&gt; (((8 - 6) * 4) * 3) = 24</div><div>&gt; ((8 - (6 / 3)) * 4) = 24</div><div><br /></div><div># python #</div><div>python的解很复杂，长达31行，以下是我写的解。当然，还有更简单的版本，我可以用eval来干这个事情，代码只有24行，但是确实给人很evil的感觉。</div><div><br /></div><div>
+为了更深入的测试语言，我做了一个经典问题——24点。
 
-<span class="Apple-tab-span" style="white-space:pre">   </span>from itertools import combinations</div><div><span class="Apple-tab-span" style="white-space:pre">   </span>class opt(object):</div><div><span class="Apple-tab-span" style="white-space:pre">   </span>    def __init__(self, name, func, ex=True):</div>
+</div>
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>        <a href="http://self.name">self.name</a>, self.func, self.exchangable = name, func, ex</div><div><span class="Apple-tab-span" style="white-space:pre">   </span>    def __str__(self): return <a href="http://self.name">self.name</a></div>
+<div>
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>    def __call__(self, l, r): return self.func(l, r)</div><div><span class="Apple-tab-span" style="white-space:pre"> </span>    def fmt(self, l, r):</div> <div> <span class="Apple-tab-span" style="white-space:pre">   </span>        return &#39;(%s %s %s)&#39; % (fmt_exp(l), str(self), fmt_exp(r))</div><div><span class="Apple-tab-span" style="white-space:pre">    </span>def eval_exp(e):</div>
+这个问题主要是测试递归，循环效率，还有数组和树的复制性能。
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>    if not isinstance(e, tuple): return e</div><div><span class="Apple-tab-span" style="white-space:pre">    </span>    try: return e[0](eval_exp(e[1]), eval_exp(e[2]))</div>
+</div>
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>    except: return None</div><div><span class="Apple-tab-span" style="white-space:pre">  </span>def fmt_exp(e): return e[0].fmt(e[1], e[2]) if isinstance(e, tuple) else str(e)</div>
+<div>
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>def print_exp(e): print fmt_exp(e), eval_exp(e)</div><div><span class="Apple-tab-span" style="white-space:pre">  </span>def chkexp(target):</div><div><span class="Apple-tab-span" style="white-space:pre">  </span>    def do_exp(e):</div>
+为了简化问题，方便测试，我的问题是这样描述的：
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>        if abs(eval_exp(e) - target) &lt; 0.001: print fmt_exp(e), &#39;=&#39;, target</div><div><span class="Apple-tab-span" style="white-space:pre">   </span>    return do_exp</div>
+</div>
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>def iter_all_exp(f, ops, ns, e=None):</div><div><span class="Apple-tab-span" style="white-space:pre">    </span>    if not ns: return f(e)</div><div><span class="Apple-tab-span" style="white-space:pre">   </span>    for r in set(ns):</div>
+<div>
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>        ns.remove(r)</div><div><span class="Apple-tab-span" style="white-space:pre"> </span>        if e is None: iter_all_exp(f, ops, ns, r)</div><div><span class="Apple-tab-span" style="white-space:pre">    </span>        else:</div>
+\
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>            for op in ops:</div><div><span class="Apple-tab-span" style="white-space:pre">   </span>                iter_all_exp(f, ops, ns, (op, e, r))</div>
+</div>
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>                if not op.exchangable:</div><div><span class="Apple-tab-span" style="white-space:pre">   </span>                    iter_all_exp(f, ops, ns, (op, r, e))</div>
+<div>
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>        ns.append(r)</div><div><span class="Apple-tab-span" style="white-space:pre"> </span>opts = [</div><div><span class="Apple-tab-span" style="white-space:pre"> </span>    opt(&#39;+&#39;, lambda x, y: x+y),</div>
+&gt;
+有一个数组，里面有多个正整数。有一个操作数组，其中每个都是双目操作符。找出以两者构成算式，其值等于给定值的所有表达式组合。
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>    opt(&#39;-&#39;, lambda x, y: x-y, False),</div><div><span class="Apple-tab-span" style="white-space:pre">   </span>    opt(&#39;*&#39;, lambda x, y: x*y),</div>
+</div>
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>    opt(&#39;/&#39;, lambda x, y: float(x)/y, False),]</div><div><span class="Apple-tab-span" style="white-space:pre">   </span>if __name__ == &#39;__main__&#39;:</div>
+<div>
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>    for i in xrange(100): iter_all_exp(chkexp(24), opts, [3, 4, 6, 8])</div><div><br /></div><div>以下是100次的时间：</div><div>&gt; real<span class="Apple-tab-span" style="white-space:pre">   </span>0m2.259s</div>
+&gt; 要求不得遗漏，可以有少量重复。例如可交换算符的交换同构暂不做排重。
 
-<div>&gt; user<span class="Apple-tab-span" style="white-space:pre"> </span>0m2.248s</div><div>&gt; sys<span class="Apple-tab-span" style="white-space:pre"> </span>0m0.004s</div><div><br /></div><div># common lisp #</div><div>
+</div>
 
-lisp来解这个问题简直是作弊，难怪被叫做人工智能语言。</div><div><br /></div><div><span class="Apple-tab-span" style="white-space:pre">   </span>(defun chkexp (target)</div><div><span class="Apple-tab-span" style="white-space:pre">   </span>  (lambda (e)</div>
+<div>
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>    (if (equal (ignore-errors (eval e)) target) (print e))))</div><div><span class="Apple-tab-span" style="white-space:pre"> </span>(defun exchangeable (op)</div>
+\
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>  (not (member op &#39;(- /))))</div><div><span class="Apple-tab-span" style="white-space:pre">  </span>(defun iter-all-exp (f ops ns &amp;optional e)</div>
+</div>
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>  (cond</div><div><span class="Apple-tab-span" style="white-space:pre">  </span>    ((not ns) (funcall f e))</div><div><span class="Apple-tab-span" style="white-space:pre"> </span>    ((not e) (dolist (r (remove-duplicates ns))</div>
+<div>
 
-<div><span class="Apple-tab-span" style="white-space:pre">      </span>       (iter-all-exp f ops (remove r ns :count 1) r)))</div><div><span class="Apple-tab-span" style="white-space:pre">   </span>    (t (dolist (r (remove-duplicates ns))</div>
+实际运行的时候，取+-\*/和3 4 6
+8，运行100次，查看时间消耗。正确的单次输出结果应当是这样的。
 
-<div><span class="Apple-tab-span" style="white-space:pre">      </span> (let ((nss (remove r ns :count 1)))</div><div><span class="Apple-tab-span" style="white-space:pre">     </span>   (dolist (op ops)</div><div><span class="Apple-tab-span" style="white-space:pre">      </span>     (iter-all-exp f ops nss `(,op ,e ,r))</div>
+</div>
 
-<div><span class="Apple-tab-span" style="white-space:pre">      </span>     (if (not (exchangeable op))</div><div><span class="Apple-tab-span" style="white-space:pre">         </span> (iter-all-exp f ops nss `(,op ,r ,e)))))))))</div>
+<div>
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>(iter-all-exp (chkexp 24) `(+ - * /) `(3 4 6 8))</div><div><br /></div><div>只有短短17行。原因在于，lisp本身的ast即是用数据结构表示的，因此根本不需要我做eval函数，也不需要画蛇添足的弄自定义算符，直接用系统算符上。显示，打印，都是现成的。需要写的只有主体逻辑。结果也很特别：</div>
+\
 
-<div><br /></div><div>&gt; (* (- (* 3 4) 8) 6) </div><div>&gt; (* (- 8 (/ 6 3)) 4) </div><div>&gt; (* (- (* 4 3) 8) 6) </div><div>&gt; (* (/ (+ 4 8) 3) 6) </div><div>&gt; (/ 6 (/ 3 (+ 4 8))) </div><div>&gt; (/ (* (+ 4 8) 6) 3) </div>
+</div>
 
-<div>&gt; (* (+ (/ 8 4) 6) 3) </div><div>&gt; (* (- 8 (/ 6 3)) 4) </div><div>&gt; (* (* (- 8 6) 3) 4) </div><div>&gt; (* (* (- 8 6) 4) 3) </div><div>&gt; (* (/ (+ 8 4) 3) 6) </div><div>&gt; (/ 6 (/ 3 (+ 8 4))) </div><div>
+<div>
 
-&gt; (/ (* (+ 8 4) 6) 3) </div><div>&gt; (* (+ (/ 8 4) 6) 3) </div><div>&gt; (* (* (- 8 6) 3) 4) </div><div>&gt; (* (* (- 8 6) 4) 3) </div><div><br /></div><div>不但行数只有一半，速度也很让人吐血，比python快了近一倍，这是100次的结果。</div><div><br /></div>
+&gt; (((8 + 4) / 3) \* 6) = 24
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>Evaluation took:</div><div><span class="Apple-tab-span" style="white-space:pre"> </span>  1.379 seconds of real time</div><div><span class="Apple-tab-span" style="white-space:pre"> </span>  1.372086 seconds of total run time (1.372086 user, 0.000000 system)</div>
+</div>
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>  [ Run times consist of 0.012 seconds GC time, and 1.361 seconds non-GC time. ]</div><div><span class="Apple-tab-span" style="white-space:pre"> </span>  99.49% CPU</div>
+<div>
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>  3,628,800 forms interpreted</div><div><span class="Apple-tab-span" style="white-space:pre">    </span>  4,127,047,350 processor cycles</div><div><span class="Apple-tab-span" style="white-space:pre"> </span>  102,577,080 bytes consed</div>
+&gt; (6 / (3 / (8 + 4))) = 24
 
-<div><br /></div><div># go #</div><div><br /></div><div># lua #</div><div>lua的代码是所有语言中最罗嗦的，足足长达60行，超过python许多。</div><div><br /></div><div><span class="Apple-tab-span" style="white-space:pre"> </span>function find_item(tbl, obj)</div>
+</div>
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>   for i, v in pairs(tbl) do</div><div><span class="Apple-tab-span" style="white-space:pre"> </span>      if v == obj then return i end</div><div><span class="Apple-tab-span" style="white-space:pre">  </span>   end</div>
+<div>
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>   return nil</div><div><span class="Apple-tab-span" style="white-space:pre">    </span>end</div><div><span class="Apple-tab-span" style="white-space:pre">  </span>function remove_duplicates (tbl)</div>
+&gt; (((8 + 4) \* 6) / 3) = 24
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>   local newtbl = {}</div><div><span class="Apple-tab-span" style="white-space:pre"> </span>   for i, v in pairs(tbl) do</div><div><span class="Apple-tab-span" style="white-space:pre"> </span>      if find_item(newtbl, v) == nil then</div>
+</div>
 
-<div><span class="Apple-tab-span" style="white-space:pre">      </span> table.insert(newtbl, v)</div><div><span class="Apple-tab-span" style="white-space:pre"> </span>      end</div><div><span class="Apple-tab-span" style="white-space:pre">    </span>   end</div>
+<div>
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>   return newtbl</div><div><span class="Apple-tab-span" style="white-space:pre"> </span>end</div><div><span class="Apple-tab-span" style="white-space:pre">  </span>function fmt_exp (e)</div>
+&gt; (((8 / 4) + 6) \* 3) = 24
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>   if type(e) ~= &#39;table&#39; then</div><div><span class="Apple-tab-span" style="white-space:pre">    </span>      return tostring(e)</div><div><span class="Apple-tab-span" style="white-space:pre"> </span>   else</div>
+</div>
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>      return &#39;(&#39; .. fmt_exp(e[3]) .. e[1] .. fmt_exp(e[4]) .. &#39;)&#39;</div><div><span class="Apple-tab-span" style="white-space:pre">    </span>   end</div>
+<div>
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>end</div><div><span class="Apple-tab-span" style="white-space:pre">  </span>function eval_exp (e)</div><div><span class="Apple-tab-span" style="white-space:pre">    </span>   if type(e) ~= &#39;table&#39; then</div>
+&gt; (((8 - 6) \* 3) \* 4) = 24
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>      return tonumber(e)</div><div><span class="Apple-tab-span" style="white-space:pre"> </span>   else</div><div><span class="Apple-tab-span" style="white-space:pre">  </span>      return e[2](eval_exp(e[3]), eval_exp(e[4]))</div>
+</div>
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>   end</div><div><span class="Apple-tab-span" style="white-space:pre">   </span>end</div><div><span class="Apple-tab-span" style="white-space:pre">  </span>function chkexp (target)</div>
+<div>
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>   return function (e)</div><div><span class="Apple-tab-span" style="white-space:pre">       </span>     if eval_exp(e) == target then</div><div><span class="Apple-tab-span" style="white-space:pre">           </span>print(fmt_exp(e))</div>
+&gt; (((8 - 6) \* 4) \* 3) = 24
 
-<div><span class="Apple-tab-span" style="white-space:pre">      </span>     end</div><div><span class="Apple-tab-span" style="white-space:pre">     </span>  end</div><div><span class="Apple-tab-span" style="white-space:pre">    </span>end</div>
+</div>
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>function iter_all_exp (f, ops, ns, e)</div><div><span class="Apple-tab-span" style="white-space:pre">    </span>   if table.maxn(ns) == 0 then return f(e) end</div>
+<div>
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>   for i, r in pairs(remove_duplicates(ns)) do</div><div><span class="Apple-tab-span" style="white-space:pre">   </span>      table.remove(ns, find_item(ns, r))</div>
+&gt; (((3 \* 4) - 8) \* 6) = 24
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>      if e == nil then</div><div><span class="Apple-tab-span" style="white-space:pre">       </span> iter_all_exp(f, ops, ns, r)</div><div><span class="Apple-tab-span" style="white-space:pre"> </span>      else</div>
+</div>
 
-<div><span class="Apple-tab-span" style="white-space:pre">      </span> for op, fp in pairs(ops) do</div><div><span class="Apple-tab-span" style="white-space:pre">     </span>    iter_all_exp(f, ops, ns, {op, fp, e, r})</div><div>
+<div>
 
-<span class="Apple-tab-span" style="white-space:pre">       </span>    if find_item(exchangable, op) == nil then</div><div><span class="Apple-tab-span" style="white-space:pre">        </span>       iter_all_exp(f, ops, ns, {op, fp, r, e})</div>
+&gt; ((8 - (6 / 3)) \* 4) = 24
 
-<div><span class="Apple-tab-span" style="white-space:pre">      </span>    end</div><div><span class="Apple-tab-span" style="white-space:pre">      </span> end</div><div><span class="Apple-tab-span" style="white-space:pre"> </span>      end</div>
+</div>
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>      table.insert(ns, r)</div><div><span class="Apple-tab-span" style="white-space:pre">    </span>   end</div><div><span class="Apple-tab-span" style="white-space:pre">   </span>end</div>
+<div>
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>exchangable = {&#39;+&#39;, &#39;*&#39;}</div><div><span class="Apple-tab-span" style="white-space:pre"> </span>opts = {</div><div><span class="Apple-tab-span" style="white-space:pre"> </span>   [&#39;+&#39;] = function (a, b) return a + b end,</div>
+&gt; (((4 + 8) / 3) \* 6) = 24
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>   [&#39;-&#39;] = function (a, b) return a - b end,</div><div><span class="Apple-tab-span" style="white-space:pre"> </span>   [&#39;*&#39;] = function (a, b) return a * b end,</div>
+</div>
 
-<div><span class="Apple-tab-span" style="white-space:pre">  </span>   [&#39;/&#39;] = function (a, b) return a / b end,</div><div><span class="Apple-tab-span" style="white-space:pre"> </span>}</div><div><span class="Apple-tab-span" style="white-space:pre">    </span>iter_all_exp(chkexp(24), opts, {3, 4, 6, 8})</div>
+<div>
 
-<div><br /></div><div>其实lua的代码很好看，自然语言风格，语言写出来后都能看懂。然而lua秉持了最小化内核的方针，死活不提供一些很常用的函数。我上来近15行全在写常用函数，查找某个值在表中的位置，还有除去表中的重复元素。实现下来，效率也不是特别高，基本和python相当。</div><div><br /></div><div>&gt; real<span class="Apple-tab-span" style="white-space:pre">  </span>0m2.222s</div>
+&gt; (6 / (3 / (4 + 8))) = 24
 
-<div>&gt; user<span class="Apple-tab-span" style="white-space:pre"> </span>0m2.184s</div><div>&gt; sys<span class="Apple-tab-span" style="white-space:pre"> </span>0m0.000s</div><div><br /></div>
+</div>
+
+<div>
+
+&gt; (((4 + 8) \* 6) / 3) = 24
+
+</div>
+
+<div>
+
+&gt; (((8 / 4) + 6) \* 3) = 24
+
+</div>
+
+<div>
+
+&gt; (((4 \* 3) - 8) \* 6) = 24
+
+</div>
+
+<div>
+
+&gt; (((8 - 6) \* 3) \* 4) = 24
+
+</div>
+
+<div>
+
+&gt; (((8 - 6) \* 4) \* 3) = 24
+
+</div>
+
+<div>
+
+&gt; ((8 - (6 / 3)) \* 4) = 24
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+\# python \#
+
+</div>
+
+<div>
+
+python的解很复杂，长达31行，以下是我写的解。当然，还有更简单的版本，我可以用eval来干这个事情，代码只有24行，但是确实给人很evil的感觉。
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>from
+itertools import combinations
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>class
+opt(object):
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>    def
+\_\_init\_\_(self, name, func, ex=True):
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>      
+ [self.name](http://self.name), self.func, self.exchangable = name,
+func, ex
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>    def
+\_\_str\_\_(self): return [self.name](http://self.name)
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>    def
+\_\_call\_\_(self, l, r): return self.func(l, r)
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>    def
+fmt(self, l, r):
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>      
+ return '(%s %s %s)' % (fmt\_exp(l), str(self), fmt\_exp(r))
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>def
+eval\_exp(e):
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>    if not
+isinstance(e, tuple): return e
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>    try:
+return e\[0\](eval\_exp(e\[1\]), eval\_exp(e\[2\]))
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>    except:
+return None
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>def
+fmt\_exp(e): return e\[0\].fmt(e\[1\], e\[2\]) if isinstance(e, tuple)
+else str(e)
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>def
+print\_exp(e): print fmt\_exp(e), eval\_exp(e)
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>def
+chkexp(target):
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>    def
+do\_exp(e):
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>        if
+abs(eval\_exp(e) - target) &lt; 0.001: print fmt\_exp(e), '=', target
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>    return
+do\_exp
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>def
+iter\_all\_exp(f, ops, ns, e=None):
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>    if not
+ns: return f(e)
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>    for r
+in set(ns):
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>      
+ ns.remove(r)
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>        if
+e is None: iter\_all\_exp(f, ops, ns, r)
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>      
+ else:
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>          
+ for op in ops:
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>          
+     iter\_all\_exp(f, ops, ns, (op, e, r))
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>          
+     if not op.exchangable:
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>          
+         iter\_all\_exp(f, ops, ns, (op, r, e))
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>      
+ ns.append(r)
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>opts = \[
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>  
+ opt('+', lambda x, y: x+y),
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>  
+ opt('-', lambda x, y: x-y, False),
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>  
+ opt('\*', lambda x, y: x\*y),
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>  
+ opt('/', lambda x, y: float(x)/y, False),\]
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>if
+\_\_name\_\_ == '\_\_main\_\_':
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>    for i
+in xrange(100): iter\_all\_exp(chkexp(24), opts, \[3, 4, 6, 8\])
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+以下是100次的时间：
+
+</div>
+
+<div>
+
+&gt; real<span class="Apple-tab-span" style="white-space:pre">
+</span>0m2.259s
+
+</div>
+
+<div>
+
+&gt; user<span class="Apple-tab-span" style="white-space:pre">
+</span>0m2.248s
+
+</div>
+
+<div>
+
+&gt; sys<span class="Apple-tab-span" style="white-space:pre">
+</span>0m0.004s
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+\# common lisp \#
+
+</div>
+
+<div>
+
+lisp来解这个问题简直是作弊，难怪被叫做人工智能语言。
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>(defun
+chkexp (target)
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>  (lambda
+(e)
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>    (if
+(equal (ignore-errors (eval e)) target) (print e))))
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>(defun
+exchangeable (op)
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>  (not
+(member op '(- /))))
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>(defun
+iter-all-exp (f ops ns &optional e)
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>  (cond
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>    ((not
+ns) (funcall f e))
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>    ((not
+e) (dolist (r (remove-duplicates ns))
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>      
+(iter-all-exp f ops (remove r ns :count 1) r)))
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>    (t
+(dolist (r (remove-duplicates ns))
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span> (let ((nss
+(remove r ns :count 1)))
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>   (dolist
+(op ops)
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>    
+(iter-all-exp f ops nss \`(,op ,e ,r))
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>     (if
+(not (exchangeable op))
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>
+(iter-all-exp f ops nss \`(,op ,r ,e)))))))))
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre">
+</span>(iter-all-exp (chkexp 24) \`(+ - \* /) \`(3 4 6 8))
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+只有短短17行。原因在于，lisp本身的ast即是用数据结构表示的，因此根本不需要我做eval函数，也不需要画蛇添足的弄自定义算符，直接用系统算符上。显示，打印，都是现成的。需要写的只有主体逻辑。结果也很特别：
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+&gt; (\* (- (\* 3 4) 8) 6) 
+
+</div>
+
+<div>
+
+&gt; (\* (- 8 (/ 6 3)) 4) 
+
+</div>
+
+<div>
+
+&gt; (\* (- (\* 4 3) 8) 6) 
+
+</div>
+
+<div>
+
+&gt; (\* (/ (+ 4 8) 3) 6) 
+
+</div>
+
+<div>
+
+&gt; (/ 6 (/ 3 (+ 4 8))) 
+
+</div>
+
+<div>
+
+&gt; (/ (\* (+ 4 8) 6) 3) 
+
+</div>
+
+<div>
+
+&gt; (\* (+ (/ 8 4) 6) 3) 
+
+</div>
+
+<div>
+
+&gt; (\* (- 8 (/ 6 3)) 4) 
+
+</div>
+
+<div>
+
+&gt; (\* (\* (- 8 6) 3) 4) 
+
+</div>
+
+<div>
+
+&gt; (\* (\* (- 8 6) 4) 3) 
+
+</div>
+
+<div>
+
+&gt; (\* (/ (+ 8 4) 3) 6) 
+
+</div>
+
+<div>
+
+&gt; (/ 6 (/ 3 (+ 8 4))) 
+
+</div>
+
+<div>
+
+&gt; (/ (\* (+ 8 4) 6) 3) 
+
+</div>
+
+<div>
+
+&gt; (\* (+ (/ 8 4) 6) 3) 
+
+</div>
+
+<div>
+
+&gt; (\* (\* (- 8 6) 3) 4) 
+
+</div>
+
+<div>
+
+&gt; (\* (\* (- 8 6) 4) 3) 
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+不但行数只有一半，速度也很让人吐血，比python快了近一倍，这是100次的结果。
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>Evaluation
+took:
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>  1.379
+seconds of real time
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>  1.372086
+seconds of total run time (1.372086 user, 0.000000 system)
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>  \[ Run
+times consist of 0.012 seconds GC time, and 1.361 seconds non-GC time.
+\]
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>  99.49%
+CPU
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>  3,628,800
+forms interpreted
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>
+ 4,127,047,350 processor cycles
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>
+ 102,577,080 bytes consed
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+\# go \#
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+\# lua \#
+
+</div>
+
+<div>
+
+lua的代码是所有语言中最罗嗦的，足足长达60行，超过python许多。
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>function
+find\_item(tbl, obj)
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>   for i, v
+in pairs(tbl) do
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>      if v
+== obj then return i end
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>   end
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>   return
+nil
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>end
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>function
+remove\_duplicates (tbl)
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>   local
+newtbl = {}
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>   for i, v
+in pairs(tbl) do
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>      if
+find\_item(newtbl, v) == nil then
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>
+table.insert(newtbl, v)
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>      end
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>   end
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>   return
+newtbl
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>end
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>function
+fmt\_exp (e)
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>   if
+type(e) \~= 'table' then
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>    
+ return tostring(e)
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>   else
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>    
+ return '(' .. fmt\_exp(e\[3\]) .. e\[1\] .. fmt\_exp(e\[4\]) .. ')'
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>   end
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>end
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>function
+eval\_exp (e)
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>   if
+type(e) \~= 'table' then
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>    
+ return tonumber(e)
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>   else
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>    
+ return e\[2\](eval\_exp(e\[3\]), eval\_exp(e\[4\]))
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>   end
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>end
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>function
+chkexp (target)
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>   return
+function (e)
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>     if
+eval\_exp(e) == target then
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre">
+</span>print(fmt\_exp(e))
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>     end
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>  end
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>end
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>function
+iter\_all\_exp (f, ops, ns, e)
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>   if
+table.maxn(ns) == 0 then return f(e) end
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>   for i, r
+in pairs(remove\_duplicates(ns)) do
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>    
+ table.remove(ns, find\_item(ns, r))
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>      if e
+== nil then
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>
+iter\_all\_exp(f, ops, ns, r)
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>      else
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span> for op, fp
+in pairs(ops) do
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>  
+ iter\_all\_exp(f, ops, ns, {op, fp, e, r})
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>    if
+find\_item(exchangable, op) == nil then
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>      
+iter\_all\_exp(f, ops, ns, {op, fp, r, e})
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>    end
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span> end
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>      end
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>    
+ table.insert(ns, r)
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>   end
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>end
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>exchangable
+= {'+', '\*'}
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>opts = {
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>   \['+'\]
+= function (a, b) return a + b end,
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>   \['-'\]
+= function (a, b) return a - b end,
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>   \['\*'\]
+= function (a, b) return a \* b end,
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>   \['/'\]
+= function (a, b) return a / b end,
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre"> </span>}
+
+</div>
+
+<div>
+
+<span class="Apple-tab-span" style="white-space:pre">
+</span>iter\_all\_exp(chkexp(24), opts, {3, 4, 6, 8})
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+其实lua的代码很好看，自然语言风格，语言写出来后都能看懂。然而lua秉持了最小化内核的方针，死活不提供一些很常用的函数。我上来近15行全在写常用函数，查找某个值在表中的位置，还有除去表中的重复元素。实现下来，效率也不是特别高，基本和python相当。
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+&gt; real<span class="Apple-tab-span" style="white-space:pre">
+</span>0m2.222s
+
+</div>
+
+<div>
+
+&gt; user<span class="Apple-tab-span" style="white-space:pre">
+</span>0m2.184s
+
+</div>
+
+<div>
+
+&gt; sys<span class="Apple-tab-span" style="white-space:pre">
+</span>0m0.000s
+
+</div>
+
+<div>
+
+\
+
+</div>
 
         </div>
         

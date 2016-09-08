@@ -112,53 +112,41 @@ ga('send', 'pageview');
           
           
           
-          <p><h1>
- quiz
-</h1>
-<p>
- 今天在
- <a href="https://twitter.com/linuxtoy/status/611020430749495296/photo/1">
-  twitter
- </a>
- 上看到一个有趣的问题。
-</p>
+          
+
+<h1 id="quiz">quiz</h1>
+
+<p>今天在
+<a href="https://twitter.com/linuxtoy/status/611020430749495296/photo/1">twitter</a>
+上看到一个有趣的问题。</p>
+
 <pre><code>t = (1, 2, [30, 40])
 t[2] += [50, 60]
 </code></pre>
-<p>
- 结果是什么？
-</p>
+
+<p>结果是什么？</p>
+
 <ol>
- <li>
-  t = (1, 2, [30, 40, 50, 60])
- </li>
- <li>
-  TypeError
- </li>
- <li>
-  都不是
- </li>
- <li>
-  1,2都发生
- </li>
+<li>t = (1, 2, [30, 40, 50, 60])</li>
+<li>TypeError</li>
+<li>都不是</li>
+<li>1,2都发生</li>
 </ol>
-<p>
- 出乎意料的，结果是4。
-</p>
-<p>
- 为什么，我们来分析一下。
-</p>
-<h1>
- disassemble
-</h1>
+
+<p>出乎意料的，结果是4。</p>
+
+<p>为什么，我们来分析一下。</p>
+
+<h1 id="disassemble">disassemble</h1>
+
 <pre><code>&gt;&gt;&gt; t = (1, 2, [30, 40])
 &gt;&gt;&gt; def f(): t[2] += [50, 60]
 &gt;&gt;&gt; import dis
 &gt;&gt;&gt; dis.dis(f)
 </code></pre>
-<p>
- 以下是结果。
-</p>
+
+<p>以下是结果。</p>
+
 <pre><code> LOAD_GLOBAL              0 (t)
  LOAD_CONST               1 (2)
  DUP_TOPX                 2
@@ -172,61 +160,40 @@ t[2] += [50, 60]
  LOAD_CONST               0 (None)
  RETURN_VALUE
 </code></pre>
-<p>
- 我们来解读一下。dis的指令集可以看
- <a href="https://docs.python.org/2/library/dis.html">
-  这里
- </a>
- 。
-</p>
+
+<p>我们来解读一下。dis的指令集可以看
+<a href="https://docs.python.org/2/library/dis.html">这里</a> 。</p>
+
 <ol>
- <li>
-  先载入全局变量t（因为写法问题，t是全局）。
- </li>
- <li>
-  载入常数2。现在栈是t|2。
- </li>
- <li>
-  复制头两项。现在栈应当是t|2|t|2。
- </li>
- <li>
-  BINARY_SUBSCR，取t[2]。现在是t|2|t[2]。
- </li>
- <li>
-  载入50和60，然后build_list。现在是t|2|t[2]|[50,60]。
- </li>
- <li>
-  INPLACE_ADD，注意这里。现在是t|2|[30,40,50,60]。同时t[2]的list成为了[30,40,50,60]。
- </li>
- <li>
-  ROT_THREE，结果是[30,40,50,60]|t|2。
- </li>
- <li>
-  STORE_SUBSCR，实际是在操作t[2] = [30,40,50,60]。当然，这里出错了。
- </li>
- <li>
-  最后是return None，这步并未发生。
- </li>
+<li>先载入全局变量t（因为写法问题，t是全局）。</li>
+<li>载入常数2。现在栈是t|2。</li>
+<li>复制头两项。现在栈应当是t|2|t|2。</li>
+<li>BINARY_SUBSCR，取t[2]。现在是t|2|t[2]。</li>
+<li>载入50和60，然后build_list。现在是t|2|t[2]|[50,60]。</li>
+<li>INPLACE_ADD，注意这里。现在是t|2|[30,40,50,60]。同时t[2]的list成为了[30,40,50,60]。</li>
+<li>ROT_THREE，结果是[30,40,50,60]|t|2。</li>
+<li>STORE_SUBSCR，实际是在操作t[2] =
+[30,40,50,60]。当然，这里出错了。</li>
+<li>最后是return None，这步并未发生。</li>
 </ol>
-<h1>
- compare with add
-</h1>
-<p>
- 整个最诡异的地方，就在于INPLACE_ADD。从字面上，这要求inplace的做加法。我们换个写法，然后再看看。
-</p>
+
+<h1 id="compare-with-add">compare with add</h1>
+
+<p>整个最诡异的地方，就在于INPLACE_ADD。从字面上，这要求inplace的做加法。我们换个写法，然后再看看。</p>
+
 <pre><code>&gt;&gt;&gt; def f(): t[2] = t[2] + [50, 60]
 &gt;&gt;&gt; f()
 Traceback (most recent call last):
-  File &ldquo;&lt;stdin&gt;&rdquo;, line 1, in &lt;module&gt;
-  File &ldquo;&lt;stdin&gt;&rdquo;, line 1, in f
-TypeError: &lsquo;tuple&rsquo; object does not support item assignment
+  File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;
+  File &quot;&lt;stdin&gt;&quot;, line 1, in f
+TypeError: 'tuple' object does not support item assignment
 &gt;&gt;&gt; t
 (1, 2, [30, 40])
 &gt;&gt;&gt; dis.dis(f)
 </code></pre>
-<p>
- 以下为结果。
-</p>
+
+<p>以下为结果。</p>
+
 <pre><code> LOAD_GLOBAL              0 (t)
  LOAD_CONST               1 (2)
  BINARY_SUBSCR
@@ -240,18 +207,14 @@ TypeError: &lsquo;tuple&rsquo; object does not support item assignment
  LOAD_CONST               0 (None)
  RETURN_VALUE
 </code></pre>
-<p>
- 看到没，结果就不一样了。
-</p>
-<h1>
- why
-</h1>
-<p>
- 没有为什么，因为+=对应的指令就是INPLACE_ADD。
-</p>
-<p>
- 只是INPLACE_ADD了，理论上就不需要赋值了。我没想明白的是，在什么情况下INPLACE_ADD了又不赋值可能导致错误呢？(我觉得可能有这种情况)
-</p></p>
+
+<p>看到没，结果就不一样了。</p>
+
+<h1 id="why">why</h1>
+
+<p>没有为什么，因为+=对应的指令就是INPLACE_ADD。</p>
+
+<p>只是INPLACE_ADD了，理论上就不需要赋值了。我没想明白的是，在什么情况下INPLACE_ADD了又不赋值可能导致错误呢？(我觉得可能有这种情况)</p>
 
         </div>
         

@@ -112,37 +112,51 @@ ga('send', 'pageview');
           
           
           
-          <p><h2>abstract</h2>
-本文的目的，在于教授使用virtualenv创立python环境，对环境的管理和使用，以及代码和部署的用法范例。在阅读完本文后，你应当可以。
+          
+
+<h2 id="abstract">abstract</h2>
+
+<p>本文的目的，在于教授使用virtualenv创立python环境，对环境的管理和使用，以及代码和部署的用法范例。在阅读完本文后，你应当可以。</p>
+
 <ul>
-    <li>创立，部署，管理virtualenv环境</li>
-    <li>使用virtualenv环境进行编码</li>
+<li>创立，部署，管理virtualenv环境</li>
+<li>使用virtualenv环境进行编码</li>
 </ul>
-<h2>virtualenv环境建立</h2>
-virtualenv是python的虚环境管理包，他的主要目的是为了隔离环境。其中包含以下两个范畴。
+
+<h2 id="virtualenv环境建立">virtualenv环境建立</h2>
+
+<p>virtualenv是python的虚环境管理包，他的主要目的是为了隔离环境。其中包含以下两个范畴。</p>
+
 <ul>
-    <li>在虚环境中安装包，不需要对系统进行修改，不会对系统造成污染。</li>
-    <li>在系统中安装的包，不会对虚环境造成污染。这主要是出于版本安全考虑。</li>
+<li>在虚环境中安装包，不需要对系统进行修改，不会对系统造成污染。</li>
+<li>在系统中安装的包，不会对虚环境造成污染。这主要是出于版本安全考虑。</li>
 </ul>
-因此，virtualenv默认会阻止你使用系统中安装的包。要解决这个问题，需要在建立虚拟环境时指定参数&ndash;system-site-packages。</p>
 
-<p>virtualenv的环境可以通过执行virtualenv path加以建立。当建立完成后<strong>不可移动</strong>，需要一些特殊调整，使用参数&ndash;relocatable对此没有帮助。
-<h2>virtualenv环境的激活和反激活</h2>
-virtualenv环境是通过替换系统环境变量工作的。在激活后会替换系统的提示符，提示你进入环境。一般我们使用source $VIRTUALENVPATH/bin/activate来激活。激活后直接执行deactivate反激活。</p>
+<p>因此，virtualenv默认会阻止你使用系统中安装的包。要解决这个问题，需要在建立虚拟环境时指定参数&ndash;system-site-packages。
+virtualenv的环境可以通过执行virtualenv
+path加以建立。当建立完成后<strong>不可移动</strong>，需要一些特殊调整，使用参数&ndash;relocatable对此没有帮助。</p>
 
-<p>virtualenv替换系统环境变量的方式是在path前加入virtualenv的bin路径，使自己的python优于系统python执行。同时替换pythonhome，变更lib查找路径。因此，对于某些可以指定pythonhome的应用（例如网络部署），直接指定pythonpath为virtualenv路径即可。</p>
+<h2 id="virtualenv环境的激活和反激活">virtualenv环境的激活和反激活</h2>
 
-<p>注意，由于virtualenv的工作方式，因此当你执行su/sudo bash后，virtualenv环境都有可能消失，但是提示符仍旧生效。建议通过sudo执行脚本，脚本内进行source比较安全。或者直接sudo目标程序也可以，<strong>不要新建上下文</strong>。</p>
+<p>virtualenv环境是通过替换系统环境变量工作的。在激活后会替换系统的提示符，提示你进入环境。一般我们使用source
+\$VIRTUALENVPATH/bin/activate来激活。激活后直接执行deactivate反激活。
+virtualenv替换系统环境变量的方式是在path前加入virtualenv的bin路径，使自己的python优于系统python执行。同时替换pythonhome，变更lib查找路径。因此，对于某些可以指定pythonhome的应用（例如网络部署），直接指定pythonpath为virtualenv路径即可。
+注意，由于virtualenv的工作方式，因此当你执行su/sudo
+bash后，virtualenv环境都有可能消失，但是提示符仍旧生效。建议通过sudo执行脚本，脚本内进行source比较安全。或者直接sudo目标程序也可以，<strong>不要新建上下文</strong>。
+如果需要保持持续的环境激活，可以将source
+\$VIRTUALENVPATH/bin/activate加入~/.bashrc。
+当virtualenv激活后，后续的pip安装和python使用都会使用virtualenv内的版本。因此下文未经特殊说明，都是指在激活环境后进行操作。</p>
 
-<p>如果需要保持持续的环境激活，可以将source $VIRTUALENVPATH/bin/activate加入~/.bashrc。</p>
+<h2 id="virtualenv环境的管理">virtualenv环境的管理</h2>
 
-<p>当virtualenv激活后，后续的pip安装和python使用都会使用virtualenv内的版本。因此下文未经特殊说明，都是指在激活环境后进行操作。
-<h2>virtualenv环境的管理</h2>
-主要包括两种手段，安装和删除。一般使用pip install package name进行安装。pip uninstall package name进行删除。
-<h2>virtualenv环境的保存和恢复</h2>
-virtualenv环境可以保存和恢复。所谓保存和恢复，是指在安装过包的环境中保存包列表（和具体版本），在未安装（或版本错误）的环境中启用。</p>
+<p>主要包括两种手段，安装和删除。一般使用pip install package
+name进行安装。pip uninstall package name进行删除。</p>
 
-<p>一般通过pip freeze &gt; filename进行保存。在目标机器上执行pip install -r filename进行恢复。</p>
+<h2 id="virtualenv环境的保存和恢复">virtualenv环境的保存和恢复</h2>
+
+<p>virtualenv环境可以保存和恢复。所谓保存和恢复，是指在安装过包的环境中保存包列表（和具体版本），在未安装（或版本错误）的环境中启用。
+一般通过pip freeze &gt; filename进行保存。在目标机器上执行pip install -r
+filename进行恢复。</p>
 
         </div>
         

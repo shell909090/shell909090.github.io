@@ -16,7 +16,9 @@
       <pubDate>Mon, 30 Jun 2014 12:32:08 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2650/</guid>
-      <description>&lt;h1&gt;从虚拟化的种类和层级说起&lt;/h1&gt;
+      <description>
+
+&lt;h1 id=&#34;从虚拟化的种类和层级说起&#34;&gt;从虚拟化的种类和层级说起&lt;/h1&gt;
 
 &lt;ul&gt;
 &lt;li&gt;cpu虚拟化：可以模拟不同CPU，例如bochs&lt;/li&gt;
@@ -39,7 +41,7 @@
 &lt;li&gt;语言沙盒时，用户没有使用api的自由&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h1&gt;docker的实现结构&lt;/h1&gt;
+&lt;h1 id=&#34;docker的实现结构&#34;&gt;docker的实现结构&lt;/h1&gt;
 
 &lt;ul&gt;
 &lt;li&gt;docker
@@ -55,13 +57,13 @@
 
 &lt;p&gt;当然，还有很多细节的东西，里面就不一一列举了。例如veth。&lt;/p&gt;
 
-&lt;h2&gt;docker不是虚拟机&lt;/h2&gt;
+&lt;h2 id=&#34;docker不是虚拟机&#34;&gt;docker不是虚拟机&lt;/h2&gt;
 
 &lt;p&gt;docker不是虚拟机，因为lxc已经是虚拟机。如果两者功能一样，那么docker就没有存在的必要。&lt;/p&gt;
 
 &lt;p&gt;你可以把docker当虚拟机用，但是当虚拟机用的话，他的完备程度远远不及现在的种种虚拟机。相比之下，就会觉得很不好用。这不是docker的错，只能说被不正确的使用了。&lt;/p&gt;
 
-&lt;h2&gt;docker是什么&lt;/h2&gt;
+&lt;h2 id=&#34;docker是什么&#34;&gt;docker是什么&lt;/h2&gt;
 
 &lt;p&gt;docker就是环境。&lt;/p&gt;
 
@@ -73,7 +75,7 @@
 
 &lt;p&gt;docker再进了一步。不但提供一个镜像，可以在系统间方便的迁移。而且连镜像的升级都能做掉。更爽的是，升级只用传输差量数据。当然，有好处就有牺牲。&lt;/p&gt;
 
-&lt;h2&gt;docker的镜像是只读的&lt;/h2&gt;
+&lt;h2 id=&#34;docker的镜像是只读的&#34;&gt;docker的镜像是只读的&lt;/h2&gt;
 
 &lt;p&gt;其实不是，docker的镜像当然可以写入。但是写的时候有几个问题。&lt;/p&gt;
 
@@ -84,7 +86,7 @@
 
 &lt;p&gt;所以，我个人认为，docker的镜像本身应当是只读的——如同EC2里面一样。数据的写入应当通过远程文件系统或者数据库服务来解决。&lt;/p&gt;
 
-&lt;h1&gt;vagrant&lt;/h1&gt;
+&lt;h1 id=&#34;vagrant&#34;&gt;vagrant&lt;/h1&gt;
 
 &lt;p&gt;提到镜像管理，我们可以提一下同样属于镜像管理的一个软件——vagrant。&lt;/p&gt;
 
@@ -93,7 +95,7 @@
 &lt;li&gt;提供了一个cloud，允许镜像的分享/更新&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h2&gt;为什么vagrant不如docker出名&lt;/h2&gt;
+&lt;h2 id=&#34;为什么vagrant不如docker出名&#34;&gt;为什么vagrant不如docker出名&lt;/h2&gt;
 
 &lt;ul&gt;
 &lt;li&gt;快，系统级虚拟化使得docker的虚拟化开销降低到百分级别以下。&lt;/li&gt;
@@ -101,13 +103,13 @@
 &lt;li&gt;资源调度灵活，不需要将资源预先划定给不同的实例，在不同资源的机器上也不用调整参数。&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h1&gt;成功案例&lt;/h1&gt;
+&lt;h1 id=&#34;成功案例&#34;&gt;成功案例&lt;/h1&gt;
 
-&lt;h2&gt;编译系统/打包系统/集成测试环境&lt;/h2&gt;
+&lt;h2 id=&#34;编译系统-打包系统-集成测试环境&#34;&gt;编译系统/打包系统/集成测试环境&lt;/h2&gt;
 
 &lt;p&gt;典型的搭建一次，执行一次，销毁一次。不需要对image做更改（准确说的需要做更改，但是不需要保存）。&lt;/p&gt;
 
-&lt;h2&gt;公司内部应用&lt;/h2&gt;
+&lt;h2 id=&#34;公司内部应用&#34;&gt;公司内部应用&lt;/h2&gt;
 
 &lt;p&gt;在IaaS的比拼中，以Openvz为代表的系统化虚拟化方案几乎完败于完全虚拟化/半虚拟化系列技术。就我和朋友的讨论，这里面最主要的因素在于。完全虚拟化技术可以比较好的隔离实例和实例间的资源使用，而系统虚拟化技术更偏向于将资源充分利用。这使得系统虚拟化更容易超售。&lt;/p&gt;
 
@@ -117,7 +119,7 @@
 
 &lt;p&gt;当然，云计算在企业化中原本就面临一些问题。原本提供软-硬件统一解决方案的集成商，需要如何重新组织解决方案。如何协调节约资源和高性能，高可用。云计算在企业级应用中还有很长的路要走。&lt;/p&gt;
 
-&lt;h1&gt;短板&lt;/h1&gt;
+&lt;h1 id=&#34;短板&#34;&gt;短板&lt;/h1&gt;
 
 &lt;ol&gt;
 &lt;li&gt;太新。目前成功案例还是不足，而且围绕docker的工具链还不完备。&lt;/li&gt;

@@ -16,9 +16,67 @@
       <pubDate>Thu, 27 Dec 2007 22:04:59 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/423/</guid>
-      <description>&lt;p&gt;&lt;p&gt;    libxml是gnome的XML解析库，具有强大的解析能力，支持DOM和SAX解析模型，属于验证型解析器。其内部是使用utf-8编码工作的，因此gbk之类编码的XML无法解析。为了解决这个问题，我们可以使用一个很简单的小窍门。&lt;br /&gt;    libxml是要和iconv一并使用的，头文件引用一般类似以下形式。&lt;br /&gt;#include &amp;lt;iconv.h&amp;gt;&lt;br /&gt;#pragma comment(lib, &amp;quot;iconv&amp;quot;)&lt;br /&gt;#include &amp;lt;libxml/tree.h&amp;gt;&lt;br /&gt;#include &amp;lt;libxml/parser.h&amp;gt;&lt;br /&gt;#pragma comment(lib, &amp;quot;libxml2&amp;quot;)&lt;br /&gt;    这样的话，我们向libxml注册一个处理句柄，对其他编码的xml先执行一次转换，再进行解析。&lt;br /&gt;iconv_t         iconv_utf8_gbk = NULL;&lt;br /&gt;iconv_t         iconv_gbk_utf8 = NULL;&lt;br /&gt;int gbk_input (unsigned char *out, int *outlen, const unsigned char *in,&lt;br /&gt;      int *inlen)&lt;br /&gt;{&lt;br /&gt; char           *outbuf = (char *) out;&lt;br /&gt; char           *inbuf = (char *) in;&lt;br /&gt; size_t          rslt;&lt;br /&gt; rslt =&lt;br /&gt;  iconv (iconv_utf8_gbk, (const char **) &amp;amp;inbuf, (size_t *) inlen,&lt;br /&gt;      &amp;amp;outbuf, (size_t *) outlen);&lt;br /&gt; if (rslt &amp;lt; 0)&lt;br /&gt;  return rslt;&lt;br /&gt; *outlen = ((unsigned char *) outbuf - out);&lt;br /&gt; *inlen = ((unsigned char *) inbuf - in);&lt;br /&gt; return *outlen;&lt;br /&gt;}
-&lt;p&gt;int gbk_output (unsigned char *out,&lt;br /&gt;    int *outlen, const unsigned char *in, int *inlen)&lt;br /&gt;{&lt;br /&gt; char           *outbuf = (char *) out;&lt;br /&gt; char           *inbuf = (char *) in;&lt;br /&gt; size_t          rslt;&lt;br /&gt; rslt =&lt;br /&gt;  iconv (iconv_gbk_utf8, (const char **) &amp;amp;inbuf, (size_t *) inlen,&lt;br /&gt;      &amp;amp;outbuf, (size_t *) outlen);&lt;br /&gt; if (rslt &amp;lt; 0)&lt;br /&gt;  return rslt;&lt;br /&gt; *outlen = ((unsigned char *) outbuf - out);&lt;br /&gt; *inlen = ((unsigned char *) inbuf - in);&lt;br /&gt; return *outlen;&lt;br /&gt;}&lt;br /&gt;    初始化的时候运行以下代码进行句柄注册。&lt;br /&gt;{&lt;br /&gt; if (iconv_utf8_gbk == NULL)&lt;br /&gt;  iconv_utf8_gbk = iconv_open (&amp;quot;utf-8&amp;quot;, &amp;quot;gbk&amp;quot;);&lt;br /&gt; if (iconv_gbk_utf8 == NULL)&lt;br /&gt;  iconv_gbk_utf8 = iconv_open (&amp;quot;gbk&amp;quot;, &amp;quot;utf-8&amp;quot;);&lt;br /&gt; LIBXML_TEST_VERSION;&lt;br /&gt; xmlNewCharEncodingHandler (&amp;quot;gb2312&amp;quot;, gbk_input, gbk_output);&lt;br /&gt; xmlNewCharEncodingHandler (&amp;quot;gbk&amp;quot;, gbk_input, gbk_output);&lt;br /&gt;}&lt;br /&gt;    经过试验，这样我们就可以解析编码类型为gbk和gb2312的xml文件了。可以进行输入和输出，不过输出的utf-8形式让人觉得有点难过……&lt;br /&gt;
-&lt;div&gt;&lt;/div&gt;&lt;/p&gt;
+      <description>&lt;p&gt;libxml是gnome的XML解析库，具有强大的解析能力，支持DOM和SAX解析模型，属于验证型解析器。其内部是使用utf-8编码工作的，因此gbk之类编码的XML无法解析。为了解决这个问题，我们可以使用一个很简单的小窍门。&lt;br /&gt;
+    libxml是要和iconv一并使用的，头文件引用一般类似以下形式。&lt;br /&gt;
+#include &amp;lt;iconv.h&amp;gt;&lt;br /&gt;
+#pragma comment(lib, &amp;ldquo;iconv&amp;rdquo;)&lt;br /&gt;
+#include &amp;lt;libxml/tree.h&amp;gt;&lt;br /&gt;
+#include &amp;lt;libxml/parser.h&amp;gt;&lt;br /&gt;
+#pragma comment(lib, &amp;ldquo;libxml2&amp;rdquo;)&lt;br /&gt;
+   
+这样的话，我们向libxml注册一个处理句柄，对其他编码的xml先执行一次转换，再进行解析。&lt;br /&gt;
+iconv_t         iconv_utf8_gbk = NULL;&lt;br /&gt;
+iconv_t         iconv_gbk_utf8 = NULL;&lt;br /&gt;
+int gbk_input (unsigned char *out, int *outlen, const unsigned char
+*in,&lt;br /&gt;
+      int *inlen)&lt;br /&gt;
+{&lt;br /&gt;
+ char           *outbuf = (char *) out;&lt;br /&gt;
+ char           *inbuf = (char *) in;&lt;br /&gt;
+ size_t          rslt;&lt;br /&gt;
+ rslt =&lt;br /&gt;
+  iconv (iconv_utf8_gbk, (const char **) &amp;amp;inbuf, (size_t *)
+inlen,&lt;br /&gt;
+      &amp;amp;outbuf, (size_t *) outlen);&lt;br /&gt;
+ if (rslt &amp;lt; 0)&lt;br /&gt;
+  return rslt;&lt;br /&gt;
+ *outlen = ((unsigned char *) outbuf - out);&lt;br /&gt;
+ *inlen = ((unsigned char *) inbuf - in);&lt;br /&gt;
+ return *outlen;&lt;br /&gt;
+}&lt;/p&gt;
+
+&lt;p&gt;int gbk_output (unsigned char *out,&lt;br /&gt;
+    int *outlen, const unsigned char *in, int *inlen)&lt;br /&gt;
+{&lt;br /&gt;
+ char           *outbuf = (char *) out;&lt;br /&gt;
+ char           *inbuf = (char *) in;&lt;br /&gt;
+ size_t          rslt;&lt;br /&gt;
+ rslt =&lt;br /&gt;
+  iconv (iconv_gbk_utf8, (const char **) &amp;amp;inbuf, (size_t *)
+inlen,&lt;br /&gt;
+      &amp;amp;outbuf, (size_t *) outlen);&lt;br /&gt;
+ if (rslt &amp;lt; 0)&lt;br /&gt;
+  return rslt;&lt;br /&gt;
+ *outlen = ((unsigned char *) outbuf - out);&lt;br /&gt;
+ *inlen = ((unsigned char *) inbuf - in);&lt;br /&gt;
+ return *outlen;&lt;br /&gt;
+}&lt;br /&gt;
+    初始化的时候运行以下代码进行句柄注册。&lt;br /&gt;
+{&lt;br /&gt;
+ if (iconv_utf8_gbk == NULL)&lt;br /&gt;
+  iconv_utf8_gbk = iconv_open (&amp;ldquo;utf-8&amp;rdquo;, &amp;ldquo;gbk&amp;rdquo;);&lt;br /&gt;
+ if (iconv_gbk_utf8 == NULL)&lt;br /&gt;
+  iconv_gbk_utf8 = iconv_open (&amp;ldquo;gbk&amp;rdquo;, &amp;ldquo;utf-8&amp;rdquo;);&lt;br /&gt;
+ LIBXML_TEST_VERSION;&lt;br /&gt;
+ xmlNewCharEncodingHandler (&amp;ldquo;gb2312&amp;rdquo;, gbk_input, gbk_output);&lt;br /&gt;
+ xmlNewCharEncodingHandler (&amp;ldquo;gbk&amp;rdquo;, gbk_input, gbk_output);&lt;br /&gt;
+}&lt;br /&gt;
+   
+经过试验，这样我们就可以解析编码类型为gbk和gb2312的xml文件了。可以进行输入和输出，不过输出的utf-8形式让人觉得有点难过……&lt;/p&gt;
+
+&lt;div&gt;
+
+&lt;/div&gt;
 </description>
     </item>
     
@@ -28,7 +86,117 @@
       <pubDate>Fri, 28 Sep 2007 22:43:40 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/411/</guid>
-      <description>&lt;p&gt;libxml2是gnome做的一个xml的库，支持SAX和DOM。&lt;br /&gt;    在解析xml的时候，libxml2会将xml中不属于标签的部分作为text节点插入。如果是属性，则添加一个属性节点到父节点上，一个文字节点到属性节点下。那么整个xml就变成了一颗单纯的树。&lt;br /&gt;    支持多语言的问题上，libxml2的内核只支持UTF-8。但是可以通过注册编码句柄来添加语言支持，一般是配合iconv[2]使用的，因为libxml2的编译依赖就是iconv。下面是代码。&lt;br /&gt;&lt;br /&gt;iconv_t         iconv_utf8_gbk;&lt;br /&gt;iconv_t         iconv_gbk_utf8;&lt;br /&gt;&lt;br /&gt;int gbk_input (unsigned char *out, int *outlen, const unsigned char *in,&lt;br /&gt;               int *inlen)&lt;br /&gt;{&lt;br /&gt;    char           *outbuf = (char *) out;&lt;br /&gt;    char           *inbuf = (char *) in;&lt;br /&gt;    size_t          rslt;&lt;br /&gt;    rslt =&lt;br /&gt;        iconv (iconv_utf8_gbk, (const char **) &amp;amp;inbuf, (size_t *) inlen,&lt;br /&gt;               &amp;amp;outbuf, (size_t *) outlen);&lt;br /&gt;    if (rslt &amp;lt; 0)&lt;br /&gt;        return rslt;&lt;br /&gt;    *outlen = ((unsigned char *) outbuf - out);&lt;br /&gt;    *inlen = ((unsigned char *) inbuf - in);&lt;br /&gt;    return *outlen;&lt;br /&gt;}&lt;br /&gt;&lt;br /&gt;int gbk_output (unsigned char *out,&lt;br /&gt;                int *outlen, const unsigned char *in, int *inlen)&lt;br /&gt;{&lt;br /&gt;    char           *outbuf = (char *) out;&lt;br /&gt;    char           *inbuf = (char *) in;&lt;br /&gt;    size_t          rslt;&lt;br /&gt;    rslt =&lt;br /&gt;        iconv (iconv_gbk_utf8, (const char **) &amp;amp;inbuf, (size_t *) inlen,&lt;br /&gt;               &amp;amp;outbuf, (size_t *) outlen);&lt;br /&gt;    if (rslt &amp;lt; 0)&lt;br /&gt;        return rslt;&lt;br /&gt;    *outlen = ((unsigned char *) outbuf - out);&lt;br /&gt;    *inlen = ((unsigned char *) inbuf - in);&lt;br /&gt;    return *outlen;&lt;br /&gt;}&lt;br /&gt;&lt;br /&gt;&lt;br /&gt;&lt;br /&gt;static void print_element_names (xmlDocPtr doc, xmlNode * a_node, int n)&lt;br /&gt;{&lt;br /&gt;    xmlNode        *cur_node = NULL;&lt;br /&gt;    xmlAttr           *cur_attr = NULL;&lt;br /&gt;    xmlChar *key;&lt;br /&gt;&lt;br /&gt;    for (cur_node = a_node; cur_node; cur_node = cur_node-&amp;gt;next) {&lt;br /&gt;            for (int i = 0; i &amp;lt; n; ++i)&lt;br /&gt;                printf (&amp;quot; &amp;quot;);&lt;br /&gt;//            key = xmlNodeListGetString(doc, cur_node-&amp;gt;xmlChildrenNode, 1);&lt;br /&gt;            printf (&amp;quot;node %d: %s = %sn&amp;quot;, cur_node-&amp;gt;type, cur_node-&amp;gt;name, cur_node-&amp;gt;content);&lt;br /&gt;            if (cur_node-&amp;gt;properties != NULL){&lt;br /&gt;                for (cur_attr = cur_node-&amp;gt;properties; cur_attr; cur_attr = cur_attr-&amp;gt;next){&lt;br /&gt;                    printf (&amp;quot;attr %s = %sn&amp;quot;, cur_attr-&amp;gt;name, cur_attr-&amp;gt;children-&amp;gt;content);&lt;br /&gt;                }&lt;br /&gt;            }&lt;br /&gt;//            xmlFree(key);&lt;br /&gt;&lt;br /&gt;        if (cur_node-&amp;gt;type == XML_ELEMENT_NODE)&lt;br /&gt;            print_element_names (doc, cur_node-&amp;gt;children, n + 1);&lt;br /&gt;    }&lt;br /&gt;}&lt;br /&gt;&lt;br /&gt;int _tmain (int argc, _TCHAR * argv[])&lt;br /&gt;{&lt;br /&gt;    xmlDoc         *doc = NULL;&lt;br /&gt;    xmlNode        *root_element = NULL;&lt;br /&gt;    LIBXML_TEST_VERSION;&lt;br /&gt;    iconv_utf8_gbk = iconv_open (&amp;quot;utf-8&amp;quot;, &amp;quot;gbk&amp;quot;);&lt;br /&gt;    iconv_gbk_utf8 = iconv_open (&amp;quot;gbk&amp;quot;, &amp;quot;utf-8&amp;quot;);&lt;br /&gt;&lt;br /&gt;    xmlNewCharEncodingHandler (&amp;quot;gb2312&amp;quot;, gbk_input, gbk_output);//添加gb2312编码支持&lt;br /&gt;    xmlNewCharEncodingHandler (&amp;quot;gbk&amp;quot;, gbk_input, gbk_output);//添加gbk编码支持&lt;br /&gt;&lt;br /&gt;    doc = xmlReadFile (&amp;quot;Q.xml&amp;quot;, NULL, 0);&lt;br /&gt;    if (doc == NULL) {&lt;br /&gt;        printf (&amp;quot;Failed to parse %sn&amp;quot;, &amp;quot;Q.xml&amp;quot;);&lt;br /&gt;        return 0;&lt;br /&gt;    }&lt;br /&gt;&lt;br /&gt;    root_element = xmlDocGetRootElement (doc);&lt;br /&gt;    print_element_names (doc, root_element, 0);&lt;br /&gt;    xmlFreeDoc (doc);&lt;br /&gt;&lt;br /&gt;    xmlCleanupParser ();&lt;br /&gt;    xmlMemoryDump ();&lt;br /&gt;    iconv_close (iconv_gbk_utf8);&lt;br /&gt;    iconv_close (iconv_utf8_gbk);&lt;br /&gt;    return 0;&lt;br /&gt;}&lt;br /&gt;&lt;br /&gt;    在XML无指定编码的时候没有测试过，不过按照XML标准，这时候应该是UTF-8编码。不符合标准的话……自己想办法吧。&lt;br /&gt;&lt;br /&gt;Reference:&lt;br /&gt;1. The XML C parser and toolkit of Gnome: &lt;a href=&#34;http://xmlsoft.org/&#34;&gt;http://xmlsoft.org/&lt;/a&gt;&lt;br /&gt;2. libiconv: &lt;a href=&#34;http://www.gnu.org/savannah-checkouts/gnu/libiconv/&#34;&gt;http://www.gnu.org/savannah-checkouts/gnu/libiconv/&lt;/a&gt;&lt;br /&gt;&lt;/p&gt;
+      <description>&lt;p&gt;libxml2是gnome做的一个xml的库，支持SAX和DOM。&lt;br /&gt;
+   
+在解析xml的时候，libxml2会将xml中不属于标签的部分作为text节点插入。如果是属性，则添加一个属性节点到父节点上，一个文字节点到属性节点下。那么整个xml就变成了一颗单纯的树。&lt;br /&gt;
+   
+支持多语言的问题上，libxml2的内核只支持UTF-8。但是可以通过注册编码句柄来添加语言支持，一般是配合iconv[2]使用的，因为libxml2的编译依赖就是iconv。下面是代码。&lt;br /&gt;
+&lt;br /&gt;
+iconv_t         iconv_utf8_gbk;&lt;br /&gt;
+iconv_t         iconv_gbk_utf8;&lt;br /&gt;
+&lt;br /&gt;
+int gbk_input (unsigned char *out, int *outlen, const unsigned char
+*in,&lt;br /&gt;
+               int *inlen)&lt;br /&gt;
+{&lt;br /&gt;
+    char           *outbuf = (char *) out;&lt;br /&gt;
+    char           *inbuf = (char *) in;&lt;br /&gt;
+    size_t          rslt;&lt;br /&gt;
+    rslt =&lt;br /&gt;
+        iconv (iconv_utf8_gbk, (const char **) &amp;amp;inbuf, (size_t *)
+inlen,&lt;br /&gt;
+               &amp;amp;outbuf, (size_t *) outlen);&lt;br /&gt;
+    if (rslt &amp;lt; 0)&lt;br /&gt;
+        return rslt;&lt;br /&gt;
+    *outlen = ((unsigned char *) outbuf - out);&lt;br /&gt;
+    *inlen = ((unsigned char *) inbuf - in);&lt;br /&gt;
+    return *outlen;&lt;br /&gt;
+}&lt;br /&gt;
+&lt;br /&gt;
+int gbk_output (unsigned char *out,&lt;br /&gt;
+                int *outlen, const unsigned char *in, int *inlen)&lt;br /&gt;
+{&lt;br /&gt;
+    char           *outbuf = (char *) out;&lt;br /&gt;
+    char           *inbuf = (char *) in;&lt;br /&gt;
+    size_t          rslt;&lt;br /&gt;
+    rslt =&lt;br /&gt;
+        iconv (iconv_gbk_utf8, (const char **) &amp;amp;inbuf, (size_t *)
+inlen,&lt;br /&gt;
+               &amp;amp;outbuf, (size_t *) outlen);&lt;br /&gt;
+    if (rslt &amp;lt; 0)&lt;br /&gt;
+        return rslt;&lt;br /&gt;
+    *outlen = ((unsigned char *) outbuf - out);&lt;br /&gt;
+    *inlen = ((unsigned char *) inbuf - in);&lt;br /&gt;
+    return *outlen;&lt;br /&gt;
+}&lt;br /&gt;
+&lt;br /&gt;
+&lt;br /&gt;
+&lt;br /&gt;
+static void print_element_names (xmlDocPtr doc, xmlNode * a_node,
+int n)&lt;br /&gt;
+{&lt;br /&gt;
+    xmlNode        *cur_node = NULL;&lt;br /&gt;
+    xmlAttr           *cur_attr = NULL;&lt;br /&gt;
+    xmlChar *key;&lt;br /&gt;
+&lt;br /&gt;
+    for (cur_node = a_node; cur_node; cur_node = cur_node-&amp;gt;next)
+{&lt;br /&gt;
+            for (int i = 0; i &amp;lt; n; ++i)&lt;br /&gt;
+                printf (&amp;rdquo; &amp;ldquo;);&lt;br /&gt;
+//            key = xmlNodeListGetString(doc,
+cur_node-&amp;gt;xmlChildrenNode, 1);&lt;br /&gt;
+            printf (&amp;ldquo;node %d: %s = %sn&amp;rdquo;, cur_node-&amp;gt;type,
+cur_node-&amp;gt;name, cur_node-&amp;gt;content);&lt;br /&gt;
+            if (cur_node-&amp;gt;properties != NULL){&lt;br /&gt;
+                for (cur_attr = cur_node-&amp;gt;properties; cur_attr;
+cur_attr = cur_attr-&amp;gt;next){&lt;br /&gt;
+                    printf (&amp;ldquo;attr %s = %sn&amp;rdquo;, cur_attr-&amp;gt;name,
+cur_attr-&amp;gt;children-&amp;gt;content);&lt;br /&gt;
+                }&lt;br /&gt;
+            }&lt;br /&gt;
+//            xmlFree(key);&lt;br /&gt;
+&lt;br /&gt;
+        if (cur_node-&amp;gt;type == XML_ELEMENT_NODE)&lt;br /&gt;
+            print_element_names (doc, cur_node-&amp;gt;children, n + 1);&lt;br /&gt;
+    }&lt;br /&gt;
+}&lt;br /&gt;
+&lt;br /&gt;
+int _tmain (int argc, _TCHAR * argv[])&lt;br /&gt;
+{&lt;br /&gt;
+    xmlDoc         *doc = NULL;&lt;br /&gt;
+    xmlNode        *root_element = NULL;&lt;br /&gt;
+    LIBXML_TEST_VERSION;&lt;br /&gt;
+    iconv_utf8_gbk = iconv_open (&amp;ldquo;utf-8&amp;rdquo;, &amp;ldquo;gbk&amp;rdquo;);&lt;br /&gt;
+    iconv_gbk_utf8 = iconv_open (&amp;ldquo;gbk&amp;rdquo;, &amp;ldquo;utf-8&amp;rdquo;);&lt;br /&gt;
+&lt;br /&gt;
+    xmlNewCharEncodingHandler (&amp;ldquo;gb2312&amp;rdquo;, gbk_input,
+gbk_output);//添加gb2312编码支持&lt;br /&gt;
+    xmlNewCharEncodingHandler (&amp;ldquo;gbk&amp;rdquo;, gbk_input,
+gbk_output);//添加gbk编码支持&lt;br /&gt;
+&lt;br /&gt;
+    doc = xmlReadFile (&amp;ldquo;Q.xml&amp;rdquo;, NULL, 0);&lt;br /&gt;
+    if (doc == NULL) {&lt;br /&gt;
+        printf (&amp;ldquo;Failed to parse %sn&amp;rdquo;, &amp;ldquo;Q.xml&amp;rdquo;);&lt;br /&gt;
+        return 0;&lt;br /&gt;
+    }&lt;br /&gt;
+&lt;br /&gt;
+    root_element = xmlDocGetRootElement (doc);&lt;br /&gt;
+    print_element_names (doc, root_element, 0);&lt;br /&gt;
+    xmlFreeDoc (doc);&lt;br /&gt;
+&lt;br /&gt;
+    xmlCleanupParser ();&lt;br /&gt;
+    xmlMemoryDump ();&lt;br /&gt;
+    iconv_close (iconv_gbk_utf8);&lt;br /&gt;
+    iconv_close (iconv_utf8_gbk);&lt;br /&gt;
+    return 0;&lt;br /&gt;
+}&lt;br /&gt;
+&lt;br /&gt;
+   
+在XML无指定编码的时候没有测试过，不过按照XML标准，这时候应该是UTF-8编码。不符合标准的话……自己想办法吧。&lt;br /&gt;
+&lt;br /&gt;
+Reference:&lt;br /&gt;
+1. The XML C parser and toolkit of Gnome: &lt;a href=&#34;http://xmlsoft.org/&#34;&gt;http://xmlsoft.org/&lt;/a&lt;br /&gt;
+2. libiconv: &lt;a href=&#34;http://www.gnu.org/savannah-checkouts/gnu/libiconv/&#34;&gt;http://www.gnu.org/savannah-checkouts/gnu/libiconv/&lt;/a&gt;&lt;/p&gt;
 </description>
     </item>
     
@@ -38,9 +206,82 @@
       <pubDate>Fri, 11 May 2007 17:11:31 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/384/</guid>
-      <description>&lt;p&gt;首先，阐明几个基本概念。字符集，编码方案，编码范围，编码方法，编码位数，兼容性，编码兼容性。&lt;br /&gt;    字符集是指一系列符号的集合。计算机中只能处理数字，因此符号必须给予编码，而后储存符号编码。打印时按照编码索引到符号，再索引到字体。因此一个字符集编码为数字的方案就是编码方案。其中西文编码规范就是ASCII(ISO-8859-1)。&lt;br /&gt;    编码范围是指字符集的有效符号编码的范围。例如当前的ASCII编码范围是0-127，因此所有兼容ASCII的编码，其编码范围必定要回避0-127，否则就会出现编码冲突。而编码方法(不等同于编码方案)则是这个数字转换为计算机内数据的方法，一般分big endian(大端点)和little endian(小端点)两种。&lt;br /&gt;    big endian和little endian是CPU处理多字节数的不同方式。例如“汉”字的Unicode编码是6C49。那么写到文件里时，究竟是将6C写在前面，还是将49写在前面？如果将6C写在前面，就是big endian。还是将49写在前面，就是little endian。“endian”这个词出自《格列佛游记》。小人国的内战就源于吃鸡蛋时是究竟从大头(Big-Endian)敲开还是从小头(Little-Endian)敲开，由此曾发生过六次叛乱，其中一个皇帝送了命，另一个丢了王位。&lt;br /&gt;    当然，编码方法还有其他情况，例如UTF-8就也是一种编码方法，叫做非等长编码。非等长编码在安全性，扩充性和兼容性上优于等长编码，但是使用起来效率非常差。不信的可以用windows中的_mbsdec函数看看，除了当前指针，还需要起始指针进行逆遍历，效率可想而知。&lt;br /&gt;    在大端点和小端点的情况下，存储一个符号所需要用的位数叫做编码位数。位数分为固定位数和浮动位数。又因为编码位数一般都为8的整数倍，因此一般都使用编码字节数来代替。    &lt;br /&gt;    兼容是指一个字符集的文字在另外一个字符集中全部存在。所以，A字符集兼容B，一般B字符集不兼容A，否则两者就相同了。编码兼容性是指一个字符集的文字在另外一个字符集中全部存在，并且同一文字表示的编码一致。可以想见，编码兼容的字符集本身一定兼容。&lt;br /&gt;&lt;br /&gt;    其次，GB3212, GBK, GB18030, BIG5, CNS11643, CJK, Unicode, UCS-2, UTF-8的区别。&lt;br /&gt;&lt;br /&gt;    简体中文来说，基本是GB系列的大陆地区简体中文国家标准，全部都是向下编码兼容的(附注：存在部分的兼容错误)。有GB3212, GBK, GB18030三个标准。编码方案都是兼容小端点序。(GB18030有变长编码)&lt;br /&gt;    1980年制定的GB2312是国家早期的字符编码规范。一共收录了7445个字符，范围是0xA1A1 - 0xFEFE。现在意义基本等同于国家最小字符编码集。支持中文的产品最小要支持所有GB2312字符的显示。&lt;br /&gt;    1995年制定的汉字扩展规范GBK1.0，简称GBK。收录了21886个符号，范围是0x8140 - 0xFEFE。现在多数电脑的字符集都是这个，向下编码兼容GB2312标准。&lt;br /&gt;    2000年的GB18030是取代GBK1.0的正式国家标准，该标准收录了27484个汉字，同时还收录了藏文、蒙文、维吾尔文等主要的少数民族文字。编码是变长的，其二字节部分与GBK兼容；四字节部分是扩充的字形、字位，其编码范围是首字节0x81-0xfe、二字节0x30-0x39、三字节0x81-0xfe、四字节0x30-0x39。向下编码兼容GBK1.0，当前使用中，GB18030和GBK的区别一般人无法区分(也没有多少人碰的上这种字)，所以一般GBK就通用指代了GB系列中比较复杂的那种编码。&lt;br /&gt;&lt;br /&gt;    繁体中文来说，有BIG5, CNS11643, HKSCS三种。贝壳实际应用比较少，下面可能存在错误，请大家指正。&lt;br /&gt;&lt;br /&gt;    BIG5是在CCCII不為政府單位採納，國家頒布的中文標準碼又不堪用的情況下。在1984年，由台北市電腦公會主導，聯合了十三家業者， 共同制定，并在2003年进行了修订(Big5-2003)，旨在提供一个小型基本字符集以便对当前的繁体中文字符进行编码。Big5-2003是Big5的扩展，仅有2个平面，包含13051个繁体中文字符和778个符号，共13829个字符。编码范围是0xA140 - 0xF9FE, 0xA1A1 - 0xF9FE。对于熟悉电脑的人来说，都知道Big5是繁体字的事实标准。&lt;br /&gt;    CNS11643在1992年制定，并在2004年进行了修订(称为CNS11643-2004)，旨在提供足够的字符编码以便对所有当前的繁体中文字符进行编码。CNS11643-2004是CNS11643的扩展，可以有 80 个编码平面。该标准支持： 8836 x 80 = 706,880 个编码点。原来的CNS11643标准仅有16个编码平面。在平面4以及平面12到15中，包含了台湾地区政府允许的所有法定人名用繁体中文字符。CNS11643直接取用了Big5的大部分编码，因此不考虑几个特例的情况下(准确的说，是两个)，CNS11643编码兼容了Big5。&lt;br /&gt;    香港增补字符集(HKSCS)原来叫做政府通用字库(GCCS)，分两个编码方案。其中Big5版是香港政府为big5加的3049个字，因此也可以说HKSCS编码兼容了BIg5。ISO 10646方案是香港政府在给Big5添加符号后向ISO标准委员会提交了申请的结果，和Big5的版本互相兼容，只是编码方案(不是编码方法)不一致而已。&lt;br /&gt;    再附加一点说明，一般我们说的编码转换，就是在Big5和GB2312间转换。鉴于繁体和简体文字的非严格对应性，转换可能存在误差。至于最大字符集组GB18030和CNS11643间的完美转换——还是等世界和平吧。&lt;br /&gt;&lt;br /&gt;    下面说明Unicode家族，根据网络上的介绍，原来Unicode联盟和ISO标准组织都要对整个人类的符号进行编码工作(背景音乐：数星星啊数星星～××)，后来两者联合，这事就成了(it was so，玩笑玩笑)。大家知道，中国文件和东南亚各国间互相交流，因此字符重复者甚众。其中CJK是原来中国(包括香港、台湾地区)与朝鲜、韩国、日本联合制定的三国文字集合，现在已经被收入Unicode中。Unicode是一个单纯的编码方案，不过编码方法就相对复杂了，分为UCS-2，UCS-4，UTF-8等等。&lt;br /&gt;    UCS-2和UCS-4是等长编码方法，简单来说就是U+65535以内的可以编码入UCS-2，以上就需要使用UCS-4了(目前这个范围还没有启用)。UCS-2总共有65535个编码点，又叫做UCS-4的BMP区域。本质上是使用大端点或者小端点编码方法直接编码，可以在字符串开始的地方加入FF FE或者FE FF加以判别。优点是将所有字符熔於一个体系，没有编码冲突问题，因此可以在一个容器内引用多国文字(例如在同一句话中引用简体和繁体中文)，效率非常高，但是有个致命缺点，不兼容ASCII。&lt;br /&gt;    为了解决这个问题，我们一般使用Unicode的时候，使用它的UTF-8编码方法。这个编码方法是非等长的，其中多数汉字需要使用三字节来存储。如果您看到有什么中文变成乱码后长度增加了一半的，那多数就是UTF-8编码。对于ASCII，UTF-8就是一字节码，于是就完整的兼容了ASCII。对于UCS-4中可能出现的最大编码来说，这时候就需要六字节来描述一个符号。因此可以想见，将来UTF-8是一定要灭亡的。&lt;br /&gt;    &lt;br /&gt;Reference:&lt;br /&gt;[1].谈谈Unicode编码                    &lt;a href=&#34;http://www.windsn.com/article/viewmore.asp?id=227&#34;&gt;http://www.windsn.com/article/viewmore.asp?id=227&lt;/a&gt;&lt;br /&gt;[2].中文编码基础知识介绍        &lt;a href=&#34;http://www.eygle.com/digest/2007/01/zhs16gbk_char.html&#34;&gt;http://www.eygle.com/digest/2007/01/zhs16gbk_char.html&lt;/a&gt;&lt;br /&gt;[3].The CJK package for LaTeX    &lt;a href=&#34;http://cjk.ffii.org/&#34;&gt;http://cjk.ffii.org/&lt;/a&gt;&lt;br /&gt;[4].編碼標準                                &lt;a href
-=&#34;http://itbbs.saihu.com/archiver/tid-1943.html&#34;&gt;&lt;a href=&#34;http://itb&#34;&gt;http://itb&lt;/a&gt;
-bs.saihu.com/archiver/tid-1943.html&lt;/a&gt;&lt;br /&gt;[5].《香港增補字符集》            &lt;a href=&#34;http://www.info.gov.hk/digital21/chi/hkscs/introduction.html&#34;&gt;http://www.info.gov.hk/digital21/chi/hkscs/introduction.html&lt;/a&gt;&lt;br /&gt;[6].Unicode Home Page                &lt;a href=&#34;http://www.unicode.org/&#34;&gt;http://www.unicode.org/&lt;/a&gt;&lt;br /&gt;&lt;/p&gt;
+      <description>
+
+&lt;p&gt;首先，阐明几个基本概念。字符集，编码方案，编码范围，编码方法，编码位数，兼容性，编码兼容性。&lt;br /&gt;
+   
+字符集是指一系列符号的集合。计算机中只能处理数字，因此符号必须给予编码，而后储存符号编码。打印时按照编码索引到符号，再索引到字体。因此一个字符集编码为数字的方案就是编码方案。其中西文编码规范就是ASCII(ISO-8859-1)。&lt;br /&gt;
+   
+编码范围是指字符集的有效符号编码的范围。例如当前的ASCII编码范围是0-127，因此所有兼容ASCII的编码，其编码范围必定要回避0-127，否则就会出现编码冲突。而编码方法(不等同于编码方案)则是这个数字转换为计算机内数据的方法，一般分big
+endian(大端点)和little endian(小端点)两种。&lt;br /&gt;
+    big endian和little
+endian是CPU处理多字节数的不同方式。例如“汉”字的Unicode编码是6C49。那么写到文件里时，究竟是将6C写在前面，还是将49写在前面？如果将6C写在前面，就是big
+endian。还是将49写在前面，就是little
+endian。“endian”这个词出自《格列佛游记》。小人国的内战就源于吃鸡蛋时是究竟从大头(Big-Endian)敲开还是从小头(Little-Endian)敲开，由此曾发生过六次叛乱，其中一个皇帝送了命，另一个丢了王位。&lt;br /&gt;
+   
+当然，编码方法还有其他情况，例如UTF-8就也是一种编码方法，叫做非等长编码。非等长编码在安全性，扩充性和兼容性上优于等长编码，但是使用起来效率非常差。不信的可以用windows中的_mbsdec函数看看，除了当前指针，还需要起始指针进行逆遍历，效率可想而知。&lt;br /&gt;
+   
+在大端点和小端点的情况下，存储一个符号所需要用的位数叫做编码位数。位数分为固定位数和浮动位数。又因为编码位数一般都为8的整数倍，因此一般都使用编码字节数来代替。   &lt;br /&gt;
+   
+兼容是指一个字符集的文字在另外一个字符集中全部存在。所以，A字符集兼容B，一般B字符集不兼容A，否则两者就相同了。编码兼容性是指一个字符集的文字在另外一个字符集中全部存在，并且同一文字表示的编码一致。可以想见，编码兼容的字符集本身一定兼容。&lt;br /&gt;
+&lt;br /&gt;
+    其次，GB3212, GBK, GB18030, BIG5, CNS11643, CJK, Unicode, UCS-2,
+UTF-8的区别。&lt;br /&gt;
+&lt;br /&gt;
+   
+简体中文来说，基本是GB系列的大陆地区简体中文国家标准，全部都是向下编码兼容的(附注：存在部分的兼容错误)。有GB3212,
+GBK, GB18030三个标准。编码方案都是兼容小端点序。(GB18030有变长编码)&lt;br /&gt;
+   &lt;/p&gt;
+
+&lt;h2 id=&#34;1980年制定的gb2312是国家早期的字符编码规范-一共收录了7445个字符-范围是0xa1a1&#34;&gt;1980年制定的GB2312是国家早期的字符编码规范。一共收录了7445个字符，范围是0xA1A1&lt;/h2&gt;
+
+&lt;p&gt;0xFEFE。现在意义基本等同于国家最小字符编码集。支持中文的产品最小要支持所有GB2312字符的显示。&lt;br /&gt;
+   
+1995年制定的汉字扩展规范GBK1.0，简称GBK。收录了21886个符号，范围是0x8140
+- 0xFEFE。现在多数电脑的字符集都是这个，向下编码兼容GB2312标准。&lt;br /&gt;
+   
+2000年的GB18030是取代GBK1.0的正式国家标准，该标准收录了27484个汉字，同时还收录了藏文、蒙文、维吾尔文等主要的少数民族文字。编码是变长的，其二字节部分与GBK兼容；四字节部分是扩充的字形、字位，其编码范围是首字节0x81-0xfe、二字节0x30-0x39、三字节0x81-0xfe、四字节0x30-0x39。向下编码兼容GBK1.0，当前使用中，GB18030和GBK的区别一般人无法区分(也没有多少人碰的上这种字)，所以一般GBK就通用指代了GB系列中比较复杂的那种编码。&lt;br /&gt;
+&lt;br /&gt;
+    繁体中文来说，有BIG5, CNS11643,
+HKSCS三种。贝壳实际应用比较少，下面可能存在错误，请大家指正。&lt;br /&gt;
+&lt;br /&gt;
+   
+BIG5是在CCCII不為政府單位採納，國家頒布的中文標準碼又不堪用的情況下。在1984年，由台北市電腦公會主導，聯合了十三家業者，
+共同制定，并在2003年进行了修订(Big5-2003)，旨在提供一个小型基本字符集以便对当前的繁体中文字符进行编码。Big5-2003是Big5的扩展，仅有2个平面，包含13051个繁体中文字符和778个符号，共13829个字符。编码范围是0xA140
+- 0xF9FE, 0xA1A1 -
+0xF9FE。对于熟悉电脑的人来说，都知道Big5是繁体字的事实标准。&lt;br /&gt;
+   
+CNS11643在1992年制定，并在2004年进行了修订(称为CNS11643-2004)，旨在提供足够的字符编码以便对所有当前的繁体中文字符进行编码。CNS11643-2004是CNS11643的扩展，可以有
+80 个编码平面。该标准支持： 8836 x 80 = 706,880
+个编码点。原来的CNS11643标准仅有16个编码平面。在平面4以及平面12到15中，包含了台湾地区政府允许的所有法定人名用繁体中文字符。CNS11643直接取用了Big5的大部分编码，因此不考虑几个特例的情况下(准确的说，是两个)，CNS11643编码兼容了Big5。&lt;br /&gt;
+   
+香港增补字符集(HKSCS)原来叫做政府通用字库(GCCS)，分两个编码方案。其中Big5版是香港政府为big5加的3049个字，因此也可以说HKSCS编码兼容了BIg5。ISO
+10646方案是香港政府在给Big5添加符号后向ISO标准委员会提交了申请的结果，和Big5的版本互相兼容，只是编码方案(不是编码方法)不一致而已。&lt;br /&gt;
+   
+再附加一点说明，一般我们说的编码转换，就是在Big5和GB2312间转换。鉴于繁体和简体文字的非严格对应性，转换可能存在误差。至于最大字符集组GB18030和CNS11643间的完美转换——还是等世界和平吧。&lt;br /&gt;
+&lt;br /&gt;
+   
+下面说明Unicode家族，根据网络上的介绍，原来Unicode联盟和ISO标准组织都要对整个人类的符号进行编码工作(背景音乐：数星星啊数星星～××)，后来两者联合，这事就成了(it
+was
+so，玩笑玩笑)。大家知道，中国文件和东南亚各国间互相交流，因此字符重复者甚众。其中CJK是原来中国(包括香港、台湾地区)与朝鲜、韩国、日本联合制定的三国文字集合，现在已经被收入Unicode中。Unicode是一个单纯的编码方案，不过编码方法就相对复杂了，分为UCS-2，UCS-4，UTF-8等等。&lt;br /&gt;
+   
+UCS-2和UCS-4是等长编码方法，简单来说就是U+65535以内的可以编码入UCS-2，以上就需要使用UCS-4了(目前这个范围还没有启用)。UCS-2总共有65535个编码点，又叫做UCS-4的BMP区域。本质上是使用大端点或者小端点编码方法直接编码，可以在字符串开始的地方加入FF
+FE或者FE
+FF加以判别。优点是将所有字符熔於一个体系，没有编码冲突问题，因此可以在一个容器内引用多国文字(例如在同一句话中引用简体和繁体中文)，效率非常高，但是有个致命缺点，不兼容ASCII。&lt;br /&gt;
+   
+为了解决这个问题，我们一般使用Unicode的时候，使用它的UTF-8编码方法。这个编码方法是非等长的，其中多数汉字需要使用三字节来存储。如果您看到有什么中文变成乱码后长度增加了一半的，那多数就是UTF-8编码。对于ASCII，UTF-8就是一字节码，于是就完整的兼容了ASCII。对于UCS-4中可能出现的最大编码来说，这时候就需要六字节来描述一个符号。因此可以想见，将来UTF-8是一定要灭亡的。&lt;br /&gt;
+   &lt;br /&gt;
+Reference:&lt;br /&gt;
+[1].谈谈Unicode编码                   
+&lt;a href=&#34;http://www.windsn.com/article/viewmore.asp?id=227&#34;&gt;http://www.windsn.com/article/viewmore.asp?id=227&lt;/a&gt;&lt;br /&gt;
+[2].中文编码基础知识介绍       
+&lt;a href=&#34;http://www.eygle.com/digest/2007/01/zhs16gbk_char.html&#34;&gt;http://www.eygle.com/digest/2007/01/zhs16gbk_char.html&lt;/a&gt;&lt;br /&gt;
+[3].The CJK package for LaTeX    &lt;a href=&#34;http://cjk.ffii.org/&#34;&gt;http://cjk.ffii.org/&lt;/a&gt;&lt;br /&gt;
+[4].編碼標準                                &lt;a href=&#34;http://itbbs.saihu.com/archiver/tid-1943.html&#34;&gt;http://itb
+bs.saihu.com/archiver/tid-1943.html&lt;/a&gt;&lt;br /&gt;
+[5].《香港增補字符集》           
+&lt;a href=&#34;http://www.info.gov.hk/digital21/chi/hkscs/introduction.html&#34;&gt;http://www.info.gov.hk/digital21/chi/hkscs/introduction.html&lt;/a&gt;&lt;br /&gt;
+[6].Unicode Home Page                &lt;a href=&#34;http://www.unicode.org/&#34;&gt;http://www.unicode.org/&lt;/a&gt;&lt;/p&gt;
 </description>
     </item>
     
@@ -50,10 +291,58 @@ bs.saihu.com/archiver/tid-1943.html&lt;/a&gt;&lt;br /&gt;[5].《香港增補字�
       <pubDate>Sun, 02 Jul 2006 19:18:31 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/306/</guid>
-      <description>&lt;div&gt;linux号称可以支持全部语言，其实细节上还是有不少问题的。具体情况大致是这样的，linux的中文支持分三部分，locales，字体，设置。&lt;/div&gt;
-&lt;div&gt;首先是locale的部分，这个最简单不过，用root运行dpkg-reconfigure locales，然后选择你需要的解码方式，最后再设定系统默认语言（这个是可以修改的），就OK了。&lt;/div&gt;
-&lt;div&gt;然后是字体，字体的设定比较复杂，不过在debian中安装所有中文桌面的字体就可以了。不用自己去绞尽脑汁。&lt;br /&gt;&lt;/div&gt;
-&lt;div&gt;最后是设定，这个比较复杂。因为可定制性非常好的系统，无法避免要用大量的脚本来定制。如果可定制性差，相信你也不会用了。和中文相关的设置大致有一下几个，针对debian系统。&lt;br /&gt;/etc/default/gdm:LANG=zh_CN.GBK #gdm登录时候的locales&lt;br /&gt;/etc/default/locale:LANG=zh_CN.GBK #这个是系统默认登录的locals，如果你使用命令行登录就是使用这个的&lt;br /&gt;/etc/environment:LANGUAGE=&amp;quot;zh_CN:zh:en_US:en&amp;quot;&lt;br /&gt;/etc/environment:LANG=zh_CN #这个是登录进入X后的设置，你运行的所有程序基本都是使用这个&lt;br /&gt;dpkg-reconfigure locales的默认语言设定修改的是/etc/default/locale，所以对X登录进去后的程序不一定起作用。一般情况下这zh_CN的设定就通吃了，不过有的时候有点小BUG，例如term下面vi后退出，就变成看不懂的乱马了。这个时候要重设屏幕才可以恢复。而且在输入的时候没有——的，很多东西也看不到。所以我改成了zh_CN.GBK，然后出现了两个问题。&lt;br /&gt;一个是gvim不运行了，这个看了看别人，这么解决。&lt;br /&gt;----------------------~/.gvimrc-----------------------&lt;br /&gt;set encoding=gb2312&lt;br /&gt;set langmenu=zh_CN.GB2312&lt;br /&gt;set imcmdline&lt;br /&gt;source $VIMRUNTIME/delmenu.vim&lt;br /&gt;source $VIMRUNTIME/menu.vim&lt;br /&gt;---------------------------------------------------------&lt;br /&gt;保证这个文件里面有这些内容就可以了。&lt;br /&gt;然后是gtk1.X的程序都不正常了，主要是xmms和audacity。这个看了人家忽悠半天，最后这么解决的。&lt;br /&gt;-----------------/usr/bin/env_zh_CN---------------&lt;br /&gt;#!/bin/bash&lt;br /&gt;LANG=zh_CN&lt;br /&gt;exec $@&lt;br /&gt;----------------------------------------------------------&lt;br /&gt;然后chmod a+x /usr/bin/env_zh_CN&lt;br /&gt;再修改所有运行语句成env_zh_CN xmms&lt;br /&gt;我修改了两处。&lt;br /&gt;&lt;br /&gt;世界基本就清静了。&lt;br /&gt;&lt;/div&gt;
+      <description>&lt;div&gt;
+
+linux号称可以支持全部语言，其实细节上还是有不少问题的。具体情况大致是这样的，linux的中文支持分三部分，locales，字体，设置。
+
+&lt;/div&gt;
+
+&lt;div&gt;
+
+首先是locale的部分，这个最简单不过，用root运行dpkg-reconfigure
+locales，然后选择你需要的解码方式，最后再设定系统默认语言（这个是可以修改的），就OK了。
+
+&lt;/div&gt;
+
+&lt;div&gt;
+
+然后是字体，字体的设定比较复杂，不过在debian中安装所有中文桌面的字体就可以了。不用自己去绞尽脑汁。\
+
+&lt;/div&gt;
+
+&lt;div&gt;
+
+最后是设定，这个比较复杂。因为可定制性非常好的系统，无法避免要用大量的脚本来定制。如果可定制性差，相信你也不会用了。和中文相关的设置大致有一下几个，针对debian系统。\
+/etc/default/gdm:LANG=zh\_CN.GBK \#gdm登录时候的locales\
+/etc/default/locale:LANG=zh\_CN.GBK
+\#这个是系统默认登录的locals，如果你使用命令行登录就是使用这个的\
+/etc/environment:LANGUAGE=&#34;zh\_CN:zh:en\_US:en&#34;\
+/etc/environment:LANG=zh\_CN
+\#这个是登录进入X后的设置，你运行的所有程序基本都是使用这个\
+dpkg-reconfigure
+locales的默认语言设定修改的是/etc/default/locale，所以对X登录进去后的程序不一定起作用。一般情况下这zh\_CN的设定就通吃了，不过有的时候有点小BUG，例如term下面vi后退出，就变成看不懂的乱马了。这个时候要重设屏幕才可以恢复。而且在输入的时候没有——的，很多东西也看不到。所以我改成了zh\_CN.GBK，然后出现了两个问题。\
+一个是gvim不运行了，这个看了看别人，这么解决。\
+----------------------\~/.gvimrc-----------------------\
+set encoding=gb2312\
+set langmenu=zh\_CN.GB2312\
+set imcmdline\
+source \$VIMRUNTIME/delmenu.vim\
+source \$VIMRUNTIME/menu.vim\
+---------------------------------------------------------\
+保证这个文件里面有这些内容就可以了。\
+然后是gtk1.X的程序都不正常了，主要是xmms和audacity。这个看了人家忽悠半天，最后这么解决的。\
+-----------------/usr/bin/env\_zh\_CN---------------\
+\#!/bin/bash\
+LANG=zh\_CN\
+exec \$@\
+----------------------------------------------------------\
+然后chmod a+x /usr/bin/env\_zh\_CN\
+再修改所有运行语句成env\_zh\_CN xmms\
+我修改了两处。\
+\
+世界基本就清静了。\
+
+&lt;/div&gt;
 </description>
     </item>
     

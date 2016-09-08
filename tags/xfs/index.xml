@@ -16,15 +16,66 @@
       <pubDate>Thu, 18 Aug 2011 15:42:49 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/1889/</guid>
-      <description>&lt;p&gt;在文件系统选型后，贝壳骤然发现用ext3保存媒体文件是一件很傻的事情。耗费空间多，性能差，安全性低。根据文章结论，其实最好的文件系统是xfs。同时，贝壳的mini-itx空间基本满了(/home分区75-80%)。所以，贝壳准备买一块新的硬盘，然后将数据迁移过去。 &lt;div&gt;    硬件选择上，贝壳询问了熟悉的硬件商。他说日立没货，WD的盘问题比较多，推荐希捷的。而且只有绿盘，具体型号是ST2000DL003-9VT166，SataIII，常规转速5900。ST的2T盘入手后，贝壳做了一下基础测试，hdparm分数是，原本的WD硬盘90M/s，新的ST硬盘70M/s，公司的硬盘99M/s。看来硬盘性能还是WD的比较好一点，当然，也可能是因为新硬盘本身就是低档硬盘。&lt;/div&gt;&lt;div&gt;    贝壳的第一选择，是按照原本的&lt;a href=&#34;http://shell909090.org/blog/2010/12/u%E7%9B%98%E5%AE%89%E8%A3%85debian%E7%9A%84%E6%8A%80%E5%B7%A7/&#34; target=&#34;_blank&#34;&gt;U盘安装设置&lt;/a&gt;，安装debian系统。不过前后两次都可耻的失败了，主要原因是mini-itx对U盘启动的支持并不是很好。被迫，用新买的大型电脑安装，又失败。原因是6.0的安装镜像对boot.img.gz方式的U盘启动支持不良。算了，先装5.0升级。没想到，这个原因直接导致了贝壳两次系统安装完毕后无法引导升级。为什么？因为硬盘的尺寸刚刚好比2T大了点。gurb升级到grub2的时候，为了让你支持全部空间，很好心的帮你升级到了gpt。然而gpt需要一个分区来保存一些信息，新多出来的空间又刚好不足以保存这个数据。因此，grub-pc就升级失败，而且救都没法救——因为没空间了。&lt;/div&gt;&lt;/p&gt;
+      <description>&lt;p&gt;在文件系统选型后，贝壳骤然发现用ext3保存媒体文件是一件很傻的事情。耗费空间多，性能差，安全性低。根据文章结论，其实最好的文件系统是xfs。同时，贝壳的mini-itx空间基本满了(/home分区75-80%)。所以，贝壳准备买一块新的硬盘，然后将数据迁移过去。
+&lt;div&gt;&lt;/p&gt;
 
-&lt;p&gt;&lt;div&gt;    两次折腾下来，贝壳基本搞明白了为什么。然而要解决这个问题，就要手工分区，计算大小，产生lvm，设定，然后debootstrap，再设定。或者就直接使用debian 6.0的安装镜像。这个时候，悲崔的事情来了——U盘安装那篇文章的上一节，就说明了如何直接使用usb启动iso，直接cat iso &amp;gt; /dev/sdX就可以了。早知道这么简单，何必折腾那么一大套呢，哎。&lt;/div&gt;&lt;div&gt;    debian 6.0的安装系统比5.0的好了很多，磁盘分区支持gpt，直接就生成了bios_grub分区。lvm2的支持增加了vg级别的控制，而不仅仅只能控制lv的生成和删除。同时增加了软raid的支持。这就很好的解决了贝壳当前的问题。&lt;/div&gt;&lt;/p&gt;
+&lt;p&gt;   
+硬件选择上，贝壳询问了熟悉的硬件商。他说日立没货，WD的盘问题比较多，推荐希捷的。而且只有绿盘，具体型号是ST2000DL003-9VT166，SataIII，常规转速5900。ST的2T盘入手后，贝壳做了一下基础测试，hdparm分数是，原本的WD硬盘90M/s，新的ST硬盘70M/s，公司的硬盘99M/s。看来硬盘性能还是WD的比较好一点，当然，也可能是因为新硬盘本身就是低档硬盘。&lt;/p&gt;
 
-&lt;p&gt;&lt;div&gt;    贝壳的分区方案是，gpt分区表，一个bios_grub分区，一个ext2的boot分区，一个lvm分区。lvm上面分8G的root，ext4格式。4G的swap，可以适应当前内存和升级到4G的内存(linux swap推荐是，4G以下两倍于内存，4G以上和内存一致)。1.7T的home，xfs格式。剩余268G。为什么要剩余？因为xfs只能扩展不能缩小，如果我需要扩展root和swap，或者需要产生新的lv来做虚拟机，不留下一定空间会出问题的。如果home不足，我再扩展150G基本可以解决问题。&lt;/div&gt;&lt;/p&gt;
+&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
 
-&lt;p&gt;&lt;div&gt;    分区和安装都很顺利，然而approx对新的系统基本没有缓冲作用。我略微想了一下，大概明白了为什么——原有系统是用i386架构和amd64内核，而新系统则是架构内核都是amd64。或者通俗来说，原系统是64位内核下的32位混合系统，而新系统是彻底的64位系统。32位的包对64位的系统一点用都没有，所以approx原有的包都白缓存了。&lt;/div&gt;&lt;div&gt;    好吧，瑕不掩瑜，这次升级基本还是成功的。安装对应软件包，复制数据（推荐首次cp -a，速度快，后面用rsync保证同步），修改属主（否则很多程序无法启动）。尤其需要注意，mldonkey在downloads.ini中，不但保存了以哪个用户启动，同时也保存了用户id。新系统中用户名和id对应关系会发生变化，因此要修改正确。基本——事情就完了。&lt;/div&gt;&lt;/p&gt;
+&lt;div&gt;
 
-&lt;p&gt;&lt;div&gt;    一个小细节是，uwsgi由于amd64升级，所以无法使用。贝壳解决了一下问题，重新编译这个包。另外，debian官方的包出来了，目前处于sid状态，大家可以等着什么时候进入testing状态了。&lt;/div&gt;&lt;/p&gt;
+   
+贝壳的第一选择，是按照原本的[U盘安装设置](http://shell909090.org/blog/2010/12/u%E7%9B%98%E5%AE%89%E8%A3%85debian%E7%9A%84%E6%8A%80%E5%B7%A7/)，安装debian系统。不过前后两次都可耻的失败了，主要原因是mini-itx对U盘启动的支持并不是很好。被迫，用新买的大型电脑安装，又失败。原因是6.0的安装镜像对boot.img.gz方式的U盘启动支持不良。算了，先装5.0升级。没想到，这个原因直接导致了贝壳两次系统安装完毕后无法引导升级。为什么？因为硬盘的尺寸刚刚好比2T大了点。gurb升级到grub2的时候，为了让你支持全部空间，很好心的帮你升级到了gpt。然而gpt需要一个分区来保存一些信息，新多出来的空间又刚好不足以保存这个数据。因此，grub-pc就升级失败，而且救都没法救——因为没空间了。
+
+&lt;/div&gt;
+
+&lt;div&gt;
+
+   
+两次折腾下来，贝壳基本搞明白了为什么。然而要解决这个问题，就要手工分区，计算大小，产生lvm，设定，然后debootstrap，再设定。或者就直接使用debian
+6.0的安装镜像。这个时候，悲崔的事情来了——U盘安装那篇文章的上一节，就说明了如何直接使用usb启动iso，直接cat
+iso &amp;gt; /dev/sdX就可以了。早知道这么简单，何必折腾那么一大套呢，哎。
+
+&lt;/div&gt;
+
+&lt;div&gt;
+
+    debian
+6.0的安装系统比5.0的好了很多，磁盘分区支持gpt，直接就生成了bios\_grub分区。lvm2的支持增加了vg级别的控制，而不仅仅只能控制lv的生成和删除。同时增加了软raid的支持。这就很好的解决了贝壳当前的问题。
+
+&lt;/div&gt;
+
+&lt;div&gt;
+
+   
+贝壳的分区方案是，gpt分区表，一个bios\_grub分区，一个ext2的boot分区，一个lvm分区。lvm上面分8G的root，ext4格式。4G的swap，可以适应当前内存和升级到4G的内存(linux
+swap推荐是，4G以下两倍于内存，4G以上和内存一致)。1.7T的home，xfs格式。剩余268G。为什么要剩余？因为xfs只能扩展不能缩小，如果我需要扩展root和swap，或者需要产生新的lv来做虚拟机，不留下一定空间会出问题的。如果home不足，我再扩展150G基本可以解决问题。
+
+&lt;/div&gt;
+
+&lt;div&gt;
+
+   
+分区和安装都很顺利，然而approx对新的系统基本没有缓冲作用。我略微想了一下，大概明白了为什么——原有系统是用i386架构和amd64内核，而新系统则是架构内核都是amd64。或者通俗来说，原系统是64位内核下的32位混合系统，而新系统是彻底的64位系统。32位的包对64位的系统一点用都没有，所以approx原有的包都白缓存了。
+
+&lt;/div&gt;
+
+&lt;div&gt;
+
+   
+好吧，瑕不掩瑜，这次升级基本还是成功的。安装对应软件包，复制数据（推荐首次cp
+-a，速度快，后面用rsync保证同步），修改属主（否则很多程序无法启动）。尤其需要注意，mldonkey在downloads.ini中，不但保存了以哪个用户启动，同时也保存了用户id。新系统中用户名和id对应关系会发生变化，因此要修改正确。基本——事情就完了。
+
+&lt;/div&gt;
+
+&lt;div&gt;
+
+   
+一个小细节是，uwsgi由于amd64升级，所以无法使用。贝壳解决了一下问题，重新编译这个包。另外，debian官方的包出来了，目前处于sid状态，大家可以等着什么时候进入testing状态了。
+
+&lt;/div&gt;
 </description>
     </item>
     
@@ -34,55 +85,272 @@
       <pubDate>Mon, 15 Aug 2011 10:07:03 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/1883/</guid>
-      <description>&lt;p&gt;贝壳原来一直认为文件系统可以随便选，结果最近吃了两次苦头。一个是btrfs对虚拟机支持不良，另一个是特定情况下xfs性能比ext3高20倍。痛定思痛，打算列一下文件系统选型的方法和依据，欢迎拍砖。&lt;div&gt;    下面我列一下纳入参考的文件系统，当然，ntfs就不要出来搞基了，玩嵌入式/光盘live之类的朋友也不要来凑热闹了阿。&lt;a href=&#34;http://zh.wikipedia.org/wiki/Btrfs&#34; target=&#34;_blank&#34;&gt;btrfs&lt;/a&gt;(&lt;a href=&#34;http://www.ibm.com/developerworks/cn/linux/l-cn-btrfs/&#34; target=&#34;_blank&#34;&gt;简介&lt;/a&gt;), &lt;a href=&#34;http://zh.wikipedia.org/wiki/Ext3&#34; target=&#34;_blank&#34;&gt;ext3&lt;/a&gt;, &lt;a href=&#34;http://zh.wikipedia.org/wiki/Ext4&#34; target=&#34;_blank&#34;&gt;ext4&lt;/a&gt;(&lt;a href=&#34;http://www.ibm.com/developerworks/cn/linux/l-anatomy-ext4/&#34; target=&#34;_blank&#34;&gt;简介&lt;/a&gt;), &lt;a href=&#34;http://en.wikipedia.org/wiki/JFS_(file_system)&#34; target=&#34;_blank&#34;&gt;jfs&lt;/a&gt;(&lt;a href=&#34;http://www.ibm.com/developerworks/cn/linux/filesystem/jfs/jfs/&#34; target=&#34;_blank&#34;&gt;简介&lt;/a&gt;), &lt;a href=&#34;http://zh.wikipedia.org/wiki/ReiserFS&#34; target=&#34;_blank&#34;&gt;reiserfs&lt;/a&gt;, &lt;a href=&#34;http://zh.wikipedia.org/wiki/XFS&#34; target=&#34;_blank&#34;&gt;xfs&lt;/a&gt;，基本涵盖常用文件系统。最下面加入ntfs和zfs对比，实际上不参与选型。以下进制换算为1024，大小依次为KB,MB,GB,TB,PB,EB,ZB。&lt;/div&gt;&lt;/p&gt;
+      <description>&lt;p&gt;贝壳原来一直认为文件系统可以随便选，结果最近吃了两次苦头。一个是btrfs对虚拟机支持不良，另一个是特定情况下xfs性能比ext3高20倍。痛定思痛，打算列一下文件系统选型的方法和依据，欢迎拍砖。
+&lt;div&gt;&lt;/p&gt;
 
-&lt;div&gt;&lt;font size=&#34;3&#34;&gt;
+&lt;p&gt;   
+下面我列一下纳入参考的文件系统，当然，ntfs就不要出来搞基了，玩嵌入式/光盘live之类的朋友也不要来凑热闹了阿。&lt;a href=&#34;http://zh.wikipedia.org/wiki/Btrfs&#34;&gt;btrfs&lt;/a&gt;(&lt;a href=&#34;http://www.ibm.com/developerworks/cn/linux/l-cn-btrfs/&#34;&gt;简介&lt;/a&gt;), &lt;a href=&#34;http://zh.wikipedia.org/wiki/Ext3&#34;&gt;ext3&lt;/a&gt;, &lt;a href=&#34;http://zh.wikipedia.org/wiki/Ext4&#34;&gt;ext4&lt;/a&gt;(&lt;a href=&#34;http://www.ibm.com/developerworks/cn/linux/l-anatomy-ext4/&#34;&gt;简介&lt;/a&gt;), &lt;a href=&#34;http://en.wikipedia.org/wiki/JFS_(file_system)&#34;&gt;jfs&lt;/a&gt;(&lt;a href=&#34;http://www.ibm.com/developerworks/cn/linux/filesystem/jfs/jfs/&#34;&gt;简介&lt;/a&gt;), &lt;a href=&#34;http://zh.wikipedia.org/wiki/ReiserFS&#34;&gt;reiserfs&lt;/a&gt;, &lt;a href=&#34;http://zh.wikipedia.org/wiki/XFS&#34;&gt;xfs&lt;/a&gt;，基本涵盖常用文件系统。最下面加入ntfs和zfs对比，实际上不参与选型。以下进制换算为1024，大小依次为KB,MB,GB,TB,PB,EB,ZB。&lt;/p&gt;
 
-
-
-
-
-
-
-
-
-
-
- &lt;table frame=&#34;VOID&#34; cellspacing=&#34;0&#34; cols=&#34;10&#34; rules=&#34;NONE&#34; border=&#34;0&#34;&gt; &lt;colgroup&gt;&lt;col width=&#34;107&#34;&gt;&lt;col width=&#34;82&#34;&gt;&lt;col width=&#34;87&#34;&gt;&lt;col width=&#34;94&#34;&gt;&lt;col width=&#34;99&#34;&gt;&lt;col width=&#34;86&#34;&gt;&lt;col width=&#34;109&#34;&gt;&lt;col width=&#34;66&#34;&gt;&lt;col width=&#34;86&#34;&gt;&lt;col width=&#34;76&#34;&gt;&lt;/colgroup&gt; &lt;tbody&gt; &lt;tr&gt; &lt;td width=&#34;107&#34; height=&#34;19&#34; align=&#34;LEFT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;文件系统&lt;/font&gt;&lt;/td&gt; &lt;td width=&#34;82&#34; align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;btrfs&lt;/font&gt;&lt;/td&gt; &lt;td width=&#34;87&#34; align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;ext3&lt;/font&gt;&lt;/td&gt; &lt;td width=&#34;94&#34; align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;ext4&lt;/font&gt;&lt;/td&gt; &lt;td width=&#34;99&#34; align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;jfs&lt;/font&gt;&lt;/td&gt; &lt;td width=&#34;86&#34; align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;reiserfs&lt;/font&gt;&lt;/td&gt; &lt;td width=&#34;109&#34; align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;reiser4&lt;/font&gt;&lt;/td&gt; &lt;td width=&#34;66&#34; align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;xfs&lt;/font&gt;&lt;/td&gt; &lt;td width=&#34;86&#34; align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;ntfs&lt;/font&gt;&lt;/td&gt; &lt;td width=&#34;76&#34; align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;zfs&lt;/font&gt;&lt;/td&gt; &lt;/tr&gt; &lt;tr&gt; &lt;td height=&#34;19&#34; align=&#34;LEFT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;最大卷容量&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;16 EB&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;32 TB&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;1 EB (16TB)&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;32 PB&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;16 TB&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;??&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;16 EB&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;256 TB&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;16 EB&lt;/font&gt;&lt;/td&gt; &lt;/tr&gt; &lt;tr&gt; &lt;td height=&#34;19&#34; align=&#34;LEFT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;最大文件容量&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;16 EB&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;2 TB&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;16 TB&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;4 PB&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;8TB&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;8TB&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;8 EB&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;16 TB&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;16 EB&lt;/font&gt;&lt;/td&gt; &lt;/tr&gt; &lt;tr&gt; &lt;td height=&#34;19&#34; align=&#34;LEFT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;目录结构&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;B tree&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;list/tree&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;list/Htree&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;B tree&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;B+ tree&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;dancing B* tree&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;B+ tree&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;B+ tree&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;hash table&lt;/font&gt;&lt;/td&gt; &lt;/tr&gt; &lt;tr&gt; &lt;td height=&#34;19&#34; align=&#34;LEFT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;文件分配&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;extents&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;bitmap/table&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;bitmap/extents&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;bitmap/extents&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;bitmap&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;??&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;extents&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;bitmap&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;??&lt;/font&gt;&lt;/td&gt; &lt;/tr&gt; &lt;tr&gt; &lt;td height=&#34;19&#34; align=&#34;LEFT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;ACLS&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;Yes&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;Yes&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;Yes&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;Yes&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;No&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;No&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;Yes&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;ACLS only&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;Yes&lt;/font&gt;&lt;/td&gt; &lt;/tr&gt; &lt;tr&gt; &lt;td height=&#34;19&#34; align=&#34;LEFT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;checksum&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;Yes&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;No&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;journal&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;No&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;No&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;No&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;No&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;No&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;Yes&lt;/font&gt;&lt;/td&gt; &lt;/tr&gt; &lt;tr&gt; &lt;td height=&#34;19&#34; align=&#34;LEFT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;透明压缩&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;Yes&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;No&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;No&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;No&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;No&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;Plugin&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;No&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;Yes&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;Yes&lt;/font&gt;&lt;/td&gt; &lt;/tr&gt; &lt;tr&gt; &lt;td height=&#34;19&#34; align=&#34;LEFT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;透明加密&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;No&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;No&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;No&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;No&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;No&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;Plugin&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;No&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;Yes&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;Yes&lt;/font&gt;&lt;/td&gt; &lt;/tr&gt; &lt;tr&gt; &lt;td height=&#34;19&#34; align=&#34;LEFT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;online defrag&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;Yes&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;No&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;Yes&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;Yes&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;No&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;Yes&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;Yes&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;Yes&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;Yes&lt;/font&gt;&lt;/td&gt; &lt;/tr&gt; &lt;tr&gt; &lt;td height=&#34;19&#34; align=&#34;LEFT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;shrink&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;Yes&lt;/font&gt;&lt;/td&gt; &lt;td align
-=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;Yes&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;Yes&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;No&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;Offline resize&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;Offline&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;No&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;Yes&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;No&lt;/font&gt;&lt;/td&gt; &lt;/tr&gt; &lt;tr&gt; &lt;td height=&#34;19&#34; align=&#34;LEFT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;特性&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;SSD&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;&lt;br /&gt;&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;&lt;br /&gt;&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;&lt;br /&gt;&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;&lt;br /&gt;&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;&lt;br /&gt;&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;&lt;br /&gt;&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;Stream&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;&lt;br /&gt;&lt;/font&gt;&lt;/td&gt; &lt;/tr&gt; &lt;/tbody&gt; &lt;/table&gt;&lt;/font&gt;&lt;div&gt;    首先，文件系统选择上要考虑现实性和支持情况。如果你希望得到广泛的支持，在移动硬盘上被多个系统挂载，应用于老内核，或者不使用/boot分区，那么可选项目基本只有ext3。作为老牌文件系统，ext3的支持是最广泛的，工具组也相对全面。无论其他文件系统拥有多大的优势，在现实情况考虑下往往会败给ext3，基本就是因为广泛的使用和支持。另外，btrfs我所知还没有fsck工具，出了问题全看RP，而且在上面使用虚拟机速度特别慢。reiser4作者目前在监狱中，出了问题能否获得支持全靠RP。jfs用的人相对xfs少一些，也比较不活跃。这些虽然并不出现在数据上，但是最好特别注意。&lt;/div&gt;
-
-&lt;div&gt;    其次，文件系统的选择要考虑必要特性。例如如果你希望使用SSD支持，你可选的项目就只有btrfs。如果需要透明加密，那只有reiser4。当然，在决定必要特性前，请仔细考虑，自己是否真的必须使用这些特性。为了一个不必须的特性选用一个不合适的文件系统会付出极大代价。linux下文件系统还是比较单调和弱小了点，基本不支持透明压缩，全部不支持透明加密，ext两兄弟更是没有完全实现Btree目录结构（ext4其实有用Htree，一种改过的Btree，不过为了兼容ext3，好像升级来的目录不使用）。不过好佳在，大部分都支持online defrag/growing，否则不如一头撞死算了。ext3/4, btrfs是支持shrink的，但是jfs, xfs只支持growing，reiser4必须offline shrink。xfs的growing在1T（一说2T）以上有点问题，非64位内核在1T以上可能无法创建inode。本来是会在1T内创建inode，使用高位空间。但是growing的时候可能地位空间已经满了，会报没有空间的错误。解决方案是将老文件移出再移回，或者看看用inode64参数是否解决。如果你确定需要shrink，最佳选项是使用ext4。另外补充一点，ntfs的online shrink也不是完美无缺，他只能shrink到未被使用的地方。也就是说，如果有不可移动文件，有可能就无法shrink到以下内容。&lt;/div&gt;
-
-&lt;p&gt;&lt;div&gt;   第三个要确定的问题，是你的系统服务的数据大小。即使是表里面最小的ext3，一次也可以使用2T的卷。贝壳全部数据加起来大概2T多一点，家用绝对不成问题。然而作为商业用途，动辄数百T的数据正常到不能再正常，ext3就可以直接出局了，同理reiser4也直接出局。jfs是唯一没有达到EB级别的文件系统，不过32PB也可堪一用，大部分商业系统都到不了这个量级。在管理大型卷的时候，bitmap比extents会消耗更大的空间进行管理。因此不支持bitmap的文件系统可以少考虑，ext3/4虽说支持extents，但是ext3中默认不开启，必须手工指定挂载参数。ext4中一旦启用extents，就无法兼容于ext3。&lt;/div&gt;&lt;/p&gt;
-
-&lt;div&gt;    最后是性能考量。在贝壳在公司的测试中，xfs会性能高于ext3达20倍。因为根据&lt;a href=&#34;http://www.evanhoffman.com/evan/2011/07/22/benchmarking-disk-io-on-ext3-vs-ext4-with-fio/&#34; target=&#34;_blank&#34;&gt;这篇文章&lt;/a&gt;，xfs的随机写性能比ext兄弟差很多，但是顺序写的性能比ext要强上无数倍。我们的业务大部分情况下是顺序写，因此差异非常明显。所以，当你的特性要求差不多的时候，性能和稳定性是另一个考量因素。&lt;/div&gt;
+&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
 
 &lt;div&gt;
 
+  --------------- --------- -------------- ---------------- ---------------- ---------------- ------------------ --------- ----------- ------------
+  文件系统        btrfs     ext3           ext4             jfs              reiserfs         reiser4            xfs       ntfs        zfs
 
+  最大卷容量      16 EB     32 TB          1 EB (16TB)      32 PB            16 TB            ??                 16 EB     256 TB      16 EB
 
+  最大文件容量    16 EB     2 TB           16 TB            4 PB             8TB              8TB                8 EB      16 TB       16 EB
 
+  目录结构        B tree    list/tree      list/Htree       B tree           B+ tree          dancing B\* tree   B+ tree   B+ tree     hash table
 
+  文件分配        extents   bitmap/table   bitmap/extents   bitmap/extents   bitmap           ??                 extents   bitmap      ??
 
+  ACLS            Yes       Yes            Yes              Yes              No               No                 Yes       ACLS only   Yes
 
-&lt;table frame=&#34;VOID&#34; cellspacing=&#34;0&#34; cols=&#34;7&#34; rules=&#34;NONE&#34; border=&#34;0&#34;&gt; &lt;colgroup&gt;&lt;col width=&#34;107&#34;&gt;&lt;col width=&#34;99&#34;&gt;&lt;col width=&#34;106&#34;&gt;&lt;col width=&#34;101&#34;&gt;&lt;col width=&#34;103&#34;&gt;&lt;col width=&#34;99&#34;&gt;&lt;col width=&#34;92&#34;&gt;&lt;/colgroup&gt; &lt;tbody&gt; &lt;tr&gt; &lt;td width=&#34;107&#34; height=&#34;19&#34; align=&#34;LEFT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;文件系统&lt;/font&gt;&lt;/td&gt; &lt;td width=&#34;99&#34; align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;btrfs&lt;/font&gt;&lt;/td&gt; &lt;td width=&#34;106&#34; align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;ext3&lt;/font&gt;&lt;/td&gt; &lt;td width=&#34;101&#34; align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;ext4&lt;/font&gt;&lt;/td&gt; &lt;td width=&#34;103&#34; align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;jfs&lt;/font&gt;&lt;/td&gt; &lt;td width=&#34;99&#34; align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;reiserfs&lt;/font&gt;&lt;/td&gt; &lt;td width=&#34;92&#34; align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;xfs&lt;/font&gt;&lt;/td&gt; &lt;/tr&gt; &lt;tr&gt; &lt;td height=&#34;19&#34; align=&#34;LEFT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;全填充速率&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;1m22.083s&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;1m34.821s&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;1m15.495s&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;1m5.819s&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;1m34.310s&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;1m38.953s&lt;/font&gt;&lt;/td&gt; &lt;/tr&gt; &lt;tr&gt; &lt;td height=&#34;19&#34; align=&#34;LEFT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;全填充利用率&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;0.8945&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;0.9065&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;0.9047&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;0.9959&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;0.9927&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;0.9918&lt;/font&gt;&lt;/td&gt; &lt;/tr&gt; &lt;tr&gt; &lt;td height=&#34;19&#34; align=&#34;LEFT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;大文件效率&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;14.676&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;17.435&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;10.7255&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;13.7493&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;14.319&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;12.7093&lt;/font&gt;&lt;/td&gt; &lt;/tr&gt; &lt;tr&gt; &lt;td height=&#34;19&#34; align=&#34;LEFT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;大文件删除&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;2.693&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;5.262&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;2.422&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;0.037&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;1.802&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;0.296&lt;/font&gt;&lt;/td&gt; &lt;/tr&gt; &lt;tr&gt; &lt;td height=&#34;19&#34; align=&#34;LEFT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;小文件效率&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;9.949&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;5.131&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#3333ff&#34;&gt;2.7866&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;40.949&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;13.605&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;8.978&lt;/font&gt;&lt;/td&gt; &lt;/tr&gt; &lt;tr&gt; &lt;td height=&#34;19&#34; align=&#34;LEFT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;小文件删除&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;6.737&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;10.7227&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#3333ff&#34;&gt;1.39&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;16.116&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;2.756&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;5.653&lt;/font&gt;&lt;/td&gt; &lt;/tr&gt; &lt;tr&gt; &lt;td height=&#34;19&#34; align=&#34;LEFT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;循环列文件&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;0.124&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;0.089&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;0.002&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;0.094&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;0.19&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;0.099&lt;/font&gt;&lt;/td&gt; &lt;/tr&gt; &lt;tr&gt; &lt;td height=&#34;19&#34; align=&#34;LEFT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;大文件read&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;2046206&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;1931451&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;1946598&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;2003912&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;1537752&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;1970242&lt;/font&gt;&lt;/td&gt; &lt;/tr&gt; &lt;tr&gt; &lt;td height=&#34;19&#34; align=&#34;LEFT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;大文件write&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;1279625&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;565960&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;926461&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;962617&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;446841&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;812466&lt;/font&gt;&lt;/td&gt; &lt;/tr&gt; &lt;tr&gt; &lt;td height=&#34;19&#34; align=&#34;LEFT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;大文件rndread&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;2012771&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;1926287&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;1934420&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;1985273&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;1490199&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;1976056&lt;/font&gt;&lt;/td&gt; &lt;/tr&gt; &lt;tr&gt; &lt;td height=&#34;19&#34; align=&#34;LEFT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;大文件rndwrite&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;1380404&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;1187010&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;1294689&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;1446011&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;1308210&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;1384804&lt;/font&gt;&lt;/td&gt; &lt;/tr&gt; &lt;tr&gt; &lt;td height=&#34;19&#34; align=&#34;LEFT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;小文件read&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;2375893&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;2934815&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;3019732&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;2708437&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;2559371&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;2236197&lt;/font&gt;&lt;/td&gt; &lt;/tr&gt; &lt;tr&gt; &lt;td height=&#34;19&#34; align=&#34;LEFT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;小文件write&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;926602&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;526469&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;681710&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;844237&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;395810&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;939536&lt;/font&gt;&lt;/td&gt; &lt;/tr&gt; &lt;tr&gt; &lt;td height=&#34;19&#34; align=&#34;LEFT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;小文件rndread&lt;/font&gt;&lt;/
-td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;3324647&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;3544566&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;2702282&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;3737551&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;4045575&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;2666753&lt;/font&gt;&lt;/td&gt; &lt;/tr&gt; &lt;tr&gt; &lt;td height=&#34;19&#34; align=&#34;LEFT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;小文件rndwrite&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#FF0000&#34;&gt;910277&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;1525970&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;1244240&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#0000FF&#34;&gt;1910756&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;1790393&lt;/font&gt;&lt;/td&gt; &lt;td align=&#34;RIGHT&#34; valign=&#34;BOTTOM&#34;&gt;&lt;font color=&#34;#000000&#34;&gt;1311261&lt;/font&gt;&lt;/td&gt; &lt;/tr&gt; &lt;/tbody&gt; &lt;/table&gt;    以上数据，在公司的debian testing上测定。机器型号Dell Inspiron 560s，CPU Dual-Core E5700，4G内存，硬盘WDC WD3200AAKS-75L9A0。系统是debian testing，内核2.6.39-2-amd64。全填充是用time dd if=/dev/zero of=abc来测试填满一个分区的速度和容量。大文件是四个ISO文件，共1.3G，从tmpfs上复制到目标设备上的时间平均值，三次平均。小文件是pypy/python2.7/linux kernel2.6.39所有源码，总计49242个文件，629M。从tmpfs上复制到目标设备的时间平均值，三次平均。循环列文件是通过time find .测试效率。下面测试单位为bytes/sec，是iozone测试结果。&lt;/div&gt;
+  checksum        Yes       No             journal          No               No               No                 No        No          Yes
 
-&lt;div&gt;    首先是文件利用率，btrfs/ext3/ext4会消耗10%左右的空间作为系统消耗。如果你需要比较高的磁盘利用率，请不要考虑这三种系统。也许你会认为，放文件又不会放满，必须空出部分来才能减少文件碎片。实际上，被消耗掉的空间也并不是白白消耗，你的所有数据，都会增加10%的系统消耗空间。因此ntfs的防碎片阀值（为了防止碎片化，磁盘使用率不应当高于）大约是85%，而ext3就只有75%-80%。&lt;/div&gt;&lt;div&gt;    其次是大文件效率，除了ext3不予考虑外，其余系统都过的去。btrfs/ext4在删除大文件的时候耗时略多，大概是和管理特性有关。&lt;/div&gt;
+  透明压缩        Yes       No             No               No               No               Plugin             No        Yes         Yes
 
-&lt;div&gt;    第三是小文件效率。如果你需要用小文件，千万不要考虑jfs，慢到我无法相信。ext4比btrfs和xfs快了四倍左右，非常适合操作大量小文件。例如源码编译，有blog说ext4比xfs快数倍。&lt;/div&gt;&lt;div&gt;    最后是循环列文件效率，同样，ext4一枝独秀，其余水准相去不远。&lt;/div&gt;&lt;div&gt; &lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;    综合以上几个考量，linux中比较推荐的文件系统是ext4, xfs两种。大量文件存储用xfs，小规模文件密集使用用ext4。在特定情况下，可以使用btrfs（它的特性非常全）或者jfs（小文件操作慢，但是随机读写快）。兼容考量下，可以用ext3。不推荐使用reiser4。&lt;/div&gt;&lt;div&gt;&lt;br /&gt;&lt;/div&gt;&lt;div&gt;参考：&lt;/div&gt;&lt;ol&gt;&lt;li&gt;&lt;a href=&#34;http://www.ilsistemista.net/index.php/linux-a-unix/6-linux-filesystems-benchmarked-ext3-vs-ext4-vs-xfs-vs-btrfs.html&#34; target=&#34;_blank&#34;&gt;Linux filesystems benchmarked: EXT3 vs EXT4 vs XFS vs BTRFS - Bonnie++ random seeks and file handling&lt;/a&gt;&lt;/li&gt;
+  透明加密        No        No             No               No               No               Plugin             No        Yes         Yes
 
+  online defrag   Yes       No             Yes              Yes              No               Yes                Yes       Yes         Yes
 
+  shrink          Yes       Yes            Yes              No               Offline resize   Offline            No        Yes         No
 
- &lt;li&gt;&lt;a href=&#34;http://www.kuqin.com/linux/20090204/34063.html&#34; target=&#34;_blank&#34;&gt;Ext4 ReiserFS Btrfs 等7种文件系统性能比拼&lt;/a&gt;&lt;/li&gt;&lt;li&gt;&lt;a href=&#34;http://www.debian-administration.org/articles/388&#34; target=&#34;_blank&#34;&gt;Filesystems (ext3, reiser, xfs, jfs) comparison on Debian Etch&lt;/a&gt;&lt;/li&gt;
+  特性            SSD       \              \                \                \                \                  \         Stream      \
+                                                                                                                                       
+  --------------- --------- -------------- ---------------- ---------------- ---------------- ------------------ --------- ----------- ------------
 
+&lt;div&gt;
 
+   
+首先，文件系统选择上要考虑现实性和支持情况。如果你希望得到广泛的支持，在移动硬盘上被多个系统挂载，应用于老内核，或者不使用/boot分区，那么可选项目基本只有ext3。作为老牌文件系统，ext3的支持是最广泛的，工具组也相对全面。无论其他文件系统拥有多大的优势，在现实情况考虑下往往会败给ext3，基本就是因为广泛的使用和支持。另外，btrfs我所知还没有fsck工具，出了问题全看RP，而且在上面使用虚拟机速度特别慢。reiser4作者目前在监狱中，出了问题能否获得支持全靠RP。jfs用的人相对xfs少一些，也比较不活跃。这些虽然并不出现在数据上，但是最好特别注意。
 
- &lt;li&gt;&lt;span style=&#34;font-family:Verdana, &amp;#39;Lucida Grande&amp;#39;, &amp;#39;Lucida Sans Unicode&amp;#39;, Tahoma, Arial, sans-serif;font-size:12px;line-height:19px;background-color:rgb(244, 244, 238)&#34;&gt;&lt;a href=&#34;http://lists.mysql.com/benchmarks/131&#34; target=&#34;_blank&#34;&gt;XFS, Reiser, JFS &amp;amp; ext3 performance on Suse 9 Enterprise&lt;/a&gt;&lt;/span&gt;&lt;/li&gt;
+&lt;/div&gt;
 
+&lt;div&gt;
 
+   
+其次，文件系统的选择要考虑必要特性。例如如果你希望使用SSD支持，你可选的项目就只有btrfs。如果需要透明加密，那只有reiser4。当然，在决定必要特性前，请仔细考虑，自己是否真的必须使用这些特性。为了一个不必须的特性选用一个不合适的文件系统会付出极大代价。linux下文件系统还是比较单调和弱小了点，基本不支持透明压缩，全部不支持透明加密，ext两兄弟更是没有完全实现Btree目录结构（ext4其实有用Htree，一种改过的Btree，不过为了兼容ext3，好像升级来的目录不使用）。不过好佳在，大部分都支持online
+defrag/growing，否则不如一头撞死算了。ext3/4,
+btrfs是支持shrink的，但是jfs, xfs只支持growing，reiser4必须offline
+shrink。xfs的growing在1T（一说2T）以上有点问题，非64位内核在1T以上可能无法创建inode。本来是会在1T内创建inode，使用高位空间。但是growing的时候可能地位空间已经满了，会报没有空间的错误。解决方案是将老文件移出再移回，或者看看用inode64参数是否解决。如果你确定需要shrink，最佳选项是使用ext4。另外补充一点，ntfs的online
+shrink也不是完美无缺，他只能shrink到未被使用的地方。也就是说，如果有不可移动文件，有可能就无法shrink到以下内容。
 
- &lt;li&gt;&lt;a href=&#34;https://securfox.wordpress.com/tag/filesystem-jfs-xfs-ext3/&#34; target=&#34;_blank&#34;&gt;Filesystems (jfs, xfs, ext3) comparison on Debian&lt;/a&gt;&lt;/li&gt;&lt;/ol&gt;&lt;/div&gt; &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div&gt;
+
+ 
+ 第三个要确定的问题，是你的系统服务的数据大小。即使是表里面最小的ext3，一次也可以使用2T的卷。贝壳全部数据加起来大概2T多一点，家用绝对不成问题。然而作为商业用途，动辄数百T的数据正常到不能再正常，ext3就可以直接出局了，同理reiser4也直接出局。jfs是唯一没有达到EB级别的文件系统，不过32PB也可堪一用，大部分商业系统都到不了这个量级。在管理大型卷的时候，bitmap比extents会消耗更大的空间进行管理。因此不支持bitmap的文件系统可以少考虑，ext3/4虽说支持extents，但是ext3中默认不开启，必须手工指定挂载参数。ext4中一旦启用extents，就无法兼容于ext3。
+
+&lt;/div&gt;
+
+&lt;div&gt;
+
+   
+最后是性能考量。在贝壳在公司的测试中，xfs会性能高于ext3达20倍。因为根据[这篇文章](http://www.evanhoffman.com/evan/2011/07/22/benchmarking-disk-io-on-ext3-vs-ext4-with-fio/)，xfs的随机写性能比ext兄弟差很多，但是顺序写的性能比ext要强上无数倍。我们的业务大部分情况下是顺序写，因此差异非常明显。所以，当你的特性要求差不多的时候，性能和稳定性是另一个考量因素。
+
+&lt;/div&gt;
+
+&lt;div&gt;
+
+文件系统
+btrfs
+ext3
+ext4
+jfs
+reiserfs
+xfs
+全填充速率
+1m22.083s
+1m34.821s
+1m15.495s
+1m5.819s
+1m34.310s
+1m38.953s
+全填充利用率
+0.8945
+0.9065
+0.9047
+0.9959
+0.9927
+0.9918
+大文件效率
+14.676
+17.435
+10.7255
+13.7493
+14.319
+12.7093
+大文件删除
+2.693
+5.262
+2.422
+0.037
+1.802
+0.296
+小文件效率
+9.949
+5.131
+2.7866
+40.949
+13.605
+8.978
+小文件删除
+6.737
+10.7227
+1.39
+16.116
+2.756
+5.653
+循环列文件
+0.124
+0.089
+0.002
+0.094
+0.19
+0.099
+大文件read
+2046206
+1931451
+1946598
+2003912
+1537752
+1970242
+大文件write
+1279625
+565960
+926461
+962617
+446841
+812466
+大文件rndread
+2012771
+1926287
+1934420
+1985273
+1490199
+1976056
+大文件rndwrite
+1380404
+1187010
+1294689
+1446011
+1308210
+1384804
+小文件read
+2375893
+2934815
+3019732
+2708437
+2559371
+2236197
+小文件write
+926602
+526469
+681710
+844237
+395810
+939536
+小文件rndread
+3324647
+3544566
+2702282
+3737551
+4045575
+2666753
+小文件rndwrite
+910277
+1525970
+1244240
+1910756
+1790393
+1311261
+    以上数据，在公司的debian testing上测定。机器型号Dell Inspiron
+560s，CPU Dual-Core E5700，4G内存，硬盘WDC
+WD3200AAKS-75L9A0。系统是debian
+testing，内核2.6.39-2-amd64。全填充是用time dd if=/dev/zero
+of=abc来测试填满一个分区的速度和容量。大文件是四个ISO文件，共1.3G，从tmpfs上复制到目标设备上的时间平均值，三次平均。小文件是pypy/python2.7/linux
+kernel2.6.39所有源码，总计49242个文件，629M。从tmpfs上复制到目标设备的时间平均值，三次平均。循环列文件是通过time
+find .测试效率。下面测试单位为bytes/sec，是iozone测试结果。
+
+&lt;/div&gt;
+
+&lt;div&gt;
+
+   
+首先是文件利用率，btrfs/ext3/ext4会消耗10%左右的空间作为系统消耗。如果你需要比较高的磁盘利用率，请不要考虑这三种系统。也许你会认为，放文件又不会放满，必须空出部分来才能减少文件碎片。实际上，被消耗掉的空间也并不是白白消耗，你的所有数据，都会增加10%的系统消耗空间。因此ntfs的防碎片阀值（为了防止碎片化，磁盘使用率不应当高于）大约是85%，而ext3就只有75%-80%。
+
+&lt;/div&gt;
+
+&lt;div&gt;
+
+   
+其次是大文件效率，除了ext3不予考虑外，其余系统都过的去。btrfs/ext4在删除大文件的时候耗时略多，大概是和管理特性有关。
+
+&lt;/div&gt;
+
+&lt;div&gt;
+
+   
+第三是小文件效率。如果你需要用小文件，千万不要考虑jfs，慢到我无法相信。ext4比btrfs和xfs快了四倍左右，非常适合操作大量小文件。例如源码编译，有blog说ext4比xfs快数倍。
+
+&lt;/div&gt;
+
+&lt;div&gt;
+
+    最后是循环列文件效率，同样，ext4一枝独秀，其余水准相去不远。
+
+&lt;/div&gt;
+
+&lt;div&gt;
+
+&lt;div&gt;
+
+\
+
+&lt;/div&gt;
+
+&lt;div&gt;
+
+    综合以上几个考量，linux中比较推荐的文件系统是ext4,
+xfs两种。大量文件存储用xfs，小规模文件密集使用用ext4。在特定情况下，可以使用btrfs（它的特性非常全）或者jfs（小文件操作慢，但是随机读写快）。兼容考量下，可以用ext3。不推荐使用reiser4。
+
+&lt;/div&gt;
+
+&lt;div&gt;
+
+\
+
+&lt;/div&gt;
+
+&lt;div&gt;
+
+参考：
+
+&lt;/div&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.ilsistemista.net/index.php/linux-a-unix/6-linux-filesystems-benchmarked-ext3-vs-ext4-vs-xfs-vs-btrfs.html&#34;&gt;Linux filesystems benchmarked: EXT3 vs EXT4 vs XFS vs BTRFS -
+Bonnie++ random seeks and file
+handling&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.kuqin.com/linux/20090204/34063.html&#34;&gt;Ext4 ReiserFS Btrfs
+等7种文件系统性能比拼&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.debian-administration.org/articles/388&#34;&gt;Filesystems (ext3, reiser, xfs, jfs) comparison on Debian
+Etch&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;span
+style=&#34;font-family:Verdana, &#39;Lucida Grande&#39;, &#39;Lucida Sans Unicode&#39;, Tahoma, Arial, sans-serif;font-size:12px;line-height:19px;background-color:rgb(244, 244, 238)&#34;&gt;&lt;a href=&#34;http://lists.mysql.com/benchmarks/131&#34;&gt;XFS,
+Reiser, JFS &amp;amp; ext3 performance on Suse 9
+Enterprise&lt;/a&gt;&lt;/span&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://securfox.wordpress.com/tag/filesystem-jfs-xfs-ext3/&#34;&gt;Filesystems (jfs, xfs, ext3) comparison
+on Debian&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
 </description>
     </item>
     

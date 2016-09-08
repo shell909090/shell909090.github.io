@@ -16,7 +16,9 @@
       <pubDate>Mon, 17 Mar 2014 14:01:13 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2594/</guid>
-      <description>&lt;h1&gt;现象&lt;/h1&gt;
+      <description>
+
+&lt;h1 id=&#34;现象&#34;&gt;现象&lt;/h1&gt;
 
 &lt;p&gt;ubuntu12.04，3.5.0-23的内核。在syslog里面持续看到内存耗尽，用free去查看却是内存还有80G左右。检查系统没有cgroup或者ulimit限制。log如下:&lt;/p&gt;
 
@@ -190,17 +192,17 @@ Mar 11 14:45:34 nb81 kernel: [7352493.576108] 5736141 pages non-shared
 
 &lt;p&gt;内存不足报警是个非常严重的问题，但是又不能对内存做调整，所以需要快速的对这个问题给出一个方案。当然，这个问题最后就到我头上了。&lt;/p&gt;
 
-&lt;h1&gt;处理&lt;/h1&gt;
+&lt;h1 id=&#34;处理&#34;&gt;处理&lt;/h1&gt;
 
 &lt;p&gt;找了半天的类似错误，找到的原因乱七八糟。有说是网络问题的，有说是硬盘swap有问题导致的，还有说是numa造成的。运维组调整了&lt;code&gt;min_free_bytes&lt;/code&gt;，从结果来看，问题倒是减轻了不少。于是分开尝试。&lt;/p&gt;
 
-&lt;h2&gt;swap&lt;/h2&gt;
+&lt;h2 id=&#34;swap&#34;&gt;swap&lt;/h2&gt;
 
 &lt;p&gt;这个其实最好验证，关掉swap就知道了，反正我们内存也够。可惜golang1.1以前有个bug，在amd64上关闭swap会导致程序crush。所以不能关闭swap，只能替换。&lt;/p&gt;
 
 &lt;p&gt;运维组的老大做的实验，换个盘新建swap。用swapon启用新的swap，swapoff关闭原来的swap。然后系统没有变化，因此排除swap导致问题的可能性。&lt;/p&gt;
 
-&lt;h2&gt;numa和内存分配碎片化问题&lt;/h2&gt;
+&lt;h2 id=&#34;numa和内存分配碎片化问题&#34;&gt;numa和内存分配碎片化问题&lt;/h2&gt;
 
 &lt;p&gt;检查出问题设备的/proc/buddyinfo文件，可以看到所有出问题设备的DMA32大块都被耗尽了。在大部分的系统上，最大的块不过是32K。64K的块只有一两块或者根本没有。这个假设可以解释&lt;code&gt;min_free_bytes&lt;/code&gt;调整能够减轻问题的理由。&lt;/p&gt;
 
@@ -208,7 +210,7 @@ Mar 11 14:45:34 nb81 kernel: [7352493.576108] 5736141 pages non-shared
 
 &lt;p&gt;对于这个问题，我试过内核参数迫使其回收内存。使用&lt;code&gt;zone_reclaim_mode&lt;/code&gt;改变内存回收模型(尽管解说中这个对某些业务非常有害)。但是始终没有彻底解决问题。&lt;/p&gt;
 
-&lt;h2&gt;网络问题&lt;/h2&gt;
+&lt;h2 id=&#34;网络问题&#34;&gt;网络问题&lt;/h2&gt;
 
 &lt;p&gt;我找到了某个朋友的&lt;a href=&#34;https://gist.github.com/jaseywang/800560&#34;&gt;gist&lt;/a&gt;，发现和我们的错误堆栈非常接近。经过询问，他有篇文章&lt;a href=&#34;http://jaseywang.me/2014/03/11/%E4%B8%8D%E5%90%8C%E4%B8%9A%E5%8A%A1%E5%AF%B9%E7%BD%91%E7%BB%9C%E7%9A%84%E8%A6%81%E6%B1%82/&#34;&gt;不同业务对网络的要求&lt;/a&gt;，里面猜测是交换机丢包导致的问题。&lt;/p&gt;
 
@@ -216,13 +218,13 @@ Mar 11 14:45:34 nb81 kernel: [7352493.576108] 5736141 pages non-shared
 
 &lt;p&gt;另一个是在设备上用&lt;code&gt;netstat -s&lt;/code&gt;来查看丢包率。但是不是每个设备都有丢包率。所以也可以排除网络问题。&lt;/p&gt;
 
-&lt;h1&gt;定向&lt;/h1&gt;
+&lt;h1 id=&#34;定向&#34;&gt;定向&lt;/h1&gt;
 
 &lt;p&gt;在上面三种假说里，我首先可以否定swap。因为两块磁盘同时损坏的概率基本是0。其他两个假说很难区分。我始终觉得两者都不能解释很多问题。例如内存碎片化假说无法说明为什么不是每个内存碎片化的系统都出现问题。网络假说也无法说明为什么问题只出现在某些设备上。&lt;/p&gt;
 
 &lt;p&gt;看来再找下去也是白费，于是我改用了其他方法——根据堆栈阅读源码。&lt;/p&gt;
 
-&lt;h1&gt;内核源码&lt;/h1&gt;
+&lt;h1 id=&#34;内核源码&#34;&gt;内核源码&lt;/h1&gt;
 
 &lt;p&gt;参阅lxr的结果。堆栈如下所列：&lt;/p&gt;
 
@@ -246,9 +248,9 @@ Mar 11 14:45:34 nb81 kernel: [7352493.576108] 5736141 pages non-shared
 
 &lt;p&gt;在有点数之后，我修改了关键词又去google了一把。得到了以下bug：&lt;/p&gt;
 
-&lt;p&gt;https://bugzilla.kernel.org/show_bug.cgi?id=12135&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://bugzilla.kernel.org/show_bug.cgi?id=12135&#34;&gt;https://bugzilla.kernel.org/show_bug.cgi?id=12135&lt;/a&gt;&lt;/p&gt;
 
-&lt;h1&gt;结论&lt;/h1&gt;
+&lt;h1 id=&#34;结论&#34;&gt;结论&lt;/h1&gt;
 
 &lt;p&gt;这是一种在tigon3上才出现的问题，由于网络传输速率大于内存回收速率，内核不停报警。本质上这个报警可以被忽略，或者调整&lt;code&gt;min_free_bytes&lt;/code&gt;来减轻。内核组暂时不对这个问题做出任何修正。&lt;/p&gt;
 

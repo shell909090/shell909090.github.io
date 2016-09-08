@@ -112,21 +112,25 @@ ga('send', 'pageview');
           
           
           
-          <h1>nagios的结构</h1>
+          
+
+<h1 id="nagios的结构">nagios的结构</h1>
 
 <p>nagios的结构其实很简单，一个监视系统，一个web展现系统，一个remote服务器，没了。</p>
 
 <p>监视系统是根本，在debian中，需要安装的包是nagios3。在安装这个包之后，会启动一个监视进程，负责检查所有的服务是否OK。不OK就触发事件。</p>
 
-<p>检查的时候，nagios会去调一些“插件”。这些插件其实都在/etc/nagios-plugins/config下面注册过的。每个插件配置都是name!v1!v2...的格式。在注册里面，可以看到这个command&#95;name，对应一个command&#95;line。你很容易看到这就将一个定义转换为了一个命令行。</p>
+<p>检查的时候，nagios会去调一些“插件”。这些插件其实都在/etc/nagios-plugins/config下面注册过的。每个插件配置都是name!v1!v2&hellip;的格式。在注册里面，可以看到这个command_name，对应一个command_line。你很容易看到这就将一个定义转换为了一个命令行。</p>
 
 <p>直接执行这个命令行，你可以看到一个标准输出。nagios就是解析这个标准输出，得到值是否在一个合法的范围内的。所以从原理上说，你可以自己写插件，对任何事情做nagios的监控。</p>
 
-<p>对于某些远程可以获得的信息，目标设备上可以什么都不动，例如ping连通性，或者是端口连通性等。而对于其他信息，例如磁盘空间剩余值，靠远程可能没法获得，就需要在目标设备上装nrpe，Nagios Remote Plugin Executor Server。在debian中，就是nagios-nrpe-server这个包。如果获得本地信息，不需要这个包。</p>
+<p>对于某些远程可以获得的信息，目标设备上可以什么都不动，例如ping连通性，或者是端口连通性等。而对于其他信息，例如磁盘空间剩余值，靠远程可能没法获得，就需要在目标设备上装nrpe，Nagios
+Remote Plugin Executor
+Server。在debian中，就是nagios-nrpe-server这个包。如果获得本地信息，不需要这个包。</p>
 
 <p>最后，cgi会将本地的信息暴露给web查询，这就构成了完整的nagios体系。在debian中，这是nagios3-cgi这个包。</p>
 
-<h1>nagios页面在nginx上的配置</h1>
+<h1 id="nagios页面在nginx上的配置">nagios页面在nginx上的配置</h1>
 
 <p>这个过程比较繁琐，因为apache会自动配置，而nginx没有宿主进程，也没有cgi。因此实际上需要运行两个宿主进程。</p>
 
@@ -136,33 +140,25 @@ ga('send', 'pageview');
 
 <p>最后，配置nginx。</p>
 
-<p>location /nagios3 {
-        index index.html index.htm index.php;
-}</p>
+<p>location /nagios3 { index index.html index.htm index.php; }</p>
 
-<p>location /nagios3/stylesheets {
-        root /etc;
-}</p>
+<p>location /nagios3/stylesheets { root /etc; }</p>
 
-<p>第一个映射是nagios的基础目录，在根目录中，我其实配置了nagios3 -> /usr/share/nagios3/htdocs/（debian中的链接位置）。第二个映射是样式表配置，我用系统缺省的。</p>
+<p>第一个映射是nagios的基础目录，在根目录中，我其实配置了nagios3 -&gt;
+/usr/share/nagios3/htdocs/（debian中的链接位置）。第二个映射是样式表配置，我用系统缺省的。</p>
 
-<p>location ~ ^/nagios3/.*&#46;php$ {
-        include fastcgi_params;
-        fastcgi_pass unix:/var/run/php5-fpm.sock;
-}</p>
+<p>location ~ \^/nagios3/.*.php\$ { include fastcgi_params;
+fastcgi_pass unix:/var/run/php5-fpm.sock; }</p>
 
 <p>这个是nagios的php解析代码。我的php-fpm执行在同一台机器上，因此直接如此配置即可。</p>
 
-<p>location /cgi-bin/nagios3 {
-        root /usr/lib;
-        include fastcgi_params;
-        fastcgi_param REMOTE_USER   $remote_user;
-        fastcgi_pass dev:port;
-}</p>
+<p>location /cgi-bin/nagios3 { root /usr/lib; include fastcgi_params;
+fastcgi_param REMOTE_USER \$remote_user; fastcgi_pass dev:port; }</p>
 
-<p>最后是cgi暴露的配置。由于我的nagios宿主并不在web服务器上，因此fastcgi是个远程地址。而且注意REMOTE_USER，传递这个才能让远程认到你的用户basic auth。由于nagios的cgi通过这个工作，因此没有这个会直接导致对方始终认为你是无权限用户。</p>
+<p>最后是cgi暴露的配置。由于我的nagios宿主并不在web服务器上，因此fastcgi是个远程地址。而且注意REMOTE_USER，传递这个才能让远程认到你的用户basic
+auth。由于nagios的cgi通过这个工作，因此没有这个会直接导致对方始终认为你是无权限用户。</p>
 
-<h1>nagios的简单配置</h1>
+<h1 id="nagios的简单配置">nagios的简单配置</h1>
 
 <p>我们首先认清一点，nagios并不负责管理机器的维护。他的设计目标是“可用性”。因此目标是否可达，服务是否可用，是nagios的关心重点。至于磁盘，负载，只是顺便监控而已。所以你可以看到，nagios并没有直接的插件来监控CPU或者内存。他只有snmp插件可以查询到这些数据。</p>
 
@@ -170,20 +166,16 @@ ga('send', 'pageview');
 
 <p>OK，在这个基础之上，让我们看看有什么可以配置的。</p>
 
-<h2>服务器添加</h2>
+<h2 id="服务器添加">服务器添加</h2>
 
 <p>首先，你可以定义一些机器。localhost_nagios2.cfg里面有例子，大致是这个样子。</p>
 
-<p>define host{
-        use                     generic-host            ; Name of host template to use
-        host_name               host
-        alias                   host
-        address                 IP
-        }</p>
+<p>define host{ use generic-host ; Name of host template to use host_name
+host alias host address IP }</p>
 
 <p>我建议你专门弄个文件来管理这些自己的设备，例如我这里叫hosts.cfg。</p>
 
-<h2>基本服务</h2>
+<h2 id="基本服务">基本服务</h2>
 
 <p>hostgroups_nagios2.cfg中有很多服务器组，其中有一个ssh组和http组是内置的。如果你的设备有这两个最常见服务，你直接添加到这两个组里面，设备的对应服务就会被监控。</p>
 
@@ -193,21 +185,21 @@ ga('send', 'pageview');
 
 <p>对于少数特殊的服务，就要在services里面开了。在hosts里面直接定义一些服务比较简单直接。</p>
 
-<h2>服务器定义</h2>
+<h2 id="服务器定义">服务器定义</h2>
 
 <p>默认的generic-host是带有keep-alive的，服务器会通过ping来确认设备活着。如果你的目标上面为了安全加防火墙关了icmp，你又很难让目标机器对你的IP互信的话。那么开着ping会很烦。每天看着有个服务器挂了，其实没事。</p>
 
 <p>你可以在generic-host_nagios2.cfg里面，将标准配置复制一份，去掉下面一行。这个服务器就不会检查是否活着了。</p>
 
-<p>check_command                   check-host-alive</p>
+<p>check_command check-host-alive</p>
 
-<h2>nrpe</h2>
+<h2 id="nrpe">nrpe</h2>
 
 <p>nrpe的配置比较繁琐，你首先要在nrpe服务的配置文件中，将需要执行的指令定义好。然后在nagios的服务这里用check_nrpe检查返回。</p>
 
-<h1>参考</h1>
+<h1 id="参考">参考</h1>
 
-<p>http://www.linuxany.com/archives/2004.html</p>
+<p><a href="http://www.linuxany.com/archives/2004.html">http://www.linuxany.com/archives/2004.html</a></p>
 
         </div>
         

@@ -114,7 +114,8 @@ ga('send', 'pageview');
           
           <p>在lxc中，可以利用mount bind指定guest可以访问某些host的路径。例如：</p>
 
-<p>lxc.mount.entry = /home/shell /var/lib/lxc/{vmname}/rootfs/home/shell none defaults,bind 0 0</p>
+<pre><code>lxc.mount.entry = /home/shell /var/lib/lxc/{vmname}/rootfs/home/shell none defaults,bind 0 0
+</code></pre>
 
 <p>注意，/home/shell是你希望共享的主机路径，/var/lib&hellip;/shell是映射到的目标路径。</p>
 
@@ -122,11 +123,12 @@ ga('send', 'pageview');
 
 <p>由此，我发现了一个lxc在文件共享时的严重bug。</p>
 
-<p>user@guest:~$ mkdir -p ttt/123
+<pre><code>user@guest:~$ mkdir -p ttt/123
 user@guest:~$ cd ttt/123
 user@host:~$ mv /var/lib/lxc/{vmname}/rootfs/home/user/ttt/123 .
 user@guest:~/ttt/123$ cd ..
-user@guest:(unreachable)/user$ ls -l</p>
+user@guest:(unreachable)/user$ ls -l
+</code></pre>
 
 <p>好了，现在guest在host的~user/目录下，host上本来不应当被看到的东西全被看光光了。</p>
 

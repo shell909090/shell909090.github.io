@@ -112,7 +112,80 @@ ga('send', 'pageview');
           
           
           
-          <p>总算把该死的有线通换成ADSL了——现在我们看看电信的宽带质量。<br />    我做了几项测试，因为时间关系(我要吃饭了——)，没有做的很足，回头补个详细的。<br />1.tcp连接丢包率<br />    根据我的测试，有一次出现了4%的丢包率，其余时间是0。<br />2.网络时延测试<br />    www.google.com的测试结果是 平均/抖动=295.<sup>3</sup>&frasl;<sub>591</sub>.7<br />    www.sina.com.cn的测试接过是 平均/抖动=435.<sup>1</sup>&frasl;<sub>714</sub>.3<br />3.TTL状态<br />    平均TTL大约在12-18左右，略略好于有线通1-2个路由器。<br />4.动态丢包测试<br />    P2P/HTTP混合实际使用下1分钟8863个包，丢包2.7%。<br />5.网络压力测试<br />    未进行。<br />    从以上参数中可以看出，电信的质量略略好于有线通的。但是网络时延大，带有数据丢包。这个要去检查是否是信号线上的问题。<br /><br />    下午仔细检测了ADSL的详细状况，然后得出了一个更详细的表，附录如下：<br />1.tcp连接丢包率&amp;网络时延测试<br />#hping -p 80 www.sina.com.cn<br />#hping -p 80 www.google.com<br />2.TTL状态<br />    NTOP测定，平均TTL大约在12-18左右，略略好于有线通1-2个路由器。<br />3.动态丢包测试<br />    wireshark测定。<br /><br />1.无网络压力状态下测试<br />    双机器自然负荷，仅仅开启MSN等IM软件。<br />&mdash; www.google.com hping statistic &mdash;<br />96 packets transmitted, 95 packets received, 2% packet loss<br />round-trip min/avg/max = 36.<sup>1</sup>&frasl;<sub>39</sub>.<sup>3</sup>&frasl;<sub>57</sub>.6 ms<br />    平均/抖动=39.<sup>3</sup>&frasl;<sub>21</sub>.5<br />&mdash; www.sina.com.cn hping statistic &mdash;<br />96 packets transmitted, 96 packets received, 0% packet loss<br />round-trip min/avg/max = 10.<sup>6</sup>&frasl;<sub>13</sub>.<sup>1</sup>&frasl;<sub>16</sub>.7 ms<br />    平均/抖动=13.<sup>1</sup>&frasl;<sub>6</sub>.1<br />HTTP实际使用下6:05。<br />    全部报文    2289个包，丢包23个，丢包率1.0%。<br />    ED包         2053个，   丢包10个，丢包率0.48%。<br />    非ED包      236个，     丢包13个，丢包率5.5%。<br /><br />2.ED网络压力状态下测试<br />    打开ED大约1小时后的稳定速度，下载对象足够，保证速度达到极限。下行85K，上行50K。<br />&mdash; www.google.com hping statistic &mdash;<br />128 packets transmitted, 111 packets received, 14% packet loss<br />round-trip min/avg/max = 40.<sup>2</sup>&frasl;<sub>145</sub>.<sup>4</sup>&frasl;<sub>231</sub>.0 ms<br />    平均/抖动=145.<sup>4</sup>&frasl;<sub>190</sub>.8<br />&mdash; www.sina.com.cn hping statistic &mdash;<br />117 packets transmitted, 110 packets received, 6% packet loss<br />round-trip min/avg/max = 11.<sup>4</sup>&frasl;<sub>120</sub>.<sup>9</sup>&frasl;<sub>239</sub>.8 ms<br />    平均/抖动=120.<sup>9</sup>&frasl;<sub>228</sub>.4<br />P2P/HTTP混合实际使用下6:05。<br />    全部报文    90181个包，    丢包7659个，丢包率8.5%。<br />    ED包         76278个，       丢包7011个，丢包率9.2%。<br />    非ED包     13903个，        丢包648个，  丢包率4.7%。<br />3.HTTP网络压力状态下测试<br />    天空软件园的扬州电信点下载DX9，同时用www.sf.net的国网点下载一个ERP。两者速度都在50K上下，此时测试结果是：<br />&mdash; www.google.com hping statistic &mdash;<br />100 packets transmitted, 99 packets received, 1% packet loss<br />round-trip min/avg/max = 37.<sup>6</sup>&frasl;<sub>81</sub>.0/135.9 ms<br />    平均/抖动=81.0/98.3<br />&mdash; www.sina.com.cn hping statistic &mdash;<br />101 packets transmitted, 101 packets received, 0% packet loss<br />round-trip min/avg/max = 11.<sup>7</sup>&frasl;<sub>55</sub>.<sup>3</sup>&frasl;<sub>105</sub>.9 ms<br />    平均/抖动=55.<sup>3</sup>&frasl;<sub>94</sub>.2<br />HTTP实际使用下6:05。<br />    全部报文    40692个包，丢包3304个，丢包率8.1%。<br />    ED包         2385个，     丢包7个，丢包率0.29%。<br />    非ED包      38307个，   丢包3297个，丢包率8.6%。<br /><br />    我们可以看出，ADSL在高速状况下的网络反应并不好，低速状况下到是勉强过关。以同样条件来看——服务质量是硬碰硬的比有线通好(从TTL来看，似乎有线通租用了电信的线路，回头找人做个traceroute就知道了)。<br /></p>
+          <p>总算把该死的有线通换成ADSL了——现在我们看看电信的宽带质量。<br />
+   
+我做了几项测试，因为时间关系(我要吃饭了——)，没有做的很足，回头补个详细的。<br />
+1.tcp连接丢包率<br />
+    根据我的测试，有一次出现了4%的丢包率，其余时间是0。<br />
+2.网络时延测试<br />
+    www.google.com的测试结果是 平均/抖动=295.<sup>3</sup>&frasl;<sub>591</sub>.7<br />
+    www.sina.com.cn的测试接过是 平均/抖动=435.<sup>1</sup>&frasl;<sub>714</sub>.3<br />
+3.TTL状态<br />
+    平均TTL大约在12-18左右，略略好于有线通1-2个路由器。<br />
+4.动态丢包测试<br />
+    P2P/HTTP混合实际使用下1分钟8863个包，丢包2.7%。<br />
+5.网络压力测试<br />
+    未进行。<br />
+   
+从以上参数中可以看出，电信的质量略略好于有线通的。但是网络时延大，带有数据丢包。这个要去检查是否是信号线上的问题。<br />
+<br />
+    下午仔细检测了ADSL的详细状况，然后得出了一个更详细的表，附录如下：<br />
+1.tcp连接丢包率&amp;网络时延测试<br />
+#hping -p 80 www.sina.com.cn<br />
+#hping -p 80 www.google.com<br />
+2.TTL状态<br />
+    NTOP测定，平均TTL大约在12-18左右，略略好于有线通1-2个路由器。<br />
+3.动态丢包测试<br />
+    wireshark测定。<br />
+<br />
+1.无网络压力状态下测试<br />
+    双机器自然负荷，仅仅开启MSN等IM软件。<br />
+&mdash; www.google.com hping statistic &mdash;<br />
+96 packets transmitted, 95 packets received, 2% packet loss<br />
+round-trip min/avg/max = 36.<sup>1</sup>&frasl;<sub>39</sub>.<sup>3</sup>&frasl;<sub>57</sub>.6 ms<br />
+    平均/抖动=39.<sup>3</sup>&frasl;<sub>21</sub>.5<br />
+&mdash; www.sina.com.cn hping statistic &mdash;<br />
+96 packets transmitted, 96 packets received, 0% packet loss<br />
+round-trip min/avg/max = 10.<sup>6</sup>&frasl;<sub>13</sub>.<sup>1</sup>&frasl;<sub>16</sub>.7 ms<br />
+    平均/抖动=13.<sup>1</sup>&frasl;<sub>6</sub>.1<br />
+HTTP实际使用下6:05。<br />
+    全部报文    2289个包，丢包23个，丢包率1.0%。<br />
+    ED包         2053个，   丢包10个，丢包率0.48%。<br />
+    非ED包      236个，     丢包13个，丢包率5.5%。<br />
+<br />
+2.ED网络压力状态下测试<br />
+   
+打开ED大约1小时后的稳定速度，下载对象足够，保证速度达到极限。下行85K，上行50K。<br />
+&mdash; www.google.com hping statistic &mdash;<br />
+128 packets transmitted, 111 packets received, 14% packet loss<br />
+round-trip min/avg/max = 40.<sup>2</sup>&frasl;<sub>145</sub>.<sup>4</sup>&frasl;<sub>231</sub>.0 ms<br />
+    平均/抖动=145.<sup>4</sup>&frasl;<sub>190</sub>.8<br />
+&mdash; www.sina.com.cn hping statistic &mdash;<br />
+117 packets transmitted, 110 packets received, 6% packet loss<br />
+round-trip min/avg/max = 11.<sup>4</sup>&frasl;<sub>120</sub>.<sup>9</sup>&frasl;<sub>239</sub>.8 ms<br />
+    平均/抖动=120.<sup>9</sup>&frasl;<sub>228</sub>.4<br />
+P2P/HTTP混合实际使用下6:05。<br />
+    全部报文    90181个包，    丢包7659个，丢包率8.5%。<br />
+    ED包         76278个，       丢包7011个，丢包率9.2%。<br />
+    非ED包     13903个，        丢包648个，  丢包率4.7%。<br />
+3.HTTP网络压力状态下测试<br />
+   
+天空软件园的扬州电信点下载DX9，同时用www.sf.net的国网点下载一个ERP。两者速度都在50K上下，此时测试结果是：<br />
+&mdash; www.google.com hping statistic &mdash;<br />
+100 packets transmitted, 99 packets received, 1% packet loss<br />
+round-trip min/avg/max = 37.<sup>6</sup>&frasl;<sub>81</sub>.0/135.9 ms<br />
+    平均/抖动=81.0/98.3<br />
+&mdash; www.sina.com.cn hping statistic &mdash;<br />
+101 packets transmitted, 101 packets received, 0% packet loss<br />
+round-trip min/avg/max = 11.<sup>7</sup>&frasl;<sub>55</sub>.<sup>3</sup>&frasl;<sub>105</sub>.9 ms<br />
+    平均/抖动=55.<sup>3</sup>&frasl;<sub>94</sub>.2<br />
+HTTP实际使用下6:05。<br />
+    全部报文    40692个包，丢包3304个，丢包率8.1%。<br />
+    ED包         2385个，     丢包7个，丢包率0.29%。<br />
+    非ED包      38307个，   丢包3297个，丢包率8.6%。<br />
+<br />
+   
+我们可以看出，ADSL在高速状况下的网络反应并不好，低速状况下到是勉强过关。以同样条件来看——服务质量是硬碰硬的比有线通好(从TTL来看，似乎有线通租用了电信的线路，回头找人做个traceroute就知道了)。</p>
 
         </div>
         

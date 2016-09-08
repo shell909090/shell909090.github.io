@@ -112,15 +112,119 @@ ga('send', 'pageview');
           
           
           
-          <p>废话不说，上干货。 <div>    首先，禁用arptables。当然，如果你没开这个防火墙，那么没必要。其次，注意你的openwrt必须有udisk，否则空间相差太多，根本没有实现的可能。</div><div>    然后，如果你用的是新版的rom，应该在/etc/init.d/dnsmasq里面看到，dnsmasq()这个函数里面有。</div><div><div>        append_parm &quot;$cfg&quot; &quot;tftp_root&quot; &quot;&ndash;tftp-root&quot;</div></p>
+          <p>废话不说，上干货。
+<div></p>
 
-<div>        append_parm &quot;$cfg&quot; &quot;dhcp_boot&quot; &quot;--dhcp-boot&quot;</div></div><div>    如果没有，加一下，有的话说明原生支持。下面可以直接修改。</div><div>    dnsmasq是一个dhcp/dns双重服务器，而pxe引导的第一步就是支持bootp协议。这个选项在/etc/config/dhcp里面。config dnsmasq一节上，增加。</div>
+<p>   
+首先，禁用arptables。当然，如果你没开这个防火墙，那么没必要。其次，注意你的openwrt必须有udisk，否则空间相差太多，根本没有实现的可能。</p>
 
-<div><div>        option &#39;dhcp_boot&#39; &#39;pxelinux.0&#39;</div></div><div>    重启dnsmasq，完成bootp准备。</div><div>    然后，安装tftpd-hpa，opkg update，opkg install tftpd-hpa。这是一个tftp服务器，默认不启动。如果你打算让pxe引导模式持久化，那么就改为默认启动，同时永久关闭arp防火墙。在/var/tftpd-hpa里面，可以看到tftpd的根路径。从参考3的的连接里面，你可以找到合适的一个下载路径，下载netboot.tar.gz到这个文件。解压后，可以看到pxelinux.0，这个和上面的pxelinux.0相对应。这是pxelinux的组件，隶属于syslinux项目，可以用来完成启动。</div>
+<p></div></p>
 
-<div>    这样，就完成了安装的所有准备工作。你可以找一个设备实验一下，应当可以完成网络安装的步骤。</div><div>    另外，如果需要启动选择amd64或者是i386，或者更进一步定制。那么需要下载其他镜像，自己生成pxelinux.cfg这个目录中的内容。</div><div><br /></div><div>1. PXE <a href="http://wiki.debian.org/PXE" target="_blank">http://wiki.debian.org/PXE</a></div>
+<div>
 
-<p><div>2. NetbootPXE <a href="http://wiki.debian.org/DebianInstaller/NetbootPXE" target="_blank"><a href="http://wiki.debian.org/DebianInstaller/NetbootPXE">http://wiki.debian.org/DebianInstaller/NetbootPXE</a></a></div> <div>3. netinst <a href="http://www.debian.org/distrib/netinst" target="_blank"><a href="http://www.debian.org/distrib/netinst">http://www.debian.org/distrib/netinst</a></a> </div><div>4. 配置pxe，安装debian和ubuntu <a href="http://my.unix-center.net/~whtbie/wordpress/?p=290" target="_blank"><a href="http://my.unix-center.net/~whtbie/wordpress/?p=290">http://my.unix-center.net/~whtbie/wordpress/?p=290</a></a></div><br /></p>
+   
+然后，如果你用的是新版的rom，应该在/etc/init.d/dnsmasq里面看到，dnsmasq()这个函数里面有。
+
+</div>
+
+<div>
+
+<div>
+
+        append\_parm "\$cfg" "tftp\_root" "--tftp-root"
+
+</div>
+
+<div>
+
+        append\_parm "\$cfg" "dhcp\_boot" "--dhcp-boot"
+
+</div>
+
+<p></div></p>
+
+<div>
+
+    如果没有，加一下，有的话说明原生支持。下面可以直接修改。
+
+</div>
+
+<div>
+
+   
+dnsmasq是一个dhcp/dns双重服务器，而pxe引导的第一步就是支持bootp协议。这个选项在/etc/config/dhcp里面。config
+dnsmasq一节上，增加。
+
+</div>
+
+<div>
+
+<div>
+
+        option 'dhcp\_boot' 'pxelinux.0'
+
+</div>
+
+<p></div></p>
+
+<div>
+
+    重启dnsmasq，完成bootp准备。
+
+</div>
+
+<div>
+
+    然后，安装tftpd-hpa，opkg update，opkg install
+tftpd-hpa。这是一个tftp服务器，默认不启动。如果你打算让pxe引导模式持久化，那么就改为默认启动，同时永久关闭arp防火墙。在/var/tftpd-hpa里面，可以看到tftpd的根路径。从参考3的的连接里面，你可以找到合适的一个下载路径，下载netboot.tar.gz到这个文件。解压后，可以看到pxelinux.0，这个和上面的pxelinux.0相对应。这是pxelinux的组件，隶属于syslinux项目，可以用来完成启动。
+
+</div>
+
+<div>
+
+   
+这样，就完成了安装的所有准备工作。你可以找一个设备实验一下，应当可以完成网络安装的步骤。
+
+</div>
+
+<div>
+
+   
+另外，如果需要启动选择amd64或者是i386，或者更进一步定制。那么需要下载其他镜像，自己生成pxelinux.cfg这个目录中的内容。
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+1\. PXE <http://wiki.debian.org/PXE>
+
+</div>
+
+<div>
+
+2\. NetbootPXE <http://wiki.debian.org/DebianInstaller/NetbootPXE>
+
+</div>
+
+<div>
+
+3\. netinst <http://www.debian.org/distrib/netinst>
+
+</div>
+
+<div>
+
+4. 配置pxe，安装debian和ubuntu <http://my.unix-center.net/~whtbie/wordpress/?p=290>
+
+</div>
+
+<p></p>
 
         </div>
         

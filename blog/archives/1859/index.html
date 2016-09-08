@@ -112,15 +112,41 @@ ga('send', 'pageview');
           
           
           
-          <p>上篇btrfs会导致虚拟机慢死的blog都看到了吧？看到了就不多解释。<br />    首先，删除掉cache数据，还有冗余数据，使得数据可备份化。然后执行rsync -av /home /mnt/mdisk/sync，将数据同步到备份的移动硬盘上。之所以用rsync，是因为我在备份的时候还能看看网页什么的。等第一次备份完成，关闭所有X程序，退出shell这个用户的所有进程，然后再次执行rsync，就可以保证同步。同步完成后，注销/etc/fstab下面的/home和swap项目，重启。<br /></p>
-
-<p>    系统启动后，先登入root用户，因为此时/home已经恢复到了/下面，所有shell用户的home路径不存在。建立/home/shell目录，并且复制/etc/skel配置，修改owner后，shell就可以登入了。当然，此时是系统默认环境，并没有定制化。没有关系，我们只需要terminal。在terminal中执行gparted，会出现图形的分区管理工具。当然，理论上说，如果你够熟悉，使用fdisk完成全部操作也是可以的，这免除了初始化shell用户和登入图形界面的麻烦。删除原先的/home所在分区和swap所在分区，切割一个ntfs分区用于将来安装windows(回头可以打游戏)，剩余的全部切割，而后开启lvm标记。当然，这一步贝壳当时不知道，而是创立了一个未知分区，再用fdisk调整分区类型为8E。而后系统会提示你，不能保证内核数据结构更新，需要执行kpartx /dev/sda。无论如何，此时我们已经有了一个lvm分区。<br /></p>
-
-<p>    lvm的结构是pv -&gt; pg -&gt; lv，也就是物理卷-&gt;物理组-&gt;逻辑卷。物理的各个分区首先被组织成物理组，再被划分为逻辑卷。这样设计是因为可能有多个磁盘上的空间，被划分为多个逻辑卷。在不改变逻辑的情况下，lvm的默认组织构型是raid0的。不过这对我不是个问题，我只有一个磁盘。<br />    首先创建pv，使用命令pvcreate，没什么好多说的。然后是产生vg，使用vgcreate main /dev/sda7，之所以需要main，是因为需要一个vg命名。而后我们需要从这个vg中创建出一个lv来，执行指令lvcreate -L150G -nhome main，设定lv的名字叫做main-home，大小150G。此时在/dev/mapper/main-home，就产生了一个设备文件，大小150G，可以当作/dev/sda1之类的设备一样使用。不过，这个设备没有经过任何格式化过程，所以还需要mkfs.ext3 /dev/mapper/main-home。在这个指令后，我很习惯的跟了一个tune2fs -c 0 /dev/mapper/main-home来关闭重启检测。使用blkid，发现这个设备已经成功创立，并且有了ID。把UUID复制进（这时就知道X的好处了，console下面比较绕路）/etc/fstab，并且修改刚刚被注释掉的/home一行，更改UUID和分区格式。贝壳当时光记得复制，忘记改分区格式，导致系统进不去。不过也不困难，修改/etc/fstab后mount -a一下就可以了。<br /></p>
-
-<p>    此时我们已经建立了有效的逻辑卷，并且正确配置。下面要创建一个交换分区，并且挂上去。废话不多说，lvcreate -L6G -nswap main，mkswap /dev/mapper/main-swap。而后一样blkid和vi /etc/fstab。系统就基本配置好了。验证一下看看。<br />shell-deb:~# pvs<br />  PV         VG   Fmt  Attr PSize   PFree <br />  /dev/sda7  main lvm2 a-   229.19g 73.19g<br /></p>
-
-<p>shell-deb:~# lvs<br />  LV   VG   Attr   LSize   Origin Snap%  Move Log Copy%  Convert<br />  home main -wi-ao 150.00g                                      <br />  swap main -wi-ao   6.00g <br />    而后就是新系统的启用过程，首先要退出X，注销shell用户的所有进程，然后以root删除/home下的所有数据。如果不删除的话，重启后，这里的数据无法访问，变成垃圾。而后重启，就可以看到正确结果了。不过还不要着急登入shell。首先执行rsync -av /mnt/mdisk/sync/home /home，将备份同步回去。这样我们登入shell的时候就可以看到有效的定制化界面了。另外一点细节是，mdisk使用了ntfs格式，所以导致数据恢复后属性混乱。使用find . -type d -exec chmod 755 {} ;和find . -type f -exec chmod 644 {} ;可以恢复大部分，少部分例如~/.ssh/authorized_keys和~/.gnupg需要手工调整。<br /></p>
+          <p>上篇btrfs会导致虚拟机慢死的blog都看到了吧？看到了就不多解释。<br />
+    首先，删除掉cache数据，还有冗余数据，使得数据可备份化。然后执行rsync
+-av /home
+/mnt/mdisk/sync，将数据同步到备份的移动硬盘上。之所以用rsync，是因为我在备份的时候还能看看网页什么的。等第一次备份完成，关闭所有X程序，退出shell这个用户的所有进程，然后再次执行rsync，就可以保证同步。同步完成后，注销/etc/fstab下面的/home和swap项目，重启。<br />
+   
+系统启动后，先登入root用户，因为此时/home已经恢复到了/下面，所有shell用户的home路径不存在。建立/home/shell目录，并且复制/etc/skel配置，修改owner后，shell就可以登入了。当然，此时是系统默认环境，并没有定制化。没有关系，我们只需要terminal。在terminal中执行gparted，会出现图形的分区管理工具。当然，理论上说，如果你够熟悉，使用fdisk完成全部操作也是可以的，这免除了初始化shell用户和登入图形界面的麻烦。删除原先的/home所在分区和swap所在分区，切割一个ntfs分区用于将来安装windows(回头可以打游戏)，剩余的全部切割，而后开启lvm标记。当然，这一步贝壳当时不知道，而是创立了一个未知分区，再用fdisk调整分区类型为8E。而后系统会提示你，不能保证内核数据结构更新，需要执行kpartx
+/dev/sda。无论如何，此时我们已经有了一个lvm分区。<br />
+    lvm的结构是pv -&gt; pg -&gt;
+lv，也就是物理卷-&gt;物理组-&gt;逻辑卷。物理的各个分区首先被组织成物理组，再被划分为逻辑卷。这样设计是因为可能有多个磁盘上的空间，被划分为多个逻辑卷。在不改变逻辑的情况下，lvm的默认组织构型是raid0的。不过这对我不是个问题，我只有一个磁盘。<br />
+   
+首先创建pv，使用命令pvcreate，没什么好多说的。然后是产生vg，使用vgcreate
+main
+/dev/sda7，之所以需要main，是因为需要一个vg命名。而后我们需要从这个vg中创建出一个lv来，执行指令lvcreate
+-L150G -nhome
+main，设定lv的名字叫做main-home，大小150G。此时在/dev/mapper/main-home，就产生了一个设备文件，大小150G，可以当作/dev/sda1之类的设备一样使用。不过，这个设备没有经过任何格式化过程，所以还需要mkfs.ext3
+/dev/mapper/main-home。在这个指令后，我很习惯的跟了一个tune2fs -c 0
+/dev/mapper/main-home来关闭重启检测。使用blkid，发现这个设备已经成功创立，并且有了ID。把UUID复制进（这时就知道X的好处了，console下面比较绕路）/etc/fstab，并且修改刚刚被注释掉的/home一行，更改UUID和分区格式。贝壳当时光记得复制，忘记改分区格式，导致系统进不去。不过也不困难，修改/etc/fstab后mount
+-a一下就可以了。<br />
+   
+此时我们已经建立了有效的逻辑卷，并且正确配置。下面要创建一个交换分区，并且挂上去。废话不多说，lvcreate
+-L6G -nswap main，mkswap /dev/mapper/main-swap。而后一样blkid和vi
+/etc/fstab。系统就基本配置好了。验证一下看看。<br />
+shell-deb:~# pvs<br />
+  PV         VG   Fmt  Attr PSize   PFree<br />
+  /dev/sda7  main lvm2 a-   229.19g 73.19g<br />
+shell-deb:~# lvs<br />
+  LV   VG   Attr   LSize   Origin Snap%  Move Log Copy%  Convert<br />
+  home main -wi-ao 150.00g                                     <br />
+  swap main -wi-ao   6.00g<br />
+   
+而后就是新系统的启用过程，首先要退出X，注销shell用户的所有进程，然后以root删除/home下的所有数据。如果不删除的话，重启后，这里的数据无法访问，变成垃圾。而后重启，就可以看到正确结果了。不过还不要着急登入shell。首先执行rsync
+-av /mnt/mdisk/sync/home
+/home，将备份同步回去。这样我们登入shell的时候就可以看到有效的定制化界面了。另外一点细节是，mdisk使用了ntfs格式，所以导致数据恢复后属性混乱。使用find
+. -type d -exec chmod 755 {} ;和find . -type f -exec chmod 644 {}
+;可以恢复大部分，少部分例如~/.ssh/authorized_keys和~/.gnupg需要手工调整。</p>
 
         </div>
         

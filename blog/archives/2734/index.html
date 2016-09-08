@@ -112,64 +112,113 @@ ga('send', 'pageview');
           
           
           
-          <p><h1>EFI和GPT的关系</h1>
+          
+
+<h1 id="efi和gpt的关系">EFI和GPT的关系</h1>
+
 <p>关于EFI和GPT的解释我就不说了，相信来看我blog的人应该能自己搜到。</p>
+
 <p>关于两者的关系，我简要点说吧。如果你需要用EFI引导，你就应该用GPT分区。如果你需要用GPT分区，你就应该用EFI引导。反之交叉组合，不一定会失败，但是折腾和兼容性不保证是必然的。从这两年的经验上看，越来越多的系统开始支持EFI+GPT模式的组合。所以大家可以提前演练一下EFI+GPT模式引导。</p>
-<h1>GPT和MBR分区互换</h1>
+
+<h1 id="gpt和mbr分区互换">GPT和MBR分区互换</h1>
+
 <p>在windows下可以用磁盘管理器直接换，在linux下可以用parted或者gdisk来做。当然，如果你有图形界面，可以上gparted这个神器。非常好用。</p>
+
 <p>linux下用parted更换分区表的方法[1]：</p>
+
 <pre><code># parted /dev/sdd
 GNU Parted 3.1
 Using /dev/sdd
-Welcome to GNU Parted! Type &lsquo;help&rsquo; to view a list of commands.
+Welcome to GNU Parted! Type 'help' to view a list of commands.
 (parted) mklabel
 New disk label type? gpt
 (parted)
 </code></pre>
+
 <p>但是目前我看到的可靠转换方案，都是在无数据情况下进行分区表互换。带数据转换有很多前置条件，而且肯定有风险。所以建议初始化硬盘的时候搞，不然后面可能代价很高。</p>
-<h1>GPT分区的划分要求</h1>
+
+<h1 id="gpt分区的划分要求">GPT分区的划分要求</h1>
+
 <p>GPT有很多优势，例如没有主分区和扩展分区的区别，硬盘大小可以超过2T，分区可以打很多flags，等等。但是使用GPT也不是说全无要求。基础来说，GPT分区划分有几个建议。</p>
+
 <ol>
 <li>第一个分区划分为EFI分区，并且保留至少20M，推荐100M的大小。</li>
 <li>第二个分区划分为GPT分区，保留同上。</li>
 <li>其他分区安装使用频繁程度和大小从前向后装。</li>
 </ol>
+
 <p>1是因为EFI推荐为第一个分区。3是因为万一你需要为某个分区扩展大小，你当然希望移动比较小的分区。</p>
-<h1>EFI引导</h1>
+
+<h1 id="efi引导">EFI引导</h1>
+
 <p>终于到了今天的重头戏，EFI引导。EFI+GPT模式下，引导变得异常简单，多重引导的支持也非常容易。大家再也不用去抢MBR了。</p>
+
 <p>在linux下，有个工具叫做efibootmgr，可以man一下看文档。简单来说，这货有三个功能。</p>
+
 <ul>
 <li>efibootmgr -v，查看当前引导表项。</li>
 <li>efibootmgr -c，增加引导表项。</li>
 <li>efibootmgr -B，删除引导表项。</li>
 </ul>
+
 <p>至于引导表项，具体是什么呢？简单点说，就是某硬盘的某分区，分区ID多少多少，上面的某路径下，有个按照EFI规范写的文件，你给我引导起来。就这么简单。</p>
+
 <p>当然，EFI认识的文件系统格式比较少，我确定的只有FAT一种。但是好在EFI文件引导起来后，后面跑什么文件系统就无关了。所以这也是为什么有EFI分区的原因。这个分区以FAT格式化，然后所有的启动管理器都安装在上面（其实就是放了一个文件）。最后加一个表项就可以引导了。</p>
-<p>通常情况下，linux下由grub-efi这个包来提供这个efi文件。当efi文件被引导后，会找到boot分区，并且加载上面的grub主程序和附加模块。最后进入grub主系统。我查看了一下，在我的系统上(debian jessie, 2015-03-24)，efi被挂载到/boot/efi，而efi文件在/boot/efi/EFI/debian/grubx64.efi，大小为119808字节。</p>
-<h1>硬盘安装windows</h1>
+
+<p>通常情况下，linux下由grub-efi这个包来提供这个efi文件。当efi文件被引导后，会找到boot分区，并且加载上面的grub主程序和附加模块。最后进入grub主系统。我查看了一下，在我的系统上(debian
+jessie,
+2015-03-24)，efi被挂载到/boot/efi，而efi文件在/boot/efi/EFI/debian/grubx64.efi，大小为119808字节。</p>
+
+<h1 id="硬盘安装windows">硬盘安装windows</h1>
+
 <p>上面说了这么多EFI有关的东西，下面说说贝壳最近的烦恼。</p>
+
 <p>最近换了一台机器，挺不错的。但是由于机箱小，所以硬盘拆卸困难，基本就当作内置硬盘了。所以把硬盘拆下来安装系统就做不到了。同时又没有光驱。所以安装系统的方案只有U盘一种。</p>
-<p>当然，对于linux来说，这都不是事。debian很快就安装完成，整个系统的重初始化没用两个小时。但是windows上就卡壳了。Windows7不支持dd到U盘引导，而微软推出的iso to udisk工具理所当然的只能跑在windows下——可当时所有windows实例都挂了正在重装中。</p>
+
+<p>当然，对于linux来说，这都不是事。debian很快就安装完成，整个系统的重初始化没用两个小时。但是windows上就卡壳了。Windows7不支持dd到U盘引导，而微软推出的iso
+to
+udisk工具理所当然的只能跑在windows下——可当时所有windows实例都挂了正在重装中。</p>
+
 <p>所以我就借了一个USB光驱来装系统，然后发现另一个悲剧的事实。当初为了多引导方便，使用了GPT分区模式。而Windows的安装，居然是EFI引导才能往GPT上装，BIOS引导只能往MBR上装。这个为了防错的愚蠢设计的结果就是，Windows7的原始安装光盘，只要从光驱一引导，就必定只能装到MBR上。。。</p>
+
 <p>当然，后面介绍的内容，可以帮助你推理出如何修改安装光盘，来实现EFI下的ISO引导。不过这种事情对当时的我一点帮助都没有。</p>
+
 <p>所以核心问题就是EFI引导了。于是，我开始了上面的研究。而研究完EFI引导，我发现——其实好像连U盘都不用的。因为本质来说，Windows的安装程序也是一个Windows。我只需要分一个FAT的分区，把安装程序丢上去，然后设法添加一项EFI表项，指向正确的EFI加载文件即可。有一份如何制作EFI引导的U盘的文档也支持我这个想法[2]。</p>
+
 <p>所以我做了一个简单的测试，在GPT的尾部分了一个小分区，并格式化为FAT32。在上面展开win7的完整ISO。</p>
+
 <p>然后是关键问题，EFI表项是一个硬盘+分区+路径的组合。硬盘和分区都不是问题，问题是应该指向哪个文件呢？根据我的测试bootmgr.efi和cdboot.efi都是错的，无法完成引导。当然，在文档[2]和文档[3]里，都指明了如何解决这个问题。从一个可引导的win7里面，提取一个bootmgfw.efi文件，改名为bootx64.efi。不过上面说了，我没有一个可用的windows。幸运的是，文档[3]里面提供了一个下载链接，可以让我下载一份。将这份efi丢到分区上，并且添加efi表项后，BIOS引导项中出现了安装器选项。选择后就直接进入windows安装界面，并且可以安装到GPT分区上。</p>
-<h1>GPT分区的激活</h1>
+
+<h1 id="gpt分区的激活">GPT分区的激活</h1>
+
 <p>其实我不是很想提到这个事，不过GPT分区安装windows绕不过去的问题就是如何绕过防盗版。</p>
-<p>本质上说，目前的软激活，都是通过抢在Windows前启动一个程序，来拦截Windows对SLIC的读取，从而返回一个合法的OEM SLIC。这个加上系统内安装的，和这个合法OEM SLIC对应的证书，就可以达到激活的目的。</p>
+
+<p>本质上说，目前的软激活，都是通过抢在Windows前启动一个程序，来拦截Windows对SLIC的读取，从而返回一个合法的OEM
+SLIC。这个加上系统内安装的，和这个合法OEM
+SLIC对应的证书，就可以达到激活的目的。</p>
+
 <p>这个拦截程序，以前是写入在windows隐藏分区内的。这也是以前软激活需要挂载隐藏分区的理由。GPT模式下，我们有了EFI分区，因此就没有隐藏分区了（MSR分区不是）。这导致原本的激活程序失效。因此，需要下载一个EFI激活程序，然后挂载EFI分区。</p>
+
 <p>具体就自己搜吧，我只能帮到这了。</p>
-<h1>如何制作可EFI引导的U盘/ISO</h1>
+
+<h1 id="如何制作可efi引导的u盘-iso">如何制作可EFI引导的U盘/ISO</h1>
+
 <p>按照上面的例子，其实只要把所有的安装文件解到U盘/ISO上，并且在上面写入一个EFI引导程序(bootmgfw.efi/bootx64.efi)，基本就齐活了。</p>
+
 <p>但是比较悲剧的是，贝壳没测试过，所以就不知道EFI表项应该往哪里写了。从这个表项的特性来说的话，我怀疑efibootmgr是直接操作了主板基础系统暴露出来的接口。类似于dmidecode。如果是这样，新系统上的引导表项就不能在制作引导盘的时候写入了。所以如果谁知道的话，请告诉我。</p>
+
 <p>同时，根据我看到的文档，有些BIOS支持从文件引导的选项。能够当场让你选择一个磁盘的一个分区的一个路径，构成EFI表项。但是目前我新买的电脑上没有此功能。</p>
-<h1>引用</h1>
+
+<h1 id="引用">引用</h1>
+
 <ol>
-<li><a rel="nofollow external" href="http://www.ibm.com/developerworks/library/l-gpt/">Make the most of large drives with GPT and Linux</a></li>
-<li><a href="https://www.thomas-krenn.com/en/wiki/Creating_Windows_UEFI_Boot-Stick_in_Windows">Creating Windows UEFI Boot-Stick in Windows</a></li>
-<li><a rel="nofollow external" href="http://www.nextofwindows.com/how-to-make-uefi-bootable-usb-flash-drive-to-install-windows-8/">How To Make UEFI Bootable USB Flash Drive to Install Windows 8</a></li>
-</ol></p>
+<li><a href="http://www.ibm.com/developerworks/library/l-gpt/">Make the most of large drives with GPT and
+Linux</a></li>
+<li><a href="https://www.thomas-krenn.com/en/wiki/Creating_Windows_UEFI_Boot-Stick_in_Windows">Creating Windows UEFI Boot-Stick in
+Windows</a></li>
+<li><a href="http://www.nextofwindows.com/how-to-make-uefi-bootable-usb-flash-drive-to-install-windows-8/">How To Make UEFI Bootable USB Flash Drive to Install Windows
+8</a></li>
+</ol>
 
         </div>
         

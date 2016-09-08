@@ -112,72 +112,84 @@ ga('send', 'pageview');
           
           
           
-          
+          <p>最近开心上狂算24点，于是贝壳搞了一个24点计算程序，并且说明原理。</p>
 
-<p>最近开心上狂算24点，于是贝壳搞了一个24点计算程序，并且说明原理。
-我们将24点问题一般化，变成一个搜索问题。假定从一个初始表开始，里面有一些原子。我们定义一个操作，结合。每次操作任意从中选择出两个(或者以上)原子，使用算符连接，成为一个新的原子。那么，一般来说，24点就是计算所有可能的路径，从初始表开始，持续进行结合，直到只剩下一个原子，并且对这个原子求值得24。
-有人可能在算符优先级上想不开，其实不用考虑这个问题，每次求值的时候，按照求值顺序优先就可以。你想到的另外一种优先级可能，会在穷举的时候被列举出来算掉，不用担心遗漏。
-同时，算子必须是两目以上算子，因为单目算子可以持续作用于同一个对象，因此原子表中的原子个数并不严格单调减少，造成无法肯定路径收敛于有限步骤上。并且，如果允许单目算子，那么我只需要求导和阶乘就可以对任何数字求24点。
-((a&rsquo;)!+(b&rsquo;)!+(c&rsquo;)!+(d&rsquo;)!)!=24
-因此，单目算符是没有意义的。
-另外，注意算符分可交换和非可交换的。例如：a+b=b+a，但是a-b!=b-a。如果不注意这点，倒是不会漏算，但是会造成搜索空间增大，并且有重复结果。
-以下是24点计算程序，python版本的。有兴趣的朋友可以用scheme重写，相信会更简洁有效。回头会用django封装一下，做成网页给大家玩玩。</p>
+<p>我们将24点问题一般化，变成一个搜索问题。假定从一个初始表开始，里面有一些原子。我们定义一个操作，结合。每次操作任意从中选择出两个(或者以上)原子，使用算符连接，成为一个新的原子。那么，一般来说，24点就是计算所有可能的路径，从初始表开始，持续进行结合，直到只剩下一个原子，并且对这个原子求值得24。</p>
 
-<p>#!/usr/bin/python
-import sys</p>
+<p>有人可能在算符优先级上想不开，其实不用考虑这个问题，每次求值的时候，按照求值顺序优先就可以。你想到的另外一种优先级可能，会在穷举的时候被列举出来算掉，不用担心遗漏。</p>
 
-<p>symbol_list = [
-(&ldquo;%s+%s&rdquo;, True), (&ldquo;%s-%s&rdquo;, False),
-(&ldquo;%s*%s&rdquo;, True), (&ldquo;%s/%s&rdquo;, False), (&ldquo;%s**%s&rdquo;, False),</p>
+<p>同时，算子必须是两目以上算子，因为单目算子可以持续作用于同一个对象，因此原子表中的原子个数并不严格单调减少，造成无法肯定路径收敛于有限步骤上。并且，如果允许单目算子，那么我只需要求导和阶乘就可以对任何数字求24点。</p>
 
-<h1 id="min-s-s-true-max-s-s-true">(&ldquo;min (%s,%s)&rdquo;, True), (&ldquo;max (%s,%s)&rdquo;, True),</h1>
+<pre><code>((a')!+(b')!+(c')!+(d')!)!=24
+</code></pre>
 
-<p>];</p>
+<p>因此，单目算符是没有意义的。</p>
 
-<p>def diff_seq (length):
-for i in range (0, length):
-for j in range (i + 1, length):
-yield (i, j);</p>
+<p>另外，注意算符分可交换和非可交换的。例如：a+b=b+a，但是a-b!=b-a。如果不注意这点，倒是不会漏算，但是会造成搜索空间增大，并且有重复结果。</p>
 
-<p>def get_less_state (input_state):
-for i, j in diff_seq (len (input_state)):
-temp = input_state[:];
-del temp[j];
-del temp[i];
-for s in symbol_list:
-rslt = s[0] % (input_state[i], input_state[j]);
-rslt = &ldquo;(%s)&rdquo; % rslt;
-temp.append (rslt);
-yield temp;
-temp.remove (rslt);
-if s[1]:
-continue;
-rslt = s[0] % (input_state[j], input_state[i]);
-rslt = &ldquo;(%s)&rdquo; % rslt;
-temp.append (rslt);
-yield temp;
-temp.remove (rslt);</p>
+<p>以下是24点计算程序，python版本的。有兴趣的朋友可以用scheme重写，相信会更简洁有效。回头会用django封装一下，做成网页给大家玩玩。</p>
 
-<p>def do_node (input_state, output):
-for i in get_less_state (input_state):
-if len (i) &gt; 1:
-do_node (i, output);
-continue;
-try:
-rslt = eval (i[0]);
-except:
-continue;
-if rslt == 24.0:
-output.add (i[0].replace (&ldquo;.0&rdquo;, &ldquo;&rdquo;));</p>
+<pre><code>#!/usr/bin/python
+import sys
 
-<p>if <strong>name</strong> == &ldquo;<strong>main</strong>&ldquo;:
-rslt = [];
-for i in sys.argv[1:]:
-rslt.append (float (i));
-output = set ([]);
-do_node (rslt, output);
-for i in list (output):
-print &ldquo;%s=24&rdquo; % i;</p>
+symbol_list = [
+    (&quot;%s+%s&quot;, True),
+    (&quot;%s-%s&quot;, False),
+    (&quot;%s*%s&quot;, True),
+    (&quot;%s/%s&quot;, False),
+    (&quot;%s**%s&quot;, False),
+]
+
+
+def diff_seq(length):
+    for i in range(0, length):
+        for j in range(i + 1, length):
+            yield (i, j)
+
+
+def get_less_state(input_state):
+    for i, j in diff_seq(len(input_state)):
+        temp = input_state[:]
+        del temp[j]
+        del temp[i]
+
+        for s in symbol_list:
+            rslt = s[0] % (input_state[i], input_state[j])
+            rslt = &quot;(%s)&quot; % rslt
+            temp.append(rslt)
+            yield temp
+            temp.remove(rslt)
+            if s[1]:
+                continue
+            rslt = s[0] % (input_state[j], input_state[i])
+            rslt = &quot;(%s)&quot; % rslt
+            temp.append(rslt)
+            yield temp
+            temp.remove(rslt)
+
+
+def do_node(input_state, output):
+    for i in get_less_state(input_state):
+        if len(i) &gt; 1:
+            do_node(i, output)
+            continue
+        try:
+            rslt = eval(i[0])
+        except:
+            continue
+        if rslt == 24.0:
+            output.add(i[0].replace(&quot;.0&quot;, &quot;&quot;))
+
+
+if __name__ == &quot;__main__&quot;:
+    rslt = []
+    for i in sys.argv[1:]:
+        rslt.append(float(i))
+        output = set([])
+        do_node(rslt, output)
+        for i in list(output):
+            print(&quot;%s=24&quot; % i)
+</code></pre>
 
         </div>
         

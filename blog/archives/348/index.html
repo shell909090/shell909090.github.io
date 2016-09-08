@@ -112,7 +112,35 @@ ga('send', 'pageview');
           
           
           
-          <p>算是介绍一个奇淫巧技吧。查找重复的文件，这个应该有很多软件都可以做的。不过在Linux里面，利用系统工具，一句语句查找应该就比较少见了。<br />$find . -name &quot;<em>&quot; -type f -size +0 -exec md5sum {} ; | sort | uniq -d -w 32<br />    原理是这样的，先用find查找当前所有文件。我们加上限定类型必须是文件，目录不要。限定大小不为0，空文件不要。然后对所有满足条件的执行md5sum，获得md5和文件的列表。然后排序，再针对md5的部分做唯一限定。就得到了所有md5相同的文件的列表。<br />    问题是，这时候我们得到的还只是一堆重复的文件的md5。我们可以把以上步骤拆开来获得完整的输出。<br />$find . -name &quot;</em>&quot; -type f -size +0 -exec md5sum {} ; | sort &gt; file_md5<br />$cat file_md5 | uniq -d -w 32<br />$grep &quot;&hellip;&quot; file_md5<br />    相信大家都看出是怎么回事情了，就不赘言了。<br />    Windows下以前我总是执行不出，原因在于要这么写。<br />&gt;find . -type f -size +0 -exec md5sum {} ; | sort &gt; report.txt<br />    差一个转义，因为不需要。<br /><br />    总结一下，我们可以用一个脚本来处理这些问题。<br />&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;fine_rep&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;<br />find $1 -type f -size +0 -exec md5sum {} ; | sort &gt; &quot;file_md5&quot;<br />cat &quot;file_md5&quot; | uniq -d -w 32 | cut -d&quot; &quot; -f1 | while read x<br />do<br />    grep &quot;$x&quot; file_md5<br />    echo &quot;&quot;<br />done<br />echo &quot;done&quot;<br />rm &quot;file_md5&quot;<br />&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;</p>
+          
+
+<p>算是介绍一个奇淫巧技吧。查找重复的文件，这个应该有很多软件都可以做的。不过在Linux里面，利用系统工具，一句语句查找应该就比较少见了。<br />
+\$find . -name &ldquo;*&rdquo; -type f -size +0 -exec md5sum {} ; | sort | uniq -d
+-w 32<br />
+   
+原理是这样的，先用find查找当前所有文件。我们加上限定类型必须是文件，目录不要。限定大小不为0，空文件不要。然后对所有满足条件的执行md5sum，获得md5和文件的列表。然后排序，再针对md5的部分做唯一限定。就得到了所有md5相同的文件的列表。<br />
+   
+问题是，这时候我们得到的还只是一堆重复的文件的md5。我们可以把以上步骤拆开来获得完整的输出。<br />
+\$find . -name &ldquo;*&rdquo; -type f -size +0 -exec md5sum {} ; | sort &gt;
+file_md5<br />
+\$cat file_md5 | uniq -d -w 32<br />
+\$grep &ldquo;&hellip;&rdquo; file_md5<br />
+    相信大家都看出是怎么回事情了，就不赘言了。<br />
+    Windows下以前我总是执行不出，原因在于要这么写。<br />
+&gt;find . -type f -size +0 -exec md5sum {} ; | sort &gt; report.txt<br />
+    差一个转义，因为不需要。<br />
+<br />
+    总结一下，我们可以用一个脚本来处理这些问题。<br />
+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;fine_rep&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;<br />
+find \$1 -type f -size +0 -exec md5sum {} ; | sort &gt; &ldquo;file_md5&rdquo;<br />
+cat &ldquo;file_md5&rdquo; | uniq -d -w 32 | cut -d&rdquo; &ldquo; -f1 | while read x<br />
+do<br />
+    grep &ldquo;\$x&rdquo; file_md5<br />
+    echo &ldquo;&rdquo;<br />
+done<br />
+echo &ldquo;done&rdquo;</p>
+
+<h2 id="rm-file-md5">rm &ldquo;file_md5&rdquo;</h2>
 
         </div>
         

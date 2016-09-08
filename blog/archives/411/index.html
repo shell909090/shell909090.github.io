@@ -112,7 +112,117 @@ ga('send', 'pageview');
           
           
           
-          <p>libxml2是gnome做的一个xml的库，支持SAX和DOM。<br />    在解析xml的时候，libxml2会将xml中不属于标签的部分作为text节点插入。如果是属性，则添加一个属性节点到父节点上，一个文字节点到属性节点下。那么整个xml就变成了一颗单纯的树。<br />    支持多语言的问题上，libxml2的内核只支持UTF-8。但是可以通过注册编码句柄来添加语言支持，一般是配合iconv[2]使用的，因为libxml2的编译依赖就是iconv。下面是代码。<br /><br />iconv_t         iconv_utf8_gbk;<br />iconv_t         iconv_gbk_utf8;<br /><br />int gbk_input (unsigned char *out, int *outlen, const unsigned char *in,<br />               int *inlen)<br />{<br />    char           *outbuf = (char *) out;<br />    char           *inbuf = (char *) in;<br />    size_t          rslt;<br />    rslt =<br />        iconv (iconv_utf8_gbk, (const char **) &amp;inbuf, (size_t *) inlen,<br />               &amp;outbuf, (size_t *) outlen);<br />    if (rslt &lt; 0)<br />        return rslt;<br />    *outlen = ((unsigned char *) outbuf - out);<br />    *inlen = ((unsigned char *) inbuf - in);<br />    return *outlen;<br />}<br /><br />int gbk_output (unsigned char *out,<br />                int *outlen, const unsigned char *in, int *inlen)<br />{<br />    char           *outbuf = (char *) out;<br />    char           *inbuf = (char *) in;<br />    size_t          rslt;<br />    rslt =<br />        iconv (iconv_gbk_utf8, (const char **) &amp;inbuf, (size_t *) inlen,<br />               &amp;outbuf, (size_t *) outlen);<br />    if (rslt &lt; 0)<br />        return rslt;<br />    *outlen = ((unsigned char *) outbuf - out);<br />    *inlen = ((unsigned char *) inbuf - in);<br />    return *outlen;<br />}<br /><br /><br /><br />static void print_element_names (xmlDocPtr doc, xmlNode * a_node, int n)<br />{<br />    xmlNode        *cur_node = NULL;<br />    xmlAttr           *cur_attr = NULL;<br />    xmlChar *key;<br /><br />    for (cur_node = a_node; cur_node; cur_node = cur_node-&gt;next) {<br />            for (int i = 0; i &lt; n; ++i)<br />                printf (&quot; &quot;);<br />//            key = xmlNodeListGetString(doc, cur_node-&gt;xmlChildrenNode, 1);<br />            printf (&quot;node %d: %s = %sn&quot;, cur_node-&gt;type, cur_node-&gt;name, cur_node-&gt;content);<br />            if (cur_node-&gt;properties != NULL){<br />                for (cur_attr = cur_node-&gt;properties; cur_attr; cur_attr = cur_attr-&gt;next){<br />                    printf (&quot;attr %s = %sn&quot;, cur_attr-&gt;name, cur_attr-&gt;children-&gt;content);<br />                }<br />            }<br />//            xmlFree(key);<br /><br />        if (cur_node-&gt;type == XML_ELEMENT_NODE)<br />            print_element_names (doc, cur_node-&gt;children, n + 1);<br />    }<br />}<br /><br />int _tmain (int argc, _TCHAR * argv[])<br />{<br />    xmlDoc         *doc = NULL;<br />    xmlNode        *root_element = NULL;<br />    LIBXML_TEST_VERSION;<br />    iconv_utf8_gbk = iconv_open (&quot;utf-8&quot;, &quot;gbk&quot;);<br />    iconv_gbk_utf8 = iconv_open (&quot;gbk&quot;, &quot;utf-8&quot;);<br /><br />    xmlNewCharEncodingHandler (&quot;gb2312&quot;, gbk_input, gbk_output);//添加gb2312编码支持<br />    xmlNewCharEncodingHandler (&quot;gbk&quot;, gbk_input, gbk_output);//添加gbk编码支持<br /><br />    doc = xmlReadFile (&quot;Q.xml&quot;, NULL, 0);<br />    if (doc == NULL) {<br />        printf (&quot;Failed to parse %sn&quot;, &quot;Q.xml&quot;);<br />        return 0;<br />    }<br /><br />    root_element = xmlDocGetRootElement (doc);<br />    print_element_names (doc, root_element, 0);<br />    xmlFreeDoc (doc);<br /><br />    xmlCleanupParser ();<br />    xmlMemoryDump ();<br />    iconv_close (iconv_gbk_utf8);<br />    iconv_close (iconv_utf8_gbk);<br />    return 0;<br />}<br /><br />    在XML无指定编码的时候没有测试过，不过按照XML标准，这时候应该是UTF-8编码。不符合标准的话……自己想办法吧。<br /><br />Reference:<br />1. The XML C parser and toolkit of Gnome: <a href="http://xmlsoft.org/">http://xmlsoft.org/</a><br />2. libiconv: <a href="http://www.gnu.org/savannah-checkouts/gnu/libiconv/">http://www.gnu.org/savannah-checkouts/gnu/libiconv/</a><br /></p>
+          <p>libxml2是gnome做的一个xml的库，支持SAX和DOM。<br />
+   
+在解析xml的时候，libxml2会将xml中不属于标签的部分作为text节点插入。如果是属性，则添加一个属性节点到父节点上，一个文字节点到属性节点下。那么整个xml就变成了一颗单纯的树。<br />
+   
+支持多语言的问题上，libxml2的内核只支持UTF-8。但是可以通过注册编码句柄来添加语言支持，一般是配合iconv[2]使用的，因为libxml2的编译依赖就是iconv。下面是代码。<br />
+<br />
+iconv_t         iconv_utf8_gbk;<br />
+iconv_t         iconv_gbk_utf8;<br />
+<br />
+int gbk_input (unsigned char *out, int *outlen, const unsigned char
+*in,<br />
+               int *inlen)<br />
+{<br />
+    char           *outbuf = (char *) out;<br />
+    char           *inbuf = (char *) in;<br />
+    size_t          rslt;<br />
+    rslt =<br />
+        iconv (iconv_utf8_gbk, (const char **) &amp;inbuf, (size_t *)
+inlen,<br />
+               &amp;outbuf, (size_t *) outlen);<br />
+    if (rslt &lt; 0)<br />
+        return rslt;<br />
+    *outlen = ((unsigned char *) outbuf - out);<br />
+    *inlen = ((unsigned char *) inbuf - in);<br />
+    return *outlen;<br />
+}<br />
+<br />
+int gbk_output (unsigned char *out,<br />
+                int *outlen, const unsigned char *in, int *inlen)<br />
+{<br />
+    char           *outbuf = (char *) out;<br />
+    char           *inbuf = (char *) in;<br />
+    size_t          rslt;<br />
+    rslt =<br />
+        iconv (iconv_gbk_utf8, (const char **) &amp;inbuf, (size_t *)
+inlen,<br />
+               &amp;outbuf, (size_t *) outlen);<br />
+    if (rslt &lt; 0)<br />
+        return rslt;<br />
+    *outlen = ((unsigned char *) outbuf - out);<br />
+    *inlen = ((unsigned char *) inbuf - in);<br />
+    return *outlen;<br />
+}<br />
+<br />
+<br />
+<br />
+static void print_element_names (xmlDocPtr doc, xmlNode * a_node,
+int n)<br />
+{<br />
+    xmlNode        *cur_node = NULL;<br />
+    xmlAttr           *cur_attr = NULL;<br />
+    xmlChar *key;<br />
+<br />
+    for (cur_node = a_node; cur_node; cur_node = cur_node-&gt;next)
+{<br />
+            for (int i = 0; i &lt; n; ++i)<br />
+                printf (&rdquo; &ldquo;);<br />
+//            key = xmlNodeListGetString(doc,
+cur_node-&gt;xmlChildrenNode, 1);<br />
+            printf (&ldquo;node %d: %s = %sn&rdquo;, cur_node-&gt;type,
+cur_node-&gt;name, cur_node-&gt;content);<br />
+            if (cur_node-&gt;properties != NULL){<br />
+                for (cur_attr = cur_node-&gt;properties; cur_attr;
+cur_attr = cur_attr-&gt;next){<br />
+                    printf (&ldquo;attr %s = %sn&rdquo;, cur_attr-&gt;name,
+cur_attr-&gt;children-&gt;content);<br />
+                }<br />
+            }<br />
+//            xmlFree(key);<br />
+<br />
+        if (cur_node-&gt;type == XML_ELEMENT_NODE)<br />
+            print_element_names (doc, cur_node-&gt;children, n + 1);<br />
+    }<br />
+}<br />
+<br />
+int _tmain (int argc, _TCHAR * argv[])<br />
+{<br />
+    xmlDoc         *doc = NULL;<br />
+    xmlNode        *root_element = NULL;<br />
+    LIBXML_TEST_VERSION;<br />
+    iconv_utf8_gbk = iconv_open (&ldquo;utf-8&rdquo;, &ldquo;gbk&rdquo;);<br />
+    iconv_gbk_utf8 = iconv_open (&ldquo;gbk&rdquo;, &ldquo;utf-8&rdquo;);<br />
+<br />
+    xmlNewCharEncodingHandler (&ldquo;gb2312&rdquo;, gbk_input,
+gbk_output);//添加gb2312编码支持<br />
+    xmlNewCharEncodingHandler (&ldquo;gbk&rdquo;, gbk_input,
+gbk_output);//添加gbk编码支持<br />
+<br />
+    doc = xmlReadFile (&ldquo;Q.xml&rdquo;, NULL, 0);<br />
+    if (doc == NULL) {<br />
+        printf (&ldquo;Failed to parse %sn&rdquo;, &ldquo;Q.xml&rdquo;);<br />
+        return 0;<br />
+    }<br />
+<br />
+    root_element = xmlDocGetRootElement (doc);<br />
+    print_element_names (doc, root_element, 0);<br />
+    xmlFreeDoc (doc);<br />
+<br />
+    xmlCleanupParser ();<br />
+    xmlMemoryDump ();<br />
+    iconv_close (iconv_gbk_utf8);<br />
+    iconv_close (iconv_utf8_gbk);<br />
+    return 0;<br />
+}<br />
+<br />
+   
+在XML无指定编码的时候没有测试过，不过按照XML标准，这时候应该是UTF-8编码。不符合标准的话……自己想办法吧。<br />
+<br />
+Reference:<br />
+1. The XML C parser and toolkit of Gnome: <a href="http://xmlsoft.org/">http://xmlsoft.org/</a<br />
+2. libiconv: <a href="http://www.gnu.org/savannah-checkouts/gnu/libiconv/">http://www.gnu.org/savannah-checkouts/gnu/libiconv/</a></p>
 
         </div>
         

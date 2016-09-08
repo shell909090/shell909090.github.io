@@ -112,17 +112,189 @@ ga('send', 'pageview');
           
           
           
-          <p>好了，debian官方的uwsgi总算出来了。包已经到了testing，stable暂时别指望了，等下一次release吧。这次打的包，比贝壳打的复杂多了。贝壳自己只打了python专用的包，debian官方的包将多个语言分别打成了plugins。 <div>    下面说说，使用debian官方的包如何做uwsgi发布，还是vhost模式哦。</div><div>    首先安装uwsgi，uwsgi-plugin-python这两个包。uwsgi-plugin-greenlet-python也可以考虑，装不装看你的需求。</div><div>    然后在/etc/uwsgi/apps-available/sites.xml下面写一个文本文件，内容如下：</div><div><div></p>
+          <p>好了，debian官方的uwsgi总算出来了。包已经到了testing，stable暂时别指望了，等下一次release吧。这次打的包，比贝壳打的复杂多了。贝壳自己只打了python专用的包，debian官方的包将多个语言分别打成了plugins。
+<div></p>
 
-<p>&lt;uwsgi&gt;</div><div><span style="white-space:pre-wrap">    </span>&lt;vhost/&gt;</div><div><span style="white-space:pre-wrap"> </span>&lt;no-site/&gt;</div><div>&lt;/uwsgi&gt;</div></div> <div>    再从/etc/uwsgi/apps-enabled/sites.xml链接过去，重启uwsgi服务，事情就搞定了。</div><div>    默认的配置在/usr/share/uwsgi/conf/default.ini，可以看看是否都满意了。一般来说，master和no-orphans都建议打开，chmod-socket最高660，改成600应该也可以工作。贝壳的机器负载小，只用一个worker就够了，所以完整的配置是这样的：</div></p>
+<p>    下面说说，使用debian官方的包如何做uwsgi发布，还是vhost模式哦。</p>
 
-<p><div><div>&lt;uwsgi&gt;</div><div><span style="white-space:pre-wrap">  </span>&lt;plugins&gt;greenlet,ugreen&lt;/plugins&gt;</div><div><span style="white-space:pre-wrap"> </span>&lt;workers&gt;1&lt;/workers&gt;</div> <div><span style="white-space:pre-wrap">  </span>&lt;reload-on-as&gt;128&lt;/reload-on-as&gt;</div><div><span style="white-space:pre-wrap">   </span>&lt;vhost/&gt;</div><div><span style="white-space:pre-wrap"> </span>&lt;no-site/&gt;</div></p>
+<p></div></p>
 
-<p><div>&lt;/uwsgi&gt;</div></div><div>    nginx里面如此设定：</div><div><div>location /asdf {</div><div><span style="white-space:pre-wrap"> </span> include<span style="white-space:pre-wrap">  </span>uwsgi_params;</div> <div><span style="white-space:pre-wrap"> </span> uwsgi_param<span style="white-space:pre-wrap">  </span>UWSGI_PYHOME /usr;</div><div><span style="white-space:pre-wrap"> </span> uwsgi_param<span style="white-space:pre-wrap">  </span>UWSGI_CHDIR /var/web/hosts;</div></p>
+<div>
 
-<p><div><span style="white-space:pre-wrap">   </span> uwsgi_param<span style="white-space:pre-wrap">  </span>UWSGI_SCRIPT main;</div><div><span style="white-space:pre-wrap"> </span> uwsgi_pass<span style="white-space:pre-wrap">   </span>unix:/run/uwsgi/sites/socket;</div></p>
+   
+首先安装uwsgi，uwsgi-plugin-python这两个包。uwsgi-plugin-greenlet-python也可以考虑，装不装看你的需求。
 
-<p><div>}</div></div><div>    其中，我的程序放在/var/web/hosts底下，使用系统环境来运行（而不是virtualenv），主脚本（带applications那个）是main.py。unix socket和上文default.ini里面的socket正好对应上。</div><div>    同理，我们其实还可以开多个uwsgi应用，只要放置多个xml配置就好。不过既然都采用了vhost模式，何必还开多个呢？这毕竟不是虚拟网站，要给其他人使用的。</div></p>
+</div>
+
+<div>
+
+   
+然后在/etc/uwsgi/apps-available/sites.xml下面写一个文本文件，内容如下：
+
+</div>
+
+<div>
+
+<div>
+
+&lt;uwsgi&gt;
+
+</div>
+
+<div>
+
+<span style="white-space:pre-wrap"> </span>&lt;vhost/&gt;
+
+</div>
+
+<div>
+
+<span style="white-space:pre-wrap"> </span>&lt;no-site/&gt;
+
+</div>
+
+<div>
+
+&lt;/uwsgi&gt;
+
+</div>
+
+<p></div></p>
+
+<div>
+
+   
+再从/etc/uwsgi/apps-enabled/sites.xml链接过去，重启uwsgi服务，事情就搞定了。
+
+</div>
+
+<div>
+
+   
+默认的配置在/usr/share/uwsgi/conf/default.ini，可以看看是否都满意了。一般来说，master和no-orphans都建议打开，chmod-socket最高660，改成600应该也可以工作。贝壳的机器负载小，只用一个worker就够了，所以完整的配置是这样的：
+
+</div>
+
+<div>
+
+<div>
+
+&lt;uwsgi&gt;
+
+</div>
+
+<div>
+
+<span style="white-space:pre-wrap">
+</span>&lt;plugins&gt;greenlet,ugreen&lt;/plugins&gt;
+
+</div>
+
+<div>
+
+<span style="white-space:pre-wrap">
+</span>&lt;workers&gt;1&lt;/workers&gt;
+
+</div>
+
+<div>
+
+<span style="white-space:pre-wrap">
+</span>&lt;reload-on-as&gt;128&lt;/reload-on-as&gt;
+
+</div>
+
+<div>
+
+<span style="white-space:pre-wrap"> </span>&lt;vhost/&gt;
+
+</div>
+
+<div>
+
+<span style="white-space:pre-wrap"> </span>&lt;no-site/&gt;
+
+</div>
+
+<div>
+
+&lt;/uwsgi&gt;
+
+</div>
+
+<p></div></p>
+
+<div>
+
+    nginx里面如此设定：
+
+</div>
+
+<div>
+
+<div>
+
+location /asdf {
+
+</div>
+
+<div>
+
+<span style="white-space:pre-wrap"> </span> include<span
+style="white-space:pre-wrap"> </span>uwsgi\_params;
+
+</div>
+
+<div>
+
+<span style="white-space:pre-wrap"> </span> uwsgi\_param<span
+style="white-space:pre-wrap"> </span>UWSGI\_PYHOME /usr;
+
+</div>
+
+<div>
+
+<span style="white-space:pre-wrap"> </span> uwsgi\_param<span
+style="white-space:pre-wrap"> </span>UWSGI\_CHDIR /var/web/hosts;
+
+</div>
+
+<div>
+
+<span style="white-space:pre-wrap"> </span> uwsgi\_param<span
+style="white-space:pre-wrap"> </span>UWSGI\_SCRIPT main;
+
+</div>
+
+<div>
+
+<span style="white-space:pre-wrap"> </span> uwsgi\_pass<span
+style="white-space:pre-wrap"> </span>unix:/run/uwsgi/sites/socket;
+
+</div>
+
+<div>
+
+}
+
+</div>
+
+<p></div></p>
+
+<div>
+
+   
+其中，我的程序放在/var/web/hosts底下，使用系统环境来运行（而不是virtualenv），主脚本（带applications那个）是main.py。unix
+socket和上文default.ini里面的socket正好对应上。
+
+</div>
+
+<div>
+
+   
+同理，我们其实还可以开多个uwsgi应用，只要放置多个xml配置就好。不过既然都采用了vhost模式，何必还开多个呢？这毕竟不是虚拟网站，要给其他人使用的。
+
+</div>
 
         </div>
         

@@ -118,25 +118,27 @@ ga('send', 'pageview');
 
 <p>源程序如下，是最最出名的Hello,World.：</p>
 
-<p>#include &ldquo;stdafx.h&rdquo;
+<pre><code>#include &quot;stdafx.h&quot;
 #include &lt;windows.h&gt;
-#pragma comment(linker, &ldquo;/ENTRY:main&rdquo;)
-//#pragma comment(linker, &ldquo;/ALIGN:0x1000&rdquo;)//这厮一上程序就变成3k党了，然后UPX就死气活样的不肯工作</p>
 
-<p>#define put(x) WriteFile(hOutput, (x), sizeof(x), &amp;NumOfBytes, NULL)
-#define get(x) ReadFile(hInput, (x), sizeof(x), &amp;NumOfBytes, NULL)</p>
+#pragma comment(linker, &quot;/ENTRY:main&quot;)
+//#pragma comment(linker, &quot;/ALIGN:0x1000&quot;)//这厮一上程序就变成3k党了，然后UPX就死气活样的不肯工作
 
-<p>HANDLE hOutput, hInput;
-DWORD NumOfBytes;</p>
+#define put(x) WriteFile(hOutput, (x), sizeof(x), &amp;amp;NumOfBytes, NULL)
+#define get(x) ReadFile(hInput, (x), sizeof(x), &amp;amp;NumOfBytes, NULL)
 
-<p>void main(){
-char tmp[1];
-hOutput=GetStdHandle(STD_OUTPUT_HANDLE);
-hInput=GetStdHandle(STD_INPUT_HANDLE);
-put(&ldquo;Hello,World.n&rdquo;);
-get(tmp);
-return ;
-}</p>
+HANDLE hOutput, hInput;
+DWORD NumOfBytes;
+
+void main(){
+    char tmp[1];
+    hOutput=GetStdHandle(STD_OUTPUT_HANDLE);
+    hInput=GetStdHandle(STD_INPUT_HANDLE);
+    put(&quot;Hello,World.n&quot;);
+    get(tmp);
+    return ;
+}
+</code></pre>
 
 <p>UPX压缩下来的程序，section会变成三个。UPX0,UPX1,UPX2。其中UPX0是虚段，具备实际的段名称和段地址，但是RawDateSize是0。所以这个段在载入后是全0数据。数据和解压代码合并在了UPX1段中，由UPX1的解压代码注入UPX0的段中。看样子解压代码是附在了最后，从入口点到段实际内容结束点之间的范围。而UPX3的段最是搞笑，是一个单独的ImportTable，仅仅导入了Kernel32.dll中ExitProcess,LoadLibrary和GetProcessAddr三个函数。UPX1在解压并且注入UPX0后，会调用这三个函数来分析和获得每个导入表项的地址，然后完成导入表的动作。</p>
 

@@ -16,72 +16,93 @@
       <pubDate>Wed, 03 Mar 2010 16:51:00 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/100/</guid>
-      <description>&lt;p&gt;emacs是个超级复杂的程序，尤其在配置问题上。贝壳的emacs要跨越三个环境。环境一，WindowsXP+Emacs23。环境二，Debian Testing + Xfce4。环境三，CentOS + Ssh。而整个的操作方式，个性设定需要保持一致。因此，引出一个问题。配置如何设置，跨平台，同步。
-首先解决配置的同步问题，贝壳建立了一个svn仓库，用于存储该配置系统。然后在各个系统中co出这个仓库，当有需要调整时ci就可以保持同步了。Linux下可以使用ln连接文件，Windows下比较麻烦点，NTFS格式(大多都是NTFS格式了吧)可以去sysinternals下一个叫做junction的工具，以建立目录的工具链接，当然，.emacs文件只能手工拷贝了。
-然后是配置的切分问题，如果只有一个文件，即使使用了版本控制，意义也不大。同时，将配置切割成不同的部分，控制载入过程，也可以跨平台和加速。以下是贝壳的.emacs文件。
-;; .emacs profile, written by shell.xu&lt;/p&gt;
+      <description>&lt;p&gt;emacs是个超级复杂的程序，尤其在配置问题上。贝壳的emacs要跨越三个环境。环境一，WindowsXP+Emacs23。环境二，Debian Testing + Xfce4。环境三，CentOS + Ssh。而整个的操作方式，个性设定需要保持一致。因此，引出一个问题。配置如何设置，跨平台，同步。&lt;/p&gt;
 
-&lt;p&gt;;; load other set
-(add-to-list &amp;lsquo;load-path &amp;ldquo;~/.emacs.d/&amp;ldquo;)
-(add-to-list &amp;lsquo;load-path &amp;ldquo;~/.emacs.d/auto-complete/&amp;ldquo;)
-(add-to-list &amp;lsquo;load-path &amp;ldquo;~/.emacs.d/plugins/&amp;ldquo;)
-(load &amp;ldquo;emacs-setup&amp;rdquo;)
-(load &amp;ldquo;emacs-redef&amp;rdquo;)
-(load &amp;ldquo;emacs-plugin&amp;rdquo;)
+&lt;p&gt;首先解决配置的同步问题，贝壳建立了一个svn仓库，用于存储该配置系统。然后在各个系统中co出这个仓库，当有需要调整时ci就可以保持同步了。Linux下可以使用ln连接文件，Windows下比较麻烦点，NTFS格式(大多都是NTFS格式了吧)可以去sysinternals下一个叫做junction的工具，以建立目录的工具链接，当然，.emacs文件只能手工拷贝了。&lt;/p&gt;
+
+&lt;p&gt;然后是配置的切分问题，如果只有一个文件，即使使用了版本控制，意义也不大。同时，将配置切割成不同的部分，控制载入过程，也可以跨平台和加速。以下是贝壳的.emacs文件。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;;; .emacs profile, written by shell.xu
+
+;; load other set
+(add-to-list &#39;load-path &amp;quot;~/.emacs.d/&amp;quot;)
+(add-to-list &#39;load-path &amp;quot;~/.emacs.d/auto-complete/&amp;quot;)
+(add-to-list &#39;load-path &amp;quot;~/.emacs.d/plugins/&amp;quot;)
+(load &amp;quot;emacs-setup&amp;quot;)
+(load &amp;quot;emacs-redef&amp;quot;)
+(load &amp;quot;emacs-plugin&amp;quot;)
 (cond
-((not (boundp &amp;lsquo;initial-window-system)) (load &amp;ldquo;emacs-console&amp;rdquo;))
-((memq initial-window-system &amp;lsquo;(x w32))
-(cond
-((memq system-type &amp;lsquo;(windows-nt cygwin)) (load &amp;ldquo;emacs-win&amp;rdquo;))
-((memq system-type &amp;lsquo;(gnu/linux)) (load &amp;ldquo;emacs-linux&amp;rdquo;))
-)
-)
-)
-(load &amp;ldquo;emacs-keymap&amp;rdquo;)
-从上可以看出，我们先设定了.emacs.d作为默认加载路径——大多数文件都是放在这里。plugins是各种第三方程序的安装路径，这样这些程序就无需在各个平台上各自安装一次。而auto-complete单独拆出来纯粹是因为文件太多了。而后，我们加载了setup，这个文件内定义了emacs的基本配置，redef文件内定义了各种自定义函数和变量，plugin内控制了需要加载的各个插件和配置。
-下面就有点复杂，简单来说，设定无Windows系统的时候加载emacs-console文件，有Windows的情况下，在windows下加载emacs-win，在linux下加载emacs-linux。这是实现跨平台设置的核心。
-最后是keymap，经过上面复杂的设定，按键设置是统一的。
-setup文件就不细说了，大家按照自己的习惯设定就好。下面我说几个redef中定义的函数。
-(defun switch-windows-buffer ()
-(interactive)
-(let ((this-buffer (window-buffer)))
-(switch-to-buffer (window-buffer (next-window (selected-window))))
-(switch-to-buffer-other-window this-buffer)
-(other-window 1)
-)
-)
-这个函数的目标是用热键交换两个窗口的位置。如果你经常用C-x 3分栏，并且在两者间跳来跳去的话，有的时候往往希望两者的位置换一下。通常都是C-x b切换当前的窗口，然后C-x o切到隔壁去再换。这个太繁琐了。
-(defun popup-term ()
-(interactive)
-(apply &amp;lsquo;start-process &amp;ldquo;terminal&amp;rdquo; nil popup-terminal-command)
-)
-这个函数是用于在当前文件所在路径弹出一个term的。也许有人说了，emacs有term啊。问题是，那个term只能开一个，而且有些东西操作不了。例如你如果想在这个term里面跑aptitude&amp;hellip;
-注意这个函数里面的popup-terminal-command，这个需要跨平台的，因此在windows和linux下设定各自不同。以下是两个典型设定，至于哪个是哪个我想都看得懂。注意console下面没必要搞这个。
-(setq popup-terminal-command &amp;lsquo;(&amp;ldquo;xfce4-terminal&amp;rdquo;))
-(setq popup-terminal-command &amp;lsquo;(&amp;ldquo;cmd&amp;rdquo; &amp;ldquo;/c&amp;rdquo; &amp;ldquo;start&amp;rdquo;))
-然后我们说plugin，这个文件其实很简单，加载插件，然后设定就好。下面是一部分范例。
-;; load template
-(require &amp;lsquo;template)
+ ((not (boundp &#39;initial-window-system)) (load &amp;quot;emacs-console&amp;quot;))
+ ((memq initial-window-system &#39;(x w32))
+  (cond
+   ((memq system-type &#39;(windows-nt cygwin)) (load &amp;quot;emacs-win&amp;quot;))
+   ((memq system-type &#39;(gnu/linux)) (load &amp;quot;emacs-linux&amp;quot;)))))
+(load &amp;quot;emacs-keymap&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;从上可以看出，我们先设定了.emacs.d作为默认加载路径——大多数文件都是放在这里。plugins是各种第三方程序的安装路径，这样这些程序就无需在各个平台上各自安装一次。而auto-complete单独拆出来纯粹是因为文件太多了。而后，我们加载了setup，这个文件内定义了emacs的基本配置，redef文件内定义了各种自定义函数和变量，plugin内控制了需要加载的各个插件和配置。&lt;/p&gt;
+
+&lt;p&gt;下面就有点复杂，简单来说，设定无Windows系统的时候加载emacs-console文件，有Windows的情况下，在windows下加载emacs-win，在linux下加载emacs-linux。这是实现跨平台设置的核心。&lt;/p&gt;
+
+&lt;p&gt;最后是keymap，经过上面复杂的设定，按键设置是统一的。&lt;/p&gt;
+
+&lt;p&gt;setup文件就不细说了，大家按照自己的习惯设定就好。下面我说几个redef中定义的函数。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(defun switch-windows-buffer ()
+  (interactive)
+  (let ((this-buffer (window-buffer)))
+    (switch-to-buffer (window-buffer (next-window (selected-window))))
+    (switch-to-buffer-other-window this-buffer)
+    (other-window 1)))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这个函数的目标是用热键交换两个窗口的位置。如果你经常用C-x 3分栏，并且在两者间跳来跳去的话，有的时候往往希望两者的位置换一下。通常都是C-x b切换当前的窗口，然后C-x o切到隔壁去再换。这个太繁琐了。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(defun popup-term ()
+  (interactive)
+  (apply &#39;start-process &amp;quot;terminal&amp;quot; nil popup-terminal-command))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这个函数是用于在当前文件所在路径弹出一个term的。也许有人说了，emacs有term啊。问题是，那个term只能开一个，而且有些东西操作不了。例如你如果想在这个term里面跑aptitude&amp;hellip;&lt;/p&gt;
+
+&lt;p&gt;注意这个函数里面的popup-terminal-command，这个需要跨平台的，因此在windows和linux下设定各自不同。以下是两个典型设定，至于哪个是哪个我想都看得懂。注意console下面没必要搞这个。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(setq popup-terminal-command &#39;(&amp;quot;xfce4-terminal&amp;quot;))
+(setq popup-terminal-command &#39;(&amp;quot;cmd&amp;quot; &amp;quot;/c&amp;quot; &amp;quot;start&amp;quot;))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;然后我们说plugin，这个文件其实很简单，加载插件，然后设定就好。下面是一部分范例。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;;; load template
+(require &#39;template)
 ;;here set the templates directory
-(setq template-subdirectories &amp;lsquo;(&amp;ldquo;./&amp;rdquo; &amp;ldquo;Templates/&amp;rdquo; &amp;ldquo;~/.emacs.d/templates/&amp;ldquo;))
+(setq template-subdirectories &#39;(&amp;quot;./&amp;quot; &amp;quot;Templates/&amp;quot; &amp;quot;~/.emacs.d/templates/&amp;quot;))
 (template-initialize)
 (setq template-auto-insert t)
-这部分范例说明了如何载入template，并且进行设定。
-下面是一点细节问题，tool-bar-mode这个设定相信多数人都有做。问题是，如果你在console下用过就知道，如果你设定了(tool-bar-mode -1)，立刻会报错——因为console下面根本没这个东西。所以，记得把这个设定放到各个平台上。
-最后，这些设定，必须经过编译才能起效。包括所有第三方插件，都必须编译生效。而显然，每个平台编译一遍是个脑残的事情。因此，我们需要写一个Makefile。
-DEPENDS=auto-complete plugins
-SOURCES=emacs-console.el emacs-keymap.el emacs-linux.el emacs-redef.el emacs-setup.el emacs-win.el&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;build: $(SOURCES) emacs-plugin.el
+&lt;p&gt;这部分范例说明了如何载入template，并且进行设定。&lt;/p&gt;
+
+&lt;p&gt;下面是一点细节问题，tool-bar-mode这个设定相信多数人都有做。问题是，如果你在console下用过就知道，如果你设定了(tool-bar-mode -1)，立刻会报错——因为console下面根本没这个东西。所以，记得把这个设定放到各个平台上。&lt;/p&gt;
+
+&lt;p&gt;最后，这些设定，必须经过编译才能起效。包括所有第三方插件，都必须编译生效。而显然，每个平台编译一遍是个脑残的事情。因此，我们需要写一个Makefile。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;DEPENDS=auto-complete plugins
+SOURCES=emacs-console.el emacs-keymap.el emacs-linux.el emacs-redef.el emacs-setup.el emacs-win.el
+
+build: $(SOURCES) emacs-plugin.el
 for i in $(DEPENDS); do $(MAKE) -C $$i build || exit 1; done
-emacs &amp;ndash;batch -f batch-byte-compile $(SOURCES)
-emacs &amp;ndash;batch -l ~/.emacs -f batch-byte-compile emacs-plugin.el&lt;/p&gt;
+emacs --batch -f batch-byte-compile $(SOURCES)
+emacs --batch -l ~/.emacs -f batch-byte-compile emacs-plugin.el
 
-&lt;p&gt;clean:
+clean:
 rm -rf *.elc
 for i in $(DEPENDS); do $(MAKE) -C $$i clean || exit 1; done
-注意，在每个目录中也要分别写Makefile，不过内容简单多了，基本就是emacs &amp;ndash;batch -f batch-byte-compile *.el而已。而plugin这个文件比较特殊——他必须依赖于所有插件才能工作，所以最后才进行编译。
-以上工作，基本完成了一个跨平台的emacs配置系统的组建。当然，如果你高兴向其中加入更多的内容，可以遵循以上规范进行。&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;注意，在每个目录中也要分别写Makefile，不过内容简单多了，基本就是emacs &amp;ndash;batch -f batch-byte-compile *.el而已。而plugin这个文件比较特殊——他必须依赖于所有插件才能工作，所以最后才进行编译。&lt;/p&gt;
+
+&lt;p&gt;以上工作，基本完成了一个跨平台的emacs配置系统的组建。当然，如果你高兴向其中加入更多的内容，可以遵循以上规范进行。&lt;/p&gt;
 </description>
     </item>
     

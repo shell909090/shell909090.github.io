@@ -112,57 +112,498 @@ ga('send', 'pageview');
           
           
           
-          <div>    最近碰到这么个问题，一个文本，每行都是乱糟糟的东西，要从里面解析出东西来。行匹配铁定是用正则表达式，我用了Boost，不会的看我前两天的blog去。</div>
-<div>    下面是按行解析问题。简单来说，写一个类继承Lister，然后实现里面的三个纯虚方法。maxSeqence返回最大可以支持的表达式，registe_regex返回表达式文本，seqenceProcess返回相应函数的指针。其实可以写成直接调用seqenceProcess加上匹配序号，然后让用户在函数内部做switch-case的。不过这样用户代码量稍微有点多，所以干脆玩一把技术。然后是几个非纯虚函数，nextSeqence可以根据当前状态来控制下一个要匹配的表达式，默认是+1，一个一个全部匹配。beforeProcess和afterProcess分别是处理前后，可以调整输入流。noMatch是一个比较常用的虚函数，用于响应没有匹配时的状态。</div>
-<div>    匹配的结果在cmatch &amp; what中，详细请看boost::regex。不过what[0].str()可以获得整句的string型返回，what[1]开始就是正则的匹配结果。</div>
-<div>---------2006-12-25---------------</div>
-<div>    原来的结果删除，我重写了一个。</div>
-<div>    主要有两个问题，一个是getline的效率问题，我会撰文说明的。还有就是两处细节不大好。</div>
-<div>    为了修正这两个问题，我突然发现整个的构架不大好了——怎么办？重写吧——</div>
-<div>    下面是新的，一个类line_regex，直接继承就好。line_buffer是用于解决getline效率不高的问题的，当然我偷了个懒，实现代码用了WIN32API，所以是不可移植的。而且数据是一次读取，最多256M。不过相信这种级别的问题还难不倒大家。line_buffer类中的函数都很清晰明了，就不介绍了。</div>
-<div>     Process (tistream &amp; is)和Process (line_buffer &amp; lb)是两大入口，同时支持自有的输入方法和流输入。当然流输入清晰明了标准化程度高。不过效率差的一塌糊涂。继承类初始化的时候，记得设置pfTable为入口列表，然后调用注册函数完成注册。nextSeqence和上面一样，可以定制下一个匹配式。noMatch用于无匹配的时候。beforeProcess和afterProcess分别会在某行开始和结束匹配后用，返回-1结束运行。其中beforeProcess返回正数会导致本行跳过，可以作为过滤器。</div>
-<div>---------------------LineRegex.h--------------------</div>
-<div>#include <br />#include <br />#include <br />#include <br />#include <br />#include <br />#include </div>
-<div>using namespace std;<br />using namespace boost;</div>
-<div>typedef basic_string       tstring;<br />typedef basic_regex       tregex;<br />typedef match_results     tmatch;<br />typedef basic_istream &gt; tistream;</div>
-<div>#ifndef _LINE_REGEX_H_<br />#define _LINE_REGEX_H_</div>
-<div>class line_regex;<br />typedef int     (line_regex::*ProcessFunction) (const tmatch &amp; what, int line);</div>
-<div>class line_buffer {<br />public:<br /> line_buffer();<br /> ~line_buffer();</div>
-<div> int   open(LPCTSTR lpPath);<br /> void  close();</div>
-<div> LPTSTR  getline();<br /> long  size();<br />protected:<br /> UINT  FileSize;<br /> LPVOID  lpFile;<br /> TCHAR    *lpNow, *lpNext;<br />};</div>
-<div>class line_regex {<br />public:<br /> line_regex();<br /> ~line_regex();</div>
-<div> virtual int  nextSeqence(int seqence);<br /> virtual int  noMatch(LPTSTR strLine, int line);<br /> virtual int     beforeProcess (LPTSTR strLine, int line);<br /> virtual int     afterProcess (LPTSTR strLine, int line);</div>
-<div> void   registe_expression(LPCTSTR exps[]);<br /> int             Process (tistream &amp; is);<br /> int             Process (line_buffer &amp; lb);<br />protected:<br /> int    ProcessLine(LPTSTR strLine, int line);<br /> long   maxSeqence;<br /> ProcessFunction *pfTable;<br /> tregex   *expressions;<br /> tmatch   what;</div>
-<div><br />};</div>
-<div>#endif//_LINE_REGEX_H_</div>
-<div>----------------------------------------------------</div>
-<div>----------------------LineRegex.h-------------------</div>
-<p>#include &quot;stdafx.h&quot;
-<p>line_buffer::line_buffer ()<br />{<br /> lpFile = NULL;<br />}
-<p>line_buffer::~line_buffer ()<br />{<br /> close ();<br />}
-<p>int line_buffer::open (LPCTSTR lpPath)<br />{<br /> HANDLE hFile;<br /> DWORD dwBytes;<br /> __try {<br />  hFile =<br />   CreateFile (lpPath, GENERIC_READ, FILE_SHARE_READ, NULL,<br />      OPEN_ALWAYS, 0, NULL);<br />  if (INVALID_HANDLE_VALUE == hFile)<br />   return -1;<br />  FileSize = GetFileSize (hFile, NULL);<br />  if (FileSize &gt; 0x10000000)<br />   return -1;<br />  lpFile = new BYTE[FileSize];<br />  if (lpFile == NULL)<br />   return -1;<br />  lpNext = (TCHAR *) lpFile;<br />  if (ReadFile (hFile, lpFile, FileSize, &amp;dwBytes, NULL) &lt; 0)<br />   return -1;<br /> }<br /> __finally {<br />  CloseHandle (hFile);<br /> }<br /> return 0;<br />}
-<p>void line_buffer::close ()<br />{<br /> if (lpFile != NULL)<br />  delete lpFile;<br /> lpFile = NULL;<br /> return;<br />}
-<p>LPTSTR line_buffer::getline ()<br />{<br /> lpNow = lpNext;<br /> if (lpNow == NULL)<br />  return NULL;<br /> while ((lpNext - (TCHAR *) lpFile) * sizeof (TCHAR) &lt; FileSize) {<br />  if (*lpNext == _T ('n')) {<br />   *lpNext = _T ('');<br />   lpNext++;<br />   return lpNow;<br />  }<br />  if ((*lpNext == _T ('r')) &amp;&amp; (*(lpNext + 1) == _T ('n'))) {<br />   *lpNext = _T ('');<br />   lpNext += 2;<br />   return lpNow;<br />  }<br />  lpNext++;<br /> }<br /> lpNext = NULL;<br /> return lpNow;<br />}
-<p>long line_buffer::size ()<br />{<br /> return 0;<br />}
-<p>line_regex::line_regex ()<br />{<br /> maxSeqence = 0;<br /> pfTable = NULL;<br /> expressions = NULL;<br />}
-<p>line_regex::~line_regex ()<br />{<br /> maxSeqence = 0;<br /> if (pfTable != NULL)<br />  pfTable = NULL;<br /> if (expressions != NULL) {<br />  delete[]expressions;<br />  expressions = NULL;<br /> }<br />}
-<p>int line_regex::nextSeqence (int seqence)<br />{<br /> return seqence + 1;<br />}
-<p>int line_regex::noMatch (LPTSTR strLine, int line)<br />{<br /> return 0;<br />}
-<p>int line_regex::beforeProcess (LPTSTR strLine, int line)<br />{<br /> return 0;<br />}
-<p>int line_regex::afterProcess (LPTSTR strLine, int line)<br />{<br /> return 0;<br />}
-<p>void line_regex::registe_expression (LPCTSTR exps[])<br />{<br /> int i;<br /> try {<br />  if (expressions != NULL) {<br />   delete[]expressions;<br />   expressions = NULL;<br />  }<br />  for (i = 0; exps[i]; i++);<br />  maxSeqence = i;<br />  expressions = new tregex[maxSeqence];<br />  for (i = 0; i &lt; maxSeqence; i++)<br />   expressions[i].assign (exps[i]);<br /> }<br /> catch (std::exception &amp; e) {<br />  cout &lt;&lt; &quot;Error in expression: &quot;&quot; &lt;&lt; e.what () &lt;&lt; &quot;&quot;&quot; &lt;&lt; endl;<br /> }<br /> return;<br />}
-<p>int line_regex::Process (tistream &amp; is)<br />{<br /> int rslt, line = 0;<br /> tstring str;
-<p> try {<br />  while (getline (is, str)) {<br />   line++;<br />   rslt = beforeProcess ((LPTSTR) str.c_str (), line);<br />   if (rslt &lt; 0)<br />    return rslt;<br />   if (rslt &lt; 0)<br />    continue;<br />   rslt = ProcessLine ((LPTSTR) str.c_str (), line);<br />   if (rslt &lt; 0)<br />    return rslt;<br />   rslt = afterProcess ((LPTSTR) str.c_str (), line);<br />   if (rslt &lt; 0)<br />    return rslt;<br />  }<br /> }<br /> catch (std::exception &amp; e) {<br />  cout &lt;&lt; &quot;Error in expression: &quot;&quot; &lt;&lt; e.what () &lt;&lt; &quot;&quot;&quot; &lt;&lt; endl;<br /> }<br /> return 0;<br />}
-<p>int line_regex::Process (line_buffer &amp; lb)<br />{<br /> int rslt, line = 0;<br /> tstring str;<br /> LPTSTR lpBuffer;
-<p> try {<br />  while (lpBuffer = lb.getline ()) {<br />   line++;<br />   rslt = beforeProcess (lpBuffer, line);<br />   if (rslt &lt; 0)<br />    return rslt;<br />   if (rslt &lt; 0)<br />    continue;<br />   rslt = ProcessLine (lpBuffer, line);<br />   if (rslt &lt; 0)<br />    return rslt;<br />   rslt = afterProcess (lpBuffer, line);<br />   if (rslt &lt; 0)<br />    return rslt;<br />  }<br /> }<br /> catch (std::exception &amp; e) {<br />  cout &lt;&lt; &quot;Error in expression: &quot;&quot; &lt;&lt; e.what () &lt;&lt; &quot;&quot;&quot; &lt;&lt; endl;<br /> }<br /> return 0;<br />}
-<div>int line_regex::ProcessLine (LPTSTR strLine, int line)<br />{<br /> int i, rslt;<br /> for (i = 0; i &lt; maxSeqence; i = nextSeqence (i)) {<br />  if (regex_search (strLine, what, expressions[i])) {<br />   rslt = (this-&gt;*(pfTable[i])) (what, line);<br />   if (rslt &lt; 0)<br />    return rslt;<br />#ifdef _DEBUG_OUT_<br />//          cout &lt;&lt; line &lt;&lt; &quot;:match&quot; &lt;&lt; i &lt;&lt; endl;<br />#endif //_DEBUG_OUT_<br />   break;<br />  }<br /> }<br /> if (i == maxSeqence) {<br />  noMatch (strLine, line);<br />#ifdef _DEBUG_OUT_<br />//      cout &lt;&lt; line &lt;&lt; &quot;:no match&quot; &lt;&lt; endl;<br />#endif //_DEBUG_OUT_<br /> }       //*/<br /> return 0;<br />}</div>
-<div>----------------------------------------------------</div>
-<div>给个例子：</div>
-<div>PsParser::PsParser ()<br />{<br /> static LPCTSTR  regex_exp[] = {<br />  _T (&quot;^/RsvMt matrix currentmatrix def <a>\[[0-9\</a>.]* [0-9\.]* [0-9\.]* [0-9\.]* ([0-9\.]*) ([0-9\.]*)\] concat$&quot;),<br />  _T (&quot;^.*-([0-9]*)X([0-9]*) setfont$&quot;),<br />//  _T (&quot;^(.*) setfont$&quot;), //<br />  _T (&quot;^([0-9]*) ([0-9]*) m$&quot;),<br />  _T (&quot;^\((.*)\) <a>\[(.*)\</a>] 2 (?:fxs|fys|VT)$&quot;),<br />  _T (&quot;^%%DownLoadCode (.*)$&quot;),<br />  _T (&quot;^RsvMt setmatrix gr$&quot;),<br />  _T (&quot;^([0-9\.]*) ([0-9\.]*) ([0-9\.]*) ([0-9\.]*) Rect$&quot;),<br />  _T (&quot;^\((.*)\) <a>\S</a>.* file bOpenFile\{ closefile $&quot;),<br />  _T (&quot;^newpath ([0-9\.]*) ([0-9\.]*) moveto $&quot;),<br />  _T (&quot;^ ([0-9\.]*) ([0-9\.]*) lineto$&quot;),<br />  NULL<br /> };<br /> static ProcessFunction pfTableStatic[] = {<br />  (ProcessFunction) text_start_block,<br />  (ProcessFunction) text_setfont,<br />  (ProcessFunction) text_movement,<br />  (ProcessFunction) text_out,<br />  (ProcessFunction) text_download_code,<br />  (ProcessFunction) text_end_block,<br />  (ProcessFunction) pic_text,<br />  (ProcessFunction) pic_out,<br />  (ProcessFunction) line_start,<br />  (ProcessFunction) line_to<br /> };<br /> this-&gt;registe_expression ((LPCTSTR *) regex_exp);<br /> pfTable = pfTableStatic;<br /> return;<br />}</div>
-<div>int _tmain (int argc, _TCHAR * argv[])<br />{<br /> line_buffer     lb;<br /> PsParser        p;</div>
-<div> lb.open (argv[1]);<br /> p.Process (lb);<br /> lb.close ();</div>
-<div> printf (&quot;%dn&quot;, clock ());</div>
-<div> return 0;<br />}<br /></div>
+          <div>
+
+   
+最近碰到这么个问题，一个文本，每行都是乱糟糟的东西，要从里面解析出东西来。行匹配铁定是用正则表达式，我用了Boost，不会的看我前两天的blog去。
+
+</div>
+
+<div>
+
+   
+下面是按行解析问题。简单来说，写一个类继承Lister，然后实现里面的三个纯虚方法。maxSeqence返回最大可以支持的表达式，registe\_regex返回表达式文本，seqenceProcess返回相应函数的指针。其实可以写成直接调用seqenceProcess加上匹配序号，然后让用户在函数内部做switch-case的。不过这样用户代码量稍微有点多，所以干脆玩一把技术。然后是几个非纯虚函数，nextSeqence可以根据当前状态来控制下一个要匹配的表达式，默认是+1，一个一个全部匹配。beforeProcess和afterProcess分别是处理前后，可以调整输入流。noMatch是一个比较常用的虚函数，用于响应没有匹配时的状态。
+
+</div>
+
+<div>
+
+    匹配的结果在cmatch &
+what中，详细请看boost::regex。不过what\[0\].str()可以获得整句的string型返回，what\[1\]开始就是正则的匹配结果。
+
+</div>
+
+<div>
+
+---------2006-12-25---------------
+
+</div>
+
+<div>
+
+    原来的结果删除，我重写了一个。
+
+</div>
+
+<div>
+
+   
+主要有两个问题，一个是getline的效率问题，我会撰文说明的。还有就是两处细节不大好。
+
+</div>
+
+<div>
+
+    为了修正这两个问题，我突然发现整个的构架不大好了——怎么办？重写吧——
+
+</div>
+
+<div>
+
+   
+下面是新的，一个类line\_regex，直接继承就好。line\_buffer是用于解决getline效率不高的问题的，当然我偷了个懒，实现代码用了WIN32API，所以是不可移植的。而且数据是一次读取，最多256M。不过相信这种级别的问题还难不倒大家。line\_buffer类中的函数都很清晰明了，就不介绍了。
+
+</div>
+
+<div>
+
+     Process (tistream & is)和Process (line\_buffer &
+lb)是两大入口，同时支持自有的输入方法和流输入。当然流输入清晰明了标准化程度高。不过效率差的一塌糊涂。继承类初始化的时候，记得设置pfTable为入口列表，然后调用注册函数完成注册。nextSeqence和上面一样，可以定制下一个匹配式。noMatch用于无匹配的时候。beforeProcess和afterProcess分别会在某行开始和结束匹配后用，返回-1结束运行。其中beforeProcess返回正数会导致本行跳过，可以作为过滤器。
+
+</div>
+
+<div>
+
+---------------------LineRegex.h--------------------
+
+</div>
+
+<div>
+
+\#include\
+\#include\
+\#include\
+\#include\
+\#include\
+\#include\
+\#include
+
+</div>
+
+<div>
+
+using namespace std;\
+using namespace boost;
+
+</div>
+
+<div>
+
+typedef basic\_string       tstring;\
+typedef basic\_regex       tregex;\
+typedef match\_results     tmatch;\
+typedef basic\_istream &gt; tistream;
+
+</div>
+
+<div>
+
+\#ifndef \_LINE\_REGEX\_H\_\
+\#define \_LINE\_REGEX\_H\_
+
+</div>
+
+<div>
+
+class line\_regex;\
+typedef int     (line\_regex::\*ProcessFunction) (const tmatch & what,
+int line);
+
+</div>
+
+<div>
+
+class line\_buffer {\
+public:\
+ line\_buffer();\
+ \~line\_buffer();
+
+</div>
+
+<div>
+
+ int   open(LPCTSTR lpPath);\
+ void  close();
+
+</div>
+
+<div>
+
+ LPTSTR  getline();\
+ long  size();\
+protected:\
+ UINT  FileSize;\
+ LPVOID  lpFile;\
+ TCHAR    \*lpNow, \*lpNext;\
+};
+
+</div>
+
+<div>
+
+class line\_regex {\
+public:\
+ line\_regex();\
+ \~line\_regex();
+
+</div>
+
+<div>
+
+ virtual int  nextSeqence(int seqence);\
+ virtual int  noMatch(LPTSTR strLine, int line);\
+ virtual int     beforeProcess (LPTSTR strLine, int line);\
+ virtual int     afterProcess (LPTSTR strLine, int line);
+
+</div>
+
+<div>
+
+ void   registe\_expression(LPCTSTR exps\[\]);\
+ int             Process (tistream & is);\
+ int             Process (line\_buffer & lb);\
+protected:\
+ int    ProcessLine(LPTSTR strLine, int line);\
+ long   maxSeqence;\
+ ProcessFunction \*pfTable;\
+ tregex   \*expressions;\
+ tmatch   what;
+
+</div>
+
+<div>
+
+\
+};
+
+</div>
+
+<div>
+
+\#endif//\_LINE\_REGEX\_H\_
+
+</div>
+
+<div>
+
+----------------------------------------------------
+
+</div>
+
+<div>
+
+----------------------LineRegex.h-------------------
+
+</div>
+
+<p>#include &ldquo;stdafx.h&rdquo;</p>
+
+<p>line_buffer::line_buffer ()<br />
+{<br />
+ lpFile = NULL;<br />
+}</p>
+
+<p>line_buffer::~line_buffer ()<br />
+{<br />
+ close ();<br />
+}</p>
+
+<p>int line_buffer::open (LPCTSTR lpPath)<br />
+{<br />
+ HANDLE hFile;<br />
+ DWORD dwBytes;<br />
+ __try {<br />
+  hFile =<br />
+   CreateFile (lpPath, GENERIC_READ, FILE_SHARE_READ, NULL,<br />
+      OPEN_ALWAYS, 0, NULL);<br />
+  if (INVALID_HANDLE_VALUE == hFile)<br />
+   return -1;<br />
+  FileSize = GetFileSize (hFile, NULL);<br />
+  if (FileSize &gt; 0x10000000)<br />
+   return -1;<br />
+  lpFile = new BYTE[FileSize];<br />
+  if (lpFile == NULL)<br />
+   return -1;<br />
+  lpNext = (TCHAR *) lpFile;<br />
+  if (ReadFile (hFile, lpFile, FileSize, &amp;dwBytes, NULL) &lt; 0)<br />
+   return -1;<br />
+ }<br />
+ __finally {<br />
+  CloseHandle (hFile);<br />
+ }<br />
+ return 0;<br />
+}</p>
+
+<p>void line_buffer::close ()<br />
+{<br />
+ if (lpFile != NULL)<br />
+  delete lpFile;<br />
+ lpFile = NULL;<br />
+ return;<br />
+}</p>
+
+<p>LPTSTR line_buffer::getline ()<br />
+{<br />
+ lpNow = lpNext;<br />
+ if (lpNow == NULL)<br />
+  return NULL;<br />
+ while ((lpNext - (TCHAR *) lpFile) * sizeof (TCHAR) &lt; FileSize) {<br />
+  if (*lpNext == _T (&lsquo;n&rsquo;)) {<br />
+   *lpNext = _T (&ldquo;);<br />
+   lpNext++;<br />
+   return lpNow;<br />
+  }<br />
+  if ((*lpNext == _T (&lsquo;r&rsquo;)) &amp;&amp; (*(lpNext + 1) == _T (&lsquo;n&rsquo;))) {<br />
+   *lpNext = _T (&ldquo;);<br />
+   lpNext += 2;<br />
+   return lpNow;<br />
+  }<br />
+  lpNext++;<br />
+ }<br />
+ lpNext = NULL;<br />
+ return lpNow;<br />
+}</p>
+
+<p>long line_buffer::size ()<br />
+{<br />
+ return 0;<br />
+}</p>
+
+<p>line_regex::line_regex ()<br />
+{<br />
+ maxSeqence = 0;<br />
+ pfTable = NULL;<br />
+ expressions = NULL;<br />
+}</p>
+
+<p>line_regex::~line_regex ()<br />
+{<br />
+ maxSeqence = 0;<br />
+ if (pfTable != NULL)<br />
+  pfTable = NULL;<br />
+ if (expressions != NULL) {<br />
+  delete[]expressions;<br />
+  expressions = NULL;<br />
+ }<br />
+}</p>
+
+<p>int line_regex::nextSeqence (int seqence)<br />
+{<br />
+ return seqence + 1;<br />
+}</p>
+
+<p>int line_regex::noMatch (LPTSTR strLine, int line)<br />
+{<br />
+ return 0;<br />
+}</p>
+
+<p>int line_regex::beforeProcess (LPTSTR strLine, int line)<br />
+{<br />
+ return 0;<br />
+}</p>
+
+<p>int line_regex::afterProcess (LPTSTR strLine, int line)<br />
+{<br />
+ return 0;<br />
+}</p>
+
+<p>void line_regex::registe_expression (LPCTSTR exps[])<br />
+{<br />
+ int i;<br />
+ try {<br />
+  if (expressions != NULL) {<br />
+   delete[]expressions;<br />
+   expressions = NULL;<br />
+  }<br />
+  for (i = 0; exps[i]; i++);<br />
+  maxSeqence = i;<br />
+  expressions = new tregex[maxSeqence];<br />
+  for (i = 0; i &lt; maxSeqence; i++)<br />
+   expressions[i].assign (exps[i]);<br />
+ }<br />
+ catch (std::exception &amp; e) {<br />
+  cout &lt;&lt; &ldquo;Error in expression: &ldquo;&rdquo; &lt;&lt; e.what () &lt;&lt; &ldquo;&rdquo;&rdquo;
+&lt;&lt; endl;<br />
+ }<br />
+ return;<br />
+}</p>
+
+<p>int line_regex::Process (tistream &amp; is)<br />
+{<br />
+ int rslt, line = 0;<br />
+ tstring str;</p>
+
+<p> try {<br />
+  while (getline (is, str)) {<br />
+   line++;<br />
+   rslt = beforeProcess ((LPTSTR) str.c_str (), line);<br />
+   if (rslt &lt; 0)<br />
+    return rslt;<br />
+   if (rslt &lt; 0)<br />
+    continue;<br />
+   rslt = ProcessLine ((LPTSTR) str.c_str (), line);<br />
+   if (rslt &lt; 0)<br />
+    return rslt;<br />
+   rslt = afterProcess ((LPTSTR) str.c_str (), line);<br />
+   if (rslt &lt; 0)<br />
+    return rslt;<br />
+  }<br />
+ }<br />
+ catch (std::exception &amp; e) {<br />
+  cout &lt;&lt; &ldquo;Error in expression: &ldquo;&rdquo; &lt;&lt; e.what () &lt;&lt; &ldquo;&rdquo;&rdquo;
+&lt;&lt; endl;<br />
+ }<br />
+ return 0;<br />
+}</p>
+
+<p>int line_regex::Process (line_buffer &amp; lb)<br />
+{<br />
+ int rslt, line = 0;<br />
+ tstring str;<br />
+ LPTSTR lpBuffer;</p>
+
+<p> try {<br />
+  while (lpBuffer = lb.getline ()) {<br />
+   line++;<br />
+   rslt = beforeProcess (lpBuffer, line);<br />
+   if (rslt &lt; 0)<br />
+    return rslt;<br />
+   if (rslt &lt; 0)<br />
+    continue;<br />
+   rslt = ProcessLine (lpBuffer, line);<br />
+   if (rslt &lt; 0)<br />
+    return rslt;<br />
+   rslt = afterProcess (lpBuffer, line);<br />
+   if (rslt &lt; 0)<br />
+    return rslt;<br />
+  }<br />
+ }<br />
+ catch (std::exception &amp; e) {<br />
+  cout &lt;&lt; &ldquo;Error in expression: &ldquo;&rdquo; &lt;&lt; e.what () &lt;&lt; &ldquo;&rdquo;&rdquo;
+&lt;&lt; endl;<br />
+ }<br />
+ return 0;<br />
+}</p>
+
+<div>
+
+int line\_regex::ProcessLine (LPTSTR strLine, int line)\
+{\
+ int i, rslt;\
+ for (i = 0; i &lt; maxSeqence; i = nextSeqence (i)) {\
+  if (regex\_search (strLine, what, expressions\[i\])) {\
+   rslt = (this-&gt;\*(pfTable\[i\])) (what, line);\
+   if (rslt &lt; 0)\
+    return rslt;\
+\#ifdef \_DEBUG\_OUT\_\
+//          cout &lt;&lt; line &lt;&lt; ":match" &lt;&lt; i &lt;&lt;
+endl;\
+\#endif //\_DEBUG\_OUT\_\
+   break;\
+  }\
+ }\
+ if (i == maxSeqence) {\
+  noMatch (strLine, line);\
+\#ifdef \_DEBUG\_OUT\_\
+//      cout &lt;&lt; line &lt;&lt; ":no match" &lt;&lt; endl;\
+\#endif //\_DEBUG\_OUT\_\
+ }       //\*/\
+ return 0;\
+}
+
+</div>
+
+<div>
+
+----------------------------------------------------
+
+</div>
+
+<div>
+
+给个例子：
+
+</div>
+
+<div>
+
+PsParser::PsParser ()\
+{\
+ static LPCTSTR  regex\_exp\[\] = {\
+  \_T ("\^/RsvMt matrix currentmatrix def [\\\[\[0-9\\]().\]\*
+\[0-9\\.\]\* \[0-9\\.\]\* \[0-9\\.\]\* (\[0-9\\.\]\*) (\[0-9\\.\]\*)\\\]
+concat\$"),\
+  \_T ("\^.\*-(\[0-9\]\*)X(\[0-9\]\*) setfont\$"),\
+//  \_T ("\^(.\*) setfont\$"), //\
+  \_T ("\^(\[0-9\]\*) (\[0-9\]\*) m\$"),\
+  \_T ("\^\\((.\*)\\) [\\\[(.\*)\\]()\] 2 (?:fxs|fys|VT)\$"),\
+  \_T ("\^%%DownLoadCode (.\*)\$"),\
+  \_T ("\^RsvMt setmatrix gr\$"),\
+  \_T ("\^(\[0-9\\.\]\*) (\[0-9\\.\]\*) (\[0-9\\.\]\*) (\[0-9\\.\]\*)
+Rect\$"),\
+  \_T ("\^\\((.\*)\\) [\\S]().\* file bOpenFile\\{ closefile \$"),\
+  \_T ("\^newpath (\[0-9\\.\]\*) (\[0-9\\.\]\*) moveto \$"),\
+  \_T ("\^ (\[0-9\\.\]\*) (\[0-9\\.\]\*) lineto\$"),\
+  NULL\
+ };\
+ static ProcessFunction pfTableStatic\[\] = {\
+  (ProcessFunction) text\_start\_block,\
+  (ProcessFunction) text\_setfont,\
+  (ProcessFunction) text\_movement,\
+  (ProcessFunction) text\_out,\
+  (ProcessFunction) text\_download\_code,\
+  (ProcessFunction) text\_end\_block,\
+  (ProcessFunction) pic\_text,\
+  (ProcessFunction) pic\_out,\
+  (ProcessFunction) line\_start,\
+  (ProcessFunction) line\_to\
+ };\
+ this-&gt;registe\_expression ((LPCTSTR \*) regex\_exp);\
+ pfTable = pfTableStatic;\
+ return;\
+}
+
+</div>
+
+<div>
+
+int \_tmain (int argc, \_TCHAR \* argv\[\])\
+{\
+ line\_buffer     lb;\
+ PsParser        p;
+
+</div>
+
+<div>
+
+ lb.open (argv\[1\]);\
+ p.Process (lb);\
+ lb.close ();
+
+</div>
+
+<div>
+
+ printf ("%dn", clock ());
+
+</div>
+
+<div>
+
+ return 0;\
+}\
+
+</div>
 
         </div>
         

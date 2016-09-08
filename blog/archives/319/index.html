@@ -112,7 +112,30 @@ ga('send', 'pageview');
           
           
           
-          <p>1.startx启动流程<br />/usr/bin/startx     +-&gt;/etc/X11/xinit/xinitrc        -&gt;/etc/X11/Xsession<br />                            |-&gt;~/.xinitrc<br />                            |-&gt;/etc/X11/xinit/xserverrc    -&gt;/usr/bin/X11/X<br />                            -&gt;~/.xserverrc<br />    startx脚本会分析用户主目录下是否存在特殊配置文件，如果不存在则使用系统默认脚本。默认脚本分两个部份，xinitrc启动客户端部份，xserverrc启动服务器端部份。<br />    xserverrc内容仅为启动X。xinitrc会执行/etc/X11/Xsession，而后进入session分析。<br />2.Xsession<br />/etc/X11/Xsession    -&gt;/etc/X11/Xsession.d/*<br />    /etc/X11/Xsession和/etc/init.d/rc很类似，是用来循环依次启动其他脚本的控制脚本。他负责启动/etc/X11/Xsession.d/下的所有文件。其中50xfree86-common_determine-startup文件会依次检测以下3个文件，并且设置到STARTUP变量中。x-session-manager;x-window-manager;x-terminal-emulator;最后99xfree86-common_start文件会执行exec $STARTUP;完成整个系统的启动过程。<br />3.gdm<br />    gdm服务被/etc/init.d/gdm启动，而后读取/etc/gdm/gdm.conf配置自身。后面是基于理论分析，没有加以验证。<br />     |-gdm&mdash;gdm-+-Xorg<br />     |                   <code>-x-session-manag-+-scim&lt;br /&gt;     |                                                </code>-ssh-agent<br />    上面是pstree的结果，第1个gdm是/etc/init.d/gdm，第2个gdm是/usr/bin/gdm。gdm先启动一个X作为服务端，否则自身也无法以图形方式显示登录界面。而后gdm成为此X界面的唯一用户，显示登录系统。在用户登录后，gdm启动/etc/gdm/Xsession。这个脚本的内容和/etc/X11/Xsession非常类似，我怀疑为什么他们不用链接的方式(可能是因为包的关系？)。这时整个启动活动就结束了。</p>
+          <p>1.startx启动流程<br />
+/usr/bin/startx     +-&gt;/etc/X11/xinit/xinitrc       
+-&gt;/etc/X11/Xsession<br />
+                            |-&gt;~/.xinitrc<br />
+                            |-&gt;/etc/X11/xinit/xserverrc   
+-&gt;/usr/bin/X11/X<br />
+                            -&gt;~/.xserverrc<br />
+   
+startx脚本会分析用户主目录下是否存在特殊配置文件，如果不存在则使用系统默认脚本。默认脚本分两个部份，xinitrc启动客户端部份，xserverrc启动服务器端部份。<br />
+   
+xserverrc内容仅为启动X。xinitrc会执行/etc/X11/Xsession，而后进入session分析。<br />
+2.Xsession<br />
+/etc/X11/Xsession    -&gt;/etc/X11/Xsession.d/*<br />
+   
+/etc/X11/Xsession和/etc/init.d/rc很类似，是用来循环依次启动其他脚本的控制脚本。他负责启动/etc/X11/Xsession.d/下的所有文件。其中50xfree86-common_determine-startup文件会依次检测以下3个文件，并且设置到STARTUP变量中。x-session-manager;x-window-manager;x-terminal-emulator;最后99xfree86-common_start文件会执行exec
+\$STARTUP;完成整个系统的启动过程。<br />
+3.gdm<br />
+   
+gdm服务被/etc/init.d/gdm启动，而后读取/etc/gdm/gdm.conf配置自身。后面是基于理论分析，没有加以验证。<br />
+     |-gdm&mdash;gdm-+-Xorg<br />
+     |                   `-x-session-manag-+-scim<br />
+     |                                                 `-ssh-agent<br />
+   
+上面是pstree的结果，第1个gdm是/etc/init.d/gdm，第2个gdm是/usr/bin/gdm。gdm先启动一个X作为服务端，否则自身也无法以图形方式显示登录界面。而后gdm成为此X界面的唯一用户，显示登录系统。在用户登录后，gdm启动/etc/gdm/Xsession。这个脚本的内容和/etc/X11/Xsession非常类似，我怀疑为什么他们不用链接的方式(可能是因为包的关系？)。这时整个启动活动就结束了。</p>
 
         </div>
         

@@ -112,13 +112,55 @@ ga('send', 'pageview');
           
           
           
-          <p>今天一个朋友和我聊天的时候，问我，是不是hosts不安全。我说，都不安全。翻墙的话，必须对翻墙服务器的拥有者相当信任才可以。不但要相信人品，而且要相信技术，相信服务器不会被入侵。使用gae的话，服务器要自己组建，否则你无法确定组建者是否会修改代码，加入监控代码再上传。hosts引入的问题是，你自己对自己进行了一遍dns毒化，如果目标本身是错的，你就傻乎乎的跳到了一个攻击者的机器上，而且你的行为使得域名核查不能阻止你犯错——他们也认为这个机器拥有你要去的domain。<br /></p>
+          <p>今天一个朋友和我聊天的时候，问我，是不是hosts不安全。我说，都不安全。翻墙的话，必须对翻墙服务器的拥有者相当信任才可以。不但要相信人品，而且要相信技术，相信服务器不会被入侵。使用gae的话，服务器要自己组建，否则你无法确定组建者是否会修改代码，加入监控代码再上传。hosts引入的问题是，你自己对自己进行了一遍dns毒化，如果目标本身是错的，你就傻乎乎的跳到了一个攻击者的机器上，而且你的行为使得域名核查不能阻止你犯错——他们也认为这个机器拥有你要去的domain。<br />
+    不过有意思的是他给出的一个例子：<br />
+<a href="https://199.59.149.208/">https://199.59.149.208/</a><br />
+    这是用于访问twitter的一个hosts。<br />
+<a href="https://twitter.com/">https://twitter.com/</a><br />
+   
+问题是，两者的授权是不一样的。我在《<a href="http://shell909090.org/blog/2011/04/%E8%AE%BA%E4%B8%8D%E5%90%8C%E7%B3%BB%E7%BB%9F%E5%92%8C%E5%AE%A2%E6%88%B7%E7%AB%AF%E7%9A%84%E8%AF%81%E4%B9%A6%E7%AE%A1%E7%90%86/">论不同系统和客户端的证书管理</a>》里面说过，如果你访问google的时候发现证书是cnnic签署的，你是否觉得可怕。而这次，我发现hosts的证书是GeoTrust签署的，但是我访问twitter的证书是VeriSign签署的。
+<div></p>
 
-<p>    不过有意思的是他给出的一个例子：<br /><a href="https://199.59.149.208/">https://199.59.149.208/</a><br />    这是用于访问twitter的一个hosts。<br /><a href="https://twitter.com/">https://twitter.com/</a><br />    问题是，两者的授权是不一样的。我在《<a href="http://shell909090.org/blog/2011/04/%E8%AE%BA%E4%B8%8D%E5%90%8C%E7%B3%BB%E7%BB%9F%E5%92%8C%E5%AE%A2%E6%88%B7%E7%AB%AF%E7%9A%84%E8%AF%81%E4%B9%A6%E7%AE%A1%E7%90%86/">论不同系统和客户端的证书管理</a>》里面说过，如果你访问google的时候发现证书是cnnic签署的，你是否觉得可怕。而这次，我发现hosts的证书是GeoTrust签署的，但是我访问twitter的证书是VeriSign签署的。<div></p>
+<p>   
+一家网络公司会找两个不同的供应商签名么？我不清楚。chrome的自动验证对这个无效（所以很危险），因为域名和ip对不上。我试过用openssl验证，但是debian的openssl有个bug，我用CApath无法验证任何证书，包括真实的twitter证书。所以我也无法解答这个问题。从IP上看，这个IP到确实是Twitter的。</p>
 
-<p>    一家网络公司会找两个不同的供应商签名么？我不清楚。chrome的自动验证对这个无效（所以很危险），因为域名和ip对不上。我试过用openssl验证，但是debian的openssl有个bug，我用CApath无法验证任何证书，包括真实的twitter证书。所以我也无法解答这个问题。从IP上看，这个IP到确实是Twitter的。</div><div><div>NetRange:       199.59.148.0 - 199.59.151.255</div></p>
+<p></div></p>
 
-<div>CIDR:           <a href="http://199.59.148.0/22">199.59.148.0/22</a></div><div>OriginAS:       AS13414</div><div>NetName:        TWITTER-NETWORK</div></div><div>    不过这不说明任何问题，完全有可能在路由器上把这一地址段定义到了其他设备上，从而实现man in middle。关键是证书——谁可以帮我验证一下这本证书是否有效？</div>
+<div>
+
+<div>
+
+NetRange:       199.59.148.0 - 199.59.151.255
+
+</div>
+
+<div>
+
+CIDR:           [199.59.148.0/22](http://199.59.148.0/22)
+
+</div>
+
+<div>
+
+OriginAS:       AS13414
+
+</div>
+
+<div>
+
+NetName:        TWITTER-NETWORK
+
+</div>
+
+<p></div></p>
+
+<div>
+
+   
+不过这不说明任何问题，完全有可能在路由器上把这一地址段定义到了其他设备上，从而实现man
+in middle。关键是证书——谁可以帮我验证一下这本证书是否有效？
+
+</div>
 
         </div>
         

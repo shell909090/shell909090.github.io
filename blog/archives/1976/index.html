@@ -112,11 +112,108 @@ ga('send', 'pageview');
           
           
           
-          <p>还记得如何配置openvpn么？手工配置有个问题，当我ppp0连接断掉，需要重启路由器的时候，网络会短暂的断开。然后，openvpn就失效了，导致各种混乱后果。为了解决这个问题，我测试了一下，做了以下设置。 <div><div>&mdash;&ndash;/etc/hotplug.d/iface/30-openvpn&mdash;&ndash;</div><div>#!/bin/sh</div><div><br /></div><div>[ &quot;$ACTION&quot; = &quot;ifup&quot; -a &quot;$INTERFACE&quot; = &quot;wan&quot; ] &amp;&amp;</div><div>[ -z &quot;<code>/sbin/ifconfig tun0 2&amp;gt;&amp;amp;1 | grep inet</code>&quot; ] &amp;&amp; {</div></p>
+          <p>还记得如何配置openvpn么？手工配置有个问题，当我ppp0连接断掉，需要重启路由器的时候，网络会短暂的断开。然后，openvpn就失效了，导致各种混乱后果。为了解决这个问题，我测试了一下，做了以下设置。
+<div></p>
 
-<p><div>        /etc/init.d/openvpn start</div><div>}</div><div><br /></div><div>[ &quot;$ACTION&quot; = &quot;ifdown&quot; -a &quot;$INTERFACE&quot; = &quot;wan&quot; ] &amp;&amp;</div><div>[ -n &quot;<code>/sbin/ifconfig tun0 2&amp;gt;&amp;amp;1 | grep inet</code>&quot; ] &amp;&amp; {</div></p>
+<div>
 
-<p><div>        /etc/init.d/openvpn stop</div><div>}</div></div><div>&mdash;&ndash;end files&mdash;&ndash;</div><div>    好了，你重启外网连接的时候，就会自动连接openvpn。</div><div><br /></div><div>参考：</div><a href="http://chaos.ycool.com/post.3028587.html" target="_blank">OpenWRT下的动态DNS(用3322.org的服务)</a></p>
+-----/etc/hotplug.d/iface/30-openvpn-----
+
+</div>
+
+<div>
+
+\#!/bin/sh
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+\[ "\$ACTION" = "ifup" -a "\$INTERFACE" = "wan" \] &&
+
+</div>
+
+<div>
+
+\[ -z "\`/sbin/ifconfig tun0 2&gt;&1 | grep inet\`" \] && {
+
+</div>
+
+<div>
+
+        /etc/init.d/openvpn start
+
+</div>
+
+<div>
+
+}
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+\[ "\$ACTION" = "ifdown" -a "\$INTERFACE" = "wan" \] &&
+
+</div>
+
+<div>
+
+\[ -n "\`/sbin/ifconfig tun0 2&gt;&1 | grep inet\`" \] && {
+
+</div>
+
+<div>
+
+        /etc/init.d/openvpn stop
+
+</div>
+
+<div>
+
+}
+
+</div>
+
+<p></div></p>
+
+<div>
+
+-----end files-----
+
+</div>
+
+<div>
+
+    好了，你重启外网连接的时候，就会自动连接openvpn。
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+参考：
+
+</div>
+
+<p><a href="http://chaos.ycool.com/post.3028587.html">OpenWRT下的动态DNS(用3322.org的服务)</a></p>
 
         </div>
         

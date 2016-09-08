@@ -112,17 +112,64 @@ ga('send', 'pageview');
           
           
           
-          <p>最近整XEN，出了一个奇怪的错误。 <div><span style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif">ERROR (SrvDaemon:355) Exception starting xend </span><span style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif">((22, &#39;Invalid argument&#39;)) </span><br style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif"></p>
+          <p>最近整XEN，出了一个奇怪的错误。
+<div></p>
 
-<p><span style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif">Traceback (most recent call last): </span><br style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif"> <span style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif">   File &quot;/usr/lib/xen-4.0/lib/python/xen/xend/server/SrvDaemon.py&quot;, line </span><br style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif"></p>
+<p><span
+style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif">ERROR
+(SrvDaemon:355) Exception starting xend </span><span
+style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif">((22,
+&lsquo;Invalid argument&rsquo;)) </span><br />
+<span
+style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif">Traceback
+(most recent call last): </span><br />
+<span
+style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif"> 
+ File &ldquo;/usr/lib/xen-4.0/lib/python/xen/xend/server/SrvDaemon.py&rdquo;,
+line </span><br />
+<span
+style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif">335,
+in run </span><br />
+<span
+style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif"> 
+   xinfo = xc.xeninfo() </span><br />
+<span
+style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif">Error:
+(22, &lsquo;Invalid argument&rsquo;) </span></p>
 
-<p><span style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif">335, in run </span><br style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif"> <span style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif">     xinfo = xc.xeninfo() </span><br style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif"> <span style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif">Error: (22, &#39;Invalid argument&#39;) </span></div><div><span style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif">    根据网络上的内容，首先排除没有xen模块——有了，然后是/proc/xen目录是否mount——有了，然后是/sys/hypervisor/下面的一堆属性——有了，然后是版本——不对。xen-utils-4.1是4.1.2版本，而xen-tools是4.2版本。不过xen-utils并不依赖xen-tools，没有后者应当也可以运行这些玩意。hypervisor和xen-utils的版本是一致的。那问题是什么？</span></div></p>
+<p></div></p>
 
-<p><div><span style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif">    出错的文件是</span><font face="Verdana, Geneva, Helvetica, Arial, sans-serif">/usr/lib/xen-4.1/lib/python/xen/lowlevel/xc.so里面发生的异常，下载xen的源码检查，这个函数主要是检查属性。属性检查会出什么错？</font></div></p>
+<div>
 
-<p><div><font face="Verdana, Geneva, Helvetica, Arial, sans-serif">    正在一头雾水的时候，突然想起一个问题。我安装的是xen-hypervisor-4.1-amd64，因为kernel是linux-image-3.1.0-1-amd64。然而，我这个系统有一个非常大的特殊——在64位CPU上运行的32位系统。因此，实际上xen-utils是32位的。行了行了，下面的事情用膝盖都能想到。</font></div></p>
+<span
+style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif"> 
+ 
+根据网络上的内容，首先排除没有xen模块——有了，然后是/proc/xen目录是否mount——有了，然后是/sys/hypervisor/下面的一堆属性——有了，然后是版本——不对。xen-utils-4.1是4.1.2版本，而xen-tools是4.2版本。不过xen-utils并不依赖xen-tools，没有后者应当也可以运行这些玩意。hypervisor和xen-utils的版本是一致的。那问题是什么？</span>
 
-<p><div><font face="Verdana, Geneva, Helvetica, Arial, sans-serif">    叹气，这世界上，真的有种错误，叫做太常见了以至于视而不见。不要认为自己不会犯。</font></div></p>
+</div>
+
+<div>
+
+<span
+style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif"> 
+ 
+出错的文件是</span>/usr/lib/xen-4.1/lib/python/xen/lowlevel/xc.so里面发生的异常，下载xen的源码检查，这个函数主要是检查属性。属性检查会出什么错？
+
+</div>
+
+<div>
+
+   
+正在一头雾水的时候，突然想起一个问题。我安装的是xen-hypervisor-4.1-amd64，因为kernel是linux-image-3.1.0-1-amd64。然而，我这个系统有一个非常大的特殊——在64位CPU上运行的32位系统。因此，实际上xen-utils是32位的。行了行了，下面的事情用膝盖都能想到。
+
+</div>
+
+<div>
+
+   
+叹气，这世界上，真的有种错误，叫做太常见了以至于视而不见。不要认为自己不会犯。
+
+</div>
 
         </div>
         

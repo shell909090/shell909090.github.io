@@ -112,7 +112,72 @@ ga('send', 'pageview');
           
           
           
-          <p>其实这个标题不准确，准确的说，应该是继承类拥有自己的基类静态对象。<br />    我们知道，类中的静态对象本质上是全局变量，不过名字在类命名空间里面。如果类B有静态对象S，D继承了B(先按照public继承讨论，其他其实也一样)。那么在D里面访问S的时候，其实是访问的B命名空间里面的静态对象S。验证代码如下：<br />class           B {<br />  protected:<br />    static int      S;<br />};<br />int B::S = 0;<br />class D:public B {<br />  public:<br />    void print () {<br />        printf (&quot;%dn&quot;, S);<br />    };<br />};<br />class E:public B {<br />  public:<br />    static void rewrite () {<br />        S = 1;<br />    };<br />};<br />int _tmain (int argc, _TCHAR * argv[]){<br />    D d;<br />    d.print ();<br />    E::rewrite ();<br />    d.print ();<br />    return 0;<br />}<br />    上例中可以看到，两个继承类，其实都是将父类的命名空间导入而已。假定我们要使得每类专有一个静态成员，例如我们要计算每个类的生成对象个数，怎么办呢？<br />    如果不用继承，我们可以在每个类里面加一个静态成员。然后在构造函数中加1，析构中减1。但是如果我们想把这个功能放到基类中，事情就麻烦了。因为所有类从同一个基类派生，我们算出来的其实是所有从基类继承的类的总对象生成个数。<br />    当然，我们可以用实现的方法来做。把所需要的功能抽离出来，放到一个单独的计数类中。然后构造的时候调用加1，析构的时候减1。听起来很蠢，那是因为例子容易的关系。比较复杂的时候，这样抽象相对简单的。计数类可以用于多个类，实现了代码重用。但是仍旧没有解决关键问题，怎么让继承类特化基类的静态对象？(虚拟化和特化的意思差不多，就是针对具体对象使用具体方法)<br />    答案最后被我在More Effective C++中找到了，正确的方法不是寻找一个特化的方法，而是继承不同的基类，使用同一套代码。既然是不同基类，怎么具备同一套代码呢？想到了吧，模版。<br />template <br />class           B {<br />  protected:<br />    static int      S;<br />};<br />class D:public B {<br />  public:<br />    void print () {<br />        printf (&quot;%dn&quot;, S);<br />    };<br />};<br />int B::S = 0;<br /><br />class E:public B {<br />  public:<br />    static void rewrite () {<br />        S = 1;<br />    };<br />};<br />int B::S = 0;<br /><br />int _tmain (int argc, _TCHAR * argv[])<br />{<br />    D d;<br />    d.print ();<br />    E::rewrite ();<br />    d.print ();<br />    return 0;<br />}<br />    看到了？每个继承类拥有了自己的静态成员。如果我们把上面的例子中，S改成ID。就可以做到RTTI了(只是还需要很多技巧)。<br /></p>
+          <p>其实这个标题不准确，准确的说，应该是继承类拥有自己的基类静态对象。<br />
+   
+我们知道，类中的静态对象本质上是全局变量，不过名字在类命名空间里面。如果类B有静态对象S，D继承了B(先按照public继承讨论，其他其实也一样)。那么在D里面访问S的时候，其实是访问的B命名空间里面的静态对象S。验证代码如下：<br />
+class           B {<br />
+  protected:<br />
+    static int      S;<br />
+};<br />
+int B::S = 0;<br />
+class D:public B {<br />
+  public:<br />
+    void print () {<br />
+        printf (&ldquo;%dn&rdquo;, S);<br />
+    };<br />
+};<br />
+class E:public B {<br />
+  public:<br />
+    static void rewrite () {<br />
+        S = 1;<br />
+    };<br />
+};<br />
+int _tmain (int argc, _TCHAR * argv[]){<br />
+    D d;<br />
+    d.print ();<br />
+    E::rewrite ();<br />
+    d.print ();<br />
+    return 0;<br />
+}<br />
+   
+上例中可以看到，两个继承类，其实都是将父类的命名空间导入而已。假定我们要使得每类专有一个静态成员，例如我们要计算每个类的生成对象个数，怎么办呢？<br />
+   
+如果不用继承，我们可以在每个类里面加一个静态成员。然后在构造函数中加1，析构中减1。但是如果我们想把这个功能放到基类中，事情就麻烦了。因为所有类从同一个基类派生，我们算出来的其实是所有从基类继承的类的总对象生成个数。<br />
+   
+当然，我们可以用实现的方法来做。把所需要的功能抽离出来，放到一个单独的计数类中。然后构造的时候调用加1，析构的时候减1。听起来很蠢，那是因为例子容易的关系。比较复杂的时候，这样抽象相对简单的。计数类可以用于多个类，实现了代码重用。但是仍旧没有解决关键问题，怎么让继承类特化基类的静态对象？(虚拟化和特化的意思差不多，就是针对具体对象使用具体方法)<br />
+    答案最后被我在More Effective
+C++中找到了，正确的方法不是寻找一个特化的方法，而是继承不同的基类，使用同一套代码。既然是不同基类，怎么具备同一套代码呢？想到了吧，模版。<br />
+template<br />
+class           B {<br />
+  protected:<br />
+    static int      S;<br />
+};<br />
+class D:public B {<br />
+  public:<br />
+    void print () {<br />
+        printf (&ldquo;%dn&rdquo;, S);<br />
+    };<br />
+};<br />
+int B::S = 0;<br />
+<br />
+class E:public B {<br />
+  public:<br />
+    static void rewrite () {<br />
+        S = 1;<br />
+    };<br />
+};<br />
+int B::S = 0;<br />
+<br />
+int _tmain (int argc, _TCHAR * argv[])<br />
+{<br />
+    D d;<br />
+    d.print ();<br />
+    E::rewrite ();<br />
+    d.print ();<br />
+    return 0;<br />
+}<br />
+   
+看到了？每个继承类拥有了自己的静态成员。如果我们把上面的例子中，S改成ID。就可以做到RTTI了(只是还需要很多技巧)。</p>
 
         </div>
         

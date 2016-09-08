@@ -112,33 +112,43 @@ ga('send', 'pageview');
           
           
           
-          <p>def comp_tuple_file (tuple_file1, tuple_file2):
-for i in tuple_file1:
-if i in tuple_file2:
-tuple_file1.remove(i);
-tuple_file2.remove(i);
-if <strong>name</strong>==&rdquo;<strong>main</strong>&ldquo;:
-t1=[(1,&ldquo;1&rdquo;),(2,&ldquo;2&rdquo;),(3,&ldquo;3&rdquo;)];
-t2=[(1,&ldquo;1&rdquo;),(3,&ldquo;3&rdquo;),(2,&ldquo;2&rdquo;),(4,&ldquo;2&rdquo;)];
-comp_tuple_file (t1, t2);
-print t1;
-print t2;
-错在哪里？
-头一次循环，i=(1,&ldquo;1&rdquo;)被正确移除了。但是接下来，i=(3,&ldquo;3&rdquo;)？
-这个叠代器的行为很有意思哦，貌似叠代器内存储的是集合的索引。
-def comp_tuple_file (tuple_file1, tuple_file2):
-collection=tuple_file1[:];
-for i in collection:
-if i in tuple_file2:
-tuple_file1.remove(i);
-tuple_file2.remove(i);
-if <strong>name</strong>==&rdquo;<strong>main</strong>&ldquo;:
-t1=[(1,&ldquo;1&rdquo;),(2,&ldquo;2&rdquo;),(3,&ldquo;3&rdquo;)];
-t2=[(1,&ldquo;1&rdquo;),(3,&ldquo;3&rdquo;),(2,&ldquo;2&rdquo;),(4,&ldquo;2&rdquo;)];
-comp_tuple_file (t1, t2);
-print t1;
-print t2;
-这才是正确的代码。</p>
+          <p>def comp_tuple_file(tuple_file1, tuple_file2):
+        for i in tuple_file1:
+            if i in tuple_file2:
+                tuple_file1.remove(i)
+                tuple_file2.remove(i)</p>
+
+<pre><code>if __name__ == &quot;__main__&quot;:
+    t1 = [(1, &quot;1&quot;), (2, &quot;2&quot;), (3, &quot;3&quot;)]
+    t2 = [(1, &quot;1&quot;), (3, &quot;3&quot;), (2, &quot;2&quot;), (4, &quot;2&quot;)]
+    comp_tuple_file(t1, t2)
+    print(t1)
+    print(t2)
+</code></pre>
+
+<p>错在哪里？</p>
+
+<p>头一次循环，i=(1,&ldquo;1&rdquo;)被正确移除了。但是接下来，i=(3,&ldquo;3&rdquo;)？</p>
+
+<p>这个叠代器的行为很有意思哦，貌似叠代器内存储的是集合的索引。</p>
+
+<pre><code>def comp_tuple_file(tuple_file1, tuple_file2):
+    collection = tuple_file1[:]
+    for i in collection:
+        if i in tuple_file2:
+            tuple_file1.remove(i)
+            tuple_file2.remove(i)
+
+
+if __name__ == &quot;__main__&quot;:
+    t1 = [(1, &quot;1&quot;), (2, &quot;2&quot;), (3, &quot;3&quot;)]
+    t2 = [(1, &quot;1&quot;), (3, &quot;3&quot;), (2, &quot;2&quot;), (4, &quot;2&quot;)]
+    comp_tuple_file(t1, t2)
+    print(t1)
+    print(t2)
+</code></pre>
+
+<p>这才是正确的代码。</p>
 
         </div>
         

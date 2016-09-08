@@ -112,9 +112,211 @@ ga('send', 'pageview');
           
           
           
-          <p>贝壳最近工作繁忙，一般都是晚上十一点到家睡觉，第二天早上继续上班的那种，所以blog基本没怎么动。现在放篇财务数据库的原型，大家参考一下吧。当然，是对程序员而言。像六牙四皂小姐这种下面估计是压根看不懂的，而且也不会有那种变态的资金准度要求。<br />    首先建立一个账户表。<br />DROP TABLE IF EXISTS <code>accont_info</code>;<br />CREATE TABLE <code>accont_info</code> (<br />  <code>id</code> int(11) NOT NULL auto_increment,<br />  <code>username</code> varchar(40) NOT NULL,<br />  <code>accont</code> varchar(40) NOT NULL,<br />  <code>accont_type</code> int(11) NOT NULL default &lsquo;0&rsquo;,<br />  PRIMARY KEY  (<code>id</code>),<br />  UNIQUE KEY <code>username</code> (<code>username</code>,<code>accont</code>)<br />) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=gbk;<br />    输入用户名，账户名和账户类型，例如&quot;许智翔&quot;,&quot;招行账户&quot;,2。账户类型中规定1是现金，2是存款，3是信用卡，4以上不计算。这样可以使用多个现金账户，存款账户和信用卡账户。然后利用子查询把所有类型间的相互行为统计出来。<br />    然后是类型表。<br />DROP TABLE IF EXISTS <code>type_info</code>;<br />CREATE TABLE <code>type_info</code> (<br />  <code>id</code> int(11) NOT NULL auto_increment,<br />  <code>type</code> varchar(40) NOT NULL,<br />  <code>subtype</code> varchar(40) default NULL,<br />  PRIMARY KEY  (<code>id</code>),<br />  UNIQUE KEY <code>type</code> (<code>type</code>,<code>subtype</code>)<br />) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=gbk;<br />    最后是资金流动数据表，accont_id中填写出户账户名，to_accont中填写入户账户名。如果是外部(例如从别人那里拿钱或者给别人钱)，则写0。happen_time上填写发生时间，money上写金额，message上写备忘。<br />DROP TABLE IF EXISTS <code>money_info</code>;<br />CREATE TABLE <code>money_info</code> (<br />  <code>id</code> int(11) NOT NULL auto_increment,<br />  <code>accont_id</code> int(11) NOT NULL,<br />  <code>to_accont</code> int(11) default NULL,<br />  <code>happen_time</code> datetime NOT NULL,<br />  <code>type</code> int(11) NOT NULL,<br />  <code>record_modify</code> timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,<br />  <code>money</code> decimal(9,2) NOT NULL,<br />  <code>message</code> varchar(400) default NULL,<br />  PRIMARY KEY  (<code>id</code>),<br />  KEY <code>happen_time</code> (<code>happen_time</code>,<code>type</code>,<code>accont_id</code>)<br />) ENGINE=InnoDB AUTO_INCREMENT=914 DEFAULT CHARSET=gbk;<br />    下面就是核心代码了。这个存储过程需要两个时间，统计的开始和结束时间。可以得出两个表，这段时间的收支和余额表，分类支出表。<br />DELIMITER $$<br /><br />DROP PROCEDURE IF EXISTS <code>money</code>.<code>count_all</code> $$<br />CREATE DEFINER=<code>shell</code>@<code>%</code> PROCEDURE <code>count_all</code>(IN start_date DATETIME, IN end_date DATETIME)<br />BEGIN<br />declare cash_get DECIMAL(9,2);<br />declare bank_get DECIMAL(9,2);<br />declare card_get DECIMAL(9,2);<br />declare cash_used DECIMAL(9,2);<br />declare cash_bank DECIMAL(9,2);<br />declare bank_used DECIMAL(9,2);<br />declare bank_cash DECIMAL(9,2);<br />declare card_used DECIMAL(9,2);<br />select sum(money) into cash_get from money_info where happen_time&gt;=start_date and happen_time&lt;end_date and<br />to_accont in (SELECT id FROM accont_info where accont_type=1);<br />select sum(money) into bank_get from money_info where happen_time&gt;=start_date and happen_time&lt;end_date and<br />to_accont in (SELECT id FROM accont_info where accont_type=2);<br />select sum(money) into card_get from money_info where happen_time&gt;=start_date and happen_time&lt;end_date and<br />to_accont in (SELECT id FROM accont_info where accont_type=3);<br />select sum(money) into cash_used from money_info where happen_time&gt;=start_date and happen_time&lt;end_date and<br />accont_id in (SELECT id FROM accont_info where accont_type=1);<br />select sum(money) into cash_bank from money_info where happen_time&gt;=start_date and happen_time&lt;end_date and<br />accont_id in (SELECT id FROM accont_info where accont_type=1) and<br />to_accont in (SELECT id FROM accont_info where accont_type=2);<br />select sum(money) into bank_used from money_info where happen_time&gt;=start_date and happen_time&lt;end_date and<br />accont_id in (SELECT id FROM accont_info where accont_type=2);<br />select sum(money) into bank_cash from money_info where happen_time&gt;=start_date and happen_time&lt;end_date and<br />accont_id in (SELECT id FROM accont_info where accont_type=2) and<br />to_accont in (SELECT id FROM accont_info where accont_type=1);<br />select sum(money) into card_used from money_info where happen_time&gt;=start_date and happen_time&lt;end_date and<br />accont_id in (SELECT id FROM accont_info where accont_type=3);<br />select &quot;开始日期&quot;,start_date<br />union<br />select &quot;结束日期&quot;,end_date<br />union<br />select &quot;现金总收入&quot;,cash_get<br />union<br />select &quot;现金总支出&quot;,cash_used<br />union<br />select &quot;  现金存款&quot;,cash_bank<br />union<br />select &quot;  现金使用&quot;,cash_used-cash_bank<br />union<br />select &quot;现金总余额&quot;,cash_get-cash_used<br />union<br />select &quot;总存款&quot;,bank_get<br />union<br />select &quot;存款使用&quot;,bank_used<br />union<br />select &quot;  银行提款&quot;,bank_cash<br />union<br />select &quot;  信用卡使用&quot;,card_used<br />union<br />select &quot;  其他使用&quot;,bank_used-bank_cash-card_used<br />union<br />select &quot;存款余额&quot;,bank_get-bank_used<br />union<br />select &quot;信用卡平衡&quot;,card_get-card_used<br />;<br />select m.type as typeid,t.type as typename,sum(m.money)as money from money_info m left join type_info t on m.type=t.id<br />where happen_time&gt;=start_date and happen_time&lt;end_date and to_accont=0 group by m.type;<br />END $$<br /><br />DELIMITER ;<br />    下面这个是上面的辅助代码，统计这个月的数据。<br />DELIMITER $$<br /><br />DROP PROCEDURE IF EXISTS <code>money</code>.<code>count_this_month</code> $$<br />CREATE DEFINER=<code>shell</code>@<code>%</code> PROCEDURE <code>count_this_month</code>()<br />BEGIN<br /><br />set @now_start=if(day(current_date())&lt;25,<br />date_format(date_sub(current_date(),interval 1 month),&lsquo;%Y-%m-25&rsquo;),<br />date_format(current_date(),&lsquo;%Y-%m-25&rsquo;));<br />set @now_end=date_add(@now_start,interval 1 month);<br />CALL count_all(@now_start,@now_end);<br /><br />END $$<br /><br />DELIMITER ;<br />    最后这个是统计历史的收入，支出，现金支出，银行支出，信用卡支出和其他支出。<br />DELIMITER $$<br /><br />DROP PROCEDURE IF EXISTS <code>money</code>.<code>count_month</code> $$<br />CREATE DEFINER=<code>shell</code>@<code>%</code> PROCEDURE <code>count_month</code>()<br />BEGIN<br /><br />create temporary table temp_in(<br />yearmonth datetime,<br />money DECIMAL(9,2)<br />);<br />create temporary table temp_out(<br />yearmonth datetime,<br />money DECIMAL(9,2)<br />);<br />create temporary table temp_cash(<br />yearmonth datetime,<br />money DECIMAL(9,2)<br />);<br />create temporary table temp_bank(<br />yearmonth datetime,<br />money DECIMAL(9,2)<br />);<br />create temporary table temp_card(<br />yearmonth datetime,<br />money DECIMAL(9,2)<br />);<br /><br />insert into temp_in<br />select date_format(date_sub(happen_time, interval 24 day),&quot;%Y-%m-25&quot;) as yearmonth,sum(money)<br />from money_info where accont_id=0 group by yearmonth;<br />insert into temp_out<br />select date_format(date_sub(happen_time, interval 24 day),&quot;%Y-%m-25&quot;) as yearmonth,sum(money)<br />from money_info where to_accont=0 group by yearmonth;<br />insert into temp_cash<br />select date_format(date_sub(happen_time, interval 24 day),&quot;%Y-%m-25&quot;) as yearmonth,sum(money)<br />from money_info where to_accont=0 and accont_id in (select id from accont_info where accont_type=1) group by yearmonth;<br />insert into temp_bank<br />select date_format(date_sub(happen_time, interval 24 day),&quot;%Y-%m-25&quot;) as yearmonth,sum(money)<br />from money_info where to_accont=0 and accont_id in (select id from accont_info where accont_type=2) group by yearmonth;<br />insert into temp_card<br />select date_format(date_sub(happen_time, interval 24 day),&quot;%Y-%m-25&amp;
-quot;) as yearmonth,sum(money)<br />from money_info where to_accont=0 and accont_id in (select id from accont_info where accont_type=3) group by yearmonth;<br /><br />select o.yearmonth as startday,date_add(o.yearmonth,interval 1 month) as endday,<br />ifnull(i.money,0) as money_in,ifnull(o.money,0) as money_out,ifnull
-(c.money,0) as money_cash,<br />ifnull(b.money,0) as money_bank,ifnull(d.money,0) as money_card,<br />ifnull(o.money,0)-ifnull(c.money,0)-ifnull(b.money,0)-ifnull(d.money,0) as money_other<br />from temp_out o<br />left join temp_in i on o.yearmonth=i.yearmonth<br />left join temp_cash c on o.yearmonth=c.yearmonth<br />left join temp_bank b on o.yearmonth=b.yearmonth<br />left join temp_card d on o.yearmonth=d.yearmonth;<br /><br />drop temporary table if exists temp_in,temp_out,temp_cash,temp_bank,temp_card;<br /><br />END $$<br /><br />DELIMITER ;<br />    怎么样，很简单实用吧。建议实用mysql+mysqlgui。图形的录入和统计，方便的备份。比以前写的方便多了。<br /></p>
+          <p>贝壳最近工作繁忙，一般都是晚上十一点到家睡觉，第二天早上继续上班的那种，所以blog基本没怎么动。现在放篇财务数据库的原型，大家参考一下吧。当然，是对程序员而言。像六牙四皂小姐这种下面估计是压根看不懂的，而且也不会有那种变态的资金准度要求。<br />
+    首先建立一个账户表。<br />
+DROP TABLE IF EXISTS `accont_info`;<br />
+CREATE TABLE `accont_info` (<br />
+  `id` int(11) NOT NULL auto_increment,<br />
+  `username` varchar(40) NOT NULL,<br />
+  `accont` varchar(40) NOT NULL,<br />
+  `accont_type` int(11) NOT NULL default &lsquo;0&rsquo;,<br />
+  PRIMARY KEY  (`id`),<br />
+  UNIQUE KEY `username` (`username`,`accont`)<br />
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=gbk;<br />
+   
+输入用户名，账户名和账户类型，例如&rdquo;许智翔&rdquo;,&ldquo;招行账户&rdquo;,2。账户类型中规定1是现金，2是存款，3是信用卡，4以上不计算。这样可以使用多个现金账户，存款账户和信用卡账户。然后利用子查询把所有类型间的相互行为统计出来。<br />
+    然后是类型表。<br />
+DROP TABLE IF EXISTS `type_info`;<br />
+CREATE TABLE `type_info` (<br />
+  `id` int(11) NOT NULL auto_increment,<br />
+  `type` varchar(40) NOT NULL,<br />
+  `subtype` varchar(40) default NULL,<br />
+  PRIMARY KEY  (`id`),<br />
+  UNIQUE KEY `type` (`type`,`subtype`)<br />
+) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=gbk;<br />
+   
+最后是资金流动数据表，accont_id中填写出户账户名，to_accont中填写入户账户名。如果是外部(例如从别人那里拿钱或者给别人钱)，则写0。happen_time上填写发生时间，money上写金额，message上写备忘。<br />
+DROP TABLE IF EXISTS `money_info`;<br />
+CREATE TABLE `money_info` (<br />
+  `id` int(11) NOT NULL auto_increment,<br />
+  `accont_id` int(11) NOT NULL,<br />
+  `to_accont` int(11) default NULL,<br />
+  `happen_time` datetime NOT NULL,<br />
+  `type` int(11) NOT NULL,<br />
+  `record_modify` timestamp NOT NULL default CURRENT_TIMESTAMP on
+update CURRENT_TIMESTAMP,<br />
+  `money` decimal(9,2) NOT NULL,<br />
+  `message` varchar(400) default NULL,<br />
+  PRIMARY KEY  (`id`),<br />
+  KEY `happen_time` (`happen_time`,`type`,`accont_id`)<br />
+) ENGINE=InnoDB AUTO_INCREMENT=914 DEFAULT CHARSET=gbk;<br />
+   
+下面就是核心代码了。这个存储过程需要两个时间，统计的开始和结束时间。可以得出两个表，这段时间的收支和余额表，分类支出表。<br />
+DELIMITER \$\$<br />
+<br />
+DROP PROCEDURE IF EXISTS `money`.`count_all` \$\$<br />
+CREATE DEFINER=`shell`@`%` PROCEDURE `count_all`(IN start_date
+DATETIME, IN end_date DATETIME)<br />
+BEGIN<br />
+declare cash_get DECIMAL(9,2);<br />
+declare bank_get DECIMAL(9,2);<br />
+declare card_get DECIMAL(9,2);<br />
+declare cash_used DECIMAL(9,2);<br />
+declare cash_bank DECIMAL(9,2);<br />
+declare bank_used DECIMAL(9,2);<br />
+declare bank_cash DECIMAL(9,2);<br />
+declare card_used DECIMAL(9,2);<br />
+select sum(money) into cash_get from money_info where
+happen_time&gt;=start_date and happen_time&lt;end_date and<br />
+to_accont in (SELECT id FROM accont_info where accont_type=1);<br />
+select sum(money) into bank_get from money_info where
+happen_time&gt;=start_date and happen_time&lt;end_date and<br />
+to_accont in (SELECT id FROM accont_info where accont_type=2);<br />
+select sum(money) into card_get from money_info where
+happen_time&gt;=start_date and happen_time&lt;end_date and<br />
+to_accont in (SELECT id FROM accont_info where accont_type=3);<br />
+select sum(money) into cash_used from money_info where
+happen_time&gt;=start_date and happen_time&lt;end_date and<br />
+accont_id in (SELECT id FROM accont_info where accont_type=1);<br />
+select sum(money) into cash_bank from money_info where
+happen_time&gt;=start_date and happen_time&lt;end_date and<br />
+accont_id in (SELECT id FROM accont_info where accont_type=1) and<br />
+to_accont in (SELECT id FROM accont_info where accont_type=2);<br />
+select sum(money) into bank_used from money_info where
+happen_time&gt;=start_date and happen_time&lt;end_date and<br />
+accont_id in (SELECT id FROM accont_info where accont_type=2);<br />
+select sum(money) into bank_cash from money_info where
+happen_time&gt;=start_date and happen_time&lt;end_date and<br />
+accont_id in (SELECT id FROM accont_info where accont_type=2) and<br />
+to_accont in (SELECT id FROM accont_info where accont_type=1);<br />
+select sum(money) into card_used from money_info where
+happen_time&gt;=start_date and happen_time&lt;end_date and<br />
+accont_id in (SELECT id FROM accont_info where accont_type=3);<br />
+select &ldquo;开始日期&rdquo;,start_date<br />
+union<br />
+select &ldquo;结束日期&rdquo;,end_date<br />
+union<br />
+select &ldquo;现金总收入&rdquo;,cash_get<br />
+union<br />
+select &ldquo;现金总支出&rdquo;,cash_used<br />
+union<br />
+select &ldquo;  现金存款&rdquo;,cash_bank<br />
+union<br />
+select &ldquo;  现金使用&rdquo;,cash_used-cash_bank<br />
+union<br />
+select &ldquo;现金总余额&rdquo;,cash_get-cash_used<br />
+union<br />
+select &ldquo;总存款&rdquo;,bank_get<br />
+union<br />
+select &ldquo;存款使用&rdquo;,bank_used<br />
+union<br />
+select &ldquo;  银行提款&rdquo;,bank_cash<br />
+union<br />
+select &ldquo;  信用卡使用&rdquo;,card_used<br />
+union<br />
+select &ldquo;  其他使用&rdquo;,bank_used-bank_cash-card_used<br />
+union<br />
+select &ldquo;存款余额&rdquo;,bank_get-bank_used<br />
+union<br />
+select &ldquo;信用卡平衡&rdquo;,card_get-card_used<br />
+;<br />
+select m.type as typeid,t.type as typename,sum(m.money)as money from
+money_info m left join type_info t on m.type=t.id<br />
+where happen_time&gt;=start_date and happen_time&lt;end_date and
+to_accont=0 group by m.type;<br />
+END \$\$<br />
+<br />
+DELIMITER ;<br />
+    下面这个是上面的辅助代码，统计这个月的数据。<br />
+DELIMITER \$\$<br />
+<br />
+DROP PROCEDURE IF EXISTS `money`.`count_this_month` \$\$<br />
+CREATE DEFINER=`shell`@`%` PROCEDURE `count_this_month`()<br />
+BEGIN<br />
+<br />
+set @now_start=if(day(current_date())&lt;25,<br />
+date_format(date_sub(current_date(),interval 1 month),&lsquo;%Y-%m-25&rsquo;),<br />
+date_format(current_date(),&lsquo;%Y-%m-25&rsquo;));<br />
+set @now_end=date_add(@now_start,interval 1 month);<br />
+CALL count_all(@now_start,@now_end);<br />
+<br />
+END \$\$<br />
+<br />
+DELIMITER ;<br />
+   
+最后这个是统计历史的收入，支出，现金支出，银行支出，信用卡支出和其他支出。<br />
+DELIMITER \$\$<br />
+<br />
+DROP PROCEDURE IF EXISTS `money`.`count_month` \$\$<br />
+CREATE DEFINER=`shell`@`%` PROCEDURE `count_month`()<br />
+BEGIN<br />
+<br />
+create temporary table temp_in(<br />
+yearmonth datetime,<br />
+money DECIMAL(9,2)<br />
+);<br />
+create temporary table temp_out(<br />
+yearmonth datetime,<br />
+money DECIMAL(9,2)<br />
+);<br />
+create temporary table temp_cash(<br />
+yearmonth datetime,<br />
+money DECIMAL(9,2)<br />
+);<br />
+create temporary table temp_bank(<br />
+yearmonth datetime,<br />
+money DECIMAL(9,2)<br />
+);<br />
+create temporary table temp_card(<br />
+yearmonth datetime,<br />
+money DECIMAL(9,2)<br />
+);<br />
+<br />
+insert into temp_in<br />
+select date_format(date_sub(happen_time, interval 24 day),&ldquo;%Y-%m-25&rdquo;)
+as yearmonth,sum(money)<br />
+from money_info where accont_id=0 group by yearmonth;<br />
+insert into temp_out<br />
+select date_format(date_sub(happen_time, interval 24 day),&ldquo;%Y-%m-25&rdquo;)
+as yearmonth,sum(money)<br />
+from money_info where to_accont=0 group by yearmonth;<br />
+insert into temp_cash<br />
+select date_format(date_sub(happen_time, interval 24 day),&ldquo;%Y-%m-25&rdquo;)
+as yearmonth,sum(money)<br />
+from money_info where to_accont=0 and accont_id in (select id from
+accont_info where accont_type=1) group by yearmonth;<br />
+insert into temp_bank<br />
+select date_format(date_sub(happen_time, interval 24 day),&ldquo;%Y-%m-25&rdquo;)
+as yearmonth,sum(money)<br />
+from money_info where to_accont=0 and accont_id in (select id from
+accont_info where accont_type=2) group by yearmonth;<br />
+insert into temp_card<br />
+select date_format(date_sub(happen_time, interval 24 day),&ldquo;%Y-%m-25&amp;
+quot;) as yearmonth,sum(money)<br />
+from money_info where to_accont=0 and accont_id in (select id from
+accont_info where accont_type=3) group by yearmonth;<br />
+<br />
+select o.yearmonth as startday,date_add(o.yearmonth,interval 1 month)
+as endday,<br />
+ifnull(i.money,0) as money_in,ifnull(o.money,0) as money_out,ifnull
+(c.money,0) as money_cash,<br />
+ifnull(b.money,0) as money_bank,ifnull(d.money,0) as money_card,<br />
+ifnull(o.money,0)-ifnull(c.money,0)-ifnull(b.money,0)-ifnull(d.money,0)
+as money_other<br />
+from temp_out o<br />
+left join temp_in i on o.yearmonth=i.yearmonth<br />
+left join temp_cash c on o.yearmonth=c.yearmonth<br />
+left join temp_bank b on o.yearmonth=b.yearmonth<br />
+left join temp_card d on o.yearmonth=d.yearmonth;<br />
+<br />
+drop temporary table if exists
+temp_in,temp_out,temp_cash,temp_bank,temp_card;<br />
+<br />
+END \$\$<br />
+<br />
+DELIMITER ;<br />
+   
+怎么样，很简单实用吧。建议实用mysql+mysqlgui。图形的录入和统计，方便的备份。比以前写的方便多了。</p>
 
         </div>
         

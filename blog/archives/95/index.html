@@ -112,13 +112,16 @@ ga('send', 'pageview');
           
           
           
-          <p>最简单的方法是使用<a style="text-decoration: none; color: #000000;" href="http://code.google.com/p/android-wifi-tether/">android-wifi-tether</a>，不过我这里使用不成功，原因不明。所以今天我们不去说他，我们说另外一个软件，azlink(<a href="http://code.google.com/p/azilink/">http://code.google.com/p/azilink/</a>)。
+          <p>最简单的方法是使用<a href="http://code.google.com/p/android-wifi-tether/">android-wifi-tether</a>，不过我这里使用不成功，原因不明。所以今天我们不去说他，我们说另外一个软件，azlink(<a href="http://code.google.com/p/azilink/">http://code.google.com/p/azilink/</a>)。
 首先是安装。检查是否满足安装条件，如果满足的话，安装apk，这个不用多说。azlink.ovpn需要复制到电脑上，并且准备好openvpn和adb。另外，推荐在手机上也保存一个azlink.ovpn和adb，openvpn，以便在多个机器上使用。
-下面开始正式的连接操作，作为测试，请先关闭手机的wifi上网功能和电脑的wifi，有线，以免影响测试结果。本文中的范例系统是Debian Testing(Squeeze)，网络环境是中国移动的CMNET(8元80M包月，很合算的)。如果环境有所差异，请照您的环境做相应调整。
+下面开始正式的连接操作，作为测试，请先关闭手机的wifi上网功能和电脑的wifi，有线，以免影响测试结果。本文中的范例系统是Debian
+Testing(Squeeze)，网络环境是中国移动的CMNET(8元80M包月，很合算的)。如果环境有所差异，请照您的环境做相应调整。
 1.使用usb线连接andriod和PC，此时android上会出现USB已连接的提示。
-2.在android上执行azlink，并且勾第一个勾，Service active，保证系统运行。此时状态应当是Warting for connection。
-3.在PC上执行adb forward tcp:41927 tcp:41927，此时可能出现service start。这个是首次运行的原因，不影响结果。
-4.执行openvpn azlink.ovpn。此时会出现虚拟网络，并且android上的状态发生变化。
+2.在android上执行azlink，并且勾第一个勾，Service
+active，保证系统运行。此时状态应当是Warting for connection。
+3.在PC上执行adb forward tcp:41927 tcp:41927，此时可能出现service
+start。这个是首次运行的原因，不影响结果。 4.执行openvpn
+azlink.ovpn。此时会出现虚拟网络，并且android上的状态发生变化。
 5.在android上，设置-&gt;高级属性-&gt;手机信息中，查看下面的GSM信息，一般能看到网关和DNS。请去ping一次网关，如果成功，你的事情已经成功了大半。
 如果上面不成功，请联系我。如果成功，请在你的系统内重设DNS。azlink.ovpn将你的DNS指向了手机上，可手机本身无法做DNS的。因此请将你电脑的DNS重设为手机上的值。如果你高兴，也可以将azlink.ovpn中的值改掉，理论上说一个地区的移动网络中，DNS应当都是一样的。不过如果你要跨地区，这个DNS就会发生变化。因此，我无法预先给定值，也无法获得。
 这是整个过程中最关键的一步。很多人说为什么无法上网，其实是可以的，只是你的DNS没有指向正确的值而已。
@@ -126,9 +129,10 @@ ga('send', 'pageview');
 作为关闭，其实拔线就可以了。不过作为程序员，我们习惯完美的析构过程。所以，下面是关闭过程。
 1.恢复浏览器原先的代理设置。
 2.断开openvpn，此时android上的状态会恢复Warting for connection。
-3.PC上需要执行adb kill-server。这样会kill掉adb的daemon进程，否则adb会一直假转发，并且始终占用进程号。
-4.在android上，关闭Service active的勾。并且，如果你喜欢，可以kill掉进程以回收内存。
-5.拔USB线。
+3.PC上需要执行adb
+kill-server。这样会kill掉adb的daemon进程，否则adb会一直假转发，并且始终占用进程号。
+4.在android上，关闭Service
+active的勾。并且，如果你喜欢，可以kill掉进程以回收内存。 5.拔USB线。
 如果你曾经关闭了手机的wifi，电脑的wifi和有线，现在也可以恢复了。</p>
 
         </div>

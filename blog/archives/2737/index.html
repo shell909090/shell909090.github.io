@@ -112,9 +112,14 @@ ga('send', 'pageview');
           
           
           
-          <p><p>最近用ppa做了backport，这里记录一下用法。</p>
-<h1>编译简述</h1>
+          
+
+<p>最近用ppa做了backport，这里记录一下用法。</p>
+
+<h1 id="编译简述">编译简述</h1>
+
 <p>ppa的大概工作原理，和mentors非常类似。</p>
+
 <ol>
 <li>包一个deb包，然后build这个包，生成dsc，deb，build和changes。</li>
 <li>上传这些文件，然后ppa丢弃所有deb（是的，ppa不接受编译好的包，因为可能在编译过程中被做手脚），从源码编译所有文件。</li>
@@ -122,31 +127,50 @@ ga('send', 'pageview');
 <li>ppa为这堆deb文件做签署。</li>
 <li>最终用户将这个目录添加到apt源中，就可以安装这些包了。</li>
 </ol>
+
 <p>这里有几个细节：</p>
+
 <ol>
-<li>服务器怎么知道是你上传的包？<br/>
-答案是在打包时进行签署，所以dput是不验证身份的。也因此，你需要将自己的gpg key上传到服务器。</li>
-<li>既然不需要deb，如何构建一个没有deb的编译？<br/>
-答案是<code>debuild -S</code>。当然，这也可能有变化。如果是建立一个已经存在的包，是-sd，否则是sa。后面还可以用-k&amp;lt;keyid&gt;来指定</li>
-<li>最终用户如何构建信任？<br/>
+<li>服务器怎么知道是你上传的包？<br />
+答案是在打包时进行签署，所以dput是不验证身份的。也因此，你需要将自己的gpg
+key上传到服务器。</li>
+<li>既然不需要deb，如何构建一个没有deb的编译？<br />
+答案是<code>debuild -S</code>。当然，这也可能有变化。如果是建立一个已经存在的包，是-sd，否则是sa。后面还可以用-k\&lt;keyid&gt;来指定</li>
+<li>最终用户如何构建信任？<br />
 答案是由ppa编译，由ppa签署。用户并不导入维护者的任何key。但是如果用户不信任维护者，那么维护者可以在包内夹杂任何恶意代码。因此ppa只解决安全传递和构建，而不解决维护者信任问题。</li>
 </ol>
-<h1>申请ppa</h1>
-<p>不废话，自己去<a href="https://launchpad.net/">launchpad</a>申请。这个是要ubuntu one帐号的，然后openid认证。不过不算太麻烦。</p>
-<h1>添加key</h1>
+
+<h1 id="申请ppa">申请ppa</h1>
+
+<p>不废话，自己去<a href="https://launchpad.net/">launchpad</a>申请。这个是要ubuntu
+one帐号的，然后openid认证。不过不算太麻烦。</p>
+
+<h1 id="添加key">添加key</h1>
+
 <p>首先需要生成gpgkey，这里不解释如何生成key pair。</p>
-<p>然后需要将key pair上传到ubuntu key server。我不知道其他key server最终会不会同步，但是即使会，同步时间也是长的那啥。</p>
-<pre><code>gpg &ndash;keyserver keyserver.ubuntu.com -send &lt;keyid&gt;
+
+<p>然后需要将key pair上传到ubuntu key server。我不知道其他key
+server最终会不会同步，但是即使会，同步时间也是长的那啥。</p>
+
+<pre><code>gpg --keyserver keyserver.ubuntu.com -send &lt;keyid&gt;
 </code></pre>
+
 <p>这样就行了。</p>
-<h1>设定dput</h1>
-<p>在<a href="https://help.launchpad.net/Packaging/PPA/Uploading">这个页面</a>有解释。在ubuntu 9.10以上版本，可以直接dput ppa:userid/ppa &lt;source.changes&gt;来上传。如果是更老版本（或者像我一样用debian），可以设定~/.dput.cf来工作（刚刚的页面下面有样例，照着改就行）。</p>
-<h1>添加ppa</h1>
+
+<h1 id="设定dput">设定dput</h1>
+
+<p>在<a href="https://help.launchpad.net/Packaging/PPA/Uploading">这个页面</a>有解释。在ubuntu
+9.10以上版本，可以直接dput ppa:userid/ppa
+&lt;source.changes&gt;来上传。如果是更老版本（或者像我一样用debian），可以设定~/.dput.cf来工作（刚刚的页面下面有样例，照着改就行）。</p>
+
+<h1 id="添加ppa">添加ppa</h1>
+
 <p>使用<code>add-apt-repository ppa:userid/ppa</code>就行了。本质上，他做了两件事。</p>
+
 <ul>
 <li>在/etc/apt/sources.list.d/下面生成一个文件，将你的repository添加到系统中。</li>
 <li>将ppa的sign key导入到系统中，并添加信任。</li>
-</ul></p>
+</ul>
 
         </div>
         

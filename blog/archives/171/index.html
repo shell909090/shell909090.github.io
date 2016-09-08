@@ -114,7 +114,7 @@ ga('send', 'pageview');
           
           <p>刚刚在看软件破解教程，看到一个人说怎么怎么破解软件。然后突然想到，许多软件破解其实不用修改出flag或者找注册算法。只要对话框不出来，软件照常好用就可以了。OK，基于这个原理，试试用DLL注入插接API的方法RIP破解软件。</p>
 
-<p>首先是对话框弹出机理。先写了个MFC程序，然后跑一跑，在运行中按着DoModel()一路F11下去，跟进了CWnd::CreateDialogIndirectPreamA云云的一个函数里面（名字忘记了）。然后就是一个API调用了。（<strong>IMP</strong>Creat&hellip;肯定是调用别的DLL的函数了）API内容看不到……我晕。编译一个Release版的出来，然后上Ollydbg。经过跟踪，确定了窗体句柄是在USER32.CreateDialogIndirectPreamAorW里面生成的。如果没有窗体句柄呢？</p>
+<p>首先是对话框弹出机理。先写了个MFC程序，然后跑一跑，在运行中按着DoModel()一路F11下去，跟进了CWnd::CreateDialogIndirectPreamA云云的一个函数里面（名字忘记了）。然后就是一个API调用了。（__IMP__Creat&hellip;肯定是调用别的DLL的函数了）API内容看不到……我晕。编译一个Release版的出来，然后上Ollydbg。经过跟踪，确定了窗体句柄是在USER32.CreateDialogIndirectPreamAorW里面生成的。如果没有窗体句柄呢？</p>
 
 <p>貌似有两种可能，一种是没事，对话框没了。一种是报错。按照试验，Readbook至少是没事情的。哈哈，这样简单多了。整理下顺序，基本就可以做RIP破解了。</p>
 

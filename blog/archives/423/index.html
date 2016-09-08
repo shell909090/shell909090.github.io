@@ -112,9 +112,67 @@ ga('send', 'pageview');
           
           
           
-          <p><p>    libxml是gnome的XML解析库，具有强大的解析能力，支持DOM和SAX解析模型，属于验证型解析器。其内部是使用utf-8编码工作的，因此gbk之类编码的XML无法解析。为了解决这个问题，我们可以使用一个很简单的小窍门。<br />    libxml是要和iconv一并使用的，头文件引用一般类似以下形式。<br />#include &lt;iconv.h&gt;<br />#pragma comment(lib, &quot;iconv&quot;)<br />#include &lt;libxml/tree.h&gt;<br />#include &lt;libxml/parser.h&gt;<br />#pragma comment(lib, &quot;libxml2&quot;)<br />    这样的话，我们向libxml注册一个处理句柄，对其他编码的xml先执行一次转换，再进行解析。<br />iconv_t         iconv_utf8_gbk = NULL;<br />iconv_t         iconv_gbk_utf8 = NULL;<br />int gbk_input (unsigned char *out, int *outlen, const unsigned char *in,<br />      int *inlen)<br />{<br /> char           *outbuf = (char *) out;<br /> char           *inbuf = (char *) in;<br /> size_t          rslt;<br /> rslt =<br />  iconv (iconv_utf8_gbk, (const char **) &amp;inbuf, (size_t *) inlen,<br />      &amp;outbuf, (size_t *) outlen);<br /> if (rslt &lt; 0)<br />  return rslt;<br /> *outlen = ((unsigned char *) outbuf - out);<br /> *inlen = ((unsigned char *) inbuf - in);<br /> return *outlen;<br />}
-<p>int gbk_output (unsigned char *out,<br />    int *outlen, const unsigned char *in, int *inlen)<br />{<br /> char           *outbuf = (char *) out;<br /> char           *inbuf = (char *) in;<br /> size_t          rslt;<br /> rslt =<br />  iconv (iconv_gbk_utf8, (const char **) &amp;inbuf, (size_t *) inlen,<br />      &amp;outbuf, (size_t *) outlen);<br /> if (rslt &lt; 0)<br />  return rslt;<br /> *outlen = ((unsigned char *) outbuf - out);<br /> *inlen = ((unsigned char *) inbuf - in);<br /> return *outlen;<br />}<br />    初始化的时候运行以下代码进行句柄注册。<br />{<br /> if (iconv_utf8_gbk == NULL)<br />  iconv_utf8_gbk = iconv_open (&quot;utf-8&quot;, &quot;gbk&quot;);<br /> if (iconv_gbk_utf8 == NULL)<br />  iconv_gbk_utf8 = iconv_open (&quot;gbk&quot;, &quot;utf-8&quot;);<br /> LIBXML_TEST_VERSION;<br /> xmlNewCharEncodingHandler (&quot;gb2312&quot;, gbk_input, gbk_output);<br /> xmlNewCharEncodingHandler (&quot;gbk&quot;, gbk_input, gbk_output);<br />}<br />    经过试验，这样我们就可以解析编码类型为gbk和gb2312的xml文件了。可以进行输入和输出，不过输出的utf-8形式让人觉得有点难过……<br />
-<div></div></p>
+          <p>libxml是gnome的XML解析库，具有强大的解析能力，支持DOM和SAX解析模型，属于验证型解析器。其内部是使用utf-8编码工作的，因此gbk之类编码的XML无法解析。为了解决这个问题，我们可以使用一个很简单的小窍门。<br />
+    libxml是要和iconv一并使用的，头文件引用一般类似以下形式。<br />
+#include &lt;iconv.h&gt;<br />
+#pragma comment(lib, &ldquo;iconv&rdquo;)<br />
+#include &lt;libxml/tree.h&gt;<br />
+#include &lt;libxml/parser.h&gt;<br />
+#pragma comment(lib, &ldquo;libxml2&rdquo;)<br />
+   
+这样的话，我们向libxml注册一个处理句柄，对其他编码的xml先执行一次转换，再进行解析。<br />
+iconv_t         iconv_utf8_gbk = NULL;<br />
+iconv_t         iconv_gbk_utf8 = NULL;<br />
+int gbk_input (unsigned char *out, int *outlen, const unsigned char
+*in,<br />
+      int *inlen)<br />
+{<br />
+ char           *outbuf = (char *) out;<br />
+ char           *inbuf = (char *) in;<br />
+ size_t          rslt;<br />
+ rslt =<br />
+  iconv (iconv_utf8_gbk, (const char **) &amp;inbuf, (size_t *)
+inlen,<br />
+      &amp;outbuf, (size_t *) outlen);<br />
+ if (rslt &lt; 0)<br />
+  return rslt;<br />
+ *outlen = ((unsigned char *) outbuf - out);<br />
+ *inlen = ((unsigned char *) inbuf - in);<br />
+ return *outlen;<br />
+}</p>
+
+<p>int gbk_output (unsigned char *out,<br />
+    int *outlen, const unsigned char *in, int *inlen)<br />
+{<br />
+ char           *outbuf = (char *) out;<br />
+ char           *inbuf = (char *) in;<br />
+ size_t          rslt;<br />
+ rslt =<br />
+  iconv (iconv_gbk_utf8, (const char **) &amp;inbuf, (size_t *)
+inlen,<br />
+      &amp;outbuf, (size_t *) outlen);<br />
+ if (rslt &lt; 0)<br />
+  return rslt;<br />
+ *outlen = ((unsigned char *) outbuf - out);<br />
+ *inlen = ((unsigned char *) inbuf - in);<br />
+ return *outlen;<br />
+}<br />
+    初始化的时候运行以下代码进行句柄注册。<br />
+{<br />
+ if (iconv_utf8_gbk == NULL)<br />
+  iconv_utf8_gbk = iconv_open (&ldquo;utf-8&rdquo;, &ldquo;gbk&rdquo;);<br />
+ if (iconv_gbk_utf8 == NULL)<br />
+  iconv_gbk_utf8 = iconv_open (&ldquo;gbk&rdquo;, &ldquo;utf-8&rdquo;);<br />
+ LIBXML_TEST_VERSION;<br />
+ xmlNewCharEncodingHandler (&ldquo;gb2312&rdquo;, gbk_input, gbk_output);<br />
+ xmlNewCharEncodingHandler (&ldquo;gbk&rdquo;, gbk_input, gbk_output);<br />
+}<br />
+   
+经过试验，这样我们就可以解析编码类型为gbk和gb2312的xml文件了。可以进行输入和输出，不过输出的utf-8形式让人觉得有点难过……</p>
+
+<div>
+
+</div>
 
         </div>
         

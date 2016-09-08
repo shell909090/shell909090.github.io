@@ -112,25 +112,341 @@ ga('send', 'pageview');
           
           
           
-          <p>太伤心了，本来以为mongo的速度很快呢。测试插入数据，结果当场被泼了冷水。 <div><div>conn = pymongo.Connection(&#39;localhost&#39;, 27017)</div><div>db = conn[&#39;perform&#39;]</div><div>coll = db[&#39;test&#39;]</div><div><br /></div><div>testdata = []</div><div>def init_testdata():</div><div>    for i in xrange(1000):</div></p>
+          <p>太伤心了，本来以为mongo的速度很快呢。测试插入数据，结果当场被泼了冷水。
+<div></p>
 
-<p><div>        s1 = &#39;&#39;.join([random.choice(string.hexdigits) for j in xrange(16)])</div><div>        s2 = &#39;&#39;.join([random.choice(string.letters) for j in xrange(200)])</div><div>        testdata.append((s1, s2))</div></p>
+<div>
 
-<p><div>init_testdata()</div><div><br /></div><div>def insert_mongo():</div><div>    for s1, s2 in testdata: coll.insert({&#39;_id&#39;: s1, &#39;content&#39;: s2})</div><div><br /></div><div><div>def find_mongo():</div><div>    for s1, s2 in testdata:</div></p>
+conn = pymongo.Connection('localhost', 27017)
 
-<p><div>        s = coll.find_one({&#39;_id&#39;: s1})</div></div><div><br /></div><div>def testfunc(funcname, times = 1000):</div><div>    from timeit import Timer</div><div>    t = Timer(&quot;%s()&quot; % funcname, &quot;from <strong>main</strong> import *&quot;)</div></p>
+</div>
 
-<p><div>    print &#39;funcname: %s used %f&#39; % (funcname, t.timeit(times) / times)</div><div><br /></div><div>if <strong>name</strong> == &#39;<strong>main</strong>&#39;:</div><div>    # os.fork()</div><div>    # os.fork()</div><div>    init_testdata()</div></p>
+<div>
 
-<p><div>    testfunc(&#39;insert_mongo&#39;, times = 100)</div></div><div>    testfunc(&#39;find_mongo&#39;, times = 100)</div><div><br /></div><div>    这个代码，在直接执行的情况下，获得结果是这样的。</div><div>funcname: insert_mongo used 0.179303</div></p>
+db = conn\['perform'\]
 
-<p><div>    折合成iops，也就是5500req/s的样子。打开os.fork后，结果变成了这样。</div><div><div>funcname: insert_mongo used 0.516131</div><div>funcname: insert_mongo used 0.526213</div></div><div>    只有3850req/s左右，我靠，比单进程慢那么多？打开四个进程试试？</div><div><div></p>
+</div>
 
-<p>funcname: insert_mongo used 1.039754</div><div>funcname: insert_mongo used 1.058093</div><div>funcname: insert_mongo used 1.058598</div><div>funcname: insert_mongo used 1.059101</div></div><div>    基本稳定下来了，差不多4000req/s的样子。而且，通过top发现，最关键的问题不在于io和内存，而是mongodb这货只有一个进程，最高吃到100%的CPU——也就是——无法利用多核。</div></p>
+<div>
 
-<p><div><br /></div><div>    幸好，在读取测试中，情况不是那么糟糕。在单进程下是下面这样子</div><div><div>funcname: find_mongo used 0.350096</div></div><div>    2850req/s，双进程就变成了这样子。</div><div><div>funcname: find_mongo used 0.220384</div><div>funcname: find_mongo used 0.221446</div></p>
+coll = db\['test'\]
 
-<p></div><div>    9000req/s！不但性能有所上升，而且更为惊喜的是，在top中检测发现，主要CPU消耗都放到了python这端。而分布系统的常识告诉我们，客户端的压力（就是应用服务器的压力）是可以很容易的通过添加服务器来解决的。在贝壳当前这台双核的机器上是无法进行进一步测试了，不过按照目前的状况预估，查询时即使只能使用单核，也可以支持10000req/s以上的性能。</div><div><br /></div><div>    又是一个典型的高读低写数据库呐。也罢也罢，nosql中也就mongo的各种特性比较接近sql数据库，用来跳过ORM层直接做系统比较合适。如果使用memcache或者redis，性能倒是上去了，用起来就未免太蛋疼了一点。不过偷偷的透露一点，贝壳估计，使用redis后，性能还能上去5倍。</div></p>
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+testdata = \[\]
+
+</div>
+
+<div>
+
+def init\_testdata():
+
+</div>
+
+<div>
+
+    for i in xrange(1000):
+
+</div>
+
+<div>
+
+        s1 = ''.join(\[random.choice(string.hexdigits) for j in
+xrange(16)\])
+
+</div>
+
+<div>
+
+        s2 = ''.join(\[random.choice(string.letters) for j in
+xrange(200)\])
+
+</div>
+
+<div>
+
+        testdata.append((s1, s2))
+
+</div>
+
+<div>
+
+init\_testdata()
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+def insert\_mongo():
+
+</div>
+
+<div>
+
+    for s1, s2 in testdata: coll.insert({'\_id': s1, 'content': s2})
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+<div>
+
+def find\_mongo():
+
+</div>
+
+<div>
+
+    for s1, s2 in testdata:
+
+</div>
+
+<div>
+
+        s = coll.find\_one({'\_id': s1})
+
+</div>
+
+<p></div></p>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+def testfunc(funcname, times = 1000):
+
+</div>
+
+<div>
+
+    from timeit import Timer
+
+</div>
+
+<div>
+
+    t = Timer("%s()" % funcname, "from \_\_main\_\_ import \*")
+
+</div>
+
+<div>
+
+    print 'funcname: %s used %f' % (funcname, t.timeit(times) / times)
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+if \_\_name\_\_ == '\_\_main\_\_':
+
+</div>
+
+<div>
+
+    \# os.fork()
+
+</div>
+
+<div>
+
+    \# os.fork()
+
+</div>
+
+<div>
+
+    init\_testdata()
+
+</div>
+
+<div>
+
+    testfunc('insert\_mongo', times = 100)
+
+</div>
+
+<p></div></p>
+
+<div>
+
+    testfunc('find\_mongo', times = 100)
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+    这个代码，在直接执行的情况下，获得结果是这样的。
+
+</div>
+
+<div>
+
+funcname: insert\_mongo used 0.179303
+
+</div>
+
+<div>
+
+    折合成iops，也就是5500req/s的样子。打开os.fork后，结果变成了这样。
+
+</div>
+
+<div>
+
+<div>
+
+funcname: insert\_mongo used 0.516131
+
+</div>
+
+<div>
+
+funcname: insert\_mongo used 0.526213
+
+</div>
+
+<p></div></p>
+
+<div>
+
+    只有3850req/s左右，我靠，比单进程慢那么多？打开四个进程试试？
+
+</div>
+
+<div>
+
+<div>
+
+funcname: insert\_mongo used 1.039754
+
+</div>
+
+<div>
+
+funcname: insert\_mongo used 1.058093
+
+</div>
+
+<div>
+
+funcname: insert\_mongo used 1.058598
+
+</div>
+
+<div>
+
+funcname: insert\_mongo used 1.059101
+
+</div>
+
+<p></div></p>
+
+<div>
+
+   
+基本稳定下来了，差不多4000req/s的样子。而且，通过top发现，最关键的问题不在于io和内存，而是mongodb这货只有一个进程，最高吃到100%的CPU——也就是——无法利用多核。
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+    幸好，在读取测试中，情况不是那么糟糕。在单进程下是下面这样子
+
+</div>
+
+<div>
+
+<div>
+
+funcname: find\_mongo used 0.350096
+
+</div>
+
+<p></div></p>
+
+<div>
+
+    2850req/s，双进程就变成了这样子。
+
+</div>
+
+<div>
+
+<div>
+
+funcname: find\_mongo used 0.220384
+
+</div>
+
+<div>
+
+funcname: find\_mongo used 0.221446
+
+</div>
+
+<p></div></p>
+
+<div>
+
+   
+9000req/s！不但性能有所上升，而且更为惊喜的是，在top中检测发现，主要CPU消耗都放到了python这端。而分布系统的常识告诉我们，客户端的压力（就是应用服务器的压力）是可以很容易的通过添加服务器来解决的。在贝壳当前这台双核的机器上是无法进行进一步测试了，不过按照目前的状况预估，查询时即使只能使用单核，也可以支持10000req/s以上的性能。
+
+</div>
+
+<div>
+
+\
+
+</div>
+
+<div>
+
+   
+又是一个典型的高读低写数据库呐。也罢也罢，nosql中也就mongo的各种特性比较接近sql数据库，用来跳过ORM层直接做系统比较合适。如果使用memcache或者redis，性能倒是上去了，用起来就未免太蛋疼了一点。不过偷偷的透露一点，贝壳估计，使用redis后，性能还能上去5倍。
+
+</div>
 
         </div>
         

@@ -112,146 +112,180 @@ ga('send', 'pageview');
           
           
           
-          <p>贝壳最近在一个朋友的网站上看到了关于SICP零钱兑换问题的python求解，使用了记忆机制，然后他给出了代码。然而他的代码计时上有点小问题，也没有用包装器(奇怪的是，有写)，而且python的栈深度有限。因此贝壳做了几个修改的版本，需要测试下性能，下面就是关于性能的几个问题和过程。
-本文详细论述了python语言下和C++语言下使用各种方法测试代码性能的方法，以及粗略的关于两种语言不同算法性能对比。
-原始的python代码是这样的：
-def change_coins(money):
-first_denomination = {
-1:1,  2:5,
-3:10, 4:25,
-5:50,
-}
-def cc((amount, kinds_of_coins)):
-if amount == 0:
-return 1
-elif amount &lt; 0 or kinds_of_coins == 0:
-return 0
-else:
-return     cc((amount, kinds_of_coins - 1))
-+ cc((amount - first_denomination[kinds_of_coins], kinds_of_coins))
-print &ldquo;change_coins return %s&rdquo; % cc((money, 5));
-return ;
-利用记忆原理包装后是这样的：
-def memoiza(fun):
-cache = {}
-def proc ( *arg ):
-if cache.has_key(arg):
-return cache[arg]
-else:
-x = fun( *arg )
-cache[arg] = x
-return x
-return proc</p>
+          <p>贝壳最近在一个朋友的网站上看到了关于SICP零钱兑换问题的python求解，使用了记忆机制，然后他给出了代码。然而他的代码计时上有点小问题，也没有用包装器(奇怪的是，有写)，而且python的栈深度有限。因此贝壳做了几个修改的版本，需要测试下性能，下面就是关于性能的几个问题和过程。</p>
 
-<p>def decorator_change_coins(money):
-first_denomination = {
-1:1,  2:5,
-3:10, 4:25,
-5:50,
-}
-@memoiza
-def cc(amount, kinds_of_coins):
-if amount == 0:
-return 1
-elif amount &lt; 0 or kinds_of_coins == 0:
-return 0
-else:
-return cc(amount, kinds_of_coins - 1)
-+ cc(amount - first_denomination[kinds_of_coins], kinds_of_coins)
-print &ldquo;decorator_change_coins return %s&rdquo; % cc(money, 5);
-return ;
-不记忆，利用栈模拟递归展开是这样的：
-def native_change_coins(money):
-first_denomination = {
-1:1,  2:5,
-3:10, 4:25,
-5:50,
-}
-stack = [(money, 5)];
-rslt = 0;
-while len (stack) &gt; 0:
-param = stack.pop ();
-if param[0] == 0:
-rslt += 1;
-continue;
-elif param[0] &lt; 0 or param[1] == 0:
-continue;
-else:
-stack.append ((param[0], param[1] - 1));
-stack.append ((param[0] - first_denomination[param[1]], param[1]));
-continue;
-print &ldquo;native_change_coins return %s&rdquo; % rslt;
-return ;</p>
+<p>本文详细论述了python语言下和C++语言下使用各种方法测试代码性能的方法，以及粗略的关于两种语言不同算法性能对比。</p>
 
-<p>贝壳主要需要测试上面三个代码的执行效率和瓶颈，所以贝壳用的主代码是这样的：
-import time
+<p>原始的python代码是这样的：</p>
+
+<pre><code>def change_coins(money):
+    first_denomination = {
+        1: 1,
+        2: 5,
+        3: 10,
+        4: 25,
+        5: 50,
+    }
+
+    def cc(amount, kinds_of_coins):
+        if amount == 0:
+            return 1
+        elif amount &lt; 0 or kinds_of_coins == 0:
+            return 0
+        else:
+            kind = cc(amount, kinds_of_coins - 1)
+            kind += cc(
+                amount-first_denomination[kinds_of_coins], kinds_of_coins)
+            return kind
+
+    print(&quot;change_coins return %s&quot; % cc(money, 5))
+
+change_coins(300)
+</code></pre>
+
+<p>利用记忆原理包装后是这样的：</p>
+
+<pre><code>def memoiza(fun):
+    cache = {}
+
+    def proc(*arg):
+        if arg in cache:
+            return cache[arg]
+        else:
+            x = fun(*arg)
+            cache[arg] = x
+            return x
+
+    return proc
+
+
+def decorator_change_coins(money):
+    first_denomination = {
+        1: 1,
+        2: 5,
+        3: 10,
+        4: 25,
+        5: 50,
+    }
+
+    @memoiza
+    def cc(amount, kinds_of_coins):
+        if amount == 0:
+            return 1
+        elif amount &lt; 0 or kinds_of_coins == 0:
+            return 0
+        else:
+            kind = cc(amount, kinds_of_coins - 1)
+            kind += cc(
+                amount - first_denomination[kinds_of_coins], kinds_of_coins)
+            return kind
+    print(&quot;decorator_change_coins return %s&quot; % cc(money, 5))
+
+decorator_change_coins(300)
+</code></pre>
+
+<p>不记忆，利用栈模拟递归展开是这样的：</p>
+
+<pre><code>def native_change_coins(money):
+    first_denomination = {
+        1: 1,
+        2: 5,
+        3: 10,
+        4: 25,
+        5: 50,
+    }
+
+    stack = [(money, 5)]
+    rslt = 0
+    while len(stack) &gt; 0:
+        param = stack.pop()
+        if param[0] == 0:
+            rslt += 1
+            continue
+        elif param[0] &lt; 0 or param[1] == 0:
+            continue
+        else:
+            stack.append((param[0], param[1] - 1))
+            stack.append((param[0] - first_denomination[param[1]], param[1]))
+            continue
+    print(&quot;native_change_coins return %s&quot; % rslt)
+
+native_change_coins(300)
+</code></pre>
+
+<p>贝壳主要需要测试上面三个代码的执行效率和瓶颈，所以贝壳用的主代码是这样的：</p>
+
+<pre><code>import time
 import timeit
-import profile</p>
+import profile
 
-<p>def test_func(f):
-f (300);</p>
+def test_func(f):
+    f(300)
 
-<p>if <strong>name</strong> == &ldquo;<strong>main</strong>&ldquo;:
-t = timeit.Timer(&ldquo;test_func (change_coins)&ldquo;, &ldquo;from <strong>main</strong> import *&ldquo;);
-print min(t.repeat (5, 1));</p>
+if __name__ == &quot;__main__&quot;:
+    t = timeit.Timer(&quot;test_func (change_coins)&quot;, &quot;from __main__ import *&quot;)
+    print min(t.repeat (5, 1))
 
-<p>t = timeit.Timer(&ldquo;test_func (decorator_change_coins)&ldquo;, &ldquo;from <strong>main</strong> import *&ldquo;);
-print min(t.repeat (5, 1));</p>
+    t = timeit.Timer(&quot;test_func (decorator_change_coins)&quot;, &quot;from __main__ import *&quot;)
+    print min(t.repeat (5, 1))
 
-<p>t = timeit.Timer(&ldquo;test_func (native_change_coins)&ldquo;, &ldquo;from <strong>main</strong> import *&ldquo;);
-print min(t.repeat (5, 1));</p>
+    t = timeit.Timer(&quot;test_func (native_change_coins)&quot;, &quot;from __main__ import *&quot;)
+    print min(t.repeat (5, 1))
 
-<p>profile.run(&ldquo;test_func (change_coins)&ldquo;);
-profile.run(&ldquo;test_func (decorator_change_coins)&ldquo;);
-profile.run(&ldquo;test_func (native_change_coins)&ldquo;);</p>
+    profile.run(&quot;test_func (change_coins)&quot;)
+    profile.run(&quot;test_func (decorator_change_coins)&quot;)
+    profile.run(&quot;test_func (native_change_coins)&quot;)
+</code></pre>
 
-<p>下面是部分结果：
-change_coins return 9590
+<p>下面是部分结果：</p>
+
+<pre><code>change_coins return 9590
 1.22809910198
 decorator_change_coins return 9590
 0.00217178440277
 native_change_coins return 9590
-2.69215193551</p>
+2.69215193551
+</code></pre>
 
 <p>以上是时间测试结果，使用timeit模块来测试运行时间，重复5次，取最小值。具体原理可以看dive into python，详细请看上面的代码。从结果中我们可以看到，使用记忆技术后，性能提升了500多倍，这是符合规律的。然而使用了集合模拟栈之后，性能大幅下降。下面我们看看为什么。</p>
 
-<p>change_coins return 9590
-1292596 function calls (6 primitive calls) in 13.591 CPU seconds</p>
+<pre><code>change_coins return 9590
+1292596 function calls (6 primitive calls) in 13.591 CPU seconds
 
-<p>Ordered by: standard name</p>
+Ordered by: standard name
 
-<p>ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+ncalls  tottime  percall  cumtime  percall filename:lineno(function)
 1    0.059    0.059    0.059    0.059 :0(setprofile)
 1    0.000    0.000   13.533   13.533 :1()
 1    0.000    0.000   13.533   13.533 amount.py:102(test_func)
-<sup>1292591</sup>&frasl;<sub>1</sub>   13.531    0.000   13.531   13.531 amount.py:11(cc)
+1292591/1   13.531    0.000   13.531   13.531 amount.py:11(cc)
 1    0.001    0.001   13.533   13.533 amount.py:5(change_coins)
 0    0.000             0.000          profile:0(profiler)
-1    0.000    0.000   13.591   13.591 profile:0(test_func (change_coins))</p>
+1    0.000    0.000   13.591   13.591 profile:0(test_func (change_coins))
 
-<p>decorator_change_coins return 9590
-2494 function calls (881 primitive calls) in 0.027 CPU seconds</p>
+decorator_change_coins return 9590
+2494 function calls (881 primitive calls) in 0.027 CPU seconds
 
-<p>Ordered by: standard name</p>
+Ordered by: standard name
 
-<p>ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+ncalls  tottime  percall  cumtime  percall filename:lineno(function)
 873    0.004    0.000    0.004    0.000 :0(has_key)
 1    0.000    0.000    0.000    0.000 :0(setprofile)
 1    0.000    0.000    0.027    0.027 :1()
 1    0.000    0.000    0.027    0.027 amount.py:102(test_func)
 1    0.000    0.000    0.000    0.000 amount.py:51(memoiza)
-<sup>873</sup>&frasl;<sub>1</sub>    0.013    0.000    0.026    0.026 amount.py:53(proc)
+873/1    0.013    0.000    0.026    0.026 amount.py:53(proc)
 1    0.001    0.001    0.027    0.027 amount.py:62(decorator_change_coins)
-<sup>742</sup>&frasl;<sub>1</sub>    0.009    0.000    0.026    0.026 amount.py:68(cc)
+742/1    0.009    0.000    0.026    0.026 amount.py:68(cc)
 0    0.000             0.000          profile:0(profiler)
-1    0.000    0.000    0.027    0.027 profile:0(test_func (decorator_change_coins))</p>
+1    0.000    0.000    0.027    0.027 profile:0(test_func (decorator_change_coins))
 
-<p>native_change_coins return 9590
-3877778 function calls in 38.798 CPU seconds</p>
+native_change_coins return 9590
+3877778 function calls in 38.798 CPU seconds
 
-<p>Ordered by: standard name</p>
+Ordered by: standard name
 
-<p>ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+ncalls  tottime  percall  cumtime  percall filename:lineno(function)
 1292590    5.824    0.000    5.824    0.000 :0(append)
 1292592    5.960    0.000    5.960    0.000 :0(len)
 1292591    6.076    0.000    6.076    0.000 :0(pop)
@@ -261,90 +295,98 @@ native_change_coins return 9590
 1   20.938   20.938   38.798   38.798 amount.py:80(native_change_coins)
 0    0.000             0.000          profile:0(profiler)
 1    0.000    0.000   38.798   38.798 profile:0(test_func (native_change_coins))
-以上是白盒分析结果，使用profile测试，主要分析函数的调用花费。具体可以参考<a href="http://www.sqlite.com.cn">http://www.sqlite.com.cn</a> /MySqlite/11/480.Html。从上面的报表中，我们可以看出，最初的函数执行时间全消耗在了cc上。而记忆后，则是proc和cc基本对半，有的时候has_key测试也花点时间。这表示cc花费的时间大幅下降，记忆技术则花了比较多的时间。而模拟的呢？大部分时间都花在了 append,len,pop这三个函数上！这说明原始集合的效率严重制约了模拟效率。如果要提升性能的话，使用其他的集合吧。
-另外贝壳又用C++写了一个，如下：</p>
+</code></pre>
 
-<p>const int coin_map[] = {
-1, 5, 10, 25, 50
+<p>以上是白盒分析结果，使用profile测试，主要分析函数的调用花费。具体可以参考 <a href="http://www.sqlite.com.cn/MySqlite/11/480.Html">http://www.sqlite.com.cn/MySqlite/11/480.Html</a> 。从上面的报表中，我们可以看出，最初的函数执行时间全消耗在了cc上。而记忆后，则是proc和cc基本对半，有的时候has_key测试也花点时间。这表示cc花费的时间大幅下降，记忆技术则花了比较多的时间。而模拟的呢？大部分时间都花在了 append,len,pop这三个函数上！这说明原始集合的效率严重制约了模拟效率。如果要提升性能的话，使用其他的集合吧。</p>
+
+<p>另外贝壳又用C++写了一个，如下：</p>
+
+<pre><code>const int coin_map[] = {
+    1, 5, 10, 25, 50
 };
-const int coin_count = 5;</p>
 
-<p>int cc (int amount, int kind_of_coins)
+const int coin_count = 5;
+
+int cc (int amount, int kind_of_coins)
 {
-if (amount == 0)
-return 1;
-if (amount &lt; 0 || kind_of_coins &lt;= 0)
-return 0;
-return cc (amount, kind_of_coins - 1) + cc (amount - coin_map[kind_of_coins - 1], kind_of_coins);
-}</p>
+    if (amount == 0)
+        return 1;
+    if (amount &lt; 0 || kind_of_coins &lt;= 0)
+        return 0;
+    return cc (amount, kind_of_coins - 1) + cc (amount - coin_map[kind_of_coins - 1], kind_of_coins);
+}
 
-<p>int dd (int amount, int kind_of_coins)
+int dd (int amount, int kind_of_coins)
 {
-if (amount == 0)
-return 1;
-if (amount &lt; 0 || kind_of_coins &lt;= 0)
-return 0;
-int rslt = 0;
-for (int i = 0; i &lt;= amount / coin_map[kind_of_coins - 1]; ++i)
-rslt += dd (amount - i * coin_map[kind_of_coins - 1], kind_of_coins - 1);
-return rslt;
-}</p>
+    if (amount == 0)
+        return 1;
+    if (amount &lt; 0 || kind_of_coins &lt;= 0)
+        return 0;
+    int rslt = 0;
+    for (int i = 0; i &lt;= amount / coin_map[kind_of_coins - 1]; ++i)
+        rslt += dd (amount - i * coin_map[kind_of_coins - 1], kind_of_coins - 1);
+    return rslt;
+}
 
-<p>class keys{
+class keys{
 public:
-int amount;
-int kind_of_coins;
-keys (int amount_p, int kind_of_coins_p):
-amount(amount_p), kind_of_coins(kind_of_coins_p)
-{}
-bool operator == (const keys &amp; k) const{
-return (amount == k.amount &amp;&amp; kind_of_coins == k.kind_of_coins);
-}
-bool operator &lt; (const keys &amp; k) const{
-if (kind_of_coins == k.kind_of_coins)
-return amount &lt; k.amount;
-return kind_of_coins &lt; k.kind_of_coins;
-}
-};</p>
+    int amount;
+    int kind_of_coins;
+    keys (int amount_p, int kind_of_coins_p):
+        amount(amount_p), kind_of_coins(kind_of_coins_p)
+        {}
+    bool operator == (const keys &amp;amp; k) const{
+        return (amount == k.amount &amp;amp;&amp;amp; kind_of_coins == k.kind_of_coins);
+    }
+    bool operator &lt; (const keys &amp;amp; k) const{
+        if (kind_of_coins == k.kind_of_coins)
+            return amount &lt; k.amount;
+        return kind_of_coins &lt; k.kind_of_coins;
+    }
+};
 
-<p>map mCache;</p>
+map mCache;
 
-<p>int ee (int amount, int kind_of_coins)
+int ee (int amount, int kind_of_coins)
 {
-if (amount == 0)
-return 1;
-if (amount &lt; 0 || kind_of_coins &lt;= 0)
-return 0;
-keys k (amount, kind_of_coins);
-map::iterator iter = mCache.find(k);
-if (iter != mCache.end ())
-return iter-&gt;second;
-int rslt = 0;
-for (int i = 0; i &lt;= amount / coin_map[kind_of_coins - 1]; ++i)
-rslt += dd (amount - i * coin_map[kind_of_coins - 1], kind_of_coins - 1);
-mCache.insert(pair(k, rslt));
-return rslt;
-}</p>
-
-<p>int _tmain(int argc, _TCHAR* argv[])
-{
-const int loop_times = 300;
-clock_t s = clock();
-printf (&ldquo;kind of coins: %dn&rdquo;, cc (loop_times, coin_count));
-printf (&ldquo;times:%dn&rdquo;, clock () - s);</p>
-
-<p>s = clock();
-printf (&ldquo;kind of coins: %dn&rdquo;, dd (loop_times, coin_count));
-printf (&ldquo;times:%dn&rdquo;, clock () - s);</p>
-
-<p>s = clock();
-printf (&ldquo;kind of coins: %dn&rdquo;, ee (loop_times, coin_count));
-printf (&ldquo;times:%dn&rdquo;, clock () - s);
-return 0;
+    if (amount == 0)
+        return 1;
+    if (amount &lt; 0 || kind_of_coins &lt;= 0)
+        return 0;
+    keys k (amount, kind_of_coins);
+    map::iterator iter = mCache.find(k);
+    if (iter != mCache.end ())
+        return iter-&gt;second;
+    int rslt = 0;
+    for (int i = 0; i &lt;= amount / coin_map[kind_of_coins - 1]; ++i)
+        rslt += dd (amount - i * coin_map[kind_of_coins - 1], kind_of_coins - 1);
+    mCache.insert(pair(k, rslt));
+    return rslt;
 }
-注意到主函数中，使用的是clock来计量时间。如果C++下要做白盒性能测试就比较麻烦，需要用精确计时函数和宏。需要的可以单独和我联系。下面是部分计算结果，cc的和ee的，没有dd的。
-300的计算结果
-kind of coins: 9590
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+    const int loop_times = 300;
+    clock_t s = clock();
+    printf (&quot;kind of coins: %dn&quot;, cc (loop_times, coin_count));
+    printf (&quot;times:%dn&quot;, clock () - s);
+
+    s = clock();
+    printf (&quot;kind of coins: %dn&quot;, dd (loop_times, coin_count));
+    printf (&quot;times:%dn&quot;, clock () - s);
+
+    s = clock();
+    printf (&quot;kind of coins: %dn&quot;, ee (loop_times, coin_count));
+    printf (&quot;times:%dn&quot;, clock () - s);
+    return 0;
+}
+</code></pre>
+
+<p>注意到主函数中，使用的是clock来计量时间。如果C++下要做白盒性能测试就比较麻烦，需要用精确计时函数和宏。需要的可以单独和我联系。下面是部分计算结果，cc的和ee的，没有dd的。</p>
+
+<p>300的计算结果</p>
+
+<pre><code>kind of coins: 9590
 times:62
 kind of coins: 9590
 times:46
@@ -353,10 +395,15 @@ kind of coins: 801451
 times:15953
 kind of coins: 801451
 times:11000
-单位，ms。
-原生的效率差异是20倍，用了缓存后性能只有略略上升？！反而是python比较快？
-看来C++下的map效率也不高，要用hash_map才好。
-倒是栈长度好很多，贝壳估计是131072次调用，大约是16384分。</p>
+</code></pre>
+
+<p>单位，ms。</p>
+
+<p>原生的效率差异是20倍，用了缓存后性能只有略略上升？！反而是python比较快？</p>
+
+<p>看来C++下的map效率也不高，要用hash_map才好。</p>
+
+<p>倒是栈长度好很多，贝壳估计是131072次调用，大约是16384分。</p>
 
         </div>
         

@@ -113,37 +113,21 @@ ga('send', 'pageview');
           
           
           <p>如果说路由规则还能讲讲，iptables防火墙规则就彻底没法讲。简直是千变万化无所不能。下面就简单说一下，对于新增的tun0设备如何设定防火墙规则。
-&mdash;&mdash;&mdash;-config/network&mdash;&mdash;&mdash;-
-config &#39;interface&#39; &#39;tun&#39;
-        option &#39;ifname&#39; &#39;tun+&#39;
-        option &#39;proto&#39; &#39;none&#39;<i>
-</i>&mdash;&mdash;&mdash;-config/firewall&mdash;&mdash;&mdash;-
-config &#39;zone&#39;
-        option &#39;name&#39; &#39;tun&#39;
-        option &#39;input&#39; &#39;ACCEPT&#39;
-        option &#39;output&#39; &#39;ACCEPT&#39;
-        option &#39;forward&#39; &#39;REJECT&#39;</p>
-
-<p>config &#39;forwarding&#39;
-        option &#39;src&#39; &#39;lan&#39;
-        option &#39;dest&#39; &#39;tun&#39;
-        option &#39;mtu_fix&#39; &#39;0&#39;</p>
-
-<p>config &#39;forwarding&#39;
-        option &#39;src&#39; &#39;tun&#39;
-        option &#39;dest&#39; &#39;lan&#39;
-        option &#39;mtu_fix&#39; &#39;0&#39;
-    好了，新增了一个网口，叫做tun，处理所有tun+（就是任何tun设备）的吞吐。默认规则是可以收发，拒绝转发。转发规则是可以和lan互相转发。
-/etc/init.d/network restart
-/etc/init.d/firewall restart
-    然后你看看你的配置是否正确。
-iptables -L -v
-    另外，这个配置方法有个bug。由于你的网口是tun+，所以在启动时，无法自动启用这个接口。在路由器重启后必须/etc/init.d/network restart才能工作。对我来说，每次路由器重启后都是手工开启openvpn的，问题不大。但是对于某些人就比较麻烦。对此推荐这些人直接修改/etc/firewall.user，直接加入以下指令。
-iptables -I INPUT -i tun+ -j ACCEPT
-iptables -I OUTPUT -o tun+ -j ACCEPT
-iptables -I FORWARD -i tun+ -j ACCEPT
-iptables -I FORWARD -o tun+ -j ACCEPT
-    使用interface配置的最终效果也差不多，不过比较简单整齐好理解。</p>
+&mdash;&mdash;&mdash;-config/network&mdash;&mdash;&mdash;- config &lsquo;interface&rsquo; &lsquo;tun&rsquo; option
+&lsquo;ifname&rsquo; &lsquo;tun+&rsquo; option &lsquo;proto&rsquo; &lsquo;none&rsquo; **
+&mdash;&mdash;&mdash;-config/firewall&mdash;&mdash;&mdash;- config &lsquo;zone&rsquo; option &lsquo;name&rsquo; &lsquo;tun&rsquo;
+option &lsquo;input&rsquo; &lsquo;ACCEPT&rsquo; option &lsquo;output&rsquo; &lsquo;ACCEPT&rsquo; option &lsquo;forward&rsquo;
+&lsquo;REJECT&rsquo; config &lsquo;forwarding&rsquo; option &lsquo;src&rsquo; &lsquo;lan&rsquo; option &lsquo;dest&rsquo; &lsquo;tun&rsquo;
+option &lsquo;mtu_fix&rsquo; &lsquo;0&rsquo; config &lsquo;forwarding&rsquo; option &lsquo;src&rsquo; &lsquo;tun&rsquo; option
+&lsquo;dest&rsquo; &lsquo;lan&rsquo; option &lsquo;mtu_fix&rsquo; &lsquo;0&rsquo;
+好了，新增了一个网口，叫做tun，处理所有tun+（就是任何tun设备）的吞吐。默认规则是可以收发，拒绝转发。转发规则是可以和lan互相转发。
+/etc/init.d/network restart /etc/init.d/firewall restart
+然后你看看你的配置是否正确。 iptables -L -v
+另外，这个配置方法有个bug。由于你的网口是tun+，所以在启动时，无法自动启用这个接口。在路由器重启后必须/etc/init.d/network
+restart才能工作。对我来说，每次路由器重启后都是手工开启openvpn的，问题不大。但是对于某些人就比较麻烦。对此推荐这些人直接修改/etc/firewall.user，直接加入以下指令。
+iptables -I INPUT -i tun+ -j ACCEPT iptables -I OUTPUT -o tun+ -j ACCEPT
+iptables -I FORWARD -i tun+ -j ACCEPT iptables -I FORWARD -o tun+ -j
+ACCEPT 使用interface配置的最终效果也差不多，不过比较简单整齐好理解。</p>
 
         </div>
         

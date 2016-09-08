@@ -112,15 +112,31 @@ ga('send', 'pageview');
           
           
           
-          <p>I&#39;m running a vmware-workstation under debian testing. Last week I update kernel from 2.6.32 to 2.6.38, then vmware don&#39;t work.<br />    Searching for patch with kernel modules, finally I got those.<br />    <a href="http://shell909090.org/vmware-source.tar.gz" target="_blank"><a href="http://shell909090.org/vmware-source.tar.gz">http://shell909090.org/vmware-source.tar.gz</a></a><br /></p>
-
-<p>    <a href="http://goog_2104760512" target="_blank"><a href="http://shell909090.org/">http://shell909090.org/</a></a><a href="http://vmware-7.1.2-2.6.38-1-generic.patch.gz" target="_blank">vmware-7.1.2-2.6.38-1-generic.patch.gz</a><br />     Source is tested under debian testing, but should work for all dist which use 2.6.38 as kernel. Patch is not tested.<br />    Here is how to make it.<br />#cd /usr/lib/vmware/modules/source<br />#for file in *; do tar xvf $file; done<br /></p>
-
-<p>#wget <a href="http://mib.pianetalinux.org/MIB/2010.1/others/vmware/vmware-7.1.3-2.6.38-1-generic.patch" target="_blank"><a href="http://mib.pianetalinux.org/MIB/2010.1/others/vmware/vmware-7.1.3-2.6.38-1-generic.patch">http://mib.pianetalinux.org/MIB/2010.1/others/vmware/vmware-7.1.3-2.6.38-1-generic.patch</a></a><br />#patch -p1 &lt; vmware-7.1.3-2.6.38-1-generic.patch<br /></p>
-
-<p>#vi vmmon-only/linux/iommu.c<br />//replace iommu_map_range with iommu_map and replace iommu_unmap_range with iommu_unmap<br />#wget <a href="http://communities.vmware.com/servlet/JiveServlet/download/1553530-39785/vmware-7.1-2.6.35-3-generic.patch" target="_blank"><a href="http://communities.vmware.com/servlet/JiveServlet/download/1553530-39785/vmware-7.1-2.6.35-3-generic.patch">http://communities.vmware.com/servlet/JiveServlet/download/1553530-39785/vmware-7.1-2.6.35-3-generic.patch</a></a><br /></p>
-
-<p>#patch -p1 &lt; vmware-7.1-2.6.35-3-generic.patch<br />// dont assume<br />#for file in *-only; do tar cvf <code>basename $file -only</code>.tar $file; done<br />#rm -rf *-only<br />#vmware-modconfig</p>
+          <p>I&rsquo;m running a vmware-workstation under debian testing. Last week I
+update kernel from 2.6.32 to 2.6.38, then vmware don&rsquo;t work.<br />
+    Searching for patch with kernel modules, finally I got those.<br />
+    <a href="http://shell909090.org/vmware-source.tar.gz">http://shell909090.org/vmware-source.tar.gz</a><br />
+   
+<a href="http://goog_2104760512">http://shell909090.org/</a><a href="http://vmware-7.1.2-2.6.38-1-generic.patch.gz">vmware-7.1.2-2.6.38-1-generic.patch.gz</a><br />
+    Source is tested under debian testing, but should work for all dist
+which use 2.6.38 as kernel. Patch is not tested.<br />
+    Here is how to make it.<br />
+#cd /usr/lib/vmware/modules/source<br />
+#for file in *; do tar xvf \$file; done<br />
+#wget
+<a href="http://mib.pianetalinux.org/MIB/2010.1/others/vmware/vmware-7.1.3-2.6.38-1-generic.patch">http://mib.pianetalinux.org/MIB/2010.1/others/vmware/vmware-7.1.3-2.6.38-1-generic.patch</a><br />
+#patch -p1 &lt; vmware-7.1.3-2.6.38-1-generic.patch<br />
+#vi vmmon-only/linux/iommu.c<br />
+//replace iommu_map_range with iommu_map and replace
+iommu_unmap_range with iommu_unmap<br />
+#wget
+<a href="http://communities.vmware.com/servlet/JiveServlet/download/1553530-39785/vmware-7.1-2.6.35-3-generic.patch">http://communities.vmware.com/servlet/JiveServlet/download/1553530-39785/vmware-7.1-2.6.35-3-generic.patch</a><br />
+#patch -p1 &lt; vmware-7.1-2.6.35-3-generic.patch<br />
+// dont assume<br />
+#for file in *-only; do tar cvf `basename \$file -only`.tar \$file;
+done<br />
+#rm -rf *-only<br />
+#vmware-modconfig</p>
 
         </div>
         

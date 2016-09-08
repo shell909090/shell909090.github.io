@@ -112,7 +112,128 @@ ga('send', 'pageview');
           
           
           
-          <p>&nbsp;&nbsp; &nbsp;首先，感谢zigo的大力支持，并且贡献出他的源码，我才得以完成本文。其次，技术文，该散的可以退散了。 <div>&nbsp;&nbsp; &nbsp;很多时候，我们对某些东西比较有兴趣，所以会安装一下。debian系统下最熟悉的安装系统就是dpkg了。作为debian用户，我想用deb包来安装这些东西。这样会有以下的好处：</div><div>1.便于在多个系统上重复安装。如果是源码包编译，就必须每台系统安装好环境来configure/make install了。</div><div>2.便于拆除。如果是make install，能不能拆就看你的运气了。</div>  <div>3.系统可以管理依赖。包括自动安装缺失的依赖包，以及保持依赖包的固定等。</div><div>&nbsp;&nbsp; &nbsp;关于打包，请看debian新维护人员手册（&nbsp;<a href="http://www.debian.org/doc/maint-guide/index.zh-cn.html">http://www.debian.org/doc/maint-guide/index.zh-cn.html</a>&nbsp;）。本文主要是说一下如何将这些包变成一个自己的仓库。</div>  <div>&nbsp;&nbsp; &nbsp;变成仓库，你将拥有以下好处。</div><div>1.不必自己去复制包，然后手工安装。</div><div>2.当仓库更新后，目标机器在update后可以发现。</div><div>3.你可以向仓库中加入自己定制编译的，更加新版本的软件。替换掉系统的同名软件，而不改变操作特性（除了没加key会碰到不安全提示）。</div><div>&nbsp;&nbsp; &nbsp;其实debian的主系统是一个超级大仓库，通过ftp和rsync同步提供服务。我们的包如果够重要，也会享受到这种待遇。然而debian官方仓库的要求比较严格，你必须在文件级别搞清楚每个文件的授权，并且核对这些授权是否符合dsfg协定。你的包必须足够重要，有可能的潜在用户。多数时候，我们自己写的产品/库还没有这种待遇，因此只有自己做一个仓库了。</div>  <div>&nbsp;&nbsp; &nbsp;zigo提供了他的打包代码，比我的功能全多了，大家可以参考这里（&nbsp;<a href="http://git.gplhost.com/gitweb/?p=mgmt-scripts.git;a=blob;f=scripts/scan_archive;h=db7647732b989b35ae7d8a48c80a48ecf67e4612;hb=0ff8fd7d0ba1991d552376f8beca0b46bfaa32e3">http://git.gplhost.com/gitweb/?p=mgmt-scripts.git;a=blob;f=scripts/scan_archive;h=db7647732b989b35ae7d8a48c80a48ecf67e4612;hb=0ff8fd7d0ba1991d552376f8beca0b46bfaa32e3</a>&nbsp;）。我根据这个脚本，自己实现了一个，放在这里（ <a href="http://shell909090.3322.org/debian/scan_deb.py">http://shell909090.3322.org/debian/scan_deb.py</a> ）。下面，我简述一下用法和原理。</div>  <div>&nbsp;&nbsp; &nbsp;首先，你需要建立一个pool目录。在其中建立一些release目录。举例来说，wheezy是一种release，testing也是。但是目前testing是wheezy的别名，你用ln -s做链接指向就可以了。在release目录下，你需要建立category目录。例如main是一种category，contrib和non-free也是。</div><div>&nbsp;&nbsp; &nbsp;在指定一个deb仓库的时候，release和category是必须指定的，可以被看作是一个仓库地址的一部分。</div>  <div>&nbsp;&nbsp; &nbsp;建立完三级目录后，将你的包放在对应目录下。</div><div>&nbsp;&nbsp; &nbsp;全部文件放好后，在根目录下执行python scan_deb.py。如果你需要自动签名，将最后一行的False改为True。在此前请准备好私钥。如果缺少某种架构，请修改脚本architectures一行。</div><div>&nbsp;&nbsp; &nbsp;系统的基本原理是，在某个release, category, architecture下，对于pool/release/category目录执行dpkg-scanpackages操作，生成Packages文件到dists目录下，并且再生成一个压缩版本。</div>  <div>&nbsp;&nbsp; &nbsp;对所有目录执行过操作后，使用apt-ftparchive来生成一个Release文件，这个文件指名了有哪些Packages文件，以及他们的MD5各是多少。</div><div>&nbsp;&nbsp; &nbsp;客户端获得了Release，就可以知道某种release的特定几个category是否需要更新。更新到了Package，就知道有什么包，他们的meta信息是多少。最后对Release文件进行签名，就可以防止作假了。</div><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta http-equiv="content-type" content="text/html; charset=utf-8"></p>
+          <p>首先，感谢zigo的大力支持，并且贡献出他的源码，我才得以完成本文。其次，技术文，该散的可以退散了。
+<div></p>
+
+<p>  
+ 很多时候，我们对某些东西比较有兴趣，所以会安装一下。debian系统下最熟悉的安装系统就是dpkg了。作为debian用户，我想用deb包来安装这些东西。这样会有以下的好处：</p>
+
+<p></div></p>
+
+<div>
+
+1.便于在多个系统上重复安装。如果是源码包编译，就必须每台系统安装好环境来configure/make
+install了。
+
+</div>
+
+<div>
+
+2.便于拆除。如果是make install，能不能拆就看你的运气了。
+
+</div>
+
+<div>
+
+3.系统可以管理依赖。包括自动安装缺失的依赖包，以及保持依赖包的固定等。
+
+</div>
+
+<div>
+
+  
+ 关于打包，请看debian新维护人员手册（ <http://www.debian.org/doc/maint-guide/index.zh-cn.html> ）。本文主要是说一下如何将这些包变成一个自己的仓库。
+
+</div>
+
+<div>
+
+    变成仓库，你将拥有以下好处。
+
+</div>
+
+<div>
+
+1.不必自己去复制包，然后手工安装。
+
+</div>
+
+<div>
+
+2.当仓库更新后，目标机器在update后可以发现。
+
+</div>
+
+<div>
+
+3.你可以向仓库中加入自己定制编译的，更加新版本的软件。替换掉系统的同名软件，而不改变操作特性（除了没加key会碰到不安全提示）。
+
+</div>
+
+<div>
+
+  
+ 其实debian的主系统是一个超级大仓库，通过ftp和rsync同步提供服务。我们的包如果够重要，也会享受到这种待遇。然而debian官方仓库的要求比较严格，你必须在文件级别搞清楚每个文件的授权，并且核对这些授权是否符合dsfg协定。你的包必须足够重要，有可能的潜在用户。多数时候，我们自己写的产品/库还没有这种待遇，因此只有自己做一个仓库了。
+
+</div>
+
+<div>
+
+  
+ zigo提供了他的打包代码，比我的功能全多了，大家可以参考这里（ <http://git.gplhost.com/gitweb/?p=mgmt-scripts.git;a=blob;f=scripts/scan_archive;h=db7647732b989b35ae7d8a48c80a48ecf67e4612;hb=0ff8fd7d0ba1991d552376f8beca0b46bfaa32e3> ）。我根据这个脚本，自己实现了一个，放在这里（
+<http://shell909090.3322.org/debian/scan_deb.py>
+）。下面，我简述一下用法和原理。
+
+</div>
+
+<div>
+
+  
+ 首先，你需要建立一个pool目录。在其中建立一些release目录。举例来说，wheezy是一种release，testing也是。但是目前testing是wheezy的别名，你用ln
+-s做链接指向就可以了。在release目录下，你需要建立category目录。例如main是一种category，contrib和non-free也是。
+
+</div>
+
+<div>
+
+  
+ 在指定一个deb仓库的时候，release和category是必须指定的，可以被看作是一个仓库地址的一部分。
+
+</div>
+
+<div>
+
+    建立完三级目录后，将你的包放在对应目录下。
+
+</div>
+
+<div>
+
+    全部文件放好后，在根目录下执行python
+scan\_deb.py。如果你需要自动签名，将最后一行的False改为True。在此前请准备好私钥。如果缺少某种架构，请修改脚本architectures一行。
+
+</div>
+
+<div>
+
+    系统的基本原理是，在某个release, category,
+architecture下，对于pool/release/category目录执行dpkg-scanpackages操作，生成Packages文件到dists目录下，并且再生成一个压缩版本。
+
+</div>
+
+<div>
+
+  
+ 对所有目录执行过操作后，使用apt-ftparchive来生成一个Release文件，这个文件指名了有哪些Packages文件，以及他们的MD5各是多少。
+
+</div>
+
+<div>
+
+  
+ 客户端获得了Release，就可以知道某种release的特定几个category是否需要更新。更新到了Package，就知道有什么包，他们的meta信息是多少。最后对Release文件进行签名，就可以防止作假了。
+
+</div>
 
         </div>
         

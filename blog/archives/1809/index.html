@@ -112,13 +112,24 @@ ga('send', 'pageview');
           
           
           
-          <p>讲了半天废话，都是在介绍你应该用什么应该用什么，基本没讲到中文用户最关心的一个问题，中文化和输入法。<br />    其实没讲是有原因的，因为debian的中文实在太简单了。在你安装的时候选择中国地区和中文，装出来应该就是中文的。如果不是，或者你安装的时候忘记选择了，可以先运行dpkg-reconfigure locales，出现一个很长的语言列表。其中选择中文的几项，常见的有zh_CN GBK(不推荐18030，多出来的字很少用到，生成时间极长)，zh_CN UTF-8，zh_HK UTF-8(香港地区编码，不用可以不选)，zh_TW BIG5，zh_TW UTF-8(后两者为台湾地区编码，不用可以不选)。选择好后，确定，推荐zh_CN UTF-8为默认编码。然后就是漫长的生成，完事。试试看重启后你的env | grep LANG有没有变成zh_CN.UTF-8？过去就对了，没有的话，手工修改/etc/default/locale加入也一样。其实dpkg-reconfigure locales就是修改了/etc/default/locale和/etc/locale.gen，然后locale-gen一下。<br /></p>
-
-<p>    不过这不代表你能正确的使用中文，只是你的满屏看不懂的东西变成了一堆方块而已。因为，你还没装字体。当linux不支持该种语言的时候，出现的是满屏的乱码。如果支持了但是没有字体，则是一个个方块。下面是我常用的一堆字体，保证不含windows，大家可以选择自己喜欢的用。ttf-arphic-bkai00mp，ttf-arphic-bsmi00lp，ttf-arphic-gbsn00lp，ttf-arphic-gkai00mp，ttf-arphic-ukai，ttf-arphic-uming，ttf-wqy-zenhei。其中最后一个就是赫赫有名的文泉驿正黑。安装方法都很简单，aptitude install就好。如果你还不满足，非要自己安装字体。那就在/usr/share/fonts下面新建个目录，把你的字体复制进去（符号链接也可以），然后在这个目录中运行mkfontscale，mkfontdir。全局运行fc-cache。<br /></p>
-
-<p>    OK，中文支持快走到最后一步了。你现在应该可以看到满屏的中文，可是，可是——你还什么都输入不进去。恩，没装输入法吧。debian的特点是什么东西都是自己来装，而不是系统帮你装好。所以，你需要自己装输入法。简体中文而言，比较流行的有三种，fcitx（传说中的小企鹅），scim，ibus。下面就要根据你的具体配置选择了。ibus是我用过的比较好的输入法，但是相对比较费cpu，在低端机器（例如netbook）上老是丢字，scim对这种情况略好些。如果你安装了一个以上，可能你还需要im-switch来切换输入法。这个软件会调整/etc/alternatives/xinput-zh_CN的链接指向，这是debian的alternative系统，细节不说。<br /></p>
-
-<p>    另外说一句额外的提示，做完上面的步骤，你应当可以阅读和输入中文，但是你看到的软件还是满眼的鸟语，对不对？这是因为软件的语言在软件书写的时候就确定了，他不会随着你的内容改变而改变。但是这并不是说常见软件没有中文版。例如你安装一下iceweasel-l10n-zh-cn这个包，再跑iceweasel (firefox)看看？<br /></p>
+          <p>讲了半天废话，都是在介绍你应该用什么应该用什么，基本没讲到中文用户最关心的一个问题，中文化和输入法。<br />
+   
+其实没讲是有原因的，因为debian的中文实在太简单了。在你安装的时候选择中国地区和中文，装出来应该就是中文的。如果不是，或者你安装的时候忘记选择了，可以先运行dpkg-reconfigure
+locales，出现一个很长的语言列表。其中选择中文的几项，常见的有zh_CN
+GBK(不推荐18030，多出来的字很少用到，生成时间极长)，zh_CN UTF-8，zh_HK
+UTF-8(香港地区编码，不用可以不选)，zh_TW BIG5，zh_TW
+UTF-8(后两者为台湾地区编码，不用可以不选)。选择好后，确定，推荐zh_CN
+UTF-8为默认编码。然后就是漫长的生成，完事。试试看重启后你的env | grep
+LANG有没有变成zh_CN.UTF-8？过去就对了，没有的话，手工修改/etc/default/locale加入也一样。其实dpkg-reconfigure
+locales就是修改了/etc/default/locale和/etc/locale.gen，然后locale-gen一下。<br />
+   
+不过这不代表你能正确的使用中文，只是你的满屏看不懂的东西变成了一堆方块而已。因为，你还没装字体。当linux不支持该种语言的时候，出现的是满屏的乱码。如果支持了但是没有字体，则是一个个方块。下面是我常用的一堆字体，保证不含windows，大家可以选择自己喜欢的用。ttf-arphic-bkai00mp，ttf-arphic-bsmi00lp，ttf-arphic-gbsn00lp，ttf-arphic-gkai00mp，ttf-arphic-ukai，ttf-arphic-uming，ttf-wqy-zenhei。其中最后一个就是赫赫有名的文泉驿正黑。安装方法都很简单，aptitude
+install就好。如果你还不满足，非要自己安装字体。那就在/usr/share/fonts下面新建个目录，把你的字体复制进去（符号链接也可以），然后在这个目录中运行mkfontscale，mkfontdir。全局运行fc-cache。<br />
+   
+OK，中文支持快走到最后一步了。你现在应该可以看到满屏的中文，可是，可是——你还什么都输入不进去。恩，没装输入法吧。debian的特点是什么东西都是自己来装，而不是系统帮你装好。所以，你需要自己装输入法。简体中文而言，比较流行的有三种，fcitx（传说中的小企鹅），scim，ibus。下面就要根据你的具体配置选择了。ibus是我用过的比较好的输入法，但是相对比较费cpu，在低端机器（例如netbook）上老是丢字，scim对这种情况略好些。如果你安装了一个以上，可能你还需要im-switch来切换输入法。这个软件会调整/etc/alternatives/xinput-zh_CN的链接指向，这是debian的alternative系统，细节不说。<br />
+   
+另外说一句额外的提示，做完上面的步骤，你应当可以阅读和输入中文，但是你看到的软件还是满眼的鸟语，对不对？这是因为软件的语言在软件书写的时候就确定了，他不会随着你的内容改变而改变。但是这并不是说常见软件没有中文版。例如你安装一下iceweasel-l10n-zh-cn这个包，再跑iceweasel
+(firefox)看看？</p>
 
         </div>
         

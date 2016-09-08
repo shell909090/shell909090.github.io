@@ -16,15 +16,18 @@
       <pubDate>Thu, 08 May 2014 16:41:25 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2627/</guid>
-      <description>&lt;p&gt;goproxy是我个人写的，和shadowsocks同类的软件。当然，在设计之初我完全不知道shadowsocks的存在，goproxy的最初目标也不是成为shadowsocks的同类。只是我一直无法实现一个可靠的，能够达成目标的系统。最后想，那这样吧，我找一个跳一跳能够够到的苹果。大幅简化的结果就是goproxy——后来我才知道shadowsocks。&lt;/p&gt;
+      <description>
 
-&lt;h1&gt;shadowsocks的基本原理&lt;/h1&gt;
+&lt;p&gt;goproxy是我个人写的，和shadowsocks同类的软件。当然，在设计之初我完全不知道shadowsocks的存在，goproxy的最初目标也不是成为shadowsocks的同类。只是我一直无法实现一个可靠的，能够达成目标的系统。最后想，那这样吧，我找一个跳一跳能够够到的苹果。大幅简化的结果就是goproxy——后来我才知道shadowsocks。&lt;/p&gt;
+
+&lt;h1 id=&#34;shadowsocks的基本原理&#34;&gt;shadowsocks的基本原理&lt;/h1&gt;
 
 &lt;p&gt;shadowsocks的基本概念，就是利用某种不同于SSL的协议，将本地的socks数据流转发到远程。这个协议，在默认版本中是一个凯撒变换，后来有了aes等加密算法。goproxy也采用了类似的做法，同样支持aes等加密算法。在每次连接时，客户端先用加密通道连接服务器端，然后完成整个连接通路。这样的设计鲁棒性相当好，但是作为代价的，也有不少缺陷。&lt;/p&gt;
 
 &lt;p&gt;首先，goproxy和shadowsocks不约而同的采用了自己的协议，而非将socks5透明的转发到远程的服务器端。为什么？因为socksv5协议中，握手过程是三次交互。客户发送握手包，服务器响应允许的握手验证方法。客户发送验证报文，服务器端返回是否成功，客户发送要连接的目标，服务器端返回是否成功。细节我记得不是很清楚，但是2-3次往返是必须的。&lt;/p&gt;
 
-&lt;p&gt;这种工作机制需要client -&gt; proxy-client -&gt; proxy-server -&gt; server的一个链条，本身就比直连多了两次TCP握手。加上上述的往返过程，更加耗时。而且这个消耗在每次建立链接时都要来一次，而HTTP是一种短连接协议——这就更加无法容忍了。因此改用自有协议，一次交互完成握手，就会更加快速。&lt;/p&gt;
+&lt;p&gt;这种工作机制需要client -&amp;gt; proxy-client -&amp;gt; proxy-server -&amp;gt;
+server的一个链条，本身就比直连多了两次TCP握手。加上上述的往返过程，更加耗时。而且这个消耗在每次建立链接时都要来一次，而HTTP是一种短连接协议——这就更加无法容忍了。因此改用自有协议，一次交互完成握手，就会更加快速。&lt;/p&gt;
 
 &lt;p&gt;更根本的原因在于，这两个系统都需要越过IDS，而三次交互的报文大小是几乎固定的——就算加密也无法改变报文大小。不但大小一样，而且由于用户名密码相同，起始加密过程和IV一致，因此采用socks协议的话，每个链接开始都有相同的来返数据。&lt;/p&gt;
 
@@ -34,7 +37,7 @@
 
 &lt;p&gt;而且每个链接都需要验证和TCP握手太慢了。&lt;/p&gt;
 
-&lt;h1&gt;msocks的改进&lt;/h1&gt;
+&lt;h1 id=&#34;msocks的改进&#34;&gt;msocks的改进&lt;/h1&gt;
 
 &lt;p&gt;所以，我参考SPDY协议，做了msocks。msocks的核心思路和qsocks很类似，主要修改是以下两点：&lt;/p&gt;
 
@@ -49,15 +52,16 @@
 
 &lt;p&gt;协议设计的时候，有几个细节问题。&lt;/p&gt;
 
-&lt;h1&gt;多对复用&lt;/h1&gt;
+&lt;h1 id=&#34;多对复用&#34;&gt;多对复用&lt;/h1&gt;
 
 &lt;p&gt;我采用了一个map，来记录某个id是否对应到了一个控制结构。这个映射只能被客户端更改，并且有个专门的函数负责查找空闲的id，每次生成的id都是递增的，如果碰到最大值则绕回。&lt;/p&gt;
 
-&lt;p&gt;id的大小是16位，足够容纳65536对同时链接。其实不修改内核的话，500对代理就会导致too many files。&lt;/p&gt;
+&lt;p&gt;id的大小是16位，足够容纳65536对同时链接。其实不修改内核的话，500对代理就会导致too
+many files。&lt;/p&gt;
 
 &lt;p&gt;实际上一般到id达到400后，单一的tcp就断线重连了。目前我还没见过上千的数字呢。&lt;/p&gt;
 
-&lt;h1&gt;连接状态&lt;/h1&gt;
+&lt;h1 id=&#34;连接状态&#34;&gt;连接状态&lt;/h1&gt;
 
 &lt;p&gt;连接一般情况下可以看到5种状态，连接请求发送，连接请求接收，连接建立，主动关闭连接中，被动关闭连接中。&lt;/p&gt;
 
@@ -69,13 +73,14 @@
 
 &lt;p&gt;简单吧。&lt;/p&gt;
 
-&lt;h1&gt;拥塞控制&lt;/h1&gt;
+&lt;h1 id=&#34;拥塞控制&#34;&gt;拥塞控制&lt;/h1&gt;
 
 &lt;p&gt;TCP原本是带有拥塞控制的——借助SSN双序列和窗口机制。但是在多路复用的时候，我们需要自行控制拥塞——而且不能采用会和机制。会和会导致后续已经到达的其他链接的报文被一个没人接收的报文阻挡。所以必须采用带拥塞控制的缓存队列机制。&lt;/p&gt;
 
 &lt;p&gt;不过幸好，TCP本身是可靠传输协议，所以我不用担心丢包重发之类的问题。我需要做的，就是把对方读取的字节数传递回来，减在控制器上，即可。&lt;/p&gt;
 
-&lt;p&gt;不过，我没有做对应于silly window syndrome的优化，在每次读取小数据量后，这个读取造成的window扩张都会被传回。当然，这么设计是有原因的。我默认采用了8K的buffer进行fd间拷贝，所以一般碰不到SWS。&lt;/p&gt;
+&lt;p&gt;不过，我没有做对应于silly window
+syndrome的优化，在每次读取小数据量后，这个读取造成的window扩张都会被传回。当然，这么设计是有原因的。我默认采用了8K的buffer进行fd间拷贝，所以一般碰不到SWS。&lt;/p&gt;
 
 &lt;p&gt;为了解决tcp链接复用造成的单连接带宽问题，我强烈的建议你做以下的设定：&lt;/p&gt;
 
@@ -88,7 +93,7 @@ net.ipv4.tcp_rmem = 4096    2621440 16777216
 net.ipv4.tcp_wmem = 4096    655360  16777216
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h1&gt;ip选择算法和DNS&lt;/h1&gt;
+&lt;h1 id=&#34;ip选择算法和dns&#34;&gt;ip选择算法和DNS&lt;/h1&gt;
 
 &lt;p&gt;在goproxy中，我沿用了一个做法。通过DNS获得请求的目标IP，和中国IP范围核对。如果在国内则直接访问，否则透过代理。这个方法能够极快的加速访问，而且几乎不依赖于需要更新的列表（中国IP列表相对来说固定）。&lt;/p&gt;
 
@@ -96,13 +101,14 @@ net.ipv4.tcp_wmem = 4096    655360  16777216
 
 &lt;p&gt;原因很简单。原本的模式会让DNS服务器感知到查询者位于中国，于是给出中国可以访问的最快地址。而新的模式则会将DNS请求者搬到美国——这无故加重了代理的负担。例如www.qq.com，原本只需要请求得到一台深圳的服务器即可，现在则需要让DNS绕出去，再回来。如果不幸，QQ有一台位于美国的服务器，那么我的访问都会通过这台服务器——这可比深圳的服务器慢多了。&lt;/p&gt;
 
-&lt;h1&gt;地址&lt;/h1&gt;
+&lt;h1 id=&#34;地址&#34;&gt;地址&lt;/h1&gt;
 
 &lt;p&gt;抱歉刚刚忘记写地址了：&lt;/p&gt;
 
 &lt;p&gt;&lt;a href=&#34;https://github.com/shell909090/goproxy&#34;&gt;goproxy&lt;/a&gt;&lt;/p&gt;
 
-&lt;p&gt;debian/ubuntu安装包：&lt;a href=&#34;http://xuzhixiang.u.qiniudn.com/program/goproxy_2.1.2_amd64.deb&#34;&gt;amd64&lt;/a&gt; &lt;a href=&#34;http://xuzhixiang.u.qiniudn.com/program/goproxy_2.1.2_i386.deb&#34;&gt;i386&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;debian/ubuntu安装包：&lt;a href=&#34;http://xuzhixiang.u.qiniudn.com/program/goproxy_2.1.2_amd64.deb&#34;&gt;amd64&lt;/a&gt;
+&lt;a href=&#34;http://xuzhixiang.u.qiniudn.com/program/goproxy_2.1.2_i386.deb&#34;&gt;i386&lt;/a&gt;&lt;/p&gt;
 </description>
     </item>
     
@@ -112,11 +118,14 @@ net.ipv4.tcp_wmem = 4096    655360  16777216
       <pubDate>Wed, 15 Jan 2014 10:53:20 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2536/</guid>
-      <description>&lt;h1&gt;说明&lt;/h1&gt;
+      <description>
+
+&lt;h1 id=&#34;说明&#34;&gt;说明&lt;/h1&gt;
 
 &lt;p&gt;测试都是ab做的，中等并发量，统一采用10000并发，100000个请求。都是本机请求本机，避免公司内网IDS的干扰。&lt;/p&gt;
 
-&lt;p&gt;机器是一台双核CPU的DELL：Intel(R) Pentium(R) CPU G2030 @ 3.00GHz。配4G内存。&lt;/p&gt;
+&lt;p&gt;机器是一台双核CPU的DELL：Intel&amp;reg; Pentium&amp;reg; CPU G2030 @
+3.00GHz。配4G内存。&lt;/p&gt;
 
 &lt;p&gt;第一组数据是ab测试nginx，nginx的配置如下：&lt;/p&gt;
 
@@ -141,10 +150,10 @@ http {
 
 &lt;p&gt;第三组是ab测试golang，返回某个目录或文件。&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;err := http.ListenAndServe(&#34;:8080&#34;, http.FileServer(http.Dir(&#34;/home/shell/photo&#34;)))
+&lt;pre&gt;&lt;code&gt;err := http.ListenAndServe(&amp;quot;:8080&amp;quot;, http.FileServer(http.Dir(&amp;quot;/home/shell/photo&amp;quot;)))
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h1&gt;nginx&lt;/h1&gt;
+&lt;h1 id=&#34;nginx&#34;&gt;nginx&lt;/h1&gt;
 
 &lt;pre&gt;&lt;code&gt;Concurrency Level:      10000
 Time taken for tests:   5.720 seconds
@@ -177,7 +186,7 @@ Percentage of the requests served within a certain time (ms)
  100%   3558 (longest request)
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h1&gt;golang with string&lt;/h1&gt;
+&lt;h1 id=&#34;golang-with-string&#34;&gt;golang with string&lt;/h1&gt;
 
 &lt;pre&gt;&lt;code&gt;Concurrency Level:      10000
 Time taken for tests:   5.147 seconds
@@ -210,7 +219,7 @@ Percentage of the requests served within a certain time (ms)
  100%   4653 (longest request)
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h1&gt;golang with file&lt;/h1&gt;
+&lt;h1 id=&#34;golang-with-file&#34;&gt;golang with file&lt;/h1&gt;
 
 &lt;pre&gt;&lt;code&gt;Concurrency Level:      10000
 Time taken for tests:   8.122 seconds
@@ -244,7 +253,7 @@ Percentage of the requests served within a certain time (ms)
  100%   8086 (longest request)
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h1&gt;分析&lt;/h1&gt;
+&lt;h1 id=&#34;分析&#34;&gt;分析&lt;/h1&gt;
 
 &lt;p&gt;从rps来看，三者都达到了10Krps的级别以上，而且差距很小。golang在没有逻辑的情况下比nginx还要快11%，但是加入逻辑后反而落后30%（这不奇怪）。三者差距都在50%以内，基本属于同一个数量级。&lt;/p&gt;
 
