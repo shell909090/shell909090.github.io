@@ -1335,221 +1335,58 @@ __name__ ==
       <pubDate>Mon, 22 Nov 2010 09:29:00 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/1618/</guid>
-      <description>&lt;p&gt;我假定你了解hg，了解python，理解nginx或者其他cgi/fcgi的配置过程。现在想用http发布自己的mercurial仓库，而且可能发布一群，怎么操作呢？
-&lt;div&gt;&lt;/p&gt;
+      <description>&lt;p&gt;我假定你了解hg，了解python，理解nginx或者其他cgi/fcgi的配置过程。现在想用http发布自己的mercurial仓库，而且可能发布一群，怎么操作呢？&lt;/p&gt;
 
-&lt;p&gt;  
- 首先，复制模板文件过来，你可以挑选其中之一。以下是debian的文件位置，其他发布请自行查询。&lt;/p&gt;
+&lt;p&gt;首先，复制模板文件过来，你可以挑选其中之一。以下是debian的文件位置，其他发布请自行查询。&lt;/p&gt;
 
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
-
-&lt;div&gt;
-
-&lt;div&gt;
-
-/usr/share/doc/mercurial-common/examples/hgweb.wsgi
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
+&lt;pre&gt;&lt;code&gt;/usr/share/doc/mercurial-common/examples/hgweb.wsgi
 /usr/share/doc/mercurial-common/examples/hgweb.fcgi
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
 /usr/share/doc/mercurial-common/examples/hgweb.cgi
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;/div&gt;
+&lt;p&gt;我使用nginx+fastcgi模式部署，因此复制了hgweb.fcgi。我假定你的仓库在~/hg下面，有很多子仓库。复制hgweb.fcgi到~/hg/下，改名为hgweb.py，并修改以下两行。&lt;/p&gt;
 
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
-
-&lt;div&gt;
-
-  
- 我使用nginx+fastcgi模式部署，因此复制了hgweb.fcgi。我假定你的仓库在\~/hg下面，有很多子仓库。复制hgweb.fcgi到\~/hg/下，改名为hgweb.py，并修改以下两行。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-config = &#34;/path/to/you/config&#34;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
+&lt;pre&gt;&lt;code&gt;config = &amp;quot;/path/to/you/config&amp;quot;
 WSGIServer(application, bindAddress=&#39;hgweb.sock&#39;).run()
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;/div&gt;
+&lt;p&gt;其中bindAddress为你需要监听的unixsocket路径，没有前缀表示在当前目录生成。而后建立配置文件，大概为以下内容。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;pre&gt;&lt;code&gt;[web]
+allow_push = someone
+push_ssl = false
 
-  
- 其中bindAddress为你需要监听的unixsocket路径，没有前缀表示在当前目录生成。而后建立配置文件，大概为以下内容。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;div&gt;
-
-\[web\]
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-allow\_push = someone
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-push\_ssl = false
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\[paths\]
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
+[paths]
 /hg/proj1=/path/to/proj1
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
 /hg/proj2=/path/to/proj2
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;/div&gt;
+&lt;p&gt;以上就完成了hgweb的服务配置，/hg/proj1是你的url映射路径，/path/to/proj1是物理路径。someone是允许进行push的人，而push_ssl是允许http推送。而后，启动服务。&lt;/p&gt;
 
-&lt;div&gt;
-
-  
- 以上就完成了hgweb的服务配置，/hg/proj1是你的url映射路径，/path/to/proj1是物理路径。someone是允许进行push的人，而push\_ssl是允许http推送。而后，启动服务。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-python hgweb.py &amp;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
+&lt;pre&gt;&lt;code&gt;python hgweb.py &amp;amp;
 chmod 666 hgweb.sock
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;/div&gt;
+&lt;p&gt;注意，这里要用screen之类的程序来启动hgweb，否则term关闭后服务进程停止，就没的玩了。修改权限是因为debian下的nginx使用www-data运行，对/home/user/hg没有读写权限，导致无法使用unixsock。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;在nginx中做以下配置。&lt;/p&gt;
 
-  
- 注意，这里要用screen之类的程序来启动hgweb，否则term关闭后服务进程停止，就没的玩了。修改权限是因为debian下的nginx使用www-data运行，对/home/user/hg没有读写权限，导致无法使用unixsock。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    在nginx中做以下配置。
-
-&lt;/div&gt;
-
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
-
-&lt;div&gt;
-
-&lt;div&gt;
-
-&lt;div&gt;
-
-location \^\~ /hg/ {
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    limit\_except GET {
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-        auth\_basic &#34;Restricted&#34;;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-        auth\_basic\_user\_file /home/user/hg/users;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    }
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    fastcgi\_pass   unix:/home/user/hg/hgweb.sock;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    include fastcgi\_params;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
+&lt;pre&gt;&lt;code&gt;location ^~ /hg/ {
+    limit_except GET {
+        auth_basic &amp;quot;Restricted&amp;quot;;
+        auth_basic_user_file /home/user/hg/users;
+    }
+    fastcgi_pass unix:/home/user/hg/hgweb.sock;
+    include fastcgi_params;
 }
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;/div&gt;
+&lt;p&gt;如果你不需要auth，可以自行参照nginx的配置修改。其他web服务器以此类推。重启服务后，&lt;a href=&#34;http://domains/hg/proj1&#34;&gt;http://domains/hg/proj1&lt;/a&gt; 就可以访问到proj1了。&lt;/p&gt;
 
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
+&lt;p&gt;当然，其实最后还要提一句，如果你不需要web界面，可以直接设定将文件内容直接发出去，这样也是可以做pull/push的。&lt;/p&gt;
 
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
-
-&lt;div&gt;
-
-  
- 如果你不需要auth，可以自行参照nginx的配置修改。其他web服务器以此类推。重启服务后，&lt;http://domains/hg/proj1&gt;就可以访问到proj1了。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-  
- 当然，其实最后还要提一句，如果你不需要web界面，可以直接设定将文件内容直接发出去，这样也是可以做pull/push的。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-参考：
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;http://mercurial.selenic.com/wiki/PublishingRepositories&gt;
-
-&lt;/div&gt;
+&lt;p&gt;参考：
+&lt;a href=&#34;http://mercurial.selenic.com/wiki/PublishingRepositories&#34;&gt;http://mercurial.selenic.com/wiki/PublishingRepositories&lt;/a&gt;&lt;/p&gt;
 </description>
     </item>
     

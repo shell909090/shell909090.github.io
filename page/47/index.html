@@ -219,7 +219,7 @@ ga('send', 'pageview');
 
 
         
-          <p>大家看看下面的代码在什么情况下才会出错？情况很特殊，想自己思考的不要先看第二段。 if ton in self.ftol: self.ftol.remove(ton) ftol是一个list，报出的错误是ValueError。经过上文的打印，赫然发现——self.ftol中真的没有ton！ \ \ \ 好吧，我们揭秘谜底。 ton是TimeoutObject类型，这种类型的对象通常放在一个list中进行堆排序，来确定最早的一个timeout对象。为了实现堆排序，我使用了heapq。而为了heapq是没有key或者是cmp参数的，因此我重载了TimeoutObject.\_\_cmp\_\_对象。然而根据python源码，list对象在进行in计算，以及基于in的remove计算的时候，\_\_cmp\_\_先于内置算法，内置算法先于id相同。因此，in函数在进行对象是否在列表中的计算的时候，实际上使用的是一个比较函数...这肯定无疑的会导致乱糟糟的结果。 为了解决这个问题，我又重载了\_\_eq\_\_函数，定义为self is o。问题立刻解决了。 之所以python内置的算法，会定义\_\_cmp\_\_先于内置算法，内置算法先于id相同，是因为有很多对象需要人工定义比较算法。如果id相同优先，那么这种自定义的能力将无法实现。然而为了in算符中为何会调用\_\_cmp\_\_，只能说是一个不解之谜。</p>
+          <p>大家看看下面的代码在什么情况下才会出错？情况很特殊，想自己思考的不要先看第二段。 if ton in self.ftol: self.ftol.remove(ton) ftol是一个list，报出的错误是ValueError。经过上文的打印，赫然发现——self.ftol中真的没有ton！ 好吧，我们揭秘谜底。 ton是TimeoutObject类型，这种类型的对象通常放在一个list中进行堆排序，来确定最早的一个timeout对象。为了实现堆排序，我使用了heapq。而为了heapq是没有key或者是cmp参数的，因此我重载了TimeoutObject.__cmp__对象。然而根据python源码，list对象在进行in计算，以及基于in的remove计算的时候，__cmp__先于内置算法，内置算法先于id相同。因此，in函数在进行对象是否在列表中的计算的时候，实际上使用的是一个比较函数&hellip;这肯定无疑的会导致乱糟糟的结果。 为了解决这个问题，我又重载了__eq__函数，定义为self is o。问题立刻解决了。 之所以python内置的算法，会定义__cmp__先于内置算法，内置算法先于id相同，是因为有很多对象需要人工定义比较算法。如果id相同优先，那么这种自定义的能力将无法实现。然而为了in算符中为何会调用__cmp__，只能说是一个不解之谜。</p>
 
           
 
@@ -246,7 +246,7 @@ ga('send', 'pageview');
 
 
         
-          <p>今天看看笔记本电池，突然想知道一下还有多少容量（不是还剩多少电，那个可以通过windows直接看到）。于是需要找一款笔记本电池查看软件。 我上网搜了一下&rdquo;笔记本 电池 软件&rdquo;（一开始就没去baidu，刚刚查了一下，果然满屏幕卖电池和讲电池保养方案的），出来了很多中文网页。我看了看地址，是google.com.hk。 再看看这些软件，仔细看看他们的广告词，说的天花乱坠。我不由有点担心，这台电脑可不是linux，要是中毒还是挺麻烦的。 罢了，还是找[google.com/ncr](http://google.com/ncr)去搜一下battery status吧。找个外国软件虽然比较难用，不过基本不用担心里面有木马病毒什么的。 做人要做到这么招人恨也挺不容易的，明明还什么都没干呢，怀疑已经先来了。对比某些国家和地区在某个事件上的处境，我觉得不容易的人不少。</p>
+          <p>今天看看笔记本电池，突然想知道一下还有多少容量（不是还剩多少电，那个可以通过windows直接看到）。于是需要找一款笔记本电池查看软件。 我上网搜了一下&rdquo;笔记本 电池软件&rdquo;（一开始就没去baidu，刚刚查了一下，果然满屏幕卖电池和讲电池保养方案的），出来了很多中文网页。我看了看地址，是google.com.hk。 再看看这些软件，仔细看看他们的广告词，说的天花乱坠。我不由有点担心，这台电脑可不是linux，要是中毒还是挺麻烦的。 罢了，还是找google.com/ncr去搜一下battery status吧。找个外国软件虽然比较难用，不过基本不用担心里面有木马病毒什么的。 做人要做到这么招人恨也挺不容易的，明明还什么都没干呢，怀疑已经先来了。对比某些国家和地区在某个事件上的处境，我觉得不容易的人不少。</p>
 
           
 
@@ -273,7 +273,7 @@ ga('send', 'pageview');
 
 
         
-          <p>我假定你了解hg，了解python，理解nginx或者其他cgi/fcgi的配置过程。现在想用http发布自己的mercurial仓库，而且可能发布一群，怎么操作呢？ 首先，复制模板文件过来，你可以挑选其中之一。以下是debian的文件位置，其他发布请自行查询。 /usr/share/doc/mercurial-common/examples/hgweb.wsgi /usr/share/doc/mercurial-common/examples/hgweb.fcgi /usr/share/doc/mercurial-common/examples/hgweb.cgi 我使用nginx+fastcgi模式部署，因此复制了hgweb.fcgi。我假定你的仓库在\~/hg下面，有很多子仓库。复制hgweb.fcgi到\~/hg/下，改名为hgweb.py，并修改以下两行。 config = "/path/to/you/config" WSGIServer(application, bindAddress='hgweb.sock').run() 其中bindAddress为你需要监听的unixsocket路径，没有前缀表示在当前目录生成。而后建立配置文件，大概为以下内容。 \[web\] allow\_push = someone push\_ssl = false \ \[paths\] /hg/proj1=/path/to/proj1 /hg/proj2=/path/to/proj2 以上就完成了hgweb的服务配置，/hg/proj1是你的url映射路径，/path/to/proj1是物理路径。someone是允许进行push的人，而push\_ssl是允许http推送。而后，启动服务。 python hgweb.py & chmod 666 hgweb.sock 注意，这里要用screen之类的程序来启动hgweb，否则term关闭后服务进程停止，就没的玩了。修改权限是因为debian下的nginx使用www-data运行，对/home/user/hg没有读写权限，导致无法使用unixsock。 在nginx中做以下配置。 location \^\~ /hg/ { limit\_except GET { auth\_basic "Restricted"; auth\_basic\_user\_file /home/user/hg/users; } fastcgi\_pass unix:/home/user/hg/hgweb.sock; include fastcgi\_params; } 如果你不需要auth，可以自行参照nginx的配置修改。其他web服务器以此类推。重启服务后，就可以访问到proj1了。 当然，其实最后还要提一句，如果你不需要web界面，可以直接设定将文件内容直接发出去，这样也是可以做pull/push的。 参考：</p>
+          <p>我假定你了解hg，了解python，理解nginx或者其他cgi/fcgi的配置过程。现在想用http发布自己的mercurial仓库，而且可能发布一群，怎么操作呢？ 首先，复制模板文件过来，你可以挑选其中之一。以下是debian的文件位置，其他发布请自行查询。 /usr/share/doc/mercurial-common/examples/hgweb.wsgi /usr/share/doc/mercurial-common/examples/hgweb.fcgi /usr/share/doc/mercurial-common/examples/hgweb.cgi 我使用nginx+fastcgi模式部署，因此复制了hgweb.fcgi。我假定你的仓库在~/hg下面，有很多子仓库。复制hgweb.fcgi到~/hg/下，改名为hgweb.py，并修改以下两行。 config = &quot;/path/to/you/config&quot; WSGIServer(application, bindAddress='hgweb.sock').run() 其中bindAddress为你需要监听的unixsocket路径，没有前缀表示在当前目录生成。而后建立配置文件，大概为以下内容。 [web] allow_push = someone push_ssl = false [paths] /hg/proj1=/path/to/proj1 /hg/proj2=/path/to/proj2 以上就完成了hgweb的服务配置，/hg/proj1是你的url映射路径，/path/to/proj1是物理路径。someone是允许进行push的人，而push_ssl是允许http推送。而后，启动服务。 python hgweb.py &amp; chmod 666 hgweb.sock 注意，这里要用screen之类的程序来启动hgweb，否则term关闭后服务进程停止，就没的玩了。修改权限是因为debian下的nginx使用www-data运行，对/home/user/hg没有读写权限，导致无法使用unixsock。 在nginx中做以下配置。 location ^~ /hg/ { limit_except GET { auth_basic &quot;Restricted&quot;; auth_basic_user_file /home/user/hg/users; } fastcgi_pass unix:/home/user/hg/hgweb.sock; include fastcgi_params; } 如果你不需要auth，可以自行参照nginx的配置修改。其他web服务器以此类推。重启服务后，http://domains/hg/proj1 就可以访问到proj1了。 当然，其实最后还要提一句，如果你不需要web界面，可以直接设定将文件内容直接发出去，这样也是可以做pull/push的。 参考： http://mercurial.selenic.com/wiki/PublishingRepositories</p>
 
           
 

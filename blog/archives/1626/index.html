@@ -112,64 +112,21 @@ ga('send', 'pageview');
           
           
           
-          <p>大家看看下面的代码在什么情况下才会出错？情况很特殊，想自己思考的不要先看第二段。
-<div></p>
+          <p>大家看看下面的代码在什么情况下才会出错？情况很特殊，想自己思考的不要先看第二段。</p>
 
-<p>    if ton in self.ftol: self.ftol.remove(ton)</p>
+<pre><code>if ton in self.ftol:
+    self.ftol.remove(ton)
+</code></pre>
 
-<p></div></p>
+<p>ftol是一个list，报出的错误是ValueError。经过上文的打印，赫然发现——self.ftol中真的没有ton！</p>
 
-<div>
+<p>好吧，我们揭秘谜底。</p>
 
-  
- ftol是一个list，报出的错误是ValueError。经过上文的打印，赫然发现——self.ftol中真的没有ton！
+<p>ton是TimeoutObject类型，这种类型的对象通常放在一个list中进行堆排序，来确定最早的一个timeout对象。为了实现堆排序，我使用了heapq。而为了heapq是没有key或者是cmp参数的，因此我重载了TimeoutObject.__cmp__对象。然而根据python源码，list对象在进行in计算，以及基于in的remove计算的时候，__cmp__先于内置算法，内置算法先于id相同。因此，in函数在进行对象是否在列表中的计算的时候，实际上使用的是一个比较函数&hellip;这肯定无疑的会导致乱糟糟的结果。</p>
 
-</div>
+<p>为了解决这个问题，我又重载了__eq__函数，定义为self is o。问题立刻解决了。</p>
 
-<div>
-
-\
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-    好吧，我们揭秘谜底。
-
-</div>
-
-<div>
-
-  
- ton是TimeoutObject类型，这种类型的对象通常放在一个list中进行堆排序，来确定最早的一个timeout对象。为了实现堆排序，我使用了heapq。而为了heapq是没有key或者是cmp参数的，因此我重载了TimeoutObject.\_\_cmp\_\_对象。然而根据python源码，list对象在进行in计算，以及基于in的remove计算的时候，\_\_cmp\_\_先于内置算法，内置算法先于id相同。因此，in函数在进行对象是否在列表中的计算的时候，实际上使用的是一个比较函数...这肯定无疑的会导致乱糟糟的结果。
-
-</div>
-
-<div>
-
-    为了解决这个问题，我又重载了\_\_eq\_\_函数，定义为self is
-o。问题立刻解决了。
-
-</div>
-
-<div>
-
-  
- 之所以python内置的算法，会定义\_\_cmp\_\_先于内置算法，内置算法先于id相同，是因为有很多对象需要人工定义比较算法。如果id相同优先，那么这种自定义的能力将无法实现。然而为了in算符中为何会调用\_\_cmp\_\_，只能说是一个不解之谜。
-
-</div>
+<p>之所以python内置的算法，会定义__cmp__先于内置算法，内置算法先于id相同，是因为有很多对象需要人工定义比较算法。如果id相同优先，那么这种自定义的能力将无法实现。然而为了in算符中为何会调用__cmp__，只能说是一个不解之谜。</p>
 
         </div>
         
