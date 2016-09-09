@@ -99,6 +99,33 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/181/">KaKa的家</a>
+    </h1>
+    <p class="meta">Jun 23, 2005
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/181/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>昨天KaKa带我们去了她的家，我们终于见到了传说中的KaKa的父亲。果然能喝，居然要求男生两杯女生一杯，点名要求我三杯。幸好后来有事，把这个事情给揭了过去，否则我就回不来了…… 对KaKa家的第三印象，好大，第二印象，环境好漂亮，第一印象，蚊子好多……晚上睡觉的时候没有被子也没有枕头，放我们在外面就是喂蚊子的。幸好小费买了瓶蚊补丁，打上后果然稳定多了……不是不是……是蚊子少多了。早上给大班叫起来，发现三个女生通宵到七点半。汗……好恐怖的精力，贝壳是困了就要睡觉了。 孙大班的家啥都好，就是路远了点（当然，蚊子也多了点……）。从学校过去是两个多钟头，偶跑回自己家又用了两个钟头，加上去学校的两个钟头，可以证明，三者形成等边三角型。贝壳出来的时候，孙大班还特意嘱咐在对面乘车。结果贝壳是属蚂蚁的，先爬会熟悉的地头，再走熟悉的路线。特意开回南汇，然后一部班车到家。省却不少麻烦，就是乘车时间稍微长了点。 昨天晚上喝酒当中不知道怎么提到的（好像是杨文卓喝酒不喝酒弄出来的），袁乐突然发神经，要在毕业一周内结婚，预定时间是七月一号，因为是党的生日。各位各位，如果我们全班没有被耍的话，七一贝壳就要去重庆玩两天了。虽然临近答辩，老师催的很紧的说。这些都不重要，但是……但是……但是我的钱包啊……负债已经一千五百了，再下去毕业前就要预支一个月的薪水了。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/180/">大教堂</a>
     </h1>
     <p class="meta">Jun 19, 2005
@@ -339,33 +366,6 @@ ga('send', 'pageview');
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/171/">利用API插接替换破解软件</a>
-    </h1>
-    <p class="meta">Jun 2, 2005
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/171/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>刚刚在看软件破解教程，看到一个人说怎么怎么破解软件。然后突然想到，许多软件破解其实不用修改出flag或者找注册算法。只要对话框不出来，软件照常好用就可以了。OK，基于这个原理，试试用DLL注入插接API的方法RIP破解软件。 首先是对话框弹出机理。先写了个MFC程序，然后跑一跑，在运行中按着DoModel()一路F11下去，跟进了CWnd::CreateDialogIndirectPreamA云云的一个函数里面（名字忘记了）。然后就是一个API调用了。（__IMP__Creat&hellip;肯定是调用别的DLL的函数了）API内容看不到……我晕。编译一个Release版的出来，然后上Ollydbg。经过跟踪，确定了窗体句柄是在USER32.CreateDialogIndirectPreamAorW里面生成的。如果没有窗体句柄呢？ 貌似有两种可能，一种是没事，对话框没了。一种是报错。按照试验，Readbook至少是没事情的。哈哈，这样简单多了。整理下顺序，基本就可以做RIP破解了。 首先是用OllyDbg等等软件定位USER32.CreateDialogIndirectPreamAorW（其实USER32.CreateDialogIndirectPreamA更好，如果只用这个的话比较好确定参数类型）。然后下断点，跑到软件里面触发窗口广告……然后记录对话框的模板位置，调试的任务就结束了。因为没有啥要判断的东西，这个应该说简单到顶点了。 然后写一个DLL注入程序，运行目标程序并且Suspend。然后注入DLL，挂接API。详细参看windows核心编程，现在我们假定挂接了USER32.CreateDialogIndirectPreamA。现在有了一个自主的处理函数，只要在里面判断模板是否为特定模板就好……这个是module的一个res，理论上不是动态生成的，所以位置不变。而且一个对话框一个模板，很好认不会出错。如果是特定模板就返回NULL，否则正常调用。这样程序的提示框就永远弹不出来了。 这个其实是将软件的对话框禁止技术搬到了API层去实现，由于API层代码相对稳定，通用性强，所以破解相对简单。不过也是有代价的。如果软件无法生成对话框会导致出错……这个就没戏了。而且要写注入程序（可以写个注入的模板，或者一次写好可以多次用……），毕竟不是直接运行程序，使用不大方便。而且速度会受影响，如果程序里面对话框满天飞的话……</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -569,6 +569,8 @@ ga('send', 'pageview');
     
         <a href="/page/91/" class="label-pagination">91</a>
     
+        <a href="/page/92/" class="label-pagination">92</a>
+    
 
     
     
@@ -577,7 +579,7 @@ ga('send', 'pageview');
 
     
     
-        <a href="/page/91/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
+        <a href="/page/92/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
     
 
 </div>

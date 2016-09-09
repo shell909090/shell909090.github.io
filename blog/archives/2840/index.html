@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>使用Jupyter制作slides</title>
+
+  
+  
+  <link rel="stylesheet" href="http://shell909090.org/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="http://shell909090.org/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-48816091-1', 'auto');
+ga('send', 'pageview');
+</script>
+
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="http://shell909090.org/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         使用Jupyter制作slides 
+    </h1>
+    <p class="meta">Sep 8, 2016
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/2840/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          <p>Jupyter是ipython notebook的新名字。可能很少有人知道，这个玩意居然还能制作slide。</p>
+
+<p>可能有人有印象，我做过一个markdown to slides生成器，底下用的是reveal.js。今天才发现，jupyter也有类似的功能，底层也是reveal.js。不过用起来比我自己写的东西方便多了。</p>
+
+<p>用法很简单。首先在View菜单里，使用Toggle Toolbar功能打开toolbar（如果已经打开就不用管）。在toolbar里能看到一项叫做Cell Toolvar的，后面一般是None。请转换为Slideshow。此时你能看到每个Cell都会多出一条来，上面有Slide Type。</p>
+
+<p>Slide Type有六个选项，默认是啥都没有。后面依次是Slide，Sub-Slide，Fragment，Skip，Notes。Slide和Sub-Slide是主要的选项。在reveal.js里，Slide是指左右切换的那些页，而Sub-Slide则是你切到一个Slide后，按向下逐渐出现的一些页。这类似于章和节的关系。章和章之间左右切换，节和节之间上下切换。而如果选择为默认，那么就不开新页，跟在前面的页面里。</p>
+
+<p>Skip的话，这个Cell会在Slide里跳过看不见。有很多时候，我们需要在Slide里嵌入Python代码。但是代码又有的时候需要做一些额外事情，我们不希望出现在Slide里面。如果将这些额外代码运行后删除，又恐怕下一次跑这个notebook跑不动。这时候就可以设定为Skip。</p>
+
+<p>Notes原则来说是给slide里面加注释用的。照理说在页面上按s就可以跳出提示，但是我测试下来跳出来却是空的。看了一下页面源码，确实是有东西的。可能是因为我使用的是静态的文件，而没有开启服务的关系。</p>
+
+<p>Fragment我也不知道干什么用的。看名字好像是代码碎片一类的，如果有知道的可以告诉我一下。</p>
+
+<p>最后，用nbconvert就可以把结果转换为html来用。方法是：</p>
+
+<pre><code>ipython nbconvert --to slides --reveal-prefix &quot;http://cdn.jsdelivr.net/reveal.js/2.6.2&quot; ...
+</code></pre>
+
+<p>之所以要加reveal-prefix，是因为最新的reveal和jupyter生成的html不兼容。</p>
+
+<p>生成过程需要使用nodejs，记得安装。</p>
+
+<p>生成出来的Html就是个彻头彻尾的slide了。原则上，同一个ipynb也可以生成html或者pdf（借助reveal.js自身的pdf打印功能）。这样的话slide也有分发能力。</p>
+
+<p>玩的愉快。</p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>Sep 8, 2016</time>
+    <span class="categories">
+      Tags:
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="http://shell909090.org/blog/archives/2839/" title="CentOS 6下安装Python2.7">CentOS 6下安装Python2.7</a>
+    
+
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2840/">使用Jupyter制作slides</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2839/">CentOS 6下安装Python2.7</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2838/">gpg pubkey ID碰撞</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2837/">更换blog声明</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2836/">Pulau Perhentian</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2835/">唐僧被吃了</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2832/">三亚潜水体验</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2822/">一个有趣的问题</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2820/">一次升级故障的排查</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2016  - <a href="http://shell909090.org/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

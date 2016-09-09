@@ -99,6 +99,33 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/2618/">CVE-2014-0160(openssl)严重漏洞及其对应</a>
+    </h1>
+    <p class="meta">Apr 8, 2014
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/2618/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>描述 openssl 1.0.1系列中，1.0.1f以前的版本在实现上存在漏洞，未正确处理Heartbeat扩展，导致攻击者可以窃取服务器端敏感数据。 对应 请立刻升级openssl到1.0.1g版以上，并重启整个系统，以保证不会遗漏某些已经启动的进程。 如果有自行编译的程序使用了openssl。当这些程序静态链接或链接了自定义的openssl时，需要重新编译。 在有问题的设备上使用过的key，需要升级私钥。 openssh不受影响，openvpn受影响。 作为证明，请执行以下语句自行检查。 ldd /usr/sbin/sshd | grep ssl ldd /usr/sbin/openvpn | grep ssl ldd /usr/sbin/nginx | grep ssl for i in $(ps aux | awk '{print $2}'); do echo $i; ldd /proc/$i/exe | grep ssl; done 其他 根据昨晚看到的信息，这个漏洞会泄漏服务器端的通讯数据。因此请将所有session清空，在受影响期间使用过的用户名和密码请务必在3-5天后再修改一次(具体看服务商什么时候补掉漏洞)。 参考 nvd debian ubuntu openssl Is OpenSSH affected by this as well?</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/2611/">安全的几点快速说明</a>
     </h1>
     <p class="meta">Mar 25, 2014
@@ -343,33 +370,6 @@ ga('send', 'pageview');
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/2564/">余额宝</a>
-    </h1>
-    <p class="meta">Feb 27, 2014
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/2564/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>最近我把大笔钞票转到余额宝和理财通去了。 说是大笔，其实也还好，只有五位数而已。毕竟互联网系统的安全性和保证能力摆在那里，太多钱也不放心。而且为了安全性，两家按照获利能力分别配置，都各自存了一部分。 其实这样挺好，以前这部分头寸必须在银行存活期。1W一个月利息才3-4元。目前存支付宝里，使用上和活期没有区别，一个月利息50。当然，等shibor降下来也许就没这么多了，但是30还是有的。至少翻了10倍，一顿饭的钱就出来了。何况我转过去的还不止1W。 以前之所以不敢这么做，一方面是利息不算太高，好处并不直观。但是最重要的一方面是使用上不算便利。短期头寸不像长期投资，可以有一定的赎回时间。往往这头要付信用卡呢，那头有人结婚，又刚好感冒要看个病。三方一合，没两三个月的平时开销，很可能哪里就调不过头寸来。这时候难道还出去借钱么？但是三个月日常开销一放，加上自己懒，有的时候有点资金不及时从银行调出来，往往就这么几万躺在银行里走活期利率。 现在支付宝打通了相当多的支付渠道，结婚吃饭AA交水电煤，样样可以支付宝。使用上又是T+0，所以银行里面躺个几百应付一下就行了。要是余额宝取出到银行的到帐时间是2小时以内，这几百我都不放。 好玩的事在于。我突然想到，余额宝为什么能够拥有这么高的回报？是因为银行需要高息借钱。货币基金里面很大部分钱都去了同业拆借。银行为什么需要高息借钱？因为没有足够的钱。为什么没有足够的钱？因为本来银行可以利用的低成本活期头寸都去了余额宝了。这就是通胀和通缩的放大效用。 所以从理论上说，用余额宝的人（或同类产品）越多，其利息越高。要是银行没看明白这个原理，盲目推出类似产品。推出的越多，利率抬高越多，只会把自己累死。但是看明白也没用，别人都推自己不推，只会把自己饿死。 当然，事情并没那么复杂。国家要管，只要快速调整基准利率，使其逼近同业拆借。或者大量印钞（或者回购）稳定shibor。哪种都可以废掉余额宝。鉴于印钞往往有很大范围的副作用，因此加速基准利率变动才是正道。当然，基准利率变化越快，就越接近利率市场化。而市场化的利率比恒定利率难监管的多。 另外一点就是，银行为什么拼不过支付宝？因为银行为了应付活期资金调度头寸，需要大量的准备金。准备金无法生息，无疑降低了资金的利用率，摊薄了回报。而支付宝本身的运营模式就会产生大量的沉淀资金。当资金在从买家到卖家的发货期的时候，是必然沉淀的。这部分资金产生了形同准备金的功用。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -573,6 +573,8 @@ ga('send', 'pageview');
     
         <a href="/page/91/" class="label-pagination">91</a>
     
+        <a href="/page/92/" class="label-pagination">92</a>
+    
 
     
     
@@ -581,7 +583,7 @@ ga('send', 'pageview');
 
     
     
-        <a href="/page/91/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
+        <a href="/page/92/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
     
 
 </div>

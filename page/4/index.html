@@ -99,6 +99,33 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/2759/">list.append的性能分析</a>
+    </h1>
+    <p class="meta">Jun 17, 2015
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/2759/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>在python2.7.5的源码中，list的append操作最终调用的是Python-2.7.5/Objects/listobject.c:266这里的app1（请帮我复核一下，Python的源码有很多隐藏的手脚不容易看见）。 在app1里，使用了list_resize来进行resize，而list_resize间接用到了PyMem_RESIZE。按照我的阅读，这个应该是层层转到realloc上的。 下面就是查glibc源码的事了。我看到的应该是glibc-2.19/malloc/malloc.c:2951这里的__libc_realloc函数。这个函数很长，我大致读了一下。这里分了两个分支。一个是2992行的chunk_is_mmapped。如果我没理解错的话，我们的内存块不可能没有mapped。那么另一个就是2996行的HAVE_MREMAP，这个是编译时宏，我也不知道我的系统上是不是打开的。如果没打开的话，肯定是走alloc，copy，free的流程。 所以我就用strace跟踪了一下，结果确实调用了mremap。 这个函数在linux内核中。我使用的源码是linux-3.2，结果在linux-3.2/mm/mremap.c:535这里。 大致看了一下函数实现。首先试图处理缩小，如果不行的话试图在扩展到最大(vma_to_resize)，如果这样还是不行，先试试看能不能追加映射(vma_expandable/vma_adjust)。如果都不行，他还是用的创建并移动的方法。(We weren’t able to just expand or shrink the area, we need to create a new one and move it..)。 所以，总体来说，list.append的复杂度还是O(n)级。但是由于remap的内核实现，因此比直接搬数据应该会快一些。具体表现可能要以测试为准了。 但是这里就有一个疑惑。难道python现在删除了复杂的内存层，将mm管理直接用系统的来支持么？我记忆中python源码解析里讲过python有一个巨复杂无比的内存控制系统。难道全用系统管理了么？对此我查了一下 2.6 / 2.7 的python mm文档。里面倒是明确提到不要同时使用系统api和python api来管理内存。但是并没有明确说明如何处理的实现。但是我在系统里并没有找到第二个实现（debug不算），唯一的实现在Python-2.7.5/Include/pymem.h:76，是直接转到realloc上去的。 貌似在新证据出现前，我得认为python使用的glibc api来处理的mm问题。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/2755/">携程本次问题分析</a>
     </h1>
     <p class="meta">May 29, 2015
@@ -339,37 +366,6 @@ ga('send', 'pageview');
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/2727/">p2p vpn的部署方法</a>
-    </h1>
-    <p class="meta">Feb 9, 2015
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/2727/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>p2p vpn的基本概念 p2p vpn这个概念的提出，是因为openvpn在数据传输上的一个特性——虚拟链路都是从拨入端到服务器的。例如vpn网关在北美，上海电信的两个人要通讯，数据就要从北美绕一圈。这个特性在多节点打通上无疑很扯，于是催生了很多p2p vpn。他们的基本理念是——尽力从端到端，不成再绕。而且为了解决端到端，顺便得解决NAT问题——也就是带有STUN打洞。 tun模式的三层转发表 先说明一点，大部分p2p vpn都是tun模式。这也很正常，tunnel用的么。但是大家在配置openvpn的时候，不知是否注意过iroute这个指令。为什么会有iroute指令的存在？ tun模式是三层模式，相信大家都有数。也就是说，报文传递的时候只带有三层地址，openvpn也凭借三层地址来找到要转发给谁。这里和普通的网络就显示出区别了——普通网络使用ARP协议来自管理转发规则，而openvpn则是凭借内部写好的转发表。 例如vpn gateway的虚地址是192.168.100.1，节点1是100.5，节点2是100.10。那么节点2发送报文给节点1时，报文大约长这个样子。 192.168.100.10 -&gt; 192.168.100.5 在普通网络中，第一步会查路由表，确定是eth0(虚拟网络是tun0)。然后在上面广播ARP请求，获得MAC地址。最后填写MAC地址，发送报文。但是在tun虚拟网络中，仔细看你的路由表，是不是整个虚网络都被交给了一个叫做100.4之类的奇怪gateway转发？甚至如果你没有打开client-to-client，整个虚网络只有一台可见，这台还是交给这个gateway转发的。 这是因为你到这个奇怪的IP之间还是走ARP过程，但是这个奇怪的IP收到你的报文后，就可以是纯三层过程了。你可以把这个IP视为本地openvpn的化身。openvpn会把你的报文发送到openvpn gateway，然后openvpn gateway再转发给正确的机器。也就是说，openvpn gateway必须知道某个目标IP需要转给哪个节点，物理地址多少，对吧？ 作为纯虚网络，知道节点的IP很容易——毕竟是openvpn gateway管理的地址分配过程。但是作为tunnel和多地址打通，这里就有点困难了。例如节点1还有个网段是192.168.80.0/24，节点2还有个网段是192.168.60.0/24，那么如下一个报文从节点2中出去，你让openvpn gateway怎么办？ 192.168.60.15 -&gt; 192.168.80.15 你也许会说，我当然有配节点1的网关转给openvpn的拨入端。问题是，这个动作，openvpn的拨入端尚且不知，何况openvpn gateway？于是我们派生了route/iroute这两个指令。 route/iroute表示这个地址段归属于这个节点所有，区别在于route同时修改路由表，而iroute不修改路由表。配合push，可以由服务器端下发指令修改客户端路由表。 p2p vpn也有类似的问题。甚至，由于没有统一配置端，因此连每个节点的虚IP都不能很容易的得到。在配置中必须注意这点。 n2n n2n的模式比较简单，也比较有局限性。基本分为两个端，supernode和edge。supernode类似于hub，把所有edge拉到一起。edge都是对等的。 supernode: supernode -l port edge: edge -a [address] -c [name] -k [password] -l [supernode:port] -u [userid] -g [groupid] 解释一下。开一个supernode，不用做任何设定。反正supernode也不会持有edge别的信息。edge要设定supernode的ip和端口，然后提交name和password。name和password相同的，就进入同一个虚拟网络。然后自己的虚拟ip是address。最后的userid和groupid必须是数字。主要是因为开tun需要root权限，因此可以在获得完权限后退化成普通用户，以防权限太高。 这里好玩的就是，理论上address可以天南海北，完全不用管路由怎么走。甚至172.16.0.1可以和10.0.0.1通讯(我没实际确认)。因为大家都是看彼此的IP是否经过注册，而不是计算路由表。 但是这里就有个缺点，我看到man文档中只提到address，没提到可以提交一个网段。所以无论我怎么设定，使用三层方案做隧道的时候，n2n是转不过去的。因为他不知道这个网段归哪个节点管。 所以，n2n的p2p模式很便利，但是没法打tunnel(至少我不知道怎么玩)。 tinc tinc和n2n一样，也是一种p2p vpn。不过好处在于，tinc允许你在一个节点上配置多个网络，因此可以打tunnel。 在配置之前，我先约定两个词。“配置名”和“节点名”。一个配置是接入同一个网络的多个节点，还有他们如何拓扑。节点名就是一个节点的名字。所以，和配置有关的有以下两个。 /etc/tinc/nets.boot: 这里写上想自动启用的配置的名字 /etc/tinc/[configname]: 配置的根路径，以下路径全是相对路径。 配置 下面就是某个配置中的一堆文件。注意这些配置都是配置自己节点的属性信息。 tinc.conf: Name = [nodename] Device =</p>
-
-          
-              <footer>
-                  <a href="http://shell909090.org/blog/archives/2727/" rel="full-article">Read On &rarr;</a>
-              </footer>
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -573,6 +569,8 @@ ga('send', 'pageview');
     
         <a href="/page/91/" class="label-pagination">91</a>
     
+        <a href="/page/92/" class="label-pagination">92</a>
+    
 
     
     
@@ -581,7 +579,7 @@ ga('send', 'pageview');
 
     
     
-        <a href="/page/91/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
+        <a href="/page/92/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
     
 
 </div>

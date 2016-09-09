@@ -99,6 +99,33 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/2397/">git log的一个吐血问题</a>
+    </h1>
+    <p class="meta">Apr 28, 2013
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/2397/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>刚刚在公司里查了半个多小时，记一下笔记。 不知道你们有没有这种吐血经历。在git上有两个分支，莫名其妙合并到一起了。这可能是某个人的误操作。你检查log的时候，只看到他不停的把主分支merge到支线上去，却从没有把支线合并到主线上去。但是最终两个线却合并了，主线指向了支线。这是为什么？ 要理解这个问题，我们要搞明白，merge在git里是怎么工作的。当两个分支，来自同一个祖先，但是提交了不同修改，又要合并的时候，就需要进行merge。能够自动merge的，多一个merge commit，被合并分支的HEAD不变，合并入的分支的HEAD加一，指向merge commit。不能够自动merge的，手工处理冲突，其余和自动相同。 注意这点，“被合并分支的HEAD不变，合并入的分支的HEAD加一”。由于两者在不同的点上，因此修改和提交会形成不同的分支。合并后的两个分支不会发生交汇。 如果在一次正向的merge后，立刻进行了一次反向merge呢？事情就麻烦了。两个branch的HEAD指向了同一个commit。因此你可以认为支线分支合并到了主线，却没有merge记录。这是当然，因为这只是指针移动，属于fast forward。没有commit，没有log。 不幸的是，这种操作还经常发生。当我们把支线向主线合并的时候，合并难度可能非常大。此时我们可以将主线向支线合并，然后反向合并。这样的合并难度就小很多了。然而这会使得合并记录不可查。 所以，当碰到类似问题的时候，考虑两次合并的可能性。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/2393/">关于雅安</a>
     </h1>
     <p class="meta">Apr 22, 2013
@@ -339,33 +366,6 @@ ga('send', 'pageview');
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/2334/">lxc的文件共享映射和严重安全隐患</a>
-    </h1>
-    <p class="meta">Feb 9, 2013
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/2334/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>在lxc中，可以利用mount bind指定guest可以访问某些host的路径。例如： lxc.mount.entry = /home/shell /var/lib/lxc/{vmname}/rootfs/home/shell none defaults,bind 0 0 注意，/home/shell是你希望共享的主机路径，/var/lib&hellip;/shell是映射到的目标路径。 这个工作的基础原理，是在虚拟机启动的时候，自动执行mount，添加一条bind映射，将host的路径挂到guest可以访问的路径里去。 由此，我发现了一个lxc在文件共享时的严重bug。 user@guest:~$ mkdir -p ttt/123 user@guest:~$ cd ttt/123 user@host:~$ mv /var/lib/lxc/{vmname}/rootfs/home/user/ttt/123 . user@guest:~/ttt/123$ cd .. user@guest:(unreachable)/user$ ls -l 好了，现在guest在host的~user/目录下，host上本来不应当被看到的东西全被看光光了。 更严重的是，如果此时sudo成root，在host中可以以root的身份做任何事情。 结论：暂时来说，不要在host和guest之间直接共享任何数据。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -569,6 +569,8 @@ ga('send', 'pageview');
     
         <a href="/page/91/" class="label-pagination">91</a>
     
+        <a href="/page/92/" class="label-pagination">92</a>
+    
 
     
     
@@ -577,7 +579,7 @@ ga('send', 'pageview');
 
     
     
-        <a href="/page/91/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
+        <a href="/page/92/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
     
 
 </div>
