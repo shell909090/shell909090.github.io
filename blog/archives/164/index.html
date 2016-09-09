@@ -112,52 +112,93 @@ ga('send', 'pageview');
           
           
           
-          <p>1.CreateFile读写文件，设备，网络。
-刚刚看到有人在问，知道了数据的物理位置，如何读取光盘上的数据。于是我很纳闷，这有何难。看他的意思不会是要编程进行硬件交互读取吧。如果已知数据的偏移地址，那么使用CreateFile(&rdquo;<a href="file://.X">\.X</a>:&ldquo;&hellip;)就可以直接读取某个盘上的数据了。（Windows
-2000 Support
-Tools中DiskProbe就是用这种方法直接读写物理磁盘的，包括可以读写0面0道0扇区，不过他用的对象是<a href="file://.PHYSICALDRIVEx">\.PHYSICALDRIVEx</a>而已）
-还有可以打开的对象包括管道（会用的人一定知道），文件（废话），Consoles（简单来说就是命令行界面），通信资源（例如COM1）。据说还可以打开内存，似乎是PHYSICMEM资源，记不得了。
-以上资源的打开都有限制的，多数都比较简单，就是在打开时候使用OPEN_EXISTING标志。另外还有些当然的限制，例如光盘不能做为GENERIC_WRITE打开（我是没有试过啦，不过想也知道，光盘哪里能写。）
-举例来说，这次我做的ISO镜像制作程序（ISO可以是光盘的按字节镜像），代码大致就是这样的。（以下代码都是伪代码，不要拿去编译哦。）
-GetLogicalDriveStrings(nBufferLength, lpBuffer);
-lpRootPathName=lpBuffer; while( lpRootPathName[0] ){ if(
-GetDriveType(lpRootPathName) &amp; DRIVE_CDROM ) break;
-lpRootPathName+=strlen(lpRootPathName)+1; }; if( !lpRootPathName[0] )
-return -1; strcpy(RootPathName, &ldquo;<a href="file://.">\.</a>&rdquo;);
+          <p>1.CreateFile读写文件，设备，网络。</p>
+
+<p>刚刚看到有人在问，知道了数据的物理位置，如何读取光盘上的数据。于是我很纳闷，这有何难。看他的意思不会是要编程进行硬件交互读取吧。如果已知数据的偏移地址，那么使用CreateFile(&rdquo;<a href="file://.X">\.X</a>:&ldquo;&hellip;)就可以直接读取某个盘上的数据了。（Windows 2000 Support Tools中DiskProbe就是用这种方法直接读写物理磁盘的，包括可以读写0面0道0扇区，不过他用的对象是<a href="file://.PHYSICALDRIVEx">\.PHYSICALDRIVEx</a>而已）</p>
+
+<p>还有可以打开的对象包括管道（会用的人一定知道），文件（废话），Consoles（简单来说就是命令行界面），通信资源（例如COM1）。据说还可以打开内存，似乎是PHYSICMEM资源，记不得了。</p>
+
+<p>以上资源的打开都有限制的，多数都比较简单，就是在打开时候使用OPEN_EXISTING标志。另外还有些当然的限制，例如光盘不能做为GENERIC_WRITE打开（我是没有试过啦，不过想也知道，光盘哪里能写。）</p>
+
+<p>举例来说，这次我做的ISO镜像制作程序（ISO可以是光盘的按字节镜像），代码大致就是这样的。（以下代码都是伪代码，不要拿去编译哦。）</p>
+
+<pre><code>GetLogicalDriveStrings(nBufferLength, lpBuffer);
+lpRootPathName=lpBuffer;
+while( lpRootPathName\[0\] ){
+    if(GetDriveType(lpRootPathName) &amp; DRIVE\_CDROM )
+        break;
+    lpRootPathName+=strlen(lpRootPathName)+1;
+};
+if( !lpRootPathName\[0\] )
+    return -1;
+strcpy(RootPathName, &quot;\\.&quot;);
 strcat(RootPathName, lpRootPathName);
-RootPathName[strlen(RootPathName)-1]=0;
+RootPathName\[strlen(RootPathName)-1\]=0;
 hFileCDROM=CreateFile(RootPathName,
-GENERIC_READ,//我要做镜像，不是刻盘（不知道能不能刻）
-FILE_SHARE_READ, NULL,
-//你这个用户有访问能力就是NULL，没有自己去看API编程去 OPEN_EXISTING,
-//必须如此,这个是打开光盘的限制条件 FILE_ATTRIBUTE_NORMAL |
-FILE_FLAG_OVERLAPPED, //交叠模式 0); hFileISO=CreateFile(ISOpath,
-GENERIC_WRITE, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
-Overlap.hEvent=CreateEvent(NULL, FALSE, FALSE, NULL); do{
-Overlap.Offset=&hellip;; Overlap.OffsetHigh=&hellip;; ReadFile(hFileCDROM,
-lpBuffer, BUFF_SIZE, &amp;NumberOfBytes, &amp;Overlap);
-WaitForSingleObject(olRead.hEvent, TimeOut); if(
-!GetOverlappedResult(hFileCDROM, &amp;Overlap, &amp;NumberOfBytes, FALSE) ){
-switch( GetLastError() ){ case ERROR_IO_INCOMPLETE:
-CancelIo(hFileCDROM); break; default: break; } //error }
-WriteFile(hFileISO, lpBuffer, BUFF_SIZE, &amp;NumberOfBytes, NULL); }while(
-1 ); CloseHandle(Overlap.hEvent); CloseHandle(hFileISO);
-CloseHandle(hFileCDROM); &hellip; 2.OVERLAPPED模式和大文件
-上面用到一个模式，OVERLAPPED。因为我做的镜像是DVD镜像。大小超过了2G。一般操作的时候是用SetFilePointerEx或者使用OverLapped模式。前者据说在windows.h中引入了，但是我没有看到，还要自己定义。
-extern &ldquo;C&rdquo;{ BOOL WINAPI SetFilePointerEx( HANDLE
-hFile,                    // handle to file LARGE_INTEGER
-liDistanceToMove,  // bytes to move pointer PLARGE_INTEGER
-lpNewFilePointer, // new file pointer DWORD dwMoveMethod              
-// starting point ); }
-加上要控制镜像的时候超时（万一读不出来）。所以采用了OVERLAPPED模式。这个模式大致意思就是说读写的时候多传递一个结构进去。里面两个有用的东西一个读写的当前位置，一个是一个由CreateEvent创建的句柄。然后就可以按照异步模式操作。不过他的条件还蛮奇怪的，我按照MSDN翻译如下。
-打开文件时使用FILE_FLAG_OVERLAPPED，lpOverlapped是NULL，读写的时候立即返回，结果是Failed。
-打开文件时使用FILE_FLAG_OVERLAPPED，lpOverlapped正常，读写的时候异步读写，结果等到读写完成后用GetOverlappedResult读取（当然，也有timeout的处理方法）。
-打开文件时未FILE_FLAG_OVERLAPPED，lpOverlapped是NULL，读写的时候同步读写，阻塞到结果返回的时候。
-然后就是最奇怪的，未FILE_FLAG_OVERLAPPED，lpOverlapped有效。NT内核下是使用了OVERLAPPED结构里面的offset，同步读写（？！）。win9X则直接报错。看来这种情况还是不要出现为妙。
-3.数据泵思想
-大家刚刚看了上面的代码，然后请稍微去google上找找关于如何远程操作CMD的方法。一般来说，都是使用管道将远程的指令发送给CMD.exe直接处理的。（代码在网络上已经满天飞，恕我不凑热闹了。）这里就涉及一个一样的问题。如何从一个文件对象中读取数据写到另一个文件对象中。
-理论上，可以构造一个段代码专门从某个句柄COPY数据到另外一个句柄，如同windows消息泵一样的工作。但是这就面临两相关的两个问题，是否是OVERLAPPED模式打开的文件，以及文件对象的特性（例如是否需要等待等等）。根据OVERLAPPED的说明，前者可以通过全部使用OVERLAPPED减轻。（而非完全避免，请看我所说的奇怪特性。）而后者基本很难做出完美的处理。因此最多可以做一些用于通用情况的消息泵，对每种通用情况分别使用。大致可能的应用例如管道和网络间通讯（后门程序）。
-另外就是代码的优化，如果读写在不同的快速对象上进行（例如两个硬盘）。那么先读后写的话，效率只有同步读写的一半。我在代码中采取的是大规模缓冲池和顺序平衡优化的方法。加上代码优化后，Copy的速度已经和Windows一样了（Windows有点投机行为，测不准）。不过CPU耗用偏高而已，这个也是没有办法啦。有兴趣的可以问我要这个程序来玩玩（代码就不用要了，这个程序蛮大的，提取读ISO的代码来也蛮困难的）。</p>
+              GENERIC\_READ,//我要做镜像，不是刻盘（不知道能不能刻）
+              FILE\_SHARE\_READ, NULL,
+              //你这个用户有访问能力就是NULL，没有自己去看API编程去 OPEN\_EXISTING,
+              //必须如此,这个是打开光盘的限制条件 FILE\_ATTRIBUTE\_NORMAL |
+              FILE\_FLAG\_OVERLAPPED, //交叠模式
+              0);
+hFileISO=CreateFile(ISOpath, GENERIC\_WRITE, 0, NULL,
+            OPEN\_ALWAYS, FILE\_ATTRIBUTE\_NORMAL, 0);
+Overlap.hEvent=CreateEvent(NULL, FALSE, FALSE, NULL);
+do{
+    Overlap.Offset=...;
+    Overlap.OffsetHigh=...;
+    ReadFile(hFileCDROM, lpBuffer, BUFF\_SIZE,
+         &amp;NumberOfBytes, &amp;Overlap);
+    WaitForSingleObject(olRead.hEvent, TimeOut);
+    if(!GetOverlappedResult(hFileCDROM, &amp;Overlap, &amp;NumberOfBytes, FALSE) ){
+        switch( GetLastError() ){
+        case ERROR\_IO\_INCOMPLETE:
+            CancelIo(hFileCDROM);
+            break;
+        default:
+            break;
+        }
+        //error
+    }
+    WriteFile(hFileISO, lpBuffer, BUFF\_SIZE, &amp;NumberOfBytes, NULL);
+}while( 1 );
+CloseHandle(Overlap.hEvent);
+CloseHandle(hFileISO);
+CloseHandle(hFileCDROM);
+...
+</code></pre>
+
+<p>2.OVERLAPPED模式和大文件</p>
+
+<p>上面用到一个模式，OVERLAPPED。因为我做的镜像是DVD镜像。大小超过了2G。一般操作的时候是用SetFilePointerEx或者使用OverLapped模式。前者据说在windows.h中引入了，但是我没有看到，还要自己定义。</p>
+
+<pre><code>extern &quot;C&quot;{
+    BOOL WINAPI SetFilePointerEx( HANDLE
+                      hFile,                    // handle to file LARGE\_INTEGER
+                      liDistanceToMove,  // bytes to move pointer PLARGE\_INTEGER
+                      lpNewFilePointer, // new file pointer DWORD dwMoveMethod              
+// starting point
+        );
+}
+</code></pre>
+
+<p>加上要控制镜像的时候超时（万一读不出来）。所以采用了OVERLAPPED模式。这个模式大致意思就是说读写的时候多传递一个结构进去。里面两个有用的东西一个读写的当前位置，一个是一个由CreateEvent创建的句柄。然后就可以按照异步模式操作。不过他的条件还蛮奇怪的，我按照MSDN翻译如下。</p>
+
+<p>打开文件时使用FILE_FLAG_OVERLAPPED，lpOverlapped是NULL，读写的时候立即返回，结果是Failed。</p>
+
+<p>打开文件时使用FILE_FLAG_OVERLAPPED，lpOverlapped正常，读写的时候异步读写，结果等到读写完成后用GetOverlappedResult读取（当然，也有timeout的处理方法）。</p>
+
+<p>打开文件时未FILE_FLAG_OVERLAPPED，lpOverlapped是NULL，读写的时候同步读写，阻塞到结果返回的时候。</p>
+
+<p>然后就是最奇怪的，未FILE_FLAG_OVERLAPPED，lpOverlapped有效。NT内核下是使用了OVERLAPPED结构里面的offset，同步读写（？！）。win9X则直接报错。看来这种情况还是不要出现为妙。</p>
+
+<p>3.数据泵思想</p>
+
+<p>大家刚刚看了上面的代码，然后请稍微去google上找找关于如何远程操作CMD的方法。一般来说，都是使用管道将远程的指令发送给CMD.exe直接处理的。（代码在网络上已经满天飞，恕我不凑热闹了。）这里就涉及一个一样的问题。如何从一个文件对象中读取数据写到另一个文件对象中。</p>
+
+<p>理论上，可以构造一个段代码专门从某个句柄COPY数据到另外一个句柄，如同windows消息泵一样的工作。但是这就面临两相关的两个问题，是否是OVERLAPPED模式打开的文件，以及文件对象的特性（例如是否需要等待等等）。根据OVERLAPPED的说明，前者可以通过全部使用OVERLAPPED减轻。（而非完全避免，请看我所说的奇怪特性。）而后者基本很难做出完美的处理。因此最多可以做一些用于通用情况的消息泵，对每种通用情况分别使用。大致可能的应用例如管道和网络间通讯（后门程序）。</p>
+
+<p>另外就是代码的优化，如果读写在不同的快速对象上进行（例如两个硬盘）。那么先读后写的话，效率只有同步读写的一半。我在代码中采取的是大规模缓冲池和顺序平衡优化的方法。加上代码优化后，Copy的速度已经和Windows一样了（Windows有点投机行为，测不准）。不过CPU耗用偏高而已，这个也是没有办法啦。有兴趣的可以问我要这个程序来玩玩（代码就不用要了，这个程序蛮大的，提取读ISO的代码来也蛮困难的）。</p>
 
         </div>
         

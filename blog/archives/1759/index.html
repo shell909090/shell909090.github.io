@@ -112,436 +112,146 @@ ga('send', 'pageview');
           
           
           
-          <p>1.mro
-<div></p>
+          <p>1.mro</p>
 
-<p>  
- 算法，自身先入栈，而后按声明顺序继承每个父类的mro，内部对象在最后。简单来说，深度优先，从左向右。</p>
+<p>算法，自身先入栈，而后按声明顺序继承每个父类的mro，内部对象在最后。简单来说，深度优先，从左向右。</p>
 
-<p></div></p>
+<p>当类对象创建时，会将父类所有函数全部复制过来（很明显，应当是符号复制）。</p>
 
-<div>
+<p>2.super规则</p>
 
-  
- 当类对象创建时，会将父类所有函数全部复制过来（很明显，应当是符号复制）。\
-\
+<p>&gt;&gt;&gt; class A(object):</p>
 
-</div>
+<p>&hellip;     def f(self): print &lsquo;A&rsquo;</p>
 
-<div>
+<p>&hellip;</p>
 
-2.super规则
+<p>&gt;&gt;&gt; class B(object):</p>
 
-</div>
+<p>&hellip;     def f(self): print &lsquo;B&rsquo;</p>
 
-<div>
+<p>&hellip;</p>
 
-&gt;&gt;&gt; class A(object):
+<p>&gt;&gt;&gt; class C(A):</p>
 
-</div>
+<p>&hellip;     def f(self): print &lsquo;C&rsquo;</p>
 
-<div>
+<p>&hellip;</p>
 
-...     def f(self): print 'A'
+<p>&gt;&gt;&gt; class D(C, B):</p>
 
-</div>
+<p>&hellip;     def f(self): super(D, self).f()</p>
 
-<div>
+<p>&hellip;</p>
 
-...
+<p>&gt;&gt;&gt; d = D()</p>
 
-</div>
+<p>&gt;&gt;&gt; d.f()</p>
 
-<div>
+<p>C</p>
 
-&gt;&gt;&gt; class B(object):
+<p>&gt;&gt;&gt; D.__base__</p>
 
-</div>
+<p>&lt;class &lsquo;__main__.C&rsquo;&gt;</p>
 
-<div>
+<p>&gt;&gt;&gt; D.__bases__</p>
 
-...     def f(self): print 'B'
+<p>(&lt;class &lsquo;__main__.C&rsquo;&gt;, &lt;class &lsquo;__main__.B&rsquo;&gt;)</p>
 
-</div>
+<p>&gt;&gt;&gt; class A(object):</p>
 
-<div>
+<p>&hellip;     def f(self): print &lsquo;A&rsquo;</p>
 
-...
+<p>&hellip;</p>
 
-</div>
+<p>&gt;&gt;&gt; class B(object):</p>
 
-<div>
+<p>&hellip;     def g(self): print &lsquo;B&rsquo;</p>
 
-&gt;&gt;&gt; class C(A):
+<p>&hellip;</p>
 
-</div>
+<p>&gt;&gt;&gt; class C(A, B):</p>
 
-<div>
+<p>&hellip;     def f(self): super(C, self).g()</p>
 
-...     def f(self): print 'C'
+<p>&hellip;</p>
 
-</div>
+<p>&gt;&gt;&gt; c = C()</p>
 
-<div>
+<p>&gt;&gt;&gt; c.f()</p>
 
-...
+<p>B</p>
 
-</div>
+<p>&gt;&gt;&gt; C.__mro__</p>
 
-<div>
+<p>(&lt;class &lsquo;__main__.C&rsquo;&gt;, &lt;class &lsquo;__main__.A&rsquo;&gt;,
+&lt;class &lsquo;__main__.B&rsquo;&gt;, &lt;type &lsquo;object&rsquo;&gt;)</p>
 
-&gt;&gt;&gt; class D(C, B):
+<p>super的算法是跟随mro次序，寻找非本类第一个符合名称的函数，调用之。</p>
 
-</div>
+<p>3.construct</p>
 
-<div>
+<p>instance = cls.__new__(cls, *args, **kargs)</p>
 
-...     def f(self): super(D, self).f()
+<p>cls.__init__(instance, *args, **kargs)</p>
 
-</div>
+<p>4.bound method</p>
 
-<div>
+<p>&gt;&gt;&gt; class A(object):</p>
 
-...
+<p>&hellip;     def f(self): pass</p>
 
-</div>
+<p>&hellip;</p>
 
-<div>
+<p>&gt;&gt;&gt; a = A()</p>
 
-&gt;&gt;&gt; d = D()
+<p>&gt;&gt;&gt; a.__class__.__dict__[&lsquo;f&rsquo;]</p>
 
-</div>
+<p>&lt;function f at 0xb7595454&gt;</p>
 
-<div>
+<p>&gt;&gt;&gt; a.f</p>
 
-&gt;&gt;&gt; d.f()
+<p>&lt;bound method A.f of &lt;__main__.A object at 0xb75a1e6c&gt;&gt;</p>
 
-</div>
+<p>&gt;&gt;&gt; a.f.im_self</p>
 
-<div>
+<p>&lt;__main__.A object at 0xb75a1e6c&gt;</p>
 
-C
+<p>bound method是一个函数对象和一个实例对象的集合。</p>
 
-</div>
+<p>5.descriptor</p>
 
-<div>
+<p>&gt;&gt;&gt; class A(object):</p>
 
-&gt;&gt;&gt; D.\_\_base\_\_
+<p>&hellip;     def __get__(self, obj, cls): return &lsquo;A.__get__ %s %s %s&rsquo;
+% (self, obj, cls)</p>
 
-</div>
+<p>&hellip;</p>
 
-<div>
+<p>&gt;&gt;&gt; class B(object):</p>
 
-&lt;class '\_\_main\_\_.C'&gt;
+<p>&hellip;     v = A()</p>
 
-</div>
+<p>&hellip;</p>
 
-<div>
+<p>&gt;&gt;&gt; b = B()</p>
 
-&gt;&gt;&gt; D.\_\_bases\_\_
+<p>&gt;&gt;&gt; b.v</p>
 
-</div>
+<p>&ldquo;A.__get__ &lt;__main__.A object at 0xb75a1cac&gt;
+&lt;__main__.B object at 0xb75a1cec&gt; &lt;class
+&lsquo;__main__.B&rsquo;&gt;&ldquo;</p>
 
-<div>
+<p>某个instance的属性查找顺序为，obj.__dict__，class属性（按照mro顺序）。如果有data
+descriptor则先于obj.__dict__。</p>
 
-(&lt;class '\_\_main\_\_.C'&gt;, &lt;class '\_\_main\_\_.B'&gt;)
+<p>于是，这解释了一个问题。我们定义函数的时候，定义的都是“类函数”，即函数是类的成员。为什么最终函数会变成实例的成员呢？为什么又在调用时会自动产生一个self呢？</p>
 
-</div>
+<p>实例在查找的时候，会先查找class属性中的descriptor。假定class有成员函数f，当使用obj.f时，首先命中这个函数对象，因为这个对象是一个descriptor。descriptor在取值时，会被调用__get__方法，这一方法有obj参数。于是函数对象的默认__get__返回了一个bound
+method，其中包含了self和函数对象自身。</p>
 
-<div>
-
-<div>
-
-&gt;&gt;&gt; class A(object):
-
-</div>
-
-<div>
-
-...     def f(self): print 'A'
-
-</div>
-
-<div>
-
-...
-
-</div>
-
-<div>
-
-&gt;&gt;&gt; class B(object):
-
-</div>
-
-<div>
-
-...     def g(self): print 'B'
-
-</div>
-
-<div>
-
-...
-
-</div>
-
-<div>
-
-<div>
-
-&gt;&gt;&gt; class C(A, B):
-
-</div>
-
-<div>
-
-...     def f(self): super(C, self).g()
-
-</div>
-
-<div>
-
-...
-
-</div>
-
-<div>
-
-&gt;&gt;&gt; c = C()
-
-</div>
-
-<div>
-
-&gt;&gt;&gt; c.f()
-
-</div>
-
-<div>
-
-B
-
-</div>
-
-<div>
-
-&gt;&gt;&gt; C.\_\_mro\_\_
-
-</div>
-
-<div>
-
-(&lt;class '\_\_main\_\_.C'&gt;, &lt;class '\_\_main\_\_.A'&gt;,
-&lt;class '\_\_main\_\_.B'&gt;, &lt;type 'object'&gt;)
-
-</div>
-
-<p></div></p>
-
-<p></div></p>
-
-<div>
-
-super的算法是跟随mro次序，寻找非本类第一个符合名称的函数，调用之。
-
-</div>
-
-<div>
-
-3.construct
-
-</div>
-
-<div>
-
-instance = cls.\_\_new\_\_(cls, \*args, \*\*kargs)
-
-</div>
-
-<div>
-
-cls.\_\_init\_\_(instance, \*args, \*\*kargs)
-
-</div>
-
-<div>
-
-<div>
-
-4.bound method
-
-</div>
-
-<div>
-
-<div>
-
-&gt;&gt;&gt; class A(object):
-
-</div>
-
-<div>
-
-...     def f(self): pass
-
-</div>
-
-<div>
-
-...
-
-</div>
-
-<div>
-
-&gt;&gt;&gt; a = A()
-
-</div>
-
-<div>
-
-&gt;&gt;&gt; a.\_\_class\_\_.\_\_dict\_\_\['f'\]
-
-</div>
-
-<div>
-
-&lt;function f at 0xb7595454&gt;
-
-</div>
-
-<div>
-
-&gt;&gt;&gt; a.f
-
-</div>
-
-<div>
-
-&lt;bound method A.f of &lt;\_\_main\_\_.A object at 0xb75a1e6c&gt;&gt;
-
-</div>
-
-<div>
-
-<div>
-
-&gt;&gt;&gt; a.f.im\_self
-
-</div>
-
-<div>
-
-&lt;\_\_main\_\_.A object at 0xb75a1e6c&gt;
-
-</div>
-
-<p></div></p>
-
-<div>
-
-bound method是一个函数对象和一个实例对象的集合。
-
-</div>
-
-<p></div></p>
-
-<p></div></p>
-
-<div>
-
-5.descriptor
-
-</div>
-
-<div>
-
-<div>
-
-&gt;&gt;&gt; class A(object):
-
-</div>
-
-<div>
-
-...     def \_\_get\_\_(self, obj, cls): return 'A.\_\_get\_\_ %s %s %s'
-% (self, obj, cls)
-
-</div>
-
-<div>
-
-...
-
-</div>
-
-<div>
-
-&gt;&gt;&gt; class B(object):
-
-</div>
-
-<div>
-
-...     v = A()
-
-</div>
-
-<div>
-
-...
-
-</div>
-
-<div>
-
-&gt;&gt;&gt; b = B()
-
-</div>
-
-<div>
-
-&gt;&gt;&gt; b.v
-
-</div>
-
-<div>
-
-"A.\_\_get\_\_ &lt;\_\_main\_\_.A object at 0xb75a1cac&gt;
-&lt;\_\_main\_\_.B object at 0xb75a1cec&gt; &lt;class
-'\_\_main\_\_.B'&gt;"
-
-</div>
-
-<div>
-
-某个instance的属性查找顺序为，obj.\_\_dict\_\_，class属性（按照mro顺序）。如果有data
-descriptor则先于obj.\_\_dict\_\_。
-
-</div>
-
-<div>
-
-于是，这解释了一个问题。我们定义函数的时候，定义的都是“类函数”，即函数是类的成员。为什么最终函数会变成实例的成员呢？为什么又在调用时会自动产生一个self呢？
-
-</div>
-
-<div>
-
-实例在查找的时候，会先查找class属性中的descriptor。假定class有成员函数f，当使用obj.f时，首先命中这个函数对象，因为这个对象是一个descriptor。descriptor在取值时，会被调用\_\_get\_\_方法，这一方法有obj参数。于是函数对象的默认\_\_get\_\_返回了一个bound
-method，其中包含了self和函数对象自身。
-
-</div>
-
-<div>
-
-这种行为在每次调用时都会发生，因此实例成员函数的性能比unbound
-method直接写对象要慢。
-
-</div>
-
-<p></div></p>
+<p>这种行为在每次调用时都会发生，因此实例成员函数的性能比unbound
+method直接写对象要慢。</p>
 
         </div>
         

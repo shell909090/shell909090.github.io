@@ -1650,134 +1650,86 @@ PS.虽说如此，记得把telepathy重启一下，否则jabber协议看的到�
       <guid>http://shell909090.org/blog/archives/2094/</guid>
       <description>&lt;p&gt;废话不说，上干货。先装一下syslinux，genisoimage，kvm，debootstrap，squashfs-tools。&lt;/p&gt;
 
-&lt;p&gt;\$ mkdir debcd&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ mkdir debcd
+$ cd debcd
+$ mkdir isoroot
+$ cp/usr/lib/syslinux/isolinux.bin isoroot/
+$cat &amp;gt; isoroot/isolinux.cfg &amp;lt;&amp;lt; &amp;quot;EOF&amp;quot;
+prompt 0
+default linux
+label linux
+kernel vmlinuz
+append initrd=initrd.img
+EOF
+$ cp /boot/vmlinuz-3.2.0-1-amd64 isoroot/vmlinuz
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;\$ cd debcd&lt;/p&gt;
+&lt;p&gt;完成上述步骤后，你就准备好了一个基础的iso镜像文件系统，并有了一个基础的引导模块和内核。现在，我们尝试把这玩意烧到iso上，并且测试一下。&lt;/p&gt;
 
-&lt;p&gt;\$ mkdir isoroot&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$genisoimage -o output.iso -b isolinux.bin -c boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table isoroot/
+$ sudo kvm -cdrom output.iso -m 512
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;\$ cp /usr/lib/syslinux/isolinux.bin isoroot/&lt;/p&gt;
+&lt;p&gt;如果没法装kvm，换成qemu。屏幕会停在内核引导过程中——因为你没有initrd.img，所以在isolinux.cfg中指定的initrd就不正确。下面我们会设法弄一个initrd.img。&lt;/p&gt;
 
-&lt;p&gt;\$ cat &amp;gt; isoroot/isolinux.cfg &amp;lt;&amp;lt; &amp;ldquo;EOF&amp;rdquo;&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ cp -a /etc/initramfs-tools/ initramfs
+$ mkinitramfs -d initramfs -o isoroot/initrd.img
+$genisoimage -o output.iso -b isolinux.bin -c boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table isoroot/
+$ sudo kvm -cdrom output.iso -m 512
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;prompt 0&lt;/p&gt;
+&lt;p&gt;现在看看？你应该能看到有initrd被加载上去了，但是很可惜，没有root，因此也无法启动。所以下一步，我们需要弄一个root。&lt;/p&gt;
 
-&lt;p&gt;default linux&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ mkdir sysroot
+$ sudo debootstrap --arch amd64 stable sysroot/ http://localhost:9999/debian/
+$ sudo chown -R user.user sysroot
+$ mksquashfs sysroot isoroot/rootfs -all-root
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;label linux&lt;/p&gt;
+&lt;p&gt;把上面的源换成你喜欢的——我用approx做了一个缓存，所以一直使用这个缓存进行加速。在脚本执行完后，你会有一个压缩为squash格式的rootfs，可以作为root。但是这个root有两个缺陷。1.不能直接mount。2.即使mount了，启动的时候也会因为只读而挂掉。所以你需要做一点调整&lt;/p&gt;
 
-&lt;p&gt;    kernel vmlinuz&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ cat &amp;gt;&amp;gt; initramfs/modules &amp;lt;&amp;lt; &amp;quot;EOF&amp;quot;
+squashfs
+aufs
+EOF
+$ cat &amp;gt; initramfs/scripts/local-premount/iso &amp;lt;&amp;lt; &amp;quot;EOF&amp;quot;
+#!/bin/sh
+case &amp;quot;${1}&amp;quot; in
+    prereqs)
+        echo &#39;iso script run&#39;
+        exit 0
+        ;;
+esac
+mkdir /cdrom
+mount -t iso9660 /dev/sr0 /cdrom
+mkdir /cdroot
+mount -t squashfs /cdrom/rootfs /cdroot
+mkdir /shadow
+mount -t tmpfs -o size=128m none /shadow
+mount -t aufs -o br:/shadow=rw:/cdroot=ro none /root
+EOF
+$ chmod +x initramfs/scripts/local-premount/iso
+$ mkinitramfs -d initramfs -o isoroot/initrd.img
+$ genisoimage -o output.iso -b isolinux.bin -c boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table isoroot/
+$ sudo kvm -cdrom output.iso -m 512
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;    append initrd=initrd.img&lt;/p&gt;
+&lt;p&gt;好，现在再make clean，make test，光盘基本就OK了。&lt;/p&gt;
 
-&lt;p&gt;EOF&lt;/p&gt;
+&lt;p&gt;root密码多少？我怎么知道你的root密码呢？用sudo chroot&lt;/p&gt;
 
-&lt;p&gt;\$ cp /boot/vmlinuz-3.2.0-1-amd64 isoroot/vmlinuz&lt;/p&gt;
+&lt;p&gt;sysroot切换到自己的系统里面去改。另外，你可能需要安装一些软件，这时候记得把/sys&lt;/p&gt;
 
-&lt;p&gt;   
-完成上述步骤后，你就准备好了一个基础的iso镜像文件系统，并有了一个基础的引导模块和内核。现在，我们尝试把这玩意烧到iso上，并且测试一下。&lt;/p&gt;
+&lt;p&gt;/proc挂到chroot里面。还有记得调整一下/etc/udev/rules.d/70-persistent-net.rules，把主机里面的记录删掉（或者干脆删掉文件）。调整/etc/network/interfaces，把以下内容加进去。&lt;/p&gt;
 
-&lt;p&gt;\$ genisoimage -o output.iso -b isolinux.bin -c
-&lt;a href=&#34;http://boot.cat&#34;&gt;boot.cat&lt;/a&gt; -no-emul-boot -boot-load-size 4
--boot-info-table isoroot/&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;auto lo
+iface lo inet loopback
+# The primary network interface
+auto eth0
+iface eth0 inet dhcp
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;\$ sudo kvm -cdrom output.iso -m 512&lt;/p&gt;
-
-&lt;p&gt;   
-如果没法装kvm，换成qemu。屏幕会停在内核引导过程中——因为你没有initrd.img，所以在isolinux.cfg中指定的initrd就不正确。下面我们会设法弄一个initrd.img。&lt;/p&gt;
-
-&lt;p&gt;\$ cp -a /etc/initramfs-tools/ initramfs&lt;/p&gt;
-
-&lt;p&gt;\$ mkinitramfs -d initramfs -o isoroot/initrd.img&lt;/p&gt;
-
-&lt;p&gt;\$ genisoimage -o output.iso -b isolinux.bin -c
-&lt;a href=&#34;http://boot.cat&#34;&gt;boot.cat&lt;/a&gt; -no-emul-boot -boot-load-size 4
--boot-info-table isoroot/&lt;/p&gt;
-
-&lt;p&gt;\$ sudo kvm -cdrom output.iso -m 512&lt;/p&gt;
-
-&lt;p&gt;   
-现在看看？你应该能看到有initrd被加载上去了，但是很可惜，没有root，因此也无法启动。所以下一步，我们需要弄一个root。&lt;/p&gt;
-
-&lt;p&gt;\$ mkdir sysroot&lt;/p&gt;
-
-&lt;p&gt;\$ sudo debootstrap &amp;ndash;arch amd64 stable sysroot/
-&lt;a href=&#34;http://localhost:9999/debian/&#34;&gt;http://localhost:9999/debian/&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;\$ sudo chown -R user.user sysroot&lt;/p&gt;
-
-&lt;p&gt;\$ mksquashfs sysroot isoroot/rootfs -all-root&lt;/p&gt;
-
-&lt;p&gt;   
-把上面的源换成你喜欢的——我用approx做了一个缓存，所以一直使用这个缓存进行加速。在脚本执行完后，你会有一个压缩为squash格式的rootfs，可以作为root。但是这个root有两个缺陷。1.不能直接mount。2.即使mount了，启动的时候也会因为只读而挂掉。所以你需要做一点调整&lt;/p&gt;
-
-&lt;p&gt;\$ cat &amp;gt;&amp;gt; initramfs/modules &amp;lt;&amp;lt; &amp;ldquo;EOF&amp;rdquo;&lt;/p&gt;
-
-&lt;p&gt;squashfs&lt;/p&gt;
-
-&lt;p&gt;aufs&lt;/p&gt;
-
-&lt;p&gt;EOF&lt;/p&gt;
-
-&lt;p&gt;\$ cat &amp;gt; initramfs/scripts/local-premount/iso &amp;lt;&amp;lt; &amp;ldquo;EOF&amp;rdquo;&lt;/p&gt;
-
-&lt;p&gt;#!/bin/sh&lt;/p&gt;
-
-&lt;p&gt;case &amp;ldquo;\${1}&amp;rdquo; in&lt;/p&gt;
-
-&lt;p&gt;    prereqs)&lt;/p&gt;
-
-&lt;p&gt;        echo &amp;lsquo;iso script run&amp;rsquo;&lt;/p&gt;
-
-&lt;p&gt;        exit 0&lt;/p&gt;
-
-&lt;p&gt;        ;;&lt;/p&gt;
-
-&lt;p&gt;esac&lt;/p&gt;
-
-&lt;p&gt;mkdir /cdrom&lt;/p&gt;
-
-&lt;p&gt;mount -t iso9660 /dev/sr0 /cdrom&lt;/p&gt;
-
-&lt;p&gt;mkdir /cdroot&lt;/p&gt;
-
-&lt;p&gt;mount -t squashfs /cdrom/rootfs /cdroot&lt;/p&gt;
-
-&lt;p&gt;mkdir /shadow&lt;/p&gt;
-
-&lt;p&gt;mount -t tmpfs -o size=128m none /shadow&lt;/p&gt;
-
-&lt;p&gt;mount -t aufs -o br:/shadow=rw:/cdroot=ro none /root&lt;/p&gt;
-
-&lt;p&gt;EOF&lt;/p&gt;
-
-&lt;p&gt;\$ chmod +x initramfs/scripts/local-premount/iso&lt;/p&gt;
-
-&lt;p&gt;\$ mkinitramfs -d initramfs -o isoroot/initrd.img&lt;/p&gt;
-
-&lt;p&gt;\$ genisoimage -o output.iso -b isolinux.bin -c
-&lt;a href=&#34;http://boot.cat&#34;&gt;boot.cat&lt;/a&gt; -no-emul-boot -boot-load-size 4
--boot-info-table isoroot/&lt;/p&gt;
-
-&lt;p&gt;\$ sudo kvm -cdrom output.iso -m 512&lt;/p&gt;
-
-&lt;p&gt;    好，现在再make clean，make test，光盘基本就OK了。&lt;/p&gt;
-
-&lt;p&gt;    root密码多少？我怎么知道你的root密码呢？用sudo chroot
-sysroot切换到自己的系统里面去改。另外，你可能需要安装一些软件，这时候记得把/sys
-/proc挂到chroot里面。还有记得调整一下/etc/udev/rules.d/70-persistent-net.rules，把主机里面的记录删掉（或者干脆删掉文件）。调整/etc/network/interfaces，把以下内容加进去。&lt;/p&gt;
-
-&lt;p&gt;auto lo&lt;/p&gt;
-
-&lt;p&gt;iface lo inet loopback&lt;/p&gt;
-
-&lt;p&gt;# The primary network interface&lt;/p&gt;
-
-&lt;p&gt;auto eth0&lt;/p&gt;
-
-&lt;p&gt;iface eth0 inet dhcp&lt;/p&gt;
-
-&lt;p&gt;    基本来说，可定制的引导系统就是这样。不过这个系统有以下几点需要注意：&lt;/p&gt;
+&lt;p&gt;基本来说，可定制的引导系统就是这样。不过这个系统有以下几点需要注意：&lt;/p&gt;
 
 &lt;p&gt;1.可写入数量只有128M，如果写多了就完蛋。&lt;/p&gt;
 
@@ -1785,42 +1737,34 @@ sysroot切换到自己的系统里面去改。另外，你可能需要安装一�
 
 &lt;p&gt;3.一次一次生成很麻烦，我用的是make。&lt;/p&gt;
 
-&lt;p&gt;TARGETS=isoroot/initrd.img isoroot/rootfs&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;TARGETS=isoroot/initrd.img isoroot/rootfs
 
-&lt;p&gt;all: output.iso&lt;/p&gt;
+all: output.iso
 
-&lt;p&gt;test: output.iso&lt;/p&gt;
+test: output.iso
+    sudo kvm -cdrom $^ -m 512
 
-&lt;p&gt;sudo kvm -cdrom \$\^ -m 512&lt;/p&gt;
+clean:
+    rm -f output.iso $(TARGETS)
 
-&lt;p&gt;clean:&lt;/p&gt;
+output.iso: isoroot/isolinux.cfg isoroot/vmlinuz $(TARGETS)
+    genisoimage -o $@ -b isolinux.bin -c boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table isoroot/
 
-&lt;p&gt;rm -f output.iso \$(TARGETS)&lt;/p&gt;
+isoroot/initrd.img: initramfs
+    mkinitramfs -d $^ -o $@
 
-&lt;p&gt;output.iso: isoroot/isolinux.cfg isoroot/vmlinuz \$(TARGETS)&lt;/p&gt;
-
-&lt;p&gt;genisoimage -o \$@ -b isolinux.bin -c &lt;a href=&#34;http://boot.cat&#34;&gt;boot.cat&lt;/a&gt;
--no-emul-boot -boot-load-size 4 -boot-info-table isoroot/&lt;/p&gt;
-
-&lt;p&gt;isoroot/initrd.img: initramfs&lt;/p&gt;
-
-&lt;p&gt;mkinitramfs -d \$\^ -o \$@&lt;/p&gt;
-
-&lt;p&gt;isoroot/rootfs: sysroot&lt;/p&gt;
-
-&lt;p&gt;mksquashfs \$\^ \$@ -all-root&lt;/p&gt;
+isoroot/rootfs: sysroot
+    mksquashfs $^ $@ -all-root
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;4.可以用一个dsvc保存中间结果，我用的是git。下面是gitignore。&lt;/p&gt;
 
-&lt;p&gt;*.iso&lt;/p&gt;
-
-&lt;p&gt;isoroot/vmlinuz*&lt;/p&gt;
-
-&lt;p&gt;isoroot/initrd*&lt;/p&gt;
-
-&lt;p&gt;isoroot/rootfs*&lt;/p&gt;
-
-&lt;p&gt;sysroot&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;*.iso
+isoroot/vmlinuz*
+isoroot/initrd*
+isoroot/rootfs*
+sysroot
+&lt;/code&gt;&lt;/pre&gt;
 </description>
     </item>
     
@@ -1830,89 +1774,63 @@ sysroot切换到自己的系统里面去改。另外，你可能需要安装一�
       <pubDate>Mon, 13 Feb 2012 01:56:41 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2092/</guid>
-      <description>&lt;p&gt;别紧张，我不是要progress Linux，这是一种新的distribution（算是吧）。 &lt;a href=&#34;http://progress-linux.org&#34;&gt;http://progress-linux.org&lt;/a&gt;，是一个基于Debian的dist。&lt;br /&gt;
-   
-为什么要有这个dist？其实严格意义上说，这不是一个完整的dist。不同于Ubuntu，这个dist可以完全的寄生在Debian stable(squeeze)上面。你不需要真的去官网上下载一个ISO，然后安装。只需要安装Debian stable，然后加入
-Progress-Linux的source就好了。如果你胆敢在Ubuntu上这么干，只会把系统弄的一团糟。当然，直接下载Progress-Linux的安装ISO也是可以的，这个ISO基于Debian
-Live，作者(Daniel Baumann)本人也是DD，是Debian Live的主要作者之一。&lt;br /&gt;
-   
-为什么要这样？因为Debian是以严谨到变态而闻名的系统。例如，mdadm这个包有一个很小的不便。每个月当检查RAID的时候，会发一封mail。如果你有一堆电脑需要管理，这件事情就非常烦人了。要修正这个问题，只需要在其中一个脚本中加入参数-q。但是Debian修这个bug修了9个月。因为具体的包维护者并不是很关心这个事情（低优先级），而Release
-Term需要确保这个bug必须先在Sid中修复，确认没事了（基本是没问题的，只加一个-q而已），再修复testing的，最后修复stable的。于是，你的邮箱要被一堆垃圾持续淹没9个月。&lt;br /&gt;
-    Progress-Linux就快多了。&lt;br /&gt;
-    但是为什么要做成dist呢？&lt;br /&gt;
-   
-Debian的模式设计，是方便fork，而严格控制release的。Debian的版本库更新要很多条件，例如符合DSFG（也就意味着符合一系列的开源授权协议），更新的时候首先作用于SID，Release
-Term说了算等等。DD也没有权利要求更新Debian
-stable中的包，他必须申请Release
-Term批准。想想也能明白，如果真的每个DD都能直接更新包，那才天下大乱了。我们不能绕过Release
-Term去解决问题，也不想让这些问题留着。&lt;br /&gt;
-   
-那么怎么办？只有自己做一个仓库。Debian鼓励这么做（有很多dist就是这么做的），但是这时就不能用Debian的名字，因此作者才做了一个新的dist。DSFG这时变成了一个优势，Debian的所有包，都满足DSFG的第8条，“不仅仅对Debian授权”，可以直接应用。&lt;br /&gt;
-    因此，其实Progress-Linux是一个基于Debian的改进。更快的bug
-fix，更多的backport，更少考虑版权问题。当然，限于作者关心的包。另一个激动人心的特点是，
-Progress-Linux的包和backport包不会碰撞，因此使得stable可以简单的安装很多新的包。如果你喜欢，可以在安装系统后加入他的source，作为系统的改进。但是不要指望有什么实质性变化，都是一些细节改进而已。如果你希望知道几个例子，可以看这个页面（&lt;a href=&#34;http://www.progress-linux.org/project/about/&#34;&gt;http://www.progress-linux.org/project/about/&lt;/a&gt;）。
-&lt;div&gt;&lt;/p&gt;
+      <description>&lt;p&gt;别紧张，我不是要progressLinux，这是一种新的distribution（算是吧）。&lt;a href=&#34;http://progress-linux.org&#34;&gt;http://progress-linux.org&lt;/a&gt;，是一个基于Debian的dist。&lt;/p&gt;
 
-&lt;p&gt;   
-也许你希望使用一个中国区的mirror来做这个事情（这样更快，也省去中间的一些其他麻烦），&lt;a href=&#34;http://mirrors.ustc.edu.cn&#34;&gt;http://mirrors.ustc.edu.cn&lt;/a&gt;是debian中国区域的主镜像(即&lt;a href=&#34;http://ftp.cn.debian.org&#34;&gt;http://ftp.cn.debian.org&lt;/a&gt;)，这个节点已经完成Progress-Linux的镜像。&lt;br /&gt;
-&lt;br /&gt;
-    Relax, I don&amp;rsquo;t mean to progress Linux, it&amp;rsquo;s a new distribution (kind
-of).  &lt;a href=&#34;http://progress-linux.org&#34;&gt;http://progress-linux.org&lt;/a&gt;, a new dist based on Debian.&lt;br /&gt;
-    Why people made this dist? Technically, it is no a fully dist.
-Unlike Ubuntu, this dist can totally on the top of Debian
-stable(squeeze). You don&amp;rsquo;t need to download a ISO from website and
-install. Just install Debian stable, and add source of Progress-Linux.
-It will be done. If you do something like that under Ubuntu, it
-will destroy your system. Even though that&amp;rsquo;s possible: 
-Progress-Linux install CD is based on the Debian Live (the main author
-of  Progress-Linux, Daniel Baumann, is a Debian Developer, and he is
-the main person behind Debian Live).&lt;br /&gt;
-    Why? Because Debian is a preciseness dist. For example, the package
-mdadm had a little tiny inconveniences. It will send you a Email When
-check RAID every month. So if there are huge amounts of computers, it
-will be annoying. To fix it, one of the scripts need to be added a extra
-parameter &amp;lsquo;-q&amp;rsquo;. But it toke 9 months to fix it. Because maintainer don&amp;rsquo;t
-care much about this issue, and Release Term insist this bug MUST be
-fixed in Sid first, then testing, finally stable. So your mailbox will
-be submerged under log reports for 9 months.&lt;br /&gt;
-    Progress-Linux is faster.&lt;br /&gt;
-    But why new dist?&lt;br /&gt;
-    The design of Debian, is easy to fork, but strictly in release.
-There are many of conditions to be met to upgrade some package, like
-DSFG (which means a series of open source license), upgrade in Sid
-first, Release Term make the decision, etc. Never, a DD can update a
-package in Debian stable directly. He has to ask approval from the
-Release Term. If every DDs can update package in stable directly, that
-will be the hell. DD can&amp;rsquo;t cut through the Release Term, and we can&amp;rsquo;t
-wait for the issues.&lt;br /&gt;
-    What&amp;rsquo;s gonna do? Make a new repository! The Debian project encourage
-you to do so (and many dist do), but new repository can&amp;rsquo;t use the name
-of Debian. So the author of  Progress-Linux made a new dist. Now, DSFG
-is a advantage. Every package in Debian is meet No.8 rule of
-DSFG, License Must Not Be Specific to Debian.&lt;br /&gt;
-    So, Progress-Linux is a improvement based on Debian. Faster bug fix,
-more backport packages, less license considering. Of course, that only
-work for the packages author care. Another exciting fact is, all the
-packages in Progress-Linux and it&amp;rsquo;s backport will not clashing. It help
-stable to install many new software easily. If you like, you can add
-it&amp;rsquo;s source for an enhance. But don&amp;rsquo;t expect too much, it all above
-details. If you wanna know some of them, try this page
-(&lt;a href=&#34;http://www.progress-linux.org/project/about/&#34;&gt;http://www.progress-linux.org/project/about/&lt;/a&gt;).&lt;/p&gt;
+&lt;p&gt;为什么要有这个dist？其实严格意义上说，这不是一个完整的dist。不同于Ubuntu，这个dist可以完全的寄生在Debianstable(squeeze)上面。你不需要真的去官网上下载一个ISO，然后安装。只需要安装Debianstable，然后加入&lt;/p&gt;
 
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
+&lt;p&gt;Progress-Linux的source就好了。如果你胆敢在Ubuntu上这么干，只会把系统弄的一团糟。当然，直接下载Progress-Linux的安装ISO也是可以的，这个ISO基于Debian Live，作者(Daniel Baumann)本人也是DD，是Debian Live的主要作者之一。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;为什么要这样？因为Debian是以严谨到变态而闻名的系统。例如，mdadm这个包有一个很小的不便。每个月当检查RAID的时候，会发一封mail。如果你有一堆电脑需要管理，这件事情就非常烦人了。要修正这个问题，只需要在其中一个脚本中加入参数-q。但是Debian修这个bug修了9个月。因为具体的包维护者并不是很关心这个事情（低优先级），而Release&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;Term需要确保这个bug必须先在Sid中修复，确认没事了（基本是没问题的，只加一个-q而已），再修复testing的，最后修复stable的。于是，你的邮箱要被一堆垃圾持续淹没9个月。&lt;/p&gt;
 
-    Maybe you wanna a mirror in China to run update(which faster, and
-less trouble).  &lt;http://mirrors.ustc.edu.cn&gt; is the
-primary Debian mirror of China(alias to &lt;http://ftp.cn.debian.org&gt;),
-which has a mirror of Progress-Linux.
+&lt;p&gt;Progress-Linux就快多了。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;但是为什么要做成dist呢？&lt;/p&gt;
 
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
+&lt;p&gt;Debian的模式设计，是方便fork，而严格控制release的。Debian的版本库更新要很多条件，例如符合DSFG（也就意味着符合一系列的开源授权协议），更新的时候首先作用于SID，Release&lt;/p&gt;
+
+&lt;p&gt;Term说了算等等。DD也没有权利要求更新Debian&lt;/p&gt;
+
+&lt;p&gt;stable中的包，他必须申请Release&lt;/p&gt;
+
+&lt;p&gt;Term批准。想想也能明白，如果真的每个DD都能直接更新包，那才天下大乱了。我们不能绕过Release&lt;/p&gt;
+
+&lt;p&gt;Term去解决问题，也不想让这些问题留着。&lt;/p&gt;
+
+&lt;p&gt;那么怎么办？只有自己做一个仓库。Debian鼓励这么做（有很多dist就是这么做的），但是这时就不能用Debian的名字，因此作者才做了一个新的dist。DSFG这时变成了一个优势，Debian的所有包，都满足DSFG的第8条，“不仅仅对Debian授权”，可以直接应用。&lt;/p&gt;
+
+&lt;p&gt;因此，其实Progress-Linux是一个基于Debian的改进。更快的bug&lt;/p&gt;
+
+&lt;p&gt;fix，更多的backport，更少考虑版权问题。当然，限于作者关心的包。另一个激动人心的特点是，&lt;/p&gt;
+
+&lt;p&gt;Progress-Linux的包和backport包不会碰撞，因此使得stable可以简单的安装很多新的包。如果你喜欢，可以在安装系统后加入他的source，作为系统的改进。但是不要指望有什么实质性变化，都是一些细节改进而已。如果你希望知道几个例子，可以看这个页面（&lt;a href=&#34;http://www.progress-linux.org/project/about/&#34;&gt;http://www.progress-linux.org/project/about/&lt;/a&gt;）。&lt;/p&gt;
+
+&lt;p&gt;也许你希望使用一个中国区的mirror来做这个事情（这样更快，也省去中间的一些其他麻烦），&lt;a href=&#34;http://mirrors.ustc.edu.cn&#34;&gt;http://mirrors.ustc.edu.cn&lt;/a&gt;是debian中国区域的主镜像(即&lt;a href=&#34;http://ftp.cn.debian.org&#34;&gt;http://ftp.cn.debian.org&lt;/a&gt;)，这个节点已经完成Progress-Linux的镜像。&lt;/p&gt;
+
+&lt;p&gt;Relax, I don&amp;rsquo;t mean to progress Linux, it&amp;rsquo;s a new distribution (kind of). &lt;a href=&#34;http://progress-linux.org&#34;&gt;http://progress-linux.org&lt;/a&gt;, a new dist based on Debian.&lt;/p&gt;
+
+&lt;p&gt;Why people made this dist? Technically, it is no a fully dist. Unlike Ubuntu, this dist can totally on the top of Debian stable(squeeze). You don&amp;rsquo;t need to download a ISO from website and install. Just install Debian stable, and add source ofProgress-Linux.&lt;/p&gt;
+
+&lt;p&gt;It will be done. If you do something like that under Ubuntu, it willdestroyyour system. Even though that&amp;rsquo;s possible:&lt;/p&gt;
+
+&lt;p&gt;Progress-Linuxinstall CD is based on theDebian Live (the main author of Progress-Linux, Daniel Baumann, is a Debian Developer, and he is themain person behind Debian Live).&lt;/p&gt;
+
+&lt;p&gt;Why? Because Debian is apreciseness dist. For example, the package mdadm had a little tinyinconveniences. It will send you a Email When check RAID every month. So if there are huge amounts of computers, it will beannoying. To fix it, one of the scripts need to be added a extra parameter &amp;lsquo;-q&amp;rsquo;. But it toke 9 months to fix it. Because maintainer don&amp;rsquo;t care much about this issue, andRelease Terminsist this bug MUST be fixed in Sid first, then testing, finally stable. So your mailbox will besubmerged under log reports for 9 months.&lt;/p&gt;
+
+&lt;p&gt;Progress-Linuxis faster.&lt;/p&gt;
+
+&lt;p&gt;But why new dist?&lt;/p&gt;
+
+&lt;p&gt;The design of Debian, is easy to fork, but strictly in release.&lt;/p&gt;
+
+&lt;p&gt;There are many of conditions to be met to upgrade some package, like DSFG (which means a series of open source license), upgrade in Sid first, Release Termmake the decision, etc. Never, a DD can update a package in Debian stable directly. He has toask approval from the Release Term. If every DDs can update package in stable directly, that will be the hell. DD can&amp;rsquo;t cut through the Release Term, and we can&amp;rsquo;t wait for the issues.&lt;/p&gt;
+
+&lt;p&gt;What&amp;rsquo;s gonna do? Make a new repository! The Debian project encourage you to do so(and many dist do), but new repository can&amp;rsquo;t use the name of Debian. So the author of Progress-Linuxmade a new dist. Now, DSFG is aadvantage. Every package in Debian is meet No.8 rule of DSFG,License Must Not Be Specific to Debian.&lt;/p&gt;
+
+&lt;p&gt;So, Progress-Linuxis a improvement based on Debian. Faster bug fix, more backport packages, less license considering. Of course, that only work for the packages author care.Another exciting fact is, all the packages inProgress-Linux and it&amp;rsquo;s backport will not clashing. It help stable to install many new software easily.If you like, you can add it&amp;rsquo;s source for an enhance. But don&amp;rsquo;t expect too much, it all above details. If you wanna know some of them, try this page(&lt;a href=&#34;http://www.progress-linux.org/project/about/&#34;&gt;http://www.progress-linux.org/project/about/&lt;/a&gt;).&lt;/p&gt;
+
+&lt;p&gt;Maybe you wanna a mirror in China to run update(which faster, and less trouble). &lt;a href=&#34;http://mirrors.ustc.edu.cn&#34;&gt;http://mirrors.ustc.edu.cn&lt;/a&gt; is the primaryDebianmirror of China(alias to&lt;a href=&#34;http://ftp.cn.debian.org&#34;&gt;http://ftp.cn.debian.org&lt;/a&gt;), which has a mirror of Progress-Linux.&lt;/p&gt;
 </description>
     </item>
     
@@ -1922,83 +1840,29 @@ which has a mirror of Progress-Linux.
       <pubDate>Thu, 09 Feb 2012 07:04:06 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2088/</guid>
-      <description>&lt;p&gt;1.严格按照说明做，少看一点无关内容后面就一堆err了。
-&lt;div&gt;&lt;/p&gt;
+      <description>&lt;p&gt;1.严格按照说明做，少看一点无关内容后面就一堆err了。&lt;/p&gt;
 
 &lt;p&gt;2.新分区大点，4G不够的，最小用8G。我用了20G的，硬盘不值钱。另外说一句，并不是4G不能够做到，而是你可能被迫删除不少有用东西，或者是移到其他位置，增加复杂度。&lt;/p&gt;
 
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
+&lt;p&gt;3.每次你进入一个section，以前针对这个包进行解压，打补丁，并修改的source都作废了。直接删除它们，然后重新解压。lfs不依赖于以前解开的源码，在任何一节的开始都不需要翻以前怎么处理（解压，打补丁，修改）源码的。你在任何一节都可以（并且必须）独立操作源码。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;4.mawk会出错，装一个gawk。&lt;/p&gt;
 
-3.每次你进入一个section，以前针对这个包进行解压，打补丁，并修改的source都作废了。直接删除它们，然后重新解压。lfs不依赖于以前解开的源码，在任何一节的开始都不需要翻以前怎么处理（解压，打补丁，修改）源码的。你在任何一节都可以（并且必须）独立操作源码。
+&lt;p&gt;5.yacc没有的时候，装bison，it&amp;rsquo;s works。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;6.如果碰到见鬼的tar.xz，用tar Jxf。或者更简单的，现代tar都支持xf直接解压，不用再自己选择zjJ。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;7.chapter5的流程？先用系统的编译器编译了binutils，gcc和glibc，然后再用刚刚编译好的再编译这三个，这样编译系统就统统连接到了/tools上。然后用/tools的连接编译了一堆编译用工具，bash啦，make啦。这样，就完成了编译环境的建立，/tools是一个独立于主系统的，完整而可用的编译系统。用这个编译系统编译任何东西的结果应当是相对可控的。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;8.如果我是你，在chapter5完成的时候会tar czf ~/tools.tar.gz /tools。这样会让你在chapter6中犯错的时候不至于血本无归。&lt;/p&gt;
 
-4.mawk会出错，装一个gawk。\
-&lt;div&gt;
+&lt;p&gt;9.chapter6的流程？用chapter5的编译系统，编译了新系统的编译系统。当然，这个不容易，因为刚刚的编译系统所有指向都是/tools。所以lfs指导你做了不少patch。然后重复chapter5的过程，逐步把源码编译安装到正式系统中。&lt;/p&gt;
 
-5.yacc没有的时候，装bison，it&#39;s works。
+&lt;p&gt;10.lfs真TMD的辛苦，连source code的typo都需要在书中指出和fix。。。而且lfs自己还有errata。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;11.lfs的56两章看起来像是两个人写的，风格习惯不一致。chapter5用``，chapter6用\$()。还有gcc-pass2的时候，cp -v XXX{,.tmp}; sed XXX.tmp &amp;hellip; &amp;gt; XXX。而chapter6的binutils则是sed -i.bak。当然，有可能是因为有些系统的sed不支持-i，例如redhat的系统始终不支持netstat -nlp46，I hate it。BTW，我喜欢sed -i。&lt;/p&gt;
 
-&lt;div&gt;
-
-6.如果碰到见鬼的tar.xz，用tar
-Jxf。或者更简单的，现代tar都支持xf直接解压，不用再自己选择zjJ。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-7.chapter5的流程？先用系统的编译器编译了binutils，gcc和glibc，然后再用刚刚编译好的再编译这三个，这样编译系统就统统连接到了/tools上。然后用/tools的连接编译了一堆编译用工具，bash啦，make啦。这样，就完成了编译环境的建立，/tools是一个独立于主系统的，完整而可用的编译系统。用这个编译系统编译任何东西的结果应当是相对可控的。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-8.如果我是你，在chapter5完成的时候会tar czf \~/tools.tar.gz
-/tools。这样会让你在chapter6中犯错的时候不至于血本无归。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-9.chapter6的流程？用chapter5的编译系统，编译了新系统的编译系统。当然，这个不容易，因为刚刚的编译系统所有指向都是/tools。所以lfs指导你做了不少patch。然后重复chapter5的过程，逐步把源码编译安装到正式系统中。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-10.lfs真TMD的辛苦，连source
-code的typo都需要在书中指出和fix。。。而且lfs自己还有errata。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-11.lfs的56两章看起来像是两个人写的，风格习惯不一致。chapter5用\`\`，chapter6用\$()。还有gcc-pass2的时候，cp
--v XXX{,.tmp}; sed XXX.tmp ... &amp;gt; XXX。而chapter6的binutils则是sed
--i.bak。当然，有可能是因为有些系统的sed不支持-i，例如redhat的系统始终不支持netstat
--nlp46，I hate it。BTW，我喜欢sed -i。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-12.编译过程真心傻X，大部分都是解开源码，configure --prefix=... &amp;&amp; make
-&amp;&amp; make check &amp;&amp; make
-install。这些过程好像可以用一个不知道啥脚本来简化，建议不要手工干这堆事情，没意思的。相反，倒是很多调整有些意思。
-
-&lt;/div&gt;
-
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
+&lt;p&gt;12.编译过程真心傻X，大部分都是解开源码，configure &amp;ndash;prefix=&amp;hellip; &amp;amp;&amp;amp; make &amp;amp;&amp;amp; make check &amp;amp;&amp;amp; make install。这些过程好像可以用一个不知道啥脚本来简化，建议不要手工干这堆事情，没意思的。相反，倒是很多调整有些意思。&lt;/p&gt;
 </description>
     </item>
     
@@ -2008,16 +1872,9 @@ install。这些过程好像可以用一个不知道啥脚本来简化，建议�
       <pubDate>Wed, 01 Feb 2012 04:06:39 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2078/</guid>
-      <description>&lt;p&gt;google
-code很好用，可是他的下载页面很恶心，很难跟，而且还改过一次。debian打包党要做watch
-file的时候，估计会很郁闷。
-&lt;div&gt;&lt;/p&gt;
+      <description>&lt;p&gt;google code很好用，可是他的下载页面很恶心，很难跟，而且还改过一次。debian打包党要做watch file的时候，估计会很郁闷。&lt;/p&gt;
 
-&lt;p&gt;   
-去&lt;a href=&#34;http://googlecode.debian.net/&#34;&gt;http://googlecode.debian.net/&lt;/a&gt;，然后提交你的包名，你会得到一个url（其实自己猜也可以猜到）。每次访问这个url的时候，他会代你解析google
-code，告诉你有没有更新。&lt;/p&gt;
-
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
+&lt;p&gt;去&lt;a href=&#34;http://googlecode.debian.net/&#34;&gt;http://googlecode.debian.net/&lt;/a&gt;，然后提交你的包名，你会得到一个url（其实自己猜也可以猜到）。每次访问这个url的时候，他会代你解析google code，告诉你有没有更新。&lt;/p&gt;
 </description>
     </item>
     
@@ -2027,119 +1884,44 @@ code，告诉你有没有更新。&lt;/p&gt;
       <pubDate>Tue, 31 Jan 2012 03:14:14 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2076/</guid>
-      <description>&lt;p&gt;废话不说，上干货。
-&lt;div&gt;&lt;/p&gt;
+      <description>&lt;p&gt;废话不说，上干货。&lt;/p&gt;
 
-&lt;p&gt;   
-首先，禁用arptables。当然，如果你没开这个防火墙，那么没必要。其次，注意你的openwrt必须有udisk，否则空间相差太多，根本没有实现的可能。&lt;/p&gt;
+&lt;p&gt;首先，禁用arptables。当然，如果你没开这个防火墙，那么没必要。其次，注意你的openwrt必须有udisk，否则空间相差太多，根本没有实现的可能。&lt;/p&gt;
 
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
+&lt;p&gt;然后，如果你用的是新版的rom，应该在/etc/init.d/dnsmasq里面看到，dnsmasq()这个函数里面有。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;pre&gt;&lt;code&gt;append_parm &amp;quot;$cfg&amp;quot; &amp;quot;tftp_root&amp;quot; &amp;quot;--tftp-root&amp;quot;
+append_parm &amp;quot;$cfg&amp;quot; &amp;quot;dhcp_boot&amp;quot; &amp;quot;--dhcp-boot&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
 
-   
-然后，如果你用的是新版的rom，应该在/etc/init.d/dnsmasq里面看到，dnsmasq()这个函数里面有。
+&lt;p&gt;如果没有，加一下，有的话说明原生支持。下面可以直接修改。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;dnsmasq是一个dhcp/dns双重服务器，而pxe引导的第一步就是支持bootp协议。这个选项在/etc/config/dhcp里面。config&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;dnsmasq一节上，增加。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;pre&gt;&lt;code&gt;option &#39;dhcp_boot&#39; &#39;pxelinux.0&#39;
+&lt;/code&gt;&lt;/pre&gt;
 
-        append\_parm &#34;\$cfg&#34; &#34;tftp\_root&#34; &#34;--tftp-root&#34;
+&lt;p&gt;重启dnsmasq，完成bootp准备。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;然后，安装tftpd-hpa，opkg update，opkg install&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;tftpd-hpa。这是一个tftp服务器，默认不启动。如果你打算让pxe引导模式持久化，那么就改为默认启动，同时永久关闭arp防火墙。在/var/tftpd-hpa里面，可以看到tftpd的根路径。从参考3的的连接里面，你可以找到合适的一个下载路径，下载netboot.tar.gz到这个文件。解压后，可以看到pxelinux.0，这个和上面的pxelinux.0相对应。这是pxelinux的组件，隶属于syslinux项目，可以用来完成启动。&lt;/p&gt;
 
-        append\_parm &#34;\$cfg&#34; &#34;dhcp\_boot&#34; &#34;--dhcp-boot&#34;
+&lt;p&gt;这样，就完成了安装的所有准备工作。你可以找一个设备实验一下，应当可以完成网络安装的步骤。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;另外，如果需要启动选择amd64或者是i386，或者更进一步定制。那么需要下载其他镜像，自己生成pxelinux.cfg这个目录中的内容。&lt;/p&gt;
 
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;PXE&lt;a href=&#34;http://wiki.debian.org/PXE&#34;&gt;http://wiki.debian.org/PXE&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
 
-&lt;div&gt;
+&lt;li&gt;&lt;p&gt;NetbootPXE&lt;a href=&#34;http://wiki.debian.org/DebianInstaller/NetbootPXE&#34;&gt;http://wiki.debian.org/DebianInstaller/NetbootPXE&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
 
-    如果没有，加一下，有的话说明原生支持。下面可以直接修改。
+&lt;li&gt;&lt;p&gt;netinst&lt;a href=&#34;http://www.debian.org/distrib/netinst&#34;&gt;http://www.debian.org/distrib/netinst&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-dnsmasq是一个dhcp/dns双重服务器，而pxe引导的第一步就是支持bootp协议。这个选项在/etc/config/dhcp里面。config
-dnsmasq一节上，增加。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;div&gt;
-
-        option &#39;dhcp\_boot&#39; &#39;pxelinux.0&#39;
-
-&lt;/div&gt;
-
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
-
-&lt;div&gt;
-
-    重启dnsmasq，完成bootp准备。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    然后，安装tftpd-hpa，opkg update，opkg install
-tftpd-hpa。这是一个tftp服务器，默认不启动。如果你打算让pxe引导模式持久化，那么就改为默认启动，同时永久关闭arp防火墙。在/var/tftpd-hpa里面，可以看到tftpd的根路径。从参考3的的连接里面，你可以找到合适的一个下载路径，下载netboot.tar.gz到这个文件。解压后，可以看到pxelinux.0，这个和上面的pxelinux.0相对应。这是pxelinux的组件，隶属于syslinux项目，可以用来完成启动。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-这样，就完成了安装的所有准备工作。你可以找一个设备实验一下，应当可以完成网络安装的步骤。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-另外，如果需要启动选择amd64或者是i386，或者更进一步定制。那么需要下载其他镜像，自己生成pxelinux.cfg这个目录中的内容。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-1\. PXE &lt;http://wiki.debian.org/PXE&gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-2\. NetbootPXE &lt;http://wiki.debian.org/DebianInstaller/NetbootPXE&gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-3\. netinst &lt;http://www.debian.org/distrib/netinst&gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-4. 配置pxe，安装debian和ubuntu &lt;http://my.unix-center.net/~whtbie/wordpress/?p=290&gt;
-
-&lt;/div&gt;
-
-&lt;p&gt;&lt;/p&gt;
+&lt;li&gt;&lt;p&gt;配置pxe，安装debian和ubuntu&lt;a href=&#34;http://my.unix-center.net/~whtbie/wordpress/?p=290&#34;&gt;http://my.unix-center.net/~whtbie/wordpress/?p=290&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
 </description>
     </item>
     
@@ -2149,48 +1931,19 @@ tftpd-hpa。这是一个tftp服务器，默认不启动。如果你打算让pxe�
       <pubDate>Thu, 15 Dec 2011 11:00:46 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2016/</guid>
-      <description>&lt;div&gt;
+      <description>&lt;p&gt;在debian/rules里面，将这个：&lt;/p&gt;
 
-    在debian/rules里面，将这个：
+&lt;pre&gt;&lt;code&gt;%:
+    dh $@
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;/div&gt;
+&lt;p&gt;改为这个：&lt;/p&gt;
 
-&lt;div&gt;
+&lt;pre&gt;&lt;code&gt;%:
+    dh $@ --with python2
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;div&gt;
-
-%:
-
-&lt;/div&gt;
-
-&lt;p&gt;    dh \$@&lt;/p&gt;
-
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
-
-&lt;div&gt;
-
-    改为这个：
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-%:
-
-&lt;/div&gt;
-
-&lt;p&gt;    dh \$@ &amp;ndash;with python2&lt;br /&gt;
-&lt;div&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
-
-&lt;div&gt;
-
-    其余看[这里](http://wiki.debian.org/Python/TransitionToDHPython2)。
-
-&lt;/div&gt;
+&lt;p&gt;其余看&lt;a href=&#34;http://wiki.debian.org/Python/TransitionToDHPython2&#34;&gt;这里&lt;/a&gt;。&lt;/p&gt;
 </description>
     </item>
     
@@ -2200,189 +1953,49 @@ tftpd-hpa。这是一个tftp服务器，默认不启动。如果你打算让pxe�
       <pubDate>Tue, 27 Sep 2011 10:28:02 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/1919/</guid>
-      <description>&lt;p&gt;好了，debian官方的uwsgi总算出来了。包已经到了testing，stable暂时别指望了，等下一次release吧。这次打的包，比贝壳打的复杂多了。贝壳自己只打了python专用的包，debian官方的包将多个语言分别打成了plugins。
-&lt;div&gt;&lt;/p&gt;
+      <description>&lt;p&gt;好了，debian官方的uwsgi总算出来了。包已经到了testing，stable暂时别指望了，等下一次release吧。这次打的包，比贝壳打的复杂多了。贝壳自己只打了python专用的包，debian官方的包将多个语言分别打成了plugins。&lt;/p&gt;
 
-&lt;p&gt;    下面说说，使用debian官方的包如何做uwsgi发布，还是vhost模式哦。&lt;/p&gt;
+&lt;p&gt;下面说说，使用debian官方的包如何做uwsgi发布，还是vhost模式哦。&lt;/p&gt;
 
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
+&lt;p&gt;首先安装uwsgi，uwsgi-plugin-python这两个包。uwsgi-plugin-greenlet-python也可以考虑，装不装看你的需求。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;然后在/etc/uwsgi/apps-available/sites.xml下面写一个文本文件，内容如下：&lt;/p&gt;
 
-   
-首先安装uwsgi，uwsgi-plugin-python这两个包。uwsgi-plugin-greenlet-python也可以考虑，装不装看你的需求。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-然后在/etc/uwsgi/apps-available/sites.xml下面写一个文本文件，内容如下：
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;div&gt;
-
-&amp;lt;uwsgi&amp;gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt; &lt;/span&gt;&amp;lt;vhost/&amp;gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt; &lt;/span&gt;&amp;lt;no-site/&amp;gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
+&lt;pre&gt;&lt;code&gt;&amp;lt;uwsgi&amp;gt;
+&amp;lt;vhost/&amp;gt;
+&amp;lt;no-site/&amp;gt;
 &amp;lt;/uwsgi&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;/div&gt;
+&lt;p&gt;再从/etc/uwsgi/apps-enabled/sites.xml链接过去，重启uwsgi服务，事情就搞定了。&lt;/p&gt;
 
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
+&lt;p&gt;默认的配置在/usr/share/uwsgi/conf/default.ini，可以看看是否都满意了。一般来说，master和no-orphans都建议打开，chmod-socket最高660，改成600应该也可以工作。贝壳的机器负载小，只用一个worker就够了，所以完整的配置是这样的：&lt;/p&gt;
 
-&lt;div&gt;
-
-   
-再从/etc/uwsgi/apps-enabled/sites.xml链接过去，重启uwsgi服务，事情就搞定了。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-默认的配置在/usr/share/uwsgi/conf/default.ini，可以看看是否都满意了。一般来说，master和no-orphans都建议打开，chmod-socket最高660，改成600应该也可以工作。贝壳的机器负载小，只用一个worker就够了，所以完整的配置是这样的：
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;div&gt;
-
-&amp;lt;uwsgi&amp;gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;&amp;lt;plugins&amp;gt;greenlet,ugreen&amp;lt;/plugins&amp;gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;&amp;lt;workers&amp;gt;1&amp;lt;/workers&amp;gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;&amp;lt;reload-on-as&amp;gt;128&amp;lt;/reload-on-as&amp;gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt; &lt;/span&gt;&amp;lt;vhost/&amp;gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt; &lt;/span&gt;&amp;lt;no-site/&amp;gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
+&lt;pre&gt;&lt;code&gt;&amp;lt;uwsgi&amp;gt;
+    &amp;lt;plugins&amp;gt;greenlet,ugreen&amp;lt;/plugins&amp;gt;
+    &amp;lt;workers&amp;gt;1&amp;lt;/workers&amp;gt;
+    &amp;lt;reload-on-as&amp;gt;128&amp;lt;/reload-on-as&amp;gt;
+    &amp;lt;vhost/&amp;gt;
+    &amp;lt;no-site/&amp;gt;
 &amp;lt;/uwsgi&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;/div&gt;
+&lt;p&gt;nginx里面如此设定：&lt;/p&gt;
 
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
-
-&lt;div&gt;
-
-    nginx里面如此设定：
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;div&gt;
-
-location /asdf {
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt; &lt;/span&gt; include&lt;span
-style=&#34;white-space:pre-wrap&#34;&gt; &lt;/span&gt;uwsgi\_params;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt; &lt;/span&gt; uwsgi\_param&lt;span
-style=&#34;white-space:pre-wrap&#34;&gt; &lt;/span&gt;UWSGI\_PYHOME /usr;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt; &lt;/span&gt; uwsgi\_param&lt;span
-style=&#34;white-space:pre-wrap&#34;&gt; &lt;/span&gt;UWSGI\_CHDIR /var/web/hosts;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt; &lt;/span&gt; uwsgi\_param&lt;span
-style=&#34;white-space:pre-wrap&#34;&gt; &lt;/span&gt;UWSGI\_SCRIPT main;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt; &lt;/span&gt; uwsgi\_pass&lt;span
-style=&#34;white-space:pre-wrap&#34;&gt; &lt;/span&gt;unix:/run/uwsgi/sites/socket;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
+&lt;pre&gt;&lt;code&gt;location /asdf {
+    include uwsgi\_params;
+    uwsgi\_param UWSGI\_PYHOME /usr;
+    uwsgi\_param UWSGI\_CHDIR /var/web/hosts;
+    uwsgi\_param UWSGI\_SCRIPT main;
+    uwsgi\_pass unix:/run/uwsgi/sites/socket;
 }
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;/div&gt;
+&lt;p&gt;其中，我的程序放在/var/web/hosts底下，使用系统环境来运行（而不是virtualenv），主脚本（带applications那个）是main.py。unix&lt;/p&gt;
 
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
+&lt;p&gt;socket和上文default.ini里面的socket正好对应上。&lt;/p&gt;
 
-&lt;div&gt;
-
-   
-其中，我的程序放在/var/web/hosts底下，使用系统环境来运行（而不是virtualenv），主脚本（带applications那个）是main.py。unix
-socket和上文default.ini里面的socket正好对应上。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-同理，我们其实还可以开多个uwsgi应用，只要放置多个xml配置就好。不过既然都采用了vhost模式，何必还开多个呢？这毕竟不是虚拟网站，要给其他人使用的。
-
-&lt;/div&gt;
+&lt;p&gt;同理，我们其实还可以开多个uwsgi应用，只要放置多个xml配置就好。不过既然都采用了vhost模式，何必还开多个呢？这毕竟不是虚拟网站，要给其他人使用的。&lt;/p&gt;
 </description>
     </item>
     
@@ -2392,102 +2005,17 @@ socket和上文default.ini里面的socket正好对应上。
       <pubDate>Fri, 26 Aug 2011 15:52:30 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/1895/</guid>
-      <description>&lt;p&gt;如果前面有人接手了，你最好和前任联系一下，看看是否可以获得他的帮助，或者跟着他的思路继续做下去。
-&lt;div&gt;&lt;/p&gt;
+      <description>&lt;p&gt;如果前面有人接手了，你最好和前任联系一下，看看是否可以获得他的帮助，或者跟着他的思路继续做下去。&lt;/p&gt;
 
-&lt;p&gt;   
-debian有一个比较变态的规定，你的打包内容，必须遵循FHS。有些程序写的数据放到了程序路径下面，你需要进行人工分离（这个花了我整整两天）。&lt;/p&gt;
+&lt;p&gt;debian有一个比较变态的规定，你的打包内容，必须遵循FHS。有些程序写的数据放到了程序路径下面，你需要进行人工分离（这个花了我整整两天）。&lt;/p&gt;
 
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
+&lt;p&gt;求RFS比ITP难多了&amp;hellip;&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;&amp;hellip;.&lt;/p&gt;
 
-    求RFS比ITP难多了...
+&lt;p&gt;&amp;hellip;&amp;hellip;.&lt;/p&gt;
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-....
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-.......
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-求RFS。\
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
+&lt;p&gt;求RFS。&lt;/p&gt;
 </description>
     </item>
     

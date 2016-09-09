@@ -933,189 +933,49 @@ clone &lt;https://github.com/indygreg/collectd-carbon.git&gt; carbon
       <pubDate>Tue, 27 Sep 2011 10:28:02 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/1919/</guid>
-      <description>&lt;p&gt;好了，debian官方的uwsgi总算出来了。包已经到了testing，stable暂时别指望了，等下一次release吧。这次打的包，比贝壳打的复杂多了。贝壳自己只打了python专用的包，debian官方的包将多个语言分别打成了plugins。
-&lt;div&gt;&lt;/p&gt;
+      <description>&lt;p&gt;好了，debian官方的uwsgi总算出来了。包已经到了testing，stable暂时别指望了，等下一次release吧。这次打的包，比贝壳打的复杂多了。贝壳自己只打了python专用的包，debian官方的包将多个语言分别打成了plugins。&lt;/p&gt;
 
-&lt;p&gt;    下面说说，使用debian官方的包如何做uwsgi发布，还是vhost模式哦。&lt;/p&gt;
+&lt;p&gt;下面说说，使用debian官方的包如何做uwsgi发布，还是vhost模式哦。&lt;/p&gt;
 
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
+&lt;p&gt;首先安装uwsgi，uwsgi-plugin-python这两个包。uwsgi-plugin-greenlet-python也可以考虑，装不装看你的需求。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;然后在/etc/uwsgi/apps-available/sites.xml下面写一个文本文件，内容如下：&lt;/p&gt;
 
-   
-首先安装uwsgi，uwsgi-plugin-python这两个包。uwsgi-plugin-greenlet-python也可以考虑，装不装看你的需求。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-然后在/etc/uwsgi/apps-available/sites.xml下面写一个文本文件，内容如下：
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;div&gt;
-
-&amp;lt;uwsgi&amp;gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt; &lt;/span&gt;&amp;lt;vhost/&amp;gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt; &lt;/span&gt;&amp;lt;no-site/&amp;gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
+&lt;pre&gt;&lt;code&gt;&amp;lt;uwsgi&amp;gt;
+&amp;lt;vhost/&amp;gt;
+&amp;lt;no-site/&amp;gt;
 &amp;lt;/uwsgi&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;/div&gt;
+&lt;p&gt;再从/etc/uwsgi/apps-enabled/sites.xml链接过去，重启uwsgi服务，事情就搞定了。&lt;/p&gt;
 
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
+&lt;p&gt;默认的配置在/usr/share/uwsgi/conf/default.ini，可以看看是否都满意了。一般来说，master和no-orphans都建议打开，chmod-socket最高660，改成600应该也可以工作。贝壳的机器负载小，只用一个worker就够了，所以完整的配置是这样的：&lt;/p&gt;
 
-&lt;div&gt;
-
-   
-再从/etc/uwsgi/apps-enabled/sites.xml链接过去，重启uwsgi服务，事情就搞定了。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-默认的配置在/usr/share/uwsgi/conf/default.ini，可以看看是否都满意了。一般来说，master和no-orphans都建议打开，chmod-socket最高660，改成600应该也可以工作。贝壳的机器负载小，只用一个worker就够了，所以完整的配置是这样的：
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;div&gt;
-
-&amp;lt;uwsgi&amp;gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;&amp;lt;plugins&amp;gt;greenlet,ugreen&amp;lt;/plugins&amp;gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;&amp;lt;workers&amp;gt;1&amp;lt;/workers&amp;gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;&amp;lt;reload-on-as&amp;gt;128&amp;lt;/reload-on-as&amp;gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt; &lt;/span&gt;&amp;lt;vhost/&amp;gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt; &lt;/span&gt;&amp;lt;no-site/&amp;gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
+&lt;pre&gt;&lt;code&gt;&amp;lt;uwsgi&amp;gt;
+    &amp;lt;plugins&amp;gt;greenlet,ugreen&amp;lt;/plugins&amp;gt;
+    &amp;lt;workers&amp;gt;1&amp;lt;/workers&amp;gt;
+    &amp;lt;reload-on-as&amp;gt;128&amp;lt;/reload-on-as&amp;gt;
+    &amp;lt;vhost/&amp;gt;
+    &amp;lt;no-site/&amp;gt;
 &amp;lt;/uwsgi&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;/div&gt;
+&lt;p&gt;nginx里面如此设定：&lt;/p&gt;
 
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
-
-&lt;div&gt;
-
-    nginx里面如此设定：
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;div&gt;
-
-location /asdf {
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt; &lt;/span&gt; include&lt;span
-style=&#34;white-space:pre-wrap&#34;&gt; &lt;/span&gt;uwsgi\_params;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt; &lt;/span&gt; uwsgi\_param&lt;span
-style=&#34;white-space:pre-wrap&#34;&gt; &lt;/span&gt;UWSGI\_PYHOME /usr;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt; &lt;/span&gt; uwsgi\_param&lt;span
-style=&#34;white-space:pre-wrap&#34;&gt; &lt;/span&gt;UWSGI\_CHDIR /var/web/hosts;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt; &lt;/span&gt; uwsgi\_param&lt;span
-style=&#34;white-space:pre-wrap&#34;&gt; &lt;/span&gt;UWSGI\_SCRIPT main;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt; &lt;/span&gt; uwsgi\_pass&lt;span
-style=&#34;white-space:pre-wrap&#34;&gt; &lt;/span&gt;unix:/run/uwsgi/sites/socket;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
+&lt;pre&gt;&lt;code&gt;location /asdf {
+    include uwsgi\_params;
+    uwsgi\_param UWSGI\_PYHOME /usr;
+    uwsgi\_param UWSGI\_CHDIR /var/web/hosts;
+    uwsgi\_param UWSGI\_SCRIPT main;
+    uwsgi\_pass unix:/run/uwsgi/sites/socket;
 }
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;/div&gt;
+&lt;p&gt;其中，我的程序放在/var/web/hosts底下，使用系统环境来运行（而不是virtualenv），主脚本（带applications那个）是main.py。unix&lt;/p&gt;
 
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
+&lt;p&gt;socket和上文default.ini里面的socket正好对应上。&lt;/p&gt;
 
-&lt;div&gt;
-
-   
-其中，我的程序放在/var/web/hosts底下，使用系统环境来运行（而不是virtualenv），主脚本（带applications那个）是main.py。unix
-socket和上文default.ini里面的socket正好对应上。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-同理，我们其实还可以开多个uwsgi应用，只要放置多个xml配置就好。不过既然都采用了vhost模式，何必还开多个呢？这毕竟不是虚拟网站，要给其他人使用的。
-
-&lt;/div&gt;
+&lt;p&gt;同理，我们其实还可以开多个uwsgi应用，只要放置多个xml配置就好。不过既然都采用了vhost模式，何必还开多个呢？这毕竟不是虚拟网站，要给其他人使用的。&lt;/p&gt;
 </description>
     </item>
     

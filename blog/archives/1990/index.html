@@ -112,110 +112,48 @@ ga('send', 'pageview');
           
           
           
-          <p>项目的主页是<a href="http://code.google.com/p/python-segment/">http://code.google.com/p/python-segment/</a>，如果有问题，可以在上面提交issue，我会收到邮件（google
-code会么？应该会吧）。如果你希望协助开发，可以加入项目。一些简单问题可以直接看项目的WIKI，Wiki中有的一些内容我不会进一步解释，只会告诉你在那里可以看到。
-<div></p>
-
-<p><br />
-<div></p>
+          <p>项目的主页是<a href="http://code.google.com/p/python-segment/">http://code.google.com/p/python-segment/</a>，如果有问题，可以在上面提交issue，我会收到邮件（google code会么？应该会吧）。如果你希望协助开发，可以加入项目。一些简单问题可以直接看项目的WIKI，Wiki中有的一些内容我不会进一步解释，只会告诉你在那里可以看到。</p>
 
 <p>1.如何获得源码</p>
 
-<p></div></p>
+<p>你可以使用以下代码，直接从版本库中复制一个可用版本出来。</p>
 
-<div>
+<pre><code>hg clone https://shell909090@code.google.com/p/python-segment/
+</code></pre>
 
-你可以使用以下代码，直接从版本库中复制一个可用版本出来。
+<p>或者可以从<a href="http://code.google.com/p/python-segment/downloads/list">这里</a>下载一个最新版本的包。</p>
 
-``` {style="font-size:12px;padding-top:0.5em;padding-right:0.5em;padding-bottom:0.5em;padding-left:0.5em;font-family:Monaco,'DejaVu Sans Mono','Bitstream Vera Sans Mono','Lucida Console',monospace;max-width:70em;background-color:rgb(255,255,255)"}
+<p>2.如何准备环境</p>
 
-hg clone https://shell909090@code.google.com/p/python-segment/
-```
+<p>你可以看INSTALL，里面讲解的比较详细了。如果你不准备进行安装部署，可以跳过安装和打包这两步。但是如果你打算使用cutter工具，请安装chardet。如果你打算使用spider工具，请安装html2text。</p>
 
-或者可以从[这里](http://code.google.com/p/python-segment/downloads/list)下载一个最新版本的包。
+<p>首先按照如下方式生成词典。</p>
 
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-2.如何准备环境
-
-</div>
-
-<div>
-
-   
-你可以看INSTALL，里面讲解的比较详细了。如果你不准备进行安装部署，可以跳过安装和打包这两步。但是如果你打算使用cutter工具，请安装chardet。如果你打算使用spider工具，请安装html2text。
-
-</div>
-
-<div>
-
-    首先按照如下方式生成词典。
-
-</div>
-
-<div>
-
-``` {style="font-size:12px;padding-top:0.5em;padding-right:0.5em;padding-bottom:0.5em;padding-left:0.5em;font-family:Monaco,'DejaVu Sans Mono','Bitstream Vera Sans Mono','Lucida Console',monospace;max-width:70em;background-color:rgb(255,255,255)"}
-
-gunzip dict.tar.gz
+<pre><code>gunzip dict.tar.gz
 ./ps_dbmgr create dict.txt
-```
+</code></pre>
 
-   
-然后，你可以看到生成了frq.db，这是词典的默认文件名。注意，词典文件的格式和具体的版本有关，换用版本后最好重新生成词典。
+<p>然后，你可以看到生成了frq.db，这是词典的默认文件名。注意，词典文件的格式和具体的版本有关，换用版本后最好重新生成词典。</p>
 
-</div>
+<p>3.试验分词</p>
 
-<div>
+<p>假定有一个文本文件，test.txt，里面内容是中文平文本，编码任意。</p>
 
-\
+<pre><code>./ps_cutter cutshow test.txt
+</code></pre>
 
-</div>
+<p>cutter会自动推测编码。</p>
 
-<div>
+<p>4.代码使用</p>
 
-3.试验分词
+<p>假如当前有一个frq.db词库。</p>
 
-</div>
-
-<div>
-
-    假定有一个文本文件，test.txt，里面内容是中文平文本，编码任意。
-
-``` {style="font-size:12px;padding-top:0.5em;padding-right:0.5em;padding-bottom:0.5em;padding-left:0.5em;font-family:Monaco,'DejaVu Sans Mono','Bitstream Vera Sans Mono','Lucida Console',monospace;max-width:70em;background-color:rgb(255,255,255)"}
-
-./ps_cutter cutshow test.txt
-```
-
-    cutter会自动推测编码。
-
-4.代码<span
-style="font-family:arial;line-height:normal;font-size:small">使用</span>
-
-假如当前有一个frq.db词库。
-
-``` {style="font-size:12px;padding-top:0.5em;padding-right:0.5em;padding-bottom:0.5em;padding-left:0.5em;font-family:Monaco,'DejaVu Sans Mono','Bitstream Vera Sans Mono','Lucida Console',monospace;max-width:70em;line-height:normal"}
-
-import segment
+<pre><code>import segment
 cut = segment.get_cutter('frq.db')
+print list(cut.parse(u'工信处女干事每月经过下属科室都要亲口交代24口交换机等技术性器件的安装工作'))
+</code></pre>
 
-
- print list(cut.parse(u'工信处女干事每月经过下属科室都要亲口交代24口交换机等技术性器件的安装工作'))
-```
-
-注意，仅仅使用parse是不会进行分词的，因为parse返回的是一个生成器。
-
-</div>
-
-<p></div></p>
+<p>注意，仅仅使用parse是不会进行分词的，因为parse返回的是一个生成器。</p>
 
         </div>
         

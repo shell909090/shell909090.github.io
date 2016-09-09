@@ -16,154 +16,51 @@
       <pubDate>Thu, 06 Jan 2011 10:14:00 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/1670/</guid>
-      <description>&lt;p&gt;又是科普文，行家免入。
-&lt;div&gt;&lt;/p&gt;
+      <description>&lt;p&gt;又是科普文，行家免入。&lt;/p&gt;
 
-&lt;p&gt;  
- 关于虚拟机的一些比较充分的讲解，可以看这里（&lt;a href=&#34;http://zh.wikipedia.org/zh-cn/%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%AF%94%E8%BE%83&#34;&gt;http://zh.wikipedia.org/zh-cn/虚拟机比较&lt;/a&gt;）。下文是对linux下希望实现虚拟化和被虚拟化的情况提出一些简洁的说明。&lt;/p&gt;
+&lt;p&gt;关于虚拟机的一些比较充分的讲解，可以看这里（&lt;a href=&#34;http://zh.wikipedia.org/zh-cn/%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%AF%94%E8%BE%83&#34;&gt;http://zh.wikipedia.org/zh-cn/虚拟机比较&lt;/a&gt;）。下文是对linux下希望实现虚拟化和被虚拟化的情况提出一些简洁的说明。&lt;/p&gt;
 
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
+&lt;p&gt;1.windows下虚拟出linux。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;不在意版权的人可以装个vmware 6.0以上，在意版权的装virtualbox开源版。字符界面通常分配128M内存，512M交换分区。图形界面512M内存，1024M交换分区。硬盘大小视各个发行会有所不同。对于多数工作用的系统，建议使用debian stable安装后升级到testing，稳定好用，最主要是简洁。128M内存512M交换8G的磁盘，足够系统安装和大部分的开发/运行。&lt;/p&gt;
 
-    1.windows下虚拟出linux。
+&lt;p&gt;2.linux下虚拟windows。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;啥都别说，装virtualbox吧。破解vmware是很蛋疼的一件事情，装ESX就更蛋疼了。建议，XP512M内存以上，要稳定使用至少1G。倒是页面文件，只要512M就差不多了。硬盘至少准备16G以上，否则安装程序加运行数据，十有八九会空间不足。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;3.linux下虚拟linux。&lt;/p&gt;
 
-    不在意版权的人可以装个vmware
-6.0以上，在意版权的装virtualbox开源版。字符界面通常分配128M内存，512M交换分区。图形界面512M内存，1024M交换分区。硬盘大小视各个发行会有所不同。对于多数工作用的系统，建议使用debian
-stable安装后升级到testing，稳定好用，最主要是简洁。128M内存512M交换8G的磁盘，足够系统安装和大部分的开发/运行。
+&lt;p&gt;主要可用方案分为四类，系统虚拟化，半虚拟化，全虚拟化，硬件虚拟化，分别介绍。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;4.linux下虚拟一些比较怪的东西。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;这是职业玩家了，例如minix，或者freenas。改天写写后者，挺不错的一个创意。&lt;/p&gt;
 
-    2.linux下虚拟windows。
+&lt;p&gt;1.全虚拟化&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;vmware是这种技术的代表。全虚拟化的特征是可以运行完全不同的系统，例如linux下运行windows。virtualbox是开源中做全虚拟化做的比较好的一款软件。当然，即使是全虚拟化，也必须是同一类CPU，例如32位虚拟64位CPU就不给力了。要虚拟不同的CPU，是CPU虚拟化，例如bochs和pearpc。速度大约是真机器的几十分之一，除了调试程序外没别的用途。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;全虚拟化比较适合玩玩其他系统，其他可以选用的方案有，vmware，virtualbox，virtual pc，qemu。&lt;/p&gt;
 
-  
- 啥都别说，装virtualbox吧。破解vmware是很蛋疼的一件事情，装ESX就更蛋疼了。建议，XP512M内存以上，要稳定使用至少1G。倒是页面文件，只要512M就差不多了。硬盘至少准备16G以上，否则安装程序加运行数据，十有八九会空间不足。
+&lt;p&gt;2.半虚拟化&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;Xen是这种技术的代表。通过修改的真机内核和客户机内核来支持虚拟化。优点是效率比全虚拟化高，缺点是客户机必须是可以修改内核的，这将windows排除在外。但是从理论上，可以在linux的xen上运行freebsd系统，两者都是开放内核源码的系统。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;半虚拟化技术一般被拿来做VPS比较多，基本没有其他可选用的方案。&lt;/p&gt;
 
-    3.linux下虚拟linux。
+&lt;p&gt;3.系统虚拟化&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;OpenVZ是这种技术的代表。这种技术通过系统内核级别的代码修改来支持虚拟化。优点是效率比半虚拟化更高，缺点是客户机和服务器必须是同一个内核。因此真机和客户机都必须是linux（或者其他相同系统，例如freebsd），但是可以是不同发行（例如真机debian客户机centos），而且客户机不能自由加载内核模块。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;系统虚拟化也被用来做VPS，但是这种VPS有强烈的超卖可能，因此不推荐使用。反倒是在同一个公司内，因为某些原因需要将多个程序部署在多台设备上，每台设备所需的资源又不多的时候，比较适合用。其他可选用的方案有jails，vserver，virtuozzo。&lt;/p&gt;
 
-  
- 主要可用方案分为四类，系统虚拟化，半虚拟化，全虚拟化，硬件虚拟化，分别介绍。
+&lt;p&gt;4.硬件虚拟化&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;kvm是这种技术的代表。当然，vmware workstation，virtualbox等也可以支持这种技术。这种技术是未来虚拟化的大趋势。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;硬件虚拟化，是使用CPU和其他硬件的特殊设计，辅助虚拟化的进行。通过硬件虚拟化，虚拟机的执行效率往往可以达到和半虚拟化相似甚至超过的地步，而不需要客户系统的特殊配合。从设计理论上说，完整的硬件虚拟化应当可以在客户机上再执行全套的硬件虚拟化，如VM/370。但是目前Intel和AMD的家用CPU系列只支持在真机上创建一系列虚拟机实例，这些虚拟机的内部是不支持硬件虚拟化的。&lt;/p&gt;
 
-    4.linux下虚拟一些比较怪的东西。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-  
- 这是职业玩家了，例如minix，或者freenas。改天写写后者，挺不错的一个创意。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    1.全虚拟化
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-  
- vmware是这种技术的代表。全虚拟化的特征是可以运行完全不同的系统，例如linux下运行windows。virtualbox是开源中做全虚拟化做的比较好的一款软件。当然，即使是全虚拟化，也必须是同一类CPU，例如32位虚拟64位CPU就不给力了。要虚拟不同的CPU，是CPU虚拟化，例如bochs和pearpc。速度大约是真机器的几十分之一，除了调试程序外没别的用途。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-  
- 全虚拟化比较适合玩玩其他系统，其他可以选用的方案有，vmware，virtualbox，virtual
-pc，qemu。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    2.半虚拟化
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-  
- Xen是这种技术的代表。通过修改的真机内核和客户机内核来支持虚拟化。优点是效率比全虚拟化高，缺点是客户机必须是可以修改内核的，这将windows排除在外。但是从理论上，可以在linux的xen上运行freebsd系统，两者都是开放内核源码的系统。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    半虚拟化技术一般被拿来做VPS比较多，基本没有其他可选用的方案。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    3.系统虚拟化
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-  
- OpenVZ是这种技术的代表。这种技术通过系统内核级别的代码修改来支持虚拟化。优点是效率比半虚拟化更高，缺点是客户机和服务器必须是同一个内核。因此真机和客户机都必须是linux（或者其他相同系统，例如freebsd），但是可以是不同发行（例如真机debian客户机centos），而且客户机不能自由加载内核模块。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-  
- 系统虚拟化也被用来做VPS，但是这种VPS有强烈的超卖可能，因此不推荐使用。反倒是在同一个公司内，因为某些原因需要将多个程序部署在多台设备上，每台设备所需的资源又不多的时候，比较适合用。其他可选用的方案有jails，vserver，virtuozzo。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    4.硬件虚拟化
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    kvm是这种技术的代表。当然，vmware
-workstation，virtualbox等也可以支持这种技术。这种技术是未来虚拟化的大趋势。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-  
- 硬件虚拟化，是使用CPU和其他硬件的特殊设计，辅助虚拟化的进行。通过硬件虚拟化，虚拟机的执行效率往往可以达到和半虚拟化相似甚至超过的地步，而不需要客户系统的特殊配合。从设计理论上说，完整的硬件虚拟化应当可以在客户机上再执行全套的硬件虚拟化，如VM/370。但是目前Intel和AMD的家用CPU系列只支持在真机上创建一系列虚拟机实例，这些虚拟机的内部是不支持硬件虚拟化的。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-  
- 硬件虚拟化可以用在VPS/机器切分/新系统尝试等各种环境中，其他备选的方案有，vmware
-workstation，virtualbox，virtual pc，qemu。
-
-&lt;/div&gt;
+&lt;p&gt;硬件虚拟化可以用在VPS/机器切分/新系统尝试等各种环境中，其他备选的方案有，vmware workstation，virtualbox，virtual pc，qemu。&lt;/p&gt;
 </description>
     </item>
     

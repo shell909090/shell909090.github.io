@@ -112,108 +112,51 @@ ga('send', 'pageview');
           
           
           
-          <p>x509证书一般会用到三类文件，key，csr，crt。key是私用密钥，openssl格式，通常是rsa算法，爱咋用咋用的。csr是证书请求文件，用于申请证书。在申请的时候，必须使用自己的私钥来签署申请，还可以设定一个密钥。crt是证书文件（windows下面的csr，其实是crt），是签署人用自己的key给你签署的凭证。<span
-style="font-family: Tahoma,sans-serif; line-height: 16px;">通常签名证书的时候都需要一个序列号，避免两个证书重复，当指明序列文件后，被签名证书会使用这个文件，并且文件会发生变化。另外一个额外说明的东西是dh参数，做openvpn的时候需要这个东西，大致是什么算法的初始参数，在下面有生成方法。</span><br />
-<br />
-key的生成方法：<br />
-openssl genrsa -des3 -out in.key 2048<br />
-   
-这样是生成rsa私钥，des3算法，openssl格式，2048位强度。ca.key是文件名。<br />
-    为了生成这样的密钥，需要一个至少四位的密码。可以通过以下方法去除。<br />
-openssl rsa -in in.key -out out.key<br />
-    输入密钥后，out.key就是没有密码的版本了。<br />
-<br />
-csr的生成方法：<br />
-<span
-style="border-collapse: separate; color: rgb(0, 0, 0); font-family: 'AR PL UKai CN'; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; line-height: normal; text-indent: 0px; text-transform: none; white-space: normal; word-spacing: 0px; font-size: medium;"><span
-style="color: rgb(187, 187, 187); font-family: Tahoma,sans-serif; font-size: 12px; line-height: 16px; text-align: left;"><span
-style="color: rgb(0, 0, 0);">openssl req -new -key server.key -out
-server.csr<br />
-    需要依次输入国家，地区，组织，email。最重要的是，有一个common
-name，可以写你的名字或者域名。如果为了https申请，这个必须和域名吻合，否则会引发浏览器警报。</span></span></span><br />
-<span
-style="border-collapse: separate; color: rgb(0, 0, 0); font-family: 'AR PL UKai CN'; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; line-height: normal; text-indent: 0px; text-transform: none; white-space: normal; word-spacing: 0px; font-size: medium;"><span
-style="color: rgb(187, 187, 187); font-family: Tahoma,sans-serif; font-size: 12px; line-height: 16px; text-align: left;"><span
-style="color: rgb(0, 0, 0);"><br />
-crt生成方法：</span></span></span>
-<div></p>
+          <p>x509证书一般会用到三类文件，key，csr，crt。key是私用密钥，openssl格式，通常是rsa算法，爱咋用咋用的。csr是证书请求文件，用于申请证书。在申请的时候，必须使用自己的私钥来签署申请，还可以设定一个密钥。crt是证书文件（windows下面的csr，其实是crt），是签署人用自己的key给你签署的凭证。通常签名证书的时候都需要一个序列号，避免两个证书重复，当指明序列文件后，被签名证书会使用这个文件，并且文件会发生变化。另外一个额外说明的东西是dh参数，做openvpn的时候需要这个东西，大致是什么算法的初始参数，在下面有生成方法。</p>
 
-<p><span
-style="border-collapse: separate; color: rgb(0, 0, 0); font-family: 'AR PL UKai CN'; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; line-height: normal; text-indent: 0px; text-transform: none; white-space: normal; word-spacing: 0px; font-size: medium;"><span
-style="color: rgb(187, 187, 187); font-family: Tahoma,sans-serif; font-size: 12px; line-height: 16px; text-align: left;"><span
-style="color: rgb(0, 0, 0);">openssl x509 -md5 -days 3560 -req -CA
-ca.crt -CAkey ca.key -CAcreateserial -CAserial ca.srl -in server.csr
--out server.crt<br />
-   
-输入key的密钥后，完成证书生成。-CA选项指明用于签名的ca证书，-CAkey选项指明用于签名的密钥。</span></span></span><span
-style="font-family: Tahoma,sans-serif; line-height: 16px;">-CAserial指明序列号文件，而</span><span
-style="font-family: Tahoma,sans-serif; line-height: 16px;">-CAcreateserial指明文件不存在时自动生成。</span>
-<div></p>
+<p>key的生成方法：</p>
 
-<p><span
-style="border-collapse: separate; color: rgb(0, 0, 0); font-family: 'AR PL UKai CN'; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; line-height: normal; text-indent: 0px; text-transform: none; white-space: normal; word-spacing: 0px; font-size: medium;"><span
-style="color: rgb(187, 187, 187); font-family: Tahoma,sans-serif; font-size: 12px; line-height: 16px; text-align: left;"><span
-style="color: rgb(0, 0, 0);">openssl req -new -x509 -days 3650 -key
-ca.key -out ca.crt</span></span></span></p>
+<pre><code>openssl genrsa -des3 -out in.key 2048
+</code></pre>
 
-<p></div></p>
+<p>这样是生成rsa私钥，des3算法，openssl格式，2048位强度。ca.key是文件名。为了生成这样的密钥，需要一个至少四位的密码。可以通过以下方法去除。</p>
 
-<div>
+<pre><code>openssl rsa -in in.key -out out.key
+</code></pre>
 
-<span
-style="border-collapse: separate; color: rgb(0, 0, 0); font-family: 'AR PL UKai CN'; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; line-height: normal; text-indent: 0px; text-transform: none; white-space: normal; word-spacing: 0px; font-size: medium;"><span
-style="color: rgb(187, 187, 187); font-family: Tahoma,sans-serif; font-size: 12px; line-height: 16px; text-align: left;"><span
-style="color: rgb(0, 0, 0);">    这个是用于生成自签名证书的。\
-\
-</span></span></span>
+<p>输入密钥后，out.key就是没有密码的版本了。</p>
 
-</div>
+<p>csr的生成方法：</p>
 
-<div style="text-align: left;">
+<pre><code>openssl req -new -key server.key -out server.csr
+</code></pre>
 
-<span style="line-height: 16px;">dh参数生成方法：</span>
+<p>需要依次输入国家，地区，组织，email。最重要的是，有一个common name，可以写你的名字或者域名。如果为了https申请，这个必须和域名吻合，否则会引发浏览器警报。</p>
 
-</div>
+<p>crt生成方法：</p>
 
-<div style="text-align: left;">
+<pre><code>openssl x509 -md5 -days 3560 -req -CA ca.crt -CAkey ca.key -CAcreateserial -CAserial ca.srl -in server.csr -out server.crt
+</code></pre>
 
-<span style="line-height: 16px;">openssl dhparam -out dh1024.pem
-1024</span>
+<p>输入key的密钥后，完成证书生成。-CA选项指明用于签名的ca证书，-CAkey选项指明用于签名的密钥。-CAserial指明序列号文件，而-CAcreateserial指明文件不存在时自动生成。</p>
 
-</div>
+<pre><code>openssl req -new -x509 -days 3650 -key ca.key -out ca.crt
+</code></pre>
 
-<div style="text-align: left;">
+<p>这个是用于生成自签名证书的。</p>
 
-<span style="line-height: 16px;">  
- 1024是位数，一般1024已经够了。</span>
+<p>dh参数生成方法：</p>
 
-</div>
+<pre><code>openssl dhparam -out dh1024.pem
+</code></pre>
 
-<div>
+<p>1024是位数，一般1024已经够了。</p>
 
-<span
-style="border-collapse: separate; color: rgb(0, 0, 0); font-family: 'AR PL UKai CN'; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; line-height: normal; text-indent: 0px; text-transform: none; white-space: normal; word-spacing: 0px; font-size: medium;"><span
-style="color: rgb(187, 187, 187); font-family: Tahoma,sans-serif; font-size: 12px; line-height: 16px; text-align: left;"><span
-style="color: rgb(0, 0, 0);">\
-   
-x509的证书链是这样的。crt上有证书持有人的信息，持有人的公钥，签署者的签名。当你安装了一个证书后，就信任了这份证书。证书上会说明用途，例如服务器认证，客户端认证，或者签署其他证书。当系统收到一份新的证书的时候，证书会说明，是由谁签署的。如果这个签署者确实可以签署其他证书，并且收到证书上的签名和签署者的公钥可以对上的时候，系统就自动信任新的证书。\
-   
-在系统开始的时候，会自动安装信任一些证书机构，这些被称为根证书机构（CA）。根证书机构会为其他公司颁发证书，用于各种用途。当然，被签署的证书也可能是一份“可签署证书”，这样就要检查对方的资质。这样逐层签署，就会形成一个叫做“证书链”的东西。从拓扑结构上来说，其实应该是森林结构。</span></span></span>
+<p>x509的证书链是这样的。crt上有证书持有人的信息，持有人的公钥，签署者的签名。当你安装了一个证书后，就信任了这份证书。证书上会说明用途，例如服务器认证，客户端认证，或者签署其他证书。当系统收到一份新的证书的时候，证书会说明，是由谁签署的。如果这个签署者确实可以签署其他证书，并且收到证书上的签名和签署者的公钥可以对上的时候，系统就自动信任新的证书。</p>
 
-</div>
+<p>在系统开始的时候，会自动安装信任一些证书机构，这些被称为根证书机构（CA）。根证书机构会为其他公司颁发证书，用于各种用途。当然，被签署的证书也可能是一份“可签署证书”，这样就要检查对方的资质。这样逐层签署，就会形成一个叫做“证书链”的东西。从拓扑结构上来说，其实应该是森林结构。</p>
 
-<div>
-
-<span
-style="border-collapse: separate; color: rgb(0, 0, 0); font-family: 'AR PL UKai CN'; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; line-height: normal; text-indent: 0px; text-transform: none; white-space: normal; word-spacing: 0px; font-size: medium;"><span
-style="color: rgb(187, 187, 187); font-family: Tahoma,sans-serif; font-size: 12px; line-height: 16px; text-align: left;"><span
-style="color: rgb(0, 0, 0);">  
- 当然，如果我们要弄ssl，又没有钱请CA给我们签署的时候（他们的验证费都好贵的），可以考虑自己给自己签署。生成一份key，生成一个req，然后用自己的key签署自己的req。当你使用这份证书做ssl的时候，就会产生不受信任的证书警报。你可以在客户那里安装这张证书为根证书，就不会弹出这个警告了。当然，考究的人，签署用证书和服务器身份认证证书要分开。先做一个自签署证书作为根证书，然后用这个根证书签署一个服务器证书。这样在客户那里安装根证书后，服务器证书就会自动信任。这样的好处是，一本证书只能颁发给一个特定域名。如果你有多个域名，就要反复在客户这里安装证书。然而如果采用根证书签名，那么只要安装一张根证书，其他都是自动的。不过如果事情只要干一次，就不用讲究这么多了。\
-</span></span></span>
-
-</div>
-
-<p></div></p>
+<p>当然，如果我们要弄ssl，又没有钱请CA给我们签署的时候（他们的验证费都好贵的），可以考虑自己给自己签署。生成一份key，生成一个req，然后用自己的key签署自己的req。当你使用这份证书做ssl的时候，就会产生不受信任的证书警报。你可以在客户那里安装这张证书为根证书，就不会弹出这个警告了。当然，考究的人，签署用证书和服务器身份认证证书要分开。先做一个自签署证书作为根证书，然后用这个根证书签署一个服务器证书。这样在客户那里安装根证书后，服务器证书就会自动信任。这样的好处是，一本证书只能颁发给一个特定域名。如果你有多个域名，就要反复在客户这里安装证书。然而如果采用根证书签名，那么只要安装一张根证书，其他都是自动的。不过如果事情只要干一次，就不用讲究这么多了。</p>
 
         </div>
         

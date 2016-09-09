@@ -112,50 +112,19 @@ ga('send', 'pageview');
           
           
           
-          <p>假如，你有一台Android，不能刷机（厂家没提供ROM，也没有源码，而且可能锁了bootloader），没有ip_gre模块，没有tun模块，连iptables_filter模块都没有，那怎么办呢？没有第一个，就无法使用pptp/l2tp的内置VPN，没有第二个，就无法使用openvpn，没有第三个，就无法使用sshtunnel。如果你运气不好，这个东西连root都没有，肿末办？
-<div></p>
+          <p>假如，你有一台Android，不能刷机（厂家没提供ROM，也没有源码，而且可能锁了bootloader），没有ip_gre模块，没有tun模块，连iptables_filter模块都没有，那怎么办呢？没有第一个，就无法使用pptp/l2tp的内置VPN，没有第二个，就无法使用openvpn，没有第三个，就无法使用sshtunnel。如果你运气不好，这个东西连root都没有，肿末办？</p>
 
-<p>    很简单，你得先弄到Opera，注意Opera
-Mini没有测试过，据说不行。然后准备一台vps，上面不但要开ssh，而且必须在机器上有个代理。然后在地址里面输入opera:config，看到设定了？下面有一项proxy。按照参考[1]的方法设定代理，地址设定为127.0.0.1:1984。注意不要写成localhost:1984，后者不一定认。代理服务器用sshtunnel，注意不要用Socks5翻墙，必须用http模式。打开看看？是不是可以了？</p>
+<p>很简单，你得先弄到Opera，注意Opera Mini没有测试过，据说不行。然后准备一台vps，上面不但要开ssh，而且必须在机器上有个代理。然后在地址里面输入opera:config，看到设定了？下面有一项proxy。按照参考[1]的方法设定代理，地址设定为127.0.0.1:1984。注意不要写成localhost:1984，后者不一定认。代理服务器用sshtunnel，注意不要用Socks5翻墙，必须用http模式。打开看看？是不是可以了？</p>
 
-<p></div></p>
+<p>原理很简单，sshtunnel使用redsocks来执行的全局翻墙。根据参考[3]，redsocks是通过iptables规则来将所有连接重定向到自身，然后包装成代理的。由于iptables_filter模块缺失，或者干脆没有root，这个路子走不通。但是启动sshtunnel后1984端口的翻墙链是好的，只是程序都不使用而已。Opear又给了我们一个自行设定代理的能力。因此，结合使用两种方法，能让你在没有模块，没有root的情况下，自行拥有翻墙能力。由于Opera只支持HTTP代理，因此你必须满足http代理翻墙要求（远程服务器上有代理，不启用socks5模式）。</p>
 
-<div>
+<p>参考：</p>
 
-   
-原理很简单，sshtunnel使用redsocks来执行的全局翻墙。根据参考\[3\]，redsocks是通过iptables规则来将所有连接重定向到自身，然后包装成代理的。由于iptables\_filter模块缺失，或者干脆没有root，这个路子走不通。但是启动sshtunnel后1984端口的翻墙链是好的，只是程序都不使用而已。Opear又给了我们一个自行设定代理的能力。因此，结合使用两种方法，能让你在没有模块，没有root的情况下，自行拥有翻墙能力。由于Opera只支持HTTP代理，因此你必须满足http代理翻墙要求（远程服务器上有代理，不启用socks5模式）。\
-<div>
+<p>1.<a href="http://www.wtnzone.com/post/2011/03/05/Android-WIFI-Proxy-Setting-With-Opera.aspx">Android下使用Opera实现Wifi代理上网</a></p>
 
-\
+<p>2.<a href="http://www.v2ex.com/t/14796">Android 平台的 SSH Tunnel 应用</a></p>
 
-</div>
-
-<div>
-
-参考：
-
-</div>
-
-<div>
-
-1. [Android下使用Opera实现Wifi代理上网](http://www.wtnzone.com/post/2011/03/05/Android-WIFI-Proxy-Setting-With-Opera.aspx)
-
-</div>
-
-<div>
-
-2. [Android 平台的 SSH Tunnel 应用](http://www.v2ex.com/t/14796)
-
-</div>
-
-<p></div></p>
-
-<div>
-
-3. [redsocks on
-android指南](http://bjin.posterous.com/redsocks-on-android)
-
-</div>
+<p>3.<a href="http://bjin.posterous.com/redsocks-on-android">redsocks on android指南</a></p>
 
         </div>
         

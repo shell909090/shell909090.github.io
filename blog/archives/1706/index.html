@@ -113,153 +113,42 @@ ga('send', 'pageview');
           
           
           <p>贝壳用的是debian
-testing，xfce。最近买了一个usb耳机，在windows下一切正常，但是linux下只有mplayer能工作。因为mplayer可以指定输出声卡，其他程序都是使用默认声卡的。而由于debian移除了alsaconf，因此连调整一下都不知道该怎么做。也许修改/etc/modprobe.d/alsa*可以解决问题，问题是，谁知道哪些资料是神马时候的呢？我最早甚至找到过01年的资料&hellip;
-<div></p>
+testing，xfce。最近买了一个usb耳机，在windows下一切正常，但是linux下只有mplayer能工作。因为mplayer可以指定输出声卡，其他程序都是使用默认声卡的。而由于debian移除了alsaconf，因此连调整一下都不知道该怎么做。也许修改/etc/modprobe.d/alsa*可以解决问题，问题是，谁知道哪些资料是神马时候的呢？我最早甚至找到过01年的资料&hellip;</p>
 
-<p>  
- 后来，在zigo的建议下，我改用了pulse。zigo在linux下玩音频的，又是DD，怎么也算职业人士，推荐果然很给力。当晚我拿着usb耳机，很顺利的听到了youku视频。那一刻我热泪盈眶，感谢国家，感谢ccav，感谢zigo&hellip;</p>
+<p>后来，在zigo的建议下，我改用了pulse。zigo在linux下玩音频的，又是DD，怎么也算职业人士，推荐果然很给力。当晚我拿着usb耳机，很顺利的听到了youku视频。那一刻我热泪盈眶，感谢国家，感谢ccav，感谢zigo&hellip;</p>
 
-<p></div></p>
+<p>做法如下：</p>
 
-<div>
+<pre><code># aptitude install pulseaudio pavucontrol
+$ pavucontrol
+</code></pre>
 
-    做法如下：
+<p>在输出设备页面，选择你想要的设备为默认。</p>
 
-</div>
+<p>如果有部分程序还是不认，建立~/.asoundrc或者/etc/asoundrc.conf，内容如下：</p>
 
-<div>
-
-\# aptitude install pulseaudio pavucontrol
-
-</div>
-
-<div>
-
-\$ pavucontrol
-
-</div>
-
-<div>
-
-    在输出设备页面，选择你想要的设备为默认。
-
-</div>
-
-<div>
-
-  
- 如果有部分程序还是不认，建立\~/.asoundrc或者/etc/asoundrc.conf，内容如下：
-
-</div>
-
-<div>
-
-<div>
-
-pcm.pulse {
-
-</div>
-
-<div>
-
-    type pulse
-
-</div>
-
-<div>
-
+<pre><code>pcm.pulse {
+    type pulse
 }
-
-</div>
-
-<div>
-
 ctl.pulse {
-
-</div>
-
-<div>
-
-    type pulse
-
-</div>
-
-<div>
-
+    type pulse
 }
-
-</div>
-
-<div>
-
 pcm.!default {
-
-</div>
-
-<div>
-
-    type pulse
-
-</div>
-
-<div>
-
+    type pulse
 }
-
-</div>
-
-<div>
-
 ctl.!default {
-
-</div>
-
-<div>
-
-    type pulse
-
-</div>
-
-<div>
-
+    type pulse
 }
+</code></pre>
 
-</div>
+<p>完了。</p>
 
-<p></div></p>
+<p>补充一下，pulse的具体资料就不说了。大致上，pulse是一个linux的混音器。用于将多个音源发出的音频流混合成一个音频流播放。严格来说，音频设备属于独占设备，当一个软件发音的时候，其他软件应当不能发音的。这个有点类似于fifo，当两个进程同时打开fifo写数据的时候，目标只能得到碎片。</p>
 
-<div>
+<p>pulse的作用，是产生一个可以被多次使用的音频设备，类似于unix
+socket。每一个进程的数据被单独的输入，然后混音，再输出到真实的物理设备上去。由此，多个音源同时发音就变成了可能。</p>
 
-    完了。
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-  
- 补充一下，pulse的具体资料就不说了。大致上，pulse是一个linux的混音器。用于将多个音源发出的音频流混合成一个音频流播放。严格来说，音频设备属于独占设备，当一个软件发音的时候，其他软件应当不能发音的。这个有点类似于fifo，当两个进程同时打开fifo写数据的时候，目标只能得到碎片。
-
-</div>
-
-<div>
-
-    pulse的作用，是产生一个可以被多次使用的音频设备，类似于unix
-socket。每一个进程的数据被单独的输入，然后混音，再输出到真实的物理设备上去。由此，多个音源同时发音就变成了可能。
-
-</div>
-
-<div>
-
-  
- 有人也许说，alsa原生也是支持多音源的阿。那是因为alsa内部带了一个很简单的混音器，叫做dmix。当然，pulse比dmix更加专业。
-
-</div>
+<p>有人也许说，alsa原生也是支持多音源的阿。那是因为alsa内部带了一个很简单的混音器，叫做dmix。当然，pulse比dmix更加专业。</p>
 
         </div>
         

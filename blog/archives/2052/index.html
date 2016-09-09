@@ -112,319 +112,76 @@ ga('send', 'pageview');
           
           
           
-          <p>cpug上面最近在讨论一个严重级漏洞，漏洞的相关资料如下： <span
-style="font-family:Verdana,Helvetica,sans-serif;font-size:12px;background-color:rgb(255,255,255)"><a href="http://www.kb.cert.org/vuls/id/903934">ERT-VN:VU#903934</a> </span>
-<a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2011-4815">CVE-2011-4815</a><span
-style="font-family:Simsun;background-color:rgb(255,255,255);font-size:medium"> </span><a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2011-3414">CVE-2011-3414</a><span
-style="font-family:Simsun;background-color:rgb(255,255,255);font-size:medium"> </span><a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2011-4838">CVE-2011-4838</a><span
-style="font-family:Simsun;background-color:rgb(255,255,255);font-size:medium"> </span><a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2011-4885">CVE-2011-4885</a> 
-<div></p>
+          <p>cpug上面最近在讨论一个严重级漏洞，漏洞的相关资料如下： <a href="http://www.kb.cert.org/vuls/id/903934">ERT-VN:VU#903934</a> <a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2011-4815">CVE-2011-4815</a> <a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2011-3414">CVE-2011-3414</a> <a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2011-4838">CVE-2011-4838</a> <a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2011-4885">CVE-2011-4885</a></p>
 
-<p>   
-上面主要讨论的是这么一个概念，当用户post一个数据，而且这个数据又是一个form的时候，应用需要先将form解析为dict，然后才能方便的使用。例如a=1&amp;b=2，可以解析为{&lsquo;a&rsquo;:&lsquo;1&rsquo;,
-&lsquo;b&rsquo;:&lsquo;2&rsquo;}。之所以1和2是字符串，是因为只有用户自己才清楚这个数据的类型。</p>
+<p>上面主要讨论的是这么一个概念，当用户post一个数据，而且这个数据又是一个form的时候，应用需要先将form解析为dict，然后才能方便的使用。例如a=1&amp;b=2，可以解析为<code>{'a':'1', 'b':'2'}</code>。之所以1和2是字符串，是因为只有用户自己才清楚这个数据的类型。</p>
 
-<p></div></p>
+<p>通常情况下，这个form的key都是随机的，生成的hash碰撞概率很低，因此dict的默认实现——hash table没什么问题。但是当攻击者恶意构造数据的时候，情况就完全不同。我们首先讨论一下hash table的实现——开链法和二次探测法。</p>
 
-<div>
+<p>所谓开链，就是指对所有同余hash，将他们挂到一个hash表项上，形成一个链表。而所谓二次探测，就是在第一次hash冲突后，再进行一次hash，作为第二地址。</p>
 
-   
-通常情况下，这个form的key都是随机的，生成的hash碰撞概率很低，因此dict的默认实现——hash
-table没什么问题。但是当攻击者恶意构造数据的时候，情况就完全不同。我们首先讨论一下hash
-table的实现——开链法和二次探测法。
+<p>开链法对碰撞冲突是有先天缺陷的，因为同余碰撞的构造远比hash碰撞的构造简单。假定hash</p>
 
-</div>
+<p>table有11个表项，那么平均11次尝试就可以得到一个元素，和原始元素hash同余。如果选用这样的恶意key序列，在执行构造的时候，hash</p>
 
-<div>
+<p>table就退化为了链表。链表的插入复杂度是O(n\^2)级的。而作为攻击者，为了获得n个hash同余对象，所需消耗的复杂度做如下估量。首先考虑hash table length和n同阶，因此以n作为hash table长度。这样每n次尝试就可以获得一个恶意元素，获得n个元素的复杂度为O(n\^2)级。</p>
 
-   
-所谓开链，就是指对所有同余hash，将他们挂到一个hash表项上，形成一个链表。而所谓二次探测，就是在第一次hash冲突后，再进行一次hash，作为第二地址。
+<p>也就是说，即使是sha256这样强的hash算法，只要保证哈希函数特性，对同样的值得到同样的哈希，就无法保证开链法的安全。</p>
 
-</div>
+<p>而二次探测法对这个是有先天抵抗的，二次探测法的第一次碰撞并不难构造，但是第二次哈希后依然保持同余的构造难度就由n增加到了n\^2，多次碰撞的构造难度以此类推。虽然我没有完整的计算过这个值，但是猜测难度量级应当是O(n*n\^n)级别的。这个级别基本就不用玩了——前提是哈希算法必须是安全的。</p>
 
-<div>
+<p>由于为了节约计算过程，因此python和php的hash算法都没有采用md5之类的高散列算法，而是一个很简单的算法。我摘抄一下Python2.7.2中的这段代码。<a href="http://shell909090.3322.org/pycode/shell909090@gmail.com/python_string_hash.c">python_string_hash.c</a></p>
 
-   
-开链法对碰撞冲突是有先天缺陷的，因为同余碰撞的构造远比hash碰撞的构造简单。假定hash
-table有11个表项，那么平均11次尝试就可以得到一个元素，和原始元素hash同余。如果选用这样的恶意key序列，在执行构造的时候，hash
-table就退化为了链表。链表的插入复杂度是O(n\^2)级的。而作为攻击者，为了获得n个hash同余对象，所需消耗的复杂度做如下估量。首先考虑hash
-table length和n同阶，因此以n作为hash
-table长度。这样每n次尝试就可以获得一个恶意元素，获得n个元素的复杂度为O(n\^2)级。
-
-</div>
-
-<div>
-
-   
-也就是说，即使是sha256这样强的hash算法，只要保证哈希函数特性，对同样的值得到同样的哈希，就无法保证开链法的安全。
-
-</div>
-
-<div>
-
-   
-而二次探测法对这个是有先天抵抗的，二次探测法的第一次碰撞并不难构造，但是第二次哈希后依然保持同余的构造难度就由n增加到了n\^2，多次碰撞的构造难度以此类推。虽然我没有完整的计算过这个值，但是猜测难度量级应当是O(n\*n\^n)级别的。这个级别基本就不用玩了——前提是哈希算法必须是安全的。
-
-</div>
-
-<div>
-
-   
-由于为了节约计算过程，因此python和php的hash算法都没有采用md5之类的高散列算法，而是一个很简单的算法。我摘抄一下Python2.7.2中的这段代码。 [python\_string\_hash.c](http://shell909090.3322.org/pycode/shell909090@gmail.com/python_string_hash.c)
-
-</div>
-
-<div>
-
-<div>
-
-static long
-
-</div>
-
-<div>
-
-string\_hash(PyStringObject \*a)
-
-</div>
-
-<div>
-
+<pre><code>static long
+string_hash(PyStringObject *a)
 {
+    register Py_ssize_t len;
+    register unsigned char *p;
+    register long x;
 
-</div>
+    if (a-&gt;ob_shash != -1)
+        return a-&gt;ob_shash;
 
-<div>
+    len = Py_SIZE(a);
+    p = (unsigned char *) a-&gt;ob_sval;
+    x = *p &lt;&lt; 7;
 
-    register Py\_ssize\_t len;
+    while (--len &gt;= 0)
+        x = (1000003*x) ^ *p++;
 
-</div>
-
-<div>
-
-    register unsigned char \*p;
-
-</div>
-
-<div>
-
-    register long x;
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-    if (a-&gt;ob\_shash != -1)
-
-</div>
-
-<div>
-
-        return a-&gt;ob\_shash;
-
-</div>
-
-<div>
-
-    len = Py\_SIZE(a);
-
-</div>
-
-<div>
-
-    p = (unsigned char \*) a-&gt;ob\_sval;
-
-</div>
-
-<div>
-
-    x = \*p &lt;&lt; 7;
-
-</div>
-
-<div>
-
-    while (--len &gt;= 0)
-
-</div>
-
-<div>
-
-        x = (1000003\*x) \^ \*p++;
-
-</div>
-
-<div>
-
-    x \^= Py\_SIZE(a);
-
-</div>
-
-<div>
-
-    if (x == -1)
-
-</div>
-
-<div>
-
-        x = -2;
-
-</div>
-
-<div>
-
-    a-&gt;ob\_shash = x;
-
-</div>
-
-<div>
-
-    return x;
-
-</div>
-
-<div>
-
+    x ^= Py_SIZE(a);
+    if (x == -1)
+        x = -2;
+    a-&gt;ob_shash = x;
+    return x;
 }
+</code></pre>
 
-</div>
+<p>按照&lt;<a href="mailto:python.leojay@gmail.com">python.leojay@gmail.com</a>&gt;的计算，以很短的时间，就可以构造出大量同样hash的字符串。既然hash相同，后续的同余不同余就没了意义。不过刚刚我复现了一下他的结论，在64位下有点问题。源码中是这么定义的。</p>
 
-<p></div></p>
+<pre><code>typedef struct {
+    PyObject_VAR_HEAD
+    long ob_shash;
+    static long string_hash(PyStringObject *a);
+</code></pre>
 
-<div>
+<p>注意两者都是用的是long。C在64位下，long的长度是64位的。按此说，哈希碰撞的概率会进一步减小。为此我查了一下算法。</p>
 
-   
-按照&lt;<python.leojay@gmail.com>&gt;的计算，以很短的时间，就可以构造出大量同样hash的字符串。既然hash相同，后续的同余不同余就没了意义。不过刚刚我复现了一下他的结论，在64位下有点问题。源码中是这么定义的。
+<p><a href="http://www.nruns.com/_downloads/advisory28122011.pdf">这篇论文</a>里面提到了meet-in-middle-attack，这是一个以空间换时间的算法。当一个哈希函数可逆，内部状态和输出一样大，并且可以把一个算法分解成两个部分，每个部分使用一半的字符串的时候，可以实行这种攻击。攻击过程首先将算法分解为两部分，一部分计算出中间内部状态，另一部分计算从中间状态到结果。然后由于算法可逆，后半部分可以逆向为由某个固定值，经由一半的字符串，计算出一个中间状态。</p>
 
-</div>
+<p>攻击者首先枚举了第一部分的值和所有的内部状态，并且存入查找表（讽刺的是，这个最好用的就是hash table）。而后枚举第二部分的逆向中间状态，并在查找表中查找。当有对应后，将两部分拼接，就得到了碰撞字符串。</p>
 
-<div>
+<p>穷举的攻击复杂度大概是O(2\^n)，而meet-in-middle-attack将复杂度降为了O(2\^(n/2))。与此对应的，空间消耗大致是O(2\^(n/2))。</p>
 
-<div>
+<p>python是采用上述哈希算法的二次探测法hash table，由于hash算法很容易找到大量同余字符，因此将这些字符组成一个form数据提交后，服务器在解析为dict的过程中，将消耗大量CPU时间。多次重发，服务器就死机了。</p>
 
-<div>
+<p>作为一个简单的对策，首先请先限制form表单提交的最大长度。冲突表单通常都高达上万条记录，即使一条记录5字节，也有50k大小。常规的表单一般都不会超过4k大小。由这一点可以很快过滤问题。当然，这个前提必须是——你可以先于框架获得处理数据的机会。php似乎是由框架主动完成这个过程的，因此很难对恶意数据直接返回。这使得php成为了本漏洞的重灾区。（这点是由其他人推测得到的，不一定准确，也不代表个人观点）php给出的补丁据说只是限制form最高可以提交100个key，从而规避了这个问题。</p>
 
-typedef struct {
+<p>另一个对策是，对上述的算法使用一个随机值作为初始值，使得客户这里的哈希函数特定和服务器端的特定完全不一致。这使得构造服务器端冲突的概率减少了很多。但是这需要对源码进行修改，因此实行起来并不是那么快。而且同样的计算表明，这个思路还不一定可行。对初始值进行小幅修改后，又很快产生了大量碰撞。</p>
 
-</div>
+<p>最稳妥的对策是，像perl一样，采用<a href="http://en.wikipedia.org/wiki/Universal_hashing">Universal hashing</a>作为基本算法。这个思路和随机值很类似，但是数学上更加严谨。假定有一组函数H，其中任何两个元素h1, h2，对集合中任何两个元素x, y，h1(x) == h2(y)的概率小于等于1/m，则称这组函数为universal family。其中m为hash目标值空间大小。满足这个条件后，服务器端在单次计算的时候采用同一个函数，可以保证哈希的正常工作，但是客户端无法做出碰撞。</p>
 
-<div>
-
-    PyObject\_VAR\_HEAD
-
-</div>
-
-<div>
-
-    long ob\_shash;
-
-</div>
-
-<p></div></p>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-<div>
-
-static long
-
-</div>
-
-<div>
-
-string\_hash(PyStringObject \*a)
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-   
-注意两者都是用的是long。C在64位下，long的长度是64位的。按此说，哈希碰撞的概率会进一步减小。为此我查了一下算法。
-
-</div>
-
-<div>
-
-   
-[这篇论文](http://www.nruns.com/_downloads/advisory28122011.pdf)里面提到了meet-in-middle-attack，这是一个以空间换时间的算法。当一个哈希函数可逆，内部状态和输出一样大，并且可以把一个算法分解成两个部分，每个部分使用一半的字符串的时候，可以实行这种攻击。攻击过程首先将算法分解为两部分，一部分计算出中间内部状态，另一部分计算从中间状态到结果。然后由于算法可逆，后半部分可以逆向为由某个固定值，经由一半的字符串，计算出一个中间状态。
-
-</div>
-
-<div>
-
-   
-攻击者首先枚举了第一部分的值和所有的内部状态，并且存入查找表（讽刺的是，这个最好用的就是hash
-table）。而后枚举第二部分的逆向中间状态，并在查找表中查找。当有对应后，将两部分拼接，就得到了碰撞字符串。
-
-</div>
-
-<div>
-
-   
-穷举的攻击复杂度大概是O(2\^n)，而meet-in-middle-attack将复杂度降为了O(2\^(n/2))。与此对应的，空间消耗大致是O(2\^(n/2))。
-
-</div>
-
-<p></div></p>
-
-<p></div></p>
-
-<div>
-
-    python是采用上述哈希算法的二次探测法hash
-table，由于hash算法很容易找到大量同余字符，因此将这些字符组成一个form数据提交后，服务器在解析为dict的过程中，将消耗大量CPU时间。多次重发，服务器就死机了。
-
-</div>
-
-<div>
-
-   
-作为一个简单的对策，首先请先限制form表单提交的最大长度。冲突表单通常都高达上万条记录，即使一条记录5字节，也有50k大小。常规的表单一般都不会超过4k大小。由这一点可以很快过滤问题。当然，这个前提必须是——你可以先于框架获得处理数据的机会。php似乎是由框架主动完成这个过程的，因此很难对恶意数据直接返回。这使得php成为了本漏洞的重灾区。（这点是由其他人推测得到的，不一定准确，也不代表个人观点）php给出的补丁据说只是限制form最高可以提交100个key，从而规避了这个问题。
-
-</div>
-
-<div>
-
-   
-另一个对策是，对上述的算法使用一个随机值作为初始值，使得客户这里的哈希函数特定和服务器端的特定完全不一致。这使得构造服务器端冲突的概率减少了很多。但是这需要对源码进行修改，因此实行起来并不是那么快。而且同样的计算表明，这个思路还不一定可行。对初始值进行小幅修改后，又很快产生了大量碰撞。
-
-</div>
-
-<div>
-
-    最稳妥的对策是，像perl一样，采用[Universal
-hashing](http://en.wikipedia.org/wiki/Universal_hashing)作为基本算法。这个思路和随机值很类似，但是数学上更加严谨。假定有一组函数H，其中任何两个元素h1,
-h2，对集合中任何两个元素x, y，h1(x) ==
-h2(y)的概率小于等于1/m，则称这组函数为universal
-family。其中m为hash目标值空间大小。满足这个条件后，服务器端在单次计算的时候采用同一个函数，可以保证哈希的正常工作，但是客户端无法做出碰撞。
-
-</div>
-
-<div>
-
-    从Universal
-hashing的算法时间来看，这是一个很古老的漏洞了。只是以前大家都没有在意。突然有一天，大家发现——原来世界还是很脆弱的。
-
-</div>
+<p>从Universal hashing的算法时间来看，这是一个很古老的漏洞了。只是以前大家都没有在意。突然有一天，大家发现——原来世界还是很脆弱的。</p>
 
         </div>
         

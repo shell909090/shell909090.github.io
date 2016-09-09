@@ -2373,310 +2373,78 @@ buffer) 0) &#34; \*&#34;))
       <pubDate>Sat, 25 Dec 2010 20:16:00 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/1661/</guid>
-      <description>&lt;p&gt;emacs是利用elisp写成的，而elisp是lisp的一个方言。lisp语言是出名的优美和晦涩，当然，更出名的是括号。。。
-&lt;div&gt;&lt;/p&gt;
+      <description>&lt;p&gt;emacs是利用elisp写成的，而elisp是lisp的一个方言。lisp语言是出名的优美和晦涩，当然，更出名的是括号。。。&lt;/p&gt;
 
-&lt;p&gt;  
- emacs利用elisp作为上层抽象。首先，emacs提供了基本的编辑器框架，包括文件操作函数API，buffer，frame，windows的API。而后，emacs附带了很多函数实现，并且和按键一一绑定。例如Ctrl+N（简写为C-N）就被绑定到“换到下一行”这个API上。于是，我们按下Ctrl+N的时候，就会触发“换到下一行”这个函数的执行。dired等插件也是基于类似的原理写成。&lt;/p&gt;
+&lt;p&gt;emacs利用elisp作为上层抽象。首先，emacs提供了基本的编辑器框架，包括文件操作函数API，buffer，frame，windows的API。而后，emacs附带了很多函数实现，并且和按键一一绑定。例如Ctrl+N（简写为C-N）就被绑定到“换到下一行”这个API上。于是，我们按下Ctrl+N的时候，就会触发“换到下一行”这个函数的执行。dired等插件也是基于类似的原理写成。&lt;/p&gt;
 
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
+&lt;p&gt;我们可以用类似的方法，来编写自己的函数，扩充emacs的功能。下面我们看一个例子：&lt;/p&gt;
 
-&lt;div&gt;
+&lt;pre&gt;&lt;code&gt;(defun popup-term ()
+  (interactive)
+  (apply &#39;start-process &amp;quot;terminal&amp;quot; nil popup-terminal-command))
+&lt;/code&gt;&lt;/pre&gt;
 
-  
- 我们可以用类似的方法，来编写自己的函数，扩充emacs的功能。下面我们看一个例子：
+&lt;p&gt;首先先说明一下，elisp的基于规则是利用括号匹配的s表达式，通过特定规则计算表达式。每个表达式由多个原子构成，一个原子可以是符号，对象（数字或者字符串），序对，表（包括空表），树，以及他们的嵌套。求值的时候，第一个原子做动词，先求值第一个原子，直到得到一个对象，再根据第一个原子的特性决定正则序和应用序。应用序的先对每个后续原子求值，再调用第一个原子对应的对象。正则序直接交给第一个原子对应对象处理。上文那个表达式，最外层的是(defun)列表，defun是函数定义函数，popup-term是符号。这部分混合起来，就是定义(interactive) (apply &amp;lsquo;start-process &amp;ldquo;terminal&amp;rdquo; nil popup-terminal-command)为一个函数，并在上层框架空间内把内容赋值给popup-term这个符号。说的更直白一点，就是定义函数。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;当我们执行popup-term这个函数的时候（M-x加上函数名就可以手工调用），首先执行interactive过程。这个函数可以在这里（&lt;a href=&#34;http://www.gnu.org/software/emacs/manual/html_node/elisp/index.html&#34;&gt;http://www.gnu.org/software/emacs/manual/html_node/elisp/index.html&lt;/a&gt;）查到，基本上，可以认为执行了这个函数，才能够和前台交互。而后是apply函数，这个函数将后面的几个值作用于紧跟着的那个符号所对应的函数。用python语言来描述，大概是这个样子。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;pre&gt;&lt;code&gt;def apply(func, \*param): return globals()\[func\](\*param)
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;div&gt;
+&lt;p&gt;这个函数真正的部分，是从start-process到括号结束。其意义是启动一个子进程，名为terminal，没有对应的buffer（熟悉emacs的应该知道这是什么），命令为popup-terminal-command。这个命令在windows下和linux下有不同定义，所以我将这个定义放在了emacs-win.el和emacs-linux.el里面。在linux下，他是这么定义的。&lt;/p&gt;
 
-(defun popup-term ()
+&lt;pre&gt;&lt;code&gt;(setq popup-terminal-command &#39;(&amp;quot;x-terminal-emulator&amp;quot;))
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;/div&gt;
+&lt;p&gt;setq是设定一个全局变量。整句合起来的意思是，在执行popup-term的时候，启动一个子进程，执行x-terminal-emulator。最后，将popup-term绑定到keymap上。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;pre&gt;&lt;code&gt;(global-set-key \[(control c) (s)\] &#39;popup-term)
+&lt;/code&gt;&lt;/pre&gt;
 
-  (interactive)
+&lt;p&gt;现在，在任何一个buffer中按下C-c s，就可以弹出当前目录对应的term了。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;我们在emacs中所做的所有配置，插件安装，其实本质上是写代码控制其他代码的载入，变更环境变量。只要有合适的文档，或者有时间阅读源码，我们就可以对其他程序进行扩充。下面介绍一个对dired进行扩充的例子，我们向dired中加入copy-from和rename-from，还有dired-open功能。dired的copy和rename必须在源目录中，选择文件，按C，输入目标路径。有的时候我们在某个目录工作到一半，突然需要从另外一个目录复制一个文件过来。这时候打开对方目录进行复制动作太繁琐，因此我编写了两个函数，分别绑定到r和c上。dired-open则是另外一个文件，有时我们需要通过其他程序打开某个文件，例如播放电影。在dired中直接用&amp;amp;可以实现这个目标，但是需要自行输入播放命令，而且会新开一个buffer。以下是代码。&lt;/p&gt;
 
-&lt;div&gt;
-
-  (apply &#39;start-process &#34;terminal&#34; nil popup-terminal-command)
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-  )
-
-&lt;/div&gt;
-
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
-
-&lt;div&gt;
-
-  
- 首先先说明一下，elisp的基于规则是利用括号匹配的s表达式，通过特定规则计算表达式。每个表达式由多个原子构成，一个原子可以是符号，对象（数字或者字符串），序对，表（包括空表），树，以及他们的嵌套。求值的时候，第一个原子做动词，先求值第一个原子，直到得到一个对象，再根据第一个原子的特性决定正则序和应用序。应用序的先对每个后续原子求值，再调用第一个原子对应的对象。正则序直接交给第一个原子对应对象处理。上文那个表达式，最外层的是(defun)列表，defun是函数定义函数，popup-term是符号。这部分混合起来，就是定义(interactive) (apply
-&#39;start-process &#34;terminal&#34; nil
-popup-terminal-command)为一个函数，并在上层框架空间内把内容赋值给popup-term这个符号。说的更直白一点，就是定义函数。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-  
- 当我们执行popup-term这个函数的时候（M-x加上函数名就可以手工调用），首先执行interactive过程。这个函数可以在这里（&lt;http://www.gnu.org/software/emacs/manual/html_node/elisp/index.html&gt;）查到，基本上，可以认为执行了这个函数，才能够和前台交互。而后是apply函数，这个函数将后面的几个值作用于紧跟着的那个符号所对应的函数。用python语言来描述，大概是这个样子。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-def apply(func, \*param): return globals()\[func\](\*param)
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-  
- 这个函数真正的部分，是从start-process到括号结束。其意义是启动一个子进程，名为terminal，没有对应的buffer（熟悉emacs的应该知道这是什么），命令为popup-terminal-command。这个命令在windows下和linux下有不同定义，所以我将这个定义放在了emacs-win.el和emacs-linux.el里面。在linux下，他是这么定义的。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-(setq popup-terminal-command &#39;(&#34;x-terminal-emulator&#34;))
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-  
- setq是设定一个全局变量。整句合起来的意思是，在执行popup-term的时候，启动一个子进程，执行x-terminal-emulator。最后，将popup-term绑定到keymap上。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-(global-set-key \[(control c) (s)\] &#39;popup-term)
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    现在，在任何一个buffer中按下C-c s，就可以弹出当前目录对应的term了。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-  
- 我们在emacs中所做的所有配置，插件安装，其实本质上是写代码控制其他代码的载入，变更环境变量。只要有合适的文档，或者有时间阅读源码，我们就可以对其他程序进行扩充。下面介绍一个对dired进行扩充的例子，我们向dired中加入copy-from和rename-from，还有dired-open功能。dired的copy和rename必须在源目录中，选择文件，按C，输入目标路径。有的时候我们在某个目录工作到一半，突然需要从另外一个目录复制一个文件过来。这时候打开对方目录进行复制动作太繁琐，因此我编写了两个函数，分别绑定到r和c上。dired-open则是另外一个文件，有时我们需要通过其他程序打开某个文件，例如播放电影。在dired中直接用&amp;可以实现这个目标，但是需要自行输入播放命令，而且会新开一个buffer。以下是代码。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;div&gt;
-
-(defun dired-open-file (&amp;optional arg)
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-  (interactive)
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-  (apply &#39;start-process &#34;dired-open&#34; nil
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-         (append (split-string
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-                  (read-shell-command
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-                   &#34;command: &#34; (dired-guess-cmd (dired-get-filename))))
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-          (list (dired-get-filename)))))
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-(defun dired-copy-from (&amp;optional arg)
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-  (interactive)
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-  (let ((source-path (read-file-name &#34;filepath: &#34;)))
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    (copy-file source-path (file-name-nondirectory source-path))))
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-(defun dired-rename-from (&amp;optional arg)
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-  (interactive)
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-  (let ((source-path (read-file-name &#34;filepath: &#34;)))
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    (rename-file source-path (file-name-nondirectory source-path))))
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
+&lt;pre&gt;&lt;code&gt;(defun dired-open-file (&amp;amp;optional arg)
+  (interactive)
+  (apply &#39;start-process &amp;quot;dired-open&amp;quot; nil
+     (append (split-string
+          (read-shell-command
+           &amp;quot;command: &amp;quot; (dired-guess-cmd (dired-get-filename))))
+         (list (dired-get-filename)))))
+(defun dired-copy-from (&amp;amp;optional arg)
+  (interactive)
+  (let ((source-path (read-file-name &amp;quot;filepath: &amp;quot;)))
+    (copy-file source-path (file-name-nondirectory source-path))))
+(defun dired-rename-from (&amp;amp;optional arg)
+  (interactive)
+  (let ((source-path (read-file-name &amp;quot;filepath: &amp;quot;)))
+    (rename-file source-path (file-name-nondirectory source-path))))
 (add-hook &#39;dired-mode-hook
+      (lambda ()
+        (define-key dired-mode-map &amp;quot;b&amp;quot; &#39;dired-open-file)
+        (define-key dired-mode-map &amp;quot;c&amp;quot; &#39;dired-copy-from)
+        (define-key dired-mode-map &amp;quot;r&amp;quot; &#39;dired-rename-from)
+        (define-key dired-mode-map \[(control c) (g)\]
+          &#39;dired-etags-tables)))
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;/div&gt;
+&lt;p&gt;如上文一样，我们定义了dired-open-file函数，这个函数的核心部分是start-process，但是在命令上，我们的命令是这个。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;pre&gt;&lt;code&gt;(append (split-string
+     (read-shell-command
+      &amp;quot;command: &amp;quot; (dired-guess-cmd (dired-get-filename))))
+    (list (dired-get-filename)))
+&lt;/code&gt;&lt;/pre&gt;
 
-          (lambda ()
+&lt;p&gt;这段代码，是将两个表进行混合。第一个是从mini-buffer读取入一个命令行，而后分解为列表，读取时的默认值由dired-guess-cmd这个函数确定。第二个表是当前光标所在的文件名。两者合起来，在执行的时候就会变成命令行后加上文件名的执行效果。而dired-guess-cmd这个函数，接受当前文件名作为参数，猜测一个正确的命令行。在windows下，大多数时候等于start，linux下则是大多数时候等于xdg-open。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;下面的dired-copy-from和dired-rename-from函数非常简单，大家可以自行分析。不明白的函数可以查阅上文那份elisp的参考手册。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;最后，我们把这些函数绑定到键上。由于不是全局绑定，因此不能使用global-set-key。非常幸运的，dired在加载的时候会调用dired-mode-hook。我们将一个lambda函数加入这个函数调用中，这个lambda函数中，使用define-key定义了键和函数的对应关系。于是，我们在dired模式下，通过b
+c r就可以调用以上三个我们编写的功能了。&lt;/p&gt;
 
-            (define-key dired-mode-map &#34;b&#34; &#39;dired-open-file)
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-            (define-key dired-mode-map &#34;c&#34; &#39;dired-copy-from)
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-            (define-key dired-mode-map &#34;r&#34; &#39;dired-rename-from)
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-            (define-key dired-mode-map \[(control c) (g)\]
-&#39;dired-etags-tables)
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-            ))
-
-&lt;/div&gt;
-
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
-
-&lt;div&gt;
-
-  
- 如上文一样，我们定义了dired-open-file函数，这个函数的核心部分是start-process，但是在命令上，我们的命令是这个。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;div&gt;
-
-(append (split-string
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-                  (read-shell-command
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-                   &#34;command: &#34; (dired-guess-cmd (dired-get-filename))))
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-          (list (dired-get-filename)))
-
-&lt;/div&gt;
-
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
-
-&lt;div&gt;
-
-  
- 这段代码，是将两个表进行混合。第一个是从mini-buffer读取入一个命令行，而后分解为列表，读取时的默认值由dired-guess-cmd这个函数确定。第二个表是当前光标所在的文件名。两者合起来，在执行的时候就会变成命令行后加上文件名的执行效果。而dired-guess-cmd这个函数，接受当前文件名作为参数，猜测一个正确的命令行。在windows下，大多数时候等于start，linux下则是大多数时候等于xdg-open。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-  
- 下面的dired-copy-from和dired-rename-from函数非常简单，大家可以自行分析。不明白的函数可以查阅上文那份elisp的参考手册。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-  
- 最后，我们把这些函数绑定到键上。由于不是全局绑定，因此不能使用global-set-key。非常幸运的，dired在加载的时候会调用dired-mode-hook。我们将一个lambda函数加入这个函数调用中，这个lambda函数中，使用define-key定义了键和函数的对应关系。于是，我们在dired模式下，通过b
-c r就可以调用以上三个我们编写的功能了。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-  
- elisp可以通过pymacs和python进行混编调用，但是通常并不需要这么复杂而强大
-
-&lt;/div&gt;
+&lt;p&gt;elisp可以通过pymacs和python进行混编调用，但是通常并不需要这么复杂而强大。&lt;/p&gt;
 </description>
     </item>
     

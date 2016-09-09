@@ -112,43 +112,87 @@ ga('send', 'pageview');
           
           
           
-          <p>在 2011年12月21日 下午2:24，Zoom.Quiet 写道： &gt;
-在昨天内部分享交流中,俺回顾了 PyCon2011China 中透露出的 Py
-最新使用/发展和体验; &gt; 最后有同学问: &gt;    Python 有什么缺点!? &gt;
-&gt; 直接HOLD 住了俺的思路&hellip; &gt;    - 是也乎!? &gt;    -
-世界上没有完美的语言 &gt;    - Python 相比各种开发语言也有缺点,当然的!
-&gt;    可是,是什么呢?! &gt; &gt; - 没有 {} ? &gt; - 不支持多CPU ? &gt;
-&gt; 大家在学习使用过程中,对 Python 有什么失望的地方?! &gt; - 兼听则明
-&gt; - 现在不满意的,就是我们努力的方向.. &gt; &gt; PS: &gt; -
-俺现场憋出的回答是: &gt;    - 由于 Py
-历史上积累的好用模块太多，会导致开发人员更加懒惰，不思进取，不论什么都可以直接搜出可用的现成模块来!
-&gt; &gt; &ndash; &gt; 人生苦短, Pythonic!
-冗余不做,日子甭过!备份不做,十恶不赦! &gt; 俺:
-<a href="http://about.me/zoom.quiet">http://about.me/zoom.quiet</a> &gt; 文字协议:
-<a href="http://creativecommons.org/licenses/by-sa/2.5/cn/">http://creativecommons.org/licenses/by-sa/2.5/cn/</a> &gt; &gt; &ndash; &gt;
-来自: python-cn`CPyUG`华蟒用户组(中文Python技术邮件列表) &gt; 规则:
-<a href="http://code.google.com/p/cpyug/wiki/PythonCn">http://code.google.com/p/cpyug/wiki/PythonCn</a> &gt; 发言:
-<a href="mailto:python-cn@googlegroups.com">python-cn@googlegroups.com</a> &gt; 退订:
-python-cn+unsubscribe@googlegroups.com (向此发空信即退!) &gt; 详情:
-<a href="http://code.google.com/p/cpyug/wiki/PythonCn">http://code.google.com/p/cpyug/wiki/PythonCn</a> &gt; 严正: 理解列表!
-智慧提问! <a href="http://wiki.woodpecker.org.cn/moin/AskForHelp">http://wiki.woodpecker.org.cn/moin/AskForHelp</a> &gt; 强烈:
-建议使用技巧: 如何有效地报告Bug
-<a href="http://www.chiark.greenend.org.uk/%7Esgtatham/bugs-cn.html">http://www.chiark.greenend.org.uk/%7Esgtatham/bugs-cn.html</a>
-好大的题目，我干脆写完发blog得了。
-python的整个系统，我其实有非常多的不满。但是用任何一门语言都是取舍问题，如果有一门语言，库够多，已读，易用，性能高，我毫不犹豫立刻转过去。python的强处在于庞大的库，还有非常好的易读和易用性。但是相比来说，性能一直是个问题。python的实现性能大约和C相差五倍上下。如果是大规模计算问题，大约能差10倍以上。当然，我们可以写C扩展，但是这就不是使用python了。我们也可以说，很多时候我们不需要这么快的速度。这是个事实，但是不改变python性能差的事实。
-python不但性能差，还有GIL这个玩意。以至于我现在对高并发计算都采取多进程的模式。多进程模式的通讯效率肯定比多线程低，而且麻烦。
-另外，python在底层设计上，也表现出很强的实用主义倾向。这是比较外交术语的词汇，更加直白的说法应当是，混乱，不知所谓。在闭包设计上采用free
-variable设计，而不是lisp中的environs设计。区别？你试试看在外层闭包中from
-lib import *。由于引入不定个数名称，free
-variable无法处理。类似的问题还有LEGB规则，新手往往要花很长时间研究这个例子究竟是怎么错的：
-a = 1 def f(): print a a = 2
-我勒个去，这种反直观反人类的事情都有，还敢说自己易读。
-还有坑爹的元编程，这东西根本是坑爹中的坑爹货。如果你用过多重继承，大概就知道python的整个OO系统看起来根本是大型的仿真，到处都是乱糟糟的。C++怎么解决多重继承的？你最好别用（真心说，这可比python更加坑爹）。java怎么解决多重继承的，只能继承Interface。其实这是变相的变成了Interface-Implement模式。python怎么解决的？MRO！为什麽一个类加个__metaclass__就会改变性质啊，为什麽一个类去生成另一个类的写法是——我基本不记得了，反正web.py里面有用到，需要的话去炒栗子吧。为什麽方法要隐藏居然要改名字加__啊。你到底是在做OO还是在看起来像OO的东西上狂打补丁啊魂淡。
-lambda表达式弱智。我和人讨论过，lambda是否是图灵完备的。结论还是完备的，不过需要借助Y
-combinator。何必呢？由于强调lambda的快速特性，因此将lambda强制在一行以内（没有结束标记），导致python其实是没有匿名函数的。一个callback数组写的难过死。
-语法糖太多了点，当然，这是纯粹的个人感觉。语法糖是把双刃剑，用的好，可以简化编写和阅读，但是太多，往往容易引入语法混乱和额外的约束。
-另外，语言的自构建特性混乱。虽说不是每门语言都强调自构建特性，但是通常而言，都是使用C实现一个内核，由内核实现一些基础操作。再由基础操作实现更复杂的操作。每层的边界都是比较清晰的。谁来告诉我，python中有多少库在移植时是由纯python实现的？库的相互依赖层级是？
-python的沙盒化也是个问题，如果沙盒做的够好，我完全可以把python作为一个客户级别的平台。用C写一个很简单的类似浏览器的东西，下载一个URL的python包回去运行（或者仅仅检查更新）。从而保证本地效果/跨平台/安全性。现在？一个都保证不了。我连把一个python包转移到另一台同构设备上都很麻烦（如果两者不是严格匹配，例如系统差异，系统版本差异）无论是web开发还是移动终端开发都必须走传统模式。</p>
+          <p>在 2011年12月21日 下午2:24，Zoom.Quiet 写道： &gt;</p>
+
+<p>在昨天内部分享交流中,俺回顾了 PyCon2011China 中透露出的 Py</p>
+
+<p>最新使用/发展和体验; &gt; 最后有同学问: &gt;  Python 有什么缺点!? &gt;</p>
+
+<blockquote>
+<p>直接HOLD 住了俺的思路&hellip; &gt;  - 是也乎!? &gt;  -</p>
+</blockquote>
+
+<p>世界上没有完美的语言 &gt;  - Python 相比各种开发语言也有缺点,当然的!</p>
+
+<blockquote>
+<p>可是,是什么呢?! &gt; &gt; - 没有 {} ? &gt; - 不支持多CPU ? &gt;</p>
+
+<p>大家在学习使用过程中,对 Python 有什么失望的地方?! &gt; - 兼听则明</p>
+
+<ul>
+<li>现在不满意的,就是我们努力的方向.. &gt; &gt; PS: &gt; -</li>
+</ul>
+</blockquote>
+
+<p>俺现场憋出的回答是: &gt;  - 由于 Py</p>
+
+<p>历史上积累的好用模块太多，会导致开发人员更加懒惰，不思进取，不论什么都可以直接搜出可用的现成模块来!</p>
+
+<blockquote>
+<blockquote>
+<p>&ndash; &gt; 人生苦短, Pythonic!</p>
+</blockquote>
+</blockquote>
+
+<p>冗余不做,日子甭过!备份不做,十恶不赦! &gt; 俺:</p>
+
+<p><a href="http://about.me/zoom.quiet">http://about.me/zoom.quiet</a> &gt; 文字协议:</p>
+
+<p><a href="http://creativecommons.org/licenses/by-sa/2.5/cn/">http://creativecommons.org/licenses/by-sa/2.5/cn/</a> &gt; &gt; &ndash; &gt;</p>
+
+<p>来自: python-cn`CPyUG`华蟒用户组(中文Python技术邮件列表) &gt; 规则:</p>
+
+<p><a href="http://code.google.com/p/cpyug/wiki/PythonCn">http://code.google.com/p/cpyug/wiki/PythonCn</a> &gt; 发言:</p>
+
+<p><a href="mailto:python-cn@googlegroups.com">python-cn@googlegroups.com</a> &gt; 退订:</p>
+
+<p>python-cn+unsubscribe@googlegroups.com (向此发空信即退!) &gt; 详情:</p>
+
+<p><a href="http://code.google.com/p/cpyug/wiki/PythonCn">http://code.google.com/p/cpyug/wiki/PythonCn</a> &gt; 严正: 理解列表!</p>
+
+<p>智慧提问! <a href="http://wiki.woodpecker.org.cn/moin/AskForHelp">http://wiki.woodpecker.org.cn/moin/AskForHelp</a> &gt; 强烈:</p>
+
+<p>建议使用技巧: 如何有效地报告Bug</p>
+
+<p><a href="http://www.chiark.greenend.org.uk/%7Esgtatham/bugs-cn.html">http://www.chiark.greenend.org.uk/%7Esgtatham/bugs-cn.html</a></p>
+
+<p>好大的题目，我干脆写完发blog得了。</p>
+
+<p>python的整个系统，我其实有非常多的不满。但是用任何一门语言都是取舍问题，如果有一门语言，库够多，已读，易用，性能高，我毫不犹豫立刻转过去。python的强处在于庞大的库，还有非常好的易读和易用性。但是相比来说，性能一直是个问题。python的实现性能大约和C相差五倍上下。如果是大规模计算问题，大约能差10倍以上。当然，我们可以写C扩展，但是这就不是使用python了。我们也可以说，很多时候我们不需要这么快的速度。这是个事实，但是不改变python性能差的事实。</p>
+
+<p>python不但性能差，还有GIL这个玩意。以至于我现在对高并发计算都采取多进程的模式。多进程模式的通讯效率肯定比多线程低，而且麻烦。</p>
+
+<p>另外，python在底层设计上，也表现出很强的实用主义倾向。这是比较外交术语的词汇，更加直白的说法应当是，混乱，不知所谓。在闭包设计上采用free variable设计，而不是lisp中的environs设计。区别？你试试看在外层闭包中from lib import *。由于引入不定个数名称，free variable无法处理。类似的问题还有LEGB规则，新手往往要花很长时间研究这个例子究竟是怎么错的：</p>
+
+<pre><code>a = 1
+def f():
+    print a
+    a = 2
+</code></pre>
+
+<p>我勒个去，这种反直观反人类的事情都有，还敢说自己易读。</p>
+
+<p>还有坑爹的元编程，这东西根本是坑爹中的坑爹货。如果你用过多重继承，大概就知道python的整个OO系统看起来根本是大型的仿真，到处都是乱糟糟的。C++怎么解决多重继承的？你最好别用（真心说，这可比python更加坑爹）。java怎么解决多重继承的，只能继承Interface。其实这是变相的变成了Interface-Implement模式。python怎么解决的？MRO！为什麽一个类加个__metaclass__就会改变性质啊，为什麽一个类去生成另一个类的写法是——我基本不记得了，反正web.py里面有用到，需要的话去炒栗子吧。为什麽方法要隐藏居然要改名字加__啊。你到底是在做OO还是在看起来像OO的东西上狂打补丁啊魂淡。</p>
+
+<p>lambda表达式弱智。我和人讨论过，lambda是否是图灵完备的。结论还是完备的，不过需要借助Y</p>
+
+<p>combinator。何必呢？由于强调lambda的快速特性，因此将lambda强制在一行以内（没有结束标记），导致python其实是没有匿名函数的。一个callback数组写的难过死。</p>
+
+<p>语法糖太多了点，当然，这是纯粹的个人感觉。语法糖是把双刃剑，用的好，可以简化编写和阅读，但是太多，往往容易引入语法混乱和额外的约束。</p>
+
+<p>另外，语言的自构建特性混乱。虽说不是每门语言都强调自构建特性，但是通常而言，都是使用C实现一个内核，由内核实现一些基础操作。再由基础操作实现更复杂的操作。每层的边界都是比较清晰的。谁来告诉我，python中有多少库在移植时是由纯python实现的？库的相互依赖层级是？</p>
+
+<p>python的沙盒化也是个问题，如果沙盒做的够好，我完全可以把python作为一个客户级别的平台。用C写一个很简单的类似浏览器的东西，下载一个URL的python包回去运行（或者仅仅检查更新）。从而保证本地效果/跨平台/安全性。现在？一个都保证不了。我连把一个python包转移到另一台同构设备上都很麻烦（如果两者不是严格匹配，例如系统差异，系统版本差异）无论是web开发还是移动终端开发都必须走传统模式。</p>
 
         </div>
         

@@ -16,82 +16,36 @@
       <pubDate>Mon, 28 Nov 2011 10:22:43 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/1996/</guid>
-      <description>&lt;p&gt;在做分词核心词典数据结构分析的时候需要，就先写一篇吧。
-&lt;div&gt;&lt;/p&gt;
+      <description>&lt;p&gt;在做分词核心词典数据结构分析的时候需要，就先写一篇吧。&lt;/p&gt;
 
-&lt;p&gt;   
-具体可以参考&lt;a href=&#34;http://shell909090.org/blog/2011/03/python%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0%EF%BC%88%E4%B8%80%EF%BC%89%E2%80%94%E2%80%94%E5%86%85%E7%BD%AE%E5%AF%B9%E8%B1%A1/&#34;&gt;python源码解析读书笔记（一）——内置对象&lt;/a&gt;，这里面有说：&lt;/p&gt;
+&lt;p&gt;具体可以参考&lt;a href=&#34;http://shell909090.org/blog/2011/03/python%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0%EF%BC%88%E4%B8%80%EF%BC%89%E2%80%94%E2%80%94%E5%86%85%E7%BD%AE%E5%AF%B9%E8%B1%A1/&#34;&gt;python源码解析读书笔记（一）——内置对象&lt;/a&gt;，这里面有说：&lt;/p&gt;
 
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
+&lt;p&gt;7.dict对象的索引方案&lt;/p&gt;
 
-&lt;p&gt;7.dict对象的索引方案&lt;br /&gt;
-dict对象的索引方案使用的是哈希表，而且是开放地址法的哈希表。当装载率达到一定规模后，会新申请一块内存，将有效数据复制过去。最小的表空间为8个对象，当装载率超过2/3时，会扩大规模到当前active的4倍（超过50000个对象为2倍）。目前为止，在对象被删除后，其表空间并不释放。因此曾经增长的非常大的dict对象，可以定期复制以回收空间。
-&lt;div&gt;&lt;/p&gt;
+&lt;p&gt;dict对象的索引方案使用的是哈希表，而且是开放地址法的哈希表。当装载率达到一定规模后，会新申请一块内存，将有效数据复制过去。最小的表空间为8个对象，当装载率超过2/3时，会扩大规模到当前active的4倍（超过50000个对象为2倍）。目前为止，在对象被删除后，其表空间并不释放。因此曾经增长的非常大的dict对象，可以定期复制以回收空间。&lt;/p&gt;
 
-&lt;p&gt;   
-最初的表项空间为6个以内，满了之后，会自动扩张到24个，有效16个。从大致来说，如果要放下N个表项，大概就要扩张T次，他们满足以下关系。&lt;/p&gt;
+&lt;p&gt;最初的表项空间为6个以内，满了之后，会自动扩张到24个，有效16个。从大致来说，如果要放下N个表项，大概就要扩张T次，他们满足以下关系。&lt;/p&gt;
 
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;A0*(8/3)^(T-1)&amp;lt;N&amp;lt;A0*(8/3)^T
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;div&gt;
+&lt;p&gt;而每次扩张，就要进行全表项复制，因此复杂度大约是O(N)量级。当扩张到放下N个表项时，就需要进行的复制的总数是：&lt;/p&gt;
 
-A0\*(8/3)\^(T-1)&amp;lt;N&amp;lt;A0\*(8/3)\^T
+&lt;pre&gt;&lt;code&gt;sum(i, 0, T-1){A0*(8/3)^i}
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;/div&gt;
+&lt;p&gt;这是一个典型的等比数列求和问题，我们知道问题的答案应当是：&lt;/p&gt;
 
-&lt;div&gt;
+&lt;pre&gt;&lt;code&gt;A0*3*((8/3)^T-1)/5=A0*(3/5)*(8/3)^T-(3/5)*A0
+&lt;/code&gt;&lt;/pre&gt;
 
-   
-而每次扩张，就要进行全表项复制，因此复杂度大约是O(N)量级。当扩张到放下N个表项时，就需要进行的复制的总数是：
+&lt;p&gt;因此，&lt;code&gt;(3/5)(N-A0)&amp;lt;O&amp;lt;(3/5)\*((8/3)\*N-A0)&lt;/code&gt;。如果只考虑数量级的话，插入的复杂度量级为O(n)，即哈希表的平均插入复杂度为n级。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;也许有人奇怪，哈希表的插入复杂度为1级阿，怎么得到n级的结论的？看上面，都说是放下N个表项时的总复杂度了。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;我们可以和红黑树对比一下，红黑树的平均插入复杂度为logn级，平均查找复杂度为logn级。哈希表的平均插入复杂度为1级，查找复杂度为1级。但是红黑树在一点上比hash优秀——他的插入时间基本稳定，hash table的插入时间有可能会暴长。&lt;/p&gt;
 
-sum(i, 0, T-1){A0\*(8/3)\^i}
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    这是一个典型的等比数列求和问题，我们知道问题的答案应当是：
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-A0\*3\*((8/3)\^T-1)/5=A0\*(3/5)\*(8/3)\^T-(3/5)\*A0
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-因此，(3/5)(N-A0)&amp;lt;O&amp;lt;(3/5)\*((8/3)\*N-A0)。如果只考虑数量级的话，插入的复杂度量级为O(n)，即哈希表的平均插入复杂度为n级。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-也许有人奇怪，哈希表的插入复杂度为1级阿，怎么得到n级的结论的？看上面，都说是放下N个表项时的总复杂度了。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-我们可以和红黑树对比一下，红黑树的平均插入复杂度为logn级，平均查找复杂度为logn级。哈希表的平均插入复杂度为1级，查找复杂度为1级。但是红黑树在一点上比hash优秀——他的插入时间基本稳定，hash
-table的插入时间有可能会暴长。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-于是，当我们有N个元素，需要进行排重的时候，我们可以set化。假定set和dict基于一样原理运作，我们的时间复杂度为O(n+m)级，m为排重后元素个数。其实按照最差情况来说，也可以认为是O(n)级。
-
-&lt;/div&gt;
+&lt;p&gt;于是，当我们有N个元素，需要进行排重的时候，我们可以set化。假定set和dict基于一样原理运作，我们的时间复杂度为O(n+m)级，m为排重后元素个数。其实按照最差情况来说，也可以认为是O(n)级。&lt;/p&gt;
 </description>
     </item>
     
@@ -101,110 +55,48 @@ table的插入时间有可能会暴长。
       <pubDate>Tue, 22 Nov 2011 10:18:15 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/1990/</guid>
-      <description>&lt;p&gt;项目的主页是&lt;a href=&#34;http://code.google.com/p/python-segment/&#34;&gt;http://code.google.com/p/python-segment/&lt;/a&gt;，如果有问题，可以在上面提交issue，我会收到邮件（google
-code会么？应该会吧）。如果你希望协助开发，可以加入项目。一些简单问题可以直接看项目的WIKI，Wiki中有的一些内容我不会进一步解释，只会告诉你在那里可以看到。
-&lt;div&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;
-&lt;div&gt;&lt;/p&gt;
+      <description>&lt;p&gt;项目的主页是&lt;a href=&#34;http://code.google.com/p/python-segment/&#34;&gt;http://code.google.com/p/python-segment/&lt;/a&gt;，如果有问题，可以在上面提交issue，我会收到邮件（google code会么？应该会吧）。如果你希望协助开发，可以加入项目。一些简单问题可以直接看项目的WIKI，Wiki中有的一些内容我不会进一步解释，只会告诉你在那里可以看到。&lt;/p&gt;
 
 &lt;p&gt;1.如何获得源码&lt;/p&gt;
 
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
+&lt;p&gt;你可以使用以下代码，直接从版本库中复制一个可用版本出来。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;pre&gt;&lt;code&gt;hg clone https://shell909090@code.google.com/p/python-segment/
+&lt;/code&gt;&lt;/pre&gt;
 
-你可以使用以下代码，直接从版本库中复制一个可用版本出来。
+&lt;p&gt;或者可以从&lt;a href=&#34;http://code.google.com/p/python-segment/downloads/list&#34;&gt;这里&lt;/a&gt;下载一个最新版本的包。&lt;/p&gt;
 
-``` {style=&#34;font-size:12px;padding-top:0.5em;padding-right:0.5em;padding-bottom:0.5em;padding-left:0.5em;font-family:Monaco,&#39;DejaVu Sans Mono&#39;,&#39;Bitstream Vera Sans Mono&#39;,&#39;Lucida Console&#39;,monospace;max-width:70em;background-color:rgb(255,255,255)&#34;}
+&lt;p&gt;2.如何准备环境&lt;/p&gt;
 
-hg clone https://shell909090@code.google.com/p/python-segment/
-```
+&lt;p&gt;你可以看INSTALL，里面讲解的比较详细了。如果你不准备进行安装部署，可以跳过安装和打包这两步。但是如果你打算使用cutter工具，请安装chardet。如果你打算使用spider工具，请安装html2text。&lt;/p&gt;
 
-或者可以从[这里](http://code.google.com/p/python-segment/downloads/list)下载一个最新版本的包。
+&lt;p&gt;首先按照如下方式生成词典。&lt;/p&gt;
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-2.如何准备环境
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-你可以看INSTALL，里面讲解的比较详细了。如果你不准备进行安装部署，可以跳过安装和打包这两步。但是如果你打算使用cutter工具，请安装chardet。如果你打算使用spider工具，请安装html2text。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    首先按照如下方式生成词典。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-``` {style=&#34;font-size:12px;padding-top:0.5em;padding-right:0.5em;padding-bottom:0.5em;padding-left:0.5em;font-family:Monaco,&#39;DejaVu Sans Mono&#39;,&#39;Bitstream Vera Sans Mono&#39;,&#39;Lucida Console&#39;,monospace;max-width:70em;background-color:rgb(255,255,255)&#34;}
-
-gunzip dict.tar.gz
+&lt;pre&gt;&lt;code&gt;gunzip dict.tar.gz
 ./ps_dbmgr create dict.txt
-```
+&lt;/code&gt;&lt;/pre&gt;
 
-   
-然后，你可以看到生成了frq.db，这是词典的默认文件名。注意，词典文件的格式和具体的版本有关，换用版本后最好重新生成词典。
+&lt;p&gt;然后，你可以看到生成了frq.db，这是词典的默认文件名。注意，词典文件的格式和具体的版本有关，换用版本后最好重新生成词典。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;3.试验分词&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;假定有一个文本文件，test.txt，里面内容是中文平文本，编码任意。&lt;/p&gt;
 
-\
+&lt;pre&gt;&lt;code&gt;./ps_cutter cutshow test.txt
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;/div&gt;
+&lt;p&gt;cutter会自动推测编码。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;4.代码使用&lt;/p&gt;
 
-3.试验分词
+&lt;p&gt;假如当前有一个frq.db词库。&lt;/p&gt;
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    假定有一个文本文件，test.txt，里面内容是中文平文本，编码任意。
-
-``` {style=&#34;font-size:12px;padding-top:0.5em;padding-right:0.5em;padding-bottom:0.5em;padding-left:0.5em;font-family:Monaco,&#39;DejaVu Sans Mono&#39;,&#39;Bitstream Vera Sans Mono&#39;,&#39;Lucida Console&#39;,monospace;max-width:70em;background-color:rgb(255,255,255)&#34;}
-
-./ps_cutter cutshow test.txt
-```
-
-    cutter会自动推测编码。
-
-4.代码&lt;span
-style=&#34;font-family:arial;line-height:normal;font-size:small&#34;&gt;使用&lt;/span&gt;
-
-假如当前有一个frq.db词库。
-
-``` {style=&#34;font-size:12px;padding-top:0.5em;padding-right:0.5em;padding-bottom:0.5em;padding-left:0.5em;font-family:Monaco,&#39;DejaVu Sans Mono&#39;,&#39;Bitstream Vera Sans Mono&#39;,&#39;Lucida Console&#39;,monospace;max-width:70em;line-height:normal&#34;}
-
-import segment
+&lt;pre&gt;&lt;code&gt;import segment
 cut = segment.get_cutter(&#39;frq.db&#39;)
+print list(cut.parse(u&#39;工信处女干事每月经过下属科室都要亲口交代24口交换机等技术性器件的安装工作&#39;))
+&lt;/code&gt;&lt;/pre&gt;
 
-
- print list(cut.parse(u&#39;工信处女干事每月经过下属科室都要亲口交代24口交换机等技术性器件的安装工作&#39;))
-```
-
-注意，仅仅使用parse是不会进行分词的，因为parse返回的是一个生成器。
-
-&lt;/div&gt;
-
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
+&lt;p&gt;注意，仅仅使用parse是不会进行分词的，因为parse返回的是一个生成器。&lt;/p&gt;
 </description>
     </item>
     

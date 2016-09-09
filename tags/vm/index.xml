@@ -835,134 +835,86 @@ style=&#34;font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif&
       <guid>http://shell909090.org/blog/archives/2094/</guid>
       <description>&lt;p&gt;废话不说，上干货。先装一下syslinux，genisoimage，kvm，debootstrap，squashfs-tools。&lt;/p&gt;
 
-&lt;p&gt;\$ mkdir debcd&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ mkdir debcd
+$ cd debcd
+$ mkdir isoroot
+$ cp/usr/lib/syslinux/isolinux.bin isoroot/
+$cat &amp;gt; isoroot/isolinux.cfg &amp;lt;&amp;lt; &amp;quot;EOF&amp;quot;
+prompt 0
+default linux
+label linux
+kernel vmlinuz
+append initrd=initrd.img
+EOF
+$ cp /boot/vmlinuz-3.2.0-1-amd64 isoroot/vmlinuz
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;\$ cd debcd&lt;/p&gt;
+&lt;p&gt;完成上述步骤后，你就准备好了一个基础的iso镜像文件系统，并有了一个基础的引导模块和内核。现在，我们尝试把这玩意烧到iso上，并且测试一下。&lt;/p&gt;
 
-&lt;p&gt;\$ mkdir isoroot&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$genisoimage -o output.iso -b isolinux.bin -c boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table isoroot/
+$ sudo kvm -cdrom output.iso -m 512
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;\$ cp /usr/lib/syslinux/isolinux.bin isoroot/&lt;/p&gt;
+&lt;p&gt;如果没法装kvm，换成qemu。屏幕会停在内核引导过程中——因为你没有initrd.img，所以在isolinux.cfg中指定的initrd就不正确。下面我们会设法弄一个initrd.img。&lt;/p&gt;
 
-&lt;p&gt;\$ cat &amp;gt; isoroot/isolinux.cfg &amp;lt;&amp;lt; &amp;ldquo;EOF&amp;rdquo;&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ cp -a /etc/initramfs-tools/ initramfs
+$ mkinitramfs -d initramfs -o isoroot/initrd.img
+$genisoimage -o output.iso -b isolinux.bin -c boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table isoroot/
+$ sudo kvm -cdrom output.iso -m 512
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;prompt 0&lt;/p&gt;
+&lt;p&gt;现在看看？你应该能看到有initrd被加载上去了，但是很可惜，没有root，因此也无法启动。所以下一步，我们需要弄一个root。&lt;/p&gt;
 
-&lt;p&gt;default linux&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ mkdir sysroot
+$ sudo debootstrap --arch amd64 stable sysroot/ http://localhost:9999/debian/
+$ sudo chown -R user.user sysroot
+$ mksquashfs sysroot isoroot/rootfs -all-root
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;label linux&lt;/p&gt;
+&lt;p&gt;把上面的源换成你喜欢的——我用approx做了一个缓存，所以一直使用这个缓存进行加速。在脚本执行完后，你会有一个压缩为squash格式的rootfs，可以作为root。但是这个root有两个缺陷。1.不能直接mount。2.即使mount了，启动的时候也会因为只读而挂掉。所以你需要做一点调整&lt;/p&gt;
 
-&lt;p&gt;    kernel vmlinuz&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ cat &amp;gt;&amp;gt; initramfs/modules &amp;lt;&amp;lt; &amp;quot;EOF&amp;quot;
+squashfs
+aufs
+EOF
+$ cat &amp;gt; initramfs/scripts/local-premount/iso &amp;lt;&amp;lt; &amp;quot;EOF&amp;quot;
+#!/bin/sh
+case &amp;quot;${1}&amp;quot; in
+    prereqs)
+        echo &#39;iso script run&#39;
+        exit 0
+        ;;
+esac
+mkdir /cdrom
+mount -t iso9660 /dev/sr0 /cdrom
+mkdir /cdroot
+mount -t squashfs /cdrom/rootfs /cdroot
+mkdir /shadow
+mount -t tmpfs -o size=128m none /shadow
+mount -t aufs -o br:/shadow=rw:/cdroot=ro none /root
+EOF
+$ chmod +x initramfs/scripts/local-premount/iso
+$ mkinitramfs -d initramfs -o isoroot/initrd.img
+$ genisoimage -o output.iso -b isolinux.bin -c boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table isoroot/
+$ sudo kvm -cdrom output.iso -m 512
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;    append initrd=initrd.img&lt;/p&gt;
+&lt;p&gt;好，现在再make clean，make test，光盘基本就OK了。&lt;/p&gt;
 
-&lt;p&gt;EOF&lt;/p&gt;
+&lt;p&gt;root密码多少？我怎么知道你的root密码呢？用sudo chroot&lt;/p&gt;
 
-&lt;p&gt;\$ cp /boot/vmlinuz-3.2.0-1-amd64 isoroot/vmlinuz&lt;/p&gt;
+&lt;p&gt;sysroot切换到自己的系统里面去改。另外，你可能需要安装一些软件，这时候记得把/sys&lt;/p&gt;
 
-&lt;p&gt;   
-完成上述步骤后，你就准备好了一个基础的iso镜像文件系统，并有了一个基础的引导模块和内核。现在，我们尝试把这玩意烧到iso上，并且测试一下。&lt;/p&gt;
+&lt;p&gt;/proc挂到chroot里面。还有记得调整一下/etc/udev/rules.d/70-persistent-net.rules，把主机里面的记录删掉（或者干脆删掉文件）。调整/etc/network/interfaces，把以下内容加进去。&lt;/p&gt;
 
-&lt;p&gt;\$ genisoimage -o output.iso -b isolinux.bin -c
-&lt;a href=&#34;http://boot.cat&#34;&gt;boot.cat&lt;/a&gt; -no-emul-boot -boot-load-size 4
--boot-info-table isoroot/&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;auto lo
+iface lo inet loopback
+# The primary network interface
+auto eth0
+iface eth0 inet dhcp
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;\$ sudo kvm -cdrom output.iso -m 512&lt;/p&gt;
-
-&lt;p&gt;   
-如果没法装kvm，换成qemu。屏幕会停在内核引导过程中——因为你没有initrd.img，所以在isolinux.cfg中指定的initrd就不正确。下面我们会设法弄一个initrd.img。&lt;/p&gt;
-
-&lt;p&gt;\$ cp -a /etc/initramfs-tools/ initramfs&lt;/p&gt;
-
-&lt;p&gt;\$ mkinitramfs -d initramfs -o isoroot/initrd.img&lt;/p&gt;
-
-&lt;p&gt;\$ genisoimage -o output.iso -b isolinux.bin -c
-&lt;a href=&#34;http://boot.cat&#34;&gt;boot.cat&lt;/a&gt; -no-emul-boot -boot-load-size 4
--boot-info-table isoroot/&lt;/p&gt;
-
-&lt;p&gt;\$ sudo kvm -cdrom output.iso -m 512&lt;/p&gt;
-
-&lt;p&gt;   
-现在看看？你应该能看到有initrd被加载上去了，但是很可惜，没有root，因此也无法启动。所以下一步，我们需要弄一个root。&lt;/p&gt;
-
-&lt;p&gt;\$ mkdir sysroot&lt;/p&gt;
-
-&lt;p&gt;\$ sudo debootstrap &amp;ndash;arch amd64 stable sysroot/
-&lt;a href=&#34;http://localhost:9999/debian/&#34;&gt;http://localhost:9999/debian/&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;\$ sudo chown -R user.user sysroot&lt;/p&gt;
-
-&lt;p&gt;\$ mksquashfs sysroot isoroot/rootfs -all-root&lt;/p&gt;
-
-&lt;p&gt;   
-把上面的源换成你喜欢的——我用approx做了一个缓存，所以一直使用这个缓存进行加速。在脚本执行完后，你会有一个压缩为squash格式的rootfs，可以作为root。但是这个root有两个缺陷。1.不能直接mount。2.即使mount了，启动的时候也会因为只读而挂掉。所以你需要做一点调整&lt;/p&gt;
-
-&lt;p&gt;\$ cat &amp;gt;&amp;gt; initramfs/modules &amp;lt;&amp;lt; &amp;ldquo;EOF&amp;rdquo;&lt;/p&gt;
-
-&lt;p&gt;squashfs&lt;/p&gt;
-
-&lt;p&gt;aufs&lt;/p&gt;
-
-&lt;p&gt;EOF&lt;/p&gt;
-
-&lt;p&gt;\$ cat &amp;gt; initramfs/scripts/local-premount/iso &amp;lt;&amp;lt; &amp;ldquo;EOF&amp;rdquo;&lt;/p&gt;
-
-&lt;p&gt;#!/bin/sh&lt;/p&gt;
-
-&lt;p&gt;case &amp;ldquo;\${1}&amp;rdquo; in&lt;/p&gt;
-
-&lt;p&gt;    prereqs)&lt;/p&gt;
-
-&lt;p&gt;        echo &amp;lsquo;iso script run&amp;rsquo;&lt;/p&gt;
-
-&lt;p&gt;        exit 0&lt;/p&gt;
-
-&lt;p&gt;        ;;&lt;/p&gt;
-
-&lt;p&gt;esac&lt;/p&gt;
-
-&lt;p&gt;mkdir /cdrom&lt;/p&gt;
-
-&lt;p&gt;mount -t iso9660 /dev/sr0 /cdrom&lt;/p&gt;
-
-&lt;p&gt;mkdir /cdroot&lt;/p&gt;
-
-&lt;p&gt;mount -t squashfs /cdrom/rootfs /cdroot&lt;/p&gt;
-
-&lt;p&gt;mkdir /shadow&lt;/p&gt;
-
-&lt;p&gt;mount -t tmpfs -o size=128m none /shadow&lt;/p&gt;
-
-&lt;p&gt;mount -t aufs -o br:/shadow=rw:/cdroot=ro none /root&lt;/p&gt;
-
-&lt;p&gt;EOF&lt;/p&gt;
-
-&lt;p&gt;\$ chmod +x initramfs/scripts/local-premount/iso&lt;/p&gt;
-
-&lt;p&gt;\$ mkinitramfs -d initramfs -o isoroot/initrd.img&lt;/p&gt;
-
-&lt;p&gt;\$ genisoimage -o output.iso -b isolinux.bin -c
-&lt;a href=&#34;http://boot.cat&#34;&gt;boot.cat&lt;/a&gt; -no-emul-boot -boot-load-size 4
--boot-info-table isoroot/&lt;/p&gt;
-
-&lt;p&gt;\$ sudo kvm -cdrom output.iso -m 512&lt;/p&gt;
-
-&lt;p&gt;    好，现在再make clean，make test，光盘基本就OK了。&lt;/p&gt;
-
-&lt;p&gt;    root密码多少？我怎么知道你的root密码呢？用sudo chroot
-sysroot切换到自己的系统里面去改。另外，你可能需要安装一些软件，这时候记得把/sys
-/proc挂到chroot里面。还有记得调整一下/etc/udev/rules.d/70-persistent-net.rules，把主机里面的记录删掉（或者干脆删掉文件）。调整/etc/network/interfaces，把以下内容加进去。&lt;/p&gt;
-
-&lt;p&gt;auto lo&lt;/p&gt;
-
-&lt;p&gt;iface lo inet loopback&lt;/p&gt;
-
-&lt;p&gt;# The primary network interface&lt;/p&gt;
-
-&lt;p&gt;auto eth0&lt;/p&gt;
-
-&lt;p&gt;iface eth0 inet dhcp&lt;/p&gt;
-
-&lt;p&gt;    基本来说，可定制的引导系统就是这样。不过这个系统有以下几点需要注意：&lt;/p&gt;
+&lt;p&gt;基本来说，可定制的引导系统就是这样。不过这个系统有以下几点需要注意：&lt;/p&gt;
 
 &lt;p&gt;1.可写入数量只有128M，如果写多了就完蛋。&lt;/p&gt;
 
@@ -970,42 +922,34 @@ sysroot切换到自己的系统里面去改。另外，你可能需要安装一�
 
 &lt;p&gt;3.一次一次生成很麻烦，我用的是make。&lt;/p&gt;
 
-&lt;p&gt;TARGETS=isoroot/initrd.img isoroot/rootfs&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;TARGETS=isoroot/initrd.img isoroot/rootfs
 
-&lt;p&gt;all: output.iso&lt;/p&gt;
+all: output.iso
 
-&lt;p&gt;test: output.iso&lt;/p&gt;
+test: output.iso
+    sudo kvm -cdrom $^ -m 512
 
-&lt;p&gt;sudo kvm -cdrom \$\^ -m 512&lt;/p&gt;
+clean:
+    rm -f output.iso $(TARGETS)
 
-&lt;p&gt;clean:&lt;/p&gt;
+output.iso: isoroot/isolinux.cfg isoroot/vmlinuz $(TARGETS)
+    genisoimage -o $@ -b isolinux.bin -c boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table isoroot/
 
-&lt;p&gt;rm -f output.iso \$(TARGETS)&lt;/p&gt;
+isoroot/initrd.img: initramfs
+    mkinitramfs -d $^ -o $@
 
-&lt;p&gt;output.iso: isoroot/isolinux.cfg isoroot/vmlinuz \$(TARGETS)&lt;/p&gt;
-
-&lt;p&gt;genisoimage -o \$@ -b isolinux.bin -c &lt;a href=&#34;http://boot.cat&#34;&gt;boot.cat&lt;/a&gt;
--no-emul-boot -boot-load-size 4 -boot-info-table isoroot/&lt;/p&gt;
-
-&lt;p&gt;isoroot/initrd.img: initramfs&lt;/p&gt;
-
-&lt;p&gt;mkinitramfs -d \$\^ -o \$@&lt;/p&gt;
-
-&lt;p&gt;isoroot/rootfs: sysroot&lt;/p&gt;
-
-&lt;p&gt;mksquashfs \$\^ \$@ -all-root&lt;/p&gt;
+isoroot/rootfs: sysroot
+    mksquashfs $^ $@ -all-root
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;4.可以用一个dsvc保存中间结果，我用的是git。下面是gitignore。&lt;/p&gt;
 
-&lt;p&gt;*.iso&lt;/p&gt;
-
-&lt;p&gt;isoroot/vmlinuz*&lt;/p&gt;
-
-&lt;p&gt;isoroot/initrd*&lt;/p&gt;
-
-&lt;p&gt;isoroot/rootfs*&lt;/p&gt;
-
-&lt;p&gt;sysroot&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;*.iso
+isoroot/vmlinuz*
+isoroot/initrd*
+isoroot/rootfs*
+sysroot
+&lt;/code&gt;&lt;/pre&gt;
 </description>
     </item>
     

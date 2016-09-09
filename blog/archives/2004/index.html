@@ -112,313 +112,59 @@ ga('send', 'pageview');
           
           
           
-          <p>1.pptp client
-<div></p>
+          <p>1.pptp client</p>
 
-<p>    安装pptp-linux，使用pptpsetup，按照man来。使用pon
-configname启动，poff关闭，plog看日志。</p>
+<p>安装pptp-linux，使用pptpsetup，按照man来。使用pon configname启动，poff关闭，plog看日志。</p>
 
-<p></div></p>
+<p>2.3g网卡拨号</p>
 
-<div>
+<p>应当使用usb_modeswitch进行编码转换，然后用wvdial拨号。MF190而言，至少我这里modeswitch会自动转换的。后者直接编辑/etc/wvdial.conf，然后输入wvdial开始拨号。wvdial有个包装叫做gnome-ppp，依赖很少，在其他桌面也可以用。我还没有研究出来怎么玩。</p>
 
-\
+<p>附，MF190使用的usb_modeswitch配置（debian自带）:</p>
 
-</div>
-
-<div>
-
-2.3g网卡拨号
-
-</div>
-
-<div>
-
-   
-应当使用usb\_modeswitch进行编码转换，然后用wvdial拨号。MF190而言，至少我这里modeswitch会自动转换的。后者直接编辑/etc/wvdial.conf，然后输入wvdial开始拨号。wvdial有个包装叫做gnome-ppp，依赖很少，在其他桌面也可以用。我还没有研究出来怎么玩。
-
-</div>
-
-<div>
-
-附，MF190使用的usb\_modeswitch配置（debian自带）:
-
-</div>
-
-<div>
-
-<div>
-
-\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#
-
-</div>
-
-<div>
-
-\# ZTE devices
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-DefaultVendor=  0x19d2
-
-</div>
-
-<div>
-
+<pre><code>########################################################
+# ZTE devices
+DefaultVendor= 0x19d2
 DefaultProduct= 0x2000
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-TargetVendor=   0x19d2
-
-</div>
-
-<div>
-
-TargetProductList="0001,0002,0015,0016,0017,0031,0037,0052,0055,0063,0064,0066,0091,0108,0117,0128,2002"
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-MessageContent="5553424312345678000000000000061e000000000000000000000000000000"
-
-</div>
-
-<div>
-
-MessageContent2="5553424312345679000000000000061b000000020000000000000000000000"
-
-</div>
-
-<div>
-
-MessageContent3="55534243123456702000000080000c85010101180101010101000000000000"
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
+TargetVendor=  0x19d2
+TargetProductList=&quot;0001,0002,0015,0016,0017,0031,0037,0052,0055,0063,0064,0066,0091,0108,0117,0128,2002&quot;
+MessageContent=&quot;5553424312345678000000000000061e000000000000000000000000000000&quot;
+MessageContent2=&quot;5553424312345679000000000000061b000000020000000000000000000000&quot;
+MessageContent3=&quot;55534243123456702000000080000c85010101180101010101000000000000&quot;
 NeedResponse=1
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
 CheckSuccess=20
+</code></pre>
 
-</div>
+<p>附，MF190可用的wvdial.conf:</p>
 
-<p></div></p>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-附，MF190可用的wvdial.conf:
-
-</div>
-
-<div>
-
-<div>
-
-\[Dialer Defaults\]
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
+<pre><code>[Dialer Defaults]
 Modem = /dev/ttyUSB2
-
-</div>
-
-<div>
-
 Init1 = ATZ
-
-</div>
-
-<div>
-
 Init3 = ATE0V1
-
-</div>
-
-<div>
-
 Init5 = ATS0=0
-
-</div>
-
-<div>
-
-Init6 = AT+CGDCONT=1,"IP","uninet"
-
-</div>
-
-<div>
-
+Init6 = AT+CGDCONT=1,&quot;IP&quot;,&quot;uninet&quot;
 Init7 = AT+CFUN=1
-
-</div>
-
-<div>
-
 Modem Type = USB Modem
-
-</div>
-
-<div>
-
 Baud = 460800
-
-</div>
-
-<div>
-
 New PPPD = yes
-
-</div>
-
-<div>
-
 ISDN = 0
-
-</div>
-
-<div>
-
-Phone = \*99\#
-
-</div>
-
-<div>
-
+Phone = *99#
 Password = any
-
-</div>
-
-<div>
-
 Username = any
-
-</div>
-
-<div>
-
 Stupid Mode = 1
+</code></pre>
 
-</div>
+<p>3.wpa联网</p>
 
-<p></div></p>
+<p>很简单，安装apt-get install wpasupplicant。用iwlist scan扫描网络。然后用<code>wpa_passphrase ESSID password &gt; wpa.conf</code>来生成conf。最后，<code>wpa_supplicant -Dwext -ieth1 -c/root/wpa.conf</code>。启用某个配置文件，连接网络。</p>
 
-<div>
+<p>注意，这样是不管分配ip的。你可以用/etc/network/interfaces来指定，或者直接用ifconfig进行设定。如果有dhcp，也可以在interface里面设定，或者用dhclient直接解决问题。</p>
 
-\
+<p>参考：</p>
 
-</div>
+<p>1.<a href="http://blog.163.com/wmkq_cq/blog/static/169582364201112165846277/">联通 3G ZTE MF190 wvdial.conf 备份</a></p>
 
-<div>
-
-3.wpa联网
-
-</div>
-
-<div>
-
-    很简单，安装apt-get install wpasupplicant。用iwlist
-scan扫描网络。然后用wpa\_passphrase ESSID password &gt;
-wpa.conf来生成conf。最后，wpa\_supplicant -Dwext -ieth1
--c/root/wpa.conf。启用某个配置文件，连接网络。
-
-</div>
-
-<div>
-
-   
-注意，这样是不管分配ip的。你可以用/etc/network/interfaces来指定，或者直接用ifconfig进行设定。如果有dhcp，也可以在interface里面设定，或者用dhclient直接解决问题。
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-参考：
-
-</div>
-
-<div>
-
-1. [联通 3G ZTE MF190 wvdial.conf
-备份](http://blog.163.com/wmkq_cq/blog/static/169582364201112165846277/)
-
-</div>
-
-<div>
-
-2. [CCommand line WPA](http://linux.icydog.net/wpa.php)
-
-</div>
-
-<div>
-
-<div>
-
-\
-
-</div>
-
-<p></div></p>
+<p>2.<a href="http://linux.icydog.net/wpa.php">CCommand line WPA</a></p>
 
         </div>
         

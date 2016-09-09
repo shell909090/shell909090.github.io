@@ -112,148 +112,39 @@ ga('send', 'pageview');
           
           
           
-          <p>女朋友的单位需要解一个背包问题，说白了就是算票。通过有限的票，凑出最接近一个数字的组合来。
-<div></p>
-
-<p>  
- 这个是经典问题，不过票数比较多，我本来用随机划分，然后一次优化一步的随机算法，凑出一个接近的数字。这样算法比较快，不过不是很准。</p>
-
-<p></div></p>
-
-<div>
-
-    女朋友领导发话了，时间长点可以接受，但是最好准点。
-
-</div>
-
-<div>
-
-    照做吧，幸好这个算法算100张票子也就是10秒不到，这还是mini-itx。
-
-</div>
-
-<div>
-
-  
- 下面上算法，具体算法猛击这里（<http://www.oiers.cn/pack/Index.html> ）和这里（<http://zh.wikipedia.org/wiki/%E8%83%8C%E5%8C%85%E9%97%AE%E9%A2%98> ）。输入是数字列表和目标，输出是组合和误差。f\[i\]是目前为止，最大代价为i所能获得的最高收益，以及组合方式。numlist是二维数组，分别是代价和收益。
-
-</div>
-
-<div>
-
-<div>
-
-def resolv\_dym(numlist, target):
-
-</div>
-
-<div>
-
-    f = \[\[0, \[\]\] for i in xrange(0, target + 1)\]
-
-</div>
-
-<div>
-
-    for c, w in numlist:
-
-</div>
-
-<div>
-
-        for v in xrange(target, c - 1, -1):
-
-</div>
-
-<div>
-
-            if f\[v - c\]\[0\] + w &gt; f\[v\]\[0\]:
-
-</div>
-
-<div>
-
-                f\[v\]\[0\] = f\[v - c\]\[0\] + w
-
-</div>
-
-<div>
-
-                f\[v\]\[1\] = f\[v - c\]\[1\] + \[(c, w),\]
-
-</div>
-
-<div>
-
-    return f\[target\]\[1\], float(abs(target - f\[target\]\[0\]))
-
-</div>
-
-<p></div></p>
-
-<div>
-
-    当然，在这个特例里面，代价和收益相等，所以下面是真实代码。
-
-</div>
-
-<div>
-
-<div>
-
-def resolv\_dym(numlist, target):
-
-</div>
-
-<div>
-
-    f = \[\[0, \[\]\] for i in xrange(0, target + 1)\]
-
-</div>
-
-<div>
-
-    for i in numlist:
-
-</div>
-
-<div>
-
-        for v in xrange(target, i - 1, -1):
-
-</div>
-
-<div>
-
-            if f\[v - i\]\[0\] + i &gt; f\[v\]\[0\]:
-
-</div>
-
-<div>
-
-                f\[v\]\[0\] = f\[v - i\]\[0\] + i
-
-</div>
-
-<div>
-
-                f\[v\]\[1\] = f\[v - i\]\[1\] + \[i,\]
-
-</div>
-
-<div>
-
-    return f\[target\]\[1\], float(abs(target - f\[target\]\[0\]))
-
-</div>
-
-<p></div></p>
-
-<div>
-
-    完毕。
-
-</div>
+          <p>女朋友的单位需要解一个背包问题，说白了就是算票。通过有限的票，凑出最接近一个数字的组合来。</p>
+
+<p>这个是经典问题，不过票数比较多，我本来用随机划分，然后一次优化一步的随机算法，凑出一个接近的数字。这样算法比较快，不过不是很准。</p>
+
+<p>女朋友领导发话了，时间长点可以接受，但是最好准点。</p>
+
+<p>照做吧，幸好这个算法算100张票子也就是10秒不到，这还是mini-itx。</p>
+
+<p>下面上算法，具体算法猛击这里（<a href="http://www.oiers.cn/pack/Index.html">http://www.oiers.cn/pack/Index.html</a> ）和这里（<a href="http://zh.wikipedia.org/wiki/%E8%83%8C%E5%8C%85%E9%97%AE%E9%A2%98">http://zh.wikipedia.org/wiki/%E8%83%8C%E5%8C%85%E9%97%AE%E9%A2%98</a> ）。输入是数字列表和目标，输出是组合和误差。f[i]是目前为止，最大代价为i所能获得的最高收益，以及组合方式。numlist是二维数组，分别是代价和收益。</p>
+
+<pre><code>def resolv_dym(numlist, target):
+    f = [[0, []] for i in range(0, target + 1)]
+    for c, w in numlist:
+        for v in range(target, c - 1, -1):
+            if f[v - c][0] + w &gt; f[v][0]:
+                f[v][0] = f[v - c][0] + w
+                f[v][1] = f[v - c][1] + [(c, w), ]
+    return f[target][1], float(abs(target - f[target][0]))
+</code></pre>
+
+<p>当然，在这个特例里面，代价和收益相等，所以下面是真实代码。</p>
+
+<pre><code>def resolv_dym(numlist, target):
+    f = [[0, []] for i in range(0, target + 1)]
+    for i in numlist:
+        for v in range(target, i - 1, -1):
+            if f[v - i][0] + i &gt; f[v][0]:
+                f[v][0] = f[v - i][0] + i
+                f[v][1] = f[v - i][1] + [i, ]
+    return f[target][1], float(abs(target - f[target][0]))
+</code></pre>
+
+<p>完毕。</p>
 
         </div>
         
@@ -267,7 +158,7 @@ def resolv\_dym(numlist, target):
       Tags:
         
         
-          <a class="category" href="http://shell909090.org/tags/%e5%85%b6%e4%bb%96">%e5%85%b6%e4%bb%96</a>  
+          <a class="category" href="http://shell909090.org/tags/others">others</a>  
         
     </span>
   </p>

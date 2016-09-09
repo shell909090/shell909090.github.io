@@ -112,185 +112,46 @@ ga('send', 'pageview');
           
           
           
-          <p>在openwrt下面配置openvpn是非常简单的事情，当然我假定你有linux下面配置openvpn的经验。
-<div></p>
+          <p>在openwrt下面配置openvpn是非常简单的事情，当然我假定你有linux下面配置openvpn的经验。</p>
 
-<p>   
-首先，将配置文件，证书等等复制到/etc/openvpn下面。我的配置大概是这样。</p>
+<p>首先，将配置文件，证书等等复制到/etc/openvpn下面。我的配置大概是这样。</p>
 
-<p></div></p>
-
-<div>
-
-<div>
-
-client
-
-</div>
-
-<div>
-
+<pre><code>client
 dev tun
-
-</div>
-
-<div>
-
 proto udp
-
-</div>
-
-<div>
-
 remote ipaddr port
-
-</div>
-
-<div>
-
 resolv-retry infinite
-
-</div>
-
-<div>
-
 nobind
-
-</div>
-
-<div>
-
 persist-key
-
-</div>
-
-<div>
-
 persist-tun
-
-</div>
-
-<div>
-
 ca /etc/openvpn/ca.crt
-
-</div>
-
-<div>
-
 cert /etc/openvpn/openwrt.crt
-
-</div>
-
-<div>
-
 key /etc/openvpn/openwrt.key
-
-</div>
-
-<div>
-
 ns-cert-type server
-
-</div>
-
-<div>
-
 tls-auth /etc/openvpn/ta.key 1
-
-</div>
-
-<div>
-
 cipher DES-EDE3-CBC
-
-</div>
-
-<div>
-
 comp-lzo
-
-</div>
-
-<div>
-
 verb 3
-
-</div>
-
-<div>
-
 script-security 3
-
-</div>
-
-<div>
-
 up /etc/openvpn/dftup
-
-</div>
-
-<div>
-
 down /etc/openvpn/dftdown
+</code></pre>
 
-</div>
+<p>注意，其中的路径必须写完整，貌似测试下来不支持相对目录。其中的up和down是指在启动和关闭时会自动执行的两个脚本。根据贝壳的测试，redirect-gateway是无效的，不知道为什么。具体的路由配置方法，会在下一章中具体介绍。</p>
 
-<p></div></p>
+<p>然后，你需要将这个配置启用，方法是修改/etc/config/openvpn，在其中加入以下内容。</p>
 
-<div>
+<pre><code>config openvpn name
+option enable 1
+option config /etc/openvpn/name.conf
+</code></pre>
 
-   
-注意，其中的路径必须写完整，貌似测试下来不支持相对目录。其中的up和down是指在启动和关闭时会自动执行的两个脚本。根据贝壳的测试，redirect-gateway是无效的，不知道为什么。具体的路由配置方法，会在下一章中具体介绍。
+<p>name是你的配置名，下面的路径和配置文件路径吻合。</p>
 
-</div>
+<p>然后，你可以这样启动vpn。</p>
 
-<div>
-
-   
-然后，你需要将这个配置启用，方法是修改/etc/config/openvpn，在其中加入以下内容。
-
-</div>
-
-<div>
-
-<div>
-
-config openvpn name
-
-</div>
-
-<div>
-
-        option enable 1
-
-</div>
-
-<div>
-
-        option config /etc/openvpn/name.conf
-
-</div>
-
-<p></div></p>
-
-<div>
-
-    name是你的配置名，下面的路径和配置文件路径吻合。
-
-</div>
-
-<div>
-
-    然后，你可以这样启动vpn。
-
-</div>
-
-<div>
-
-/etc/init.d/openvpn restart
-
-</div>
+<pre><code>/etc/init.d/openvpn restart
+</code></pre>
 
         </div>
         
