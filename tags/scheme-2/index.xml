@@ -20,13 +20,11 @@
 
 &lt;h1 id=&#34;不动点理论&#34;&gt;不动点理论&lt;/h1&gt;
 
-&lt;p&gt;假定我们有一个函数f，例如，f(x) = x\^2。对于某些点，f(x) =
-x。在这个例子里面，0和1很明显就是两个点。这样的点称为不动点。&lt;/p&gt;
+&lt;p&gt;假定我们有一个函数f，例如，f(x) = x^2。对于某些点，f(x) = x。在这个例子里面，0和1很明显就是两个点。这样的点称为不动点。&lt;/p&gt;
 
 &lt;p&gt;不动点理论在各种领域有广泛应用，我记得其中之一就是在血型比例上。当ABO遗传规则固定后，存在一些ABO血型比例，这些比例的人随机通婚，生下来的孩子的血型比例亦保持不变。这是三种血型千百年来存在的基础，否则随着遗传规则比例转变，其中某些血型可能已经在地球上消失了。&lt;/p&gt;
 
-&lt;p&gt;也许你很好奇，当我们有了一个规则后，例如f(x) =
-x\^2，或者ABO遗传规则（这也可以当作一个函数，将父代ABO比例转换为子代的），如何才能计算出函数的不动点。&lt;/p&gt;
+&lt;p&gt;也许你很好奇，当我们有了一个规则后，例如f(x) = x^2，或者ABO遗传规则（这也可以当作一个函数，将父代ABO比例转换为子代的），如何才能计算出函数的不动点。&lt;/p&gt;
 
 &lt;p&gt;答案是不动点算子。&lt;/p&gt;
 
@@ -49,8 +47,7 @@ x\^2，或者ABO遗传规则（这也可以当作一个函数，将父代ABO比�
 &lt;pre&gt;&lt;code&gt;F = (lambda (h) (lambda (n) (if (&amp;lt; n 2) 1 (* n (h (- n 1))))))
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;看不懂为什么？这是一个柯里化函数。当我们传递真正的阶乘函数f给F的时候，在函数体内，他叫做h。而按照f(n-1)的定义，我们得到的值和(f
-n)没有区别。因此，我们有(F f) = f，你也可以写作F(f) = f。&lt;/p&gt;
+&lt;p&gt;看不懂为什么？这是一个柯里化函数。当我们传递真正的阶乘函数f给F的时候，在函数体内，他叫做h。而按照f(n-1)的定义，我们得到的值和(f n)没有区别。因此，我们有(F f) = f，你也可以写作F(f) = f。&lt;/p&gt;
 
 &lt;p&gt;是不是觉得眼熟？是的，f是函数F的一个不动点。要获得真正的阶乘函数f，我们只要对F计算不动点即可。&lt;/p&gt;
 
@@ -58,9 +55,7 @@ n)没有区别。因此，我们有(F f) = f，你也可以写作F(f) = f。&lt;
 
 &lt;p&gt;Y算子(或者叫做Y组合子)是另一种高阶函数，用于计算任意函数的不动点。&lt;/p&gt;
 
-&lt;p&gt;假定对于函数f，存在不动点x，有f(x) = x，那么Y(f) =
-x，这是Y算子的基础。按照上文代入，我们可以得到f(Y(f)) =
-Y(f)，或者可以写作scheme格式：(f (Y f)) = (Y f)，这就是Y算子。&lt;/p&gt;
+&lt;p&gt;假定对于函数f，存在不动点x，有f(x) = x，那么Y(f) = x，这是Y算子的基础。按照上文代入，我们可以得到f(Y(f)) = Y(f)，或者可以写作scheme格式：(f (Y f)) = (Y f)，这就是Y算子。&lt;/p&gt;
 
 &lt;p&gt;我们先跳过Y算子的推导过程，直接给出他的scheme表达式：&lt;/p&gt;
 
@@ -86,8 +81,7 @@ Y(f)，或者可以写作scheme格式：(f (Y f)) = (Y f)，这就是Y算子。&
 &lt;p&gt;我们验证一下，看看事情是怎么走的。&lt;/p&gt;
 
 &lt;ol&gt;
-&lt;li&gt;&lt;p&gt;首先let需要计算f，而f = (Y
-F)。F为以下函数，在let之后，F的值被唯一确定(赋值)。&lt;/p&gt;
+&lt;li&gt;&lt;p&gt;首先let需要计算f，而f = (Y F)。F为以下函数，在let之后，F的值被唯一确定(赋值)。&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;(lambda (h)
   (lambda (n)
@@ -103,25 +97,19 @@ F)。F为以下函数，在let之后，F的值被唯一确定(赋值)。&lt;/p&g
 
 &lt;li&gt;&lt;p&gt;这里，第二个let需要计算g，不过他已经很明显了。这很重要，因为在这个let中，g的值被唯一确定。他是一个lambda表达式，虽然这个表达式内有一些东西没被算出来(例如h)。&lt;/p&gt;&lt;/li&gt;
 
-&lt;li&gt;&lt;p&gt;我们计算f = (g g) = (lambda (x) ((F (g g))
-x))。在这个表达式内，f的值也被唯一确定，是一个lambda表达式。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;我们计算f = (g g) = (lambda (x) ((F (g g)) x))。在这个表达式内，f的值也被唯一确定，是一个lambda表达式。&lt;/p&gt;&lt;/li&gt;
 
 &lt;li&gt;&lt;p&gt;现在，我们有了f，可以计算(f 10)了。&lt;/p&gt;&lt;/li&gt;
 
 &lt;li&gt;&lt;p&gt;(f 10) = ((F (g g)) 10) = ((F f) 10)。看到没有，不动点。&lt;/p&gt;&lt;/li&gt;
 
-&lt;li&gt;&lt;p&gt;上文真正需要计算的是((F (g g)) 10)，其中，(g
-g)需要被展开。而恰好，我们知道他的展开结果。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;上文真正需要计算的是((F (g g)) 10)，其中，(g g)需要被展开。而恰好，我们知道他的展开结果。&lt;/p&gt;&lt;/li&gt;
 
 &lt;li&gt;&lt;p&gt;((F (lambda (x) ((F (g g)) x))) 10)，这时才会对F进行计算。&lt;/p&gt;&lt;/li&gt;
 
-&lt;li&gt;&lt;p&gt;上面的展开结果是((lambda (n) (if (&amp;lt; n 2) 1 (* n ((lambda (x) ((F
-(g g)) x)) (- n 1)))))
-10)。而这就是一个纯粹的计算问题了。结果很明确，是(* 10 ((lambda (x)
-((F (g g)) x)) 9))。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;上面的展开结果是((lambda (n) (if (&amp;lt; n 2) 1 (* n ((lambda (x) ((F (g g)) x)) (- n 1))))) 10)。而这就是一个纯粹的计算问题了。结果很明确，是(* 10 ((lambda (x) ((F (g g)) x)) 9))。&lt;/p&gt;&lt;/li&gt;
 
-&lt;li&gt;&lt;p&gt;这时((lambda (x) ((F (g g)) x)) 9)会被求值，结果应该是((F (g g))
-9)。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;这时((lambda (x) ((F (g g)) x)) 9)会被求值，结果应该是((F (g g)) 9)。&lt;/p&gt;&lt;/li&gt;
 
 &lt;li&gt;&lt;p&gt;此时我们就跳回了步骤7。&lt;/p&gt;&lt;/li&gt;
 
@@ -132,8 +120,7 @@ g)需要被展开。而恰好，我们知道他的展开结果。&lt;/p&gt;&lt;/
 
 &lt;h1 id=&#34;注意&#34;&gt;注意&lt;/h1&gt;
 
-&lt;p&gt;而我们也注意到，(lambda (x) ((f (h h)) x)) = (f (h
-h))。但是如果你胆敢这么写，就等着循环到溢出吧。我们可以看一下原因。&lt;/p&gt;
+&lt;p&gt;而我们也注意到，(lambda (x) ((f (h h)) x)) = (f (h h))。但是如果你胆敢这么写，就等着循环到溢出吧。我们可以看一下原因。&lt;/p&gt;
 
 &lt;ol&gt;
 &lt;li&gt;和上一节的1一样，略。&lt;/li&gt;
@@ -148,8 +135,7 @@ h))。但是如果你胆敢这么写，就等着循环到溢出吧。我们可�
 
 &lt;li&gt;&lt;p&gt;f = (g g) = (F (g g))。&lt;/p&gt;&lt;/li&gt;
 
-&lt;li&gt;&lt;p&gt;和上面的4不一样，那时f是一个lambda表达式，可以延迟求值。这里的f可是一个表达式，必须先求值。但是对(g
-g)求值的结果是什么？死循环。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;和上面的4不一样，那时f是一个lambda表达式，可以延迟求值。这里的f可是一个表达式，必须先求值。但是对(g g)求值的结果是什么？死循环。&lt;/p&gt;&lt;/li&gt;
 &lt;/ol&gt;
 
 &lt;p&gt;为什么？通常而言，第二种写法不可以，除非这个语言是应用序的。&lt;/p&gt;
@@ -208,8 +194,7 @@ g)求值的结果是什么？死循环。&lt;/p&gt;&lt;/li&gt;
 &lt;h1 id=&#34;引用&#34;&gt;引用&lt;/h1&gt;
 
 &lt;ol&gt;
-&lt;li&gt;&lt;a href=&#34;http://www.dreamsongs.com/Files/WhyOfY.pdf#search=%22The%20Why%20of%20Y%22&#34;&gt;The Why of
-Y&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.dreamsongs.com/Files/WhyOfY.pdf#search=%22The%20Why%20of%20Y%22&#34;&gt;The Why of Y&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;
 </description>
     </item>
@@ -220,165 +205,73 @@ Y&lt;/a&gt;&lt;/li&gt;
       <pubDate>Fri, 15 Jun 2012 07:19:45 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2194/</guid>
-      <description>&lt;div&gt;
+      <description>&lt;p&gt;劳资明天要结婚了，今天婚前最后一个blog。&lt;/p&gt;
 
-劳资明天要结婚了，今天婚前最后一个blog。
+&lt;p&gt;1.hello, world&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;目标：屏幕上打印出hello, world。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;原因：不解释。&lt;/p&gt;
 
-\
+&lt;p&gt;进阶：当命令行给与不同参数的时候，打印hello,&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;名字。给与开关的时候，打印hello, 123。&lt;/p&gt;
 
-&lt;p&gt;1.hello, world&lt;br /&gt;
-目标：屏幕上打印出hello, world。&lt;br /&gt;
-原因：不解释。
-&lt;div&gt;&lt;/p&gt;
+&lt;p&gt;2.正则提取&lt;/p&gt;
 
-&lt;p&gt;进阶：当命令行给与不同参数的时候，打印hello,
-名字。给与开关的时候，打印hello, 123。&lt;br /&gt;
-&lt;br /&gt;
-&lt;div&gt;&lt;/p&gt;
+&lt;p&gt;目标：写一个正则表达式(或者类似的东西)，从一段网页源码中找到某个标签的内容，去掉前后空格，显示。&lt;/p&gt;
 
-&lt;p&gt;2.正则提取&lt;br /&gt;
-目标：写一个正则表达式(或者类似的东西)，从一段网页源码中找到某个标签的内容，去掉前后空格，显示。&lt;br /&gt;
-原因：测试字符串处理能力。&lt;br /&gt;
-进阶：支持正则扩展&lt;/p&gt;
+&lt;p&gt;原因：测试字符串处理能力。&lt;/p&gt;
 
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
+&lt;p&gt;进阶：支持正则扩展&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;3.扫描排重&lt;/p&gt;
 
-\
+&lt;p&gt;目标：将某个目录和子目录下的所有文件扫描，排除重复的文件。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;原因：测试文件系统操作能力。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;进阶：多线程处理，注意吞吐颠簸。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;4.做24点自动计算程序&lt;/p&gt;
 
-3.扫描排重\
-目标：将某个目录和子目录下的所有文件扫描，排除重复的文件。\
-原因：测试文件系统操作能力。
+&lt;p&gt;目标：写一个程序，能够计算24点。要求能够自定义扩展算符。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;原因：检查深度优先搜索，栈，结构设计，抽象处理能力等等。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;进阶：做并发处理。有数种语言可能无法实现并发，或并发实现难度大，不美观，例如python。&lt;/p&gt;
 
-进阶：多线程处理，注意吞吐颠簸。
+&lt;p&gt;5.做一个计算器&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;目标：做一个计算器，要求能计算1+2*3=7，并支持()。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;原因：表达式解析和处理需要用到程序的方方面面，字符串处理等等。&lt;/p&gt;
 
-\
+&lt;p&gt;进阶：做一个本语言的eval函数出来。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;7.抓网页&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;目标：实现一个服务，定期下载符合规则的一批网页，解析，获得格式化的数据，并存入数据库。&lt;/p&gt;
 
-4.做24点自动计算程序\
-目标：写一个程序，能够计算24点。要求能够自定义扩展算符。\
-原因：检查深度优先搜索，栈，结构设计，抽象处理能力等等。
+&lt;p&gt;原因：测试系统开发能力，基础网络库，字符串处理能力。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;进阶：分布化抓取。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;8.留言板&lt;/p&gt;
 
-进阶：做并发处理。有数种语言可能无法实现并发，或并发实现难度大，不美观，例如python。
+&lt;p&gt;目标：设计一个留言板，将所有人提交的话保存起来，能一并展示。提交不需验证，展示不需分页。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;原因：测试网络服务能力，数据库支持和多国语言支持。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;进阶：防止XSS攻击。&lt;/p&gt;
 
-\
-5.做一个计算器\
-目标：做一个计算器，要求能计算1+2\*3=7，并支持()。\
-原因：表达式解析和处理需要用到程序的方方面面，字符串处理等等。
+&lt;p&gt;9.异步大并发服务器&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;目标：设计一个异步http服务器，能对请求做出响应，添加，删除，修改数据库中的数据。不得使用现有的http框架和容器。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;原因：集成性测试&lt;/p&gt;
 
-进阶：做一个本语言的eval函数出来。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-7.抓网页\
-目标：实现一个服务，定期下载符合规则的一批网页，解析，获得格式化的数据，并存入数据库。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-原因：测试系统开发能力，基础网络库，字符串处理能力。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-进阶：分布化抓取。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-8.留言板\
-目标：设计一个留言板，将所有人提交的话保存起来，能一并展示。提交不需验证，展示不需分页。\
-原因：测试网络服务能力，数据库支持和多国语言支持。\
-
-&lt;/div&gt;
-
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
-
-&lt;div&gt;
-
-进阶：防止XSS攻击。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-9.异步大并发服务器
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-目标：设计一个异步http服务器，能对请求做出响应，添加，删除，修改数据库中的数据。不得使用现有的http框架和容器。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-原因：集成性测试
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-进阶：不使用现有数据库，自己写一个。。。
-
-&lt;/div&gt;
-
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
+&lt;p&gt;进阶：不使用现有数据库，自己写一个。。。&lt;/p&gt;
 </description>
     </item>
     

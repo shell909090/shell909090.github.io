@@ -16,17 +16,29 @@
       <pubDate>Mon, 08 Apr 2013 11:18:57 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2362/</guid>
-      <description>&lt;p&gt;下面简述的只是linux下的brctl创建出来的玩意，和网桥的学术定义什么的没有关系。
-想像你有一块网卡，接上网线，OK，能上网了。
-现在，你有一台物理的机器，和一台虚拟机，都需要上网。但是网卡和网线只有一块，怎么办？
-如果你能够物理的触摸到虚拟机，你也许会这么干。
-找一个交换机来，把物理设备的网卡用网线连接到上面，把虚拟机的网卡连接到上面，再把外网网线接上去，OK，齐活了。
-brctl创立出来的网桥就是这么工作的。
-你原本的物理网卡，例如eth0，我们直接为他分配IP，进行通讯。结构大概是这个样子的。
-system &amp;ndash; eth0 &amp;ndash; network
-接入网桥这个假的交换机后，eth0依然负责向外通讯，但是没有自己的IP了。网桥和宿主所在的机器的连接叫做br0（或者br1，以此类推）。
-system &amp;ndash; br0 &amp;ndash; eth0 &amp;ndash; network
-然后，我们可以为这个交换机接入很多的设备。&lt;/p&gt;
+      <description>&lt;p&gt;下面简述的只是linux下的brctl创建出来的玩意，和网桥的学术定义什么的没有关系。&lt;/p&gt;
+
+&lt;p&gt;想像你有一块网卡，接上网线，OK，能上网了。&lt;/p&gt;
+
+&lt;p&gt;现在，你有一台物理的机器，和一台虚拟机，都需要上网。但是网卡和网线只有一块，怎么办？&lt;/p&gt;
+
+&lt;p&gt;如果你能够物理的触摸到虚拟机，你也许会这么干。&lt;/p&gt;
+
+&lt;p&gt;找一个交换机来，把物理设备的网卡用网线连接到上面，把虚拟机的网卡连接到上面，再把外网网线接上去，OK，齐活了。&lt;/p&gt;
+
+&lt;p&gt;brctl创立出来的网桥就是这么工作的。&lt;/p&gt;
+
+&lt;p&gt;你原本的物理网卡，例如eth0，我们直接为他分配IP，进行通讯。结构大概是这个样子的。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;system -- eth0 -- network
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;接入网桥这个假的交换机后，eth0依然负责向外通讯，但是没有自己的IP了。网桥和宿主所在的机器的连接叫做br0（或者br1，以此类推）。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;system -- br0 -- eth0 -- network
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;然后，我们可以为这个交换机接入很多的设备。&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;system -- br0 -- eth0 -- network
                   |
@@ -35,174 +47,9 @@ system &amp;ndash; br0 &amp;ndash; eth0 &amp;ndash; network
 virtual -- eth0   /
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;其中，eth0和vethXX是一对设备。一个在宿主里，一个在虚拟机里。互相连通。
-所以，当虚拟机发生通讯时，eth0上可以看到数据流，但是br0上看不到。而如果虚拟机和宿主通讯时，eth0看不到数据流，br0上可以。&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>2012年4月12日断网的技术记录</title>
-      <link>http://shell909090.org/blog/archives/2142/</link>
-      <pubDate>Mon, 16 Apr 2012 02:24:40 +0800</pubDate>
-      
-      <guid>http://shell909090.org/blog/archives/2142/</guid>
-      <description>&lt;div&gt;
+&lt;p&gt;其中，eth0和vethXX是一对设备。一个在宿主里，一个在虚拟机里。互相连通。&lt;/p&gt;
 
-    4月12日上午, 大约北京时间10点(UTC02:00前后),
-中国大部分地区发生了一次断网. 这次断网我有幸正好在使用网络,
-因此跟踪调试了整个过程.
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-1\. 网络开始中断
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   当时我在公司里面用ssh调整一台国外的机器,
-同时用另一台机器作为ssh跳板访问google. 问题发生的时候,
-很多国外网站都无法打开, ssh指令不能工作. 我的第一反应就是,
-GFW针对ssh做了拦截.
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   鉴于其他可能, 我登录回了家中, 从家里的机器直接ssh到国外的跳板,
-一切正常. 莫非只是我这里的ssh发生了断路? 我正在这么猜测的时候,
-家里的ssh也随即断开. 我kill了当前进程, 重新连接后,
-恢复了对家里服务器的控制, 但是境外的ssh跳板已经不能连接.
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   至此, 可以确定中国出国网络逐步发生中断, 针对什么协议,
-机制如何尚不清楚.
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   但是, 我同时用同一台机器打开了openvpn, openvpn会提供一个内网接口.
-我偶然的用这个内网iface访问了一下, 一切正常. 再尝试了一下,
-openvpn上网正常. 这说明问题可能局限在ssh上.
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-2\. 这不是一个个例, 这是大规模断网
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   既然我对境外服务器还有控制能力, 我就更换了一个ssh端口,
-但是问题并没有解决. 这似乎说明封锁不是针对端口(port),
-而是针对协议(protocol)的. 为了确证这点, 我对通讯过程做了抓包,
-但是结果出乎我的意料. 问题并不出现在ssh握手的时候,
-而是tcp第二步的syn-ack回包彻底消失. 这表明封锁并不针对ssh协议,
-而是tcp协议栈!
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   这非常疯狂, 如果是这样的话, 大部分基于tcp的网络协议将无法工作,
-包括境外大部分网站的http协议. 我从twitter上看到,
-很多人的各种工具都相继失效, 并且境外很多的http(而非https)确实无法访问,
-这和我的判断相一致. 这是针对tcp协议栈的大规模拦截.
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-3\. 为什么特殊
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   通常而言, GFW有三个常见工作模式.
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\* dns污染
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\* ip封锁
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\* 深度包过滤(关键字拦截)
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-  其中dns封锁只对域名有效, ip封锁只对ip有效, 只有深度包过滤才是最麻烦的.
-但是通常深度包过滤是使用旁路过滤的方式,
-在连接出现问题时发出rst包干扰tcp工作.
-而本次的模式是将境外向境内的tcp包直接丢弃, 而非rst. 这是ip封锁的模式.
-根据上文的经验和我在twitter上收集的有限几个数据,
-封锁范围似乎随着不同的网络连接方式而发生变化.
-我这里可以连接的设备在其他人那里就无法继续连接, 反之亦然.
-似乎是在多个不同的核心路由器上逐步部署不同的路由器规则,
-对境外的特定回包给与丢弃. 这表示GFW的工作模式有可能从包检测向白名单过渡.
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-4\. 为什么麻烦
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   白名单是很难对付的一种模式. 对于深度包检测,
-可以通过修改包的封装性质予以绕过. ssh/vpn都是这类的典型方式.
-然而白名单使得你很难在境外部署一台处于你自己控制之下的服务器.
-即使你可以在境外弄到一台服务器(这到不困难),
-也没有希望将服务器ip加入白名单内. 由于白名单内的都是国家认可的服务器,
-因此上面运作的服务基本都是无可能进行绕行的.
-
-&lt;/div&gt;
+&lt;p&gt;所以，当虚拟机发生通讯时，eth0上可以看到数据流，但是br0上看不到。而如果虚拟机和宿主通讯时，eth0看不到数据流，br0上可以。&lt;/p&gt;
 </description>
     </item>
     
@@ -599,89 +446,113 @@ Stupid Mode = 1
       <pubDate>Sat, 30 Sep 2006 22:46:28 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/324/</guid>
-      <description>&lt;p&gt;前两天弄有线通的事情弄的郁闷了，所以就研究了网络性能测试。以后不用也是浪费，大家需要就看看吧。&lt;br /&gt;
-1.目标&lt;br /&gt;
-   
-测试目的往往是测试清楚几个值，包括:IP包传输往返时延(RTT)，IP包时延变化(抖动)，IP包丢失率(Lost
-rate)，IP业务可用性，还有带宽(Bandwidth)。&lt;br /&gt;
-2.适用标准&lt;br /&gt;
-    RFC 1242， RFC1944， RFC2285， RFC2432。&lt;br /&gt;
-**   
-中华人民共和国信息产业部令第36号(&lt;a href=&#34;http://www.chinanetcom.com.cn/mj/dxsc.asp?Unid=3810&#34;&gt;http://www.chinanetcom.com.cn/mj/dxsc.asp?Unid=3810&lt;/a&gt;)&lt;br /&gt;
-&lt;strong&gt;    IP网络技术要求&amp;ndash; 网络性能参数与指标(YD/T 1171-2001)&lt;br /&gt;
-3.测试平台和工具&lt;br /&gt;
-    我们假定基于POSIX兼容平台测试，演示用的例子来自Debian Etch/Kernel
-2.6.17-2-686。Windows下所需要工具可以参考移植工具。&lt;br /&gt;
-    iperf 网络带宽测试工具&lt;br /&gt;
-    paratrace 被动路由测试工具&lt;br /&gt;
-    hping2 网络联通和时延测试工具&lt;br /&gt;
-    wireshark(ethereal) 抓包分析工具&lt;br /&gt;
-    p0f 被动指纹分析工具&lt;br /&gt;
-4.测试对象，方法，和结果分析&lt;br /&gt;
-    以下为实例测试，参数需要根据具体情况变化。&lt;br /&gt;
-    4.1.测试网络带宽&lt;br /&gt;
-        在服务器端运行iperf -s。&lt;br /&gt;
-        在客户端运行iperf -c 192.168.0.2&lt;br /&gt;
-       
-100Mbps网络环境下，得到结果为92.6Mbps，折合为11.5MB/s。即数据极限传输速度。&lt;br /&gt;
-    4.2.测试网络IP包传输往返时延(RTT)和IP包时延变化(抖动)&lt;br /&gt;
-       
-分主动被动方法，被动方法用wireshark抓包分析。下面主要介绍主动方法：&lt;br /&gt;
-        运行hping2 www.google.com -p 80。得到&lt;br /&gt;
-56 packets transmitted, 56 packets received, 0% packet loss&lt;br /&gt;
-round-trip min/avg/max = 242.&lt;sup&gt;5&lt;/sup&gt;&amp;frasl;&lt;sub&gt;269&lt;/sub&gt;.&lt;sup&gt;9&lt;/sup&gt;&amp;frasl;&lt;sub&gt;381&lt;/sub&gt;.1 ms&lt;br /&gt;
-       
-即在主动建立的到www.google.com的TCP连接中(默认为TCP，可以使用UDP，ICMP，IP，具体请看hping2
-&amp;ndash;help)，丢包率为0。平均传输延迟为269.9，抖动为138.6。&lt;br /&gt;
-       
-注：按照《&lt;/strong&gt;中华人民共和国信息产业部令第36号》，&lt;strong&gt;往返时延平均值≤200毫秒，时延变化平均值≤80毫秒。此处已经超标。但因为测试环境和适用条件不完全吻合，因此无法作为有效证据。&lt;br /&gt;
-    4.3.IP包丢失率(Lost rate)&lt;br /&gt;
-       
-也分主动方法和被动方法，主动方法见上。被动方法是用wireshark抓包后，通过tpc.analysis.lost_segment标志分析丢包数量和总体数量。具体为。&lt;br /&gt;
-        用wireshark抓包。&lt;br /&gt;
-        用( tcp.srcport == 7007 || tcp.dstport == 7007
-)&amp;amp;&amp;amp;(tcp.analysis.retransmission||tcp.analysis.lost_segment||tcp.analysis.ack_lost_segment)过滤。7007为aMule端口。&lt;br /&gt;
-        另存，其中会显示丢包和总体数目。此处一般都3%-9%。&lt;br /&gt;
-        用( tcp.srcport != 7007 &amp;amp;&amp;amp; tcp.dstport != 7007
-)&amp;amp;&amp;amp;(tcp.analysis.retransmission||tcp.analysis.lost_segment||tcp.analysis.ack_lost_segment)过滤。&lt;br /&gt;
-        另存，此时是非7007端口丢包和总体数目。此处一般是0.18%-0.32%。&lt;br /&gt;
-       
-主动方法在测试网络硬性联通上比较方便，但是对于特殊封锁造成的丢包(例如BT/ED封锁)。由于主动TCP测试不会被封锁，因此无法得到有效数据。需要在实际环境中使用被动方法测试。&lt;br /&gt;
-       
-此处丢包率总体值一般都超过了3%，根据《&lt;/strong&gt;中华人民共和国信息产业部令第36号》，**IP包丢失率平均值≤2％。此处已经超标，但基于和上文同样理由，无法作为有效证据。&lt;br /&gt;
-    4.4.IP业务可用性&lt;br /&gt;
-        如果在测试中，连续5分钟平均丢包超过75%，则可以认定为无效。&lt;br /&gt;
-    4.5.问题出现点定位&lt;br /&gt;
-       
-假定出现问题，那么我们可以假设，问题应当出现在从当前机器到目标机器中的某个路由器上。&lt;br /&gt;
-       
-如果多个目标机器通讯出现问题，我们可以猜测，问题很大可能出现在这些机器共同经过的某个路由器上。&lt;br /&gt;
-        所以，我们需要跟踪每个IP的连接。windows下是tracert。&lt;br /&gt;
-\$traceroute www.google.com&lt;br /&gt;
-1 192.168.0.1 (192.168.0.1) 2 ms 1 ms 0 ms&lt;br /&gt;
-2 10.119.16.1 (10.119.16.1) 23 ms 25 ms 13 ms&lt;br /&gt;
-3 reserve.cableplus.com.cn (219.233.244.141) 15 ms 11 ms 16 ms&lt;br /&gt;
-4 * * *&lt;br /&gt;
-5 reserve.cableplus.com.cn (219.233.238.205) 14 ms 10 ms 18 ms&lt;br /&gt;
-6 202.96.222.77 (202.96.222.77) 13 ms 15 ms 14 ms&lt;br /&gt;
-7 202.101.63.226 (202.101.63.226) 32 ms 19 ms 17 ms&lt;br /&gt;
-8 202.97.33.38 (202.97.33.38) 84 ms 78 ms 82 ms&lt;br /&gt;
-9 202.97.33.178 (202.97.33.178) 61 ms 65 ms 69 ms&lt;br /&gt;
-10 202.97.4.46 (202.97.4.46) 106 ms 103 ms 104 ms&lt;br /&gt;
-11 216.239.47.232 (216.239.47.232) 94 ms 99 ms 112 ms&lt;br /&gt;
-12 216.239.47.237 (216.239.47.237) 224 ms 195 ms 196 ms&lt;br /&gt;
-13 72.14.233.53 (72.14.233.53) 185 ms 181 ms 195 ms&lt;br /&gt;
-14 72.14.232.139 (72.14.232.139) 208 ms 213 ms 240 ms&lt;br /&gt;
+      <description>&lt;p&gt;前两天弄有线通的事情弄的郁闷了，所以就研究了网络性能测试。以后不用也是浪费，大家需要就看看吧。&lt;/p&gt;
+
+&lt;p&gt;1.目标&lt;/p&gt;
+
+&lt;p&gt;测试目的往往是测试清楚几个值，包括:IP包传输往返时延(RTT)，IP包时延变化(抖动)，IP包丢失率(Lost rate)，IP业务可用性，还有带宽(Bandwidth)。&lt;/p&gt;
+
+&lt;p&gt;2.适用标准&lt;/p&gt;
+
+&lt;p&gt;RFC 1242， RFC1944， RFC2285， RFC2432。&lt;/p&gt;
+
+&lt;p&gt;** 中华人民共和国信息产业部令第36号(&lt;a href=&#34;http://www.chinanetcom.com.cn/mj/dxsc.asp?Unid=3810&#34;&gt;http://www.chinanetcom.com.cn/mj/dxsc.asp?Unid=3810&lt;/a&gt;)&lt;/p&gt;
+
+&lt;p&gt;** IP网络技术要求&amp;ndash; 网络性能参数与指标(YD/T 1171-2001)&lt;/p&gt;
+
+&lt;p&gt;3.测试平台和工具&lt;/p&gt;
+
+&lt;p&gt;我们假定基于POSIX兼容平台测试，演示用的例子来自Debian Etch/Kernel 2.6.17-2-686。Windows下所需要工具可以参考移植工具。&lt;/p&gt;
+
+&lt;p&gt;iperf 网络带宽测试工具&lt;/p&gt;
+
+&lt;p&gt;paratrace 被动路由测试工具&lt;/p&gt;
+
+&lt;p&gt;hping2 网络联通和时延测试工具&lt;/p&gt;
+
+&lt;p&gt;wireshark(ethereal) 抓包分析工具&lt;/p&gt;
+
+&lt;p&gt;p0f 被动指纹分析工具&lt;/p&gt;
+
+&lt;p&gt;4.测试对象，方法，和结果分析&lt;/p&gt;
+
+&lt;p&gt;以下为实例测试，参数需要根据具体情况变化。&lt;/p&gt;
+
+&lt;p&gt;4.1.测试网络带宽&lt;/p&gt;
+
+&lt;p&gt;在服务器端运行iperf -s。&lt;/p&gt;
+
+&lt;p&gt;在客户端运行iperf -c 192.168.0.2&lt;/p&gt;
+
+&lt;p&gt;100Mbps网络环境下，得到结果为92.6Mbps，折合为11.5MB/s。即数据极限传输速度。&lt;/p&gt;
+
+&lt;p&gt;4.2.测试网络IP包传输往返时延(RTT)和IP包时延变化(抖动)&lt;/p&gt;
+
+&lt;p&gt;分主动被动方法，被动方法用wireshark抓包分析。下面主要介绍主动方法：&lt;/p&gt;
+
+&lt;p&gt;运行hping2 www.google.com -p 80。得到&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;56 packets transmitted, 56 packets received, 0% packet loss
+round-trip min/avg/max = 242.5/269.9/381.1 ms
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;即在主动建立的到www.google.com的TCP连接中(默认为TCP，可以使用UDP，ICMP，IP，具体请看hping2 &amp;ndash;help)，丢包率为0。平均传输延迟为269.9，抖动为138.6。&lt;/p&gt;
+
+&lt;p&gt;注：按照《&lt;strong&gt;中华人民共和国信息产业部令第36号》，&lt;/strong&gt;往返时延平均值≤200毫秒，时延变化平均值≤80毫秒。此处已经超标。但因为测试环境和适用条件不完全吻合，因此无法作为有效证据。&lt;/p&gt;
+
+&lt;p&gt;4.3.IP包丢失率(Lost rate)&lt;/p&gt;
+
+&lt;p&gt;也分主动方法和被动方法，主动方法见上。被动方法是用wireshark抓包后，通过tpc.analysis.lost_segment标志分析丢包数量和总体数量。具体为。&lt;/p&gt;
+
+&lt;p&gt;用wireshark抓包。&lt;/p&gt;
+
+&lt;p&gt;用&lt;code&gt;( tcp.srcport == 7007 || tcp.dstport == 7007)&amp;amp;&amp;amp;(tcp.analysis.retransmission||tcp.analysis.lost_segment||tcp.analysis.ack_lost_segment)&lt;/code&gt;过滤。7007为aMule端口。&lt;/p&gt;
+
+&lt;p&gt;另存，其中会显示丢包和总体数目。此处一般都3%-9%。&lt;/p&gt;
+
+&lt;p&gt;用&lt;code&gt;( tcp.srcport != 7007 &amp;amp;&amp;amp; tcp.dstport != 7007 )&amp;amp;&amp;amp;(tcp.analysis.retransmission||tcp.analysis.lost_segment||tcp.analysis.ack_lost_segment)&lt;/code&gt;过滤。&lt;/p&gt;
+
+&lt;p&gt;另存，此时是非7007端口丢包和总体数目。此处一般是0.18%-0.32%。&lt;/p&gt;
+
+&lt;p&gt;主动方法在测试网络硬性联通上比较方便，但是对于特殊封锁造成的丢包(例如BT/ED封锁)。由于主动TCP测试不会被封锁，因此无法得到有效数据。需要在实际环境中使用被动方法测试。&lt;/p&gt;
+
+&lt;p&gt;此处丢包率总体值一般都超过了3%，根据《&lt;strong&gt;中华人民共和国信息产业部令第36号》，&lt;/strong&gt;IP包丢失率平均值≤2％。此处已经超标，但基于和上文同样理由，无法作为有效证据。&lt;/p&gt;
+
+&lt;p&gt;4.4.IP业务可用性&lt;/p&gt;
+
+&lt;p&gt;如果在测试中，连续5分钟平均丢包超过75%，则可以认定为无效。&lt;/p&gt;
+
+&lt;p&gt;4.5.问题出现点定位&lt;/p&gt;
+
+&lt;p&gt;假定出现问题，那么我们可以假设，问题应当出现在从当前机器到目标机器中的某个路由器上。&lt;/p&gt;
+
+&lt;p&gt;如果多个目标机器通讯出现问题，我们可以猜测，问题很大可能出现在这些机器共同经过的某个路由器上。&lt;/p&gt;
+
+&lt;p&gt;所以，我们需要跟踪每个IP的连接。windows下是tracert。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$traceroute www.google.com
+1 192.168.0.1 (192.168.0.1) 2 ms 1 ms 0 ms
+2 10.119.16.1 (10.119.16.1) 23 ms 25 ms 13 ms
+3 reserve.cableplus.com.cn (219.233.244.141) 15 ms 11 ms 16 ms
+4 * * *
+5 reserve.cableplus.com.cn (219.233.238.205) 14 ms 10 ms 18 ms
+6 202.96.222.77 (202.96.222.77) 13 ms 15 ms 14 ms
+7 202.101.63.226 (202.101.63.226) 32 ms 19 ms 17 ms
+8 202.97.33.38 (202.97.33.38) 84 ms 78 ms 82 ms
+9 202.97.33.178 (202.97.33.178) 61 ms 65 ms 69 ms
+10 202.97.4.46 (202.97.4.46) 106 ms 103 ms 104 ms
+11 216.239.47.232 (216.239.47.232) 94 ms 99 ms 112 ms
+12 216.239.47.237 (216.239.47.237) 224 ms 195 ms 196 ms
+13 72.14.233.53 (72.14.233.53) 185 ms 181 ms 195 ms
+14 72.14.232.139 (72.14.232.139) 208 ms 213 ms 240 ms
 15 72.14.233.129 (72.14.233.129) 205 ms 66.249.94.227 (66.249.94.227)
-193 ms 209 ms&lt;br /&gt;
-16 72.14.233.131 (72.14.233.131) 193 ms 195 ms 202 ms&lt;br /&gt;
-17 216.239.49.66 (216.239.49.66) 209 ms 204 ms 244 ms&lt;br /&gt;
-18 66.102.7.99 (66.102.7.99) 198 ms 193 ms 195 ms&lt;br /&gt;
-        当然，如果是禁止了ICMP
-TTL超时的死报文回复。就会测定不出路由，这时候需要用paratrace。结果是一样的，不过没有被封锁的危险。&lt;br /&gt;
-&lt;br /&gt;
-&lt;br /&gt;
-&lt;/p&gt;
+193 ms 209 ms
+16 72.14.233.131 (72.14.233.131) 193 ms 195 ms 202 ms
+17 216.239.49.66 (216.239.49.66) 209 ms 204 ms 244 ms
+18 66.102.7.99 (66.102.7.99) 198 ms 193 ms 195 ms
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;当然，如果是禁止了ICMP TTL超时的死报文回复。就会测定不出路由，这时候需要用paratrace。结果是一样的，不过没有被封锁的危险。&lt;/p&gt;
 </description>
     </item>
     
@@ -691,17 +562,17 @@ TTL超时的死报文回复。就会测定不出路由，这时候需要用parat
       <pubDate>Tue, 12 Sep 2006 09:01:16 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/320/</guid>
-      <description>&lt;p&gt;OK，今天贝壳稍微辛苦了点。给用有线通的朋友们准备了份礼物。&lt;br /&gt;
-   
-贝壳今天解析了有线通的抓包，发现了有线通限制P2P的方法，那就是，丢包。&lt;br /&gt;
-   
-TCP传输的时候，会有一定几率的丢失部分或者全部传输的数据，对方会根据你的SEQ和checksum来分析是否接收到了所有的包，并且返回一个包，告诉你报文状况。一般来说，丢包率都是很小的，大约是0.1%以下。丢包太多往往意味着各种网络异常，例如抢占MAC的sniffer方式就会有大量的丢包。&lt;a href=&#34;http://publish.it168.com/cword/2829.shtml&#34;&gt;这里是丢包率的详细解释。&lt;/a&gt;&lt;br /&gt;
-   
-贝壳刚刚截取了32秒的数据，总共传输3082个，丢包率是ED数据丢失119个，其余总共丢失2个，总丢包率3.9%。图片内有相应的截图，并且贝壳可以提供多次的抓包分析证明。&lt;br /&gt;
-   
-贝壳又做了一次分析，这次贝壳从skycn.com上面下载directx9c，同时保持ED通信。ED是7K上传40K下载的样子，HTTP是15K的样子。在60秒内总共是16763个包，其中ED相关丢包321个，非ED相关丢包13个，丢包率1.99%。&lt;br /&gt;
-   
-通过这个就可以证明，即使不说有线通封锁P2P的问题，有线通的网络服务质量也存在硬性问题。&lt;/p&gt;
+      <description>&lt;p&gt;OK，今天贝壳稍微辛苦了点。给用有线通的朋友们准备了份礼物。&lt;/p&gt;
+
+&lt;p&gt;贝壳今天解析了有线通的抓包，发现了有线通限制P2P的方法，那就是，丢包。&lt;/p&gt;
+
+&lt;p&gt;TCP传输的时候，会有一定几率的丢失部分或者全部传输的数据，对方会根据你的SEQ和checksum来分析是否接收到了所有的包，并且返回一个包，告诉你报文状况。一般来说，丢包率都是很小的，大约是0.1%以下。丢包太多往往意味着各种网络异常，例如抢占MAC的sniffer方式就会有大量的丢包。&lt;a href=&#34;http://publish.it168.com/cword/2829.shtml&#34;&gt;这里是丢包率的详细解释。&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;贝壳刚刚截取了32秒的数据，总共传输3082个，丢包率是ED数据丢失119个，其余总共丢失2个，总丢包率3.9%。图片内有相应的截图，并且贝壳可以提供多次的抓包分析证明。&lt;/p&gt;
+
+&lt;p&gt;贝壳又做了一次分析，这次贝壳从skycn.com上面下载directx9c，同时保持ED通信。ED是7K上传40K下载的样子，HTTP是15K的样子。在60秒内总共是16763个包，其中ED相关丢包321个，非ED相关丢包13个，丢包率1.99%。&lt;/p&gt;
+
+&lt;p&gt;通过这个就可以证明，即使不说有线通封锁P2P的问题，有线通的网络服务质量也存在硬性问题。&lt;/p&gt;
 </description>
     </item>
     
@@ -711,11 +582,11 @@ TCP传输的时候，会有一定几率的丢失部分或者全部传输的数�
       <pubDate>Sat, 09 Sep 2006 05:27:34 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/317/</guid>
-      <description>&lt;p&gt;虽然决定不用有线通了，但是还是要熬到年费结束。所以稍微研究了有线通的封锁方法，看看有没有变通方案。根据我上面的研究，有线通浦东地区封锁的是协议。所以我实验打开了BT和ED两个协议。结果证实，这两个协议同时打开对于单个协议的速度稍微有影响，估计是TCP的优先相应问题。不过总体速度比单个协议高了很多。昨天打开的时候，ED是30下载5上传，没有BT。今天同时打开的结果是BT45下载10上传，ED17下载10上传。总体来说有62下载20上传左右，高了很多。&lt;br /&gt;
-   
-其中针对BT说一句。之所以有这么高的速度，主要因为打开了BT中的加密协议头优先。这样在某些传输中就被当作HTTP连接，这个速度就是赚到的。不过现在不多，因此也没有太高的提升。不过总体下来不无小补，所以提供给继续要受到有线通荼毒的人士用用。&lt;br /&gt;
-   
-另外，有线通对HTTP下载不限速。大家可以把HTTP下载速度降低到不影响P2P连接的水平(例如用flashget的限制速度功能)，慢慢下。这样你的总体平均流速是最大的，同时对于有线通的杀伤也是最大的。&lt;/p&gt;
+      <description>&lt;p&gt;虽然决定不用有线通了，但是还是要熬到年费结束。所以稍微研究了有线通的封锁方法，看看有没有变通方案。根据我上面的研究，有线通浦东地区封锁的是协议。所以我实验打开了BT和ED两个协议。结果证实，这两个协议同时打开对于单个协议的速度稍微有影响，估计是TCP的优先相应问题。不过总体速度比单个协议高了很多。昨天打开的时候，ED是30下载5上传，没有BT。今天同时打开的结果是BT45下载10上传，ED17下载10上传。总体来说有62下载20上传左右，高了很多。&lt;/p&gt;
+
+&lt;p&gt;其中针对BT说一句。之所以有这么高的速度，主要因为打开了BT中的加密协议头优先。这样在某些传输中就被当作HTTP连接，这个速度就是赚到的。不过现在不多，因此也没有太高的提升。不过总体下来不无小补，所以提供给继续要受到有线通荼毒的人士用用。&lt;/p&gt;
+
+&lt;p&gt;另外，有线通对HTTP下载不限速。大家可以把HTTP下载速度降低到不影响P2P连接的水平(例如用flashget的限制速度功能)，慢慢下。这样你的总体平均流速是最大的，同时对于有线通的杀伤也是最大的。&lt;/p&gt;
 </description>
     </item>
     
@@ -725,27 +596,27 @@ TCP传输的时候，会有一定几率的丢失部分或者全部传输的数�
       <pubDate>Tue, 05 Sep 2006 22:07:46 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/315/</guid>
-      <description>&lt;p&gt;最近贝壳要换ISP了。大家知道，贝壳用了5年多的上海有线通。虽然速度不快，偶尔还有降到半速的现象，但是总体来说还是不错的。TTL跃点主要在12到16上下(经过12-16个路由器)，极限上传一般在55K/s上下。虽然说和标称有一定区别，不过考虑IP封包头问题，也还可以。只是最近有线通不怎么像话，封了P2P不说，还不告知。去询问，又不承认。幸好贝壳两个月后包年到期，到时就跑了结束。&lt;br /&gt;
-   
-开始(8.30左右)贝壳的ED速度突然从50K/s持续上传下跌到7K/s持续上传。贝壳以为是电信故障维修，造成数个连线失效，路由重生成后形成瓶颈。这现象照理不会在电信这种大公司发生。不过按照莫菲定律，什么坏事都可能发生。就随他去了。24小时以后，贝壳打电话到96877报修。对方开始说会不会是系统问题，windows新出病毒云云。贝壳两台电脑，平台不一样(Intel和AMD64)，系统不一样(WindowsXP和Debian/GNU
-Linux)，所用软件不一样(eMuleVC，BC0.70和aMule)。不会都是出这个问题吧？再说windows出病毒，关linux啥事情？&lt;br /&gt;
-   
-维修人员看看没法说的通，换了口风。说这种问题不能算是问题，他需要“提交”一下。OK，你本身做维护的，还向谁提交问题？我也不管他，这几天忙，没空和他唠叨。说好好，你提交下看看。&lt;br /&gt;
-   
-过两天空了，看问题照旧，贝壳坐不住了。莫非我碰到了P2P封锁？贝壳先查看了网络上的评论，说上海有线通有这问题，已经有人在&lt;a href=&#34;http://www.315ts.net/viewtousu.asp?id=42745&#34;&gt;315&lt;/a&gt;网上提交了&lt;a href=&#34;http://www.315ts.net/viewtousu.asp?id=43018&amp;amp;tid=9&#34;&gt;抱怨&lt;/a&gt;。贝壳下面做了几个测试。&lt;br /&gt;
-   
-首先将eMule复制一份，保留原先的配置。然后关闭所有共享，只共享一个文件。名字起的奇怪点，这样就没有别的下载客户了。然后找一个朋友来做下载，速度是5K上下，而且一般有下没上。&lt;br /&gt;
-   
-然后贝壳打开apache2，共享同一个文件，打开端口映射(ED等软件的端口映射也是做好的，经EtherReal核查没有问题)。下载速度是50K上下，一般有上没下。&lt;br /&gt;
-   
-再打开BT，勾选其中“加密数据包头”为“优先”。然后在传输测试中，多数客户的速度是2K-3K，但是一个也是BC0.70的客户，本地发起连接，速度高达50K。后面偶尔也会出现这样的客户，估计是因为不是所有BT客户端全支持加密数据包头的。&lt;br /&gt;
-    最后，测试Debian/GNU
-Linux从ftp.linuxforum.net下载更新的速度。这是ftp和http混用协议，一般在70K以上，最高甚至达到120K。&lt;br /&gt;
-    至此，基本可以下结论，有线通封锁了P2P类软件的使用。&lt;br /&gt;
-   
-最可笑的是，我再次打电话过去。他们的服务人员开始还跟我念叨机器问题等等。然后我把测试方法一说，他们立刻改口，说从不保证任何P2P类软件的稳定。只保证Http协议的传输速度。什么时候宽带还有条款，说只能保证Http协议的速度了？如果说只衡量HTTP协议速度，那条款应该重新修订。如果说网络速度，一般都是指IP封包的传输速度。或者放松说，底层网络封包的传输速度。有线通此举就是明显的侵权。上述电话可以向有线通查询的，工号7061。&lt;br /&gt;
-   
-任何愿意起诉有线通的同志，贝壳这里免费提供技术支持，提供有线通的网络数据统计(ntop统计结果)。大家高兴起诉的，贝壳提供声援和支持。并且贝壳郑重表示，有生之年，见到用有线通的就游说用别的宽带，即使他道歉并且解除封锁也不例外。自10月底有线通到期后，贝壳即抽空银行资金，签订解约协议，改用ADSL。&lt;/p&gt;
+      <description>&lt;p&gt;最近贝壳要换ISP了。大家知道，贝壳用了5年多的上海有线通。虽然速度不快，偶尔还有降到半速的现象，但是总体来说还是不错的。TTL跃点主要在12到16上下(经过12-16个路由器)，极限上传一般在55K/s上下。虽然说和标称有一定区别，不过考虑IP封包头问题，也还可以。只是最近有线通不怎么像话，封了P2P不说，还不告知。去询问，又不承认。幸好贝壳两个月后包年到期，到时就跑了结束。&lt;/p&gt;
+
+&lt;p&gt;开始(8.30左右)贝壳的ED速度突然从50K/s持续上传下跌到7K/s持续上传。贝壳以为是电信故障维修，造成数个连线失效，路由重生成后形成瓶颈。这现象照理不会在电信这种大公司发生。不过按照莫菲定律，什么坏事都可能发生。就随他去了。24小时以后，贝壳打电话到96877报修。对方开始说会不会是系统问题，windows新出病毒云云。贝壳两台电脑，平台不一样(Intel和AMD64)，系统不一样(WindowsXP和Debian/GNU Linux)，所用软件不一样(eMuleVC，BC0.70和aMule)。不会都是出这个问题吧？再说windows出病毒，关linux啥事情？&lt;/p&gt;
+
+&lt;p&gt;维修人员看看没法说的通，换了口风。说这种问题不能算是问题，他需要“提交”一下。OK，你本身做维护的，还向谁提交问题？我也不管他，这几天忙，没空和他唠叨。说好好，你提交下看看。&lt;/p&gt;
+
+&lt;p&gt;过两天空了，看问题照旧，贝壳坐不住了。莫非我碰到了P2P封锁？贝壳先查看了网络上的评论，说上海有线通有这问题，已经有人在&lt;a href=&#34;http://www.315ts.net/viewtousu.asp?id=42745&#34;&gt;315&lt;/a&gt;网上提交了&lt;a href=&#34;http://www.315ts.net/viewtousu.asp?id=43018&amp;amp;tid=9&#34;&gt;抱怨&lt;/a&gt;。贝壳下面做了几个测试。&lt;/p&gt;
+
+&lt;p&gt;首先将eMule复制一份，保留原先的配置。然后关闭所有共享，只共享一个文件。名字起的奇怪点，这样就没有别的下载客户了。然后找一个朋友来做下载，速度是5K上下，而且一般有下没上。&lt;/p&gt;
+
+&lt;p&gt;然后贝壳打开apache2，共享同一个文件，打开端口映射(ED等软件的端口映射也是做好的，经EtherReal核查没有问题)。下载速度是50K上下，一般有上没下。&lt;/p&gt;
+
+&lt;p&gt;再打开BT，勾选其中“加密数据包头”为“优先”。然后在传输测试中，多数客户的速度是2K-3K，但是一个也是BC0.70的客户，本地发起连接，速度高达50K。后面偶尔也会出现这样的客户，估计是因为不是所有BT客户端全支持加密数据包头的。&lt;/p&gt;
+
+&lt;p&gt;最后，测试Debian/GNU Linux从ftp.linuxforum.net下载更新的速度。这是ftp和http混用协议，一般在70K以上，最高甚至达到120K。&lt;/p&gt;
+
+&lt;p&gt;至此，基本可以下结论，有线通封锁了P2P类软件的使用。&lt;/p&gt;
+
+&lt;p&gt;最可笑的是，我再次打电话过去。他们的服务人员开始还跟我念叨机器问题等等。然后我把测试方法一说，他们立刻改口，说从不保证任何P2P类软件的稳定。只保证Http协议的传输速度。什么时候宽带还有条款，说只能保证Http协议的速度了？如果说只衡量HTTP协议速度，那条款应该重新修订。如果说网络速度，一般都是指IP封包的传输速度。或者放松说，底层网络封包的传输速度。有线通此举就是明显的侵权。上述电话可以向有线通查询的，工号7061。&lt;/p&gt;
+
+&lt;p&gt;任何愿意起诉有线通的同志，贝壳这里免费提供技术支持，提供有线通的网络数据统计(ntop统计结果)。大家高兴起诉的，贝壳提供声援和支持。并且贝壳郑重表示，有生之年，见到用有线通的就游说用别的宽带，即使他道歉并且解除封锁也不例外。自10月底有线通到期后，贝壳即抽空银行资金，签订解约协议，改用ADSL。&lt;/p&gt;
 </description>
     </item>
     

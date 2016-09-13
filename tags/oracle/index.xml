@@ -88,134 +88,104 @@ $ sqlplus / as sysdba
       <pubDate>Mon, 21 Nov 2005 21:58:01 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/262/</guid>
-      <description>&lt;div&gt;
+      <description>&lt;p&gt;最近因为工作需要，在Debian GNU/Linux安装了Oracle 9i。Debian代号sarge，版本号release 3.1，testing发行。Oracle代号9ir2,版本号9.2.0.4。安装文件名称为ship_9204_linux_disk1.cpio.gz ship_9204_linux_disk2.cpio.gz ship_9204_linux_disk3.cpio.gz。需要一个补丁，文件名为p3006854_9204_LINUX.zip。Oracle 9i安装的是Enterprise Datebase。&lt;/p&gt;
 
-    最近因为工作需要，在Debian GNU/Linux安装了Oracle
-9i。Debian代号sarge，版本号release
-3.1，testing发行。Oracle代号9ir2,版本号9.2.0.4。安装文件名称为ship\_9204\_linux\_disk1.cpio.gz
-ship\_9204\_linux\_disk2.cpio.gz
-ship\_9204\_linux\_disk3.cpio.gz。需要一个补丁，文件名为p3006854\_9204\_LINUX.zip。Oracle
-9i安装的是Enterprise Datebase。
+&lt;p&gt;先执行以下脚本：&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;pre&gt;&lt;code&gt;#! /bin/bash
+#变更内核参数
+cd /proc/sys/kernel
+#1G内存状况，按照需要调整
+echo 4294967295 &amp;gt; shmmax
+touch /etc/rac_on
+#增加一个link，debian需要
+apt-get install libstdc++-glibc ; 或者使用aptitude
+cd /usr/lib
+ln -s libstdc++-libc6.2-2.so.3 libstdc++-libc6.1-1.so.2
+#增加用户
+cd /home
+mkdir oracle
+groupadd dba
+useradd -g dba -d /home/oracle -s /bin/bash oracle
+#注意-s参数，如果不指定下面的初试化脚本不一定跑的起来
+passwd -d oracle
+chown -cR oracle:dba oracle
+cd /usr
+mkdir oracle
+chown -cR oracle:dba oracle
+cd /var
+mkdir oracle
+chown -cR oracle:dba oracle
+#增加初试化脚本
+cd /home/oracle
+echo &amp;quot;export DISPLAY=&#39;&#39;&amp;quot;&amp;gt;.bash_profile
+echo &amp;quot;export BASH_ENV=$HOME/.bashrc&amp;quot;&amp;gt;&amp;gt;.bash_profile
+echo &amp;quot;export LD_ASSUME_KERNEL=2.4.1&amp;quot;&amp;gt;&amp;gt;.bash_profile
+echo &amp;quot;ORACLE_HOME=/usr/oracle; export
+ORACLE_HOME&amp;quot;&amp;gt;&amp;gt;.bash_profile
+echo &amp;quot;ORACLE_BASE=/var/oracle; export
+ORACLE_BASE&amp;quot;&amp;gt;&amp;gt;.bash_profile
+echo &amp;quot;ORACLE_SID=oracle; export ORACLE_SID&amp;quot;&amp;gt;&amp;gt;.bash_profile
+echo &amp;quot;ORACLE_TERM=xterm; export ORACLE_TERM&amp;quot;&amp;gt;&amp;gt;.bash_profile
+echo &amp;quot;TNS_ADMIN=/home/oracle/config/9.0.1;
+export TNS_ADMIN&amp;quot;&amp;gt;&amp;gt;.bash_profile
+echo &amp;quot;NLS_LANG=american_america.ZHS16GBK;
+export NLS_LANG&amp;quot;&amp;gt;&amp;gt;.bash_profile
+echo &amp;quot;ORA_NLS33=$ORACLE_HOME/ocommon/nls/admin/data;
+export ORA_NLS33&amp;quot;&amp;gt;&amp;gt;.bash_profile
+echo &amp;quot;LD_LIBRARY_PATH=$ORACLE_HOME/lib;export
+LD_LIBRARY_PATH&amp;quot;&amp;gt;&amp;gt;.bash_profile
+echo &amp;quot;PATH=$PATH:/bin:/usr/bin:/usr/sbin:/etc:/opt/bin:/usr/ccs/bin:/usr/openwin&amp;quot;&amp;gt;&amp;gt;.bash_profile
+echo &amp;quot;PATH=$PATH:/opt/local/bin:/opt/NSCPnav/bin:$ORACLE_HOME/bin&amp;quot;&amp;gt;&amp;gt;.bash_profile
+echo &amp;quot;PATH=$PATH:/usr/local/samba/bin:/usr/ucb&amp;quot;&amp;gt;&amp;gt;.bash_profile
+echo &amp;quot;export PATH&amp;quot;&amp;gt;&amp;gt;.bash_profile
+echo &amp;quot;CLASSPATH=$ORACLE_HOME/JRE:$ORACLE_HOME/jlib:$ORACLE_HOME/rdbms/jlib&amp;quot;&amp;gt;&amp;gt;.bash_profile
+echo &amp;quot;CLASSPATH=$CLASSPATH:$ORACLE_HOME/network/jlib&amp;quot;&amp;gt;&amp;gt;.bash_profile
+echo &amp;quot;TMPDIR=/tmp;export TMPDIR&amp;quot;&amp;gt;&amp;gt;.bash_profile
+echo &amp;quot;umask 022&amp;quot;&amp;gt;&amp;gt;.bash_profile
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;div&gt;
+&lt;p&gt;然后，复制oracle安装程序到用户目录，执行以下脚本：&lt;/p&gt;
 
-    先执行以下脚本：
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#! /bin/bash\
- \
-\#变更内核参数\
-cd /proc/sys/kernel\
-\#1G内存状况，按照需要调整\
-echo 4294967295 &amp;gt; shmmax\
-touch /etc/rac\_on\
- \
-\#增加一个link，debian需要\
-apt-get install libstdc++-glibc ; 或者使用aptitude\
-cd /usr/lib\
-ln -s libstdc++-libc6.2-2.so.3 libstdc++-libc6.1-1.so.2\
- \
-\#增加用户\
-cd /home\
-mkdir oracle\
-groupadd dba\
-useradd -g dba -d /home/oracle -s /bin/bash oracle\
-\#注意-s参数，如果不指定下面的初试化脚本不一定跑的起来\
-passwd -d oracle\
-chown -cR oracle:dba oracle\
-cd /usr\
-mkdir oracle\
-chown -cR oracle:dba oracle\
-cd /var\
-mkdir oracle\
-chown -cR oracle:dba oracle\
- \
-\#增加初试化脚本\
-cd /home/oracle\
-echo &#34;export DISPLAY=&#39;&#39;&#34;&amp;gt;.bash\_profile\
-echo &#34;export BASH\_ENV=\$HOME/.bashrc&#34;&amp;gt;&amp;gt;.bash\_profile\
-echo &#34;export LD\_ASSUME\_KERNEL=2.4.1&#34;&amp;gt;&amp;gt;.bash\_profile\
-echo &#34;ORACLE\_HOME=/usr/oracle; export
-ORACLE\_HOME&#34;&amp;gt;&amp;gt;.bash\_profile\
-echo &#34;ORACLE\_BASE=/var/oracle; export
-ORACLE\_BASE&#34;&amp;gt;&amp;gt;.bash\_profile\
-echo &#34;ORACLE\_SID=oracle; export ORACLE\_SID&#34;&amp;gt;&amp;gt;.bash\_profile\
-echo &#34;ORACLE\_TERM=xterm; export ORACLE\_TERM&#34;&amp;gt;&amp;gt;.bash\_profile\
-echo &#34;TNS\_ADMIN=/home/oracle/config/9.0.1; export
-TNS\_ADMIN&#34;&amp;gt;&amp;gt;.bash\_profile\
-echo &#34;NLS\_LANG=american\_america.ZHS16GBK; export
-NLS\_LANG&#34;&amp;gt;&amp;gt;.bash\_profile\
-echo &#34;ORA\_NLS33=\$ORACLE\_HOME/ocommon/nls/admin/data; export
-ORA\_NLS33&#34;&amp;gt;&amp;gt;.bash\_profile\
-echo &#34;LD\_LIBRARY\_PATH=\$ORACLE\_HOME/lib;export
-LD\_LIBRARY\_PATH&#34;&amp;gt;&amp;gt;.bash\_profile\
-echo
-&#34;PATH=\$PATH:/bin:/usr/bin:/usr/sbin:/etc:/opt/bin:/usr/ccs/bin:/usr/openwin&#34;&amp;gt;&amp;gt;.bash\_profile\
-echo
-&#34;PATH=\$PATH:/opt/local/bin:/opt/NSCPnav/bin:\$ORACLE\_HOME/bin&#34;&amp;gt;&amp;gt;.bash\_profile\
-echo &#34;PATH=\$PATH:/usr/local/samba/bin:/usr/ucb&#34;&amp;gt;&amp;gt;.bash\_profile\
-echo &#34;export PATH&#34;&amp;gt;&amp;gt;.bash\_profile\
-echo
-&#34;CLASSPATH=\$ORACLE\_HOME/JRE:\$ORACLE\_HOME/jlib:\$ORACLE\_HOME/rdbms/jlib&#34;&amp;gt;&amp;gt;.bash\_profile\
-echo
-&#34;CLASSPATH=\$CLASSPATH:\$ORACLE\_HOME/network/jlib&#34;&amp;gt;&amp;gt;.bash\_profile\
-echo &#34;TMPDIR=/tmp;export TMPDIR&#34;&amp;gt;&amp;gt;.bash\_profile\
-echo &#34;umask 022&#34;&amp;gt;&amp;gt;.bash\_profile\
- \
-    然后，复制oracle安装程序到用户目录，执行以下脚本：\
-\#! /bin/bash
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-cd /home/oracle\
-gunzip -dc ship\_9204\_linux\_disk1.cpio.gz | cpio -idv --quiet &amp;\
-gunzip -dc ship\_9204\_linux\_disk2.cpio.gz | cpio -idv --quiet &amp;\
-gunzip -dc ship\_9204\_linux\_disk3.cpio.gz | cpio -idv --quiet &amp;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#使用补丁p3006854\_9204\_LINUX.zip\
-cd /home/oracle/patch\
-unzip p3006854\_9204\_LINUX.zip\
-cd 3006854\
-chmod 755 rhel3\_pre\_install.sh\
-./rhel3\_pre\_install.sh\
-cd ..\
-rm p3006854\_9204\_LINUX.zip\
+&lt;pre&gt;&lt;code&gt;#! /bin/bash
+cd /home/oracle
+gunzip -dc ship_9204_linux_disk1.cpio.gz | cpio -idv --quiet &amp;amp;
+gunzip -dc ship_9204_linux_disk2.cpio.gz | cpio -idv --quiet &amp;amp;
+gunzip -dc ship_9204_linux_disk3.cpio.gz | cpio -idv --quiet &amp;amp;
+#使用补丁p3006854_9204_LINUX.zip
+cd /home/oracle/patch
+unzip p3006854_9204_LINUX.zip
+cd 3006854
+chmod 755 rhel3_pre_install.sh
+./rhel3_pre_install.sh
+cd ..
+rm p3006854_9204_LINUX.zip
 rm -R 3006854
+cd /home/oracle
+rm ship_9204_linux_disk2.cpio.gz
+rm ship_9204_linux_disk1.cpio.gz
+rm ship_9204_linux_disk3.cpio.gz
+cd ..
+chown -cR oracle:dba oracle
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;/div&gt;
+&lt;p&gt;最后检查临时盘大小大于400M，交换区大小大于两倍内存。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;pre&gt;&lt;code&gt;df -hT
+&lt;/code&gt;&lt;/pre&gt;
 
-cd /home/oracle\
-rm ship\_9204\_linux\_disk2.cpio.gz\
-rm ship\_9204\_linux\_disk1.cpio.gz\
-rm ship\_9204\_linux\_disk3.cpio.gz\
-cd ..\
-chown -cR oracle:dba oracle\
- \
- \
-    最后检查临时盘大小大于400M，交换区大小大于两倍内存。\
-df -hT\
-    重新登录，使用oracle。\
-startx\
-    Xwindows启动后开一个console，运行以下指令。\
-cd Disk1\
-./runInstaller\
- \
-谢谢观赏
+&lt;p&gt;重新登录，使用oracle。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;pre&gt;&lt;code&gt;startx
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Xwindows启动后开一个console，运行以下指令。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;cd Disk1
+./runInstaller
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;谢谢观赏&lt;/p&gt;
 </description>
     </item>
     

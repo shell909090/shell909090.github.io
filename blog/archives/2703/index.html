@@ -224,9 +224,7 @@ herd problem</a>。</p>
 
 <p>你可能看到资料说，一个线程栈会消耗8M内存(linux默认值，ulimit可以看到)，512个线程栈就会消耗4G内存，而10K个线程就是80G。所以首先要考虑调整栈深度，并考虑爆栈问题。</p>
 
-<p>听起来很有道理，问题是——linux的栈是通过缺页来分配内存的(<a href="http://unix.stackexchange.com/questions/145557/how-does-stack-allocation-work-in-linux">How does stack
-allocation work in
-Linux?</a>)，不是所有栈地址空间都分配了内存。因此，8M是*最大*消耗，实际的内存消耗只会略大于实际需要的内存(内部损耗，每个在4k以内)。但是内存一旦被分配，就很难回收(除非线程结束)，这是线程模式的缺陷。</p>
+<p>听起来很有道理，问题是——linux的栈是通过缺页来分配内存的(<a href="http://unix.stackexchange.com/questions/145557/how-does-stack-allocation-work-in-linux">How does stack allocation work in Linux?</a>)，不是所有栈地址空间都分配了内存。因此，8M是*最大*消耗，实际的内存消耗只会略大于实际需要的内存(内部损耗，每个在4k以内)。但是内存一旦被分配，就很难回收(除非线程结束)，这是线程模式的缺陷。</p>
 
 <p>这个问题提出的前提是，32位下地址空间有限。虽然10K个线程不一定会耗尽内存，但是512个线程一定会耗尽地址空间。然而这个问题对于目前已经成为主流的64位系统来说根本不存在。</p>
 
@@ -288,8 +286,7 @@ Linux?</a>)，不是所有栈地址空间都分配了内存。因此，8M是*最
 
 <h2 id="epoll">epoll</h2>
 
-<p>用户可以新建一个epoll文件句柄，并且将其他fd和这个&rdquo;epoll
-fd&rdquo;关联。此后可以通过epoll fd读取到所有就绪的文件句柄。</p>
+<p>用户可以新建一个epoll文件句柄，并且将其他fd和这个&rdquo;epoll fd&rdquo;关联。此后可以通过epoll fd读取到所有就绪的文件句柄。</p>
 
 <p>epoll有两大模式，ET和LT。LT模式下，每次读取就绪句柄都会读取出完整的就绪句柄。而ET模式下，只给出上次到这次调用间新就绪的句柄。换个说法，如果ET模式下某次读取出了一个句柄，这个句柄从未被读取完过——也就是从没有从就绪变为未就绪。那么这个句柄就永远不会被新的调用返回，哪怕上面其实充满了数据——因为句柄无法经历从非就绪变为就绪的过程。</p>
 
@@ -355,10 +352,7 @@ frame(greenlet)。</p>
 
 <p>而比较好的方案(makecontext/swapcontext)则需要进入内核(sigprocmask)，这导致整个调用的性能非常低。</p>
 
-<p>关于setjmp/longjmp，你可以参考<a href="http://web.eecs.utk.edu/~huangj/cs360/360/notes/Setjmp/lecture.html">CS360 Lecture notes &ndash;
-Setjmp</a>，和<a href="http://blog.codingnow.com/2010/05/setjmp.html">setjmp
-的正确使用 | 云风的
-BLOG</a>。</p>
+<p>关于setjmp/longjmp，你可以参考<a href="http://web.eecs.utk.edu/~huangj/cs360/360/notes/Setjmp/lecture.html">CS360 Lecture notes &ndash; Setjmp</a>，和<a href="http://blog.codingnow.com/2010/05/setjmp.html">setjmp 的正确使用 | 云风的 BLOG</a>。</p>
 
 <h2 id="协程与线程的关系">协程与线程的关系</h2>
 

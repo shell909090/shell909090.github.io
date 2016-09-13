@@ -112,64 +112,23 @@ ga('send', 'pageview');
           
           
           
-          <p>最近整XEN，出了一个奇怪的错误。
-<div></p>
+          <p>最近整XEN，出了一个奇怪的错误。</p>
 
-<p><span
-style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif">ERROR
-(SrvDaemon:355) Exception starting xend </span><span
-style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif">((22,
-&lsquo;Invalid argument&rsquo;)) </span><br />
-<span
-style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif">Traceback
-(most recent call last): </span><br />
-<span
-style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif"> 
- File &ldquo;/usr/lib/xen-4.0/lib/python/xen/xend/server/SrvDaemon.py&rdquo;,
-line </span><br />
-<span
-style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif">335,
-in run </span><br />
-<span
-style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif"> 
-   xinfo = xc.xeninfo() </span><br />
-<span
-style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif">Error:
-(22, &lsquo;Invalid argument&rsquo;) </span></p>
+<pre><code>ERROR (SrvDaemon:355) Exception starting xend((22, 'Invalid argument'))
+Traceback
+(most recent call last):
+File &quot;/usr/lib/xen-4.0/lib/python/xen/xend/server/SrvDaemon.py&quot;, line 335, in run
+xinfo = xc.xeninfo()
+Error: (22, 'Invalid argument')
+</code></pre>
 
-<p></div></p>
+<p>根据网络上的内容，首先排除没有xen模块——有了，然后是/proc/xen目录是否mount——有了，然后是/sys/hypervisor/下面的一堆属性——有了，然后是版本——不对。xen-utils-4.1是4.1.2版本，而xen-tools是4.2版本。不过xen-utils并不依赖xen-tools，没有后者应当也可以运行这些玩意。hypervisor和xen-utils的版本是一致的。那问题是什么？</p>
 
-<div>
+<p>出错的文件是/usr/lib/xen-4.1/lib/python/xen/lowlevel/xc.so里面发生的异常，下载xen的源码检查，这个函数主要是检查属性。属性检查会出什么错？</p>
 
-<span
-style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif"> 
- 
-根据网络上的内容，首先排除没有xen模块——有了，然后是/proc/xen目录是否mount——有了，然后是/sys/hypervisor/下面的一堆属性——有了，然后是版本——不对。xen-utils-4.1是4.1.2版本，而xen-tools是4.2版本。不过xen-utils并不依赖xen-tools，没有后者应当也可以运行这些玩意。hypervisor和xen-utils的版本是一致的。那问题是什么？</span>
+<p>正在一头雾水的时候，突然想起一个问题。我安装的是xen-hypervisor-4.1-amd64，因为kernel是linux-image-3.1.0-1-amd64。然而，我这个系统有一个非常大的特殊——在64位CPU上运行的32位系统。因此，实际上xen-utils是32位的。行了行了，下面的事情用膝盖都能想到。</p>
 
-</div>
-
-<div>
-
-<span
-style="font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif"> 
- 
-出错的文件是</span>/usr/lib/xen-4.1/lib/python/xen/lowlevel/xc.so里面发生的异常，下载xen的源码检查，这个函数主要是检查属性。属性检查会出什么错？
-
-</div>
-
-<div>
-
-   
-正在一头雾水的时候，突然想起一个问题。我安装的是xen-hypervisor-4.1-amd64，因为kernel是linux-image-3.1.0-1-amd64。然而，我这个系统有一个非常大的特殊——在64位CPU上运行的32位系统。因此，实际上xen-utils是32位的。行了行了，下面的事情用膝盖都能想到。
-
-</div>
-
-<div>
-
-   
-叹气，这世界上，真的有种错误，叫做太常见了以至于视而不见。不要认为自己不会犯。
-
-</div>
+<p>叹气，这世界上，真的有种错误，叫做太常见了以至于视而不见。不要认为自己不会犯。</p>
 
         </div>
         

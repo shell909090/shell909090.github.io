@@ -112,696 +112,132 @@ ga('send', 'pageview');
           
           
           
-          <div>
+          
 
-\# 问题 \#
+<h1 id="问题">问题</h1>
 
-</div>
+<p>为了测试语言的效率，做一个正则解析。</p>
 
-<div>
+<p>预先说好，正则解析的问题是老板正在做的一个实际问题，我把其他和效率无关的部分去了。因此我接受“用法不正确”这样的反驳理由，但是不接受“这不是典型用例”的理由。我欢迎你指正我的用法错误，或者对语言不了解导致的效率低下，但是别来和我吵吵这种例子太特殊。另外，在调整代码和评估速度的时候，顺便注意一下代码行数。我知道用汇编逐行写和优化会很优秀，但是这对实际工作基本没有帮助。</p>
 
-为了测试语言的效率，做一个正则解析。
+<p>问题是这样的：</p>
 
-</div>
+<blockquote>
+<p>有一个文本文件，每行两个数，要求解析出来这两个数。</p>
+</blockquote>
 
-<div>
+<p>我用python生成了数据，代码是这样的</p>
 
-预先说好，正则解析的问题是老板正在做的一个实际问题，我把其他和效率无关的部分去了。因此我接受“用法不正确”这样的反驳理由，但是不接受“这不是典型用例”的理由。我欢迎你指正我的用法错误，或者对语言不了解导致的效率低下，但是别来和我吵吵这种例子太特殊。另外，在调整代码和评估速度的时候，顺便注意一下代码行数。我知道用汇编逐行写和优化会很优秀，但是这对实际工作基本没有帮助。
+<pre><code>with open(sys.argv[1], 'w') as fo:
+    for i in xrange(500000):
+        fo.write('%d %dn' % (i, random.randint(0, 10000)))
+</code></pre>
 
-</div>
+<p>正则分析速率，是个典型的CPU密集操作。对于非编译型语言而言(这里的编译是指正则表达式的解析预编译，实际上除了lisp还真没有编译型的，即使是go也是现场拿到正则进行解析的)，这主要是看正则库的实现效率。很多时候，语言的效率问题并不取决于语言本身，还取决于语言的库的实现。大部分情况下我们都不可能砍掉系统的库重新来一个，那还不如换一门语言。</p>
 
-<div>
+<h1 id="python">python</h1>
 
-问题是这样的：
+<p>我首先贴出python语言的解答。</p>
 
-</div>
+<pre><code>reline = re.compile('(d+) (d+)')
+def main():
+    with open(sys.argv[1], 'r') as fi:
+        for line in fi: reline.match(line).groups()
+</code></pre>
 
-<div>
+<p>这是性能</p>
 
-\
+<pre><code>real  0m0.466s
+user  0m0.436s
+sys   0m0.012s
+</code></pre>
 
-</div>
+<h1 id="common-lisp">common lisp</h1>
 
-<div>
+<p>我找了N个正则包，实际能用的只有ppcre。有些包号称很快，实际测试下来还不如ppcre。</p>
 
-&gt; 有一个文本文件，每行两个数，要求解析出来这两个数。
+<pre><code>(require :cl-ppcre)
 
-</div>
+(defun grepfile (filename)
+  (let*
+      ((cl-ppcre:*use-bmh-matchers* t)
+       (cl-ppcre:*regex-char-code-limit* 256)
+       (scanner
+    (cl-ppcre:create-scanner &quot;d+ d+&quot;)))
+    (with-open-file (in filename)
+      (loop
+     for line = (read-line in nil) while line do
+       (cl-ppcre:split scanner line)))))
+</code></pre>
 
-<div>
+<p>代码在slime里面测试(time (grepfile &ldquo;data.dat&rdquo;))，下面是结果</p>
 
-\
+<pre><code>CL-USER&gt; (time (main))
+Evaluation took: 0.398 seconds of real time 0.392025 seconds of total run time (0.384024 user, 0.008001 system)
+[ Run times consist of 0.016 seconds GC time, and 0.377 seconds non-GC time. ]
+98.49% CPU 1,188,481,425 processor cycles 72,242,256 bytes consed
+</code></pre>
 
-</div>
+<h1 id="go">go</h1>
 
-<div>
+<p>go的代码是现学现卖的，不知道是不是哪里写出问题了。</p>
 
-我用python生成了数据，代码是这样的
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-    with open(sys.argv\[1\], 'w') as fo:
-
-</div>
-
-<div>
-
-        for i in xrange(500000):
-
-</div>
-
-<div>
-
-            fo.write('%d %dn' % (i, random.randint(0, 10000)))
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-正则分析速率，是个典型的CPU密集操作。对于非编译型语言而言(这里的编译是指正则表达式的解析预编译，实际上除了lisp还真没有编译型的，即使是go也是现场拿到正则进行解析的)，这主要是看正则库的实现效率。很多时候，语言的效率问题并不取决于语言本身，还取决于语言的库的实现。大部分情况下我们都不可能砍掉系统的库重新来一个，那还不如换一门语言。
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-\# python \#
-
-</div>
-
-<div>
-
-我首先贴出python语言的解答。
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>reline =
-re.compile('(d+) (d+)')
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>def main():
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>with
-open(sys.argv\[1\], 'r') as fi:
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>for line in
-fi: reline.match(line).groups()
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-这是性能
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-&gt; real    0m0.466s
-
-</div>
-
-<div>
-
-&gt; user    0m0.436s
-
-</div>
-
-<div>
-
-&gt; sys     0m0.012s
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-\# common lisp \#
-
-</div>
-
-<div>
-
-我找了N个正则包，实际能用的只有ppcre。有些包号称很快，实际测试下来还不如ppcre。
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>(require
-:cl-ppcre)
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>(defun
-grepfile (filename)
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>  (let\*
-((cl-ppcre:\*use-bmh-matchers\* t)
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>
-(cl-ppcre:\*regex-char-code-limit\* 256)
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span> (scanner
-(cl-ppcre:create-scanner "d+ d+")))
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>  
- (with-open-file (in filename)
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>      (loop
-for line = (read-line in nil) while line do
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>  
-(cl-ppcre:split scanner line)))
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>  ))
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-代码在slime里面测试(time (grepfile "data.dat"))，下面是结果
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>CL-USER&gt;
-(time (main))
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>Evaluation
-took:
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>  0.398
-seconds of real time
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>  0.392025
-seconds of total run time (0.384024 user, 0.008001 system)
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>  \[ Run
-times consist of 0.016 seconds GC time, and 0.377 seconds non-GC time.
-\]
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>  98.49%
-CPU
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>
- 1,188,481,425 processor cycles
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>
- 72,242,256 bytes consed
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-\# go \#
-
-</div>
-
-<div>
-
-go的代码是现学现卖的，不知道是不是哪里写出问题了。
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>func main()
+<pre><code>func main()
 {
+    f, _ := os.Open(&quot;data.txt&quot;)
+    r := bufio.NewReader(f)
+    rex, _ := regexp.Compile(&quot;(d+) (d+)&quot;)
+    for line, isPrefix, err := r.ReadLine();err == nil &amp;&amp; !isPrefix; line, isPrefix, err = r.ReadLine() {
+        rex.FindSubmatch(line)
+    }
+}
+</code></pre>
 
-</div>
+<p>结果居然要差一个数量级！</p>
 
-<div>
+<pre><code>real 0m8.699s
+user 0m8.593s
+sys 0m0.036s
+</code></pre>
 
-<span class="Apple-tab-span" style="white-space:pre"> </span>f, \_ :=
-os.Open("data.txt")
+<p>这太出乎我的意料了。google的v8引擎赫赫有名，我猜想也应当用到了go上面才是，怎么会性能差成这样？gary说过正则在他那里很快，我希望是我用错了。</p>
 
-</div>
+<h1 id="lua">lua</h1>
 
-<div>
+<p>lua没有使用正则包，更准确的说，lua内置的字符串处理函数可以处理这个情况。以下是我的代码：</p>
 
-<span class="Apple-tab-span" style="white-space:pre"> </span>r :=
-bufio.NewReader(f)
+<pre><code>for line in io.lines(&quot;data.txt&quot;) do
+    for w in string.gmatch(line, &quot;%d+&quot;) do
+        print(w)
+    end
+end
+</code></pre>
 
-</div>
+<p>以下是执行结果：</p>
 
-<div>
+<pre><code>real 0m0.796s
+user 0m0.792s
+sys  0m0.000s
+</code></pre>
 
-<span class="Apple-tab-span" style="white-space:pre"> </span>
+<p>lua的代码的却很好看，但是效率上却不见得高。这是当然的，gmatch可是每工作一次就要解析一次阿。</p>
 
-</div>
+<h1 id="lua-rex-pcre">lua-rex-pcre</h1>
 
-<div>
+<p>装一个支持pcre的正则包，lua-rex-pcre。</p>
 
-<span class="Apple-tab-span" style="white-space:pre"> </span>rex, \_ :=
-regexp.Compile("(d+) (d+)")
+<pre><code>r = require &quot;rex_pcre&quot;.new(&quot;(d+) (d+)&quot;, 0)
+for line in io.lines(&quot;data.txt&quot;) do
+    r.match(r, line)
+end
+</code></pre>
 
-</div>
+<p>OK，速度一下就快了不少：</p>
 
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>for line,
-isPrefix, err := r.ReadLine();
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>    err ==
-nil && !isPrefix;
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>    line,
-isPrefix, err = r.ReadLine() {
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre">
-</span>rex.FindSubmatch(line)
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>}
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>}
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-结果居然要差一个数量级！
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-&gt; real<span class="Apple-tab-span" style="white-space:pre">
-</span>0m8.699s
-
-</div>
-
-<div>
-
-&gt; user<span class="Apple-tab-span" style="white-space:pre">
-</span>0m8.593s
-
-</div>
-
-<div>
-
-&gt; sys<span class="Apple-tab-span" style="white-space:pre">
-</span>0m0.036s
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-这太出乎我的意料了。google的v8引擎赫赫有名，我猜想也应当用到了go上面才是，怎么会性能差成这样？gary说过正则在他那里很快，我希望是我用错了。
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-\# lua \#
-
-</div>
-
-<div>
-
-lua没有使用正则包，更准确的说，lua内置的字符串处理函数可以处理这个情况。以下是我的代码：
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>for line in
-io.lines("data.txt") do
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>   for w in
-string.gmatch(line, "%d+") do
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>      --
-print(w)
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>   end
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>end
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-以下是执行结果：
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-&gt; real<span class="Apple-tab-span" style="white-space:pre">
-</span>0m0.796s
-
-</div>
-
-<div>
-
-&gt; user<span class="Apple-tab-span" style="white-space:pre">
-</span>0m0.792s
-
-</div>
-
-<div>
-
-&gt; sys<span class="Apple-tab-span" style="white-space:pre">
-</span>0m0.000s
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-lua的代码的却很好看，但是效率上却不见得高。这是当然的，gmatch可是每工作一次就要解析一次阿。
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-\# lua-rex-pcre \#
-
-</div>
-
-<div>
-
-装一个支持pcre的正则包，lua-rex-pcre。
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>r = require
-"rex\_pcre".new("(d+) (d+)", 0)
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>for line in
-io.lines("data.txt") do
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>  
-r.match(r, line)
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre"> </span>end
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-OK，速度一下就快了不少：
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-&gt; real<span class="Apple-tab-span" style="white-space:pre">
-</span>0m0.643s
-
-</div>
-
-<div>
-
-&gt; user<span class="Apple-tab-span" style="white-space:pre">
-</span>0m0.632s
-
-</div>
-
-<div>
-
-&gt; sys<span class="Apple-tab-span" style="white-space:pre">
-</span>0m0.008s
-
-</div>
-
-<div>
-
-\
-
-</div>
+<pre><code>real 0m0.643s
+user 0m0.632s
+sys  0m0.008s
+</code></pre>
 
         </div>
         

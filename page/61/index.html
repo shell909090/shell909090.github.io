@@ -99,64 +99,6 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/39/">苏博婚礼回来暨python2.6发布</a>
-    </h1>
-    <p class="meta">Oct 6, 2008
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/39/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>这次10.1算是个大日子，因为我们可爱的苏博终于和他美丽的新娘结婚了。据说两个人相识10年拍拖7年，找的高中班主任做证婚人。实在有点为难人家，到底说高中就好上了呢？还是高中没好上？不过总而言之，他们总算结婚了。具体苏博是怎么被我们蹂躏的，以及婚礼的起因经过什么的就不写了，毕竟我不是新闻记者。这次就写一些有趣的事情和感想。 首先是去震泽的车子，因为10.1的关系，并不怎么好去。不过坐在车上晃晃悠悠两个小时，看旁边的河跟路一起走，感觉还是很不错的。江南不愧是水乡，有条河就在我们的路旁跟了10多分钟，还有条船跟我们并排跑。震泽古镇也很灵的，宝塔街古香古色，保证没有现代元素，除了大头发现的几个公共厕所外。建议大家有空可以去看看，苏博的家乡。 而后是新郎和新娘的一个让我比较震撼的问题。婚礼上，主持人问新娘的大学同学，是否在校园里面经常看到新郎。人家说，一直以为苏於良是南大学生。我吓一跳，南大啊，我一直以为王苏瑾在上海念大学。由此我得到一个结论，远距离恋爱是否会失败，和双方爱对方的程度无关，而和双方把爱付诸行动的程度有关。其实不光远距离恋爱，婚姻也是一样。认识我的人都知道我的两个总结。夫妻双方性格相近或相反，价值观一致。今天看来还要加一条，愿意将爱付诸行动。 然后是婚礼前一天，阿丁同学打过来跟我哭诉她和她男友的情况。实话说，虽然被哭诉半天，但是我还是搞不清楚她和她男友的状态，总之是非常复杂一团浆糊。因为隐私关系，我不打算说她和她男友的具体状况。不过大致就是她很喜欢他男友，喜欢到没有自我没有尊严。他男友呢，则是有点——不知道怎么说。说有问题吧，说不出来，说没有问题吧，情况确实——不怎么好。而且她本人处理事情上也不是没有问题，我觉得这个应当叫孽缘吧。不过无论如何，我的建议是——分手。 然后我就建议阿丁同学到震泽来玩一天，反正黄禹同学正好没来。然后她跑来玩了一天，回去和我说了一句雷晕人的话。我彻底无语了—— 无论如何，那是她的家事。 再后面就是苏州到上海的车，同样也不怎么好弄。我问今天又没有去上海的车，最好是动车。回答说有，动车。我说来两张票（帮人代买一张），售票员说，晚上11点半的哦～～ 我彻底无语。 后面一个朋友则更悲惨。他问，今天到南京的车票还有么？没了。明天的呢？也没了。后天的呢？我们只发售今明两天的～～ 最后我们坐大巴回来的。 最后的最后，说一下，python2.6发布了，虽然我不打算用。比以前在构架上有了不少进步，不过很多东西暂时没有这么快迁移过去。我打算等3.0出了后直接用3.0，反正程序是一样写的。</p>
-
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/38/">VeryCD版电驴(eMule)存在封锁</a>
-    </h1>
-    <p class="meta">Sep 24, 2008
-         - 4 minute read 
-         - <a href="http://shell909090.org/blog/archives/38/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>eMule是一个GPL程序，所以VeryCD的改版必须公开源码。今天听说VeryCD版有封锁的现象，所以贝壳抓源码来看看。如果大家认为老调重弹的话，不妨把文章拉到最后。 源码从此处下载：http://www.emule.org.cn/download/ 最下方链接：http://download.verycd.com/eMule-VeryCD-src.rar 贝壳下到的文件大小13,703,064字节，打包时间2008-09-11。经过贝壳查找，在eMule-VeryCD-srcsrc WordFilter发现两个文件，WordFilter.cpp 2008-03-12 09:57 13374和WordFilter.h 2007-11-20 17:56 1009。仔细阅读里面，发现有以下内容。 void CWordFilter::Init() { HANDLE hFile; DWORD dwRead; int nLen; BOOL bResult; CStringList list; //m_count = 0; CString saaa = thePrefs.GetMuleDirectory(EMULE_EXECUTEABLEDIR) + FLITER_FILE; CString sbbb = thePrefs.GetMuleDirectory(EMULE_CONFIGDIR) + FLITER_FILE; // 如果文件目录不对，程序移动一下，到config目录下 added by kernel1983 2006.07.31 if (PathFileExists(thePrefs.GetMuleDirectory(EMULE_EXECUTEABLEDIR) + FLITER_FILE)) MoveFile(thePrefs.GetMuleDirectory(EMULE_EXECUTEABLEDIR) + FLITER_FILE, thePrefs.GetMuleDirectory(EMULE_CONFIGDIR) + FLITER_FILE); if (!PathFileExists(thePrefs.GetMuleDirectory(EMULE_CONFIGDIR) + FLITER_FILE)) { // 不存在，所有的都过滤 added by kernel1983 2006.08.08 m_filterall = true; return; } // Open file for read hFile = CreateFile(thePrefs.GetMuleDirectory(EMULE_CONFIGDIR) + FLITER_FILE, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL); //AddLogLine(false,_T(&quot;:%sn&quot;),thePrefs.GetConfigDir() + FLITER_FILE); if(hFile == NULL || hFile == INVALID_HANDLE_VALUE) { // 读取错误，所有的都过滤 added by kernel1983 2006.08.08 m_filterall = true; return; } DWORD dwSize = GetFileSize(hFile, NULL); TCHAR * pszData = new TCHAR[(dwSize / sizeof(TCHAR)) + 1]; // 申请空间 bResult = ReadFile(hFile, pszData, dwSize, &amp;amp;dwRead, NULL); // 读入文件1 CloseHandle(hFile); pszData[(dwSize / sizeof(TCHAR))] = 0; if(bResult) { // 加入解码算法 { std::string tempstr( (char*)pszData + 1 , ((int)dwSize - 1) &amp;gt; 0 ?</p>
-
-          
-              <footer>
-                  <a href="http://shell909090.org/blog/archives/38/" rel="full-article">Read On &rarr;</a>
-              </footer>
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/37/">百度、官员辞职和特供局</a>
     </h1>
     <p class="meta">Sep 23, 2008
@@ -370,6 +312,60 @@ ga('send', 'pageview');
 
     </article>
     
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/30/">运气真好</a>
+    </h1>
+    <p class="meta">Aug 15, 2008
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/30/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>昨天晚上吃完晚饭，觉得应该勤快点，还指不定什么时候回去呢，把衣服洗了。刚刚把衣服放进去，电话过来，说系统出问题了，要赶快去看看。于是，贝壳赶快出门，去看看系统有什么问题。 进去被一顿狂说，怎么这么不稳定，怎么解决。贝壳一个头两个大。马上去看看什么问题，一看把我气个半死。原来新华社的稿件都是一个xml，一个txt，一个图片，主文件名一样，贝壳的程序也是基于这个原理写的。现在到好，只有图片没有xml，或者只有xml没有图片。这叫贝壳做个P啊！据说是因为新华社要推新格式，所以老格式不怎么支持了。问题是，上面说保奥保奥，居然奥运期间来这手，这不是要整死人么？而且通知都没有的，要不过来看，黑锅就我背定了。 抱怨归抱怨，贝壳还是赶快改程序，做了个入新格式的。进度还挺快，虽然差异一堆，但是做到早上三点半基本就做好了。到实验机器上一跑，全部通过。然后到生产环境中一炮——全部报错。 OK，下面可就是贝壳无能为力的了。毕竟数据库那里应该都是一样的，而且也不是贝壳写的，无法调试。于是今天只有这样，回去睡觉。走到电梯里面，贝壳觉得不对，味道不对，一股臭脚的味道。这种味道只有两种可能，一种是中国男足来过了，一种是下雨。出门一看，果然，大雨滂沱。最要命的是，贝壳只带了两套衣服，还有套正在水池里面泡着～～～ 于是贝壳一路狂奔，跑过去没两步，哗的一声，贝壳就不知道陷到什么里面去了。吓了一跳，赶快站直，包举高。仔细看看，原来前面马路修路，旁边的土还没有填完整，给水一冲就变成了泥浆坑。贝壳就是陷到这里去了，水刚好漫过小腿肚。 慢慢爬上来，然后贝壳就不敢跑了。前面毕竟还是有几个没有完成的井的。万一掉里面去，连申诉都不会有人管的，毕竟那是还没修好的工地。于是慢慢慢慢走回去，到宾馆的时候全身湿透，外带两脚泥。而且两套衣服全报销了，连第二天吃饭怎么出门都不知道～～～ 奥运期间，这个运气还真是——无敌了。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/29/">最近悟到了一个道理</a>
+    </h1>
+    <p class="meta">Aug 11, 2008
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/29/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>贝壳问上帝，中国房价什么时候下来。上帝说，通涨结束，或者居民消费上去就下来了。 贝壳问上帝，中国居民消费什么时候上去。上帝说，全民保障体系搞好就上去了。 贝壳问上帝，中国什么时候结束通涨，搞好全民保障体系呢？上帝哭着说，我看不到那天了。 上面是拿中国足球的玩笑改的一个玩笑，不过贝壳真的悟到了房价高的原因。通涨乱高无比，保障一塌糊涂，赚了钱不敢花，也不能放，当然只有买房了。房价上涨，通涨更加高高高。</p>
+
+          
+
+        
+
+    </article>
+    
     
     
 
@@ -573,8 +569,6 @@ ga('send', 'pageview');
     
         <a href="/page/91/" class="label-pagination">91</a>
     
-        <a href="/page/92/" class="label-pagination">92</a>
-    
 
     
     
@@ -583,7 +577,7 @@ ga('send', 'pageview');
 
     
     
-        <a href="/page/92/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
+        <a href="/page/91/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
     
 
 </div>

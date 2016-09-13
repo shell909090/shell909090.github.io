@@ -112,210 +112,66 @@ ga('send', 'pageview');
           
           
           
-          <div>
+          
 
-   
-辨析语言的微妙差异，使得语言精密的符合目的语义，此为程序员基本功的最高要求。对精密语义的追求，应当凌驾于排版美观，代码美感，代码简化之上，也凌驾于运行时效率之上。除非为特定目的小幅的修正，否则不应破坏此原则。
+<p>辨析语言的微妙差异，使得语言精密的符合目的语义，此为程序员基本功的最高要求。对精密语义的追求，应当凌驾于排版美观，代码美感，代码简化之上，也凌驾于运行时效率之上。除非为特定目的小幅的修正，否则不应破坏此原则。</p>
 
-</div>
+<p>以此为指导，我们看几个if。</p>
 
-<div>
+<h1 id="if-a-in-python">if a in python</h1>
 
-<span style="white-space:pre-wrap"> </span>以此为指导，我们看几个if。
+<p>以下代码的目标语义是，如果a不为None，就运行代码。</p>
 
-</div>
+<pre><code>if a:
+    do something
+</code></pre>
 
-<div>
+<p>有什么问题？</p>
 
-\
+<p>有没有考虑a=0的情况？a=[]呢？</p>
 
-</div>
+<pre><code>if a is not None:
+    do something
+</code></pre>
 
-<div>
+<p>这样才是严密表达。</p>
 
-\# if a in python \#
+<h1 id="if-a-in-c">if a in C</h1>
 
-</div>
+<p>以下代码的目标语义是，a是一个int数，对a!=0的情况下，执行代码。</p>
 
-<div>
+<pre><code>if (a) do something
+</code></pre>
 
-    以下代码的目标语义是，如果a不为None，就运行代码。
+<p>有什么问题？</p>
 
-</div>
+<p>没问题，因为C是静态语言，这限定了a的使用。除了代码并没有体现a!=0的条件，没有太大问题。但是鉴于语言表达语义，最好改为以下代码。</p>
 
-<div>
+<pre><code>if (a != 0)
+</code></pre>
 
-\`if a:
+<p>相对的，如果a是bool型，就可以直接用了。</p>
 
-</div>
+<pre><code>if (a)
+</code></pre>
 
-<div>
+<p>如果a是char*形，那么合适的语义表达应当是。</p>
 
-    do something\`
+<pre><code>if (a != NULL)
+</code></pre>
 
-</div>
+<p>他们生成的汇编代码都没有差异。</p>
 
-<div>
+<h1 id="if-a-in-c-1">if a in C++</h1>
 
-    有什么问题？
+<p>概念上同C，不过a是一个复杂对象。</p>
 
-</div>
+<pre><code>if (a) do something
+</code></pre>
 
-<div>
+<p>有什么问题？</p>
 
-<span style="white-space:pre-wrap">
-</span>有没有考虑a=0的情况？a=\[\]呢？
-
-</div>
-
-<div>
-
-\`if a is not None:
-
-</div>
-
-<div>
-
-    do something\`
-
-</div>
-
-<div>
-
-<span style="white-space:pre-wrap"> </span>这样才是严密表达。
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-\# if a in C \#
-
-</div>
-
-<div>
-
-    以下代码的目标语义是，a是一个int数，对a!=0的情况下，执行代码。
-
-</div>
-
-<div>
-
-\`if (a)
-
-</div>
-
-<div>
-
-    do something\`
-
-</div>
-
-<div>
-
-    有什么问题？
-
-</div>
-
-<div>
-
-<span style="white-space:pre-wrap">
-</span>没问题，因为C是静态语言，这限定了a的使用。除了代码并没有体现a!=0的条件，没有太大问题。但是鉴于语言表达语义，最好改为以下代码。
-
-</div>
-
-<div>
-
-\`if (a != 0)\`
-
-</div>
-
-<div>
-
-    相对的，如果a是bool型，就可以直接用了。
-
-</div>
-
-<div>
-
-\`if (a)\`
-
-</div>
-
-<div>
-
-<span style="white-space:pre-wrap">
-</span>如果a是char\*形，那么合适的语义表达应当是。
-
-</div>
-
-<div>
-
-\`if (a != NULL)\`
-
-</div>
-
-<div>
-
-    他们生成的汇编代码都没有差异。
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-\# if a in C++ \#
-
-</div>
-
-<div>
-
-    概念上同C，不过a是一个复杂对象。
-
-</div>
-
-<div>
-
-\`if (a)
-
-</div>
-
-<div>
-
-<span style="white-space:pre-wrap"> </span>do something\`
-
-</div>
-
-<div>
-
-<span style="white-space:pre-wrap"> </span>有什么问题？
-
-</div>
-
-<div>
-
-<span style="white-space:pre-wrap">
-</span>问题大了去了，和python一样，C++可以重载行为。谁知道type(a)::opreator
-bool(const type(a)
-&a)函数被定义为什么鬼逻辑。这就是为什么我憎恨默认行为重载的原因——因为他们对精密语义表达有破坏作用。
-
-</div>
-
-<div>
-
-\
-
-</div>
+<p>问题大了去了，和python一样，C++可以重载行为。谁知道type(a)::opreator bool(const type(a) &amp;a)函数被定义为什么鬼逻辑。这就是为什么我憎恨默认行为重载的原因——因为他们对精密语义表达有破坏作用。</p>
 
         </div>
         

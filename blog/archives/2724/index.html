@@ -116,8 +116,7 @@ ga('send', 'pageview');
 
 <h1 id="vpn的原始模式">vpn的原始模式</h1>
 
-<p>vpn的最简模型，相当于在两台机器上插一块虚拟网卡，然后中间连一根虚拟网线连通。因此vpn才得名vpn(virtual
-private network)。</p>
+<p>vpn的最简模型，相当于在两台机器上插一块虚拟网卡，然后中间连一根虚拟网线连通。因此vpn才得名vpn(virtual private network)。</p>
 
 <p>其复杂之处在于，这块虚拟网卡如何配置网络，和别的网卡是什么关系。再加上多个节点间如何通讯。种种都够新手喝一壶。</p>
 
@@ -157,27 +156,43 @@ vpn，在启动脚本中指定加入这个br。</p>
 
 <p>服务器配置:</p>
 
-<p>port [port num] proto udp ;
-参考我上一篇<a href="http://shell909090.org/blog/archives/2722">vpn不要走tcp协议</a>
-dev tap ca ca.crt cert server.crt key server.key server-bridge
-172.19.0.16 255.255.255.0 172.19.0.17 172.19.0.31 ; 或者可以采用这句 ;
-server 172.19.0.16 255.255.255.240 ;
-注意掩码实际上等于/28，做掩码运算后，这段地址和上面的保留地址重合
-script-security 2 up vpn-start ; 建议使用绝对路径，避免版本坑 down
-vpn-stop</p>
+<pre><code>port [port num]
+proto udp
+; 参考我上一篇[vpn不要走tcp协议](http://shell909090.org/blog/archives/2722)
+dev tap
+ca ca.crt
+cert server.crt
+key server.key
+server-bridge 172.19.0.16 255.255.255.0 172.19.0.17 172.19.0.31
+; 或者可以采用这句
+; server 172.19.0.16 255.255.255.240
+; 注意掩码实际上等于/28，做掩码运算后，这段地址和上面的保留地址重合
+script-security 2
+up vpn-start
+; 建议使用绝对路径，避免版本坑 down
+vpn-stop
+</code></pre>
 
 <p>vpn-start:</p>
 
-<p>brctl add br0 \$dev</p>
+<pre><code>brctl add br0 $dev
+</code></pre>
 
 <p>vpn-stop:</p>
 
-<p>brctl del br0 \$dev</p>
+<pre><code>brctl del br0 $dev
+</code></pre>
 
 <p>客户端配置:</p>
 
-<p>client dev tap proto udp remote [server ip] [port num] ca ca.crt
-cert client.crt key client.key</p>
+<pre><code>client
+dev tap
+proto udp
+remote [server ip] [port num]
+ca ca.crt
+cert client.crt
+key client.key
+</code></pre>
 
 <p>测试:</p>
 
@@ -189,8 +204,7 @@ cert client.crt key client.key</p>
 
 <p>dh和tls-auth可以配，个人每次都是配的。但是懒的话也可以不搞。</p>
 
-<p>user nobody和group
-nobody强烈建议配，注意debian上是nogroup。这个配置可以将openvpn的执行权搞低，如果openssl再出什么执行任意代码漏洞，那么问题就不是立刻致命。</p>
+<p>user nobody和group nobody强烈建议配，注意debian上是nogroup。这个配置可以将openvpn的执行权搞低，如果openssl再出什么执行任意代码漏洞，那么问题就不是立刻致命。</p>
 
 <p>注意使用了user和group后，要配置persist-key和persist-tun，避免出错。</p>
 
@@ -218,8 +232,7 @@ nobody强烈建议配，注意debian上是nogroup。这个配置可以将openvpn
 
 <p>非常灵活，几乎无法总结。简单说说从外网拨入内网，打通两者间互访的配法吧。</p>
 
-<p>配置一个tun
-vpn，连接到vpn网关上。配置中下发内网网段，走vpn。内网下发vpn路由，指向vpn网关。</p>
+<p>配置一个tun vpn，连接到vpn网关上。配置中下发内网网段，走vpn。内网下发vpn路由，指向vpn网关。</p>
 
 <h2 id="example-1">example</h2>
 
@@ -227,31 +240,45 @@ vpn，连接到vpn网关上。配置中下发内网网段，走vpn。内网下�
 
 <p>服务器配置:</p>
 
-<p>port [port num] proto udp dev tun ca ca.crt cert server.crt key
-server.key server 172.19.1.0 255.255.255.0 push &ldquo;route 172.19.0.0
-255.255.255.0&rdquo;</p>
+<pre><code>port [port num]
+proto udp
+dev tun
+ca ca.crt
+cert server.crt
+key server.key
+server 172.19.1.0 255.255.255.0
+push &quot;route 172.19.0.0 255.255.255.0&quot;
+</code></pre>
 
 <p>在服务器上一定要打开:</p>
 
-<p>sysctl -w &lsquo;net.ipv4.ip_forward=1&rsquo;</p>
+<pre><code>sysctl -w 'net.ipv4.ip_forward=1'
+</code></pre>
 
 <p>在所有服务器上执行/在网关上执行:</p>
 
-<p>ip route add 172.19.1.0/24 via 172.19.0.100</p>
+<pre><code>ip route add 172.19.1.0/24 via 172.19.0.100
+</code></pre>
 
 <p>或</p>
 
-<p>route add -net 172.19.1.0 netmask 255.255.255.0 gateway 172.19.0.100</p>
+<pre><code>route add -net 172.19.1.0 netmask 255.255.255.0 gateway 172.19.0.100
+</code></pre>
 
 <p>客户端配置:</p>
 
-<p>client dev tun proto udp remote [server ip] [port num] ca ca.crt
-cert client.crt key client.key</p>
+<pre><code>client
+dev tun
+proto udp
+remote [server ip] [port num]
+ca ca.crt
+cert client.crt
+key client.key
+</code></pre>
 
 <p>测试:</p>
 
-<p>在拨入设备上，使用mtr
-172.19.0.1(内网网关)，来查看是否通过172.19.1.1和172.19.0.1。如果都到了，说明整个配置成功。否则看是否到vpn网关，再在网关上抓包。</p>
+<p>在拨入设备上，使用mtr 172.19.0.1(内网网关)，来查看是否通过172.19.1.1和172.19.0.1。如果都到了，说明整个配置成功。否则看是否到vpn网关，再在网关上抓包。</p>
 
 <h1 id="多节点通过虚拟骨干网打通">多节点通过虚拟骨干网打通</h1>
 

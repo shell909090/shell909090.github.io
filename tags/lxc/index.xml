@@ -177,10 +177,7 @@ sysbench --test=mutex --num-threads=2 --mutex-locks=1000000 run
 
 &lt;p&gt;所有测试都是测试数次，取最高者（因为低者可能受到各种干扰）。一般是2-3次。&lt;/p&gt;
 
-&lt;p&gt;物理机是一台DELL Intel
-64位桌面系统，支持硬件虚拟化，有4G内存。系统采用debian
-jessie，测试于2014年1月17日-20日执行，内核3.12.6-2 (2013-12-29)
-x86_64。&lt;/p&gt;
+&lt;p&gt;物理机是一台DELL Intel 64位桌面系统，支持硬件虚拟化，有4G内存。系统采用debian jessie，测试于2014年1月17日-20日执行，内核3.12.6-2 (2013-12-29) x86_64。&lt;/p&gt;
 
 &lt;p&gt;虚拟机lxc是使用lxc切分的一台虚拟机，没有做资源限制。&lt;/p&gt;
 
@@ -648,9 +645,7 @@ lxc.cgroup.blkio.throttle.write_iops_device = 8:0 100 # 写入频率限定
 &lt;pre&gt;&lt;code&gt;lxc-execute -n name /bin/echo hello
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;**
-注意，虽然系统初始化了所有资源，但是由于sysv-init没有执行，因此系统内初始化并没完成。这导致系统不完整，例如网络部分不可用。
-**&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;注意，虽然系统初始化了所有资源，但是由于sysv-init没有执行，因此系统内初始化并没完成。这导致系统不完整，例如网络部分不可用。&lt;/strong&gt;&lt;/p&gt;
 
 &lt;h1 id=&#34;网络隔离&#34;&gt;网络隔离&lt;/h1&gt;
 
@@ -659,8 +654,7 @@ lxc.cgroup.blkio.throttle.write_iops_device = 8:0 100 # 写入频率限定
 &lt;p&gt;lxc采用veth技术，每次虚拟机建立时，都会产生一对veth。虚拟机内的一般叫做eth0，虚拟机外的叫做vethXXX。这张网卡可以以任何linux许可的方式进行配置。&lt;/p&gt;
 
 &lt;ul&gt;
-&lt;li&gt;dnsmasq所产生的dhcp封包无法被debian guest的dhcp
-client承认，因此无法使用dnsmasq自动部署网络。&lt;/li&gt;
+&lt;li&gt;dnsmasq所产生的dhcp封包无法被debian guest的dhcp client承认，因此无法使用dnsmasq自动部署网络。&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;h2 id=&#34;使用iptables配置访问&#34;&gt;使用iptables配置访问&lt;/h2&gt;
@@ -687,36 +681,27 @@ client承认，因此无法使用dnsmasq自动部署网络。&lt;/li&gt;
       <guid>http://shell909090.org/blog/archives/2517/</guid>
       <description>&lt;p&gt;系统debian testing，lxc-0.9。&lt;/p&gt;
 
-&lt;p&gt;在笔记本上做lxc，网络是wifi，AP会drop不同MAC发出的报文，所以无法做网桥。一个办法是用ebtables做规则，我嫌麻烦。另一个是配置多头主机，double
-NAT。当然，还有路由器模式。不过大多数网络环境中我搞不到default
-gateway的权限来添加子网的路由规则。所以就选了double NAT。&lt;/p&gt;
+&lt;p&gt;在笔记本上做lxc，网络是wifi，AP会drop不同MAC发出的报文，所以无法做网桥。一个办法是用ebtables做规则，我嫌麻烦。另一个是配置多头主机，double NAT。当然，还有路由器模式。不过大多数网络环境中我搞不到default gateway的权限来添加子网的路由规则。所以就选了double NAT。&lt;/p&gt;
 
 &lt;p&gt;问题出在dnsmasq作为dhcp和dns服务器上。整个网络都搭好了，通的。完了我在host上启动dnsmasq，在guest里就是硬生生无法获得IP。&lt;/p&gt;
 
-&lt;p&gt;首先host上vi /var/log/syslog，看到dnsmasq把dhcp
-offer发出去了。在guest里tcpdump，看到有报文收到。那就奇怪该死的dhclient不工作了。dhclient版本4.2.4，和主系统一致。网桥环境中这个版本可以工作。&lt;/p&gt;
+&lt;p&gt;首先host上vi /var/log/syslog，看到dnsmasq把dhcp offer发出去了。在guest里tcpdump，看到有报文收到。那就奇怪该死的dhclient不工作了。dhclient版本4.2.4，和主系统一致。网桥环境中这个版本可以工作。&lt;/p&gt;
 
 &lt;p&gt;所以把网桥环境中的报文也tcpdump了一遍，加上刚刚不成功的dumpout一起看——什么都看不出来。&lt;/p&gt;
 
-&lt;p&gt;偶然dhclient -v -d -4 eth0了一下，看到bad udp
-checksums，顿时一愣。跑到wireshark下面看了一下——还真是没有计算checksum。打开checksum计算可以看到double
-NAT里的checksum算错了。提示是maybe checksum offload。&lt;/p&gt;
+&lt;p&gt;偶然dhclient -v -d -4 eth0了一下，看到bad udp checksums，顿时一愣。跑到wireshark下面看了一下——还真是没有计算checksum。打开checksum计算可以看到double NAT里的checksum算错了。提示是maybe checksum offload。&lt;/p&gt;
 
 &lt;p&gt;我找到这个链接：&lt;a href=&#34;http://www.wireshark.org/docs/wsug_html_chunked/ChAdvChecksums.html&#34;&gt;http://www.wireshark.org/docs/wsug_html_chunked/ChAdvChecksums.html&lt;/a&gt;&lt;/p&gt;
 
-&lt;p&gt;里面提到，checksum可能是由网卡或驱动计算的。这就难怪——没问题的dhcp
-offer的udp
-checksum是由openwrt的网卡发出，而有问题的则是由bridge和virtual
-ethernet发出。&lt;/p&gt;
+&lt;p&gt;里面提到，checksum可能是由网卡或驱动计算的。这就难怪——没问题的dhcp offer的udp checksum是由openwrt的网卡发出，而有问题的则是由bridge和virtual ethernet发出。&lt;/p&gt;
 
 &lt;p&gt;那见鬼，别人是怎么成功的？&lt;/p&gt;
 
 &lt;p&gt;一番搜索，看来lxc还不是第一个中招的：&lt;a href=&#34;http://lists.xen.org/archives/html/xen-devel/2011-12/msg01770.html&#34;&gt;http://lists.xen.org/archives/html/xen-devel/2011-12/msg01770.html&lt;/a&gt;&lt;/p&gt;
 
-&lt;p&gt;dhcp-4.2.2可以打这个补丁，使得dhcp-client不去校验udp
-checksum：&lt;a href=&#34;http://pkgs.fedoraproject.org/cgit/dhcp.git/plain/dhcp-4.2.2-xen-checksum.patch?id2=HEAD&#34;&gt;http://pkgs.fedoraproject.org/cgit/dhcp.git/plain/dhcp-4.2.2-xen-checksum.patch?id2=HEAD&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;dhcp-4.2.2可以打这个补丁，使得dhcp-client不去校验udp checksum：&lt;a href=&#34;http://pkgs.fedoraproject.org/cgit/dhcp.git/plain/dhcp-4.2.2-xen-checksum.patch?id2=HEAD&#34;&gt;http://pkgs.fedoraproject.org/cgit/dhcp.git/plain/dhcp-4.2.2-xen-checksum.patch?id2=HEAD&lt;/a&gt;&lt;/p&gt;
 
-&lt;p&gt;当然，也有各种坑爹补丁（例如这个：&lt;a href=&#34;http://marc.info/?l=kvm&amp;amp;m=121882968407525&amp;amp;w=2）来修复虚拟驱动上的问题，计算出正确的checksum。&#34;&gt;http://marc.info/?l=kvm&amp;amp;m=121882968407525&amp;amp;w=2）来修复虚拟驱动上的问题，计算出正确的checksum。&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;当然，也有各种坑爹补丁（例如这个：&lt;a href=&#34;http://marc.info/?l=kvm&amp;amp;m=121882968407525&amp;amp;w=2&#34;&gt;http://marc.info/?l=kvm&amp;amp;m=121882968407525&amp;amp;w=2&lt;/a&gt; ）来修复虚拟驱动上的问题，计算出正确的checksum。&lt;/p&gt;
 
 &lt;p&gt;在debian下，他被报为bts671707(&lt;a href=&#34;http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=671707)。已经报了一年半，尚未处理。&#34;&gt;http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=671707)。已经报了一年半，尚未处理。&lt;/a&gt;&lt;/p&gt;
 

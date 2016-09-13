@@ -308,7 +308,7 @@ ga('send', 'pageview');
 
 
         
-          <p>系统debian testing，lxc-0.9。 在笔记本上做lxc，网络是wifi，AP会drop不同MAC发出的报文，所以无法做网桥。一个办法是用ebtables做规则，我嫌麻烦。另一个是配置多头主机，double NAT。当然，还有路由器模式。不过大多数网络环境中我搞不到default gateway的权限来添加子网的路由规则。所以就选了double NAT。 问题出在dnsmasq作为dhcp和dns服务器上。整个网络都搭好了，通的。完了我在host上启动dnsmasq，在guest里就是硬生生无法获得IP。 首先host上vi /var/log/syslog，看到dnsmasq把dhcp offer发出去了。在guest里tcpdump，看到有报文收到。那就奇怪该死的dhclient不工作了。dhclient版本4.2.4，和主系统一致。网桥环境中这个版本可以工作。 所以把网桥环境中的报文也tcpdump了一遍，加上刚刚不成功的dumpout一起看——什么都看不出来。 偶然dhclient -v -d -4 eth0了一下，看到bad udp checksums，顿时一愣。跑到wireshark下面看了一下——还真是没有计算checksum。打开checksum计算可以看到double NAT里的checksum算错了。提示是maybe checksum offload。 我找到这个链接：http://www.wireshark.org/docs/wsug_html_chunked/ChAdvChecksums.html 里面提到，checksum可能是由网卡或驱动计算的。这就难怪——没问题的dhcp offer的udp checksum是由openwrt的网卡发出，而有问题的则是由bridge和virtual ethernet发出。 那见鬼，别人是怎么成功的？ 一番搜索，看来lxc还不是第一个中招的：http://lists.xen.org/archives/html/xen-devel/2011-12/msg01770.html dhcp-4.2.2可以打这个补丁，使得dhcp-client不去校验udp checksum：http://pkgs.fedoraproject.org/cgit/dhcp.git/plain/dhcp-4.2.2-xen-checksum.patch?id2=HEAD 当然，也有各种坑爹补丁（例如这个：http://marc.info/?l=kvm&amp;m=121882968407525&amp;w=2）来修复虚拟驱动上的问题，计算出正确的checksum。 在debian下，他被报为bts671707(http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=671707)。已经报了一年半，尚未处理。 网上很多教程能够跑通的原因，大概是因为他们的guest基于08年以后的rh系系统。rh在08年就对dhclient出了一个补丁（4.2.2那个），用于暂时修复这个问题。 所有基于debian系的系统都无法从offloading不处理的系统上获得dhcp offer。</p>
+          <p>系统debian testing，lxc-0.9。 在笔记本上做lxc，网络是wifi，AP会drop不同MAC发出的报文，所以无法做网桥。一个办法是用ebtables做规则，我嫌麻烦。另一个是配置多头主机，double NAT。当然，还有路由器模式。不过大多数网络环境中我搞不到default gateway的权限来添加子网的路由规则。所以就选了double NAT。 问题出在dnsmasq作为dhcp和dns服务器上。整个网络都搭好了，通的。完了我在host上启动dnsmasq，在guest里就是硬生生无法获得IP。 首先host上vi /var/log/syslog，看到dnsmasq把dhcp offer发出去了。在guest里tcpdump，看到有报文收到。那就奇怪该死的dhclient不工作了。dhclient版本4.2.4，和主系统一致。网桥环境中这个版本可以工作。 所以把网桥环境中的报文也tcpdump了一遍，加上刚刚不成功的dumpout一起看——什么都看不出来。 偶然dhclient -v -d -4 eth0了一下，看到bad udp checksums，顿时一愣。跑到wireshark下面看了一下——还真是没有计算checksum。打开checksum计算可以看到double NAT里的checksum算错了。提示是maybe checksum offload。 我找到这个链接：http://www.wireshark.org/docs/wsug_html_chunked/ChAdvChecksums.html 里面提到，checksum可能是由网卡或驱动计算的。这就难怪——没问题的dhcp offer的udp checksum是由openwrt的网卡发出，而有问题的则是由bridge和virtual ethernet发出。 那见鬼，别人是怎么成功的？ 一番搜索，看来lxc还不是第一个中招的：http://lists.xen.org/archives/html/xen-devel/2011-12/msg01770.html dhcp-4.2.2可以打这个补丁，使得dhcp-client不去校验udp checksum：http://pkgs.fedoraproject.org/cgit/dhcp.git/plain/dhcp-4.2.2-xen-checksum.patch?id2=HEAD 当然，也有各种坑爹补丁（例如这个：http://marc.info/?l=kvm&amp;m=121882968407525&amp;w=2 ）来修复虚拟驱动上的问题，计算出正确的checksum。 在debian下，他被报为bts671707(http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=671707)。已经报了一年半，尚未处理。 网上很多教程能够跑通的原因，大概是因为他们的guest基于08年以后的rh系系统。rh在08年就对dhclient出了一个补丁（4.2.2那个），用于暂时修复这个问题。 所有基于debian系的系统都无法从offloading不处理的系统上获得dhcp offer。</p>
 
           
 
@@ -573,8 +573,6 @@ ga('send', 'pageview');
     
         <a href="/page/91/" class="label-pagination">91</a>
     
-        <a href="/page/92/" class="label-pagination">92</a>
-    
 
     
     
@@ -583,7 +581,7 @@ ga('send', 'pageview');
 
     
     
-        <a href="/page/92/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
+        <a href="/page/91/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
     
 
 </div>

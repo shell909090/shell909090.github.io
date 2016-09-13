@@ -112,163 +112,47 @@ ga('send', 'pageview');
           
           
           
-          <div>
+          
 
-\# 引言 \#
+<h1 id="引言">引言</h1>
 
-</div>
+<p>别废话了，我觉得这都应当是常识的。除去最后几种包装框架，剩下都是基本知识问题。即使不知道怎么做，也应该知道有这种方法。所谓经验，很多时候不是把知识装脑子里，而是把索引装内存，数据丢硬盘。</p>
 
-<div>
+<h1 id="c模块">C模块</h1>
 
-<span class="Apple-tab-span" style="white-space:pre">
-</span>别废话了，我觉得这都应当是常识的。除去最后几种包装框架，剩下都是基本知识问题。即使不知道怎么做，也应该知道有这种方法。所谓经验，很多时候不是把知识装脑子里，而是把索引装内存，数据丢硬盘。
+<p>最基本的方法，直接写个C模块。具体很长，你去找python-doc，看“Extending</p>
 
-</div>
+<p>and Embedding”这章，全看完就差不多了。如果没空，看几个例子就上也可以。</p>
 
-<div>
+<p>优点：基本没有，写起来很麻烦，要维护额外的C代码，还有交叉版本固定，跟随C升级等等麻烦。唯一的优点，就是这是唯一一个“绝对没有问题”的方法，而且没有额外依赖。如果下面几个路子全出了问题，就用C模块吧。</p>
 
-\
+<h1 id="ctypes">ctypes</h1>
 
-</div>
+<p>去看python-doc的ctypes模块。本质上是提供一个C模块，去载入和使用其他模块。</p>
 
-<div>
+<p>优点：写起来很方便，修改便捷，而且跨各个python实现。</p>
 
-\# C模块 \#
+<p>缺点：只能调用动态库，对静态库没啥办法。某些复杂数据类型的转换很麻烦，据说有时还有效率问题。</p>
 
-</div>
+<h1 id="swig">swig</h1>
 
-<div>
+<p>自己找，一个叫做swig的项目，目标是制作C语言的各种平台包装。实现上看，会生成一个动态库和一个py。</p>
 
-<span class="Apple-tab-span" style="white-space:pre">
-</span>最基本的方法，直接写个C模块。具体很长，你去找python-doc，看“Extending
-and Embedding”这章，全看完就差不多了。如果没空，看几个例子就上也可以。
+<p>优点：跨平台多。如果你的C代码不仅是python需要调用，还有其他语言（例如php），那么swig用起来很舒服。</p>
 
-</div>
+<p>缺点：编译时引入额外依赖，而且调用范式也是受限的。不过别担心，一般你也用不到范围以外的范式。</p>
 
-<div>
+<h1 id="boost-python">boost.python</h1>
 
-<span class="Apple-tab-span" style="white-space:pre">
-</span>优点：基本没有，写起来很麻烦，要维护额外的C代码，还有交叉版本固定，跟随C升级等等麻烦。唯一的优点，就是这是唯一一个“绝对没有问题”的方法，而且没有额外依赖。如果下面几个路子全出了问题，就用C模块吧。
+<p>boost的自带库，只能用于C++。</p>
 
-</div>
+<p>优点：对C++的支持是极好的。</p>
 
-<div>
+<p>缺点：要依赖boost这么个坑爹玩意，摔。</p>
 
-\
+<h1 id="pyrex">Pyrex</h1>
 
-</div>
-
-<div>
-
-\# ctypes \#
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre">
-</span>去看python-doc的ctypes模块。本质上是提供一个C模块，去载入和使用其他模块。
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre">
-</span>优点：写起来很方便，修改便捷，而且跨各个python实现。
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre">
-</span>缺点：只能调用动态库，对静态库没啥办法。某些复杂数据类型的转换很麻烦，据说有时还有效率问题。
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-\# swig \#
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre">
-</span>自己找，一个叫做swig的项目，目标是制作C语言的各种平台包装。实现上看，会生成一个动态库和一个py。
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre">
-</span>优点：跨平台多。如果你的C代码不仅是python需要调用，还有其他语言（例如php），那么swig用起来很舒服。
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre">
-</span>缺点：编译时引入额外依赖，而且调用范式也是受限的。不过别担心，一般你也用不到范围以外的范式。
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-\# boost.python \#
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre">
-</span>boost的自带库，只能用于C++。
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre">
-</span>优点：对C++的支持是极好的。
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre">
-</span>缺点：要依赖boost这么个坑爹玩意，摔。
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-\# Pyrex \#
-
-</div>
-
-<div>
-
-<span class="Apple-tab-span" style="white-space:pre">
-</span>我知道douban的python-libmemcached是使用这个来包装的，不过没用过，不是很清楚。
-
-</div>
+<p>我知道douban的python-libmemcached是使用这个来包装的，不过没用过，不是很清楚。</p>
 
         </div>
         

@@ -20,8 +20,7 @@
 
 &lt;h1 id=&#34;vpn的原始模式&#34;&gt;vpn的原始模式&lt;/h1&gt;
 
-&lt;p&gt;vpn的最简模型，相当于在两台机器上插一块虚拟网卡，然后中间连一根虚拟网线连通。因此vpn才得名vpn(virtual
-private network)。&lt;/p&gt;
+&lt;p&gt;vpn的最简模型，相当于在两台机器上插一块虚拟网卡，然后中间连一根虚拟网线连通。因此vpn才得名vpn(virtual private network)。&lt;/p&gt;
 
 &lt;p&gt;其复杂之处在于，这块虚拟网卡如何配置网络，和别的网卡是什么关系。再加上多个节点间如何通讯。种种都够新手喝一壶。&lt;/p&gt;
 
@@ -61,27 +60,43 @@ vpn，在启动脚本中指定加入这个br。&lt;/p&gt;
 
 &lt;p&gt;服务器配置:&lt;/p&gt;
 
-&lt;p&gt;port [port num] proto udp ;
-参考我上一篇&lt;a href=&#34;http://shell909090.org/blog/archives/2722&#34;&gt;vpn不要走tcp协议&lt;/a&gt;
-dev tap ca ca.crt cert server.crt key server.key server-bridge
-172.19.0.16 255.255.255.0 172.19.0.17 172.19.0.31 ; 或者可以采用这句 ;
-server 172.19.0.16 255.255.255.240 ;
-注意掩码实际上等于/28，做掩码运算后，这段地址和上面的保留地址重合
-script-security 2 up vpn-start ; 建议使用绝对路径，避免版本坑 down
-vpn-stop&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;port [port num]
+proto udp
+; 参考我上一篇[vpn不要走tcp协议](http://shell909090.org/blog/archives/2722)
+dev tap
+ca ca.crt
+cert server.crt
+key server.key
+server-bridge 172.19.0.16 255.255.255.0 172.19.0.17 172.19.0.31
+; 或者可以采用这句
+; server 172.19.0.16 255.255.255.240
+; 注意掩码实际上等于/28，做掩码运算后，这段地址和上面的保留地址重合
+script-security 2
+up vpn-start
+; 建议使用绝对路径，避免版本坑 down
+vpn-stop
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;vpn-start:&lt;/p&gt;
 
-&lt;p&gt;brctl add br0 \$dev&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;brctl add br0 $dev
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;vpn-stop:&lt;/p&gt;
 
-&lt;p&gt;brctl del br0 \$dev&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;brctl del br0 $dev
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;客户端配置:&lt;/p&gt;
 
-&lt;p&gt;client dev tap proto udp remote [server ip] [port num] ca ca.crt
-cert client.crt key client.key&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;client
+dev tap
+proto udp
+remote [server ip] [port num]
+ca ca.crt
+cert client.crt
+key client.key
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;测试:&lt;/p&gt;
 
@@ -93,8 +108,7 @@ cert client.crt key client.key&lt;/p&gt;
 
 &lt;p&gt;dh和tls-auth可以配，个人每次都是配的。但是懒的话也可以不搞。&lt;/p&gt;
 
-&lt;p&gt;user nobody和group
-nobody强烈建议配，注意debian上是nogroup。这个配置可以将openvpn的执行权搞低，如果openssl再出什么执行任意代码漏洞，那么问题就不是立刻致命。&lt;/p&gt;
+&lt;p&gt;user nobody和group nobody强烈建议配，注意debian上是nogroup。这个配置可以将openvpn的执行权搞低，如果openssl再出什么执行任意代码漏洞，那么问题就不是立刻致命。&lt;/p&gt;
 
 &lt;p&gt;注意使用了user和group后，要配置persist-key和persist-tun，避免出错。&lt;/p&gt;
 
@@ -122,8 +136,7 @@ nobody强烈建议配，注意debian上是nogroup。这个配置可以将openvpn
 
 &lt;p&gt;非常灵活，几乎无法总结。简单说说从外网拨入内网，打通两者间互访的配法吧。&lt;/p&gt;
 
-&lt;p&gt;配置一个tun
-vpn，连接到vpn网关上。配置中下发内网网段，走vpn。内网下发vpn路由，指向vpn网关。&lt;/p&gt;
+&lt;p&gt;配置一个tun vpn，连接到vpn网关上。配置中下发内网网段，走vpn。内网下发vpn路由，指向vpn网关。&lt;/p&gt;
 
 &lt;h2 id=&#34;example-1&#34;&gt;example&lt;/h2&gt;
 
@@ -131,31 +144,45 @@ vpn，连接到vpn网关上。配置中下发内网网段，走vpn。内网下�
 
 &lt;p&gt;服务器配置:&lt;/p&gt;
 
-&lt;p&gt;port [port num] proto udp dev tun ca ca.crt cert server.crt key
-server.key server 172.19.1.0 255.255.255.0 push &amp;ldquo;route 172.19.0.0
-255.255.255.0&amp;rdquo;&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;port [port num]
+proto udp
+dev tun
+ca ca.crt
+cert server.crt
+key server.key
+server 172.19.1.0 255.255.255.0
+push &amp;quot;route 172.19.0.0 255.255.255.0&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;在服务器上一定要打开:&lt;/p&gt;
 
-&lt;p&gt;sysctl -w &amp;lsquo;net.ipv4.ip_forward=1&amp;rsquo;&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;sysctl -w &#39;net.ipv4.ip_forward=1&#39;
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;在所有服务器上执行/在网关上执行:&lt;/p&gt;
 
-&lt;p&gt;ip route add 172.19.1.0/24 via 172.19.0.100&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;ip route add 172.19.1.0/24 via 172.19.0.100
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;或&lt;/p&gt;
 
-&lt;p&gt;route add -net 172.19.1.0 netmask 255.255.255.0 gateway 172.19.0.100&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;route add -net 172.19.1.0 netmask 255.255.255.0 gateway 172.19.0.100
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;客户端配置:&lt;/p&gt;
 
-&lt;p&gt;client dev tun proto udp remote [server ip] [port num] ca ca.crt
-cert client.crt key client.key&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;client
+dev tun
+proto udp
+remote [server ip] [port num]
+ca ca.crt
+cert client.crt
+key client.key
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;测试:&lt;/p&gt;
 
-&lt;p&gt;在拨入设备上，使用mtr
-172.19.0.1(内网网关)，来查看是否通过172.19.1.1和172.19.0.1。如果都到了，说明整个配置成功。否则看是否到vpn网关，再在网关上抓包。&lt;/p&gt;
+&lt;p&gt;在拨入设备上，使用mtr 172.19.0.1(内网网关)，来查看是否通过172.19.1.1和172.19.0.1。如果都到了，说明整个配置成功。否则看是否到vpn网关，再在网关上抓包。&lt;/p&gt;
 
 &lt;h1 id=&#34;多节点通过虚拟骨干网打通&#34;&gt;多节点通过虚拟骨干网打通&lt;/h1&gt;
 
@@ -246,13 +273,11 @@ client-to-client
 duplicate-cn
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;Plugin should be /usr/lib/openvpn/openvpn-plugin-auth-pam.so in debian,
-&amp;ldquo;openvpn&amp;rdquo; behind is fit for the filename in /etc/pam.d/openvpn.&lt;/p&gt;
+&lt;p&gt;Plugin should be /usr/lib/openvpn/openvpn-plugin-auth-pam.so in debian, &amp;ldquo;openvpn&amp;rdquo; behind is fit for the filename in /etc/pam.d/openvpn.&lt;/p&gt;
 
 &lt;h1 id=&#34;google-authentication-config&#34;&gt;google authentication config&lt;/h1&gt;
 
-&lt;p&gt;Look at this &lt;a href=&#34;http://shell909090.org/blog/2014/01/%E5%9C%A8pam%E4%B8%AD%E4%BD%BF%E7%94%A8google-authentication/&#34;&gt;在PAM中使用google
-authentication&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Look at this &lt;a href=&#34;http://shell909090.org/blog/2014/01/%E5%9C%A8pam%E4%B8%AD%E4%BD%BF%E7%94%A8google-authentication/&#34;&gt;在PAM中使用google authentication&lt;/a&gt;.&lt;/p&gt;
 
 &lt;h1 id=&#34;startup&#34;&gt;startup&lt;/h1&gt;
 
@@ -263,11 +288,9 @@ Enter Auth Password:
 Enter Private Key Password:
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;The user you used to config google authentication is the username put
-into Auth Username.&lt;/p&gt;
+&lt;p&gt;The user you used to config google authentication is the username put into Auth Username.&lt;/p&gt;
 
-&lt;p&gt;Put verification code as Password, and you may have Private Key Password
-in your private key.&lt;/p&gt;
+&lt;p&gt;Put verification code as Password, and you may have Private Key Password in your private key.&lt;/p&gt;
 
 &lt;p&gt;Have a fun.&lt;/p&gt;
 </description>

@@ -112,99 +112,31 @@ ga('send', 'pageview');
           
           
           
-          <div>
+          <p>frist of all, today is google&rsquo;s 7th brithday. Happy brithday.</p>
 
-    frist of all, today is google's 7th brithday. Happy brithday.
+<p>这篇是接上篇windows版本论的，主要讲述windows的SN算法和椭圆曲线算法。</p>
 
-</div>
+<p>windows的SN长度是25位，大家都知道了。但是大家可能不知道，windows的SN是base24的</p>
 
-<div>
+<p>UUCode算法的结果，所以里面应该只有以下字符BCDFGHJKMPQRTVWXY2346789。如果有别的就不用试了，肯定假的。在UUDecode后应该有114bit的数据，其中只有31bit的有效数据，我们称为data。</p>
 
-    这篇是接上篇windows版本论的，主要讲述windows的SN算法和椭圆曲线算法。
+<p>具体椭圆曲线密码体系就不说了，大致来说，和RSA一样，是属于非对称密钥体系。RSA是利用大质数分解构造的陷门函数，椭圆曲线利用的是二次方程的整数解。应用方法说明如下：</p>
 
-</div>
+<p>先利用data和private key经过SHA-1算法hash出一个hsah，取28位。</p>
 
-<div>
+<p>利用data和private key经过椭圆曲线算法得到sign，55位。</p>
 
-   
-windows的SN长度是25位，大家都知道了。但是大家可能不知道，windows的SN是base24的
-UUCode算法的结果，所以里面应该只有以下字符BCDFGHJKMPQRTVWXY2346789。如果有别的就不用试了，肯定假的。在UUDecode后应该有114bit的数据，其中只有31bit的有效数据，我们称为data。
+<p>将(data, hash, sign)三元组UUCode出SN。</p>
 
-</div>
+<p>SN上面算法如下：</p>
 
-<div>
+<p>用SN做UUDecode得到(data, hash, sign)三元组。</p>
 
-   
-具体椭圆曲线密码体系就不说了，大致来说，和RSA一样，是属于非对称密钥体系。RSA是利用大质数分解构造的陷门函数，椭圆曲线利用的是二次方程的整数解。应用方法说明如下：
+<p>利用sign和hash可以求出private key。（贝壳这里有点看不懂） 利用data和private key经过SHA-1算法hash出一个hsah，取28位。</p>
 
-</div>
+<p>效验private key。</p>
 
-<div>
-
-   先利用data和private key经过SHA-1算法hash出一个hsah，取28位。
-
-</div>
-
-<div>
-
-   利用data和private key经过椭圆曲线算法得到sign，55位。
-
-</div>
-
-<div>
-
-   将(data, hash, sign)三元组UUCode出SN。
-
-</div>
-
-<div>
-
- 
-
-</div>
-
-<div>
-
-    SN上面算法如下：
-
-</div>
-
-<div>
-
-    用SN做UUDecode得到(data, hash, sign)三元组。
-
-</div>
-
-<div>
-
-    利用sign和hash可以求出private key。（贝壳这里有点看不懂）
-
-</div>
-
-<div>
-
-    利用data和private key经过SHA-1算法hash出一个hsah，取28位。
-
-</div>
-
-<div>
-
-    效验private key。
-
-</div>
-
-<div>
-
- 
-
-</div>
-
-<div>
-
-    我们的破解程序很明显在根据public key求private
-key，正好是要算死的那种。幸好微软为了考虑用户输入SN的麻烦，所以sign才55位。否则我们这辈子休想算出一个号来。
-
-</div>
+<p>我们的破解程序很明显在根据public key求private key，正好是要算死的那种。幸好微软为了考虑用户输入SN的麻烦，所以sign才55位。否则我们这辈子休想算出一个号来。</p>
 
         </div>
         

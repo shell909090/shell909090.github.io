@@ -140,23 +140,33 @@ Server。在debian中，就是nagios-nrpe-server这个包。如果获得本地�
 
 <p>最后，配置nginx。</p>
 
-<p>location /nagios3 { index index.html index.htm index.php; }</p>
+<pre><code>location /nagios3 {
+    index index.html index.htm index.php;
+}
+location /nagios3/stylesheets {
+    root /etc;
+}
+</code></pre>
 
-<p>location /nagios3/stylesheets { root /etc; }</p>
+<p>第一个映射是nagios的基础目录，在根目录中，我其实配置了nagios3 -&gt; /usr/share/nagios3/htdocs/（debian中的链接位置）。第二个映射是样式表配置，我用系统缺省的。</p>
 
-<p>第一个映射是nagios的基础目录，在根目录中，我其实配置了nagios3 -&gt;
-/usr/share/nagios3/htdocs/（debian中的链接位置）。第二个映射是样式表配置，我用系统缺省的。</p>
-
-<p>location ~ \^/nagios3/.*.php\$ { include fastcgi_params;
-fastcgi_pass unix:/var/run/php5-fpm.sock; }</p>
+<pre><code>location ~ ^/nagios3/.*.php$ {
+    include fastcgi_params;
+    fastcgi_pass unix:/var/run/php5-fpm.sock;
+}
+</code></pre>
 
 <p>这个是nagios的php解析代码。我的php-fpm执行在同一台机器上，因此直接如此配置即可。</p>
 
-<p>location /cgi-bin/nagios3 { root /usr/lib; include fastcgi_params;
-fastcgi_param REMOTE_USER \$remote_user; fastcgi_pass dev:port; }</p>
+<pre><code>location /cgi-bin/nagios3 {
+    root /usr/lib;
+    include fastcgi_params;
+    fastcgi_param REMOTE_USER $remote_user;
+    fastcgi_pass dev:port;
+}
+</code></pre>
 
-<p>最后是cgi暴露的配置。由于我的nagios宿主并不在web服务器上，因此fastcgi是个远程地址。而且注意REMOTE_USER，传递这个才能让远程认到你的用户basic
-auth。由于nagios的cgi通过这个工作，因此没有这个会直接导致对方始终认为你是无权限用户。</p>
+<p>最后是cgi暴露的配置。由于我的nagios宿主并不在web服务器上，因此fastcgi是个远程地址。而且注意REMOTE_USER，传递这个才能让远程认到你的用户basic auth。由于nagios的cgi通过这个工作，因此没有这个会直接导致对方始终认为你是无权限用户。</p>
 
 <h1 id="nagios的简单配置">nagios的简单配置</h1>
 
@@ -170,8 +180,11 @@ auth。由于nagios的cgi通过这个工作，因此没有这个会直接导致�
 
 <p>首先，你可以定义一些机器。localhost_nagios2.cfg里面有例子，大致是这个样子。</p>
 
-<p>define host{ use generic-host ; Name of host template to use host_name
-host alias host address IP }</p>
+<pre><code>define host{
+    use generic-host ; Name of host template to use host_name
+    host alias host address IP
+}
+</code></pre>
 
 <p>我建议你专门弄个文件来管理这些自己的设备，例如我这里叫hosts.cfg。</p>
 
@@ -191,7 +204,8 @@ host alias host address IP }</p>
 
 <p>你可以在generic-host_nagios2.cfg里面，将标准配置复制一份，去掉下面一行。这个服务器就不会检查是否活着了。</p>
 
-<p>check_command check-host-alive</p>
+<pre><code>check_command check-host-alive
+</code></pre>
 
 <h2 id="nrpe">nrpe</h2>
 

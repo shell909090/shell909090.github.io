@@ -112,66 +112,26 @@ ga('send', 'pageview');
           
           
           
-          <div>
+          <p>如果这个代码出现在linux内核里面，你们怎么想？</p>
 
-    如果这个代码出现在linux内核里面，你们怎么想？
+<pre><code>subtypes[n].parse(state, bdev, START_SECT(p)*sector_size, NR_SECTS(p)*sector_size, slot);
+</code></pre>
 
-</div>
+<p>很像是对象数组调用方法吧，很多人可能甚至会猜想这个东西是虚函数。问题是，大家记得吗？linux内核，是C的！</p>
 
-<div>
+<p>事实上，这是声明。</p>
 
-subtypes\[n\].parse(state, bdev, START\_SECT(p)\*sector\_size,
-NR\_SECTS(p)\*sector\_size, slot);
-
-</div>
-
-<div>
-
-   
-很像是对象数组调用方法吧，很多人可能甚至会猜想这个东西是虚函数。问题是，大家记得吗？linux内核，是C的！
-
-</div>
-
-<div>
-
-    事实上，这是声明。
-
-</div>
-
-<div>
-
-static struct {\
-    unsigned char id;\
-    void (\*parse)(struct parsed\_partitions \*, struct block\_device
-\*, u32, u32, int);\
+<pre><code>static struct {
+    unsigned char id;
+    void (*parse)(struct parsed_partitions *, struct block_device*, u32, u32, int);
 };
+</code></pre>
 
-</div>
+<p>怎么想？这个是方法映射。技术上讲，和虚函数属于同种类的应用（dymanic binding）。当然，数据结构有差异。虚函数要先根据n确定对象位置，根据v_ptr确定虚函数表，根据虚函数表定位了函数入口。而这里是根据n定位了对象，然后直接找到了函数入口。</p>
 
-<div>
+<p>可是，还是被骗了……</p>
 
-    怎么想？这个是方法映射。技术上讲，和虚函数属于同种类的应用（dymanic
-binding）。当然，数据结构有差异。虚函数要先根据n确定对象位置，根据v\_ptr确定虚函数表，根据虚函数表定位了函数入口。而这里是根据n定位了对象，然后直接找到了函数入口。
-
-</div>
-
-<div>
-
-    可是，还是被骗了……
-
-</div>
-
-<div>
-
- 
-
-</div>
-
-<div>
-
-PS.谨以此纪念首次在GNU/GPL下引用Linux内核源码用于程序开发，因为分区系统资料该死的不清楚！
-
-</div>
+<p>PS.谨以此纪念首次在GNU/GPL下引用Linux内核源码用于程序开发，因为分区系统资料该死的不清楚！</p>
 
         </div>
         

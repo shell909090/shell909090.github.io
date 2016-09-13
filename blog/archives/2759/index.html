@@ -122,17 +122,14 @@ ga('send', 'pageview');
 
 <p>这个函数在linux内核中。我使用的源码是linux-3.2，结果在linux-3.2/mm/mremap.c:535这里。</p>
 
-<p>大致看了一下函数实现。首先试图处理缩小，如果不行的话试图在扩展到最大(vma_to_resize)，如果这样还是不行，先试试看能不能追加映射(vma_expandable/vma_adjust)。如果都不行，他还是用的创建并移动的方法。(We
-weren’t able to just expand or shrink the area, we need to create a new
-one and move it..)。</p>
+<p>大致看了一下函数实现。首先试图处理缩小，如果不行的话试图在扩展到最大(vma_to_resize)，如果这样还是不行，先试试看能不能追加映射(vma_expandable/vma_adjust)。如果都不行，他还是用的创建并移动的方法。(We weren’t able to just expand or shrink the area, we need to create a new one and move it..)。</p>
 
 <p>所以，总体来说，list.append的复杂度还是O(n)级。但是由于remap的内核实现，因此比直接搬数据应该会快一些。具体表现可能要以测试为准了。</p>
 
 <p>但是这里就有一个疑惑。难道python现在删除了复杂的内存层，将mm管理直接用系统的来支持么？我记忆中python源码解析里讲过python有一个巨复杂无比的内存控制系统。难道全用系统管理了么？对此我查了一下
 <a href="https://docs.python.org/2.6/c-api/memory.html">2.6</a> /
 <a href="https://docs.python.org/2/c-api/memory.html">2.7</a> 的python
-mm文档。里面倒是明确提到不要同时使用系统api和python
-api来管理内存。但是并没有明确说明如何处理的实现。但是我在系统里并没有找到第二个实现（debug不算），唯一的实现在Python-2.7.5/Include/pymem.h:76，是直接转到realloc上去的。</p>
+mm文档。里面倒是明确提到不要同时使用系统api和python api来管理内存。但是并没有明确说明如何处理的实现。但是我在系统里并没有找到第二个实现（debug不算），唯一的实现在Python-2.7.5/Include/pymem.h:76，是直接转到realloc上去的。</p>
 
 <p>貌似在新证据出现前，我得认为python使用的glibc api来处理的mm问题。</p>
 

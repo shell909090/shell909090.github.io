@@ -99,60 +99,6 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/1712/">招人，招人！</a>
-    </h1>
-    <p class="meta">Mar 3, 2011
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/1712/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>最近帮一个朋友吼招人，发现上海要python程序员的公司真不少。保守估计，有五家以上需要各种python程序员。 我们公司需要一个比较精通系统的python程序员，最好有C/C++能力。有一家朋友的公司是需要python进行测试开发的，说白了就是测试程序员。另两家求靠谱的python web主力程序员，需要熟悉系统，数据库建立和优化，完整的python程序架构和实现。这两家比较打架。最后一家需要python web工程师，能干活的那种。 每个公司的要求和薪资都不大相同，排除掉爬虫，几乎涵盖了整个python领域的方方面面。当然待遇薪水也涵盖了从低到高的整个领域。今年有意思的同学不妨试试运气，说不定能找到你要的工作。 另外就是每个大三快大四，即将毕业的同学。如果你今年开始学python，搞不好明年毕业就可以直接签掉。如果你能搞定整个网站，有数据库优化经验，并且真实的运营过一个网站。搞不好毕业薪水就上五位数。有没有兴趣混一下python社区，靠谱的学上一年？ 当然，这里说的，对程序员基本功都有一点要求。昨天还在餐厅洗盘子的，今天跑来学三个月python和django，明天跑过去求职。这一准失败没商量的。你起码应当知道常用系统调用，尤其是os.open和open的区别。应当知道django中如何实现多对多外键，并且将这个外键转化为一个带复选框的表格，再表单提交读出来。知道为什么IE打开网页一切正常，firefox和chrome却每次都让你保存网页而不是显示出来。知道网页在几个浏览器下乱码，而另外几个正常是为什么。知道django给你弹出一个错误，里面说了些什么。知道mysql慢的要死是为什么，还有怎么做。知道数据存入mysql再读出来就全是乱码是为什么。 以上种种，是开发中最常见的一些问题，也是每个开发都会碰到的问题。他们涉及了系统底层调用和封装调用的常识，ORM和表单的常识，http协议的常识，html标准的常识。涵盖调试，优化，运维等方面。 通常来说，比较全才的，经验丰富的主力程序员，我会推荐他们去一些小公司。所谓宁为鸡头不为凤尾，当你在大公司里面做到顶棚的时候，可以试试看在小公司里面主政一方。如果老板赏识，也许还有机会参与期权。这对已经不算缺钱的程序员来说比较有吸引力。而小公司通常没成本来雇用一些比较初级的程序员，又在主力程序员的人选上求助无门，因此往往对主程序员求才若渴。 而刚毕业的同学就不要去凑热闹了。小公司没那么多钱，每个人都要独挡一面。刚毕业的人通常没这个能力，更可怕的是通常不知道自己没这个能力。因此建议，除非是大学期间就参与过商业网站运作的，否则别去凑。中型公司是一个更好的选择。公司里有几个高手，你方便找人。工作方向相对窄，容易入手。而且工作稳定，没有随时随地的压力，利于学习发展。至于大型公司，通常不是大牛的人进去，接触的东西太有限，太定向，发展前景有限。而且大牛都集中起来了，你也很难抓到人。 至于牛人，我就不吼了。牛人都不是在人才市场上求职的。</p>
-
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/1710/">如何建立自己的debian repository</a>
-    </h1>
-    <p class="meta">Feb 28, 2011
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/1710/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>首先，感谢zigo的大力支持，并且贡献出他的源码，我才得以完成本文。其次，技术文，该散的可以退散了。 很多时候，我们对某些东西比较有兴趣，所以会安装一下。debian系统下最熟悉的安装系统就是dpkg了。作为debian用户，我想用deb包来安装这些东西。这样会有以下的好处： 1.便于在多个系统上重复安装。如果是源码包编译，就必须每台系统安装好环境来configure/make install了。 2.便于拆除。如果是make install，能不能拆就看你的运气了。 3.系统可以管理依赖。包括自动安装缺失的依赖包，以及保持依赖包的固定等。 关于打包，请看debian新维护人员手册（ http://www.debian.org/doc/maint-guide/index.zh-cn.html）。本文主要是说一下如何将这些包变成一个自己的仓库。 变成仓库，你将拥有以下好处。 1.不必自己去复制包，然后手工安装。 2.当仓库更新后，目标机器在update后可以发现。 3.你可以向仓库中加入自己定制编译的，更加新版本的软件。替换掉系统的同名软件，而不改变操作特性（除了没加key会碰到不安全提示）。 其实debian的主系统是一个超级大仓库，通过ftp和rsync同步提供服务。我们的包如果够重要，也会享受到这种待遇。然而debian官方仓库的要求比较严格，你必须在文件级别搞清楚每个文件的授权，并且核对这些授权是否符合dsfg协定。你的包必须足够重要，有可能的潜在用户。多数时候，我们自己写的产品/库还没有这种待遇，因此只有自己做一个仓库了。 zigo提供了他的打包代码，比我的功能全多了，大家可以参考这里（http://git.gplhost.com/gitweb/?p=mgmt-scripts.git;a=blob;f=scripts/scan_archive;h=db7647732b989b35ae7d8a48c80a48ecf67e4612;hb=0ff8fd7d0ba1991d552376f8beca0b46bfaa32e3）。我根据这个脚本，自己实现了一个，放在这里（http://shell909090.3322.org/debian/scan_deb.py）。下面，我简述一下用法和原理。 首先，你需要建立一个pool目录。在其中建立一些release目录。举例来说，wheezy是一种release，testing也是。但是目前testing是wheezy的别名，你用ln -s做链接指向就可以了。在release目录下，你需要建立category目录。例如main是一种category，contrib和non-free也是。 在指定一个deb仓库的时候，release和category是必须指定的，可以被看作是一个仓库地址的一部分。 建立完三级目录后，将你的包放在对应目录下。 全部文件放好后，在根目录下执行python scan_deb.py。如果你需要自动签名，将最后一行的False改为True。在此前请准备好私钥。如果缺少某种架构，请修改脚本architectures一行。 系统的基本原理是，在某个release, category, architecture下，对于pool/release/category目录执行dpkg-scanpackages操作，生成Packages文件到dists目录下，并且再生成一个压缩版本。 对所有目录执行过操作后，使用apt-ftparchive来生成一个Release文件，这个文件指名了有哪些Packages文件，以及他们的MD5各是多少。 客户端获得了Release，就可以知道某种release的特定几个category是否需要更新。更新到了Package，就知道有什么包，他们的meta信息是多少。最后对Release文件进行签名，就可以防止作假了。</p>
-
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/1707/">上海电信ADSL的劫持？</a>
     </h1>
     <p class="meta">Feb 26, 2011
@@ -355,6 +301,60 @@ ga('send', 'pageview');
 
         
           <p>django使用PATH_INFO和SCRIPT_NAME来计算urls.py中的匹配路径，当两者都设定时，会出现URL计算结果为空，导致无法访问的问题。具体看这里。 http://aftnn.org/2009/jan/23/nginx-django-fastcgi/</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/1691/">闹肚子找到罪魁祸首了</a>
+    </h1>
+    <p class="meta">Feb 11, 2011
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/1691/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>现在全家闹肚子了，看样子是外婆的冰箱。数年不洗，生熟混用，而且还没有控温器，靠定时器工作的。。。 亏我也能活到现在。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/1690/">蹊跷的闹肚子</a>
+    </h1>
+    <p class="meta">Feb 9, 2011
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/1690/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>今年闹肚子了，上吐下泻。 水样稀，吐出来的也全是水。吗丁啉不管用，黄连素管用，可能是肠道炎。 奇怪的是，家里没人有事，女朋友家没人有事，我又没在外面吃过东西。 真是奇怪。</p>
 
           
 
@@ -565,8 +565,6 @@ ga('send', 'pageview');
     
         <a href="/page/91/" class="label-pagination">91</a>
     
-        <a href="/page/92/" class="label-pagination">92</a>
-    
 
     
     
@@ -575,7 +573,7 @@ ga('send', 'pageview');
 
     
     
-        <a href="/page/92/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
+        <a href="/page/91/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
     
 
 </div>

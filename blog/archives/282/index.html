@@ -112,72 +112,30 @@ ga('send', 'pageview');
           
           
           
-          <div>
+          <p>IE这个东西讨人喜欢讨人嫌，很多时候没有它不行，有了又容易中各种东西。下面的研究就是怎么样来控制IE的各种行为。首先是屏蔽IE的开启</p>
 
-   
-IE这个东西讨人喜欢讨人嫌，很多时候没有它不行，有了又容易中各种东西。下面的研究就是怎么样来控制IE的各种行为。首先是屏蔽IE的开启
+<pre><code>cacls &quot;C:\Program Files\Internet Explorer&quot; /P admini:N /E
+</code></pre>
 
-</div>
+<p>这条语句的目的是屏蔽administrator对浏览器目录的访问权限，访问权限都没了，浏览器自然开不了了。不过这只适合于用户手工开启浏览器，如果系统自动弹出，浏览器还是照样开的。例如我们亲爱的MSN，所以还要加下面这条。</p>
 
-<div>
+<pre><code>cacls &quot;C:\WINNT\system32\BROWSEUI.DLL&quot; /P admini:N /E
+</code></pre>
 
-cacls "C:Program FilesInternet Explorer" /P admini:N /E
+<p>这条屏蔽的是IE的界面（UI），所以凡用IE界面的东西全部弹不出来。像刚刚我就差点无法写新的日志。所以用这两条语句重新开启访问权限。</p>
 
-</div>
+<pre><code>cacls &quot;C:\WINNT\system32\BROWSEUI.DLL&quot; /P admini:F /E
+cacls &quot;C:\Program Files\Internet Explorer&quot; /P admini:F /E
+</code></pre>
 
-<div>
+<p>这里要特别说明下，admini在我的机器上指administrator，而我机器上的administrator则是一个连guest权限都没有的空账户，专门用来诱骗攻击的。各种账户的情况大家可以根据自己机器自行修改。</p>
 
-   
-这条语句的目的是屏蔽administrator对浏览器目录的访问权限，访问权限都没了，浏览器自然开不了了。不过这只适合于用户手工开启浏览器，如果系统自动弹出，浏览器还是照样开的。例如我们亲爱的MSN，所以还要加下面这条。
+<p>上面屏蔽了IE的UI，但是内核还是可以访问的，所以在FireFox里面用IE插件可以载入IE的解释系统，外壳则是FireFox的。如果要真正保证安全就使用这个语句。</p>
 
-</div>
+<pre><code>cacls &quot;C:\WINNT\system32\MSHTML.DLL&quot; /P admini:N /E
+</code></pre>
 
-<div>
-
-cacls "C:WINNTsystem32BROWSEUI.DLL" /P admini:N /E
-
-</div>
-
-<div>
-
-   
-这条屏蔽的是IE的界面（UI），所以凡用IE界面的东西全部弹不出来。像刚刚我就差点无法写新的日志。所以用这两条语句重新开启访问权限。
-
-</div>
-
-<div>
-
-cacls "C:WINNTsystem32BROWSEUI.DLL" /P admini:F /E\
-cacls "C:Program FilesInternet Explorer" /P admini:F /E
-
-</div>
-
-<div>
-
-   
-这里要特别说明下，admini在我的机器上指administrator，而我机器上的administrator则是一个连guest权限都没有的空账户，专门用来诱骗攻击的。各种账户的情况大家可以根据自己机器自行修改。
-
-</div>
-
-<div>
-
-   
-上面屏蔽了IE的UI，但是内核还是可以访问的，所以在FireFox里面用IE插件可以载入IE的解释系统，外壳则是FireFox的。如果要真正保证安全就使用这个语句。
-
-</div>
-
-<div>
-
-cacls "C:WINNTsystem32MSHTML.DLL" /P admini:N /E
-
-</div>
-
-<div>
-
-   
-这个语句屏蔽的是IE内核入口，所以下面所有的IE行为全部都会变成下载。有啥网页也全都是下载而不是解释出来显示在网页上。至于解除代码，自己想吧。
-
-</div>
+<p>这个语句屏蔽的是IE内核入口，所以下面所有的IE行为全部都会变成下载。有啥网页也全都是下载而不是解释出来显示在网页上。至于解除代码，自己想吧。</p>
 
         </div>
         

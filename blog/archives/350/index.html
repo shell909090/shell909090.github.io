@@ -112,21 +112,27 @@ ga('send', 'pageview');
           
           
           
-          <p>大家写代码的时候，假如写了一个组件，自身需要开一个线程的。那么多数是在初始化代码中直接写开线程的。如果要求这个类不在初始化代码中添加函数，怎么做？<br />
-    MSDN中有个例子，不是解决这个问题的，但是可以用。<br />
-class DialogWindow{<br />
-public:<br />
-    static short  GetTextHeight(){<br />
-        return 1;<br />
-    };<br />
-private:<br />
-    static short nTextHeight;<br />
-};<br />
-short DialogWindow :: nTextHeight = GetTextHeight();<br />
-int main(){}<br />
-    在这里，把GetTextHeight里面添加上你需要的代码就可以了。<br />
-   
-但是注意，这些代码的运行时间要早于main(准确的说，是在wmainCRTStartup里面运行的_c_init函数)。所以很多自然而然就有的初始化没做，你自己在main里面调用的初始化(例如WSAStartup啦，GDI+初始化啦)更是没做。所以必须严格测试。</p>
+          <p>大家写代码的时候，假如写了一个组件，自身需要开一个线程的。那么多数是在初始化代码中直接写开线程的。如果要求这个类不在初始化代码中添加函数，怎么做？</p>
+
+<p>MSDN中有个例子，不是解决这个问题的，但是可以用。</p>
+
+<pre><code>class DialogWindow{
+public:
+    static short GetTextHeight(){
+        return 1;
+    };
+
+private:
+    static short nTextHeight;
+};
+
+short DialogWindow :: nTextHeight = GetTextHeight();
+int main(){}
+</code></pre>
+
+<p>在这里，把GetTextHeight里面添加上你需要的代码就可以了。</p>
+
+<p>但是注意，这些代码的运行时间要早于main(准确的说，是在wmainCRTStartup里面运行的_c_init函数)。所以很多自然而然就有的初始化没做，你自己在main里面调用的初始化(例如WSAStartup啦，GDI+初始化啦)更是没做。所以必须严格测试。</p>
 
         </div>
         

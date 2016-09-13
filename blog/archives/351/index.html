@@ -112,327 +112,175 @@ ga('send', 'pageview');
           
           
           
-          <div>
+          <p>先给大家看个恐怖东西.</p>
 
-    先给大家看个恐怖东西.
-
-</div>
-
-<div>
-
-class           TIFF2JPEG {\
-  public:\
- static void     newInstance (tstring & strFilepath, HGLOBAL hGlobal);\
- static void     waitObject ();\
-  protected:\
- static ULONG\_PTR initInstance ();\
- static DWORD WINAPI ThreadProc (LPVOID lpParameter);\
-                 TIFF2JPEG ();\
- TIFF2JPEG (tstring & str, HGLOBAL hg);\
- int             Translate ();\
- static ULONG\_PTR gdiplusToken;\
- tstring         strFilepath;\
- HGLOBAL         hGlobal;\
- DWORD           dwSize;\
+<pre><code>class TIFF2JPEG {
+public:
+    static void newInstance (tstring &amp; strFilepath, HGLOBAL hGlobal);
+    static void waitObject ();
+protected:
+    static ULONG_PTR initInstance ();
+    static DWORD WINAPI ThreadProc (LPVOID lpParameter);
+    TIFF2JPEG ();
+    TIFF2JPEG (tstring &amp; str, HGLOBAL hg);
+    int Translate ();
+    static ULONG_PTR gdiplusToken;
+    tstring strFilepath;
+    HGLOBAL hGlobal;
+    DWORD dwSize;
 };
 
-</div>
-
-<div>
-
-int             ImageInMemory = 0;\
-deque &lt; TIFF2JPEG \* &gt;t2j\_list;\
-CRITICAL\_SECTION CriticalSection\_t2j\_list;\
-CLSID           GifCodec;\
-bool            bThreadDelete = 0;\
+int ImageInMemory = 0;
+deque &lt; TIFF2JPEG * &gt;t2j_list;
+CRITICAL_SECTION CriticalSection_t2j_list;
+CLSID GifCodec;
+bool bThreadDelete = 0;
 vector &lt; HANDLE &gt; vThreads;
 
-</div>
-
-<div>
-
-TIFF2JPEG::TIFF2JPEG ()\
+TIFF2JPEG::TIFF2JPEG ()
 {
-
-</div>
-
-<div>
-
 }
 
-</div>
-
-<div>
-
-TIFF2JPEG::TIFF2JPEG (tstring & str, HGLOBAL hg):strFilepath (str)\
-{\
- hGlobal = hg;\
- dwSize = GlobalSize (hGlobal);\
- return;\
+TIFF2JPEG::TIFF2JPEG (tstring &amp; str, HGLOBAL hg):strFilepath (str)
+{
+    hGlobal = hg;
+    dwSize = GlobalSize (hGlobal);
+    return;
 }
 
-</div>
-
-<div>
-
-ULONG\_PTR TIFF2JPEG::initInstance ()\
-{\
- int i;\
- HANDLE hThread;\
- GdiplusStartupInput gdiplusStartupInput;\
- ULONG\_PTR gdiplusToken;\
- GdiplusStartup (&gdiplusToken, &gdiplusStartupInput, NULL);\
- GetCodecClsid (L"image/jpeg", &GifCodec);
-
-</div>
-
-<div>
-
- InitializeCriticalSection (&CriticalSection\_t2j\_list);\
- for (i = 0; i &lt; MAX\_THREAD; i++) {\
-  hThread = CreateThread\
-   (NULL, 0, TIFF2JPEG::ThreadProc, NULL, 0, NULL);\
-  SetThreadPriority (hThread, THREAD\_PRIORITY\_IDLE);\
-  vThreads.push\_back (hThread);\
- }
-
-</div>
-
-<div>
-
- return gdiplusToken;\
+ULONG_PTR TIFF2JPEG::initInstance ()
+{
+    int i;
+    HANDLE hThread;
+    GdiplusStartupInput gdiplusStartupInput;
+    ULONG_PTR gdiplusToken;
+    GdiplusStartup (&amp;gdiplusToken, &amp;gdiplusStartupInput, NULL);
+    GetCodecClsid (L&quot;image/jpeg&quot;, &amp;GifCodec);
+    InitializeCriticalSection (&amp;CriticalSection_t2j_list);
+    for (i = 0; i &lt; MAX_THREAD; i++) {
+        hThread = CreateThread
+            (NULL, 0, TIFF2JPEG::ThreadProc, NULL, 0, NULL);
+        SetThreadPriority (hThread, THREAD_PRIORITY_IDLE);
+        vThreads.push_back (hThread);
+    }
+    return gdiplusToken;
 }
 
-</div>
-
-<div>
-
-void TIFF2JPEG::newInstance (tstring & strFilepath, HGLOBAL hGlobal)\
-{\
- TIFF2JPEG      \*pt2j = new TIFF2JPEG (strFilepath, hGlobal);
-
-</div>
-
-<div>
-
- //可以锁定不严格\
- while (ImageInMemory &gt; MAX\_IMAGE)\
-  Sleep (100);
-
-</div>
-
-<div>
-
- //互斥锁定\
- EnterCriticalSection (&CriticalSection\_t2j\_list);\
- ImageInMemory += pt2j-&gt;dwSize;\
- t2j\_list.push\_back (pt2j);\
- LeaveCriticalSection (&CriticalSection\_t2j\_list);
-
-</div>
-
-<div>
-
- return;\
+void TIFF2JPEG::newInstance (tstring &amp; strFilepath, HGLOBAL hGlobal)
+{
+    TIFF2JPEG *pt2j = new TIFF2JPEG (strFilepath, hGlobal);
+//可以锁定不严格
+    while (ImageInMemory &gt; MAX_IMAGE)
+        Sleep (100);
+//互斥锁定
+    EnterCriticalSection (&amp;CriticalSection_t2j_list);
+    ImageInMemory += pt2j-&gt;dwSize;
+    t2j_list.push_back (pt2j);
+    LeaveCriticalSection (&amp;CriticalSection_t2j_list);
+    return;
 }
 
-</div>
-
-<div>
-
-void TIFF2JPEG::waitObject ()\
-{\
- bThreadDelete = 1;\
- WaitForMultipleObjects (vThreads.size (), &(vThreads\[0\]), TRUE,
-INFINITE);\
- vThreads.clear ();\
- DeleteCriticalSection (&CriticalSection\_t2j\_list);\
- GdiplusShutdown (gdiplusToken);\
- return;\
+void TIFF2JPEG::waitObject ()
+{
+    bThreadDelete = 1;
+    WaitForMultipleObjects (vThreads.size (), &amp;(vThreads[0]), TRUE,
+                INFINITE);
+    vThreads.clear ();
+    DeleteCriticalSection (&amp;CriticalSection_t2j_list);
+    GdiplusShutdown (gdiplusToken);
+    return;
 }
 
-</div>
-
-<div>
-
-DWORD WINAPI TIFF2JPEG::ThreadProc (LPVOID lpParameter)\
-{\
- TIFF2JPEG      \*pt2j;\
- Sleep (1000);
-
-</div>
-
-<div>
-
- while (1) {\
-  //互斥锁定\
-  EnterCriticalSection (&CriticalSection\_t2j\_list);\
-  if (t2j\_list.size () == 0) { //必须严格锁定\
-   LeaveCriticalSection (&CriticalSection\_t2j\_list);\
-   if (bThreadDelete)\
-    break;\
-   Sleep (100);\
-   continue;\
-  }\
-  pt2j = t2j\_list.front ();\
-  t2j\_list.pop\_front ();\
-  LeaveCriticalSection (&CriticalSection\_t2j\_list);
-
-</div>
-
-<div>
-
-  printf ("%0.8X:%sn", GetCurrentThreadId (),\
-    pt2j-&gt;strFilepath.c\_str ());\
-  pt2j-&gt;Translate ();\
-  printf ("%0.8X:endn", GetCurrentThreadId ());
-
-</div>
-
-<div>
-
-  EnterCriticalSection (&CriticalSection\_t2j\_list);\
-  ImageInMemory -= pt2j-&gt;dwSize;\
-  delete pt2j;\
-  LeaveCriticalSection (&CriticalSection\_t2j\_list);\
- }\
- return 0;\
+DWORD WINAPI TIFF2JPEG::ThreadProc (LPVOID lpParameter)
+{
+    TIFF2JPEG *pt2j;
+    Sleep (1000);
+    while (1) {
+//互斥锁定
+        EnterCriticalSection (&amp;CriticalSection_t2j_list);
+        if (t2j_list.size () == 0) {//必须严格锁定
+            LeaveCriticalSection (&amp;CriticalSection_t2j_list);
+            if (bThreadDelete)
+                break;
+            Sleep (100);
+            continue;
+        }
+        pt2j = t2j_list.front ();
+        t2j_list.pop_front ();
+        LeaveCriticalSection (&amp;CriticalSection_t2j_list);
+        printf (&quot;%0.8X:%sn&quot;, GetCurrentThreadId (),
+            pt2j-&gt;strFilepath.c_str ());
+        pt2j-&gt;Translate ();
+        printf (&quot;%0.8X:endn&quot;, GetCurrentThreadId ());
+        EnterCriticalSection (&amp;CriticalSection_t2j_list);
+        ImageInMemory -= pt2j-&gt;dwSize;
+        delete pt2j;
+        LeaveCriticalSection (&amp;CriticalSection_t2j_list);
+    }
+    return 0;
 }
 
-</div>
+int TIFF2JPEG::Translate ()
+{
+    IStream *pis;
+    Image *image;
+    Status stat;
+    wchar_t wsFilePath[0x400];
+    if (CreateStreamOnHGlobal (hGlobal, TRUE, &amp;pis) != S_OK) {
+        ON_ERROR;
+        return -1;
+    }
+    image = Image::FromStream (pis);
+    stat = image-&gt;GetLastStatus ();
+    if (stat != Ok) {
+        ON_ERROR;
+        return -1;
+    }
+    MultiByteToWideChar (CP_ACP, MB_PRECOMPOSED, strFilepath.c_str (),
+                 -1,
+                 wsFilePath, 0x400);
+    image-&gt;Save (wsFilePath, &amp;GifCodec, NULL);
+    delete image;
+    pis-&gt;Release ();
+    return 0;
+}
+</code></pre>
 
-<div>
+<p>这是我的程序里面写的一个组件，用于后台将TIF转换到jpg。前面还一堆很复杂的程序，以后再说。不过这个小小的程序里面用了蛮多复杂东西的。</p>
 
-int TIFF2JPEG::Translate ()\
-{\
- IStream        \*pis;\
- Image          \*image;\
- Status stat;\
- wchar\_t wsFilePath\[0x400\];
+<p>首先是纯工厂模式，注意构造函数，我声明为protected。这样其他类就无法构造新对象，整个类就剩下一个静态方法可以构造新对象。</p>
 
-</div>
+<p>然后是对象静态方法回掉，用一个对象的静态方法作为参数启动线程，然后传入这个类的指针。然后这个线程调用这个指针的某个方法，就相当于多线程启动了这个方法一样。</p>
 
-<div>
+<p>再下面是生产者消费者模型的一个解法，利用临界区锁定保护一个队列。解法没啥新意，但是要写对还是有难度的。</p>
 
- if (CreateStreamOnHGlobal (hGlobal, TRUE, &pis) != S\_OK) {\
-  ON\_ERROR;\
-  return -1;\
- }\
- image = Image::FromStream (pis);\
- stat = image-&gt;GetLastStatus ();\
- if (stat != Ok) {\
-  ON\_ERROR;\
-  return -1;\
- }
+<pre><code>//互斥锁定
+EnterCriticalSection (&amp;CriticalSection_t2j_list);
+if (t2j_list.size () == 0) {//必须严格锁定
+</code></pre>
 
-</div>
+<p>这里不能在互斥外判断是否有处理对象。因为可能两个线程同时发现有对象，但是进去才发现就一个对象。也不能用测试ImageInMemory的方法来判断，因为有逻辑问题(在单线程里面不会出现的逻辑问题)。单线程中，循环完成后，对象处理好，ImageInMemory也对应变更了。可是多线程的时候，一个线程处理对象的时候，ImageInMemory还是有数值的。所以如果用ImageInMemory来判断是否有处理对象，一样出错。</p>
 
-<div>
+<pre><code>while (ImageInMemory &gt; MAX_IMAGE)
+    Sleep (100);
+</code></pre>
 
- MultiByteToWideChar (CP\_ACP, MB\_PRECOMPOSED, strFilepath.c\_str (),
--1,\
-       wsFilePath, 0x400);\
- image-&gt;Save (wsFilePath, &GifCodec, NULL);
+<p>这个则是一个忙等待的技巧，不过这里用问题不大而已。</p>
 
-</div>
+<pre><code>EnterCriticalSection (&amp;CriticalSection_t2j_list);
+ImageInMemory -= pt2j-&gt;dwSize;
+delete pt2j;
+LeaveCriticalSection (&amp;CriticalSection_t2j_list);
+</code></pre>
 
-<div>
+<p>这里就非常有意思了，为什么要这么写？ImageInMemory的-=操作是这么执行的。ImageInMemory读入到寄存器里面，执行减法，然后写入内存。问题在于，读入后是否有人也要修改他的值。</p>
 
- delete image;\
- pis-&gt;Release ();\
- return 0;\
-}\
-   
-这是我的程序里面写的一个组件，用于后台将TIF转换到jpg。前面还一堆很复杂的程序，以后再说。不过这个小小的程序里面用了蛮多复杂东西的。
+<p>bThreadDelete = 1;
+WaitForMultipleObjects (vThreads.size (), &amp;(vThreads[0]), TRUE, INFINITE);</p>
 
-</div>
+<p>这里也有一个小技巧，所有线程都会使用互斥区。但是我要关闭互斥区，怎么办呢？简单方法就是关闭所有线程，只是太暴力了。所以用bThreadDelete标识来让线程自主关闭。然后等待线程的关闭。注意这里传入的时候，用了vector来管理所有的线程列表。我前几天才知道vector可以这么用的。</p>
 
-<div>
-
-   
-首先是纯工厂模式，注意构造函数，我声明为protected。这样其他类就无法构造新对象，整个类就剩下一个静态方法可以构造新对象。
-
-</div>
-
-<div>
-
-   
-然后是对象静态方法回掉，用一个对象的静态方法作为参数启动线程，然后传入这个类的指针。然后这个线程调用这个指针的某个方法，就相当于多线程启动了这个方法一样。
-
-</div>
-
-<div>
-
-   
-再下面是生产者消费者模型的一个解法，利用临界区锁定保护一个队列。解法没啥新意，但是要写对还是有难度的。
-
-</div>
-
-<div>
-
-  //互斥锁定\
-  EnterCriticalSection (&CriticalSection\_t2j\_list);\
-  if (t2j\_list.size () == 0) { //必须严格锁定
-
-</div>
-
-<div>
-
-   
-这里不能在互斥外判断是否有处理对象。因为可能两个线程同时发现有对象，但是进去才发现就一个对象。也不能用测试ImageInMemory的方法来判断，因为有逻辑问题(在单线程里面不会出现的逻辑问题)。单线程中，循环完成后，对象处理好，ImageInMemory也对应变更了。可是多线程的时候，一个线程处理对象的时候，ImageInMemory还是有数值的。所以如果用ImageInMemory来判断是否有处理对象，一样出错。
-
-</div>
-
-<div>
-
- while (ImageInMemory &gt; MAX\_IMAGE)\
-  Sleep (100);
-
-</div>
-
-<div>
-
-    这个则是一个忙等待的技巧，不过这里用问题不大而已。
-
-</div>
-
-<div>
-
-  EnterCriticalSection (&CriticalSection\_t2j\_list);\
-  ImageInMemory -= pt2j-&gt;dwSize;\
-  delete pt2j;\
-  LeaveCriticalSection (&CriticalSection\_t2j\_list);
-
-</div>
-
-<div>
-
-   
-这里就非常有意思了，为什么要这么写？ImageInMemory的-=操作是这么执行的。ImageInMemory读入到寄存器里面，执行减法，然后写入内存。问题在于，读入后是否有人也要修改他的值。
-
-</div>
-
-<div>
-
- bThreadDelete = 1;\
- WaitForMultipleObjects (vThreads.size (), &(vThreads\[0\]), TRUE,
-INFINITE);
-
-</div>
-
-<div>
-
-   
-这里也有一个小技巧，所有线程都会使用互斥区。但是我要关闭互斥区，怎么办呢？简单方法就是关闭所有线程，只是太暴力了。所以用bThreadDelete标识来让线程自主关闭。然后等待线程的关闭。注意这里传入的时候，用了vector来管理所有的线程列表。我前几天才知道vector可以这么用的。
-
-</div>
-
-<div>
-
-   
-还有一个不算技巧的技巧，在main函数前自动运行一段代码和在main后自动运行一段代码。定义一个包装类，然后写一个构造函数，写一个析构函数。在类的cpp里面定义一个这个对象。构造就会自动在main前执行，析构就在main之后。CWinApp就用了这个手法。只是比java的static用法更加烦琐而已。
-
-</div>
+<p>还有一个不算技巧的技巧，在main函数前自动运行一段代码和在main后自动运行一段代码。定义一个包装类，然后写一个构造函数，写一个析构函数。在类的cpp里面定义一个这个对象。构造就会自动在main前执行，析构就在main之后。CWinApp就用了这个手法。只是比java的static用法更加烦琐而已。</p>
 
         </div>
         

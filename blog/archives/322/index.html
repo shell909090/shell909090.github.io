@@ -112,29 +112,37 @@ ga('send', 'pageview');
           
           
           
-          <p>今天弄了一个好玩的东西，<a href="http://www.liquid-reality.de/main/projects/esound">esound4win</a>。<br />
-   
-现在在我的linux和windows上面有一堆穿来穿去的协议，大家看看实现方法，然后头晕不头晕。<br />
-   
-首先是VNC，在windows上面安装RealVNC，启动服务。然后用linux的xvncviewer访问，就可以无缝在linux上面访问windows。<br />
-   
-然后是Xming，这个是<a href="http://cygwin.com/">Cygwin</a>的一个部分。可以在windows上启动X服务，这样我们可以运行一个远程跨平台的图形界面。在我的Debian上面是这样的。<br />
-    用一个tty登录进去，然后<br />
-\$export DISPLAY=192.168.0.X:0<br />
-\$/etc/X11/Xsession &amp;<br />
-   
-这样就完成了完整的一个界面，界面控制是在windows下，但是程序是在linux下跑。和VNC不一样的是，windows的前端在操作的时候，其他的前端可以同步操作。<br />
-   
-再然后是esound，这也是Cygwin的一个部分。可以在windows上开启一个esound
-daemon。方法是运行。<br />
-&gt;esound -tcp -public<br />
-    在linux下面，esound可以跨站传输，方法是设定。<br />
-\$export ESPEAKER=192.168.0.X:16001<br />
-    当然，监听端口可以自行设定。<br />
-    这样，就完成了从linux上将声音输出到windows听的功能。<br />
-<br />
-   
-最后，我讲讲我的实现。我先开了一个VNC穿到windows上操作，然后启动Xming。按F8退出到本地，用Ctrl+Atl+F2切换到tty登录，并且连接上Xming的前台X。然后Atl+F7返回GUI，F8返回VNC全屏模式。在Xming里面，开了个term。export了参数后启动xmms，并且切换到esound输出。再在windows下面运行esound4win，插上耳机。最后我点了下VNC中的Xming中的xmms的播放，声音出来了——世界多么奇妙？</p>
+          <p>今天弄了一个好玩的东西，<a href="http://www.liquid-reality.de/main/projects/esound">esound4win</a>。</p>
+
+<p>现在在我的linux和windows上面有一堆穿来穿去的协议，大家看看实现方法，然后头晕不头晕。</p>
+
+<p>首先是VNC，在windows上面安装RealVNC，启动服务。然后用linux的xvncviewer访问，就可以无缝在linux上面访问windows。</p>
+
+<p>然后是Xming，这个是<a href="http://cygwin.com/">Cygwin</a>的一个部分。可以在windows上启动X服务，这样我们可以运行一个远程跨平台的图形界面。在我的Debian上面是这样的。</p>
+
+<p>用一个tty登录进去，然后</p>
+
+<pre><code>$export DISPLAY=192.168.0.X:0
+$/etc/X11/Xsession &amp;
+</code></pre>
+
+<p>这样就完成了完整的一个界面，界面控制是在windows下，但是程序是在linux下跑。和VNC不一样的是，windows的前端在操作的时候，其他的前端可以同步操作。</p>
+
+<p>再然后是esound，这也是Cygwin的一个部分。可以在windows上开启一个esound daemon。方法是运行。</p>
+
+<pre><code>esound -tcp -public
+</code></pre>
+
+<p>在linux下面，esound可以跨站传输，方法是设定。</p>
+
+<pre><code>$export ESPEAKER=192.168.0.X:16001
+</code></pre>
+
+<p>当然，监听端口可以自行设定。</p>
+
+<p>这样，就完成了从linux上将声音输出到windows听的功能。</p>
+
+<p>最后，我讲讲我的实现。我先开了一个VNC穿到windows上操作，然后启动Xming。按F8退出到本地，用Ctrl+Atl+F2切换到tty登录，并且连接上Xming的前台X。然后Atl+F7返回GUI，F8返回VNC全屏模式。在Xming里面，开了个term。export了参数后启动xmms，并且切换到esound输出。再在windows下面运行esound4win，插上耳机。最后我点了下VNC中的Xming中的xmms的播放，声音出来了——世界多么奇妙？</p>
 
         </div>
         

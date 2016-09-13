@@ -20,8 +20,7 @@
 
 &lt;h1 id=&#34;vpn的原始模式&#34;&gt;vpn的原始模式&lt;/h1&gt;
 
-&lt;p&gt;vpn的最简模型，相当于在两台机器上插一块虚拟网卡，然后中间连一根虚拟网线连通。因此vpn才得名vpn(virtual
-private network)。&lt;/p&gt;
+&lt;p&gt;vpn的最简模型，相当于在两台机器上插一块虚拟网卡，然后中间连一根虚拟网线连通。因此vpn才得名vpn(virtual private network)。&lt;/p&gt;
 
 &lt;p&gt;其复杂之处在于，这块虚拟网卡如何配置网络，和别的网卡是什么关系。再加上多个节点间如何通讯。种种都够新手喝一壶。&lt;/p&gt;
 
@@ -61,27 +60,43 @@ vpn，在启动脚本中指定加入这个br。&lt;/p&gt;
 
 &lt;p&gt;服务器配置:&lt;/p&gt;
 
-&lt;p&gt;port [port num] proto udp ;
-参考我上一篇&lt;a href=&#34;http://shell909090.org/blog/archives/2722&#34;&gt;vpn不要走tcp协议&lt;/a&gt;
-dev tap ca ca.crt cert server.crt key server.key server-bridge
-172.19.0.16 255.255.255.0 172.19.0.17 172.19.0.31 ; 或者可以采用这句 ;
-server 172.19.0.16 255.255.255.240 ;
-注意掩码实际上等于/28，做掩码运算后，这段地址和上面的保留地址重合
-script-security 2 up vpn-start ; 建议使用绝对路径，避免版本坑 down
-vpn-stop&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;port [port num]
+proto udp
+; 参考我上一篇[vpn不要走tcp协议](http://shell909090.org/blog/archives/2722)
+dev tap
+ca ca.crt
+cert server.crt
+key server.key
+server-bridge 172.19.0.16 255.255.255.0 172.19.0.17 172.19.0.31
+; 或者可以采用这句
+; server 172.19.0.16 255.255.255.240
+; 注意掩码实际上等于/28，做掩码运算后，这段地址和上面的保留地址重合
+script-security 2
+up vpn-start
+; 建议使用绝对路径，避免版本坑 down
+vpn-stop
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;vpn-start:&lt;/p&gt;
 
-&lt;p&gt;brctl add br0 \$dev&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;brctl add br0 $dev
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;vpn-stop:&lt;/p&gt;
 
-&lt;p&gt;brctl del br0 \$dev&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;brctl del br0 $dev
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;客户端配置:&lt;/p&gt;
 
-&lt;p&gt;client dev tap proto udp remote [server ip] [port num] ca ca.crt
-cert client.crt key client.key&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;client
+dev tap
+proto udp
+remote [server ip] [port num]
+ca ca.crt
+cert client.crt
+key client.key
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;测试:&lt;/p&gt;
 
@@ -93,8 +108,7 @@ cert client.crt key client.key&lt;/p&gt;
 
 &lt;p&gt;dh和tls-auth可以配，个人每次都是配的。但是懒的话也可以不搞。&lt;/p&gt;
 
-&lt;p&gt;user nobody和group
-nobody强烈建议配，注意debian上是nogroup。这个配置可以将openvpn的执行权搞低，如果openssl再出什么执行任意代码漏洞，那么问题就不是立刻致命。&lt;/p&gt;
+&lt;p&gt;user nobody和group nobody强烈建议配，注意debian上是nogroup。这个配置可以将openvpn的执行权搞低，如果openssl再出什么执行任意代码漏洞，那么问题就不是立刻致命。&lt;/p&gt;
 
 &lt;p&gt;注意使用了user和group后，要配置persist-key和persist-tun，避免出错。&lt;/p&gt;
 
@@ -122,8 +136,7 @@ nobody强烈建议配，注意debian上是nogroup。这个配置可以将openvpn
 
 &lt;p&gt;非常灵活，几乎无法总结。简单说说从外网拨入内网，打通两者间互访的配法吧。&lt;/p&gt;
 
-&lt;p&gt;配置一个tun
-vpn，连接到vpn网关上。配置中下发内网网段，走vpn。内网下发vpn路由，指向vpn网关。&lt;/p&gt;
+&lt;p&gt;配置一个tun vpn，连接到vpn网关上。配置中下发内网网段，走vpn。内网下发vpn路由，指向vpn网关。&lt;/p&gt;
 
 &lt;h2 id=&#34;example-1&#34;&gt;example&lt;/h2&gt;
 
@@ -131,31 +144,45 @@ vpn，连接到vpn网关上。配置中下发内网网段，走vpn。内网下�
 
 &lt;p&gt;服务器配置:&lt;/p&gt;
 
-&lt;p&gt;port [port num] proto udp dev tun ca ca.crt cert server.crt key
-server.key server 172.19.1.0 255.255.255.0 push &amp;ldquo;route 172.19.0.0
-255.255.255.0&amp;rdquo;&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;port [port num]
+proto udp
+dev tun
+ca ca.crt
+cert server.crt
+key server.key
+server 172.19.1.0 255.255.255.0
+push &amp;quot;route 172.19.0.0 255.255.255.0&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;在服务器上一定要打开:&lt;/p&gt;
 
-&lt;p&gt;sysctl -w &amp;lsquo;net.ipv4.ip_forward=1&amp;rsquo;&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;sysctl -w &#39;net.ipv4.ip_forward=1&#39;
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;在所有服务器上执行/在网关上执行:&lt;/p&gt;
 
-&lt;p&gt;ip route add 172.19.1.0/24 via 172.19.0.100&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;ip route add 172.19.1.0/24 via 172.19.0.100
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;或&lt;/p&gt;
 
-&lt;p&gt;route add -net 172.19.1.0 netmask 255.255.255.0 gateway 172.19.0.100&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;route add -net 172.19.1.0 netmask 255.255.255.0 gateway 172.19.0.100
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;客户端配置:&lt;/p&gt;
 
-&lt;p&gt;client dev tun proto udp remote [server ip] [port num] ca ca.crt
-cert client.crt key client.key&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;client
+dev tun
+proto udp
+remote [server ip] [port num]
+ca ca.crt
+cert client.crt
+key client.key
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;测试:&lt;/p&gt;
 
-&lt;p&gt;在拨入设备上，使用mtr
-172.19.0.1(内网网关)，来查看是否通过172.19.1.1和172.19.0.1。如果都到了，说明整个配置成功。否则看是否到vpn网关，再在网关上抓包。&lt;/p&gt;
+&lt;p&gt;在拨入设备上，使用mtr 172.19.0.1(内网网关)，来查看是否通过172.19.1.1和172.19.0.1。如果都到了，说明整个配置成功。否则看是否到vpn网关，再在网关上抓包。&lt;/p&gt;
 
 &lt;h1 id=&#34;多节点通过虚拟骨干网打通&#34;&gt;多节点通过虚拟骨干网打通&lt;/h1&gt;
 
@@ -272,69 +299,25 @@ allowedClients = 192.168.1.0/24
       <pubDate>Mon, 03 Sep 2012 14:28:49 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2236/</guid>
-      <description>&lt;p&gt;昨天翻了一下vpn的相关法律，结果是——没有。
-&lt;div&gt;&lt;/p&gt;
+      <description>&lt;p&gt;昨天翻了一下vpn的相关法律，结果是——没有。&lt;/p&gt;
 
-&lt;p&gt;   
-唯一一部接近的，还是《境外组织和个人在华使用密码产品管理办法》。但是这实际上有两个问题。&lt;/p&gt;
+&lt;p&gt;唯一一部接近的，还是《境外组织和个人在华使用密码产品管理办法》。但是这实际上有两个问题。&lt;/p&gt;
 
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
+&lt;p&gt;首先，办法对含密码产品的限制太过严格，而现在的密码学衍生领域又铺天盖地。这导致实际上有办法没管法。例如我们公司的产品，为了升级，就在系统里面放置了升级系统。为了防止升级系统升入非我们的代码破坏系统，又要对升级系统做签名验证。这实际上就一脚跨到了密码产品的范畴里面去。不过幸好，我们的产品本身就是涉密产品，有公安部的认证。但是其他需要在产品中包含了安全系统的产品怎么办？别的不说，你想想有多少软件链接了openssl？哪怕是python这种东西，都是链接着openssl的。从某种意义上说，使用python也违法。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;其次，办法只限制使用密码产品，可一字没提到提供密码服务和帐号。大家知道，vpn实际上是帐号和服务，至于使用这些帐号和服务的具体“产品”，那是windows，ssh客户端这种东西。而windows是经过国家认证的。退一步说，即使没有，也是使用者和软件发行者需要对此事负责，而管不到账户提供者头上。&lt;/p&gt;
 
-   
-首先，办法对含密码产品的限制太过严格，而现在的密码学衍生领域又铺天盖地。这导致实际上有办法没管法。例如我们公司的产品，为了升级，就在系统里面放置了升级系统。为了防止升级系统升入非我们的代码破坏系统，又要对升级系统做签名验证。这实际上就一脚跨到了密码产品的范畴里面去。不过幸好，我们的产品本身就是涉密产品，有公安部的认证。但是其他需要在产品中包含了安全系统的产品怎么办？别的不说，你想想有多少软件链接了openssl？哪怕是python这种东西，都是链接着openssl的。从某种意义上说，使用python也违法。
+&lt;p&gt;另一个有关的，是《互联网信息服务管理办法》。可办法开宗明义第一句，是在中国境内。要提供vpn服务，你的服务器必须是境外的，境内没意义。但是相应的，你不能在中国境内进行收费，否则就算违法。然而，如果免费帐号漫天发，这条法律依据也是靠不住的。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;OK，我们常说中国立法远远落后于时代，我们又找到了一个例子。实际上，你在看中国法律的时候，往往大疑不解，为什么会有这种那种狗屁规定？那是因为那些法律的制定年代往往都是上个世纪。例如地图法规定，私自使用精度在一定范围以下（我记得是100米）的地图是违法的。我找不到这条的出处，不过测绘法是上个世纪颁布的。大概颁布测绘法的人不会想到，在短短15年后，就会有大量个人手持的高精度（&amp;lt;10米）定位工具出现。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;至于互联网，托这几年比较敏感的福，互联网立法始终是重中之重。然而，大部分立法还是针对的web而言的。其中有条规定，服务提供商必须进行备案，然后在网站上公布其备案号，目的是方便公安机关管理。问题是，目前很多网站是没有web界面的，直接通过手机使用。有些网络服务连客户端界面都没有，例如vpn，你说怎么提供？服务商倒是不会介意弄个网站，把备案号贴出来。问题是公安机关怎么知道提供服务的供应商网站是哪个？&lt;/p&gt;
 
-   
-其次，办法只限制使用密码产品，可一字没提到提供密码服务和帐号。大家知道，vpn实际上是帐号和服务，至于使用这些帐号和服务的具体“产品”，那是windows，ssh客户端这种东西。而windows是经过国家认证的。退一步说，即使没有，也是使用者和软件发行者需要对此事负责，而管不到账户提供者头上。
+&lt;p&gt;再说法理基础吧，不仅是中国，在世界上，对于网络和程序这块的法理都是一塌糊涂。我们首先说一个简单问题，什么叫做引用，什么叫做使用？&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;之所以在GPL之外还有个LGPL，就是因为，如果你在编译时直接使用了某个GPL库，就会被传染这个库的授权。为什么？这主要是针对C语言而言的。因为C在编译时，需要引用对方的.h文件。而对方的.h文件是基于GPL的，这就构成了引用。而针对python程序，你可以很容易的反射和动态加载，这又是否构成引用呢？如果编译时，使用自己反推对方头文件构成的.h文件，是否需要被传染授权呢？又例如，在kernel中的license中，明确说明了内核调用不属于引用。然而如果在程序内以变量形态包含了firmware，又是否算是引用呢？别的我不清楚，debian是严禁这类软件进入仓库的。&lt;/p&gt;
 
-&lt;div&gt;
-
-   
-另一个有关的，是《互联网信息服务管理办法》。可办法开宗明义第一句，是在中国境内。要提供vpn服务，你的服务器必须是境外的，境内没意义。但是相应的，你不能在中国境内进行收费，否则就算违法。然而，如果免费帐号漫天发，这条法律依据也是靠不住的。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-OK，我们常说中国立法远远落后于时代，我们又找到了一个例子。实际上，你在看中国法律的时候，往往大疑不解，为什么会有这种那种狗屁规定？那是因为那些法律的制定年代往往都是上个世纪。例如地图法规定，私自使用精度在一定范围以下（我记得是100米）的地图是违法的。我找不到这条的出处，不过测绘法是上个世纪颁布的。大概颁布测绘法的人不会想到，在短短15年后，就会有大量个人手持的高精度（&amp;lt;10米）定位工具出现。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-至于互联网，托这几年比较敏感的福，互联网立法始终是重中之重。然而，大部分立法还是针对的web而言的。其中有条规定，服务提供商必须进行备案，然后在网站上公布其备案号，目的是方便公安机关管理。问题是，目前很多网站是没有web界面的，直接通过手机使用。有些网络服务连客户端界面都没有，例如vpn，你说怎么提供？服务商倒是不会介意弄个网站，把备案号贴出来。问题是公安机关怎么知道提供服务的供应商网站是哪个？
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-再说法理基础吧，不仅是中国，在世界上，对于网络和程序这块的法理都是一塌糊涂。我们首先说一个简单问题，什么叫做引用，什么叫做使用？
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-之所以在GPL之外还有个LGPL，就是因为，如果你在编译时直接使用了某个GPL库，就会被传染这个库的授权。为什么？这主要是针对C语言而言的。因为C在编译时，需要引用对方的.h文件。而对方的.h文件是基于GPL的，这就构成了引用。而针对python程序，你可以很容易的反射和动态加载，这又是否构成引用呢？如果编译时，使用自己反推对方头文件构成的.h文件，是否需要被传染授权呢？又例如，在kernel中的license中，明确说明了内核调用不属于引用。然而如果在程序内以变量形态包含了firmware，又是否算是引用呢？别的我不清楚，debian是严禁这类软件进入仓库的。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-当然，这些问题对于欧美法系不是太大问题，因为一切都是来自判例，判例构成了法律。对于新出现的问题，只要诉讼，就等于在进行立法。然而对大陆法系而言，这就是个噩梦了。
-
-&lt;/div&gt;
+&lt;p&gt;当然，这些问题对于欧美法系不是太大问题，因为一切都是来自判例，判例构成了法律。对于新出现的问题，只要诉讼，就等于在进行立法。然而对大陆法系而言，这就是个噩梦了。&lt;/p&gt;
 </description>
     </item>
     
@@ -344,216 +327,69 @@ OK，我们常说中国立法远远落后于时代，我们又找到了一个例
       <pubDate>Mon, 13 Aug 2012 02:46:03 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2223/</guid>
-      <description>&lt;div&gt;
+      <description>&lt;p&gt;提供pptp, l2tp, openvpn, ssh,&lt;/p&gt;
 
-    提供pptp, l2tp, openvpn, ssh,
-socks5五种协议支持。如果需要的人比较多，其他协议也可以逐步实验，例如iodine。其中pptp,l2tp和socks5依赖于客户端和网络环境，因此不能保证每个点每次都连接正常，请自行测试，有问题联系我，看看是否是已知问题。
+&lt;p&gt;socks5五种协议支持。如果需要的人比较多，其他协议也可以逐步实验，例如iodine。其中pptp,l2tp和socks5依赖于客户端和网络环境，因此不能保证每个点每次都连接正常，请自行测试，有问题联系我，看看是否是已知问题。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;美国机房（应该是西海岸，不过我不确定），不限速，不限流量。原则上一个vps大概放10个vpn帐号，保持成本就行，不会太慢。但是不得使用p2p，也请不要超过12小时连续满速使用vpn。如果发现连续满速使用造成其他用户投诉，暂封帐号，您来找我。只要不是病毒造成的，您继续用。如果发现使用p2p，头次警告，第二次封号不退款。（因为被版权部门发现使用p2p会造成vps被封，所以，抱歉）&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;一个帐号10元一月，100一年，试用期一周。你可以先联系我开账户，然后试用一周，一周内你可以实验账户和各种环境的匹配性。一周后付款（这一周也是计入费用的），支持支付宝，银行汇款，面付（限上海）。&lt;/p&gt;
 
-   
-美国机房（应该是西海岸，不过我不确定），不限速，不限流量。原则上一个vps大概放10个vpn帐号，保持成本就行，不会太慢。但是不得使用p2p，也请不要超过12小时连续满速使用vpn。如果发现连续满速使用造成其他用户投诉，暂封帐号，您来找我。只要不是病毒造成的，您继续用。如果发现使用p2p，头次警告，第二次封号不退款。（因为被版权部门发现使用p2p会造成vps被封，所以，抱歉）
+&lt;p&gt;如果碰到问题，邮件联系我。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;开通账户：&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;你需要给我你的用户名和密码，以及需要开通的服务。如果开通ssh，最好由你来生成密钥，并给我key。如果你懒得给，那么就由我来随机生成了。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;完成后，我会邮件给你你的用户名，密码（如果可能的话，key），服务器设定。&lt;/p&gt;
 
-   
-一个帐号10元一月，100一年，试用期一周。你可以先联系我开账户，然后试用一周，一周内你可以实验账户和各种环境的匹配性。一周后付款（这一周也是计入费用的），支持支付宝，银行汇款，面付（限上海）。
+&lt;p&gt;一般来说，android手机推荐pptp/l2tp，ios系统只能用l2tp。windows和linux推荐openvpn，在外使用时推荐ssh。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;注意，无论用哪种vpn方式，必须将你的dns修改为境外dns，例如8.8.8.8。ssh的话需要客户端支持从socks中进行地址解析。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;pptp设定：&lt;/p&gt;
 
-    如果碰到问题，邮件联系我。
+&lt;p&gt;&lt;a href=&#34;http://www.maizidi.com/howto-configure-windows-xp-win7-pptp-l2tp-client/&#34;&gt;http://www.maizidi.com/howto-configure-windows-xp-win7-pptp-l2tp-client/&lt;/a&gt;&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;pptp和l2tp协议需要你的路由器支持。普通的tplink设定中就有是否开启pptp协议通过的选项，请&lt;strong&gt;务必打开&lt;/strong&gt;这个选项，否则无法工作。&lt;/p&gt;
 
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
+&lt;p&gt;如果你的网络接入供应商封锁pptp，那么也是无法正常使用的。你可以再试试l2tp。如果也不行，那么请换别的协议。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;ssh：&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;ssh一般用于pptp和l2tp都无法穿越的地方，例如机场或者酒店的网络。具体设定可以看这里：&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;&lt;a href=&#34;http://hi.baidu.com/x%CE%B4%D6%AA%B7%E7x/blog/item/6e6eaf1ff55f641a203f2efc.html&#34;&gt;http://hi.baidu.com/x%CE%B4%D6%AA%B7%E7x/blog/item/6e6eaf1ff55f641a203f2efc.html&lt;/a&gt;&lt;/p&gt;
 
-开通账户：
+&lt;p&gt;autoproxy的目的，是为了自动检测域名是否需要进行代理。如果你不需要这一检测，可以不用autoproxy。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;在身份验证选项那里，应当有一项是使用key。你需要将自己的key在user keypair&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;manager里面导入(import)，最后再使用。如果是我邮件给你，你需要将key的内容保存为一个文本文件。&lt;/p&gt;
 
-你需要给我你的用户名和密码，以及需要开通的服务。如果开通ssh，最好由你来生成密钥，并给我key。如果你懒得给，那么就由我来随机生成了。
+&lt;p&gt;openvpn：&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;&lt;a href=&#34;http://blog.felixc.at/2010/11/openvpn-win/&#34;&gt;http://blog.felixc.at/2010/11/openvpn-win/&lt;/a&gt;&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;我会为你准备好配置，可以直接使用。但是&lt;/p&gt;
 
-完成后，我会邮件给你你的用户名，密码（如果可能的话，key），服务器设定。
+&lt;p&gt;，你必须在这里下载，不要直接去首页下载，那是openvpn官方提供的服务的定制版：&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;&lt;a href=&#34;http://openvpn.net/index.php/open-source/downloads.html&#34;&gt;http://openvpn.net/index.php/open-source/downloads.html&lt;/a&gt;&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;配置文件默认是.conf，在windows下也许需要修改为.ovpn。默认是会打开智能路由的，这会导致加载速度比较慢。如果是win7，你需要以管理员身份运行openvpn-gui-1.0.3.exe，否则会出现权限问题。&lt;/p&gt;
 
-一般来说，android手机推荐pptp/l2tp，ios系统只能用l2tp。windows和linux推荐openvpn，在外使用时推荐ssh。
+&lt;p&gt;MacOsX的教程在这里：&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;&lt;a href=&#34;http://cn.giganews.com/vyprvpn/setup/mac/openvpn.html&#34;&gt;http://cn.giganews.com/vyprvpn/setup/mac/openvpn.html&lt;/a&gt;&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;你可以在这里下载：&lt;/p&gt;
 
-注意，无论用哪种vpn方式，必须将你的dns修改为境外dns，例如8.8.8.8。ssh的话需要客户端支持从socks中进行地址解析。
+&lt;p&gt;&lt;a href=&#34;http://code.google.com/p/tunnelblick/&#34;&gt;http://code.google.com/p/tunnelblick/&lt;/a&gt;&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;至于linux用户，你直接sudo openvpn xxx.conf就好了，没有任何难处。&lt;/p&gt;
 
-&lt;div&gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-pptp设定：
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;div&gt;
-
-&lt;http://www.maizidi.com/howto-configure-windows-xp-win7-pptp-l2tp-client/&gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-pptp和l2tp协议需要你的路由器支持。普通的tplink设定中就有是否开启pptp协议通过的选项，请\*\*务必打开\*\*这个选项，否则无法工作。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-如果你的网络接入供应商封锁pptp，那么也是无法正常使用的。你可以再试试l2tp。如果也不行，那么请换别的协议。
-
-&lt;/div&gt;
-
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
-
-&lt;div&gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-ssh：
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-ssh一般用于pptp和l2tp都无法穿越的地方，例如机场或者酒店的网络。具体设定可以看这里：
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;div&gt;
-
-&lt;http://hi.baidu.com/x%CE%B4%D6%AA%B7%E7x/blog/item/6e6eaf1ff55f641a203f2efc.html&gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-autoproxy的目的，是为了自动检测域名是否需要进行代理。如果你不需要这一检测，可以不用autoproxy。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-在身份验证选项那里，应当有一项是使用key。你需要将自己的key在user keypair
-manager里面导入(import)，最后再使用。如果是我邮件给你，你需要将key的内容保存为一个文本文件。
-
-&lt;/div&gt;
-
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
-
-&lt;div&gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-openvpn：
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;http://blog.felixc.at/2010/11/openvpn-win/&gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-我会为你准备好配置，可以直接使用。但是
-，你必须在这里下载，不要直接去首页下载，那是openvpn官方提供的服务的定制版：
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;div&gt;
-
-&lt;http://openvpn.net/index.php/open-source/downloads.html&gt;
-
-&lt;/div&gt;
-
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
-
-&lt;div&gt;
-
-配置文件默认是.conf，在windows下也许需要修改为.ovpn。默认是会打开智能路由的，这会导致加载速度比较慢。如果是win7，你需要以管理员身份运行openvpn-gui-1.0.3.exe，否则会出现权限问题。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-MacOsX的教程在这里：
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;http://cn.giganews.com/vyprvpn/setup/mac/openvpn.html&gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-你可以在这里下载：
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;http://code.google.com/p/tunnelblick/&gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-至于linux用户，你直接sudo openvpn xxx.conf就好了，没有任何难处。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-另外，最近gfw开始升级。openvpn的稳定性会比原来差很多，即使连接上，也可能丢包。这点对不同的接入和不同的机房情况不一样，我们还在进一步确认中。如果你有类似困难，可以向我反映。
-
-&lt;/div&gt;
+&lt;p&gt;另外，最近gfw开始升级。openvpn的稳定性会比原来差很多，即使连接上，也可能丢包。这点对不同的接入和不同的机房情况不一样，我们还在进一步确认中。如果你有类似困难，可以向我反映。&lt;/p&gt;
 </description>
     </item>
     
@@ -563,173 +399,52 @@ MacOsX的教程在这里：
       <pubDate>Fri, 04 May 2012 02:09:39 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2162/</guid>
-      <description>&lt;div&gt;
+      <description>&lt;p&gt;目前有很多服务，其实我们都是按照非正规用法在用的。例如github，看上去像是个源码托管服务，我们拿来当blog用。GAE，看上去像是个代码托管服务，我们当翻墙工具用。空间，常规都是发布应用的，我们也拿来翻墙。&lt;/p&gt;
 
-   
-目前有很多服务，其实我们都是按照非正规用法在用的。例如github，看上去像是个源码托管服务，我们拿来当blog用。GAE，看上去像是个代码托管服务，我们当翻墙工具用。空间，常规都是发布应用的，我们也拿来翻墙。
+&lt;p&gt;对服务的非正规用法，我们首先把这个命题分几个类。一类是服务本身没有对用法做出特殊假定，但是你的用法和传统用法相违背，例如VPS传统是作为私有主机用的，用于发布网站。但是天朝人民经常用VPS当作云存储，或者是VPN。作为这类用途，我觉得是没有任何问题的，服务商本身就没有限定你的应用类型。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;第二类，是服务商默许或者半鼓励你作为特殊用途应用。例如github并不反对你用他作为blog。这也没问题。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;第三类，服务商明确反对的用途。例如利用空间来翻墙。一来ssh流量并不计入你的流量限额中，二来长期使用空间翻墙会导致空间的服务器地址在中国被封。前者影响成本，后者影响销售。因此，很多空间商都封锁了ssh的跳板功能，例如DreamHost。&lt;/p&gt;
 
-   
-对服务的非正规用法，我们首先把这个命题分几个类。一类是服务本身没有对用法做出特殊假定，但是你的用法和传统用法相违背，例如VPS传统是作为私有主机用的，用于发布网站。但是天朝人民经常用VPS当作云存储，或者是VPN。作为这类用途，我觉得是没有任何问题的，服务商本身就没有限定你的应用类型。
+&lt;p&gt;也许有人会骂，空间商为什么要阻止ssh，这是对自由人权的破坏什么的。我觉得这压根是骂错人了。如果你无法自由浏览你想要浏览的网页，你需要骂的是阻止你访问的人，而不是别人。空间商既没有封你，也不是帮凶。通过对人有害的方法获得自己想要的利益，别人阻止你还骂人，这是流氓嘴脸。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;第四类，服务商没有明确回应，他们可能对此一无所知。这种情况最复杂，也最值得讨论。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;无论空间商默许还是反对，我们都可以看作是一个附加合同。这种事情你同意就接着用，不同意就换家人，市场经济大家好聚好散。但是服务商没有明确回应，那么事情就比较暧昧。我倾向于将事情分为两个阶段，或者类型。一类是影响较小，或者刚刚出现，服务商有理由不知道。这种阶段下，该怎么用就怎么用。直到服务商有表态为止。另一类是我们有理由相信服务商知道这类用法。在这种阶段下，你不妨参照第二类。&lt;/p&gt;
 
-   
-第二类，是服务商默许或者半鼓励你作为特殊用途应用。例如github并不反对你用他作为blog。这也没问题。
+&lt;p&gt;当然，这里顺便说另外一个话题，就是很多人对翻墙的要求是——免费。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;我去阿，你在中国网络上玩多了，啥都要免费，有没有写信给电信要求宽带接入免费阿。你要是真没钱，要么就不用，要么就学学怎么让自己出去。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;天下的特权有几类的，一种是你通过努力来获得某种特权，一种是你付钱让别人帮你获得这种特权，一种是左求右拜，借到某种特权。这特权还不稳固，有点问题就让人收了回去，因此不得不小心翼翼，缩着尾巴做人。且不提现实中有个头痛脑热，行政手续，求爷爷告奶奶的诸多无奈。那毕竟很多时候还是不得以而为之。网络上凡是有点大小P事，全是“360度冰天雪地裸体跪求”，就这种人还自诩为“不食嗟来之食”之后，实在让人叹息。&lt;/p&gt;
 
-   
-第三类，服务商明确反对的用途。例如利用空间来翻墙。一来ssh流量并不计入你的流量限额中，二来长期使用空间翻墙会导致空间的服务器地址在中国被封。前者影响成本，后者影响销售。因此，很多空间商都封锁了ssh的跳板功能，例如DreamHost。
+&lt;p&gt;墙的存在意义，就是要“拦截大多数”。要稳定翻墙，基本就两种途径。一者是牛，自己付出辛苦，学会了整个过程，从而翻墙出去。或者你付钱，弄到了翻墙帐号，从而翻墙出去，这也是一种。这两者都算的上少数，剩下的就是绝对的大多数。既不付钱，也不想付出辛苦，张口就求各种方法的人不知有没有想过，当某种方法会的人多了，墙自然就会把这种方法连根铲掉。法子不能用了，瞬间破口大骂给法子的人，不知道脑子里转的是什么逻辑——或者是，他们其实想过，只是：&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;ol&gt;
+&lt;li&gt;在中国，只要考虑三天后的事情，三个月后的事情谁说的准呢。&lt;/li&gt;
+&lt;li&gt;在网络上求爷爷告奶奶也是一种辛苦阿。&lt;/li&gt;
+&lt;/ol&gt;
 
-&lt;div&gt;
+&lt;p&gt;——我已经连叹息都发不出了。&lt;/p&gt;
 
-   
-也许有人会骂，空间商为什么要阻止ssh，这是对自由人权的破坏什么的。我觉得这压根是骂错人了。如果你无法自由浏览你想要浏览的网页，你需要骂的是阻止你访问的人，而不是别人。空间商既没有封你，也不是帮凶。通过对人有害的方法获得自己想要的利益，别人阻止你还骂人，这是流氓嘴脸。
+&lt;p&gt;最后一个话题，如果你的某种对服务的应用，对其他人会产生伤害怎么办？例如，你用某个空间翻墙，这个空间IP就可能被墙。你用GAE翻墙，GAE就会被墙。你在网站上发表很合理的言论，自己没事，站长进去了。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;首先请允许我就最后一个例子向中国的有关部门表示无比的XXX。。。就这精确度还好意思指责人家老美的导弹？&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;我们先说最后一个。很多人往往鄙视中国的网站管理者，我写个无比正常的内容你都给我删了。实际上，在一切不正常都当作正常的国度，再正常的内容都可能是不正常的。我是挺同情网站的管理者的，删把，道义上挺站不住的，不删吧，自己进去了。某种意义上说，开网站是为了赚两个钱顺便提供娱乐的(当然，很多人是反过来的)，而不是为你表达言论挺身而出的——真是这个目的开的网站现在站长的骨头都在长草了——从这个意义看，删，不是恶。如果你要指责，应当指责的是这个制度和产生这个制度的原因。&lt;/p&gt;
 
-   
-第四类，服务商没有明确回应，他们可能对此一无所知。这种情况最复杂，也最值得讨论。
+&lt;p&gt;但是，我又要但是了，这也有个度。删本身不是恶，但是捕风捉影，删了不说，不删，偷偷让别人看不到，这就沦为不道德了。只是在中国，各种事情交错纠缠之下，人人皆提心吊胆提防别人，往往事情就会走了样。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;这里插一个前两天的段子。魔都地铁是要安检的，大家知道。坐地铁的经常听说保安和你争执两句就躺地上装死讹钱的例子。前两天过地铁的时候，把包拿给保安检查。保安摸到我的饭盒，说，这是啥阿。我刚要说话，旁边保安示意放行，小声说，摸坏了你赔不起。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;——那地铁安检的结果就不言自明了。&lt;/p&gt;
 
-   
-无论空间商默许还是反对，我们都可以看作是一个附加合同。这种事情你同意就接着用，不同意就换家人，市场经济大家好聚好散。但是服务商没有明确回应，那么事情就比较暧昧。我倾向于将事情分为两个阶段，或者类型。一类是影响较小，或者刚刚出现，服务商有理由不知道。这种阶段下，该怎么用就怎么用。直到服务商有表态为止。另一类是我们有理由相信服务商知道这类用法。在这种阶段下，你不妨参照第二类。
+&lt;p&gt;因此，在层层把关的网络审查中，往往下层执行的东西和上层想的差了十万八千里。其距离大概就和客户心里的网站和项目经理笔下的网站和工程师手下的代码的区别差不多。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;当然，即便结论如此，我还是管我自己。我的blog都是在自己的域名下面——结果被封，也是自己的选择。如果发到其他网站，能不能留，留多久，就看别人的意思了。&lt;/p&gt;
 
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    当然，这里顺便说另外一个话题，就是很多人对翻墙的要求是——免费。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-我去阿，你在中国网络上玩多了，啥都要免费，有没有写信给电信要求宽带接入免费阿。你要是真没钱，要么就不用，要么就学学怎么让自己出去。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-天下的特权有几类的，一种是你通过努力来获得某种特权，一种是你付钱让别人帮你获得这种特权，一种是左求右拜，借到某种特权。这特权还不稳固，有点问题就让人收了回去，因此不得不小心翼翼，缩着尾巴做人。且不提现实中有个头痛脑热，行政手续，求爷爷告奶奶的诸多无奈。那毕竟很多时候还是不得以而为之。网络上凡是有点大小P事，全是“360度冰天雪地裸体跪求”，就这种人还自诩为“不食嗟来之食”之后，实在让人叹息。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-墙的存在意义，就是要“拦截大多数”。要稳定翻墙，基本就两种途径。一者是牛，自己付出辛苦，学会了整个过程，从而翻墙出去。或者你付钱，弄到了翻墙帐号，从而翻墙出去，这也是一种。这两者都算的上少数，剩下的就是绝对的大多数。既不付钱，也不想付出辛苦，张口就求各种方法的人不知有没有想过，当某种方法会的人多了，墙自然就会把这种方法连根铲掉。法子不能用了，瞬间破口大骂给法子的人，不知道脑子里转的是什么逻辑——或者是，他们其实想过，只是：
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-1\. 在中国，只要考虑三天后的事情，三个月后的事情谁说的准呢。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-2\. 在网络上求爷爷告奶奶也是一种辛苦阿。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    ——我已经连叹息都发不出了。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-最后一个话题，如果你的某种对服务的应用，对其他人会产生伤害怎么办？例如，你用某个空间翻墙，这个空间IP就可能被墙。你用GAE翻墙，GAE就会被墙。你在网站上发表很合理的言论，自己没事，站长进去了。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-首先请允许我就最后一个例子向中国的有关部门表示无比的XXX。。。就这精确度还好意思指责人家老美的导弹？
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-我们先说最后一个。很多人往往鄙视中国的网站管理者，我写个无比正常的内容你都给我删了。实际上，在一切不正常都当作正常的国度，再正常的内容都可能是不正常的。我是挺同情网站的管理者的，删把，道义上挺站不住的，不删吧，自己进去了。某种意义上说，开网站是为了赚两个钱顺便提供娱乐的(当然，很多人是反过来的)，而不是为你表达言论挺身而出的——真是这个目的开的网站现在站长的骨头都在长草了——从这个意义看，删，不是恶。如果你要指责，应当指责的是这个制度和产生这个制度的原因。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-但是，我又要但是了，这也有个度。删本身不是恶，但是捕风捉影，删了不说，不删，偷偷让别人看不到，这就沦为不道德了。只是在中国，各种事情交错纠缠之下，人人皆提心吊胆提防别人，往往事情就会走了样。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-这里插一个前两天的段子。魔都地铁是要安检的，大家知道。坐地铁的经常听说保安和你争执两句就躺地上装死讹钱的例子。前两天过地铁的时候，把包拿给保安检查。保安摸到我的饭盒，说，这是啥阿。我刚要说话，旁边保安示意放行，小声说，摸坏了你赔不起。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    ——那地铁安检的结果就不言自明了。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-因此，在层层把关的网络审查中，往往下层执行的东西和上层想的差了十万八千里。其距离大概就和客户心里的网站和项目经理笔下的网站和工程师手下的代码的区别差不多。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-当然，即便结论如此，我还是管我自己。我的blog都是在自己的域名下面——结果被封，也是自己的选择。如果发到其他网站，能不能留，留多久，就看别人的意思了。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-至于使用GAE翻墙的问题，我觉得适用于我们有理由相信服务商知道的情况。我相信Google一定知道上面有人放什么网站，做翻墙用途。既然他没有反对，我们可以看作是他默许。
-
-&lt;/div&gt;
+&lt;p&gt;至于使用GAE翻墙的问题，我觉得适用于我们有理由相信服务商知道的情况。我相信Google一定知道上面有人放什么网站，做翻墙用途。既然他没有反对，我们可以看作是他默许。&lt;/p&gt;
 </description>
     </item>
     
@@ -739,393 +454,105 @@ MacOsX的教程在这里：
       <pubDate>Tue, 17 Apr 2012 07:00:21 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2144/</guid>
-      <description>&lt;div&gt;
+      <description>
 
-&lt;div&gt;
+&lt;p&gt;假定你有一台debian vps，上面需要装一些东西来——你懂。你应该装一些什么呢？&lt;/p&gt;
 
-    假定你有一台debian
-vps，上面需要装一些东西来——你懂。你应该装一些什么呢？
+&lt;h1 id=&#34;基础部分&#34;&gt;基础部分&lt;/h1&gt;
 
-&lt;/div&gt;
+&lt;h2 id=&#34;ssh&#34;&gt;ssh&lt;/h2&gt;
 
-&lt;div&gt;
+&lt;p&gt;没啥好多说，没有ssh，你甚至无法管理机器。不过注意，安全的ssh方式应当只允许使用key登录，禁止一切密码登录。而且对于没必要登录的某些用户，需要在/etc/passwd中将shell改为/bin/false。至于端口改不改，这个不重要，看你心情。&lt;/p&gt;
 
-\
+&lt;h2 id=&#34;vim&#34;&gt;vim&lt;/h2&gt;
 
-&lt;/div&gt;
+&lt;p&gt;debian默认装的是vim-tiny，很不好用。建议改为vim，改配置的时候让自己舒服点。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;h2 id=&#34;安全部分&#34;&gt;安全部分&lt;/h2&gt;
 
-\# 基础部分 \#
+&lt;h2 id=&#34;iptables-persistent&#34;&gt;iptables-persistent&lt;/h2&gt;
 
-&lt;/div&gt;
+&lt;p&gt;这是debian内用于iptables规则持久化的工具，你可以编辑/etc/iptables/rules.v4来修改防火墙规则。注意，目前debian stable(squeeze)中的版本还没有4/6区分，你可以弄一个testing(wheezy)中的来装。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;一般来说，你的规则中至少要包含以下内容：&lt;/p&gt;
 
-\#\# ssh \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;没啥好多说，没有ssh，你甚至无法管理机器。不过注意，安全的ssh方式应当只允许使用key登录，禁止一切密码登录。而且对于没必要登录的某些用户，需要在/etc/passwd中将shell改为/bin/false。至于端口改不改，这个不重要，看你心情。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# vim \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;debian默认装的是vim-tiny，很不好用。建议改为vim，改配置的时候让自己舒服点。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# 安全部分 \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# iptables-persistent \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;这是debian内用于iptables规则持久化的工具，你可以编辑/etc/iptables/rules.v4来修改防火墙规则。注意，目前debian
-stable(squeeze)中的版本还没有4/6区分，你可以弄一个testing(wheezy)中的来装。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;一般来说，你的规则中至少要包含以下内容：
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\`
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
--A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
+&lt;pre&gt;&lt;code&gt;-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
 -A INPUT -i lo -j ACCEPT
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
 -A INPUT -i tun+ -j ACCEPT
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
 -A INPUT -i ppp+ -j ACCEPT
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
 -A INPUT -p tcp -m multiport --dport 22,xxx,xxx,xxx -j ACCEPT
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
 -A INPUT -p udp -m multiport --dport xxx,xxx,xxx -j ACCEPT
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;/div&gt;
+&lt;p&gt;而且强烈建议，先保存一个没问题的iptables，然后直接修改iptables，再保存。这样的好处是，当你脑残改错了导致你自己都无法管理的时候，只要重启就可以恢复vps工作，而不用更麻烦的动作。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;h2 id=&#34;denyhosts&#34;&gt;denyhosts&lt;/h2&gt;
 
-\`
+&lt;p&gt;这是ssh的连接防御进程，用python编写。如果有人试图尝试你的ssh密码，这个程序就会踢掉他的ip。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;如果你已经用了我说的，通过key的连接方式，你可以一次就直接踢掉对方ip。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;h1 id=&#34;管理部分&#34;&gt;管理部分&lt;/h1&gt;
 
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;而且强烈建议，先保存一个没问题的iptables，然后直接修改iptables，再保存。这样的好处是，当你脑残改错了导致你自己都无法管理的时候，只要重启就可以恢复vps工作，而不用更麻烦的动作。
+&lt;h2 id=&#34;ifstat&#34;&gt;ifstat&lt;/h2&gt;
 
-&lt;/div&gt;
+&lt;p&gt;ifstat是用于网络流量管理的工具，可以告诉你网络目标的流量是多少。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;h2 id=&#34;dnsutils&#34;&gt;dnsutils&lt;/h2&gt;
 
-\#\# denyhosts \#\#
+&lt;p&gt;dnsutils里面包含了不少用于管理dns的工具，包括我们常用的nslookup，还有相对少用的dig。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;h2 id=&#34;mtr-tiny&#34;&gt;mtr-tiny&lt;/h2&gt;
 
-&lt;div&gt;
+&lt;p&gt;mtr是一个traceroute工具，比后者好用很多。这个工具可以快速跟踪路由。&lt;/p&gt;
 
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;这是ssh的连接防御进程，用python编写。如果有人试图尝试你的ssh密码，这个程序就会踢掉他的ip。
+&lt;h2 id=&#34;vnstat&#34;&gt;vnstat&lt;/h2&gt;
 
-&lt;/div&gt;
+&lt;p&gt;vnstat是用于跟踪网卡流量的工具，尤其对于每个月都有限额的vps，这个工具更有意义。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;注意安装完成后需要初始化每个网卡，然后重启服务，而不是马上能够工作。&lt;/p&gt;
 
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;如果你已经用了我说的，通过key的连接方式，你可以一次就直接踢掉对方ip。
+&lt;h1 id=&#34;网络部分&#34;&gt;网络部分&lt;/h1&gt;
 
-&lt;/div&gt;
+&lt;h2 id=&#34;pptp&#34;&gt;pptp&lt;/h2&gt;
 
-&lt;div&gt;
+&lt;p&gt;pptp是一个经典的vpn服务，直接安装pptpd就好。注意，部分手机不支持128bit的mppe，关闭后可以连接。但是windows只支持128bit的mppe，关掉就无法连接。So，自己权衡。&lt;/p&gt;
 
-\
+&lt;h2 id=&#34;openvpn&#34;&gt;openvpn&lt;/h2&gt;
 
-&lt;/div&gt;
+&lt;p&gt;openpn是一个非常稳定而强大的vpn程序，他使用udp作为连接协议。其实openvpn有tcp协议模式，但是速度比udp慢很多。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;openvpn的配置很长，我也写过，就不赘述了，可以参考这三篇文章(&lt;a href=&#34;http://shell909090.org/blog/2009/09/%E6%90%AD%E5%BB%BA%E5%AE%B6%E7%94%A8%E7%9A%84openvpn%E6%9C%8D%E5%8A%A1%E5%99%A8/&#34;&gt;1.搭建家用的OpenVPN服务器&lt;/a&gt;, &lt;a href=&#34;http://shell909090.org/blog/2011/04/%E8%AF%B4%E8%AF%B4x509%E8%AF%81%E4%B9%A6%E9%93%BE/&#34;&gt;2.说说x509证书链&lt;/a&gt;, &lt;a href=&#34;http://shell909090.org/blog/2011/05/%E5%86%8D%E8%AE%BAopenvpn%E7%9A%84%E6%90%AD%E5%BB%BA/&#34;&gt;3.再论openvpn的搭建&lt;/a&gt;&amp;gt;)。&lt;/p&gt;
 
-\# 管理部分 \#
+&lt;h2 id=&#34;l2tp&#34;&gt;l2tp&lt;/h2&gt;
 
-&lt;/div&gt;
+&lt;p&gt;l2tp的配置比openvpn更加繁琐，我配置过多次，始终在部分的设备上可以访问，部分不可以。因此等全部搞定后，会专门写一篇确认一下。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;h2 id=&#34;iodine&#34;&gt;iodine&lt;/h2&gt;
 
-\#\# ifstat \#\#
+&lt;p&gt;iodine是一个dns vpn。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;h2 id=&#34;ssh-1&#34;&gt;ssh&lt;/h2&gt;
 
-&lt;div&gt;
+&lt;p&gt;ssh用于翻墙常见两种模式，固定端口转发和动态端口转发。前者使用-R将远程的某个端口映射到本地。通常而言，映射的都是squid或者polipo(推荐后者，内存消耗更小，更好配置)。这样相当于在本地可以访问远程的代理，从而达到翻墙的效果。这个的命令行是&lt;code&gt;ssh -L port:localhost:port ...&lt;/code&gt;而动态端口转发则是使用ssh -D port &amp;hellip;，将本地的port端口变成一个支持socks5协议的代理服务器。&lt;/p&gt;
 
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;ifstat是用于网络流量管理的工具，可以告诉你网络目标的流量是多少。
+&lt;p&gt;相比而言，-D模式更加灵活，提供了全协议的访问，本地可以通过polipo转换为http代理。而-L模式则不能提供socks5代理功能(除非远程的端口上是socks5代理服务，但是这样就回到了-D模式，反而多开了一个服务)。但是有些时候(例如android的ssh翻墙软件)只支持后者的模式。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;另外，不要用日常管理帐号翻墙。新开一个翻墙帐号，并且设定独立的key。然后禁用shell，在ssh的时候，使用参数-CNq，这个参数可以不打开shell。如果网络不稳定，可以加上-o ServerAliveInterval 30。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;h2 id=&#34;stunnel&#34;&gt;stunnel&lt;/h2&gt;
 
-\#\# dnsutils \#\#
+&lt;p&gt;stunnel本身没有任何功效，他只是将你的普通连接转换为ssl连接而已。当这个程序搭配其他程序，例如polipo，就可以实现一个ssl级别的代理。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;h2 id=&#34;httptunnel&#34;&gt;httptunnel&lt;/h2&gt;
 
-&lt;div&gt;
+&lt;p&gt;这是一个服务软件，服务器端运行一个httptunnel，客户端运行一个。而后客户端就可以获得一个到服务器端的tcp连接，不受限的。&lt;/p&gt;
 
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;dnsutils里面包含了不少用于管理dns的工具，包括我们常用的nslookup，还有相对少用的dig。
+&lt;h2 id=&#34;polipo&#34;&gt;polipo&lt;/h2&gt;
 
-&lt;/div&gt;
+&lt;p&gt;polipo常见有两种模式，端口转发模式和ssl模式。两者都在前文有说。端口转发模式配合ssh用，ssl模式配合stunnel用。&lt;/p&gt;
 
-&lt;div&gt;
-
-\#\# mtr-tiny \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;mtr是一个traceroute工具，比后者好用很多。这个工具可以快速跟踪路由。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# vnstat \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;vnstat是用于跟踪网卡流量的工具，尤其对于每个月都有限额的vps，这个工具更有意义。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;注意安装完成后需要初始化每个网卡，然后重启服务，而不是马上能够工作。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\# 网络部分 \#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# pptp \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;pptp是一个经典的vpn服务，直接安装pptpd就好。注意，部分手机不支持128bit的mppe，关闭后可以连接。但是windows只支持128bit的mppe，关掉就无法连接。So，自己权衡。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# openvpn \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;openpn是一个非常稳定而强大的vpn程序，他使用udp作为连接协议。其实openvpn有tcp协议模式，但是速度比udp慢很多。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;openvpn的配置很长，我也写过，就不赘述了，可以参考这三篇文章(\[1.搭建家用的OpenVPN服务器\](&lt;http://shell909090.org/blog/2009/09/%E6%90%AD%E5%BB%BA%E5%AE%B6%E7%94%A8%E7%9A%84openvpn%E6%9C%8D%E5%8A%A1%E5%99%A8/&gt;),
-\[2.说说x509证书链\](&lt;http://shell909090.org/blog/2011/04/%E8%AF%B4%E8%AF%B4x509%E8%AF%81%E4%B9%A6%E9%93%BE/&gt;),
-\[3.再论openvpn的搭建\](&lt;http://shell909090.org/blog/2011/05/%E5%86%8D%E8%AE%BAopenvpn%E7%9A%84%E6%90%AD%E5%BB%BA/)&gt;)。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# l2tp \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;l2tp的配置比openvpn更加繁琐，我配置过多次，始终在部分的设备上可以访问，部分不可以。因此等全部搞定后，会专门写一篇确认一下。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# iodine \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt; &lt;/span&gt;iodine是一个dns vpn。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# ssh \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;ssh用于翻墙常见两种模式，固定端口转发和动态端口转发。前者使用-R将远程的某个端口映射到本地。通常而言，映射的都是squid或者polipo(推荐后者，内存消耗更小，更好配置)。这样相当于在本地可以访问远程的代理，从而达到翻墙的效果。这个的命令行是ssh
--L port:localhost:port ...
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt; &lt;/span&gt;而动态端口转发则是使用ssh -D
-port ...，将本地的port端口变成一个支持socks5协议的代理服务器。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;相比而言，-D模式更加灵活，提供了全协议的访问，本地可以通过polipo转换为http代理。而-L模式则不能提供socks5代理功能(除非远程的端口上是socks5代理服务，但是这样就回到了-D模式，反而多开了一个服务)。但是有些时候(例如android的ssh翻墙软件)只支持后者的模式。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;另外，不要用日常管理帐号翻墙。新开一个翻墙帐号，并且设定独立的key。然后禁用shell，在ssh的时候，使用参数-CNq，这个参数可以不打开shell。如果网络不稳定，可以加上-o
-ServerAliveInterval 30。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# stunnel \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;stunnel本身没有任何功效，他只是将你的普通连接转换为ssl连接而已。当这个程序搭配其他程序，例如polipo，就可以实现一个ssl级别的代理。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# httptunnel \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;这是一个服务软件，服务器端运行一个httptunnel，客户端运行一个。而后客户端就可以获得一个到服务器端的tcp连接，不受限的。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# polipo \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;polipo常见有两种模式，端口转发模式和ssl模式。两者都在前文有说。端口转发模式配合ssh用，ssl模式配合stunnel用。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;以上的服务看似很多，实际上，在128M内存的实例上完全可以运行其中大部分的服务。你可以在一台服务器上运行其中多个，以保证全天候的服务。
-
-&lt;/div&gt;
-
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
+&lt;p&gt;以上的服务看似很多，实际上，在128M内存的实例上完全可以运行其中大部分的服务。你可以在一台服务器上运行其中多个，以保证全天候的服务。&lt;/p&gt;
 </description>
     </item>
     

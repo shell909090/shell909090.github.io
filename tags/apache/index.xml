@@ -71,30 +71,38 @@ RequestHeader edit Destination \^https http early 问题解决，Q.E.D。&lt;/p&
       <pubDate>Tue, 06 Dec 2005 19:42:04 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/272/</guid>
-      <description>&lt;div&gt;
+      <description>&lt;p&gt;首先为 CA 创建一个 RSA 私用密钥&lt;/p&gt;
 
-首先为 CA 创建一个 RSA 私用密钥\
-openssl genrsa -des3 -out ca.key 1024\
-利用 CA 的 RSA 密钥创建一个自签署的 CA 证书（X.509结构）\
-openssl req -new -x509 -days 3650 -key ca.key -out ca.crt\
-首先为你的 Apache 创建一个 RSA 私用密钥\
-openssl genrsa -des3 -out server.key 1024\
-用 server.key 生成证书签署请求 CSR\
-openssl req -new -key server.key -out server.csr\
-签署证书\
-openssl x509 -md5 -days 3560 -req -signkey server.key -CAcrea\
-teserial -CAserial ca.crt -in server.csr -out server.crt\
-最后apache设置，将下面的参数改为\
-SSLCertificateFILE /usr/local/apache/conf/server.crt\
+&lt;pre&gt;&lt;code&gt;openssl genrsa -des3 -out ca.key 1024
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;利用 CA 的 RSA 密钥创建一个自签署的 CA 证书（X.509结构）&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;openssl req -new -x509 -days 3650 -key ca.key -out ca.crt
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;首先为你的 Apache 创建一个 RSA 私用密钥&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;openssl genrsa -des3 -out server.key 1024
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;用 server.key 生成证书签署请求 CSR&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;openssl req -new -key server.key -out server.csr
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;签署证书&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;openssl x509 -md5 -days 3560 -req -signkey server.key -CAcreateserial -CAserial ca.crt -in server.csr -out server.crt
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;最后apache设置，将下面的参数改为&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;SSLCertificateFILE /usr/local/apache/conf/server.crt
 SSLCertificateKeyFile /usr/local/apache/conf/server.key
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-当然你也可以拿ca.key和ca.crt顶上去，这两个是自签署的。
-
-&lt;/div&gt;
+&lt;p&gt;当然你也可以拿ca.key和ca.crt顶上去，这两个是自签署的。&lt;/p&gt;
 </description>
     </item>
     
@@ -104,99 +112,41 @@ SSLCertificateKeyFile /usr/local/apache/conf/server.key
       <pubDate>Tue, 29 Nov 2005 00:26:52 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/266/</guid>
-      <description>&lt;div&gt;
+      <description>&lt;p&gt;别的不说了，先用debian自带的apt安装apache2,记得安装dev部分，还有libapr0,libapr-dev,libapr0-dev。千万别忘记安装后面的部分，否则你在下面编译的时候就要出现问题。&lt;/p&gt;
 
-   
-别的不说了，先用debian自带的apt安装apache2,记得安装dev部分，还有libapr0,libapr-dev,libapr0-dev。千万别忘记安装后面的部分，否则你在下面编译的时候就要出现问题。
+&lt;p&gt;拿到resin，放在目标目录下面，然后tar -jxvf。完成后用ln -s做一个链接上去，使用resin的名字，这样可以方便的替换版本。然后在主目录下面运行./configure，make一下。一般来说，会出不少错误，最后生成一个libresin.so放到libexec下面，并且更新了resin的主执行程序。这个so很具有迷惑性，开始贝壳就被他骗了。这个so貌似是resin在本地平台下的加速程序，而不是嵌入到apache系列服务器中的整合插件。其中最大的差异是没有caucho_module导出符号，在apache加载的时候肯定会失败。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;跑到src/c/plugins/apache2下面运行make。可能会报错，可能没有。贝壳这里报了错，不过贝壳运行configure的时候没有加任何参数，也许加了参数就正常了。如果不正常，出错的代码可能分别是httpd.h找不到或者apr_time.h找不到。运行vi Makefile，看到有INCLUDE的目录吗？那里面要包含/usr/include/apache2和/usr/include/apr-0两个目录，没有就肯定出错。好了，修改然后重新make。得到的文件是mod_caucho.so。将它cp到$RESIN_HOME/libexec下面，这个动态库导出了caucho_module符号。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;在/etc/apache2/httpd.conf里面编辑一下，添加这个内容。&lt;/p&gt;
 
-    拿到resin，放在目标目录下面，然后tar -jxvf。完成后用ln
--s做一个链接上去，使用resin的名字，这样可以方便的替换版本。然后在主目录下面运行./configure，make一下。一般来说，会出不少错误，最后生成一个libresin.so放到libexec下面，并且更新了resin的主执行程序。这个so很具有迷惑性，开始贝壳就被他骗了。这个so貌似是resin在本地平台下的加速程序，而不是嵌入到apache系列服务器中的整合插件。其中最大的差异是没有caucho\_module导出符号，在apache加载的时候肯定会失败。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-跑到src/c/plugins/apache2下面运行make。可能会报错，可能没有。贝壳这里报了错，不过贝壳运行configure的时候没有加任何参数，也许加了参数就正常了。如果不正常，出错的代码可能分别是httpd.h找不到或者apr\_time.h找不到。运行vi
-Makefile，看到有INCLUDE的目录吗？那里面要包含/usr/include/apache2和/usr/include/apr-0两个目录，没有就肯定出错。好了，修改然后重新make。得到的文件是mod\_caucho.so。将它cp到\$RESIN\_HOME/libexec下面，这个动态库导出了caucho\_module符号。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    在/etc/apache2/httpd.conf里面编辑一下，添加这个内容。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-LoadModule caucho\_module /usr/resin/libexec/mod\_caucho.so
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&amp;lt;IfModule mod\_caucho.c&amp;gt;\
-  CauchoConfigFile ......../resin.conf\
-  &amp;lt;Location /caucho-status&amp;gt;\
-    SetHandler caucho-status\
-  &amp;lt;/Location&amp;gt;\
+&lt;pre&gt;&lt;code&gt;LoadModule caucho_module /usr/resin/libexec/mod_caucho.so
+&amp;lt;IfModule mod_caucho.c&amp;gt;
+    CauchoConfigFile ......../resin.conf
+    &amp;lt;Location /caucho-status&amp;gt;
+        SetHandler caucho-status
+    &amp;lt;/Location&amp;gt;
 &amp;lt;/IfModule&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;/div&gt;
+&lt;p&gt;在/usr/resin/conf/resin.conf里面，添加这些内容。&lt;/p&gt;
 
-&lt;div&gt;
-
-    在/usr/resin/conf/resin.conf里面，添加这些内容。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&amp;lt;doc-dir&amp;gt;/var/www/htdocs&amp;lt;/doc-dir&amp;gt;\
+&lt;pre&gt;&lt;code&gt;&amp;lt;doc-dir&amp;gt;/var/www/htdocs&amp;lt;/doc-dir&amp;gt;
 &amp;lt;war-dir id=&#39;/var/www/htdocs&#39;/&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;/div&gt;
+&lt;p&gt;在/etc/apache2/sites-available/default中可能要修改如下配置。&lt;/p&gt;
 
-&lt;div&gt;
-
-    在/etc/apache2/sites-available/default中可能要修改如下配置。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-DocumentRoot /var/www/htdocs/
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
+&lt;pre&gt;&lt;code&gt;DocumentRoot /var/www/htdocs/
 &amp;lt;Directory /var/www/htdocs/&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;/div&gt;
+&lt;p&gt;然后注销&lt;/p&gt;
 
-&lt;div&gt;
+&lt;pre&gt;&lt;code&gt;RedirectMatch ^/$ /apache2-default/
+&lt;/code&gt;&lt;/pre&gt;
 
-然后注销
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-RedirectMatch \^/\$ /apache2-default/
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    OK，这样就基本完成了整个系统的整合配置。
-
-&lt;/div&gt;
+&lt;p&gt;OK，这样就基本完成了整个系统的整合配置。&lt;/p&gt;
 </description>
     </item>
     

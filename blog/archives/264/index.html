@@ -112,257 +112,77 @@ ga('send', 'pageview');
           
           
           
-          <div>
+          <p>又中计了……</p>
 
-    又中计了……
+<p>近几天用oracle，发现oracle狂用内存，经常内存小到10M的规模。汗一个，赶快让经理买了新的1G内存来装，上去后发现根本认不出来。加班一多小时才发现386内核根本不认高端内存(HIGHMEM)，所以内存极限一直是896M。以前是1G内存，所以看不出来，现在换了1.5G，看出来了。</p>
 
-</div>
+<p>赶快上了一个2.6.12-1-686的内核，然后重启，认出来了。不过free还是只有32M左右，我们大惊小怪的打电话到oracle那里去咨询，得到的答复是要安装完整的补丁，并且要用oracle认证过的服务器。oracle认证了啥服务器？RedHatEnterpriseAS3/4,那个东西要收费的，而且绝对不便宜。最后无奈，做了一次不启动oracle的测试。出乎我们意料的，mysql吃了多数的内存。具体造成这种状况的原因是啥呢？</p>
 
-<div>
+<p>偶查阅了linux内存管理资料，发现linux的内存管理计数上讲的东西和windows讲的有很大差异。下面具体列举下几种计数、查看方式和含义。</p>
 
-   
-近几天用oracle，发现oracle狂用内存，经常内存小到10M的规模。汗一个，赶快让经理买了新的1G内存来装，上去后发现根本认不出来。加班一多小时才发现386内核根本不认高端内存(HIGHMEM)，所以内存极限一直是896M。以前是1G内存，所以看不出来，现在换了1.5G，看出来了。
+<p>total mem，可以用top free查看出来。</p>
 
-</div>
+<p>free mem，可以用top free vmstat查看出来。</p>
 
-<div>
+<p>used mem，可以用top free查看出来.</p>
 
-   
-赶快上了一个2.6.12-1-686的内核，然后重启，认出来了。不过free还是只有32M左右，我们大惊小怪的打电话到oracle那里去咨询，得到的答复是要安装完整的补丁，并且要用oracle认证过的服务器。oracle认证了啥服务器？RedHatEnterpriseAS3/4,那个东西要收费的，而且绝对不便宜。最后无奈，做了一次不启动oracle的测试。出乎我们意料的，mysql吃了多数的内存。具体造成这种状况的原因是啥呢？
+<p>buffer mem，可以用top free vmstat查看出来。</p>
 
-</div>
+<p>shared mem，可以用free查看出来。</p>
 
-<div>
+<p>swap mem，可以用top查看出来。</p>
 
-   
-偶查阅了linux内存管理资料，发现linux的内存管理计数上讲的东西和windows讲的有很大差异。下面具体列举下几种计数、查看方式和含义。
+<p>swap used，可以用top vmstat查看出来。</p>
 
-</div>
+<p>cached mem，可以用top free vmstat查看出来。</p>
 
-<div>
+<p>active mem，可以用free vmstat -a查看出来，即cached used。</p>
 
-    total mem，可以用top free查看出来。
+<p>inactive mem，可以用free vmstat -a查看出来，即cached free。</p>
 
-</div>
+<p>其中total mem是除去系统外的可用内存，系统大约占1M多。然后分配给free mem和used mem。used mem又包括了内核表使用（例如GDT），程序使用，buffer，cached。所以</p>
 
-<div>
+<p>cached mem=active mem+inactive mem</p>
 
-    free mem，可以用top free vmstat查看出来。
+<p>total mem=free mem+used mem</p>
 
-</div>
+<p>used mem=内核表使用+程序使用物理内存+buffer mem+cached mem</p>
 
-<div>
+<p>略去内核表使用，这个式子可以变形成这样：</p>
 
-    used mem，可以用top free查看出来.
+<p>程序使用总内存=swap used+程序使用物理内存</p>
 
-</div>
+<p>=swap used+used mem-buffer mem-cached mem</p>
 
-<div>
+<p>=total mem-free mem+swap used-buffer mem-cached mem</p>
 
-    buffer mem，可以用top free vmstat查看出来。
+<p>根据所有系统内存管理的恒等式：</p>
 
-</div>
+<p>程序使用总内存+一次可申请内存=total mem+swap used</p>
 
-<div>
+<p>我们可以计算出：</p>
 
-    shared mem，可以用free查看出来。
+<p>一次可申请内存=free mem+buffer mem+cached mem（事实上要略小于这个值）</p>
 
-</div>
+<p>程序使用的部分swap出去部分，占用total部分，剩下的就是一次可以申请的最大值。多次申请造成这个值太小就继续向swap里面交换。</p>
 
-<div>
+<p>首先解释buffer和cached区别。通俗的讲，buffer中放的是对象数据结构，而cached中放的是无结构的块数据。cached可以缓冲任何标准的块设备，而不用管是什么东西。其中涉及写通和写回的概念，大家自己看去吧。</p>
 
-    swap mem，可以用top查看出来。
+<p>然后是程序使用物理内存的概念。程序的总内存等于交换出去的部分加上程序使用物理内存。而程序使用的总内存和各个程序的内存占用是什么关系呢？这个又要涉及共用页面的问题。</p>
 
-</div>
+<p>windows中也有类似概念，如果两个页面内容相同，那么在内存中保留一份就可以了。这个是动态链接库/动态共享库的理论基础。所以所有进程的shared mem只有一份copy。进程使用的Data+Stack是数据空间，code是代码空间，两者和减去shared mem是私有空间，也就是俗称的进程内存占用。将所有内存占用求和加上shared mem的和，就得到了程序的总内存。</p>
 
-<div>
+<p>Linux的cached和windows的一个很大差异在于，windows的磁盘缓存是读写缓存队列。写入操作和预读取操作在队列中排序。完了就释放了，主要用于平缓读写瓶颈。读取预测机制才是增加命中的重头。linux的cached读写完了一直不释放，直到内存不足再释放。释放的速度来说应该是没有问题的，毕竟数据已经写入了，只差一个数据结构标志位修改而已。这种机制主要对应高命中率，如果重复使用相同文件（应该说是相同块设备的相同offset）。那么缓存机制永远只要读一次，写入次数也远远小于应当的写入次数。</p>
 
-    swap used，可以用top vmstat查看出来。
+<p>根据上面一次可申请内存的计算公式，可以知道这次偶死在哪里了吧。</p>
 
-</div>
+<p>reference：</p>
 
-<div>
+<p>感谢以下几位作者的文章为我解答了疑惑，为了表达敬意列于下。我没有全文照抄，按理不用起告知义务吧。</p>
 
-    cached mem，可以用top free vmstat查看出来。
+<p>[1].Linux内存使用的体会.nonameboy.linux宝库.<a href="http://www.linuxmine.com/5621.html">http://www.linuxmine.com/5621.html</a></p>
 
-</div>
-
-<div>
-
-    active mem，可以用free vmstat -a查看出来，即cached used。
-
-</div>
-
-<div>
-
-    inactive mem，可以用free vmstat -a查看出来，即cached free。
-
-</div>
-
-<div>
-
-    其中total mem是除去系统外的可用内存，系统大约占1M多。然后分配给free
-mem和used mem。used
-mem又包括了内核表使用（例如GDT），程序使用，buffer，cached。所以
-
-</div>
-
-<div>
-
-    cached mem=active mem+inactive mem
-
-</div>
-
-<div>
-
-    total mem=free mem+used mem
-
-</div>
-
-<div>
-
-    used mem=内核表使用+程序使用物理内存+buffer mem+cached mem
-
-</div>
-
-<div>
-
-略去内核表使用，这个式子可以变形成这样：
-
-</div>
-
-<div>
-
-    程序使用总内存=swap used+程序使用物理内存
-
-</div>
-
-<div>
-
-                         =swap used+used mem-buffer mem-cached mem
-
-</div>
-
-<div>
-
-                         =total mem-free mem+swap used-buffer mem-cached
-mem
-
-</div>
-
-<div>
-
-根据所有系统内存管理的恒等式：
-
-</div>
-
-<div>
-
-    程序使用总内存+一次可申请内存=total mem+swap used
-
-</div>
-
-<div>
-
-我们可以计算出：
-
-</div>
-
-<div>
-
-    一次可申请内存=free mem+buffer mem+cached
-mem（事实上要略小于这个值）
-
-</div>
-
-<div>
-
-   
-程序使用的部分swap出去部分，占用total部分，剩下的就是一次可以申请的最大值。多次申请造成这个值太小就继续向swap里面交换。
-
-</div>
-
-<div>
-
- 
-
-</div>
-
-<div>
-
-   
-首先解释buffer和cached区别。通俗的讲，buffer中放的是对象数据结构，而cached中放的是无结构的块数据。cached可以缓冲任何标准的块设备，而不用管是什么东西。其中涉及写通和写回的概念，大家自己看去吧。
-
-</div>
-
-<div>
-
-   
-然后是程序使用物理内存的概念。程序的总内存等于交换出去的部分加上程序使用物理内存。而程序使用的总内存和各个程序的内存占用是什么关系呢？这个又要涉及共用页面的问题。
-
-</div>
-
-<div>
-
-   
-windows中也有类似概念，如果两个页面内容相同，那么在内存中保留一份就可以了。这个是动态链接库/动态共享库的理论基础。所以所有进程的shared
-mem只有一份copy。进程使用的Data+Stack是数据空间，code是代码空间，两者和减去shared
-mem是私有空间，也就是俗称的进程内存占用。将所有内存占用求和加上shared
-mem的和，就得到了程序的总内存。
-
-</div>
-
-<div>
-
-   
-Linux的cached和windows的一个很大差异在于，windows的磁盘缓存是读写缓存队列。写入操作和预读取操作在队列中排序。完了就释放了，主要用于平缓读写瓶颈。读取预测机制才是增加命中的重头。linux的cached读写完了一直不释放，直到内存不足再释放。释放的速度来说应该是没有问题的，毕竟数据已经写入了，只差一个数据结构标志位修改而已。这种机制主要对应高命中率，如果重复使用相同文件（应该说是相同块设备的相同offset）。那么缓存机制永远只要读一次，写入次数也远远小于应当的写入次数。
-
-</div>
-
-<div>
-
- 
-
-</div>
-
-<div>
-
-    根据上面一次可申请内存的计算公式，可以知道这次偶死在哪里了吧。
-
-</div>
-
-<div>
-
- 
-
-</div>
-
-<div>
-
-reference：
-
-</div>
-
-<div>
-
-   
-感谢以下几位作者的文章为我解答了疑惑，为了表达敬意列于下。我没有全文照抄，按理不用起告知义务吧。
-
-</div>
-
-<div>
-
-   
-\[1\].Linux内存使用的体会.nonameboy.linux宝库.http://www.linuxmine.com/5621.html
-
-</div>
-
-<div>
-
-    \[2\].Linux
-管理员手册(4)--内存管理...http://it.qlsh.net/html/2004/11/20041110092900-1.htm
-
-</div>
+<p>[2].Linux管理员手册(4)&ndash;内存管理&hellip;<a href="http://it.qlsh.net/html/2004/11/20041110092900-1.htm">http://it.qlsh.net/html/2004/11/20041110092900-1.htm</a></p>
 
         </div>
         

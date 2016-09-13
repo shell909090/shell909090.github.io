@@ -142,7 +142,7 @@ ga('send', 'pageview');
 
 
         
-          <p>vpn的原始模式 vpn的最简模型，相当于在两台机器上插一块虚拟网卡，然后中间连一根虚拟网线连通。因此vpn才得名vpn(virtual private network)。 其复杂之处在于，这块虚拟网卡如何配置网络，和别的网卡是什么关系。再加上多个节点间如何通讯。种种都够新手喝一壶。 虽然openvpn在科学上网上是废了，但是在不出国的网络上用来保护通讯，还是非常好用的。 tap模式 tap模式的特点是二层打通。典型场景是从外部打一条隧道到本地网络。进来的机器就像本地的机器一样参与通讯，你分毫看不出这些机器是在远程。 优点： 配置简单。 不需要在所有机器上配置或者动网关。 缺点： tap在部分设备上不支持(例如移动设备)。 wlan加入网桥后不一定可以工作。 广播包会散发到虚拟网络中，可能极大消耗流量。 特别解说一下wlan。部分AP对一个客户只接受一个MAC地址，因此无法做网桥。这应该是wifi网络的常规问题了。解决方法是换AP，或者做mac-nat。 操作方法： 你需要先在当前网络中，为vpn预留一些地址。这些地址应该足够拨入用户使用，不应和dhcp撞车，不应有其他人使用。 而后，建立一个br，将当前工作的eth迁移过去。(具体细节就不说了，每个系统小有差别)再建立一个tap vpn，在启动脚本中指定加入这个br。 example 假定内网地址为172.19.0.0/24，其中保留172.19.0.16-172.19.0.31供vpn使用。 服务器配置: port [port num] proto udp ; 参考我上一篇vpn不要走tcp协议 dev tap ca ca.crt cert server.crt key server.key server-bridge 172.19.0.16 255.255.255.0 172.19.0.17 172.19.0.31 ; 或者可以采用这句 ; server 172.19.0.16 255.255.255.240 ; 注意掩码实际上等于/28，做掩码运算后，这段地址和上面的保留地址重合 script-security 2 up vpn-start ; 建议使用绝对路径，避免版本坑 down vpn-stop vpn-start: brctl add br0 \$dev vpn-stop: brctl del br0 \$dev 客户端配置:</p>
+          <p>vpn的原始模式 vpn的最简模型，相当于在两台机器上插一块虚拟网卡，然后中间连一根虚拟网线连通。因此vpn才得名vpn(virtual private network)。 其复杂之处在于，这块虚拟网卡如何配置网络，和别的网卡是什么关系。再加上多个节点间如何通讯。种种都够新手喝一壶。 虽然openvpn在科学上网上是废了，但是在不出国的网络上用来保护通讯，还是非常好用的。 tap模式 tap模式的特点是二层打通。典型场景是从外部打一条隧道到本地网络。进来的机器就像本地的机器一样参与通讯，你分毫看不出这些机器是在远程。 优点： 配置简单。 不需要在所有机器上配置或者动网关。 缺点： tap在部分设备上不支持(例如移动设备)。 wlan加入网桥后不一定可以工作。 广播包会散发到虚拟网络中，可能极大消耗流量。 特别解说一下wlan。部分AP对一个客户只接受一个MAC地址，因此无法做网桥。这应该是wifi网络的常规问题了。解决方法是换AP，或者做mac-nat。 操作方法： 你需要先在当前网络中，为vpn预留一些地址。这些地址应该足够拨入用户使用，不应和dhcp撞车，不应有其他人使用。 而后，建立一个br，将当前工作的eth迁移过去。(具体细节就不说了，每个系统小有差别)再建立一个tap vpn，在启动脚本中指定加入这个br。 example 假定内网地址为172.19.0.0/24，其中保留172.19.0.16-172.19.0.31供vpn使用。 服务器配置: port [port num] proto udp ; 参考我上一篇[vpn不要走tcp协议](http://shell909090.org/blog/archives/2722) dev tap ca ca.crt cert server.crt key server.key server-bridge 172.19.0.16 255.255.255.0 172.19.0.17 172.19.0.31 ; 或者可以采用这句 ; server 172.19.0.16 255.255.255.240 ; 注意掩码实际上等于/28，做掩码运算后，这段地址和上面的保留地址重合 script-security 2 up vpn-start ; 建议使用绝对路径，避免版本坑 down vpn-stop vpn-start: brctl add br0 $dev vpn-stop: brctl del br0 $dev 客户端配置:</p>
 
           
               <footer>
@@ -585,8 +585,6 @@ ga('send', 'pageview');
     
         <a href="/page/91/" class="label-pagination">91</a>
     
-        <a href="/page/92/" class="label-pagination">92</a>
-    
 
     
     
@@ -595,7 +593,7 @@ ga('send', 'pageview');
 
     
     
-        <a href="/page/92/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
+        <a href="/page/91/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
     
 
 </div>

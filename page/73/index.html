@@ -99,64 +99,6 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/351/">多线程同步说</a>
-    </h1>
-    <p class="meta">Jan 19, 2007
-         - 2 minute read 
-         - <a href="http://shell909090.org/blog/archives/351/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>先给大家看个恐怖东西. class TIFF2JPEG {\ public:\ static void newInstance (tstring & strFilepath, HGLOBAL hGlobal);\ static void waitObject ();\ protected:\ static ULONG\_PTR initInstance ();\ static DWORD WINAPI ThreadProc (LPVOID lpParameter);\ TIFF2JPEG ();\ TIFF2JPEG (tstring & str, HGLOBAL hg);\ int Translate ();\ static ULONG\_PTR gdiplusToken;\ tstring strFilepath;\ HGLOBAL hGlobal;\ DWORD dwSize;\ }; int ImageInMemory = 0;\ deque &lt; TIFF2JPEG \* &gt;t2j\_list;\ CRITICAL\_SECTION CriticalSection\_t2j\_list;\ CLSID GifCodec;\ bool bThreadDelete = 0;\ vector &lt; HANDLE &gt;</p>
-
-          
-              <footer>
-                  <a href="http://shell909090.org/blog/archives/351/" rel="full-article">Read On &rarr;</a>
-              </footer>
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/350/">全局初始化</a>
-    </h1>
-    <p class="meta">Jan 17, 2007
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/350/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>大家写代码的时候，假如写了一个组件，自身需要开一个线程的。那么多数是在初始化代码中直接写开线程的。如果要求这个类不在初始化代码中添加函数，怎么做？ MSDN中有个例子，不是解决这个问题的，但是可以用。 class DialogWindow{ public: static short GetTextHeight(){ return 1; }; private: static short nTextHeight; }; short DialogWindow :: nTextHeight = GetTextHeight(); int main(){} 在这里，把GetTextHeight里面添加上你需要的代码就可以了。 但是注意，这些代码的运行时间要早于main(准确的说，是在wmainCRTStartup里面运行的_c_init函数)。所以很多自然而然就有的初始化没做，你自己在main里面调用的初始化(例如WSAStartup啦，GDI+初始化啦)更是没做。所以必须严格测试。</p>
-
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/349/">KMP</a>
     </h1>
     <p class="meta">Jan 16, 2007
@@ -200,7 +142,7 @@ ga('send', 'pageview');
 
 
         
-          <p>算是介绍一个奇淫巧技吧。查找重复的文件，这个应该有很多软件都可以做的。不过在Linux里面，利用系统工具，一句语句查找应该就比较少见了。 \$find . -name &ldquo;*&rdquo; -type f -size +0 -exec md5sum {} ; | sort | uniq -d -w 32 原理是这样的，先用find查找当前所有文件。我们加上限定类型必须是文件，目录不要。限定大小不为0，空文件不要。然后对所有满足条件的执行md5sum，获得md5和文件的列表。然后排序，再针对md5的部分做唯一限定。就得到了所有md5相同的文件的列表。 问题是，这时候我们得到的还只是一堆重复的文件的md5。我们可以把以上步骤拆开来获得完整的输出。 \$find . -name &ldquo;*&rdquo; -type f -size +0 -exec md5sum {} ; | sort &gt; file_md5 \$cat file_md5 | uniq -d -w 32 \$grep &ldquo;&hellip;&rdquo; file_md5 相信大家都看出是怎么回事情了，就不赘言了。 Windows下以前我总是执行不出，原因在于要这么写。 &gt;find . -type f -size +0 -exec md5sum {} ; | sort &gt; report.txt 差一个转义，因为不需要。 总结一下，我们可以用一个脚本来处理这些问题。 &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;fine_rep&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash; find \$1 -type</p>
+          <p>算是介绍一个奇淫巧技吧。查找重复的文件，这个应该有很多软件都可以做的。不过在Linux里面，利用系统工具，一句语句查找应该就比较少见了。 $find . -name &quot;*&quot; -type f -size +0 -exec md5sum {} ; | sort | uniq -d -w 32 原理是这样的，先用find查找当前所有文件。我们加上限定类型必须是文件，目录不要。限定大小不为0，空文件不要。然后对所有满足条件的执行md5sum，获得md5和文件的列表。然后排序，再针对md5的部分做唯一限定。就得到了所有md5相同的文件的列表。 问题是，这时候我们得到的还只是一堆重复的文件的md5。我们可以把以上步骤拆开来获得完整的输出。 $find . -name &quot;*&quot; -type f -size +0 -exec md5sum {} ; | sort &gt; file_md5 $cat file_md5 | uniq -d -w 32 $grep &quot;...&quot; file_md5 相信大家都看出是怎么回事情了，就不赘言了。 Windows下以前我总是执行不出，原因在于要这么写。 find . -type f -size +0 -exec md5sum {} ; | sort &gt; report.txt 差一个转义，因为不需要。 总结一下，我们可以用一个脚本来处理这些问题。 --------------------------fine_rep------------------------------ find $1 -type</p>
 
           
               <footer>
@@ -231,7 +173,7 @@ ga('send', 'pageview');
 
 
         
-          <p>在进入正题前，我们首先回顾下我们的基础C++常识。如果调用某个对象的某个方法，那么会调用到什么？ 一般来说，如果这个方法是普通函数，则按照这个对象的声明类型去调用。就好像(&amp;obj)-&gt;obj_type::function(param&hellip;);。而如果是虚函数，则是按照这个对象的构造类型去调用。就好像(&amp;obj)-&gt;((&amp;obj)-&gt;_v_ptr[n])(param&hellip;);。或者说简单点，一个是按照这个类看起来像是哪个类来调用，一个是按照这个类实际是哪个类来调用。 那么，如果在一个基类的某个成员里面调用这个类的另外一个虚函数，调用的是哪个呢？ 任何正常人来说，都应该说是，按照这个类的构造类型来确定。基本上没错，不过有一个函数例外。 那么先看一个问题。 class B { public: B(){test ();} virtual void test (){printf (&ldquo;parentn&rdquo;);} void out (){test ();} }; class D:public B {\ public:\ virtual void test (){printf ("childn");}\ }; int \_tmain(int argc, \_TCHAR\* argv\[\]){\ D d;\ d.out();\ return 0;\ }\ 想像下输出，再运行下。想想为什么，再看下面。想通了就不用看了。\ ---------------------我是无敌的分割线-----------------------\ C++标准规定，任何一个带有虚函数的类都有一个\_v\_ptr成员，这个成员必须存放在这个类内存地址中头部。这个成员指向了这个类的虚函数表。于是，调用虚函数的时候，我们首先确定这个是虚函数。(按照这个逻辑，如果父类不声明为虚函数，子类重载为虚函数，还是没用的)然后，我们确定这是第几个虚函数(严格来说，这并不符合面对对象的设计规范，应该是按照函数名字查表的，\_v\_ptr也不应该仅仅指向虚函数表，而应该是类形态表)。最后，我们去虚函数表中取得入口地址进行调用。\ 那么为什么在构造函数中调用就无法调用子类的虚函数呢？问题在于\_v\_ptr的初始化时间上。某个类的构造函数启动前，这个类的\_v\_ptr才能完成初始化。如果是多重继承，那么首先调用最初类的，然后是次类的，最后是子类的。\_v\_ptr首先指向基类的，再是继承类，最后是子类。我们在父类构造函数中，\_v\_ptr指针还指向了父类的虚函数表，所以调用不到子类的虚函数。\ 其实我们可以这么说，构造函数以前，子类不存在。\</p>
+          <p>在进入正题前，我们首先回顾下我们的基础C++常识。如果调用某个对象的某个方法，那么会调用到什么？ 一般来说，如果这个方法是普通函数，则按照这个对象的声明类型去调用。就好像(&amp;obj)-&gt;obj_type::function(param&hellip;);。而如果是虚函数，则是按照这个对象的构造类型去调用。就好像(&amp;obj)-&gt;((&amp;obj)-&gt;_v_ptr[n])(param&hellip;);。或者说简单点，一个是按照这个类看起来像是哪个类来调用，一个是按照这个类实际是哪个类来调用。 那么，如果在一个基类的某个成员里面调用这个类的另外一个虚函数，调用的是哪个呢？ 任何正常人来说，都应该说是，按照这个类的构造类型来确定。基本上没错，不过有一个函数例外。 那么先看一个问题。 class B { public: B(){test ();} virtual void test (){printf (&quot;parentn&quot;);} void out (){test ();} }; class D:public B { public: virtual void test (){printf (&quot;childn&quot;);} }; int _tmain(int argc, _TCHAR* argv[]){ D d; d.out(); return 0; } 想像下输出，再运行下。想想为什么，再看下面。想通了就不用看了。 &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;我是无敌的分割线&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash; C++标准规定，任何一个带有虚函数的类都有一个_v_ptr成员，这个成员必须存放在这个类内存地址中头部。这个成员指向了这个类的虚函数表。于是，调用虚函数的时候，我们首先确定这个是虚函数。(按照这个逻辑，如果父类不声明为虚函数，子类重载为虚函数，还是没用的)然后，我们确定这是第几个虚函数(严格来说，这并不符合面对对象的设计规范，应该是按照函数名字查表的，_v_ptr也不应该仅仅指向虚函数表，而应该是类形态表)。最后，我们去虚函数表中取得入口地址进行调用。 那么为什么在构造函数中调用就无法调用子类的虚函数呢？问题在于_v_ptr的初始化时间上。某个类的构造函数启动前，这个类的_v_ptr才能完成初始化。如果是多重继承，那么首先调用最初类的，然后是次类的，最后是子类的。_v_ptr首先指向基类的，再是继承类，最后是子类。我们在父类构造函数中，_v_ptr指针还指向了父类的虚函数表，所以调用不到子类的虚函数。 其实我们可以这么说，构造函数以前，子类不存在。</p>
 
           
 
@@ -258,7 +200,7 @@ ga('send', 'pageview');
 
 
         
-          <p>现在真是深深的为IDE所苦啊。 基本来说，现在用的IDE有几种，eclipse，MSVC，Anjuta，MingStudio，Code::Blocks。不过都有毛病。 eclipse好用的很，功能齐全，插件多，支持多，跨平台。可惜开发Java是本行，C就稍微有点小毛病，而且消耗资源太大。MSVC也是功能强大，可惜Linux下面没法用，而且不支持CVS。Anjuta只是Linux下面的开发程序，而且使用了Automake和Autoconf。MingStudio不开源，Code::Blocks编译困难。 不过想想也是，IDE都又好用又免费了，M\$要\$哪个去？\ 其中唯一好用点的也就是Code::Blocks了。前两天看一个论坛上说Code::Blocks是针对单语言的，所以要用Anjuta。我立刻喷笑。说起来一个人能会多少语言呢？三种？五种？要真的是多语言，不如用Eclipse或者Emacs。Eclipse支持Java/C++/Php，Emacs配置好了啥都支持。问题是支持多了，效果就差了。Eclipse在支持C++上就和MSVC没的比。\ 要比较一个IDE，基本来说是比较三个方面，自动写作，生成和版本管理，统一化测试/调试。\ 自动写作有四个主要方面，自动完成，符号提示，参数提示，自动格式化。说明白点，自动完成，就是使用某个范围的某个东西，例如变量或者方法。在写好范围(例如对象名或者类名)后会提示这个东西的名字。好比写了::Messa就基本可以自动给出::MessageBox。符号提示则更加智能些，在写作的时候自动判断当前最可能使用的对象并且给出提示。参数提示是指调用函数的时候提示应该传入的参数类型和个数，当然也有自动将最可能的变量传入的例子。自动格式化，就是乱糟糟的代码自动格式整齐。针对C++来说，MSVC可以自动完成，符号提示，参数提示，外挂插件可以自动格式化。Eclipse可以自动完成，参数提示(这就是那个自动填写最可能参数的例子)，外挂插件可以自动格式化。Anjuta和Code::Blocks没用过，不过Code::Blocks可以外挂插件格式化。\ 生成和版本管理来说，MSVC，Code::Blocks和Eclipse用的是自身的格式，脱离了IDE基本就没用了。Anjuta用的是Autoconf和Automake，即使没有IDE也可以编译。便于跨语言和发行原码包。\ 统一化测试/调试来说，基本都有行调试的功能，不过都不带测试工具的。</p>
+          <p>现在真是深深的为IDE所苦啊。 基本来说，现在用的IDE有几种，eclipse，MSVC，Anjuta，MingStudio，Code::Blocks。不过都有毛病。 eclipse好用的很，功能齐全，插件多，支持多，跨平台。可惜开发Java是本行，C就稍微有点小毛病，而且消耗资源太大。MSVC也是功能强大，可惜Linux下面没法用，而且不支持CVS。Anjuta只是Linux下面的开发程序，而且使用了Automake和Autoconf。MingStudio不开源，Code::Blocks编译困难。 不过想想也是，IDE都又好用又免费了，M$要$哪个去？ 其中唯一好用点的也就是Code::Blocks了。前两天看一个论坛上说Code::Blocks是针对单语言的，所以要用Anjuta。我立刻喷笑。说起来一个人能会多少语言呢？三种？五种？要真的是多语言，不如用Eclipse或者Emacs。Eclipse支持Java/C++/Php，Emacs配置好了啥都支持。问题是支持多了，效果就差了。Eclipse在支持C++上就和MSVC没的比。 要比较一个IDE，基本来说是比较三个方面，自动写作，生成和版本管理，统一化测试/调试。 自动写作有四个主要方面，自动完成，符号提示，参数提示，自动格式化。说明白点，自动完成，就是使用某个范围的某个东西，例如变量或者方法。在写好范围(例如对象名或者类名)后会提示这个东西的名字。好比写了::Messa就基本可以自动给出::MessageBox。符号提示则更加智能些，在写作的时候自动判断当前最可能使用的对象并且给出提示。参数提示是指调用函数的时候提示应该传入的参数类型和个数，当然也有自动将最可能的变量传入的例子。自动格式化，就是乱糟糟的代码自动格式整齐。针对C++来说，MSVC可以自动完成，符号提示，参数提示，外挂插件可以自动格式化。Eclipse可以自动完成，参数提示(这就是那个自动填写最可能参数的例子)，外挂插件可以自动格式化。Anjuta和Code::Blocks没用过，不过Code::Blocks可以外挂插件格式化。 生成和版本管理来说，MSVC，Code::Blocks和Eclipse用的是自身的格式，脱离了IDE基本就没用了。Anjuta用的是Autoconf和Automake，即使没有IDE也可以编译。便于跨语言和发行原码包。 统一化测试/调试来说，基本都有行调试的功能，不过都不带测试工具的。</p>
 
           
 
@@ -339,7 +281,7 @@ ga('send', 'pageview');
 
 
         
-          <p>用过debian的朋友，在用apt-get和aptitude的时候会发现有句声明。 #aptitude &ndash;help &hellip; 这个 aptitude 没有超级牛力。 #apt-get &ndash;help &hellip; 本 APT 有着超级牛力。 什么是超级牛力呢？ 超級牛力是 Debian 系統中一股神秘的力量。 /* ..暴打ing.. */ 其实说明白点，超级牛力就是一个彩蛋。详细可以参看SuperCowPowers。 $ apt-get moo (__) (oo) /------/ / | || * /---/ ~~ ~~ ....&quot;Have you mooed today?&quot;... \$ apt-build moo (__) ~ (oo) / _____/___/ / / / / ~ / * / / ___/ *----/ / / / ~ ~ ...&quot;Have you danced today ? Discow !&quot;... $ aptitude moo 此軟體沒有復活節彩蛋程式。 $ aptitude -v moo 此軟體真的沒有復活節彩蛋程式。 $ aptitude -vv moo 我不是已經告訴你這個軟體真的沒有復活節彩蛋程式了嗎?</p>
+          <p>用过debian的朋友，在用apt-get和aptitude的时候会发现有句声明。 #aptitude --help ... 这个 aptitude 没有超级牛力。 #apt-get --help ... 本 APT 有着超级牛力。 什么是超级牛力呢？ 超級牛力是 Debian 系統中一股神秘的力量。 /* ..暴打ing.. */ 其实说明白点，超级牛力就是一个彩蛋。详细可以参看SuperCowPowers。 $ apt-get moo (__) (oo) /------/ / | || * /---/ ~~ ~~ ....&quot;Have you mooed today?&quot;... $ apt-build moo (__) ~ (oo) / _____/___/ / / / / ~ / * / / ___/ *----/ / / / ~ ~ ...&quot;Have you danced today ? Discow !&quot;... $ aptitude moo 此軟體沒有復活節彩蛋程式。 $ aptitude -v moo 此軟體真的沒有復活節彩蛋程式。 $ aptitude -vv moo 我不是已經告訴你這個軟體真的沒有復活節彩蛋程式了嗎?</p>
 
           
               <footer>
@@ -372,6 +314,64 @@ ga('send', 'pageview');
         
           <p>同志们，由于人力不可抗拒因素(中国的出国网络海底光缆给地震震断了)，所以我的blog不定期更新。 敬请耐心等待。</p>
 
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/341/">getline的效率问题</a>
+    </h1>
+    <p class="meta">Dec 26, 2006
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/341/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>用过C++的肯定都知道getline(cin, str)这个用法吧，用于将某行读入到一个字符串对象中。但是根据我的测试，这个方法有严重的效率问题。 正则表达式行匹配器，匹配一个23M文件。用getline的总运行时间是21秒，用直接文件读取方法只有7秒。getline方法在屏蔽对读入数据的正则匹配后还运行了9秒上下。这里有人可能弄不懂，即使读取不用时间，getline花费的时间加正则运算时间不应该是总时间吗？结论是不是的，因为多个接口上下调用需要时间，str对象得到指针需要时间。所以其中还有一些时间差。不过getline方法效率差是显而易见的。 原因在于istream的类型和行的长度。我们是从文件中读取的，一次获得一个字符的取得的。ifstream应该没有弱智到一次只ReadFile一个字节，估计是用了1-4K的缓冲簇。对于大型文件，这个缓冲簇应该越大效率越高。但是stream不会知道输入流的长度，所以—— 而且即使知道了，50W个byte就是50W次call调用，花多少时间自己考虑吧。 还有一个是string类型的问题。getline istream一般都是用string作为接收对象的，因为string几乎可以无限制的接收。在STL的实现中，string是vector一样的连续块分配。当长度超出的时候，就必须重新分配，然后复制数据，删除原先块。因此STL中建议给string对象reserve一个块来提高效率。不过getline开始的时候会earse string对象，可能在这里面保留区域就被OOXX了—— 所以在大规模数据处理中，还是手来吧。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/340/">EPS转BMP和代码优化</a>
+    </h1>
+    <p class="meta">Dec 22, 2006
+         - 3 minute read 
+         - <a href="http://shell909090.org/blog/archives/340/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>EPS转BMP(我用的是PNG，不过还是一回事情)。EPS内部有两种图片，一个是TIF，位置和大小在头32个字节中描述。具体可以看EPS文档，在lp[5]保存位置，lp[6]保存大小。还有就是%%BeginBinary: 后面跟一个大小，然后跟beginimagex0D。在前文中应当有大小，自己找找看去，最后是一堆数据。存放方法是一位一位的像素连续存放，先存放一行C，然后是一行M，然后是Y，然后是K。当这4者全部存放完后，向后跳空一端区域，到本行开始的4字节对齐处，开始下一行的存放。 例如3个像素宽的图片(好简单——)存放方法就是，在0字节的最高三位(7,6,5位)，存放了这三个像素的C值。次三位(4,3,2位)，存放了M值。然后Y值存放在0字节的两位(1,0位)和1字节的一位(7位)。最后K值存放在1字节的次三位(6,5,4位)。然后跳空对齐，在4字节的位置开始描述下一行。 了解这个过程了，就应该发现，要转换到BMP需要大量的位操作。前置过程不说了，假定数据在内存里面(我当然不会用读取这种方法，用的是文件内存映射啦)，然后目标是GDI+的BitmapData对象。 BYTE getBit (PBYTE lpInData, int bit) { bit*=n; BYTE rslt; rslt = lpInData[bit / 8]; rslt &gt;&gt;= (7 - bit % 8); return rslt &amp; 0x1; } for (y = 0; y &lt; tgtData.Height; y++) { line_start = lpOut + l * n * Stride; for (x = 0; x &lt; tgtData.Width; x++) { c = 1 - getBit (line_start, x); m = 1 - getBit</p>
+
+          
+              <footer>
+                  <a href="http://shell909090.org/blog/archives/340/" rel="full-article">Read On &rarr;</a>
+              </footer>
           
 
         
@@ -581,8 +581,6 @@ ga('send', 'pageview');
     
         <a href="/page/91/" class="label-pagination">91</a>
     
-        <a href="/page/92/" class="label-pagination">92</a>
-    
 
     
     
@@ -591,7 +589,7 @@ ga('send', 'pageview');
 
     
     
-        <a href="/page/92/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
+        <a href="/page/91/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
     
 
 </div>

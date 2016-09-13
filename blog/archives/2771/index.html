@@ -116,13 +116,9 @@ ga('send', 'pageview');
 
 <p>根据引用1和2的说法，cache是用来缓存文件的，buffer是用来缓存块设备的。在2.4之前，这俩是独立的，所以很多文件缓存两遍。在2.4之后，两个联起来了，所以一个文件只缓存一遍，这个大小算cache的。</p>
 
-<p>linux通过page
-cache做所有的文件IO。写的时候，只标记这个cache页面为dirty，一个周期循环的刷写系统会去把这个脏页面刷到磁盘上。而读的返回也在page
-cache里。如果没有命中，那么就先载入。page
-cache是一个长期存在的东西，是一个几乎只会增大的怪物。他的唯一回收理由就是系统耗尽内存，需要释放部分来用。</p>
+<p>linux通过page cache做所有的文件IO。写的时候，只标记这个cache页面为dirty，一个周期循环的刷写系统会去把这个脏页面刷到磁盘上。而读的返回也在page cache里。如果没有命中，那么就先载入。page cache是一个长期存在的东西，是一个几乎只会增大的怪物。他的唯一回收理由就是系统耗尽内存，需要释放部分来用。</p>
 
-<p>而buffer缓存的是块设备数据。正常来说，这些数据都应该和page
-cache一致。里面只有部分数据会不在page cache里，例如文件元数据。</p>
+<p>而buffer缓存的是块设备数据。正常来说，这些数据都应该和page cache一致。里面只有部分数据会不在page cache里，例如文件元数据。</p>
 
 <ol>
 <li><a href="http://www.quora.com/Linux-Kernel/What-is-the-major-difference-between-the-buffer-cache-and-the-page-cache">http://www.quora.com/Linux-Kernel/What-is-the-major-difference-between-the-buffer-cache-and-the-page-cache</a></li>

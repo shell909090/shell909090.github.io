@@ -112,208 +112,113 @@ ga('send', 'pageview');
           
           
           
-          <div>
+          <p>EPS转BMP(我用的是PNG，不过还是一回事情)。EPS内部有两种图片，一个是TIF，位置和大小在头32个字节中描述。具体可以看EPS文档，在lp[5]保存位置，lp[6]保存大小。还有就是%%BeginBinary:</p>
 
-   
-EPS转BMP(我用的是PNG，不过还是一回事情)。EPS内部有两种图片，一个是TIF，位置和大小在头32个字节中描述。具体可以看EPS文档，在lp\[5\]保存位置，lp\[6\]保存大小。还有就是%%BeginBinary:
-后面跟一个大小，然后跟beginimagex0D。在前文中应当有大小，自己找找看去，最后是一堆数据。存放方法是一位一位的像素连续存放，先存放一行C，然后是一行M，然后是Y，然后是K。当这4者全部存放完后，向后跳空一端区域，到本行开始的4字节对齐处，开始下一行的存放。
+<p>后面跟一个大小，然后跟beginimagex0D。在前文中应当有大小，自己找找看去，最后是一堆数据。存放方法是一位一位的像素连续存放，先存放一行C，然后是一行M，然后是Y，然后是K。当这4者全部存放完后，向后跳空一端区域，到本行开始的4字节对齐处，开始下一行的存放。</p>
 
-</div>
+<p>例如3个像素宽的图片(好简单——)存放方法就是，在0字节的最高三位(7,6,5位)，存放了这三个像素的C值。次三位(4,3,2位)，存放了M值。然后Y值存放在0字节的两位(1,0位)和1字节的一位(7位)。最后K值存放在1字节的次三位(6,5,4位)。然后跳空对齐，在4字节的位置开始描述下一行。</p>
 
-<div>
+<p>了解这个过程了，就应该发现，要转换到BMP需要大量的位操作。前置过程不说了，假定数据在内存里面(我当然不会用读取这种方法，用的是文件内存映射啦)，然后目标是GDI+的BitmapData对象。</p>
 
-   
-例如3个像素宽的图片(好简单——)存放方法就是，在0字节的最高三位(7,6,5位)，存放了这三个像素的C值。次三位(4,3,2位)，存放了M值。然后Y值存放在0字节的两位(1,0位)和1字节的一位(7位)。最后K值存放在1字节的次三位(6,5,4位)。然后跳空对齐，在4字节的位置开始描述下一行。
-
-</div>
-
-<div>
-
-   
-了解这个过程了，就应该发现，要转换到BMP需要大量的位操作。前置过程不说了，假定数据在内存里面(我当然不会用读取这种方法，用的是文件内存映射啦)，然后目标是GDI+的BitmapData对象。
-
-</div>
-
-<div>
-
-BYTE getBit (PBYTE lpInData, int bit)\
+<pre><code>BYTE getBit (PBYTE lpInData, int bit)
 {
-
-</div>
-
-<div>
-
- bit\*=n;\
- BYTE            rslt;\
- rslt = lpInData\[bit / 8\];\
- rslt &gt;&gt;= (7 - bit % 8);\
- return rslt & 0x1;\
-}\
- for (y = 0; y &lt; tgtData.Height; y++) {\
-  line\_start = lpOut + l \* n \* Stride;\
-  for (x = 0; x &lt; tgtData.Width; x++) {\
-   c = 1 - getBit (line\_start, x);\
-   m = 1 - getBit (line\_start, x + tgtData.Width);\
-   yy = 1 - getBit (line\_start, x + 2 \* tgtData.Width);\
-   k = getBit (line\_start, x + 3 \* tgtData.Width);\
-   r = 1 - min (1, c \* (1 - k) + k);\
-   g = 1 - min (1, m \* (1 - k) + k);\
-   b = 1 - min (1, yy \* (1 - k) + k);\
-   if (x % 2) {\
-    \*((PBYTE) tgtData.Scan0 + l \* tgtData.Stride + x / 2) |=\
-     (g &lt;&lt; 6) + (r &lt;&lt; 5) + (b &lt;&lt; 4);\
-   } else {\
-    \*((PBYTE) tgtData.Scan0 + l \* tgtData.Stride + x / 2) |=\
-     (m &lt;&lt; 2) + (c &lt;&lt; 1) + yy;
-
-</div>
-
-<div>
-
-   }
-
-</div>
-
-<div>
-
-  }
-
-</div>
-
-<div>
-
- }
-
-</div>
-
-<div>
-
-    贴上来的代码格式都不怎么样，拿indent格一下就好了。
-
-</div>
-
-<div>
-
-   
-原本来说，CMYK转RGM是有一个算法的。在这里，CMKY都是非1即0。我们可以运算出，当K等于1的时候，结果就是RGB=0;所以当K为1的时候无需进行取值运算写入操作。这是第一步优化。当K等于0的时候，RGB等于CMY求反。所以无需多三个变量，不用1-运算就可以了，这是第二步优化。
-
-</div>
-
-<div>
-
- for (y = 0; y &lt; tgtData.Height; y++) {\
-  line\_start = lpOut + l \* n \* Stride;\
-  for (x = 0; x &lt; tgtData.Width; x++) {\
-   k = getBit (line\_start, x + 3 \* tgtData.Width);\
-   if(k){\
-    c = getBit (line\_start, x);\
-    m = getBit (line\_start, x + tgtData.Width);\
-    yy = getBit (line\_start, x + 2 \* tgtData.Width);\
-    if (x % 2) {\
-     \*((PBYTE) tgtData.Scan0 + l \* tgtData.Stride + x / 2) |=\
-      (c &lt;&lt; 6) + (m &lt;&lt; 5) + (yy &lt;&lt; 4);\
-    } else {\
-     \*((PBYTE) tgtData.Scan0 + l \* tgtData.Stride + x / 2) |=\
-      (c &lt;&lt; 2) + (m &lt;&lt; 1) + yy;\
-    }\
-   }\
-  }\
- }
-
-</div>
-
-<div>
-
-   
-然后是获得CMKY的过程。我原先是使用一个函数来获得的，但是函数获得的时候会出现一个问题。在循环中使用函数会打断循环的流水，造成效率下降，因此改成内嵌。内联函数(inline
-faction)理论上可以，但是有两个问题。一个是有的编译器理解内联为建议关键字，是否执行要看编译器的心情。还有一个是使用内联就无法使用register关键字来优化，虽然这个也是建议关键字。内嵌写起来很长，因此使用宏来解决。这是第三步优化。
-
-</div>
-
-<div>
-
-   
-再然后是减少循环中计算的规模，降低计算难度。这是细节优化，本质上是空间换时间，不过空间消耗很小而时间加速明显。首先是将Width1和Width3计算出来备用，减少核心循环中乘法次数(双循环内减少了三次乘法)。将pic\_line\_start的计算从内层循环提到外层(单循环减少内循环数目减一次乘法和加法。乘法是主要目的，加法可以到内核循环中做，不怎么费时，不过没必要在能优化的地方放过，还弄的程序更复杂就是了)。bit计算的时候本来是x\*n+分别的Width1-Width3，可以改成减Width1(减少内核两次乘法)。这是第四步优化。
-
-</div>
-
-<div>
-
-   
-最后是细节，例如bit/8改成bit&gt;&gt;3，bit%8改成bit&0x07，x%2改成x&0x01。尽量使用使用+=
--= &gt;&gt;=操作，减少运算目数。这是第五步优化。
-
-</div>
-
-<div>
-
-    最后结果
-
-</div>
-
-<div>
-
-<div>
-
-\#define GETBIT(byte) byte = line\_start\[bit &gt;&gt; 3\];byte
-&gt;&gt;= \~bit & 0x07;byte &= 0x01;
-
-</div>
-
-<div>
-
-int eps2gdip::DataProcess (BitmapData & tgtData)\
-{\
- BYTE c, m, y, k;\
- UINT x, l, Width1, Width3;\
- register ULONG bit;\
- BYTE RGB;\
- PBYTE line\_start, pic\_line\_start;\
- Width1 = n \* tgtData.Width;\
- Width3 = n \* tgtData.Width \* 3;
-
-</div>
-
-<div>
-
- for (l = 0; l &lt; tgtData.Height; l++) {\
-  line\_start = lpOut + l \* n \* Stride;\
-  pic\_line\_start = (PBYTE) tgtData.Scan0 + l \* tgtData.Stride;\
-  for (x = 0; x &lt; tgtData.Width; x++) {\
-   bit = Width3 + x \* n;\
-   GETBIT (k);\
-   if (k) {\
-    bit -= Width3;\
-    GETBIT (c);\
-    bit += Width1;\
-    GETBIT (m);\
-    bit += Width1;\
-    GETBIT (y);\
-    RGB = (c &lt;&lt; 2) | (m &lt;&lt; 1) | (y);\
-    if (x & 0x01)\
-     \*(pic\_line\_start + x / 2) |= (RGB &lt;&lt; 4);\
-    else\
-     \*(pic\_line\_start + x / 2) |= RGB;\
-   }\
-  }\
- }\
- return 0;\
+    bit*=n;
+    BYTE rslt;
+    rslt = lpInData[bit / 8];
+    rslt &gt;&gt;= (7 - bit % 8);
+    return rslt &amp; 0x1;
 }
 
-</div>
+for (y = 0; y &lt; tgtData.Height; y++) {
+    line_start = lpOut + l * n * Stride;
+    for (x = 0; x &lt; tgtData.Width; x++) {
+        c = 1 - getBit (line_start, x);
+        m = 1 - getBit (line_start, x + tgtData.Width);
+        yy = 1 - getBit (line_start, x + 2 * tgtData.Width);
+        k = getBit (line_start, x + 3 * tgtData.Width);
+        r = 1 - min (1, c * (1 - k) + k);
+        g = 1 - min (1, m * (1 - k) + k);
+        b = 1 - min (1, yy * (1 - k) + k);
+        if (x % 2) {
+            *((PBYTE) tgtData.Scan0 + l * tgtData.Stride + x / 2) |=
+                (g &lt;&lt; 6) + (r &lt;&lt; 5) + (b &lt;&lt; 4);
+        } else {
+            *((PBYTE) tgtData.Scan0 + l * tgtData.Stride + x / 2) |=
+                (m &lt;&lt; 2) + (c &lt;&lt; 1) + yy;
+        }
+    }
+}
+</code></pre>
 
-<div>
+<p>贴上来的代码格式都不怎么样，拿indent格一下就好了。</p>
 
-</div>
+<p>原本来说，CMYK转RGM是有一个算法的。在这里，CMKY都是非1即0。我们可以运算出，当K等于1的时候，结果就是RGB=0;所以当K为1的时候无需进行取值运算写入操作。这是第一步优化。当K等于0的时候，RGB等于CMY求反。所以无需多三个变量，不用1-运算就可以了，这是第二步优化。</p>
 
-<div>
+<pre><code>for (y = 0; y &lt; tgtData.Height; y++) {
+    line_start = lpOut + l * n * Stride;
+    for (x = 0; x &lt; tgtData.Width; x++) {
+        k = getBit (line_start, x + 3 * tgtData.Width);
+        if(k){
+            c =getBit (line_start, x);
+            m =getBit (line_start, x + tgtData.Width);
+            yy =getBit (line_start, x + 2 * tgtData.Width);
+            if (x % 2) {
+                *((PBYTE) tgtData.Scan0 + l * tgtData.Stride + x / 2) |=
+                    (c &lt;&lt; 6) + (m &lt;&lt; 5) + (yy &lt;&lt; 4);
+            } else {
+                *((PBYTE) tgtData.Scan0 + l * tgtData.Stride + x / 2) |=
+                    (c &lt;&lt; 2) + (m &lt;&lt; 1) + yy;
+            }
+        }
+    }
+}
+</code></pre>
 
-   
-结果测试，在100M文件的完全运算中，处理时间从83秒降低到35秒。其中结果保存等动作耗费20秒，即核心运算从63秒降低到15秒。效率增加了300%。
+<p>然后是获得CMKY的过程。我原先是使用一个函数来获得的，但是函数获得的时候会出现一个问题。在循环中使用函数会打断循环的流水，造成效率下降，因此改成内嵌。内联函数(inline faction)理论上可以，但是有两个问题。一个是有的编译器理解内联为建议关键字，是否执行要看编译器的心情。还有一个是使用内联就无法使用register关键字来优化，虽然这个也是建议关键字。内嵌写起来很长，因此使用宏来解决。这是第三步优化。</p>
 
-</div>
+<p>再然后是减少循环中计算的规模，降低计算难度。这是细节优化，本质上是空间换时间，不过空间消耗很小而时间加速明显。首先是将Width1和Width3计算出来备用，减少核心循环中乘法次数(双循环内减少了三次乘法)。将pic_line_start的计算从内层循环提到外层(单循环减少内循环数目减一次乘法和加法。乘法是主要目的，加法可以到内核循环中做，不怎么费时，不过没必要在能优化的地方放过，还弄的程序更复杂就是了)。bit计算的时候本来是x*n+分别的Width1-Width3，可以改成减Width1(减少内核两次乘法)。这是第四步优化。</p>
 
-<p></div></p>
+<p>最后是细节，例如bit/8改成bit&gt;&gt;3，bit%8改成bit&amp;0x07，x%2改成x&amp;0x01。尽量使用使用+= -= &gt;&gt;=操作，减少运算目数。这是第五步优化。</p>
+
+<p>最后结果</p>
+
+<pre><code>#define GETBIT(byte) byte = line_start[bit &gt;&gt; 3];byte &gt;&gt;= ~bit &amp; 0x07;byte &amp;= 0x01;
+
+int eps2gdip::DataProcess (BitmapData &amp; tgtData)
+{
+    BYTE c, m, y, k;
+    UINT x, l, Width1, Width3;
+    register ULONG bit;
+    BYTE RGB;
+    PBYTE line_start, pic_line_start;
+    Width1 = n * tgtData.Width;
+    Width3 = n * tgtData.Width * 3;
+    for (l = 0; l &lt; tgtData.Height; l++) {
+        line_start = lpOut + l * n * Stride;
+        pic_line_start = (PBYTE) tgtData.Scan0 + l * tgtData.Stride;
+        for (x = 0; x &lt; tgtData.Width; x++) {
+            bit = Width3 + x * n;
+            GETBIT (k);
+            if (k) {
+                bit -= Width3;
+                GETBIT (c);
+                bit += Width1;
+                GETBIT (m);
+                bit += Width1;
+                GETBIT (y);
+                RGB = (c &lt;&lt; 2) | (m &lt;&lt; 1) | (y);
+                if (x &amp; 0x01)
+                    *(pic_line_start + x / 2) |= (RGB &lt;&lt; 4);
+                else
+                    *(pic_line_start + x / 2) |= RGB;
+            }
+        }
+    }
+    return 0;
+}
+</code></pre>
+
+<p>结果测试，在100M文件的完全运算中，处理时间从83秒降低到35秒。其中结果保存等动作耗费20秒，即核心运算从63秒降低到15秒。效率增加了300%。</p>
 
         </div>
         

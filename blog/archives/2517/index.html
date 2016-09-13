@@ -114,36 +114,27 @@ ga('send', 'pageview');
           
           <p>系统debian testing，lxc-0.9。</p>
 
-<p>在笔记本上做lxc，网络是wifi，AP会drop不同MAC发出的报文，所以无法做网桥。一个办法是用ebtables做规则，我嫌麻烦。另一个是配置多头主机，double
-NAT。当然，还有路由器模式。不过大多数网络环境中我搞不到default
-gateway的权限来添加子网的路由规则。所以就选了double NAT。</p>
+<p>在笔记本上做lxc，网络是wifi，AP会drop不同MAC发出的报文，所以无法做网桥。一个办法是用ebtables做规则，我嫌麻烦。另一个是配置多头主机，double NAT。当然，还有路由器模式。不过大多数网络环境中我搞不到default gateway的权限来添加子网的路由规则。所以就选了double NAT。</p>
 
 <p>问题出在dnsmasq作为dhcp和dns服务器上。整个网络都搭好了，通的。完了我在host上启动dnsmasq，在guest里就是硬生生无法获得IP。</p>
 
-<p>首先host上vi /var/log/syslog，看到dnsmasq把dhcp
-offer发出去了。在guest里tcpdump，看到有报文收到。那就奇怪该死的dhclient不工作了。dhclient版本4.2.4，和主系统一致。网桥环境中这个版本可以工作。</p>
+<p>首先host上vi /var/log/syslog，看到dnsmasq把dhcp offer发出去了。在guest里tcpdump，看到有报文收到。那就奇怪该死的dhclient不工作了。dhclient版本4.2.4，和主系统一致。网桥环境中这个版本可以工作。</p>
 
 <p>所以把网桥环境中的报文也tcpdump了一遍，加上刚刚不成功的dumpout一起看——什么都看不出来。</p>
 
-<p>偶然dhclient -v -d -4 eth0了一下，看到bad udp
-checksums，顿时一愣。跑到wireshark下面看了一下——还真是没有计算checksum。打开checksum计算可以看到double
-NAT里的checksum算错了。提示是maybe checksum offload。</p>
+<p>偶然dhclient -v -d -4 eth0了一下，看到bad udp checksums，顿时一愣。跑到wireshark下面看了一下——还真是没有计算checksum。打开checksum计算可以看到double NAT里的checksum算错了。提示是maybe checksum offload。</p>
 
 <p>我找到这个链接：<a href="http://www.wireshark.org/docs/wsug_html_chunked/ChAdvChecksums.html">http://www.wireshark.org/docs/wsug_html_chunked/ChAdvChecksums.html</a></p>
 
-<p>里面提到，checksum可能是由网卡或驱动计算的。这就难怪——没问题的dhcp
-offer的udp
-checksum是由openwrt的网卡发出，而有问题的则是由bridge和virtual
-ethernet发出。</p>
+<p>里面提到，checksum可能是由网卡或驱动计算的。这就难怪——没问题的dhcp offer的udp checksum是由openwrt的网卡发出，而有问题的则是由bridge和virtual ethernet发出。</p>
 
 <p>那见鬼，别人是怎么成功的？</p>
 
 <p>一番搜索，看来lxc还不是第一个中招的：<a href="http://lists.xen.org/archives/html/xen-devel/2011-12/msg01770.html">http://lists.xen.org/archives/html/xen-devel/2011-12/msg01770.html</a></p>
 
-<p>dhcp-4.2.2可以打这个补丁，使得dhcp-client不去校验udp
-checksum：<a href="http://pkgs.fedoraproject.org/cgit/dhcp.git/plain/dhcp-4.2.2-xen-checksum.patch?id2=HEAD">http://pkgs.fedoraproject.org/cgit/dhcp.git/plain/dhcp-4.2.2-xen-checksum.patch?id2=HEAD</a></p>
+<p>dhcp-4.2.2可以打这个补丁，使得dhcp-client不去校验udp checksum：<a href="http://pkgs.fedoraproject.org/cgit/dhcp.git/plain/dhcp-4.2.2-xen-checksum.patch?id2=HEAD">http://pkgs.fedoraproject.org/cgit/dhcp.git/plain/dhcp-4.2.2-xen-checksum.patch?id2=HEAD</a></p>
 
-<p>当然，也有各种坑爹补丁（例如这个：<a href="http://marc.info/?l=kvm&amp;m=121882968407525&amp;w=2）来修复虚拟驱动上的问题，计算出正确的checksum。">http://marc.info/?l=kvm&amp;m=121882968407525&amp;w=2）来修复虚拟驱动上的问题，计算出正确的checksum。</a></p>
+<p>当然，也有各种坑爹补丁（例如这个：<a href="http://marc.info/?l=kvm&amp;m=121882968407525&amp;w=2">http://marc.info/?l=kvm&amp;m=121882968407525&amp;w=2</a> ）来修复虚拟驱动上的问题，计算出正确的checksum。</p>
 
 <p>在debian下，他被报为bts671707(<a href="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=671707)。已经报了一年半，尚未处理。">http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=671707)。已经报了一年半，尚未处理。</a></p>
 

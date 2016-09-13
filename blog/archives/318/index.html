@@ -112,33 +112,51 @@ ga('send', 'pageview');
           
           
           
-          <p>CopyRight:<br />
-    Written by Shell.E.Xu. Published under GPL.<br />
-KeyWord:<br />
-    Linux bash profile 配置文件。<br />
-Abstract:<br />
-    利用变量声明次序测定多个配置文件是否被调用以及调用的次序。<br />
-环境：<br />
-    Debian/GNU Linux starg 3.1<br />
-    Kernel:2.6.16-686-2<br />
-   
-测定方法，加入变量TEST=XXX。此方法可能被某些变量解除函数解除，因此不予执行的反应未必是真，不过执行次序一般假不了。<br />
-1.tty登录时<br />
-   
-/etc/environment;/etc/profile;~/.bash_profile-&gt;~/.bashrc-&gt;/etc/bashrc;<br />
-    /etc/environment;/etc/profile;~/.bash_login<br />
-    /etc/environment;/etc/profile;~/.profile<br />
-    当上级启动过程中文件不存在时，才进行下面的过程。<br />
-2.GDM登录时<br />
-    /etc/environment<br />
-3.新启动bash时<br />
-    /etc/bash.bashrc;~/.bashrc-&gt;/etc/bashrc;<br />
-4.~/.inputrc<br />
-    根据文档，这个函数在readline函数初始化时启用。<br />
-5.结论<br />
-   
-如果需要有效执行命令，需要同时修改/etc/profile和/etc/bash.bashrc。因为GDM登录的时候不执行登录脚本顺序，所以仅仅修改/etc/profile会造成对GUI下面开的term无效。虽然/etc/bashrc在理论上也有效，但是一旦~/.bashrc中没有引用，则无效(例如Debian中的root，由于安装系统的时候没有copy
-skel，所以缺少很多.XX文件)。如果仅仅是设定变量，可以用/etc/environment。该文件没有找到资料，其中仅可以设定变量(不用export，应当是被某程序作为配置读取而非脚本执行)，据分析是登录时当即起效。</p>
+          <p>CopyRight:</p>
+
+<p>Written by Shell.E.Xu. Published under GPL.</p>
+
+<p>KeyWord:</p>
+
+<p>Linux bash profile 配置文件。</p>
+
+<p>Abstract:</p>
+
+<p>利用变量声明次序测定多个配置文件是否被调用以及调用的次序。</p>
+
+<p>环境：</p>
+
+<p>Debian/GNU Linux starg 3.1</p>
+
+<p>Kernel:2.6.16-686-2</p>
+
+<p>测定方法，加入变量TEST=XXX。此方法可能被某些变量解除函数解除，因此不予执行的反应未必是真，不过执行次序一般假不了。</p>
+
+<p>1.tty登录时</p>
+
+<p>/etc/environment;/etc/profile;~/.bash_profile-&gt;~/.bashrc-&gt;/etc/bashrc;</p>
+
+<p>/etc/environment;/etc/profile;~/.bash_login</p>
+
+<p>/etc/environment;/etc/profile;~/.profile</p>
+
+<p>当上级启动过程中文件不存在时，才进行下面的过程。</p>
+
+<p>2.GDM登录时</p>
+
+<p>/etc/environment</p>
+
+<p>3.新启动bash时</p>
+
+<p>/etc/bash.bashrc;~/.bashrc-&gt;/etc/bashrc;</p>
+
+<p>4.~/.inputrc</p>
+
+<p>根据文档，这个函数在readline函数初始化时启用。</p>
+
+<p>5.结论</p>
+
+<p>如果需要有效执行命令，需要同时修改/etc/profile和/etc/bash.bashrc。因为GDM登录的时候不执行登录脚本顺序，所以仅仅修改/etc/profile会造成对GUI下面开的term无效。虽然/etc/bashrc在理论上也有效，但是一旦~/.bashrc中没有引用，则无效(例如Debian中的root，由于安装系统的时候没有copy skel，所以缺少很多.XX文件)。如果仅仅是设定变量，可以用/etc/environment。该文件没有找到资料，其中仅可以设定变量(不用export，应当是被某程序作为配置读取而非脚本执行)，据分析是登录时当即起效。</p>
 
         </div>
         

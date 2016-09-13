@@ -112,25 +112,39 @@ ga('send', 'pageview');
           
           
           
-          <p>贝壳家里开了emule，天天下载，问题是又不能每次都是晚上添加资源。
-怎么办呢？不知道大家知道不知道，emule是可以网络管理的，端口是4711。不过不是https，密码容易泄露。而且贝壳已经有一个nginx服务器了，也懒的再做端口映射，换端口。于是，在nginx中做如下设定。(当然，贝壳是放在https段中的)
-location \^~ /emule/ { rewrite             \^/emule/(.*)\$ /\$1 break;
-proxy_pass          <a href="http://hostip:4711">http://hostip:4711</a>; proxy_set_header   
-Host            \$host; proxy_set_header    X-Real-IP      
-\$remote_addr; proxy_set_header    X-Forwarded-For
-\$proxy_add_x_forwarded_for; }
-然后，用<a href="https://dynname/emule/">https://dynname/emule/</a>就可以访问你家里的emule了，记得密码设强点。
-接下来，verycd里面曾经有复制所有连接的选项，现在没了。面对几个链接，也就手工复制一下，面对上百个连接，贝壳就无语了。贝壳试验过几个插件，都无法正确识别ed2k的链接获取。那怎么办呢？这时就要请出我们伟大的Linux。
-需要准备的工具是lynx，请预先装好，然后如下操作。(范例是个动画\^_\^)
-wget -c <a href="http://www.verycd.com/topics/2779234/">http://www.verycd.com/topics/2779234/</a> lynx -dump -listonly
-index.html | grep &ldquo;ed2k://&rdquo; | sed &ldquo;s/.*ed2k/ed2k/g&rdquo; | grep -v BIG5 &gt;
-out.txt wc -l out.txt
-lynx的-dump选项是将某个网页全部渲染成文本进行展示，这是html2text的好方法，效果还不错哦，不过中文支持好像不是很好。而-listonly则是展示出页面上的所有链接，这就拿到了我们需要的原始数据。
-然后，我们取其中的ed2k行，忽略其他链接，再通过sed转换，去除头部的编号和空格，这样就可以得到所有的ed2k链接。
-我在下面是用-v
-BIG5的参数，忽略了其中繁体中文的资源，然后输出到一个文件中。数数行数，52行，大致和文件个数相当(其中好像有两个v2)。那就是可用资源了，复制到emule的控制页面中——出错？
-这是因为emule的控制页面使用GET方式传递参数，因此有长度限制。你需要将链接10个一批往里面复制——有个几次就OK了。当然，如果还是多，贝壳回头会写一篇文章，介绍如何使用curl自动干这事情——这还不算太难。
-这就是为啥贝壳喜欢Linux的原因了。相比Windows下的两个解决方案，找插件太费劲，自己写程序更费劲。Linux使用现有工具的组合可以轻松完成这一任务。</p>
+          <p>贝壳家里开了emule，天天下载，问题是又不能每次都是晚上添加资源。</p>
+
+<p>怎么办呢？不知道大家知道不知道，emule是可以网络管理的，端口是4711。不过不是https，密码容易泄露。而且贝壳已经有一个nginx服务器了，也懒的再做端口映射，换端口。于是，在nginx中做如下设定。(当然，贝壳是放在https段中的)</p>
+
+<pre><code>location ^~ /emule/ {
+    rewrite ^/emule/(.*)$ /$1 break;
+    proxy_pass &lt;http://hostip:4711&gt;;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+}
+</code></pre>
+
+<p>然后，用<a href="https://dynname/emule/">https://dynname/emule/</a>就可以访问你家里的emule了，记得密码设强点。</p>
+
+<p>接下来，verycd里面曾经有复制所有连接的选项，现在没了。面对几个链接，也就手工复制一下，面对上百个连接，贝壳就无语了。贝壳试验过几个插件，都无法正确识别ed2k的链接获取。那怎么办呢？这时就要请出我们伟大的Linux。</p>
+
+<p>需要准备的工具是lynx，请预先装好，然后如下操作。(范例是个动画^_^)</p>
+
+<pre><code>wget -c &lt;http://www.verycd.com/topics/2779234/&gt;
+lynx -dump -listonly index.html | grep &quot;ed2k://&quot; | sed &quot;s/.*ed2k/ed2k/g&quot; | grep -v BIG5 &gt; out.txt
+wc -l out.txt
+</code></pre>
+
+<p>lynx的-dump选项是将某个网页全部渲染成文本进行展示，这是html2text的好方法，效果还不错哦，不过中文支持好像不是很好。而-listonly则是展示出页面上的所有链接，这就拿到了我们需要的原始数据。</p>
+
+<p>然后，我们取其中的ed2k行，忽略其他链接，再通过sed转换，去除头部的编号和空格，这样就可以得到所有的ed2k链接。</p>
+
+<p>我在下面是用-v BIG5的参数，忽略了其中繁体中文的资源，然后输出到一个文件中。数数行数，52行，大致和文件个数相当(其中好像有两个v2)。那就是可用资源了，复制到emule的控制页面中——出错？</p>
+
+<p>这是因为emule的控制页面使用GET方式传递参数，因此有长度限制。你需要将链接10个一批往里面复制——有个几次就OK了。当然，如果还是多，贝壳回头会写一篇文章，介绍如何使用curl自动干这事情——这还不算太难。</p>
+
+<p>这就是为啥贝壳喜欢Linux的原因了。相比Windows下的两个解决方案，找插件太费劲，自己写程序更费劲。Linux使用现有工具的组合可以轻松完成这一任务。</p>
 
         </div>
         

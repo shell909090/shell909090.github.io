@@ -239,32 +239,56 @@ settings，不解释，翻墙必备。倒是自带的pptp客户端连接不上�
       <pubDate>Tue, 02 Mar 2010 16:10:00 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/99/</guid>
-      <description>&lt;p&gt;有不少不折腾会死星人已经用上andriod了吧？有没有刷机过？有没有怕手机掉过？android的联系人是同步到gmail的，不用怕。但是信息就不同不了。所以，下面介绍几个信息导出的方法。
-1.aqq 用adb
-shell去/data/data/com.android.aqq/databases/下面，把aqq.db复制出来，sqlite3格式，随便看吧。
-2.AnFetion 用adb
-shell去/data/data/&amp;hellip;..AnFetion2/databases/下面，把fetion.DB复制出来。
-3.信息
-这个是最麻烦的。去信息-&amp;gt;Menu-&amp;gt;设置-&amp;gt;导出短信里面导出。但是别高兴的太早，贝壳发现一个bug。如果你的短信里面有西文引号，会导致xml格式错误，从而无法导入。解决方法是手工删除引号。
-应用，使用xsltproc，将xml转换为html来浏览。贝壳用的xslt比较简单，抄在下面。
-&amp;lt;?xml version=&amp;lsquo;1.0&amp;rsquo; encoding=&amp;ldquo;GBK&amp;rdquo;?&amp;gt; &amp;lt;xsl:stylesheet
-version=&amp;ldquo;1.0&amp;rdquo; xmlns:xsl=&amp;rdquo;&lt;a href=&#34;http://www.w3.org/1999/XSL/Transform&#34;&gt;http://www.w3.org/1999/XSL/Transform&lt;/a&gt;&amp;ldquo;&amp;gt;
-&amp;lt;xsl:template match=&amp;ldquo;/&amp;rdquo;&amp;gt; &amp;lt;html&amp;gt; &amp;lt;body&amp;gt;
-&amp;lt;xsl:for-each select=&amp;ldquo;//smss/address&amp;rdquo;&amp;gt; Phone
-Number:&amp;lt;xsl:value-of select=&amp;ldquo;@data&amp;rdquo;/&amp;gt;&amp;lt;br/&amp;gt; &amp;lt;table
-border=&amp;ldquo;0&amp;rdquo; class=&amp;ldquo;rev_tab&amp;rdquo; width=&amp;ldquo;100%&amp;rdquo;&amp;gt; &amp;lt;xsl:for-each
-select=&amp;ldquo;sms&amp;rdquo;&amp;gt; &amp;lt;tr&amp;gt; &amp;lt;td
-class=&amp;ldquo;rev_tab_rev&amp;rdquo;&amp;gt;&amp;lt;xsl:value-of
-select=&amp;ldquo;date/@data&amp;rdquo;/&amp;gt;&amp;lt;/td&amp;gt; &amp;lt;td
-class=&amp;ldquo;rev_tab_rev&amp;rdquo;&amp;gt;&amp;lt;xsl:choose&amp;gt; &amp;lt;xsl:when
-test=&amp;ldquo;read/@data = 1&amp;rdquo;&amp;gt;read&amp;lt;/xsl:when&amp;gt; &amp;lt;xsl:when
-test=&amp;ldquo;read/@data = 0&amp;rdquo;&amp;gt;unread&amp;lt;/xsl:when&amp;gt;
-&amp;lt;/xsl:choose&amp;gt;&amp;lt;/td&amp;gt; &amp;lt;td
-class=&amp;ldquo;rev_tab_rev&amp;rdquo;&amp;gt;&amp;lt;xsl:value-of
-select=&amp;ldquo;body/@data&amp;rdquo;/&amp;gt;&amp;lt;/td&amp;gt; &amp;lt;/tr&amp;gt; &amp;lt;/xsl:for-each&amp;gt;
-&amp;lt;/table&amp;gt;&amp;lt;BR/&amp;gt; &amp;lt;/xsl:for-each&amp;gt; &amp;lt;/body&amp;gt;
-&amp;lt;/html&amp;gt; &amp;lt;/xsl:template&amp;gt; &amp;lt;/xsl:stylesheet&amp;gt;
-为了美观，你还可以修改一下xslt。xsltproc在linux下直接有包，Windows可以来信问贝壳索要移植(其实去官网上就能下到)。&lt;/p&gt;
+      <description>&lt;p&gt;有不少不折腾会死星人已经用上andriod了吧？有没有刷机过？有没有怕手机掉过？android的联系人是同步到gmail的，不用怕。但是信息就不同不了。所以，下面介绍几个信息导出的方法。&lt;/p&gt;
+
+&lt;p&gt;1.aqq&lt;/p&gt;
+
+&lt;p&gt;用adb shell去/data/data/com.android.aqq/databases/下面，把aqq.db复制出来，sqlite3格式，随便看吧。&lt;/p&gt;
+
+&lt;p&gt;2.AnFetion&lt;/p&gt;
+
+&lt;p&gt;用adb shell去/data/data/&amp;hellip;..AnFetion2/databases/下面，把fetion.DB复制出来。&lt;/p&gt;
+
+&lt;p&gt;3.信息&lt;/p&gt;
+
+&lt;p&gt;这个是最麻烦的。去信息-&amp;gt;Menu-&amp;gt;设置-&amp;gt;导出短信里面导出。但是别高兴的太早，贝壳发现一个bug。如果你的短信里面有西文引号，会导致xml格式错误，从而无法导入。解决方法是手工删除引号。&lt;/p&gt;
+
+&lt;p&gt;应用，使用xsltproc，将xml转换为html来浏览。贝壳用的xslt比较简单，抄在下面。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;&amp;lt;?xml version=&#39;1.0&#39; encoding=&amp;quot;GBK&amp;quot;?&amp;gt;
+&amp;lt;xsl:stylesheet version=&amp;quot;1.0&amp;quot; xmlns:xsl=&amp;quot;&amp;lt;http://www.w3.org/1999/XSL/Transform&amp;gt;&amp;quot;&amp;gt;
+&amp;lt;xsl:template match=&amp;quot;/&amp;quot;&amp;gt;
+  &amp;lt;html&amp;gt;
+    &amp;lt;body&amp;gt;
+      &amp;lt;xsl:for-each select=&amp;quot;//smss/address&amp;quot;&amp;gt; Phone Number:&amp;lt;xsl:value-of select=&amp;quot;@data&amp;quot;/&amp;gt;
+      &amp;lt;br/&amp;gt;
+      &amp;lt;table border=&amp;quot;0&amp;quot; class=&amp;quot;rev_tab&amp;quot; width=&amp;quot;100%&amp;quot;&amp;gt;
+    &amp;lt;xsl:for-each select=&amp;quot;sms&amp;quot;&amp;gt;
+      &amp;lt;tr&amp;gt;
+        &amp;lt;td class=&amp;quot;rev_tab_rev&amp;quot;&amp;gt;
+          &amp;lt;xsl:value-of select=&amp;quot;date/@data&amp;quot;/&amp;gt;
+        &amp;lt;/td&amp;gt;
+        &amp;lt;td class=&amp;quot;rev_tab_rev&amp;quot;&amp;gt;
+          &amp;lt;xsl:choose&amp;gt;
+        &amp;lt;xsl:when test=&amp;quot;read/@data = 1&amp;quot;&amp;gt;read&amp;lt;/xsl:when&amp;gt;
+        &amp;lt;xsl:when test=&amp;quot;read/@data = 0&amp;quot;&amp;gt;unread&amp;lt;/xsl:when&amp;gt;
+          &amp;lt;/xsl:choose&amp;gt;
+        &amp;lt;/td&amp;gt;
+        &amp;lt;td class=&amp;quot;rev_tab_rev&amp;quot;&amp;gt;
+          &amp;lt;xsl:value-of select=&amp;quot;body/@data&amp;quot;/&amp;gt;
+        &amp;lt;/td&amp;gt;
+      &amp;lt;/tr&amp;gt;
+    &amp;lt;/xsl:for-each&amp;gt;
+      &amp;lt;/table&amp;gt;
+      &amp;lt;BR/&amp;gt;
+      &amp;lt;/xsl:for-each&amp;gt;
+    &amp;lt;/body&amp;gt;
+  &amp;lt;/html&amp;gt;
+&amp;lt;/xsl:template&amp;gt;
+&amp;lt;/xsl:stylesheet&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;为了美观，你还可以修改一下xslt。xsltproc在linux下直接有包，Windows可以来信问贝壳索要移植(其实去官网上就能下到)。&lt;/p&gt;
 </description>
     </item>
     
@@ -274,28 +298,41 @@ select=&amp;ldquo;body/@data&amp;rdquo;/&amp;gt;&amp;lt;/td&amp;gt; &amp;lt;/tr&
       <pubDate>Mon, 22 Feb 2010 10:27:00 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/95/</guid>
-      <description>&lt;p&gt;最简单的方法是使用&lt;a href=&#34;http://code.google.com/p/android-wifi-tether/&#34;&gt;android-wifi-tether&lt;/a&gt;，不过我这里使用不成功，原因不明。所以今天我们不去说他，我们说另外一个软件，azlink(&lt;a href=&#34;http://code.google.com/p/azilink/&#34;&gt;http://code.google.com/p/azilink/&lt;/a&gt;)。
-首先是安装。检查是否满足安装条件，如果满足的话，安装apk，这个不用多说。azlink.ovpn需要复制到电脑上，并且准备好openvpn和adb。另外，推荐在手机上也保存一个azlink.ovpn和adb，openvpn，以便在多个机器上使用。
-下面开始正式的连接操作，作为测试，请先关闭手机的wifi上网功能和电脑的wifi，有线，以免影响测试结果。本文中的范例系统是Debian
-Testing(Squeeze)，网络环境是中国移动的CMNET(8元80M包月，很合算的)。如果环境有所差异，请照您的环境做相应调整。
-1.使用usb线连接andriod和PC，此时android上会出现USB已连接的提示。
-2.在android上执行azlink，并且勾第一个勾，Service
-active，保证系统运行。此时状态应当是Warting for connection。
-3.在PC上执行adb forward tcp:41927 tcp:41927，此时可能出现service
-start。这个是首次运行的原因，不影响结果。 4.执行openvpn
-azlink.ovpn。此时会出现虚拟网络，并且android上的状态发生变化。
-5.在android上，设置-&amp;gt;高级属性-&amp;gt;手机信息中，查看下面的GSM信息，一般能看到网关和DNS。请去ping一次网关，如果成功，你的事情已经成功了大半。
-如果上面不成功，请联系我。如果成功，请在你的系统内重设DNS。azlink.ovpn将你的DNS指向了手机上，可手机本身无法做DNS的。因此请将你电脑的DNS重设为手机上的值。如果你高兴，也可以将azlink.ovpn中的值改掉，理论上说一个地区的移动网络中，DNS应当都是一样的。不过如果你要跨地区，这个DNS就会发生变化。因此，我无法预先给定值，也无法获得。
-这是整个过程中最关键的一步。很多人说为什么无法上网，其实是可以的，只是你的DNS没有指向正确的值而已。
-6.如果是CMNET，事情就到此为止了。如果是CMWAP，你还需要做一小步。找一个CMWAP能够访问的代理，设到你的浏览器里面。
-作为关闭，其实拔线就可以了。不过作为程序员，我们习惯完美的析构过程。所以，下面是关闭过程。
-1.恢复浏览器原先的代理设置。
-2.断开openvpn，此时android上的状态会恢复Warting for connection。
-3.PC上需要执行adb
-kill-server。这样会kill掉adb的daemon进程，否则adb会一直假转发，并且始终占用进程号。
-4.在android上，关闭Service
-active的勾。并且，如果你喜欢，可以kill掉进程以回收内存。 5.拔USB线。
-如果你曾经关闭了手机的wifi，电脑的wifi和有线，现在也可以恢复了。&lt;/p&gt;
+      <description>&lt;p&gt;最简单的方法是使用&lt;a href=&#34;http://code.google.com/p/android-wifi-tether/&#34;&gt;android-wifi-tether&lt;/a&gt;，不过我这里使用不成功，原因不明。所以今天我们不去说他，我们说另外一个软件，azlink(&lt;a href=&#34;http://code.google.com/p/azilink/&#34;&gt;http://code.google.com/p/azilink/&lt;/a&gt;)。&lt;/p&gt;
+
+&lt;p&gt;首先是安装。检查是否满足安装条件，如果满足的话，安装apk，这个不用多说。azlink.ovpn需要复制到电脑上，并且准备好openvpn和adb。另外，推荐在手机上也保存一个azlink.ovpn和adb，openvpn，以便在多个机器上使用。&lt;/p&gt;
+
+&lt;p&gt;下面开始正式的连接操作，作为测试，请先关闭手机的wifi上网功能和电脑的wifi，有线，以免影响测试结果。本文中的范例系统是Debian Testing(Squeeze)，网络环境是中国移动的CMNET(8元80M包月，很合算的)。如果环境有所差异，请照您的环境做相应调整。&lt;/p&gt;
+
+&lt;p&gt;1.使用usb线连接andriod和PC，此时android上会出现USB已连接的提示。&lt;/p&gt;
+
+&lt;p&gt;2.在android上执行azlink，并且勾第一个勾，Service active，保证系统运行。此时状态应当是Warting for connection。&lt;/p&gt;
+
+&lt;p&gt;3.在PC上执行adb forward tcp:41927 tcp:41927，此时可能出现service start。这个是首次运行的原因，不影响结果。&lt;/p&gt;
+
+&lt;p&gt;4.执行openvpn azlink.ovpn。此时会出现虚拟网络，并且android上的状态发生变化。&lt;/p&gt;
+
+&lt;p&gt;5.在android上，设置-&amp;gt;高级属性-&amp;gt;手机信息中，查看下面的GSM信息，一般能看到网关和DNS。请去ping一次网关，如果成功，你的事情已经成功了大半。&lt;/p&gt;
+
+&lt;p&gt;如果上面不成功，请联系我。如果成功，请在你的系统内重设DNS。azlink.ovpn将你的DNS指向了手机上，可手机本身无法做DNS的。因此请将你电脑的DNS重设为手机上的值。如果你高兴，也可以将azlink.ovpn中的值改掉，理论上说一个地区的移动网络中，DNS应当都是一样的。不过如果你要跨地区，这个DNS就会发生变化。因此，我无法预先给定值，也无法获得。&lt;/p&gt;
+
+&lt;p&gt;这是整个过程中最关键的一步。很多人说为什么无法上网，其实是可以的，只是你的DNS没有指向正确的值而已。&lt;/p&gt;
+
+&lt;p&gt;6.如果是CMNET，事情就到此为止了。如果是CMWAP，你还需要做一小步。找一个CMWAP能够访问的代理，设到你的浏览器里面。&lt;/p&gt;
+
+&lt;p&gt;作为关闭，其实拔线就可以了。不过作为程序员，我们习惯完美的析构过程。所以，下面是关闭过程。&lt;/p&gt;
+
+&lt;p&gt;1.恢复浏览器原先的代理设置。&lt;/p&gt;
+
+&lt;p&gt;2.断开openvpn，此时android上的状态会恢复Warting for connection。&lt;/p&gt;
+
+&lt;p&gt;3.PC上需要执行adb kill-server。这样会kill掉adb的daemon进程，否则adb会一直假转发，并且始终占用进程号。&lt;/p&gt;
+
+&lt;p&gt;4.在android上，关闭Service active的勾。并且，如果你喜欢，可以kill掉进程以回收内存。&lt;/p&gt;
+
+&lt;p&gt;5.拔USB线。&lt;/p&gt;
+
+&lt;p&gt;如果你曾经关闭了手机的wifi，电脑的wifi和有线，现在也可以恢复了。&lt;/p&gt;
 </description>
     </item>
     

@@ -112,89 +112,113 @@ ga('send', 'pageview');
           
           
           
-          <p>前两天弄有线通的事情弄的郁闷了，所以就研究了网络性能测试。以后不用也是浪费，大家需要就看看吧。<br />
-1.目标<br />
-   
-测试目的往往是测试清楚几个值，包括:IP包传输往返时延(RTT)，IP包时延变化(抖动)，IP包丢失率(Lost
-rate)，IP业务可用性，还有带宽(Bandwidth)。<br />
-2.适用标准<br />
-    RFC 1242， RFC1944， RFC2285， RFC2432。<br />
-**   
-中华人民共和国信息产业部令第36号(<a href="http://www.chinanetcom.com.cn/mj/dxsc.asp?Unid=3810">http://www.chinanetcom.com.cn/mj/dxsc.asp?Unid=3810</a>)<br />
-<strong>    IP网络技术要求&ndash; 网络性能参数与指标(YD/T 1171-2001)<br />
-3.测试平台和工具<br />
-    我们假定基于POSIX兼容平台测试，演示用的例子来自Debian Etch/Kernel
-2.6.17-2-686。Windows下所需要工具可以参考移植工具。<br />
-    iperf 网络带宽测试工具<br />
-    paratrace 被动路由测试工具<br />
-    hping2 网络联通和时延测试工具<br />
-    wireshark(ethereal) 抓包分析工具<br />
-    p0f 被动指纹分析工具<br />
-4.测试对象，方法，和结果分析<br />
-    以下为实例测试，参数需要根据具体情况变化。<br />
-    4.1.测试网络带宽<br />
-        在服务器端运行iperf -s。<br />
-        在客户端运行iperf -c 192.168.0.2<br />
-       
-100Mbps网络环境下，得到结果为92.6Mbps，折合为11.5MB/s。即数据极限传输速度。<br />
-    4.2.测试网络IP包传输往返时延(RTT)和IP包时延变化(抖动)<br />
-       
-分主动被动方法，被动方法用wireshark抓包分析。下面主要介绍主动方法：<br />
-        运行hping2 www.google.com -p 80。得到<br />
-56 packets transmitted, 56 packets received, 0% packet loss<br />
-round-trip min/avg/max = 242.<sup>5</sup>&frasl;<sub>269</sub>.<sup>9</sup>&frasl;<sub>381</sub>.1 ms<br />
-       
-即在主动建立的到www.google.com的TCP连接中(默认为TCP，可以使用UDP，ICMP，IP，具体请看hping2
-&ndash;help)，丢包率为0。平均传输延迟为269.9，抖动为138.6。<br />
-       
-注：按照《</strong>中华人民共和国信息产业部令第36号》，<strong>往返时延平均值≤200毫秒，时延变化平均值≤80毫秒。此处已经超标。但因为测试环境和适用条件不完全吻合，因此无法作为有效证据。<br />
-    4.3.IP包丢失率(Lost rate)<br />
-       
-也分主动方法和被动方法，主动方法见上。被动方法是用wireshark抓包后，通过tpc.analysis.lost_segment标志分析丢包数量和总体数量。具体为。<br />
-        用wireshark抓包。<br />
-        用( tcp.srcport == 7007 || tcp.dstport == 7007
-)&amp;&amp;(tcp.analysis.retransmission||tcp.analysis.lost_segment||tcp.analysis.ack_lost_segment)过滤。7007为aMule端口。<br />
-        另存，其中会显示丢包和总体数目。此处一般都3%-9%。<br />
-        用( tcp.srcport != 7007 &amp;&amp; tcp.dstport != 7007
-)&amp;&amp;(tcp.analysis.retransmission||tcp.analysis.lost_segment||tcp.analysis.ack_lost_segment)过滤。<br />
-        另存，此时是非7007端口丢包和总体数目。此处一般是0.18%-0.32%。<br />
-       
-主动方法在测试网络硬性联通上比较方便，但是对于特殊封锁造成的丢包(例如BT/ED封锁)。由于主动TCP测试不会被封锁，因此无法得到有效数据。需要在实际环境中使用被动方法测试。<br />
-       
-此处丢包率总体值一般都超过了3%，根据《</strong>中华人民共和国信息产业部令第36号》，**IP包丢失率平均值≤2％。此处已经超标，但基于和上文同样理由，无法作为有效证据。<br />
-    4.4.IP业务可用性<br />
-        如果在测试中，连续5分钟平均丢包超过75%，则可以认定为无效。<br />
-    4.5.问题出现点定位<br />
-       
-假定出现问题，那么我们可以假设，问题应当出现在从当前机器到目标机器中的某个路由器上。<br />
-       
-如果多个目标机器通讯出现问题，我们可以猜测，问题很大可能出现在这些机器共同经过的某个路由器上。<br />
-        所以，我们需要跟踪每个IP的连接。windows下是tracert。<br />
-\$traceroute www.google.com<br />
-1 192.168.0.1 (192.168.0.1) 2 ms 1 ms 0 ms<br />
-2 10.119.16.1 (10.119.16.1) 23 ms 25 ms 13 ms<br />
-3 reserve.cableplus.com.cn (219.233.244.141) 15 ms 11 ms 16 ms<br />
-4 * * *<br />
-5 reserve.cableplus.com.cn (219.233.238.205) 14 ms 10 ms 18 ms<br />
-6 202.96.222.77 (202.96.222.77) 13 ms 15 ms 14 ms<br />
-7 202.101.63.226 (202.101.63.226) 32 ms 19 ms 17 ms<br />
-8 202.97.33.38 (202.97.33.38) 84 ms 78 ms 82 ms<br />
-9 202.97.33.178 (202.97.33.178) 61 ms 65 ms 69 ms<br />
-10 202.97.4.46 (202.97.4.46) 106 ms 103 ms 104 ms<br />
-11 216.239.47.232 (216.239.47.232) 94 ms 99 ms 112 ms<br />
-12 216.239.47.237 (216.239.47.237) 224 ms 195 ms 196 ms<br />
-13 72.14.233.53 (72.14.233.53) 185 ms 181 ms 195 ms<br />
-14 72.14.232.139 (72.14.232.139) 208 ms 213 ms 240 ms<br />
+          <p>前两天弄有线通的事情弄的郁闷了，所以就研究了网络性能测试。以后不用也是浪费，大家需要就看看吧。</p>
+
+<p>1.目标</p>
+
+<p>测试目的往往是测试清楚几个值，包括:IP包传输往返时延(RTT)，IP包时延变化(抖动)，IP包丢失率(Lost rate)，IP业务可用性，还有带宽(Bandwidth)。</p>
+
+<p>2.适用标准</p>
+
+<p>RFC 1242， RFC1944， RFC2285， RFC2432。</p>
+
+<p>** 中华人民共和国信息产业部令第36号(<a href="http://www.chinanetcom.com.cn/mj/dxsc.asp?Unid=3810">http://www.chinanetcom.com.cn/mj/dxsc.asp?Unid=3810</a>)</p>
+
+<p>** IP网络技术要求&ndash; 网络性能参数与指标(YD/T 1171-2001)</p>
+
+<p>3.测试平台和工具</p>
+
+<p>我们假定基于POSIX兼容平台测试，演示用的例子来自Debian Etch/Kernel 2.6.17-2-686。Windows下所需要工具可以参考移植工具。</p>
+
+<p>iperf 网络带宽测试工具</p>
+
+<p>paratrace 被动路由测试工具</p>
+
+<p>hping2 网络联通和时延测试工具</p>
+
+<p>wireshark(ethereal) 抓包分析工具</p>
+
+<p>p0f 被动指纹分析工具</p>
+
+<p>4.测试对象，方法，和结果分析</p>
+
+<p>以下为实例测试，参数需要根据具体情况变化。</p>
+
+<p>4.1.测试网络带宽</p>
+
+<p>在服务器端运行iperf -s。</p>
+
+<p>在客户端运行iperf -c 192.168.0.2</p>
+
+<p>100Mbps网络环境下，得到结果为92.6Mbps，折合为11.5MB/s。即数据极限传输速度。</p>
+
+<p>4.2.测试网络IP包传输往返时延(RTT)和IP包时延变化(抖动)</p>
+
+<p>分主动被动方法，被动方法用wireshark抓包分析。下面主要介绍主动方法：</p>
+
+<p>运行hping2 www.google.com -p 80。得到</p>
+
+<pre><code>56 packets transmitted, 56 packets received, 0% packet loss
+round-trip min/avg/max = 242.5/269.9/381.1 ms
+</code></pre>
+
+<p>即在主动建立的到www.google.com的TCP连接中(默认为TCP，可以使用UDP，ICMP，IP，具体请看hping2 &ndash;help)，丢包率为0。平均传输延迟为269.9，抖动为138.6。</p>
+
+<p>注：按照《<strong>中华人民共和国信息产业部令第36号》，</strong>往返时延平均值≤200毫秒，时延变化平均值≤80毫秒。此处已经超标。但因为测试环境和适用条件不完全吻合，因此无法作为有效证据。</p>
+
+<p>4.3.IP包丢失率(Lost rate)</p>
+
+<p>也分主动方法和被动方法，主动方法见上。被动方法是用wireshark抓包后，通过tpc.analysis.lost_segment标志分析丢包数量和总体数量。具体为。</p>
+
+<p>用wireshark抓包。</p>
+
+<p>用<code>( tcp.srcport == 7007 || tcp.dstport == 7007)&amp;&amp;(tcp.analysis.retransmission||tcp.analysis.lost_segment||tcp.analysis.ack_lost_segment)</code>过滤。7007为aMule端口。</p>
+
+<p>另存，其中会显示丢包和总体数目。此处一般都3%-9%。</p>
+
+<p>用<code>( tcp.srcport != 7007 &amp;&amp; tcp.dstport != 7007 )&amp;&amp;(tcp.analysis.retransmission||tcp.analysis.lost_segment||tcp.analysis.ack_lost_segment)</code>过滤。</p>
+
+<p>另存，此时是非7007端口丢包和总体数目。此处一般是0.18%-0.32%。</p>
+
+<p>主动方法在测试网络硬性联通上比较方便，但是对于特殊封锁造成的丢包(例如BT/ED封锁)。由于主动TCP测试不会被封锁，因此无法得到有效数据。需要在实际环境中使用被动方法测试。</p>
+
+<p>此处丢包率总体值一般都超过了3%，根据《<strong>中华人民共和国信息产业部令第36号》，</strong>IP包丢失率平均值≤2％。此处已经超标，但基于和上文同样理由，无法作为有效证据。</p>
+
+<p>4.4.IP业务可用性</p>
+
+<p>如果在测试中，连续5分钟平均丢包超过75%，则可以认定为无效。</p>
+
+<p>4.5.问题出现点定位</p>
+
+<p>假定出现问题，那么我们可以假设，问题应当出现在从当前机器到目标机器中的某个路由器上。</p>
+
+<p>如果多个目标机器通讯出现问题，我们可以猜测，问题很大可能出现在这些机器共同经过的某个路由器上。</p>
+
+<p>所以，我们需要跟踪每个IP的连接。windows下是tracert。</p>
+
+<pre><code>$traceroute www.google.com
+1 192.168.0.1 (192.168.0.1) 2 ms 1 ms 0 ms
+2 10.119.16.1 (10.119.16.1) 23 ms 25 ms 13 ms
+3 reserve.cableplus.com.cn (219.233.244.141) 15 ms 11 ms 16 ms
+4 * * *
+5 reserve.cableplus.com.cn (219.233.238.205) 14 ms 10 ms 18 ms
+6 202.96.222.77 (202.96.222.77) 13 ms 15 ms 14 ms
+7 202.101.63.226 (202.101.63.226) 32 ms 19 ms 17 ms
+8 202.97.33.38 (202.97.33.38) 84 ms 78 ms 82 ms
+9 202.97.33.178 (202.97.33.178) 61 ms 65 ms 69 ms
+10 202.97.4.46 (202.97.4.46) 106 ms 103 ms 104 ms
+11 216.239.47.232 (216.239.47.232) 94 ms 99 ms 112 ms
+12 216.239.47.237 (216.239.47.237) 224 ms 195 ms 196 ms
+13 72.14.233.53 (72.14.233.53) 185 ms 181 ms 195 ms
+14 72.14.232.139 (72.14.232.139) 208 ms 213 ms 240 ms
 15 72.14.233.129 (72.14.233.129) 205 ms 66.249.94.227 (66.249.94.227)
-193 ms 209 ms<br />
-16 72.14.233.131 (72.14.233.131) 193 ms 195 ms 202 ms<br />
-17 216.239.49.66 (216.239.49.66) 209 ms 204 ms 244 ms<br />
-18 66.102.7.99 (66.102.7.99) 198 ms 193 ms 195 ms<br />
-        当然，如果是禁止了ICMP
-TTL超时的死报文回复。就会测定不出路由，这时候需要用paratrace。结果是一样的，不过没有被封锁的危险。<br />
-<br />
-<br />
-</p>
+193 ms 209 ms
+16 72.14.233.131 (72.14.233.131) 193 ms 195 ms 202 ms
+17 216.239.49.66 (216.239.49.66) 209 ms 204 ms 244 ms
+18 66.102.7.99 (66.102.7.99) 198 ms 193 ms 195 ms
+</code></pre>
+
+<p>当然，如果是禁止了ICMP TTL超时的死报文回复。就会测定不出路由，这时候需要用paratrace。结果是一样的，不过没有被封锁的危险。</p>
 
         </div>
         

@@ -468,19 +468,15 @@ pslist             3048   32124    3108    2440    2956 
       <pubDate>Sat, 26 Jan 2008 22:43:47 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/425/</guid>
-      <description>&lt;p&gt;MSN8的共享文件夹功能根本就是一个废物功能，速度慢，不习惯，而且用处不大。最恶心的是，没有卸载选项不说，手工卸载后一开MSN一重起还会回来。NND，看我怎么弄死他。MSN虽然是微软自己的产品，但是也需要遵守微软的API行为。改变资源管理器的行为是用COM组件注入到exlporer中实现的，没有使用驱动层的东西。那么我们就设法阻断DLL文件的注入加载。&lt;br /&gt;
-    首先，regsvr32
-/u是不行的。因为MSN一启动又会注册上，除非你不用MSN。删除文件也不行，因为会再生成一个。那么，我放着文件不动，把内容清空，然后再删除NTFS权限怎么样呢？即使是微软的产品，也不会强制说我的更改无效，然后自己胡来一套吧。&lt;br /&gt;
-   
-首先，关闭所有MSN有关软件，在运行中输入cmd开一个命令行窗口。然后，用process
-explorer(现在这东西也是微软的产品)终止explorer进程(系统自带那个应该也行，不过我没有测试过)。这步顺序非常重要，因为我们要先阻断COM组件的加载，否则无法对文件实行更改。所以我们要先打开一个CMD，然后再关闭explorer。否则一旦关闭explorer，开CMD就难了。而没有CMD，要去删除文件就要多费一些手续了。&lt;br /&gt;
-   
-我们现在在CMD中切换到MSN所在目录，删除fsshext.8.1.0178.00.dll啥的文件。这个文件名会根据你安装的版本而变化。而后启动explorer(在CMD里面敲explorer就好)，这个时候COM组件已经没有加载了。于是我们建立一个文本文件，改名叫fsshext.8.1.0178.00.dll，放到MSN的目录里面，再删除所有人的访问权限。删除的方法是文件上右击，点属性，安全，高级，取消&amp;rdquo;从父目录继承权限&amp;rdquo;的勾选，然后点删除。如果看不到安全选项卡，检查以下项目。工具，文件夹选项，察看，使用简单文件共享(推荐)，取消他的勾选。微软的东西，最好表随便勾。&lt;br /&gt;
-   
-根据我的测试，这时候你随便重起电脑，MSN的组件说加载不上就加载不上。同理也可以应用到3721之类的流氓组件上，只要抢先建立了同名的文件，并且阻断了权限，这些组件就会无法使用。如果你进一步做了分离权限(日常不使用管理员账户)，即使安装程序作者知道这种方法都无法应对。如果可以的话，就说明微软存在漏洞了。
-&lt;div&gt;&lt;/p&gt;
+      <description>&lt;p&gt;MSN8的共享文件夹功能根本就是一个废物功能，速度慢，不习惯，而且用处不大。最恶心的是，没有卸载选项不说，手工卸载后一开MSN一重起还会回来。NND，看我怎么弄死他。MSN虽然是微软自己的产品，但是也需要遵守微软的API行为。改变资源管理器的行为是用COM组件注入到exlporer中实现的，没有使用驱动层的东西。那么我们就设法阻断DLL文件的注入加载。&lt;/p&gt;
 
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
+&lt;p&gt;首先，regsvr32 /u是不行的。因为MSN一启动又会注册上，除非你不用MSN。删除文件也不行，因为会再生成一个。那么，我放着文件不动，把内容清空，然后再删除NTFS权限怎么样呢？即使是微软的产品，也不会强制说我的更改无效，然后自己胡来一套吧。&lt;/p&gt;
+
+&lt;p&gt;首先，关闭所有MSN有关软件，在运行中输入cmd开一个命令行窗口。然后，用process explorer(现在这东西也是微软的产品)终止explorer进程(系统自带那个应该也行，不过我没有测试过)。这步顺序非常重要，因为我们要先阻断COM组件的加载，否则无法对文件实行更改。所以我们要先打开一个CMD，然后再关闭explorer。否则一旦关闭explorer，开CMD就难了。而没有CMD，要去删除文件就要多费一些手续了。&lt;/p&gt;
+
+&lt;p&gt;我们现在在CMD中切换到MSN所在目录，删除fsshext.8.1.0178.00.dll啥的文件。这个文件名会根据你安装的版本而变化。而后启动explorer(在CMD里面敲explorer就好)，这个时候COM组件已经没有加载了。于是我们建立一个文本文件，改名叫fsshext.8.1.0178.00.dll，放到MSN的目录里面，再删除所有人的访问权限。删除的方法是文件上右击，点属性，安全，高级，取消&amp;rdquo;从父目录继承权限&amp;rdquo;的勾选，然后点删除。如果看不到安全选项卡，检查以下项目。工具，文件夹选项，察看，使用简单文件共享(推荐)，取消他的勾选。微软的东西，最好表随便勾。&lt;/p&gt;
+
+&lt;p&gt;根据我的测试，这时候你随便重起电脑，MSN的组件说加载不上就加载不上。同理也可以应用到3721之类的流氓组件上，只要抢先建立了同名的文件，并且阻断了权限，这些组件就会无法使用。如果你进一步做了分离权限(日常不使用管理员账户)，即使安装程序作者知道这种方法都无法应对。如果可以的话，就说明微软存在漏洞了。&lt;/p&gt;
 </description>
     </item>
     
@@ -490,60 +486,22 @@ explorer(现在这东西也是微软的产品)终止explorer进程(系统自带�
       <pubDate>Sun, 04 Nov 2007 22:59:14 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/417/</guid>
-      <description>&lt;div&gt;
+      <description>&lt;p&gt;总算能发正常的文章了，前面发出来的老是不会断行。庆祝一下。&lt;/p&gt;
 
-    总算能发正常的文章了，前面发出来的老是不会断行。庆祝一下。
+&lt;p&gt;很多人像贝壳一样使用双系统，Linux加windows。贝壳的Linux用的是Debian，最近其中的xfce4出现一些问题。使用的时候老是死机，这日子没法过了。所以贝壳就稍微下了点功夫，先弄个好用的windows凑合一下。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;windows下最难办的恐怕就是邮件了，到不是说不能收。只是windows下一个邮件状况，Linux下一个。未免讨厌了点。就算有导入导出可以转换，你想转换多少次呢？&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;下面贝壳就说一种方法来对付这种状况。&lt;/p&gt;
 
-   
-很多人像贝壳一样使用双系统，Linux加windows。贝壳的Linux用的是Debian，最近其中的xfce4出现一些问题。使用的时候老是死机，这日子没法过了。所以贝壳就稍微下了点功夫，先弄个好用的windows凑合一下。
+&lt;p&gt;首先你的系统盘应当是ntfs，否则这方法不能用。然后在windows下安装ext2ifs来读取linux的home目录，假定是d:\username.mozilla-thunderbird。windows下安装类似版本的thunderbird，然后看看你的C:\Document and Setting\username\Application Data\Thunderbird下面，是否有一个profile.ini？有就对了。删除这个目录(我没说错)，然后去下一个叫做junction的软件，微软出的。这个软件可以将ntfs的某个目录映射到一个目标上去，对这个目录的访问就等同于对这个目标的访问，就好像linux下面的符号链接一样。下面知道我要做什么了么？&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;pre&gt;&lt;code&gt;junction &amp;quot;C:\Document and Setting\username\Application Data\Thunderbird&amp;quot; d:\username\.mozilla-thunderbird
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;div&gt;
+&lt;p&gt;然后启动thunderbird，他首先会检查你系统中插件的版本可用性。然后你的Linux下邮件就可以用了。&lt;/p&gt;
 
-   
-windows下最难办的恐怕就是邮件了，到不是说不能收。只是windows下一个邮件状况，Linux下一个。未免讨厌了点。就算有导入导出可以转换，你想转换多少次呢？
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    下面贝壳就说一种方法来对付这种状况。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-首先你的系统盘应当是ntfs，否则这方法不能用。然后在windows下安装ext2ifs来读取linux的home目录，假定是d:username.mozilla-thunderbird。windows下安装类似版本的thunderbird，然后看看你的C:Document
-and SettingusernameApplication
-DataThunderbird下面，是否有一个profile.ini？有就对了。删除这个目录(我没说错)，然后去下一个叫做junction的软件，微软出的。这个软件可以将ntfs的某个目录映射到一个目标上去，对这个目录的访问就等同于对这个目标的访问，就好像linux下面的符号链接一样。下面知道我要做什么了么？
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-junction &#34;C:Document and SettingusernameApplication DataThunderbird&#34;
-d:username.mozilla-thunderbird
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-然后启动thunderbird，他首先会检查你系统中插件的版本可用性。然后你的Linux下邮件就可以用了。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    简单吧？
-
-&lt;/div&gt;
+&lt;p&gt;简单吧？&lt;/p&gt;
 </description>
     </item>
     
@@ -553,777 +511,496 @@ d:username.mozilla-thunderbird
       <pubDate>Wed, 20 Dec 2006 20:09:10 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/338/</guid>
-      <description>&lt;div&gt;
+      <description>&lt;p&gt;windows系统服务入口的封装类，service是基类，service_manager是管理类。支持UNICODE，可以多服务封装在一个程序里面，过程当然都是自动的。拥有自动防错系统，在服务异常退出的时候会去关闭服务，而不是开着服务直接没了进程。写一个类，继承service，然后在哪里出一个实例，就可以了。service中有很多虚函数，可以重载了监听对应事件(我应该写的比较明白吧)。get_service_name，返回UNICODE的字符串指针，定义服务名称。注意是纯虚函数，必须实现。get_dependence，也是返回UNICODE的字符指针。指明这个服务依赖什么服务。get_service_type返回服务类型，其实也就是是否可以交互。get_contral_accepts，支持的信号(例如是否可以暂停)，默认可以暂停。on_start开始时候调用的函数，下同。&lt;/p&gt;
 
-   
-windows系统服务入口的封装类，service是基类，service\_manager是管理类。支持UNICODE，可以多服务封装在一个程序里面，过程当然都是自动的。拥有自动防错系统，在服务异常退出的时候会去关闭服务，而不是开着服务直接没了进程。写一个类，继承service，然后在哪里出一个实例，就可以了。service中有很多虚函数，可以重载了监听对应事件(我应该写的比较明白吧)。 get\_service\_name，返回UNICODE的字符串指针，定义服务名称。注意是纯虚函数，必须实现。get\_dependence，也是返回UNICODE的字符指针。指明这个服务依赖什么服务。get\_service\_type返回服务类型，其实也就是是否可以交互。get\_contral\_accepts，支持的信号(例如是否可以暂停)，默认可以暂停。on\_start开始时候调用的函数，下同。
+&lt;p&gt;使用方法&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;pre&gt;&lt;code&gt;#include
+#include &amp;quot;service.h&amp;quot;
 
-&lt;div&gt;
-
-使用方法
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;div&gt;
-
-\#include\
-\#include &#34;service.h&#34;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-class test\_service : public service{\
-public:\
- virtual LPTSTR get\_service\_name ();\
- virtual DWORD   on\_start (DWORD argc, LPTSTR \* argv);\
- virtual DWORD   on\_stop ();\
- virtual DWORD   on\_shutdown ();\
+class test_service : public service{
+public:
+    virtual LPTSTRget_service_name ();
+    virtual DWORD on_start (DWORD argc, LPTSTR * argv);
+    virtual DWORD on_stop ();
+    virtual DWORD on_shutdown ();
 };
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-LPTSTR test\_service::get\_service\_name ()\
-{\
- return \_T (&#34;test\_service&#34;);\
+LPTSTR test_service::get_service_name ()
+{
+    return _T (&amp;quot;test_service&amp;quot;);
 }
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-DWORD test\_service::on\_start (DWORD argc, LPTSTR \* argv)\
-{\
- return service::on\_start (argc, argv);\
+DWORD test_service::on_start (DWORD argc, LPTSTR * argv)
+{
+    return service::on_start (argc, argv);
 }
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-DWORD test\_service::on\_stop ()\
-{\
- return service::on\_stop ();\
+DWORD test_service::on_stop ()
+{
+    return service::on_stop ();
 }
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-DWORD test\_service::on\_shutdown ()\
-{\
- return service::on\_shutdown ();\
+DWORD test_service::on_shutdown ()
+{
+    return service::on_shutdown ();
 }
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-int \_tmain (int argc, \_TCHAR \* argv\[\])\
-{\
- test\_service ts;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
- if (argc == 1)\
-  service\_manager::start ();\
- else if (!\_tcscmp (argv\[1\], \_T (&#34;install&#34;)))\
-  service\_manager::install\_services (NULL, false);\
- else if (!\_tcscmp (argv\[1\], \_T (&#34;remove&#34;)))\
-  service\_manager::remove\_services (NULL);
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
- return 0;\
+int _tmain (int argc, _TCHAR * argv[])
+{
+    test_service ts;
+    if (argc == 1)
+        service_manager::start ();
+    else if (!_tcscmp (argv[1], _T (&amp;quot;install&amp;quot;)))
+        service_manager::install_services (NULL, false);
+    else if (!_tcscmp (argv[1], _T (&amp;quot;remove&amp;quot;)))
+        service_manager::remove_services (NULL);
+    return 0;
 }
-
-&lt;/div&gt;
-
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
-
-&lt;div&gt;
 
 ------------service.h-------------------
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#include\
+#include
 using namespace std;
+#include
+#pragma comment(lib, &amp;quot;psapi&amp;quot;)
 
-&lt;/div&gt;
+typedef basic_string &amp;lt; TCHAR &amp;gt; tstring;
 
-&lt;div&gt;
+#ifndef _SERVICE_H_
+#define _SERVICE_H_
 
-\#include\
-\#pragma comment(lib, &#34;psapi&#34;)
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-typedef         basic\_string &amp;lt; TCHAR &amp;gt; tstring;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#ifndef \_SERVICE\_H\_\
-\#define \_SERVICE\_H\_
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-class           service {\
-  public:\
- service ();\
- \~service ();\
- virtual LPTSTR get\_service\_name () = 0;\
- virtual LPTSTR get\_dependence ();\
- virtual DWORD   get\_service\_type ();\
- virtual DWORD   get\_contral\_accepts ();\
- virtual DWORD   on\_start (DWORD argc, LPTSTR \* argv);\
- virtual DWORD   on\_stop ();\
- virtual DWORD   on\_interrogate ();\
- virtual DWORD   on\_pause ();\
- virtual DWORD   on\_continue ();\
- virtual DWORD   on\_shutdown ();
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
- void   pre\_start (SERVICE\_STATUS\_HANDLE hServiceStatus,\
-          DWORD argc, LPTSTR \* argv);\
- BOOL            SetServiceStatus (DWORD dwState);\
-  protected:\
- SERVICE\_STATUS\_HANDLE hServiceStatus;\
- SERVICE\_STATUS  ServiceStatus;\
+class service {
+public:
+    service ();
+    ~service ();
+    virtual LPTSTRget_service_name () = 0;
+    virtual LPTSTRget_dependence ();
+    virtual DWORD get_service_type ();
+    virtual DWORD get_contral_accepts ();
+    virtual DWORD on_start (DWORD argc, LPTSTR * argv);
+    virtual DWORD on_stop ();
+    virtual DWORD on_interrogate ();
+    virtual DWORD on_pause ();
+    virtual DWORD on_continue ();
+    virtual DWORD on_shutdown ();
+    voidpre_start (SERVICE_STATUS_HANDLE hServiceStatus,
+               DWORD argc, LPTSTR * argv);
+    BOOL SetServiceStatus (DWORD dwState);
+protected:
+    SERVICE_STATUS_HANDLE hServiceStatus;
+    SERVICE_STATUS ServiceStatus;
 };
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-class           service\_manager {\
-  public:\
- service\_manager ();\
- \~service\_manager ();\
- DWORD     register\_service (service \* s);\
- DWORD     unregister\_service (service \* s);\
- LPSERVICE\_TABLE\_ENTRY get\_service\_entries ();\
- service       \*get\_service (LPCTSTR lpName);\
- static service\_manager \*get\_service\_manager();\
- static int    install\_services (LPCTSTR lpServiceName, bool
-autostart);\
- static int    remove\_services (LPCTSTR lpServiceName);\
- static int    start();\
- static void WINAPI  service\_start (DWORD argc, LPTSTR \* argv);\
- static DWORD WINAPI  ctrl\_handler (DWORD dwControl, DWORD
-dwEventType,\
-           LPVOID lpEventData, LPVOID lpContext);\
- static TCHAR     \*service\_status\_name\[\];\
-  protected:\
- static service\_manager \*this\_for\_static;\
- vector &amp;lt; service \* &amp;gt; service\_list;\
+class service_manager {
+public:
+    service_manager ();
+    ~service_manager ();
+    DWORDregister_service (service * s);
+    DWORDunregister_service (service * s);
+    LPSERVICE_TABLE_ENTRYget_service_entries ();
+    service *get_service (LPCTSTR lpName);
+    static service_manager *get_service_manager();
+    static intinstall_services (LPCTSTR lpServiceName, bool
+                    autostart);
+    static intremove_services (LPCTSTR lpServiceName);
+    static intstart();
+    static void WINAPIservice_start (DWORD argc, LPTSTR * argv);
+    static DWORD WINAPIctrl_handler (DWORD dwControl, DWORD
+                     dwEventType,
+                     LPVOID lpEventData, LPVOID lpContext);
+    static TCHAR *service_status_name[];
+protected:
+    static service_manager *this_for_static;
+    vector &amp;lt; service * &amp;gt;service_list;
 };
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#endif //\_SERVICE\_H\_
-
-&lt;/div&gt;
-
-&lt;div&gt;
+#endif //_SERVICE_H_
 
 ----------------------------------------
-
-&lt;/div&gt;
-
-&lt;div&gt;
 
 ------------service.cpp-----------------
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-// service.cpp : 定义控制台应用程序的入口点。\
+// service.cpp : 定义控制台应用程序的入口点。
 //
+#include &amp;quot;stdafx.h&amp;quot;
 
-&lt;/div&gt;
+#define PRINTERROR(x) _tprintf (_T (&amp;quot;%s failed, errorcode 0x%0.8X\n&amp;quot;),(x), GetLastError ())
 
-&lt;div&gt;
-
-\#include &#34;stdafx.h&#34;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#define PRINTERROR(x) \_tprintf (\_T (&#34;%s failed, errorcode 0x%0.8Xn&#34;),
-(x), GetLastError ())
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-service\_manager \*service\_manager::this\_for\_static = NULL;\
-TCHAR          \*service\_manager::service\_status\_name\[\] = {\
- \_T (&#34;SERVICE\_UNKNOWN&#34;),\
- \_T (&#34;SERVICE\_STOPPED&#34;),\
- \_T (&#34;SERVICE\_START\_PENDING&#34;),\
- \_T (&#34;SERVICE\_STOP\_PENDING&#34;),\
- \_T (&#34;SERVICE\_RUNNING&#34;),\
- \_T (&#34;SERVICE\_CONTINUE\_PENDING&#34;),\
- \_T (&#34;SERVICE\_PAUSE\_PENDING&#34;),\
- \_T (&#34;SERVICE\_PAUSED&#34;)\
+service_manager *service_manager::this_for_static = NULL;
+TCHAR *service_manager::service_status_name[] = {
+    _T (&amp;quot;SERVICE_UNKNOWN&amp;quot;),
+    _T (&amp;quot;SERVICE_STOPPED&amp;quot;),
+    _T (&amp;quot;SERVICE_START_PENDING&amp;quot;),
+    _T (&amp;quot;SERVICE_STOP_PENDING&amp;quot;),
+    _T (&amp;quot;SERVICE_RUNNING&amp;quot;),
+    _T (&amp;quot;SERVICE_CONTINUE_PENDING&amp;quot;),
+    _T (&amp;quot;SERVICE_PAUSE_PENDING&amp;quot;),
+    _T (&amp;quot;SERVICE_PAUSED&amp;quot;)
 };
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-service::service ()\
-{\
- if (service\_manager::get\_service\_manager () == NULL)\
-  new             service\_manager ();\
- service\_manager::get\_service\_manager ()-&amp;gt;register\_service
-(this);\
+service::service ()
+{
+    if (service_manager::get_service_manager () == NULL)
+        new service_manager ();
+    service_manager::get_service_manager ()-&amp;gt;register_service
+        (this);
 }
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-service::\~service ()\
-{\
- if (service\_manager::get\_service\_manager () == NULL)\
-  return;\
- service\_manager::get\_service\_manager ()-&amp;gt;unregister\_service
-(this);\
+service::~service ()
+{
+    if (service_manager::get_service_manager () == NULL)
+        return;
+    service_manager::get_service_manager ()-&amp;gt;unregister_service(this);
 }
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-LPTSTR service::get\_dependence ()\
-{\
- return NULL;\
+LPTSTR service::get_dependence ()
+{
+    return NULL;
 }
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-DWORD service::get\_service\_type ()\
-{\
- return 0;\
+DWORD service::get_service_type ()
+{
+    return 0;
 }
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-DWORD service::get\_contral\_accepts ()\
-{\
- return SERVICE\_ACCEPT\_PAUSE\_CONTINUE | SERVICE\_ACCEPT\_SHUTDOWN |\
-  SERVICE\_ACCEPT\_STOP;\
+DWORD service::get_contral_accepts ()
+{
+    return SERVICE_ACCEPT_PAUSE_CONTINUE | SERVICE_ACCEPT_SHUTDOWN |
+        SERVICE_ACCEPT_STOP;
 }
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-DWORD service::on\_start (DWORD argc, LPTSTR \* argv)\
-{\
- return SERVICE\_RUNNING;\
+DWORD service::on_start (DWORD argc, LPTSTR * argv)
+{
+    return SERVICE_RUNNING;
 }
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-DWORD service::on\_stop ()\
-{\
- return SERVICE\_STOPPED;\
+DWORD service::on_stop ()
+{
+    return SERVICE_STOPPED;
 }
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-DWORD service::on\_interrogate ()\
-{\
- return SERVICE\_RUNNING;\
+DWORD service::on_interrogate ()
+{
+    return SERVICE_RUNNING;
 }
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-DWORD service::on\_pause ()\
-{\
- return SERVICE\_PAUSED;\
+DWORD service::on_pause ()
+{
+    return SERVICE_PAUSED;
 }
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-DWORD service::on\_continue ()\
-{\
- return SERVICE\_RUNNING;\
+DWORD service::on_continue ()
+{
+    return SERVICE_RUNNING;
 }
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-DWORD service::on\_shutdown ()\
-{\
- return SERVICE\_STOPPED;\
+DWORD service::on_shutdown ()
+{
+    return SERVICE_STOPPED;
 }
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-void service::pre\_start (SERVICE\_STATUS\_HANDLE hServiceStatus,\
-       DWORD argc, LPTSTR \* argv)\
-{\
- this-&amp;gt;hServiceStatus = hServiceStatus;\
- ServiceStatus.dwServiceType = SERVICE\_WIN32;\
- ServiceStatus.dwCurrentState = SERVICE\_START\_PENDING;\
- ServiceStatus.dwControlsAccepted = 0;\
- ServiceStatus.dwWin32ExitCode = 0;\
- ServiceStatus.dwServiceSpecificExitCode = 0;\
- ServiceStatus.dwCheckPoint = 0;\
- ServiceStatus.dwWaitHint = 10000;\
- SetServiceStatus (0);
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
- ServiceStatus.dwCurrentState = on\_start (argc, argv);
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
- if (ServiceStatus.dwCurrentState == SERVICE\_STOPPED)\
-  ServiceStatus.dwWin32ExitCode = ServiceStatus.dwCurrentState;\
- ServiceStatus.dwCheckPoint = 0;\
- ServiceStatus.dwWaitHint = 0;\
- ServiceStatus.dwControlsAccepted = get\_contral\_accepts ();\
- SetServiceStatus (0);\
- return;\
+void service::pre_start (SERVICE_STATUS_HANDLE hServiceStatus,
+             DWORD argc, LPTSTR * argv)
+{
+    this-&amp;gt;hServiceStatus = hServiceStatus;
+    ServiceStatus.dwServiceType = SERVICE_WIN32;
+    ServiceStatus.dwCurrentState = SERVICE_START_PENDING;
+    ServiceStatus.dwControlsAccepted = 0;
+    ServiceStatus.dwWin32ExitCode = 0;
+    ServiceStatus.dwServiceSpecificExitCode = 0;
+    ServiceStatus.dwCheckPoint = 0;
+    ServiceStatus.dwWaitHint = 10000;
+    SetServiceStatus (0);
+    ServiceStatus.dwCurrentState = on_start (argc, argv);
+    if (ServiceStatus.dwCurrentState == SERVICE_STOPPED)
+        ServiceStatus.dwWin32ExitCode = ServiceStatus.dwCurrentState;
+    ServiceStatus.dwCheckPoint = 0;
+    ServiceStatus.dwWaitHint = 0;
+    ServiceStatus.dwControlsAccepted = get_contral_accepts ();
+    SetServiceStatus (0);
+    return;
 }
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-BOOL service::SetServiceStatus (DWORD dwState)\
-{\
- TCHAR lpOutString\[0x400\];\
- if (dwState != 0)\
-  ServiceStatus.dwCurrentState = dwState;\
- if (ServiceStatus.dwCurrentState &amp;gt; 7)\
-  return 0;\
- BOOL rslt =::SetServiceStatus (hServiceStatus, &amp;ServiceStatus);\
- if (rslt)\
-  \_stprintf (lpOutString,\
-       \_T (&#34;%s set service status %s successed.n&#34;),\
-       get\_service\_name (),\
-       service\_manager::service\_status\_name\[ServiceStatus.\
-              dwCurrentState\]);\
- else\
-  \_stprintf (lpOutString,\
-       \_T\
-       (&#34;%s set service status %s failed, errorcode 0x%0.8Xn&#34;),\
-       get\_service\_name (),\
-       service\_manager::service\_status\_name\[ServiceStatus.\
-              dwCurrentState\],\
-       GetLastError ());\
- OutputDebugString ((LPCTSTR) lpOutString);\
- return rslt;\
+BOOL service::SetServiceStatus (DWORD dwState)
+{
+    TCHAR lpOutString[0x400];
+    if (dwState != 0)
+        ServiceStatus.dwCurrentState = dwState;
+    if (ServiceStatus.dwCurrentState &amp;gt; 7)
+        return 0;
+    BOOL rslt =::SetServiceStatus (hServiceStatus, &amp;amp;ServiceStatus);
+    if (rslt)
+        _stprintf (lpOutString,
+               _T (&amp;quot;%s set service status %s successed.\n&amp;quot;),
+               get_service_name (),
+               service_manager::service_status_name[ServiceStatus.
+                                dwCurrentState]);
+    else
+        _stprintf (lpOutString,
+               _T
+               (&amp;quot;%s set service status %s failed, errorcode 0x%0.8X\n&amp;quot;),
+               get_service_name (),
+               service_manager::service_status_name[ServiceStatus.
+                                dwCurrentState],
+               GetLastError ());
+    OutputDebugString ((LPCTSTR) lpOutString);
+    return rslt;
 }
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-service\_manager::service\_manager ()\
-{\
- if (this\_for\_static != NULL)\
-  return;\
- this\_for\_static = this;\
+service_manager::service_manager ()
+{
+    if (this_for_static != NULL)
+        return;
+    this_for_static = this;
 }
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-service\_manager::\~service\_manager ()\
-{\
- this\_for\_static = NULL;\
+service_manager::\~service_manager ()
+{
+    this_for_static = NULL;
 }
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-DWORD service\_manager::register\_service (service \* s)\
-{\
- vector &amp;lt; service \* &amp;gt;::iterator iter;\
- iter = service\_list.begin ();\
- for (; iter != service\_list.end (); iter++)\
-  if (\*iter == s)\
-   return 1;\
- service\_list.push\_back (s);\
- return 0;\
+DWORD service_manager::register_service (service * s)
+{
+    vector &amp;lt; service * &amp;gt;::iterator iter;
+    iter = service_list.begin ();
+    for (; iter != service_list.end (); iter++)
+        if (*iter == s)
+            return 1;
+    service_list.push_back (s);
+    return 0;
 }
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-DWORD service\_manager::unregister\_service (service \* s)\
-{\
- vector &amp;lt; service \* &amp;gt;::iterator iter;\
- iter = service\_list.begin ();\
- for (; iter != service\_list.end (); iter++)\
-  if (\*iter == s) {\
-   service\_list.erase (iter);\
-   return 0;\
-  }\
- return -1;\
+DWORD service_manager::unregister_service (service * s)
+{
+    vector &amp;lt; service * &amp;gt;::iterator iter;
+    iter = service_list.begin ();
+    for (; iter != service_list.end (); iter++)
+        if (*iter == s) {
+            service_list.erase (iter);
+            return 0;
+        }
+    return -1;
 }
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-LPSERVICE\_TABLE\_ENTRY service\_manager::get\_service\_entries ()\
-{\
- UINT i;\
- LPSERVICE\_TABLE\_ENTRY lte = NULL;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
- lte = new SERVICE\_TABLE\_ENTRY\[service\_list.size () + 1\];\
- for (i = 0; i &amp;lt; service\_list.size (); i++) {\
-  lte\[i\].lpServiceName = service\_list\[i\]-&amp;gt;get\_service\_name
-();\
-  lte\[i\].lpServiceProc = (LPSERVICE\_MAIN\_FUNCTION) service\_start;\
- }\
- lte\[i\].lpServiceName = NULL;\
- lte\[i\].lpServiceProc = NULL;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
- return lte;\
+LPSERVICE_TABLE_ENTRY service_manager::get_service_entries ()
+{
+    UINT i;
+    LPSERVICE_TABLE_ENTRY lte = NULL;
+    lte = new SERVICE_TABLE_ENTRY[service_list.size () + 1];
+    for (i = 0; i &amp;lt; service_list.size (); i++) {
+        lte[i].lpServiceName = service_list[i]-&amp;gt;get_service_name
+            ();
+        lte[i].lpServiceProc = (LPSERVICE_MAIN_FUNCTION) service_start;
+    }
+    lte[i].lpServiceName = NULL;
+    lte[i].lpServiceProc = NULL;
+    return lte;
 }
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-service        \*service\_manager::get\_service (LPCTSTR lpName)\
-{\
- for (UINT i = 0; i &amp;lt; service\_list.size (); i++)\
-  if (!\_tcscmp (service\_list\[i\]-&amp;gt;get\_service\_name (), lpName))\
-   return service\_list\[i\];\
- return NULL;\
+service *service_manager::get_service (LPCTSTR lpName)
+{
+    for (UINT i = 0; i &amp;lt; service_list.size (); i++)
+        if (!_tcscmp (service_list[i]-&amp;gt;get_service_name (), lpName))
+            return service_list[i];
+    return NULL;
 }
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-int service\_manager::install\_services (LPCTSTR lpServiceName, bool
-autostart)\
-{\
- UINT i;\
- int rslt = 0;\
- DWORD service\_type;\
- TCHAR binary\_path\[0x400\];\
- SC\_HANDLE hSCManager = NULL, hService = NULL;\
- service        \*pservice;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
- if (lpServiceName == NULL) {\
-  for (i = 0; i &amp;lt; this\_for\_static-&amp;gt;service\_list.size (); i++)\
-   install\_services (this\_for\_static-&amp;gt;service\_list\[i\]-&amp;gt;\
-         get\_service\_name (), autostart);\
-  return 0;\
- }\
- pservice = this\_for\_static-&amp;gt;get\_service (lpServiceName);\
- if (pservice == NULL) {\
-  \_tprintf (\_T (&#34;get\_service %s failed, don&#39;t have this servicen&#34;),\
-      lpServiceName);\
-  return -1;\
- }\
- if (!GetModuleFileNameEx (GetCurrentProcess (), NULL, binary\_path,
-0x400)) {\
-  PRINTERROR (\_T (&#34;GetModuleFileNameEx&#34;));\
-  return -1;\
- }\
- if (this\_for\_static-&amp;gt;service\_list.size () &amp;lt; 2)\
-  service\_type = SERVICE\_WIN32\_OWN\_PROCESS;\
- else\
-  service\_type = SERVICE\_WIN32\_SHARE\_PROCESS;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
- \_\_try {\
-  hSCManager = OpenSCManager (NULL, NULL, SC\_MANAGER\_ALL\_ACCESS);\
-  if (hSCManager == NULL) {\
-   rslt = -1;\
-   \_\_leave;\
-  }
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-  hService = CreateService (hSCManager, lpServiceName, lpServiceName,\
-          SC\_MANAGER\_ALL\_ACCESS,\
-          pservice-&amp;gt;\
-          get\_service\_type () | service\_type,\
-          (autostart ? SERVICE\_AUTO\_START :\
-           SERVICE\_DEMAND\_START),\
-          SERVICE\_ERROR\_NORMAL, binary\_path, NULL,\
-          NULL, pservice-&amp;gt;get\_dependence (), NULL,\
-          NULL);\
-  if (hService == NULL) {\
-   rslt = -2;\
-   \_\_leave;\
-  }\
- }\
- \_\_finally {\
-  if (hService != NULL)\
-   CloseServiceHandle (hService);\
-  if (hSCManager != NULL)\
-   CloseServiceHandle (hSCManager);\
-  if (rslt == 0)\
-   \_tprintf (\_T (&#34;install\_services %s successedn&#34;), lpServiceName);\
-  if (rslt == -1)\
-   PRINTERROR (\_T (&#34;OpenSCManager&#34;));\
-  if (rslt == -2)\
-   PRINTERROR (\_T (&#34;CreateService&#34;));\
- }\
- return rslt;\
+int service_manager::install_services (LPCTSTR lpServiceName, bool
+                       autostart)
+{
+    UINT i;
+    int rslt = 0;
+    DWORD service_type;
+    TCHAR binary_path[0x400];
+    SC_HANDLE hSCManager = NULL, hService = NULL;
+    service *pservice;
+    if (lpServiceName == NULL) {
+        for (i = 0; i &amp;lt; this_for_static-&amp;gt;service_list.size (); i++)
+            install_services (this_for_static-&amp;gt;service_list[i]-&amp;gt;
+                      get_service_name (), autostart);
+        return 0;
+    }
+    pservice = this_for_static-&amp;gt;get_service (lpServiceName);
+    if (pservice == NULL) {
+        _tprintf (_T (&amp;quot;get_service %s failed, don&#39;t have this service\n&amp;quot;),
+              lpServiceName);
+        return -1;
+    }
+    if (!GetModuleFileNameEx (GetCurrentProcess (), NULL, binary_path,
+                  0x400)) {
+        PRINTERROR (_T (&amp;quot;GetModuleFileNameEx&amp;quot;));
+        return -1;
+    }
+    if (this_for_static-&amp;gt;service_list.size () &amp;lt; 2)
+        service_type = SERVICE_WIN32_OWN_PROCESS;
+    else
+        service_type = SERVICE_WIN32_SHARE_PROCESS;
+    __try {
+        hSCManager = OpenSCManager (NULL, NULL, SC_MANAGER_ALL_ACCESS);
+        if (hSCManager == NULL) {
+            rslt = -1;
+            __leave;
+        }
+        hService = CreateService (hSCManager, lpServiceName, lpServiceName,
+                      SC_MANAGER_ALL_ACCESS,
+                      pservice-&amp;gt;
+                      get_service_type () | service_type,
+                      (autostart ? SERVICE_AUTO_START :
+                       SERVICE_DEMAND_START),
+                      SERVICE_ERROR_NORMAL, binary_path, NULL,
+                      NULL, pservice-&amp;gt;get_dependence (), NULL,
+                      NULL);
+        if (hService == NULL) {
+            rslt = -2;
+            __leave;
+        }
+    }
+    __finally {
+        if (hService != NULL)
+            CloseServiceHandle (hService);
+        if (hSCManager != NULL)
+            CloseServiceHandle (hSCManager);
+        if (rslt == 0)
+            _tprintf (_T (&amp;quot;install_services %s successed\n&amp;quot;), lpServiceName);
+        if (rslt == -1)
+            PRINTERROR (_T (&amp;quot;OpenSCManager&amp;quot;));
+        if (rslt == -2)
+            PRINTERROR (_T (&amp;quot;CreateService&amp;quot;));
+    }
+    return rslt;
 }
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-int service\_manager::remove\_services (LPCTSTR lpServiceName)\
-{\
- int rslt = 0;\
- UINT i;\
- SC\_HANDLE hSCManager, hService;\
- service        \*pservice;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
- if (lpServiceName == NULL) {\
-  for (i = 0; i &amp;lt; this\_for\_static-&amp;gt;service\_list.size (); i++)\
-   remove\_services (this\_for\_static-&amp;gt;service\_list\[i\]-&amp;gt;\
-        get\_service\_name ());\
-  return 0;\
- }\
- pservice = this\_for\_static-&amp;gt;get\_service (lpServiceName);\
- if (pservice == NULL) {\
-  \_tprintf (\_T (&#34;get\_service failed, don&#39;t have this servicen&#34;));\
-  return -1;\
- }
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
- \_\_try {\
-  hSCManager = OpenSCManager (NULL, NULL, SC\_MANAGER\_ALL\_ACCESS);\
-  if (hSCManager == NULL) {\
-   rslt = -1;\
-   \_\_leave;\
-  }\
-  hService =\
-   OpenService (hSCManager, lpServiceName, SC\_MANAGER\_ALL\_ACCESS);\
-  if (hService == NULL) {\
-   rslt = -2;\
-   \_\_leave;\
-  }\
-  if (!DeleteService (hService)) {\
-   rslt = -3;\
-   \_\_leave;\
-  }\
- }\
- \_\_finally {\
-  if (hService != NULL)\
-   CloseServiceHandle (hService);\
-  if (hSCManager != NULL)\
-   CloseServiceHandle (hSCManager);\
-  if (rslt == 0)\
-   \_tprintf (\_T (&#34;remove\_services %s successedn&#34;), lpServiceName);\
-  if (rslt == -1)\
-   PRINTERROR (\_T (&#34;OpenSCManager&#34;));\
-  if (rslt == -2)\
-   PRINTERROR (\_T (&#34;OpenService&#34;));\
-  if (rslt == -3)\
-   PRINTERROR (\_T (&#34;DeleteService&#34;));\
- }\
- return rslt;\
+int service_manager::remove_services (LPCTSTR lpServiceName)
+{
+    int rslt = 0;
+    UINT i;
+    SC_HANDLE hSCManager, hService;
+    service *pservice;
+    if (lpServiceName == NULL) {
+        for (i = 0; i &amp;lt; this_for_static-&amp;gt;service_list.size (); i++)
+            remove_services (this_for_static-&amp;gt;service_list[i]-&amp;gt;
+                     get_service_name ());
+        return 0;
+    }
+    pservice = this_for_static-&amp;gt;get_service (lpServiceName);
+    if (pservice == NULL) {
+        _tprintf (_T (&amp;quot;get_service failed, don&#39;t have this service\n&amp;quot;));
+        return -1;
+    }
+    __try {
+        hSCManager = OpenSCManager (NULL, NULL, SC_MANAGER_ALL_ACCESS);
+        if (hSCManager == NULL) {
+            rslt = -1;
+            __leave;
+        }
+        hService =
+            OpenService (hSCManager, lpServiceName, SC_MANAGER_ALL_ACCESS);
+        if (hService == NULL) {
+            rslt = -2;
+            __leave;
+        }
+        if (!DeleteService (hService)) {
+            rslt = -3;
+            __leave;
+        }
+    }
+    __finally {
+        if (hService != NULL)
+            CloseServiceHandle (hService);
+        if (hSCManager != NULL)
+            CloseServiceHandle (hSCManager);
+        if (rslt == 0)
+            _tprintf (_T (&amp;quot;remove_services %s successed\n&amp;quot;), lpServiceName);
+        if (rslt == -1)
+            PRINTERROR (_T (&amp;quot;OpenSCManager&amp;quot;));
+        if (rslt == -2)
+            PRINTERROR (_T (&amp;quot;OpenService&amp;quot;));
+        if (rslt == -3)
+            PRINTERROR (_T (&amp;quot;DeleteService&amp;quot;));
+    }
+    return rslt;
 }
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-int service\_manager::start ()\
-{\
- if (!StartServiceCtrlDispatcher
-(this\_for\_static-&amp;gt;get\_service\_entries ()))\
-  OutputDebugString (\_T (&#34;StartServiceCtrlDispatcher failedn&#34;));\
- return 0;\
+int service_manager::start ()
+{
+    if (!StartServiceCtrlDispatcher
+        (this_for_static-&amp;gt;get_service_entries ()))
+        OutputDebugString (_T (&amp;quot;StartServiceCtrlDispatcher failed\n&amp;quot;));
+    return 0;
 }
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-void WINAPI service\_manager::service\_start (DWORD argc, LPTSTR \*
-argv)\
-{\
- SERVICE\_STATUS\_HANDLE hServiceStatus;\
- service        \*pservice = this\_for\_static-&amp;gt;get\_service
-(argv\[0\]);\
- if (pservice == NULL) {\
-  OutputDebugString (\_T\
-         (&#34;get\_service failed, don&#39;t have this servicen&#34;));\
-  return;\
- }
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
- hServiceStatus =\
-  RegisterServiceCtrlHandlerEx (argv\[0\], ctrl\_handler, (LPVOID)\
-           pservice);\
- if (hServiceStatus == NULL) {\
-  OutputDebugString (\_T (&#34;RegisterServiceCtrlHandlerEx return
-NULLn&#34;));\
-  return;\
- }
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
- \_\_try {\
-  pservice-&amp;gt;pre\_start (hServiceStatus, argc, argv);\
- }\
- \_\_except (EXCEPTION\_EXECUTE\_HANDLER) {\
-  pservice-&amp;gt;SetServiceStatus (SERVICE\_STOPPED);\
- }\
- return;\
+void WINAPI service_manager::service_start (DWORD argc, LPTSTR *
+                        argv)
+{
+    SERVICE_STATUS_HANDLE hServiceStatus;
+    service *pservice = this_for_static-&amp;gt;get_service
+        (argv[0]);
+    if (pservice == NULL) {
+        OutputDebugString (_T
+                   (&amp;quot;get_service failed, don&#39;t have this service\n&amp;quot;));
+        return;
+    }
+    hServiceStatus =
+        RegisterServiceCtrlHandlerEx (argv[0], ctrl_handler, (LPVOID)
+                          pservice);
+    if (hServiceStatus == NULL) {
+        OutputDebugString (_T (&amp;quot;RegisterServiceCtrlHandlerEx return NULL\n&amp;quot;));
+        return;
+    }
+    __try {
+        pservice-&amp;gt;pre_start (hServiceStatus, argc, argv);
+    }
+    __except (EXCEPTION_EXECUTE_HANDLER) {
+        pservice-&amp;gt;SetServiceStatus (SERVICE_STOPPED);
+    }
+    return;
 }
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-DWORD WINAPI service\_manager::ctrl\_handler (DWORD dwControl,\
-           DWORD dwEventType,\
-           LPVOID lpEventData,\
-           LPVOID lpContext)\
-{\
- DWORD status;\
- service        \*pservice = (service \*) lpContext;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
- SetLastError (NO\_ERROR);\
- \_\_try {\
-  switch (dwControl) {\
-  case SERVICE\_CONTROL\_STOP:\
-   status = pservice-&amp;gt;on\_stop ();\
-   break;\
-  case SERVICE\_CONTROL\_SHUTDOWN:\
-   status = pservice-&amp;gt;on\_shutdown ();\
-   break;\
-  case SERVICE\_CONTROL\_PAUSE:\
-   status = pservice-&amp;gt;on\_pause ();\
-   break;\
-  case SERVICE\_CONTROL\_INTERROGATE:\
-   status = pservice-&amp;gt;on\_interrogate ();\
-   break;\
-  case SERVICE\_CONTROL\_CONTINUE:\
-   status = pservice-&amp;gt;on\_continue ();\
-   break;\
-  default:\
-   return GetLastError ();\
-  }\
-  pservice-&amp;gt;SetServiceStatus (status);\
- }\
- \_\_except (EXCEPTION\_EXECUTE\_HANDLER) {\
-  pservice-&amp;gt;SetServiceStatus (SERVICE\_STOPPED);\
- }\
- return GetLastError ();\
+DWORD WINAPI service_manager::ctrl_handler (DWORD dwControl,
+                        DWORD dwEventType,
+                        LPVOID lpEventData,
+                        LPVOID lpContext)
+{
+    DWORD status;
+    service *pservice = (service *) lpContext;
+    SetLastError (NO_ERROR);
+    __try {
+        switch (dwControl) {
+        case SERVICE_CONTROL_STOP:
+            status = pservice-&amp;gt;on_stop ();
+            break;
+        case SERVICE_CONTROL_SHUTDOWN:
+            status = pservice-&amp;gt;on_shutdown ();
+            break;
+        case SERVICE_CONTROL_PAUSE:
+            status = pservice-&amp;gt;on_pause ();
+            break;
+        case SERVICE_CONTROL_INTERROGATE:
+            status = pservice-&amp;gt;on_interrogate ();
+            break;
+        case SERVICE_CONTROL_CONTINUE:
+            status = pservice-&amp;gt;on_continue ();
+            break;
+        default:
+            return GetLastError ();
+        }
+        pservice-&amp;gt;SetServiceStatus (status);
+    }
+    __except (EXCEPTION_EXECUTE_HANDLER) {
+        pservice-&amp;gt;SetServiceStatus (SERVICE_STOPPED);
+    }
+    return GetLastError ();
 }
 
-&lt;/div&gt;
+service_manager *service_manager::get_service_manager ()
+{
+    return this_for_static;
+}
 
-&lt;div&gt;
-
-service\_manager \*service\_manager::get\_service\_manager ()\
-{\
- return this\_for\_static;\
-}\
 ----------------------------------------
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-之所有list没有写成map是因为在某个服务处理过程中可能需要用到服务的名称。写成map就需要反向查询，也不是很方便。 register\_service中会查询这个服务是否已经注册过，注意不能用服务名对比的方法。这也是我才发现的一个问题，C++在基类的构造函数中的时候，虚函数指针是指向基类虚函数表的。在某个service子类构造的时候，其基类(service)构造函数会自动调用register\_service方法注册自身。如果在register\_service用取得服务名的方法，此时虚函数指针指向了基类的虚函数表。也就是说，我们会调用到一个纯虚函数入口，从而产生C++错误。所以必须手工来匹配指针，大家忍耐忍耐。
-
-&lt;/div&gt;
+&lt;p&gt;之所有list没有写成map是因为在某个服务处理过程中可能需要用到服务的名称。写成map就需要反向查询，也不是很方便。register_service中会查询这个服务是否已经注册过，注意不能用服务名对比的方法。这也是我才发现的一个问题，C++在基类的构造函数中的时候，虚函数指针是指向基类虚函数表的。在某个service子类构造的时候，其基类(service)构造函数会自动调用register_service方法注册自身。如果在register_service用取得服务名的方法，此时虚函数指针指向了基类的虚函数表。也就是说，我们会调用到一个纯虚函数入口，从而产生C++错误。所以必须手工来匹配指针，大家忍耐忍耐。&lt;/p&gt;
 </description>
     </item>
     

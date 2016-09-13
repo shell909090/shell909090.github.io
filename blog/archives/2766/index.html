@@ -140,13 +140,11 @@ echo slapd shared/organization string shell909090.org | debconf-set-selections
 
 <p>为什么？</p>
 
-<p>检查同样发现了本质的原因。如果debconf里没有配，则去读取hostname
--d。在一台机器上，这个配置没事，另一台就不行。</p>
+<p>检查同样发现了本质的原因。如果debconf里没有配，则去读取hostname -d。在一台机器上，这个配置没事，另一台就不行。</p>
 
 <p>经过我反复测试，发现原因是这样的。</p>
 
-<p>hostname
--d读取域名的时候，是寻找/etc/hostname对应的域名作为行尾的那行，而不是127.0.0.1所在的那行。。。</p>
+<p>hostname -d读取域名的时候，是寻找/etc/hostname对应的域名作为行尾的那行，而不是127.0.0.1所在的那行。。。</p>
 
 <p>而出问题的那台机器，/etc/hosts配置和没问题的那台严格一致。包括机器编号！</p>
 

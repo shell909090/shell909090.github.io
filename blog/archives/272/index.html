@@ -112,30 +112,38 @@ ga('send', 'pageview');
           
           
           
-          <div>
+          <p>首先为 CA 创建一个 RSA 私用密钥</p>
 
-首先为 CA 创建一个 RSA 私用密钥\
-openssl genrsa -des3 -out ca.key 1024\
-利用 CA 的 RSA 密钥创建一个自签署的 CA 证书（X.509结构）\
-openssl req -new -x509 -days 3650 -key ca.key -out ca.crt\
-首先为你的 Apache 创建一个 RSA 私用密钥\
-openssl genrsa -des3 -out server.key 1024\
-用 server.key 生成证书签署请求 CSR\
-openssl req -new -key server.key -out server.csr\
-签署证书\
-openssl x509 -md5 -days 3560 -req -signkey server.key -CAcrea\
-teserial -CAserial ca.crt -in server.csr -out server.crt\
-最后apache设置，将下面的参数改为\
-SSLCertificateFILE /usr/local/apache/conf/server.crt\
+<pre><code>openssl genrsa -des3 -out ca.key 1024
+</code></pre>
+
+<p>利用 CA 的 RSA 密钥创建一个自签署的 CA 证书（X.509结构）</p>
+
+<pre><code>openssl req -new -x509 -days 3650 -key ca.key -out ca.crt
+</code></pre>
+
+<p>首先为你的 Apache 创建一个 RSA 私用密钥</p>
+
+<pre><code>openssl genrsa -des3 -out server.key 1024
+</code></pre>
+
+<p>用 server.key 生成证书签署请求 CSR</p>
+
+<pre><code>openssl req -new -key server.key -out server.csr
+</code></pre>
+
+<p>签署证书</p>
+
+<pre><code>openssl x509 -md5 -days 3560 -req -signkey server.key -CAcreateserial -CAserial ca.crt -in server.csr -out server.crt
+</code></pre>
+
+<p>最后apache设置，将下面的参数改为</p>
+
+<pre><code>SSLCertificateFILE /usr/local/apache/conf/server.crt
 SSLCertificateKeyFile /usr/local/apache/conf/server.key
+</code></pre>
 
-</div>
-
-<div>
-
-当然你也可以拿ca.key和ca.crt顶上去，这两个是自签署的。
-
-</div>
+<p>当然你也可以拿ca.key和ca.crt顶上去，这两个是自签署的。</p>
 
         </div>
         

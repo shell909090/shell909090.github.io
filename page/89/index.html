@@ -99,60 +99,6 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/191/">windows系统一</a>
-    </h1>
-    <p class="meta">Jul 13, 2005
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/191/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>一，启动 任何一个系统，一般都从启动讲起的。这里讲启动本来从NTLDR讲就好，可是怕有人不懂，所以简略概述加电后系统的启动流程。 系统加电后，会将CS:IP（注意不是EIP）设定为FFFF:0000。然后开始BIOS自检流程（Power-On Self Test,POST），最后初始化0地址的中断向量表，将引导盘CHS(0,0,1)读入系统0000:7C00开始执行。我们假定这是硬盘（软盘的没有MBR这步），并且没有安装LILO到MBR（否则流程不大一样）。于是MBR会先读取分区表（Disk Partition Table,DPT），寻找活动分区并且载入其第一扇区到000:7C00位置执行。这样MBR等于一个透明层，无论哪个分区（逻辑磁盘不行哦）获得了活动分区，其引导区（OS Boot Record,OBR）都可以当做自己是被BIOS读取执行的。而后如果是9X系统，引导区会读取系统文件（FAT32）头部来执行。这个就是我们非常熟悉的DOS启动流程。同时插句话，如果您无法format一个DOS系统盘出来。那么先彻底格式化（注意彻底，否则FAT遗留信息会让你失败）磁盘，然后COPY IO.SYS上去。照样可以产生系统盘，当然这种BT非常规手法只有了解系统才干的出来…… 如果是NT系统嘛，就会按照某种方法载入NTLDR这个文件。具体方法我也不清楚。因为NTLDR文件没有位置要求支持NTFS和FAT两种格式。按理这么一来引导代码会超过引导区的容量。根据分析NT系统的引导区内容总共有六个连续扇区，分布在头六扇区中。当然第一个扇区还包含了文件系统相关信息BPB（BIOS Parameter Block，研究MFT的还有一个Extend）。这样的大小还是无法容纳整个文件系统的支持阿？要解决除非我愿意反向引导代码，不过为了这么一个问题反向引导代码……等我有空再说吧。 下面NTLDR会进入保护模式，设置了GDT,LDT等等东西，并且彻底支持了NTFS和FAT的读取（引导区只要能从两个格式盘上马找到一个文件就好）。然后会根据BOOT.ini中内容决定如何进行引导，如果出现文字，还可能需要bootfont.bin字体文件。一般来说，会直接调用NTDETECT.COM来检测硬件变化，继续系统加载过程。这个就是我们经常看到的黑色屏幕上有东西从左到右闪的那个…… 后面的东西就是微软内部的资料，众人根据推理分析得来，所以不是很准确。不过可以肯定，后面的东西全在system32中打转。根据分析，首先加载的是NTOSKRNL.EXE（单处理器）或者NTKRNLPA.EXE（SMP，对称多处理器）。这个东西就是windows的微内核，由它导出了windows全部NativeAPI的实现。然后是SMSS.EXE，这是进程管理器，也可以说是头个系统派生的进程。后续所有进程可以视为它的子例。由它派生了CSRSS.EXE和WINLOGON.EXE。后者接管了系统的很多部分，例如GINA。它派生了SERVICES.EXE进程，系统开始加载各种服务。最后在登陆后由GINA启动EXPLORER.EXE。出现桌面等操作界面，启动基本完成。按照上述分析，多数服务的宿主进程都是SERVICES.EXE的派生进程（有特例，例如贝壳手里的RaidenFTPD守护进程就是先由SERVICES.EXE派生，再两次派生所成的）。而多数应用程序的进程都是EXPLORER.EXE的派生进程（当然，或者再派生进程）。EXPLORER.EXE负责的内容包括了开始菜单等等，所以除非你通过某个服务去启动程序，否则都是它的子孙。（特例包括Process Explorer工具作为Ctrl+Atl+Del启动时，是WINLOGON.EXE的子例。所以在上面启动一个CMD就成了服务派生，无服务身份。还有MSN弹出的邮件或者Space都是作为某个服务的派生的，所以也不是EXPLORER.EXE的子例。）</p>
-
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/190/">Windows系统引论</a>
-    </h1>
-    <p class="meta">Jul 13, 2005
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/190/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>最近在开linux系统，找找发现资料那个叫……哎。到不是说少，linux号称开放源码，想要什么没有阿。问题是精论系统结构和意义的很少，一般都是讨论某个技术点如何如何的。没有大略的瞻观（当然，也有可能是英文，贝壳的E文水平看了等于没看到）。而一般系统中要做某个应用，除了经验，就是根据系统的运作方法、构架、原理等等去模拟。例如了解了file HANDLE这种东西后，自然会就如何将一个HiddenConsole的Output转Dump到一个windows的text中产生想法。或者了解了[\.]()系列文件后，自然会想到如何制作的ISO。当然，其实还有ATAPI的方法。如果了解了winsock的层实现流程，自然会知道防火墙如何实现。所以了解一个系统，无须了解内核的每句代码（对于windows，根本无法了解。即使是linux，了解了全部也要数年。届时你了解的也该淘汰了。）。系统主要了解其构架和思想，关键部分才了解实现。 现在看linux系统，犹如隔纱而望。当然，系统的命令我了解了不少（其实了解了ls和man已经差不多了）。但是每个命令是哪里的？系统的目录如何设置？什么配置应该看什么地方。linux载入进程是如何实现的。（估计这个是ELF的范畴，不过肯定要先啃过内核在看的懂。否则就如同我当年不知道NativeAPI的时候看NE和PE一样） 所以现在写一个windows系统引论，希望抛砖引玉。毕竟windows的资料全，了解时间长。所以难保还有哪位大大也写过类似文章，大家姑且看之吧。</p>
-
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/189/">史上最倒霉的一天</a>
     </h1>
     <p class="meta">Jul 12, 2005
@@ -366,6 +312,60 @@ ga('send', 'pageview');
 
     </article>
     
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/181/">KaKa的家</a>
+    </h1>
+    <p class="meta">Jun 23, 2005
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/181/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>昨天KaKa带我们去了她的家，我们终于见到了传说中的KaKa的父亲。果然能喝，居然要求男生两杯女生一杯，点名要求我三杯。幸好后来有事，把这个事情给揭了过去，否则我就回不来了…… 对KaKa家的第三印象，好大，第二印象，环境好漂亮，第一印象，蚊子好多……晚上睡觉的时候没有被子也没有枕头，放我们在外面就是喂蚊子的。幸好小费买了瓶蚊补丁，打上后果然稳定多了……不是不是……是蚊子少多了。早上给大班叫起来，发现三个女生通宵到七点半。汗……好恐怖的精力，贝壳是困了就要睡觉了。 孙大班的家啥都好，就是路远了点（当然，蚊子也多了点……）。从学校过去是两个多钟头，偶跑回自己家又用了两个钟头，加上去学校的两个钟头，可以证明，三者形成等边三角型。贝壳出来的时候，孙大班还特意嘱咐在对面乘车。结果贝壳是属蚂蚁的，先爬会熟悉的地头，再走熟悉的路线。特意开回南汇，然后一部班车到家。省却不少麻烦，就是乘车时间稍微长了点。 昨天晚上喝酒当中不知道怎么提到的（好像是杨文卓喝酒不喝酒弄出来的），袁乐突然发神经，要在毕业一周内结婚，预定时间是七月一号，因为是党的生日。各位各位，如果我们全班没有被耍的话，七一贝壳就要去重庆玩两天了。虽然临近答辩，老师催的很紧的说。这些都不重要，但是……但是……但是我的钱包啊……负债已经一千五百了，再下去毕业前就要预支一个月的薪水了。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/180/">大教堂</a>
+    </h1>
+    <p class="meta">Jun 19, 2005
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/180/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>很久以前就听过巴利奥斯的大教堂，不过一直都不知道叫什么。（相信大家也听过吧，尤其是男生，CS中某关在教堂附近的音乐……）然后，我学了吉他，知道了名字。不过很抱歉也很遗憾，我弹不来。嘿嘿，好像我有点懒…… 不过大教堂的却也够难……不但技术上要求技巧高，弹奏速度快，而且持续时间超长。技术差点，不是弹不出来，就是断断续续，或者根本弹不完。开始的时候就要用拇指食指中指交替快速弹奏，我现在连这段都无法连贯弹出来。看来弹完它这个梦想是终身无望了…… 大教堂给人的感觉有点庄严不是那么特别的庄严。每次烦躁的时候听，心里面都会平静下来。但是静心仔细听，又给我一种蠢蠢欲动的感觉。上跳下窜的音符引发隐约的躁动，仿佛要发生什么，又什么都不会发生。每个走向都非常出人意料，就像人生，你永远不知道下一刻你会得到什么。</p>
+
+          
+
+        
+
+    </article>
+    
     
     
 
@@ -569,8 +569,6 @@ ga('send', 'pageview');
     
         <a href="/page/91/" class="label-pagination">91</a>
     
-        <a href="/page/92/" class="label-pagination">92</a>
-    
 
     
     
@@ -579,7 +577,7 @@ ga('send', 'pageview');
 
     
     
-        <a href="/page/92/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
+        <a href="/page/91/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
     
 
 </div>

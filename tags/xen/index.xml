@@ -16,64 +16,23 @@
       <pubDate>Mon, 20 Feb 2012 06:19:51 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2098/</guid>
-      <description>&lt;p&gt;最近整XEN，出了一个奇怪的错误。
-&lt;div&gt;&lt;/p&gt;
+      <description>&lt;p&gt;最近整XEN，出了一个奇怪的错误。&lt;/p&gt;
 
-&lt;p&gt;&lt;span
-style=&#34;font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif&#34;&gt;ERROR
-(SrvDaemon:355) Exception starting xend &lt;/span&gt;&lt;span
-style=&#34;font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif&#34;&gt;((22,
-&amp;lsquo;Invalid argument&amp;rsquo;)) &lt;/span&gt;&lt;br /&gt;
-&lt;span
-style=&#34;font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif&#34;&gt;Traceback
-(most recent call last): &lt;/span&gt;&lt;br /&gt;
-&lt;span
-style=&#34;font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif&#34;&gt; 
- File &amp;ldquo;/usr/lib/xen-4.0/lib/python/xen/xend/server/SrvDaemon.py&amp;rdquo;,
-line &lt;/span&gt;&lt;br /&gt;
-&lt;span
-style=&#34;font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif&#34;&gt;335,
-in run &lt;/span&gt;&lt;br /&gt;
-&lt;span
-style=&#34;font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif&#34;&gt; 
-   xinfo = xc.xeninfo() &lt;/span&gt;&lt;br /&gt;
-&lt;span
-style=&#34;font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif&#34;&gt;Error:
-(22, &amp;lsquo;Invalid argument&amp;rsquo;) &lt;/span&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;ERROR (SrvDaemon:355) Exception starting xend((22, &#39;Invalid argument&#39;))
+Traceback
+(most recent call last):
+File &amp;quot;/usr/lib/xen-4.0/lib/python/xen/xend/server/SrvDaemon.py&amp;quot;, line 335, in run
+xinfo = xc.xeninfo()
+Error: (22, &#39;Invalid argument&#39;)
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
+&lt;p&gt;根据网络上的内容，首先排除没有xen模块——有了，然后是/proc/xen目录是否mount——有了，然后是/sys/hypervisor/下面的一堆属性——有了，然后是版本——不对。xen-utils-4.1是4.1.2版本，而xen-tools是4.2版本。不过xen-utils并不依赖xen-tools，没有后者应当也可以运行这些玩意。hypervisor和xen-utils的版本是一致的。那问题是什么？&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;出错的文件是/usr/lib/xen-4.1/lib/python/xen/lowlevel/xc.so里面发生的异常，下载xen的源码检查，这个函数主要是检查属性。属性检查会出什么错？&lt;/p&gt;
 
-&lt;span
-style=&#34;font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif&#34;&gt; 
- 
-根据网络上的内容，首先排除没有xen模块——有了，然后是/proc/xen目录是否mount——有了，然后是/sys/hypervisor/下面的一堆属性——有了，然后是版本——不对。xen-utils-4.1是4.1.2版本，而xen-tools是4.2版本。不过xen-utils并不依赖xen-tools，没有后者应当也可以运行这些玩意。hypervisor和xen-utils的版本是一致的。那问题是什么？&lt;/span&gt;
+&lt;p&gt;正在一头雾水的时候，突然想起一个问题。我安装的是xen-hypervisor-4.1-amd64，因为kernel是linux-image-3.1.0-1-amd64。然而，我这个系统有一个非常大的特殊——在64位CPU上运行的32位系统。因此，实际上xen-utils是32位的。行了行了，下面的事情用膝盖都能想到。&lt;/p&gt;
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span
-style=&#34;font-size:13px;font-family:Verdana,Geneva,Helvetica,Arial,sans-serif&#34;&gt; 
- 
-出错的文件是&lt;/span&gt;/usr/lib/xen-4.1/lib/python/xen/lowlevel/xc.so里面发生的异常，下载xen的源码检查，这个函数主要是检查属性。属性检查会出什么错？
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-正在一头雾水的时候，突然想起一个问题。我安装的是xen-hypervisor-4.1-amd64，因为kernel是linux-image-3.1.0-1-amd64。然而，我这个系统有一个非常大的特殊——在64位CPU上运行的32位系统。因此，实际上xen-utils是32位的。行了行了，下面的事情用膝盖都能想到。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-叹气，这世界上，真的有种错误，叫做太常见了以至于视而不见。不要认为自己不会犯。
-
-&lt;/div&gt;
+&lt;p&gt;叹气，这世界上，真的有种错误，叫做太常见了以至于视而不见。不要认为自己不会犯。&lt;/p&gt;
 </description>
     </item>
     

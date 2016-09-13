@@ -103,914 +103,169 @@ livecd也不错。这两个都是livecd系列，就是可以直接从光盘启�
       <pubDate>Mon, 09 Jul 2012 08:45:28 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2200/</guid>
-      <description>&lt;div&gt;
+      <description>
 
-\# abstract \#
+&lt;h1 id=&#34;abstract&#34;&gt;abstract&lt;/h1&gt;
 
-&lt;/div&gt;
+&lt;p&gt;graphite是一个python写的性能监控系统。这个系统是由多个分离的部分组成的。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;ul&gt;
+&lt;li&gt;graphite-web: 由django写的web界面系统。&lt;/li&gt;
+&lt;li&gt;carbon: 数据收集的守护进程。&lt;/li&gt;
+&lt;li&gt;whisper: 一种python写的数据库，类似rrd，便于大量的性能日志数据收集和处理。上两个组件会调用这个库。&lt;/li&gt;
+&lt;li&gt;collectd: 数据收集守护进程，向carbon中喂数据的数据源。&lt;/li&gt;
+&lt;/ul&gt;
 
-\
+&lt;p&gt;另外，有一点黑色幽默的就是，graphite的意思是石墨，是炭(carbon)的一种同素异形体。因此在graphite项目中，多次出现carbon这个名字。当然，另两个同素异形体是钻石(diamond)和足球烯(footballene)，你就暂时别指望看到他们的身影了。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;另一个用python写的，以元素命名的著名软件是mercurial。化学元素中的汞，俗称水银，符号hg。因此mercurial的命令行简写才是hg。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;以上几个的结构大概是这样的：&lt;/p&gt;
 
-graphite是一个python写的性能监控系统。这个系统是由多个分离的部分组成的。
+&lt;p&gt;collectd(source) -network-&amp;gt; carbon -&amp;gt; writing-&amp;gt; whisper&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;database -&amp;gt; reading-&amp;gt; graphite-web&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;下文描述了在debian wheezy下，以nginx+uwsgi模式安装graphite的过程。之所以用这个模式，是因为我的大部分系统都是python写的，同样安装在uwsgi下面。一事不烦二主。&lt;/p&gt;
 
-\
+&lt;h1 id=&#34;carbon&#34;&gt;carbon&lt;/h1&gt;
 
-&lt;/div&gt;
+&lt;p&gt;carbon有对应的debian包，可以很简单的安装。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;pre&gt;&lt;code&gt;sudo aptitude install graphite-carbon
+&lt;/code&gt;&lt;/pre&gt;
 
-\* graphite-web: 由django写的web界面系统。
+&lt;p&gt;默认的数据端口是2003，默认的数据路径是/var/lib/graphite/，这个在下文需要用到。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;h1 id=&#34;graphite&#34;&gt;graphite&lt;/h1&gt;
 
-&lt;div&gt;
+&lt;h2 id=&#34;virtual&#34;&gt;virtual&lt;/h2&gt;
 
-\* carbon: 数据收集的守护进程。
+&lt;p&gt;graphite有部分需要安装到系统中，因此最好用virtualenv进行安装。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;pre&gt;&lt;code&gt;cd /var/web/
+sudo aptitude install python-virtualenv
+virtualenv --system-site-packages graphite
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;div&gt;
+&lt;p&gt;我假定你的安装路径是/var/web/graphite，这个在下面要反复用到。&lt;/p&gt;
 
-\* whisper:
-一种python写的数据库，类似rrd，便于大量的性能日志数据收集和处理。上两个组件会调用这个库。
+&lt;h2 id=&#34;install&#34;&gt;install&lt;/h2&gt;
 
-&lt;/div&gt;
+&lt;p&gt;在安装路径下，执行以下内容&lt;/p&gt;
 
-&lt;div&gt;
+&lt;pre&gt;&lt;code&gt;source bin/activite
+pip install graphite-web --install-option=&amp;quot;--prefix=/var/web/graphite&amp;quot; --install-option=&amp;quot;--install-lib=/var/web/graphite/webapp&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
 
-\* collectd: 数据收集守护进程，向carbon中喂数据的数据源。
+&lt;p&gt;注意，/var/web/graphite需要根据上面的设定自行修改，webapp是你的django基础路径。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;h2 id=&#34;configure&#34;&gt;configure&lt;/h2&gt;
 
-&lt;div&gt;
+&lt;p&gt;在/var/web/graphite/webapp/graphite下面，执行以下内容&lt;/p&gt;
 
-\
+&lt;pre&gt;&lt;code&gt;cp local_settings.py.example local_settings.py
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;/div&gt;
+&lt;p&gt;然后编辑local_settings.py&lt;/p&gt;
 
-&lt;div&gt;
+&lt;pre&gt;&lt;code&gt;GRAPHITE_ROOT = &#39;/var/web/graphite&#39;
+WHISPER_DIR = &#39;/var/lib/graphite/whisper&#39;
+DATABASES = ...
+&lt;/code&gt;&lt;/pre&gt;
 
-另外，有一点黑色幽默的就是，graphite的意思是石墨，是炭(carbon)的一种同素异形体。因此在graphite项目中，多次出现carbon这个名字。当然，另两个同素异形体是钻石(diamond)和足球烯(footballene)，你就暂时别指望看到他们的身影了。
+&lt;p&gt;注意databases，不要在settings.py里面修改，要改这里的才有效。我用的是sqlite，如果你高兴，可以改为postgres/mysql。WHISPER_DIR是上文carbon中设定的目录。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;最后，执行以下指令，完成数据库初始化。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;pre&gt;&lt;code&gt;python manage.py syncdb
+&lt;/code&gt;&lt;/pre&gt;
 
-\
+&lt;h2 id=&#34;uwsgi&#34;&gt;uwsgi&lt;/h2&gt;
 
-&lt;/div&gt;
+&lt;p&gt;编辑/etc/uwsgi/apps-enabled/graphite.ini，包含以下内容。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;pre&gt;&lt;code&gt;[uwsgi]
+plugins = python
+workers = 1
+chdir = /var/web/graphite/webapp
+pythonpath = /var/web/graphite
+env = DJANGO_SETTINGS_MODULE=graphite.settings
+module = django.core.handlers.wsgi:WSGIHandler()
+&lt;/code&gt;&lt;/pre&gt;
 
-另一个用python写的，以元素命名的著名软件是mercurial。化学元素中的汞，俗称水银，符号hg。因此mercurial的命令行简写才是hg。
+&lt;p&gt;注意，这里的chdir，是你的webapp基础路径。而pythonpath则是virtualenv的路径。两者在上文都有说明的。env里面那个graphite是webapp/graphite这个app(不详细说明，自己学一下django就懂了)。module是django的固定写法。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;h2 id=&#34;nginx&#34;&gt;nginx&lt;/h2&gt;
 
-&lt;div&gt;
+&lt;p&gt;最后，在nginx中包含以下内容，将部分url转发到uwsgi上。&lt;/p&gt;
 
-\
+&lt;pre&gt;&lt;code&gt;location ~ ^/(graphite|content|metrics|dashboard|render|browser|composer)/ {
+    include uwsgi_params;
+    uwsgi_param  UWSGI_SCHEME $scheme;
+    uwsgi_pass unix:/run/uwsgi/app/graphite/socket;
+}
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;/div&gt;
+&lt;h1 id=&#34;collectd&#34;&gt;collectd&lt;/h1&gt;
 
-&lt;div&gt;
+&lt;h2 id=&#34;install-1&#34;&gt;install&lt;/h2&gt;
 
-以上几个的结构大概是这样的：
+&lt;p&gt;collectd的安装很简答，有包，直接安装就好。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;pre&gt;&lt;code&gt;sudo aptitude install collectd
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;div&gt;
+&lt;h2 id=&#34;configure-1&#34;&gt;configure&lt;/h2&gt;
 
-\
+&lt;p&gt;在/etc/collectd/这个路径，能够看到collectd.conf这个文件。反注释掉以下内容：&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;pre&gt;&lt;code&gt;&amp;lt;LoadPlugin python&amp;gt;
+    Globals true
+&amp;lt;/LoadPlugin&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;div&gt;
+&lt;p&gt;然后，再编辑以下内容。&lt;/p&gt;
 
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;
-&lt;/span&gt;collectd(source) -network-&amp;gt; carbon -writing-&amp;gt; whisper
-database -reading-&amp;gt; graphite-web
+&lt;pre&gt;&lt;code&gt;&amp;lt;Plugin python&amp;gt;
+    ModulePath &amp;quot;/etc/collectd/carbon&amp;quot;
+    Import “carbon_writer”
+    &amp;lt;Module “carbon_writer”&amp;gt;
+        LineReceiverHost “localhost″
+        LineReceiverPort 2003
+        DifferentiateCountersOverTime true
+        LowercaseMetricNames true
+        TypesDB &amp;quot;/usr/share/collectd/types.db&amp;quot;
+    &amp;lt;/Module&amp;gt;
+&amp;lt;/Plugin&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;/div&gt;
+&lt;p&gt;上文中假定你把python插件放在了/etc/collectd/carbon下面，所以下文需要按照这个路径安装carbon。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;h2 id=&#34;collectd-carbon&#34;&gt;collectd-carbon&lt;/h2&gt;
 
-\
+&lt;p&gt;在/etc/collectd下面，执行&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;pre&gt;&lt;code&gt;sudo git clone https://github.com/indygreg/collectd-carbon.git carbon
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;div&gt;
+&lt;p&gt;注意，sudo其实是不安全的。不过目前就这样吧，问题不明显。&lt;/p&gt;
 
-下文描述了在debian
-wheezy下，以nginx+uwsgi模式安装graphite的过程。之所以用这个模式，是因为我的大部分系统都是python写的，同样安装在uwsgi下面。一事不烦二主。
+&lt;h2 id=&#34;restart-whole-system&#34;&gt;restart whole system&lt;/h2&gt;
 
-&lt;/div&gt;
+&lt;p&gt;执行以下指令重启服务&lt;/p&gt;
 
-&lt;div&gt;
+&lt;pre&gt;&lt;code&gt;sudo /etc/init.d/nginx restart
+sudo /etc/init.d/uwsgi restart
+sudo /etc/init.d/carbon-cache restart
+sudo /etc/init.d/collectd restart
+&lt;/code&gt;&lt;/pre&gt;
 
-\
+&lt;p&gt;完成这步后，可以在/var/log/syslog中看到collectd的输出，数据确实的被灌入了carbon。而/var/log/uwsgi/app/graphite.log中可以看到uwsgi的输出。如果一切正常的话，你可以去&lt;a href=&#34;http://localhost/graphite/&#34;&gt;http://localhost/graphite/&lt;/a&gt;下面看你要的东西了。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;h1 id=&#34;评价&#34;&gt;评价&lt;/h1&gt;
 
-&lt;div&gt;
-
-\# carbon \#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-carbon有对应的debian包，可以很简单的安装。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;sudo
-aptitude install graphite-carbon
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-默认的数据端口是2003，默认的数据路径是/var/lib/graphite/，这个在下文需要用到。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\# graphite \#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# virtual \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-graphite有部分需要安装到系统中，因此最好用virtualenv进行安装。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;cd
-/var/web/
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;sudo
-aptitude install python-virtualenv
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;virtualenv
---system-site-packages graphite
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-我假定你的安装路径是/var/web/graphite，这个在下面要反复用到。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# install \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-在安装路径下，执行以下内容
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;source
-bin/activite
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;pip install
-graphite-web --install-option=&#34;--prefix=/var/web/graphite&#34;
---install-option=&#34;--install-lib=/var/web/graphite/webapp&#34;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-注意，/var/web/graphite需要根据上面的设定自行修改，webapp是你的django基础路径。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# configure \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-在/var/web/graphite/webapp/graphite下面，执行以下内容
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;cp
-local\_settings.py.example local\_settings.py
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-然后编辑local\_settings.py
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;
-&lt;/span&gt;GRAPHITE\_ROOT = &#39;/var/web/graphite&#39;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;
-&lt;/span&gt;WHISPER\_DIR = &#39;/var/lib/graphite/whisper&#39;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;DATABASES =
-...
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-注意databases，不要在settings.py里面修改，要改这里的才有效。我用的是sqlite，如果你高兴，可以改为postgres/mysql。WHISPER\_DIR是上文carbon中设定的目录。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-最后，执行以下指令，完成数据库初始化。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;python
-manage.py syncdb
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# uwsgi \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-编辑/etc/uwsgi/apps-enabled/graphite.ini，包含以下内容。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;\[uwsgi\]
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;plugins    
-    = python
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;workers    
-    = 1
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;chdir      
-    = /var/web/graphite/webapp
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;pythonpath
-     = /var/web/graphite
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;env        
-    = DJANGO\_SETTINGS\_MODULE=graphite.settings
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;module    
-     = django.core.handlers.wsgi:WSGIHandler()
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-注意，这里的chdir，是你的webapp基础路径。而pythonpath则是virtualenv的路径。两者在上文都有说明的。env里面那个graphite是webapp/graphite这个app(不详细说明，自己学一下django就懂了)。module是django的固定写法。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# nginx \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-最后，在nginx中包含以下内容，将部分url转发到uwsgi上。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;location \~
-\^/(graphite|content|metrics|dashboard|render|browser|composer)/ {
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;include
-       uwsgi\_params;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;
-&lt;/span&gt;uwsgi\_param    UWSGI\_SCHEME \$scheme;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;uwsgi\_pass
-    unix:/run/uwsgi/app/graphite/socket;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;}
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\# collectd \#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# install \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-collectd的安装很简答，有包，直接安装就好。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;sudo
-aptitude install collectd
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# configure \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-在/etc/collectd/这个路径，能够看到collectd.conf这个文件。反注释掉以下内容：
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;
-&lt;/span&gt;&amp;lt;LoadPlugin python&amp;gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;Globals
-true
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;
-&lt;/span&gt;&amp;lt;/LoadPlugin&amp;gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-然后，再编辑以下内容。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;&amp;lt;Plugin
-python&amp;gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;
-&lt;/span&gt;ModulePath &#34;/etc/collectd/carbon&#34;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;Import
-“carbon\_writer”
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;
-&lt;/span&gt;&amp;lt;Module “carbon\_writer”&amp;gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;
-&lt;/span&gt;LineReceiverHost “localhost″
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;
-&lt;/span&gt;LineReceiverPort 2003
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;
-&lt;/span&gt;DifferentiateCountersOverTime true
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;
-&lt;/span&gt;LowercaseMetricNames true
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;TypesDB
-&#34;/usr/share/collectd/types.db&#34;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;
-&lt;/span&gt;&amp;lt;/Module&amp;gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    &amp;lt;/Plugin&amp;gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-上文中假定你把python插件放在了/etc/collectd/carbon下面，所以下文需要按照这个路径安装carbon。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# collectd-carbon \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-在/etc/collectd下面，执行
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;sudo git
-clone &lt;https://github.com/indygreg/collectd-carbon.git&gt; carbon
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-注意，sudo其实是不安全的。不过目前就这样吧，问题不明显。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# restart whole system \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-执行以下指令重启服务
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;sudo
-/etc/init.d/nginx restart
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;sudo
-/etc/init.d/uwsgi restart
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;sudo
-/etc/init.d/carbon-cache restart
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;sudo
-/etc/init.d/collectd restart
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-完成这步后，可以在/var/log/syslog中看到collectd的输出，数据确实的被灌入了carbon。而/var/log/uwsgi/app/graphite.log中可以看到uwsgi的输出。如果一切正常的话，你可以去\[[http://localhost/graphite/\](http://localhost/graphite/)下面看你要的东西了](http://localhost/graphite/%5D%28http://localhost/graphite/)%E4%B8%8B%E9%9D%A2%E7%9C%8B%E4%BD%A0%E8%A6%81%E7%9A%84%E4%B8%9C%E8%A5%BF%E4%BA%86)。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\# 评价 \#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-数据收集的挺完整的。既然是基于collectd，那么应当没什么问题的，openwrt也可以支持的。问题是拿到数据后展现的一方面。由于默认配置太差，因此需要很长时间调教。我没那个功夫，搞定测试后就直接删除了。
-
-&lt;/div&gt;
+&lt;p&gt;数据收集的挺完整的。既然是基于collectd，那么应当没什么问题的，openwrt也可以支持的。问题是拿到数据后展现的一方面。由于默认配置太差，因此需要很长时间调教。我没那个功夫，搞定测试后就直接删除了。&lt;/p&gt;
 </description>
     </item>
     
@@ -1020,58 +275,17 @@ clone &lt;https://github.com/indygreg/collectd-carbon.git&gt; carbon
       <pubDate>Wed, 02 May 2012 03:09:03 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2158/</guid>
-      <description>&lt;div&gt;
+      <description>&lt;p&gt;第一次参加BSP，还不错拉。因为以前没参加过，所以等搞明白了这个是干吗的再和大家说。&lt;/p&gt;
 
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;
-&lt;/span&gt;第一次参加BSP，还不错拉。因为以前没参加过，所以等搞明白了这个是干吗的再和大家说。
+&lt;p&gt;BSP是bug squeeze party的简称，简单来说就是修错会。debian马上要发行7了，在此之前有很多的bug没有修复。其中有一种是RC bug，即运行就会出大问题的bug，或者干脆没法编译。无论哪个，都会导致这个包不能进入最新的发布。有些bug很麻烦，需要maintainer和author沟通，这个没有办法。但是有些问题解决起来很简单，只是因为后果很严重，作者又暂时没空处理，导致包无法进入stable，实在很无谓。BSP的目的，主要是以非维护者上传(non-maintainer upload)的方式修复这类bug。因为包不是自己的，所以礼貌上，只修复半个月以上的rc级别bug，其他的留给maintainer来处理。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;BSP的主要目的，就是这么一个苦力会。没有挂名，最多只有一条changelog记录，还要大量寻找和修复bug。不过BSP相当重要，因为很多maintainer往往有一段一段的不活跃时间。这时候即使再简单的问题也不会处理。按照debian的规则，别人也不会帮他处理。除了BSP，很少有一批人会专门找这种简单的Bug来修正。如果没有BSP，debian stable发布的时候一做RC冻结，就要少掉很多有用的包。BSP更大的目的是，交流和传授debian打包和除错的经验，唤起人们的关注。也许在会后，如果有人看到一些简单bug，会使用nmu的方法给与修正。不过BSP到确实是有一个额外加成的好处——基本变成了签名会。昨天估计是中国大陆地区首次DD数量接近其他人数量，我一下弄到了5个签名，2个DD一个Ubuntu员工。加上原来就有的zigo签名，我就有3个DD签名了。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;本地BSP是在thomas的公司举行，欧特家博士匹萨厂商赞助了我们两天的午餐——微波食品匹萨。第一天来的人比较多，很多都是纯新手，大概有20多人。Zigo倒是在网络上说会帮助新手，但是纯新手看到debian打包系统根本无从下手，所谓指导什么的也无从说起。很多人一天一个bug都修不掉，甚至都看不懂，很有挫折感，估计有不少有热情的人在第二天就这么默默退散了，第二天只来了15个左右。&lt;/p&gt;
 
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;BSP是bug
-squeeze
-party的简称，简单来说就是修错会。debian马上要发行7了，在此之前有很多的bug没有修复。其中有一种是RC
-bug，即运行就会出大问题的bug，或者干脆没法编译。无论哪个，都会导致这个包不能进入最新的发布。有些bug很麻烦，需要maintainer和author沟通，这个没有办法。但是有些问题解决起来很简单，只是因为后果很严重，作者又暂时没空处理，导致包无法进入stable，实在很无谓。BSP的目的，主要是以非维护者上传(non-maintainer
-upload)的方式修复这类bug。因为包不是自己的，所以礼貌上，只修复半个月以上的rc级别bug，其他的留给maintainer来处理。
+&lt;p&gt;我主要是以修复自己的问题为主，python-snappy和python-formalchemy都升级到了最高级，并且修复了自己以前打包的一个问题。至于RC bug么，我修了一个。两个包在python中命名冲突了，所以在debian中需要声明为conflicts。另外我评审了一下，最终还是决定关闭了python-libmemcached的ITP。虽然对douban很不好意思，还让他们修了一下。但是python-libmemcached依赖于libmemcached，而后者已经逐步升级到了1.0.X版本，但是douban为了稳定使用，是sticky在0.4版上的。因此当更新的debian发行时，实际上python-libmemcached和系统中的libmemcached不是一回事。因此，我不能依赖libmemcached的维护者，而是需要自己去维护后者——没办法，我就是怂了。python-libmemcached的爱用者，还是自己打包吧。我倒是可以公开打包文档。&lt;/p&gt;
 
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;
-&lt;/span&gt;BSP的主要目的，就是这么一个苦力会。没有挂名，最多只有一条changelog记录，还要大量寻找和修复bug。不过BSP相当重要，因为很多maintainer往往有一段一段的不活跃时间。这时候即使再简单的问题也不会处理。按照debian的规则，别人也不会帮他处理。除了BSP，很少有一批人会专门找这种简单的Bug来修正。如果没有BSP，debian
-stable发布的时候一做RC冻结，就要少掉很多有用的包。BSP更大的目的是，交流和传授debian打包和除错的经验，唤起人们的关注。也许在会后，如果有人看到一些简单bug，会使用nmu的方法给与修正。不过BSP到确实是有一个额外加成的好处——基本变成了签名会。昨天估计是中国大陆地区首次DD数量接近其他人数量，我一下弄到了5个签名，2个DD一个Ubuntu员工。加上原来就有的zigo签名，我就有3个DD签名了。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;
-&lt;/span&gt;本地BSP是在thomas的公司举行，欧特家博士匹萨厂商赞助了我们两天的午餐——微波食品匹萨。第一天来的人比较多，很多都是纯新手，大概有20多人。Zigo倒是在网络上说会帮助新手，但是纯新手看到debian打包系统根本无从下手，所谓指导什么的也无从说起。很多人一天一个bug都修不掉，甚至都看不懂，很有挫折感，估计有不少有热情的人在第二天就这么默默退散了，第二天只来了15个左右。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;
-&lt;/span&gt;我主要是以修复自己的问题为主，python-snappy和python-formalchemy都升级到了最高级，并且修复了自己以前打包的一个问题。至于RC
-bug么，我修了一个。两个包在python中命名冲突了，所以在debian中需要声明为conflicts。另外我评审了一下，最终还是决定关闭了python-libmemcached的ITP。虽然对douban很不好意思，还让他们修了一下。但是python-libmemcached依赖于libmemcached，而后者已经逐步升级到了1.0.X版本，但是douban为了稳定使用，是sticky在0.4版上的。因此当更新的debian发行时，实际上python-libmemcached和系统中的libmemcached不是一回事。因此，我不能依赖libmemcached的维护者，而是需要自己去维护后者——没办法，我就是怂了。python-libmemcached的爱用者，还是自己打包吧。我倒是可以公开打包文档。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;
-&lt;/span&gt;另外，我在想是否要集合一批python/debian的用户，来做投票。例如，python的一个容器——flup，在debian中实际上已经orphon了。如果有足够的人投票，我愿意为flup做接手维护工作。不过目前debian下问下来的结果，大家对flup没什么太大兴趣。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
+&lt;p&gt;另外，我在想是否要集合一批python/debian的用户，来做投票。例如，python的一个容器——flup，在debian中实际上已经orphon了。如果有足够的人投票，我愿意为flup做接手维护工作。不过目前debian下问下来的结果，大家对flup没什么太大兴趣。&lt;/p&gt;
 </description>
     </item>
     
@@ -1081,393 +295,105 @@ bug么，我修了一个。两个包在python中命名冲突了，所以在debia
       <pubDate>Tue, 17 Apr 2012 07:00:21 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2144/</guid>
-      <description>&lt;div&gt;
+      <description>
 
-&lt;div&gt;
+&lt;p&gt;假定你有一台debian vps，上面需要装一些东西来——你懂。你应该装一些什么呢？&lt;/p&gt;
 
-    假定你有一台debian
-vps，上面需要装一些东西来——你懂。你应该装一些什么呢？
+&lt;h1 id=&#34;基础部分&#34;&gt;基础部分&lt;/h1&gt;
 
-&lt;/div&gt;
+&lt;h2 id=&#34;ssh&#34;&gt;ssh&lt;/h2&gt;
 
-&lt;div&gt;
+&lt;p&gt;没啥好多说，没有ssh，你甚至无法管理机器。不过注意，安全的ssh方式应当只允许使用key登录，禁止一切密码登录。而且对于没必要登录的某些用户，需要在/etc/passwd中将shell改为/bin/false。至于端口改不改，这个不重要，看你心情。&lt;/p&gt;
 
-\
+&lt;h2 id=&#34;vim&#34;&gt;vim&lt;/h2&gt;
 
-&lt;/div&gt;
+&lt;p&gt;debian默认装的是vim-tiny，很不好用。建议改为vim，改配置的时候让自己舒服点。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;h2 id=&#34;安全部分&#34;&gt;安全部分&lt;/h2&gt;
 
-\# 基础部分 \#
+&lt;h2 id=&#34;iptables-persistent&#34;&gt;iptables-persistent&lt;/h2&gt;
 
-&lt;/div&gt;
+&lt;p&gt;这是debian内用于iptables规则持久化的工具，你可以编辑/etc/iptables/rules.v4来修改防火墙规则。注意，目前debian stable(squeeze)中的版本还没有4/6区分，你可以弄一个testing(wheezy)中的来装。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;一般来说，你的规则中至少要包含以下内容：&lt;/p&gt;
 
-\#\# ssh \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;没啥好多说，没有ssh，你甚至无法管理机器。不过注意，安全的ssh方式应当只允许使用key登录，禁止一切密码登录。而且对于没必要登录的某些用户，需要在/etc/passwd中将shell改为/bin/false。至于端口改不改，这个不重要，看你心情。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# vim \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;debian默认装的是vim-tiny，很不好用。建议改为vim，改配置的时候让自己舒服点。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# 安全部分 \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# iptables-persistent \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;这是debian内用于iptables规则持久化的工具，你可以编辑/etc/iptables/rules.v4来修改防火墙规则。注意，目前debian
-stable(squeeze)中的版本还没有4/6区分，你可以弄一个testing(wheezy)中的来装。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;一般来说，你的规则中至少要包含以下内容：
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\`
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
--A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
+&lt;pre&gt;&lt;code&gt;-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
 -A INPUT -i lo -j ACCEPT
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
 -A INPUT -i tun+ -j ACCEPT
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
 -A INPUT -i ppp+ -j ACCEPT
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
 -A INPUT -p tcp -m multiport --dport 22,xxx,xxx,xxx -j ACCEPT
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
 -A INPUT -p udp -m multiport --dport xxx,xxx,xxx -j ACCEPT
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;/div&gt;
+&lt;p&gt;而且强烈建议，先保存一个没问题的iptables，然后直接修改iptables，再保存。这样的好处是，当你脑残改错了导致你自己都无法管理的时候，只要重启就可以恢复vps工作，而不用更麻烦的动作。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;h2 id=&#34;denyhosts&#34;&gt;denyhosts&lt;/h2&gt;
 
-\`
+&lt;p&gt;这是ssh的连接防御进程，用python编写。如果有人试图尝试你的ssh密码，这个程序就会踢掉他的ip。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;如果你已经用了我说的，通过key的连接方式，你可以一次就直接踢掉对方ip。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;h1 id=&#34;管理部分&#34;&gt;管理部分&lt;/h1&gt;
 
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;而且强烈建议，先保存一个没问题的iptables，然后直接修改iptables，再保存。这样的好处是，当你脑残改错了导致你自己都无法管理的时候，只要重启就可以恢复vps工作，而不用更麻烦的动作。
+&lt;h2 id=&#34;ifstat&#34;&gt;ifstat&lt;/h2&gt;
 
-&lt;/div&gt;
+&lt;p&gt;ifstat是用于网络流量管理的工具，可以告诉你网络目标的流量是多少。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;h2 id=&#34;dnsutils&#34;&gt;dnsutils&lt;/h2&gt;
 
-\#\# denyhosts \#\#
+&lt;p&gt;dnsutils里面包含了不少用于管理dns的工具，包括我们常用的nslookup，还有相对少用的dig。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;h2 id=&#34;mtr-tiny&#34;&gt;mtr-tiny&lt;/h2&gt;
 
-&lt;div&gt;
+&lt;p&gt;mtr是一个traceroute工具，比后者好用很多。这个工具可以快速跟踪路由。&lt;/p&gt;
 
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;这是ssh的连接防御进程，用python编写。如果有人试图尝试你的ssh密码，这个程序就会踢掉他的ip。
+&lt;h2 id=&#34;vnstat&#34;&gt;vnstat&lt;/h2&gt;
 
-&lt;/div&gt;
+&lt;p&gt;vnstat是用于跟踪网卡流量的工具，尤其对于每个月都有限额的vps，这个工具更有意义。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;注意安装完成后需要初始化每个网卡，然后重启服务，而不是马上能够工作。&lt;/p&gt;
 
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;如果你已经用了我说的，通过key的连接方式，你可以一次就直接踢掉对方ip。
+&lt;h1 id=&#34;网络部分&#34;&gt;网络部分&lt;/h1&gt;
 
-&lt;/div&gt;
+&lt;h2 id=&#34;pptp&#34;&gt;pptp&lt;/h2&gt;
 
-&lt;div&gt;
+&lt;p&gt;pptp是一个经典的vpn服务，直接安装pptpd就好。注意，部分手机不支持128bit的mppe，关闭后可以连接。但是windows只支持128bit的mppe，关掉就无法连接。So，自己权衡。&lt;/p&gt;
 
-\
+&lt;h2 id=&#34;openvpn&#34;&gt;openvpn&lt;/h2&gt;
 
-&lt;/div&gt;
+&lt;p&gt;openpn是一个非常稳定而强大的vpn程序，他使用udp作为连接协议。其实openvpn有tcp协议模式，但是速度比udp慢很多。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;openvpn的配置很长，我也写过，就不赘述了，可以参考这三篇文章(&lt;a href=&#34;http://shell909090.org/blog/2009/09/%E6%90%AD%E5%BB%BA%E5%AE%B6%E7%94%A8%E7%9A%84openvpn%E6%9C%8D%E5%8A%A1%E5%99%A8/&#34;&gt;1.搭建家用的OpenVPN服务器&lt;/a&gt;, &lt;a href=&#34;http://shell909090.org/blog/2011/04/%E8%AF%B4%E8%AF%B4x509%E8%AF%81%E4%B9%A6%E9%93%BE/&#34;&gt;2.说说x509证书链&lt;/a&gt;, &lt;a href=&#34;http://shell909090.org/blog/2011/05/%E5%86%8D%E8%AE%BAopenvpn%E7%9A%84%E6%90%AD%E5%BB%BA/&#34;&gt;3.再论openvpn的搭建&lt;/a&gt;&amp;gt;)。&lt;/p&gt;
 
-\# 管理部分 \#
+&lt;h2 id=&#34;l2tp&#34;&gt;l2tp&lt;/h2&gt;
 
-&lt;/div&gt;
+&lt;p&gt;l2tp的配置比openvpn更加繁琐，我配置过多次，始终在部分的设备上可以访问，部分不可以。因此等全部搞定后，会专门写一篇确认一下。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;h2 id=&#34;iodine&#34;&gt;iodine&lt;/h2&gt;
 
-\#\# ifstat \#\#
+&lt;p&gt;iodine是一个dns vpn。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;h2 id=&#34;ssh-1&#34;&gt;ssh&lt;/h2&gt;
 
-&lt;div&gt;
+&lt;p&gt;ssh用于翻墙常见两种模式，固定端口转发和动态端口转发。前者使用-R将远程的某个端口映射到本地。通常而言，映射的都是squid或者polipo(推荐后者，内存消耗更小，更好配置)。这样相当于在本地可以访问远程的代理，从而达到翻墙的效果。这个的命令行是&lt;code&gt;ssh -L port:localhost:port ...&lt;/code&gt;而动态端口转发则是使用ssh -D port &amp;hellip;，将本地的port端口变成一个支持socks5协议的代理服务器。&lt;/p&gt;
 
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;ifstat是用于网络流量管理的工具，可以告诉你网络目标的流量是多少。
+&lt;p&gt;相比而言，-D模式更加灵活，提供了全协议的访问，本地可以通过polipo转换为http代理。而-L模式则不能提供socks5代理功能(除非远程的端口上是socks5代理服务，但是这样就回到了-D模式，反而多开了一个服务)。但是有些时候(例如android的ssh翻墙软件)只支持后者的模式。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;另外，不要用日常管理帐号翻墙。新开一个翻墙帐号，并且设定独立的key。然后禁用shell，在ssh的时候，使用参数-CNq，这个参数可以不打开shell。如果网络不稳定，可以加上-o ServerAliveInterval 30。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;h2 id=&#34;stunnel&#34;&gt;stunnel&lt;/h2&gt;
 
-\#\# dnsutils \#\#
+&lt;p&gt;stunnel本身没有任何功效，他只是将你的普通连接转换为ssl连接而已。当这个程序搭配其他程序，例如polipo，就可以实现一个ssl级别的代理。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;h2 id=&#34;httptunnel&#34;&gt;httptunnel&lt;/h2&gt;
 
-&lt;div&gt;
+&lt;p&gt;这是一个服务软件，服务器端运行一个httptunnel，客户端运行一个。而后客户端就可以获得一个到服务器端的tcp连接，不受限的。&lt;/p&gt;
 
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;dnsutils里面包含了不少用于管理dns的工具，包括我们常用的nslookup，还有相对少用的dig。
+&lt;h2 id=&#34;polipo&#34;&gt;polipo&lt;/h2&gt;
 
-&lt;/div&gt;
+&lt;p&gt;polipo常见有两种模式，端口转发模式和ssl模式。两者都在前文有说。端口转发模式配合ssh用，ssl模式配合stunnel用。&lt;/p&gt;
 
-&lt;div&gt;
-
-\#\# mtr-tiny \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;mtr是一个traceroute工具，比后者好用很多。这个工具可以快速跟踪路由。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# vnstat \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;vnstat是用于跟踪网卡流量的工具，尤其对于每个月都有限额的vps，这个工具更有意义。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;注意安装完成后需要初始化每个网卡，然后重启服务，而不是马上能够工作。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\# 网络部分 \#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# pptp \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;pptp是一个经典的vpn服务，直接安装pptpd就好。注意，部分手机不支持128bit的mppe，关闭后可以连接。但是windows只支持128bit的mppe，关掉就无法连接。So，自己权衡。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# openvpn \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;openpn是一个非常稳定而强大的vpn程序，他使用udp作为连接协议。其实openvpn有tcp协议模式，但是速度比udp慢很多。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;openvpn的配置很长，我也写过，就不赘述了，可以参考这三篇文章(\[1.搭建家用的OpenVPN服务器\](&lt;http://shell909090.org/blog/2009/09/%E6%90%AD%E5%BB%BA%E5%AE%B6%E7%94%A8%E7%9A%84openvpn%E6%9C%8D%E5%8A%A1%E5%99%A8/&gt;),
-\[2.说说x509证书链\](&lt;http://shell909090.org/blog/2011/04/%E8%AF%B4%E8%AF%B4x509%E8%AF%81%E4%B9%A6%E9%93%BE/&gt;),
-\[3.再论openvpn的搭建\](&lt;http://shell909090.org/blog/2011/05/%E5%86%8D%E8%AE%BAopenvpn%E7%9A%84%E6%90%AD%E5%BB%BA/)&gt;)。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# l2tp \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;l2tp的配置比openvpn更加繁琐，我配置过多次，始终在部分的设备上可以访问，部分不可以。因此等全部搞定后，会专门写一篇确认一下。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# iodine \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt; &lt;/span&gt;iodine是一个dns vpn。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# ssh \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;ssh用于翻墙常见两种模式，固定端口转发和动态端口转发。前者使用-R将远程的某个端口映射到本地。通常而言，映射的都是squid或者polipo(推荐后者，内存消耗更小，更好配置)。这样相当于在本地可以访问远程的代理，从而达到翻墙的效果。这个的命令行是ssh
--L port:localhost:port ...
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt; &lt;/span&gt;而动态端口转发则是使用ssh -D
-port ...，将本地的port端口变成一个支持socks5协议的代理服务器。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;相比而言，-D模式更加灵活，提供了全协议的访问，本地可以通过polipo转换为http代理。而-L模式则不能提供socks5代理功能(除非远程的端口上是socks5代理服务，但是这样就回到了-D模式，反而多开了一个服务)。但是有些时候(例如android的ssh翻墙软件)只支持后者的模式。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;另外，不要用日常管理帐号翻墙。新开一个翻墙帐号，并且设定独立的key。然后禁用shell，在ssh的时候，使用参数-CNq，这个参数可以不打开shell。如果网络不稳定，可以加上-o
-ServerAliveInterval 30。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# stunnel \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;stunnel本身没有任何功效，他只是将你的普通连接转换为ssl连接而已。当这个程序搭配其他程序，例如polipo，就可以实现一个ssl级别的代理。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# httptunnel \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;这是一个服务软件，服务器端运行一个httptunnel，客户端运行一个。而后客户端就可以获得一个到服务器端的tcp连接，不受限的。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# polipo \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;polipo常见有两种模式，端口转发模式和ssl模式。两者都在前文有说。端口转发模式配合ssh用，ssl模式配合stunnel用。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span style=&#34;white-space:pre-wrap&#34;&gt;
-&lt;/span&gt;以上的服务看似很多，实际上，在128M内存的实例上完全可以运行其中大部分的服务。你可以在一台服务器上运行其中多个，以保证全天候的服务。
-
-&lt;/div&gt;
-
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
+&lt;p&gt;以上的服务看似很多，实际上，在128M内存的实例上完全可以运行其中大部分的服务。你可以在一台服务器上运行其中多个，以保证全天候的服务。&lt;/p&gt;
 </description>
     </item>
     
@@ -1477,67 +403,33 @@ ServerAliveInterval 30。
       <pubDate>Fri, 13 Apr 2012 01:38:56 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2140/</guid>
-      <description>&lt;div&gt;
+      <description>&lt;p&gt;原文&lt;a href=&#34;http://www.shlug.org/?p=1515&#34;&gt;在此&lt;/a&gt;我用了5年多的cn99和geekbone两大镜像终于全部下线。&lt;/p&gt;
 
-   
-原文\[在此\]([http://www.shlug.org/?p=1515)。](http://www.shlug.org/?p=1515)%E3%80%82)我用了5年多的cn99和geekbone两大镜像终于全部下线。
+&lt;p&gt;需要通告的一点关键问题即是, 由于tux下线早于新一个版本的debian发行,&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;因此目前&lt;a href=&#34;http://mirrors.geekbone.org&#34;&gt;mirrors.geekbone.org&lt;/a&gt;还是已经发行的debian安装盘的官方源之一.&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;请大家在安装debian6的时候不要再选择geekbone, 并请通告其他debian用户.&lt;/p&gt;
 
-    需要通告的一点关键问题即是, 由于tux下线早于新一个版本的debian发行,
-因此目前[mirrors.geekbone.org](http://mirrors.geekbone.org)还是已经发行的debian安装盘的官方源之一.
-请大家在安装debian6的时候不要再选择geekbone, 并请通告其他debian用户.
+&lt;p&gt;在09年加入shlug之初，就知道当年用了很久的geekbone服务器是shlug管理维护的。当时就很惊讶，以捐助方式运作一台镜像服务器，这个是相当不容易的。包括募集，管理，账目，在中国要做整套过程需要相当心力。而且geekbone还是在debian有注册的镜像站之一。可以看&lt;a href=&#34;http://www.debian.org/mirror/list&#34;&gt;Debian 全球鏡像站&lt;/a&gt;。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;大约在11年，中科大的ustc服务器上线后。在一次和lightning的闲聊中，lightning就谈到了tux服务器的问题。当时tux的服务器硬盘已经不足，最多在数月后就会满额。lightning删除了部分上面的无用数据，让服务器可以稍稍多工作一些时日。我当时就建议不要全面镜像所有的debian镜像，毕竟当时中国已经有anheng和ustc两个全面源，其中ustc还在申请大陆一级源(他们的资源投入确实不错，镜像速度相当快)。tux毕竟是老服务器，可以转做i386和amd64两个主要镜像。国内大部分人用的都是这两个arch，sohu的部分镜像也是针对这部分的。lightning表示看看再说。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;今天，看到了shlug通告，tux服务器准备下线。想想也的却是，tux已经在超期服役，而国内已经有了ustc, anheng, sohu, bjtu四个镜像.&lt;/p&gt;
 
-   
-在09年加入shlug之初，就知道当年用了很久的geekbone服务器是shlug管理维护的。当时就很惊讶，以捐助方式运作一台镜像服务器，这个是相当不容易的。包括募集，管理，账目，在中国要做整套过程需要相当心力。而且geekbone还是在debian有注册的镜像站之一。可以看\[Debian
-全球鏡像站\](&lt;http://www.debian.org/mirror/list&gt;)。
+&lt;p&gt;再进行一次募捐让tux恢复服役看来是没什么必要了.&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;在此, 感谢一下shlug服务器维护团队, 谢谢你们的努力让我五年来得以享用快速的源服务. 祝tux一路走好, 愿电脑诸神与它同在, enter.&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;另外, 提一点我们和欧美的工业水准差距. 我曾经撰文说过, 中国要追赶美国还有很长的路要走. 当时列举的证据就是dd和debian mirror lists. 当时我们也是4个源, 目前加入了bjtu, tux退出, 还是4个源.&lt;/p&gt;
 
-   
-大约在11年，中科大的ustc服务器上线后。在一次和lightning的闲聊中，lightning就谈到了tux服务器的问题。当时tux的服务器硬盘已经不足，最多在数月后就会满额。lightning删除了部分上面的无用数据，让服务器可以稍稍多工作一些时日。我当时就建议不要全面镜像所有的debian镜像，毕竟当时中国已经有anheng和ustc两个全面源，其中ustc还在申请大陆一级源(他们的资源投入确实不错，镜像速度相当快)。tux毕竟是老服务器，可以转做i386和amd64两个主要镜像。国内大部分人用的都是这两个arch，sohu的部分镜像也是针对这部分的。lightning表示看看再说。
+&lt;p&gt;相比美国那个深不见底, 鼠标滚轮滚好几下都没看到头的列表, 实在是太差距了.&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;这个差距不仅体现在源少, 更体现在用户少. 用户少就是源少的原因.&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;如果用户增长一个数量级, 目前这些源肯定会发生不足, 然后吵着让各个大学再开一两个镜像出来. 我倒是觉得这样不错, 至少sjtu有机会露个脸.&lt;/p&gt;
 
-   
-今天，看到了shlug通告，tux服务器准备下线。想想也的却是，tux已经在超期服役，而国内已经有了ustc,
-anheng, sohu, bjtu四个镜像.
-再进行一次募捐让tux恢复服役看来是没什么必要了.
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    在此, 感谢一下shlug服务器维护团队,
-谢谢你们的努力让我五年来得以享用快速的源服务. 祝tux一路走好,
-愿电脑诸神与它同在, enter.
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    另外, 提一点我们和欧美的工业水准差距. 我曾经撰文说过,
-中国要追赶美国还有很长的路要走. 当时列举的证据就是dd和debian mirror
-lists. 当时我们也是4个源, 目前加入了bjtu, tux退出, 还是4个源.
-相比美国那个深不见底, 鼠标滚轮滚好几下都没看到头的列表, 实在是太差距了.
-这个差距不仅体现在源少, 更体现在用户少. 用户少就是源少的原因.
-如果用户增长一个数量级, 目前这些源肯定会发生不足,
-然后吵着让各个大学再开一两个镜像出来. 我倒是觉得这样不错,
-至少sjtu有机会露个脸.
-其实sjtu也是有自己的\[源\]([http://ftp.sjtu.edu.cn/debian/)的](http://ftp.sjtu.edu.cn/debian/)%E7%9A%84),
-只是没有对普通网络用户开放, 访问速度缓慢而已.
-
-&lt;/div&gt;
+&lt;p&gt;其实sjtu也是有自己的&lt;a href=&#34;[http://ftp.sjtu.edu.cn/debian/&#34;&gt;源&lt;/a&gt;的](&lt;a href=&#34;http://ftp.sjtu.edu.cn/debian/)%E7%9A%84)&#34;&gt;http://ftp.sjtu.edu.cn/debian/)%E7%9A%84)&lt;/a&gt;, 只是没有对普通网络用户开放, 访问速度缓慢而已.&lt;/p&gt;
 </description>
     </item>
     
@@ -1547,98 +439,30 @@ lists. 当时我们也是4个源, 目前加入了bjtu, tux退出, 还是4个源.
       <pubDate>Mon, 09 Apr 2012 03:55:40 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2132/</guid>
-      <description>&lt;p&gt;废话不说，debian testing，装了empathy后没法用account，等于废物。
-&lt;div&gt;&lt;/p&gt;
+      <description>&lt;p&gt;废话不说，debian testing，装了empathy后没法用account，等于废物。&lt;/p&gt;
 
-&lt;p&gt;    先看bug report，开reportbug，看empathy的bug，有一个“Accounts window
-does not open”，估计就是我要的。&lt;/p&gt;
+&lt;p&gt;先看bug report，开reportbug，看empathy的bug，有一个“Accounts window does not open”，估计就是我要的。&lt;/p&gt;
 
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
+&lt;p&gt;在浏览器中打开，&lt;a href=&#34;http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=594945&amp;amp;archived=False&amp;amp;mbox=no&#34;&gt;http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=594945&amp;amp;archived=False&amp;amp;mbox=no&lt;/a&gt;，里面说了大致情况，和我这里非常类似。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;第一个意见，killall -9 empathy-account，无效。&lt;/p&gt;
 
-   
-在浏览器中打开，&lt;http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=594945&amp;archived=False&amp;mbox=no&gt;，里面说了大致情况，和我这里非常类似。
+&lt;p&gt;第二个意见，需要装CM。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;跑去看看，一个都没装。跟着看说明，应该在recommand里面的。OK，我这里有这个配置。&lt;/p&gt;
 
-&lt;div&gt;
-
-    第一个意见，killall -9 empathy-account，无效。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    第二个意见，需要装CM。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-跑去看看，一个都没装。跟着看说明，应该在recommand里面的。OK，我这里有这个配置。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;div&gt;
-
-shell-deb:\~\# cat /etc/apt/apt.conf.d/20norecommanded 
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
+&lt;pre&gt;&lt;code&gt;shell-deb:\~\# cat /etc/apt/apt.conf.d/20norecommanded
 APT
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
 {
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    Install-Recommends 0;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
+    Install-Recommends 0;
 };
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;/div&gt;
+&lt;p&gt;这是对付很多无聊包把recommand当作suggest用的，结果这次中标。其实这次的recommand应当放入dep里面的。&lt;/p&gt;
 
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
+&lt;p&gt;OK，完事。&lt;/p&gt;
 
-&lt;div&gt;
-
-   
-这是对付很多无聊包把recommand当作suggest用的，结果这次中标。其实这次的recommand应当放入dep里面的。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    OK，完事。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-PS.虽说如此，记得把telepathy重启一下，否则jabber协议看的到但是无效。
-
-&lt;/div&gt;
+&lt;p&gt;PS.虽说如此，记得把telepathy重启一下，否则jabber协议看的到但是无效。&lt;/p&gt;
 </description>
     </item>
     

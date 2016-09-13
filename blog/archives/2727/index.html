@@ -116,52 +116,45 @@ ga('send', 'pageview');
 
 <h1 id="p2p-vpn的基本概念">p2p vpn的基本概念</h1>
 
-<p>p2p
-vpn这个概念的提出，是因为openvpn在数据传输上的一个特性——虚拟链路都是从拨入端到服务器的。例如vpn网关在北美，上海电信的两个人要通讯，数据就要从北美绕一圈。这个特性在多节点打通上无疑很扯，于是催生了很多p2p
-vpn。他们的基本理念是——尽力从端到端，不成再绕。而且为了解决端到端，顺便得解决NAT问题——也就是带有STUN打洞。</p>
+<p>p2p vpn这个概念的提出，是因为openvpn在数据传输上的一个特性——虚拟链路都是从拨入端到服务器的。例如vpn网关在北美，上海电信的两个人要通讯，数据就要从北美绕一圈。这个特性在多节点打通上无疑很扯，于是催生了很多p2p vpn。他们的基本理念是——尽力从端到端，不成再绕。而且为了解决端到端，顺便得解决NAT问题——也就是带有STUN打洞。</p>
 
 <h2 id="tun模式的三层转发表">tun模式的三层转发表</h2>
 
-<p>先说明一点，大部分p2p
-vpn都是tun模式。这也很正常，tunnel用的么。但是大家在配置openvpn的时候，不知是否注意过iroute这个指令。为什么会有iroute指令的存在？</p>
+<p>先说明一点，大部分p2p vpn都是tun模式。这也很正常，tunnel用的么。但是大家在配置openvpn的时候，不知是否注意过iroute这个指令。为什么会有iroute指令的存在？</p>
 
 <p>tun模式是三层模式，相信大家都有数。也就是说，报文传递的时候只带有三层地址，openvpn也凭借三层地址来找到要转发给谁。这里和普通的网络就显示出区别了——普通网络使用ARP协议来自管理转发规则，而openvpn则是凭借内部写好的转发表。</p>
 
-<p>例如vpn
-gateway的虚地址是192.168.100.1，节点1是100.5，节点2是100.10。那么节点2发送报文给节点1时，报文大约长这个样子。</p>
+<p>例如vpn gateway的虚地址是192.168.100.1，节点1是100.5，节点2是100.10。那么节点2发送报文给节点1时，报文大约长这个样子。</p>
 
 <p>192.168.100.10 -&gt; 192.168.100.5</p>
 
 <p>在普通网络中，第一步会查路由表，确定是eth0(虚拟网络是tun0)。然后在上面广播ARP请求，获得MAC地址。最后填写MAC地址，发送报文。但是在tun虚拟网络中，仔细看你的路由表，是不是整个虚网络都被交给了一个叫做100.4之类的奇怪gateway转发？甚至如果你没有打开client-to-client，整个虚网络只有一台可见，这台还是交给这个gateway转发的。</p>
 
-<p>这是因为你到这个奇怪的IP之间还是走ARP过程，但是这个奇怪的IP收到你的报文后，就可以是纯三层过程了。你可以把这个IP视为本地openvpn的化身。openvpn会把你的报文发送到openvpn
-gateway，然后openvpn gateway再转发给正确的机器。也就是说，openvpn
-gateway必须知道某个目标IP需要转给哪个节点，物理地址多少，对吧？</p>
+<p>这是因为你到这个奇怪的IP之间还是走ARP过程，但是这个奇怪的IP收到你的报文后，就可以是纯三层过程了。你可以把这个IP视为本地openvpn的化身。openvpn会把你的报文发送到openvpn gateway，然后openvpn gateway再转发给正确的机器。也就是说，openvpn gateway必须知道某个目标IP需要转给哪个节点，物理地址多少，对吧？</p>
 
-<p>作为纯虚网络，知道节点的IP很容易——毕竟是openvpn
-gateway管理的地址分配过程。但是作为tunnel和多地址打通，这里就有点困难了。例如节点1还有个网段是192.168.80.0/24，节点2还有个网段是192.168.60.0/24，那么如下一个报文从节点2中出去，你让openvpn
-gateway怎么办？</p>
+<p>作为纯虚网络，知道节点的IP很容易——毕竟是openvpn gateway管理的地址分配过程。但是作为tunnel和多地址打通，这里就有点困难了。例如节点1还有个网段是192.168.80.0/24，节点2还有个网段是192.168.60.0/24，那么如下一个报文从节点2中出去，你让openvpn gateway怎么办？</p>
 
 <p>192.168.60.15 -&gt; 192.168.80.15</p>
 
-<p>你也许会说，我当然有配节点1的网关转给openvpn的拨入端。问题是，这个动作，openvpn的拨入端尚且不知，何况openvpn
-gateway？于是我们派生了route/iroute这两个指令。</p>
+<p>你也许会说，我当然有配节点1的网关转给openvpn的拨入端。问题是，这个动作，openvpn的拨入端尚且不知，何况openvpn gateway？于是我们派生了route/iroute这两个指令。</p>
 
 <p>route/iroute表示这个地址段归属于这个节点所有，区别在于route同时修改路由表，而iroute不修改路由表。配合push，可以由服务器端下发指令修改客户端路由表。</p>
 
-<p>p2p
-vpn也有类似的问题。甚至，由于没有统一配置端，因此连每个节点的虚IP都不能很容易的得到。在配置中必须注意这点。</p>
+<p>p2p vpn也有类似的问题。甚至，由于没有统一配置端，因此连每个节点的虚IP都不能很容易的得到。在配置中必须注意这点。</p>
 
 <h1 id="n2n">n2n</h1>
 
 <p>n2n的模式比较简单，也比较有局限性。基本分为两个端，supernode和edge。supernode类似于hub，把所有edge拉到一起。edge都是对等的。</p>
 
-<p>supernode:<br />
-supernode -l port</p>
+<p>supernode:</p>
 
-<p>edge:<br />
-edge -a [address] -c [name] -k [password] -l [supernode:port] -u
-[userid] -g [groupid]</p>
+<pre><code>supernode -l port
+</code></pre>
+
+<p>edge:</p>
+
+<pre><code>edge -a [address] -c [name] -k [password] -l [supernode:port] -u [userid] -g [groupid]
+</code></pre>
 
 <p>解释一下。开一个supernode，不用做任何设定。反正supernode也不会持有edge别的信息。edge要设定supernode的ip和端口，然后提交name和password。name和password相同的，就进入同一个虚拟网络。然后自己的虚拟ip是address。最后的userid和groupid必须是数字。主要是因为开tun需要root权限，因此可以在获得完权限后退化成普通用户，以防权限太高。</p>
 
@@ -173,16 +166,13 @@ edge -a [address] -c [name] -k [password] -l [supernode:port] -u
 
 <h1 id="tinc">tinc</h1>
 
-<p>tinc和n2n一样，也是一种p2p
-vpn。不过好处在于，tinc允许你在一个节点上配置多个网络，因此可以打tunnel。</p>
+<p>tinc和n2n一样，也是一种p2p vpn。不过好处在于，tinc允许你在一个节点上配置多个网络，因此可以打tunnel。</p>
 
 <p>在配置之前，我先约定两个词。“配置名”和“节点名”。一个配置是接入同一个网络的多个节点，还有他们如何拓扑。节点名就是一个节点的名字。所以，和配置有关的有以下两个。</p>
 
-<p>/etc/tinc/nets.boot:<br />
-这里写上想自动启用的配置的名字</p>
+<p>/etc/tinc/nets.boot: 这里写上想自动启用的配置的名字</p>
 
-<p>/etc/tinc/[configname]:<br />
-配置的根路径，以下路径全是相对路径。</p>
+<p>/etc/tinc/[configname]: 配置的根路径，以下路径全是相对路径。</p>
 
 <h2 id="配置">配置</h2>
 
@@ -233,8 +223,7 @@ Subnet = network/mask
 
 <p>这个指令会在/etc/tinc/[configname]/rsa_key.priv下生成一个私钥，并且把公钥添加到hosts/[nodename]文件中。最后，在多个node间把彼此的hosts/下的文件一复制，让每个node都拥有其他node的hosts文件，整个网络就完成配置了。</p>
 
-<p>如果你的配置名已经写入nets.boot文件的话，可以用/etc/init.d/tinc
-restart来重启启动整个网络。</p>
+<p>如果你的配置名已经写入nets.boot文件的话，可以用<code>/etc/init.d/tinc restart</code>来重启启动整个网络。</p>
 
         </div>
         

@@ -120,9 +120,7 @@ ga('send', 'pageview');
 
 <p>tcp关闭时有多少个状态？</p>
 
-<p>当当，别数了，应该是6个，不算CLOSED。分别是FIN-WAIT-1/FIN-WAIT-2,
-CLOSING, TIME_WAIT, CLOSE_WAIT,
-LAST_ACK。如果不能瞬间想起一个方块来，说明tcp状态不算熟。</p>
+<p>当当，别数了，应该是6个，不算CLOSED。分别是FIN-WAIT-1/FIN-WAIT-2,CLOSING, TIME_WAIT, CLOSE_WAIT,LAST_ACK。如果不能瞬间想起一个方块来，说明tcp状态不算熟。</p>
 
 <h1 id="问题">问题</h1>
 
@@ -138,16 +136,13 @@ LAST_ACK。如果不能瞬间想起一个方块来，说明tcp状态不算熟。
 
 <p>偶然，同事注意到所有出现现象的链接都有写缓冲区数据。这是一个不常见的现象。写缓冲区一般会有点数据，但是应该很快就被消费，而不会长期堆积，更不会长期维持同样的数字。这是写缓冲区满。结合刚刚的ACK，其实本质是对端停止消费数据。</p>
 
-<p>这是一个TCP的边角。当读缓冲区满的时候，tcp协议栈会声明window=0。当读缓冲区恢复的时候，读方会用ack
-with
-window来重新宣告可用缓冲区。但是在tcp里，ack是不重传的。所以这个ack会丢失。因此写方有责任定期请求确认读方window，来确定整个过程不会卡死。这就是刚刚看到的不停ACK的现象。</p>
+<p>这是一个TCP的边角。当读缓冲区满的时候，tcp协议栈会声明window=0。当读缓冲区恢复的时候，读方会用ack with window来重新宣告可用缓冲区。但是在tcp里，ack是不重传的。所以这个ack会丢失。因此写方有责任定期请求确认读方window，来确定整个过程不会卡死。这就是刚刚看到的不停ACK的现象。</p>
 
 <p>而这里就有个非常重要的可能性——FIN包的处理方式。为此我阅读了源码。源码告诉我们，FIN包被接收到的时候，并不是即时处理的。实际上，在ESTAB状态收到的FIN，正常path下会进入tcp_data_queue。这个函数会将包堆积到队列中，并根据当前seq来处理包。主要包括三种seq，当前包，过去包，未来包。只有在以下两种情况下，fin包才会被处理：</p>
 
 <ol>
 <li>当前收到一个fin包。</li>
-<li>当前收到一个包，完成处理后out of
-order队列中有数据，因而进入tcp_ofo_queue。而队列中有fin包。</li>
+<li>当前收到一个包，完成处理后out of order队列中有数据，因而进入tcp_ofo_queue。而队列中有fin包。</li>
 </ol>
 
 <p>而不幸的是，当前包处理流程第一步就是判断tcp_receive_window。如果没空间了，会进入out_of_window过程。后者会快速的触发一个ack返回，然后就把包给丢了。</p>
@@ -172,8 +167,7 @@ order队列中有数据，因而进入tcp_ofo_queue。而队列中有fin包。</
 <li>net.ipv4.tcp_orphan_retries</li>
 </ul>
 
-<p>测试表明，net.ipv4.tcp_max_orphans可以抑制这个现象。当减低这个数值后，再进入FIN-WAIT-1状态的连接会自动消失。ss
--natp不能看到连接。有趣的是，如果进程尚未关闭的话，可以在/proc/[pid]/fd下面看到fd仍然存在，而且还可以读出数据。</p>
+<p>测试表明，net.ipv4.tcp_max_orphans可以抑制这个现象。当减低这个数值后，再进入FIN-WAIT-1状态的连接会自动消失。ss -natp不能看到连接。有趣的是，如果进程尚未关闭的话，可以在/proc/[pid]/fd下面看到fd仍然存在，而且还可以读出数据。</p>
 
 <p>抓包表明，连接实际是被一个RST干掉的。阅读源码，在tcp_close的最后部分，可以看到tcp_too_many_orphans被调用了。如果超过限制，就会发出reset，并且关闭连接。</p>
 

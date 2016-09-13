@@ -99,68 +99,10 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/341/">getline的效率问题</a>
-    </h1>
-    <p class="meta">Dec 26, 2006
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/341/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>用过C++的肯定都知道getline(cin, str)这个用法吧，用于将某行读入到一个字符串对象中。但是根据我的测试，这个方法有严重的效率问题。 正则表达式行匹配器，匹配一个23M文件。用getline的总运行时间是21秒，用直接文件读取方法只有7秒。getline方法在屏蔽对读入数据的正则匹配后还运行了9秒上下。这里有人可能弄不懂，即使读取不用时间，getline花费的时间加正则运算时间不应该是总时间吗？结论是不是的，因为多个接口上下调用需要时间，str对象得到指针需要时间。所以其中还有一些时间差。不过getline方法效率差是显而易见的。 原因在于istream的类型和行的长度。我们是从文件中读取的，一次获得一个字符的取得的。ifstream应该没有弱智到一次只ReadFile一个字节，估计是用了1-4K的缓冲簇。对于大型文件，这个缓冲簇应该越大效率越高。但是stream不会知道输入流的长度，所以—— 而且即使知道了，50W个byte就是50W次call调用，花多少时间自己考虑吧。 还有一个是string类型的问题。getline istream一般都是用string作为接收对象的，因为string几乎可以无限制的接收。在STL的实现中，string是vector一样的连续块分配。当长度超出的时候，就必须重新分配，然后复制数据，删除原先块。因此STL中建议给string对象reserve一个块来提高效率。不过getline开始的时候会earse string对象，可能在这里面保留区域就被OOXX了—— 所以在大规模数据处理中，还是手来吧。</p>
-
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/340/">EPS转BMP和代码优化</a>
-    </h1>
-    <p class="meta">Dec 22, 2006
-         - 3 minute read 
-         - <a href="http://shell909090.org/blog/archives/340/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>EPS转BMP(我用的是PNG，不过还是一回事情)。EPS内部有两种图片，一个是TIF，位置和大小在头32个字节中描述。具体可以看EPS文档，在lp\[5\]保存位置，lp\[6\]保存大小。还有就是%%BeginBinary: 后面跟一个大小，然后跟beginimagex0D。在前文中应当有大小，自己找找看去，最后是一堆数据。存放方法是一位一位的像素连续存放，先存放一行C，然后是一行M，然后是Y，然后是K。当这4者全部存放完后，向后跳空一端区域，到本行开始的4字节对齐处，开始下一行的存放。 例如3个像素宽的图片(好简单——)存放方法就是，在0字节的最高三位(7,6,5位)，存放了这三个像素的C值。次三位(4,3,2位)，存放了M值。然后Y值存放在0字节的两位(1,0位)和1字节的一位(7位)。最后K值存放在1字节的次三位(6,5,4位)。然后跳空对齐，在4字节的位置开始描述下一行。 了解这个过程了，就应该发现，要转换到BMP需要大量的位操作。前置过程不说了，假定数据在内存里面(我当然不会用读取这种方法，用的是文件内存映射啦)，然后目标是GDI+的BitmapData对象。 BYTE getBit (PBYTE lpInData, int bit)\ { bit\*=n;\ BYTE rslt;\ rslt = lpInData\[bit / 8\];\ rslt &gt;&gt;= (7 - bit % 8);\ return rslt & 0x1;\ }\ for (y = 0; y &lt; tgtData.Height; y++) {\ line\_start = lpOut + l \* n \* Stride;\ for (x = 0; x &lt; tgtData.Width; x++) {\ c = 1 - getBit (line\_start, x);\ m = 1 - getBit</p>
-
-          
-              <footer>
-                  <a href="http://shell909090.org/blog/archives/340/" rel="full-article">Read On &rarr;</a>
-              </footer>
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/339/">正则表达式解析文本</a>
     </h1>
     <p class="meta">Dec 21, 2006
-         - 5 minute read 
+         - 4 minute read 
          - <a href="http://shell909090.org/blog/archives/339/#disqus_thread">Comments</a>
 
         
@@ -169,7 +111,7 @@ ga('send', 'pageview');
 
 
         
-          <p>最近碰到这么个问题，一个文本，每行都是乱糟糟的东西，要从里面解析出东西来。行匹配铁定是用正则表达式，我用了Boost，不会的看我前两天的blog去。 下面是按行解析问题。简单来说，写一个类继承Lister，然后实现里面的三个纯虚方法。maxSeqence返回最大可以支持的表达式，registe\_regex返回表达式文本，seqenceProcess返回相应函数的指针。其实可以写成直接调用seqenceProcess加上匹配序号，然后让用户在函数内部做switch-case的。不过这样用户代码量稍微有点多，所以干脆玩一把技术。然后是几个非纯虚函数，nextSeqence可以根据当前状态来控制下一个要匹配的表达式，默认是+1，一个一个全部匹配。beforeProcess和afterProcess分别是处理前后，可以调整输入流。noMatch是一个比较常用的虚函数，用于响应没有匹配时的状态。 匹配的结果在cmatch & what中，详细请看boost::regex。不过what\[0\].str()可以获得整句的string型返回，what\[1\]开始就是正则的匹配结果。 ---------2006-12-25--------------- 原来的结果删除，我重写了一个。 主要有两个问题，一个是getline的效率问题，我会撰文说明的。还有就是两处细节不大好。 为了修正这两个问题，我突然发现整个的构架不大好了——怎么办？重写吧—— 下面是新的，一个类line\_regex，直接继承就好。line\_buffer是用于解决getline效率不高的问题的，当然我偷了个懒，实现代码用了WIN32API，所以是不可移植的。而且数据是一次读取，最多256M。不过相信这种级别的问题还难不倒大家。line\_buffer类中的函数都很清晰明了，就不介绍了。 Process (tistream & is)和Process (line\_buffer & lb)是两大入口，同时支持自有的输入方法和流输入。当然流输入清晰明了标准化程度高。不过效率差的一塌糊涂。继承类初始化的时候，记得设置pfTable为入口列表，然后调用注册函数完成注册。nextSeqence和上面一样，可以定制下一个匹配式。noMatch用于无匹配的时候。beforeProcess和afterProcess分别会在某行开始和结束匹配后用，返回-1结束运行。其中beforeProcess返回正数会导致本行跳过，可以作为过滤器。 ---------------------LineRegex.h-------------------- \#include\ \#include\ \#include\ \#include\ \#include\ \#include\ \#include using namespace std;\ using namespace boost; typedef basic\_string tstring;\ typedef basic\_regex tregex;\ typedef match\_results tmatch;\ typedef basic\_istream &gt; tistream; \#ifndef \_LINE\_REGEX\_H\_\ \#define \_LINE\_REGEX\_H\_ class line\_regex;\ typedef int (line\_regex::\*ProcessFunction) (const tmatch & what, int line); class line\_buffer {\ public:\ line\_buffer();\ \~line\_buffer(); int open(LPCTSTR lpPath);\ void close();</p>
+          <p>最近碰到这么个问题，一个文本，每行都是乱糟糟的东西，要从里面解析出东西来。行匹配铁定是用正则表达式，我用了Boost，不会的看我前两天的blog去。 下面是按行解析问题。简单来说，写一个类继承Lister，然后实现里面的三个纯虚方法。maxSeqence返回最大可以支持的表达式，registe_regex返回表达式文本，seqenceProcess返回相应函数的指针。其实可以写成直接调用seqenceProcess加上匹配序号，然后让用户在函数内部做switch-case的。不过这样用户代码量稍微有点多，所以干脆玩一把技术。然后是几个非纯虚函数，nextSeqence可以根据当前状态来控制下一个要匹配的表达式，默认是+1，一个一个全部匹配。beforeProcess和afterProcess分别是处理前后，可以调整输入流。noMatch是一个比较常用的虚函数，用于响应没有匹配时的状态。 匹配的结果在cmatch &amp; what中，详细请看boost::regex。不过what[0].str()可以获得整句的string型返回，what[1]开始就是正则的匹配结果。 &mdash;&mdash;&mdash;2006-12-25&mdash;&mdash;&mdash;&mdash;&mdash; 原来的结果删除，我重写了一个。 主要有两个问题，一个是getline的效率问题，我会撰文说明的。还有就是两处细节不大好。 为了修正这两个问题，我突然发现整个的构架不大好了——怎么办？重写吧—— 下面是新的，一个类line_regex，直接继承就好。line_buffer是用于解决getline效率不高的问题的，当然我偷了个懒，实现代码用了WIN32API，所以是不可移植的。而且数据是一次读取，最多256M。不过相信这种级别的问题还难不倒大家。line_buffer类中的函数都很清晰明了，就不介绍了。 Process (tistream &amp; is)和Process (line_buffer &amp; lb)是两大入口，同时支持自有的输入方法和流输入。当然流输入清晰明了标准化程度高。不过效率差的一塌糊涂。继承类初始化的时候，记得设置pfTable为入口列表，然后调用注册函数完成注册。nextSeqence和上面一样，可以定制下一个匹配式。noMatch用于无匹配的时候。beforeProcess和afterProcess分别会在某行开始和结束匹配后用，返回-1结束运行。其中beforeProcess返回正数会导致本行跳过，可以作为过滤器。 ---------------------LineRegex.h-------------------- #include #include #include #include #include #include #include using namespace std; using namespace boost; typedef basic_stringtstring; typedef basic_regextregex; typedef match_resultstmatch; typedef basic_istream &gt;tistream; #ifndef_LINE_REGEX_H_ #define_LINE_REGEX_H_ class line_regex; typedef int (line_regex::*ProcessFunction) (const tmatch &amp; what, int line); class line_buffer { public: line_buffer(); ~line_buffer(); intopen(LPCTSTR lpPath); voidclose(); LPTSTRgetline(); longsize(); protected: UINTFileSize; LPVOIDlpFile; TCHAR *lpNow, *lpNext;</p>
 
           
               <footer>
@@ -200,7 +142,7 @@ ga('send', 'pageview');
 
 
         
-          <p>windows系统服务入口的封装类，service是基类，service\_manager是管理类。支持UNICODE，可以多服务封装在一个程序里面，过程当然都是自动的。拥有自动防错系统，在服务异常退出的时候会去关闭服务，而不是开着服务直接没了进程。写一个类，继承service，然后在哪里出一个实例，就可以了。service中有很多虚函数，可以重载了监听对应事件(我应该写的比较明白吧)。 get\_service\_name，返回UNICODE的字符串指针，定义服务名称。注意是纯虚函数，必须实现。get\_dependence，也是返回UNICODE的字符指针。指明这个服务依赖什么服务。get\_service\_type返回服务类型，其实也就是是否可以交互。get\_contral\_accepts，支持的信号(例如是否可以暂停)，默认可以暂停。on\_start开始时候调用的函数，下同。 使用方法 \#include\ \#include "service.h" class test\_service : public service{\ public:\ virtual LPTSTR get\_service\_name ();\ virtual DWORD on\_start (DWORD argc, LPTSTR \* argv);\ virtual DWORD on\_stop ();\ virtual DWORD on\_shutdown ();\ }; LPTSTR test\_service::get\_service\_name ()\ {\ return \_T ("test\_service");\ } DWORD test\_service::on\_start (DWORD argc, LPTSTR \* argv)\ {\ return service::on\_start (argc, argv);\ } DWORD test\_service::on\_stop ()\ {\ return service::on\_stop ();\ } DWORD test\_service::on\_shutdown ()\ {\ return service::on\_shutdown ();\ } int \_tmain (int argc, \_TCHAR \* argv\[\])\ {\ test\_service ts; if (argc == 1)\ service\_manager::start ();\ else if (!\_tcscmp (argv\[1\], \_T ("install")))\ service\_manager::install\_services (NULL, false);\ else if (!\_tcscmp (argv\[1\], \_T ("remove")))\ service\_manager::remove\_services (NULL); return 0;\ } ------------service.h------------------- \#include\ using namespace std; \#include\ \#pragma comment(lib, "psapi") typedef basic\_string &lt; TCHAR &gt; tstring; \#ifndef \_SERVICE\_H\_\ \#define \_SERVICE\_H\_ class service {\ public:\ service ();\ \~service ();\ virtual LPTSTR get\_service\_name () = 0;\ virtual LPTSTR get\_dependence ();\ virtual DWORD get\_service\_type ();\ virtual DWORD get\_contral\_accepts ();\ virtual DWORD on\_start (DWORD argc, LPTSTR \* argv);\ virtual DWORD on\_stop ();\ virtual DWORD on\_interrogate ();\ virtual DWORD on\_pause ();\ virtual DWORD on\_continue ();\ virtual DWORD on\_shutdown (); void pre\_start (SERVICE\_STATUS\_HANDLE hServiceStatus,\ DWORD argc, LPTSTR \* argv);\ BOOL SetServiceStatus (DWORD dwState);\ protected:\ SERVICE\_STATUS\_HANDLE hServiceStatus;\ SERVICE\_STATUS ServiceStatus;\ }; class service\_manager {\ public:\ service\_manager ();\ \~service\_manager ();\ DWORD register\_service (service \* s);\ DWORD unregister\_service (service \* s);\ LPSERVICE\_TABLE\_ENTRY get\_service\_entries ();\ service \*get\_service (LPCTSTR lpName);\ static service\_manager \*get\_service\_manager();\ static int install\_services (LPCTSTR lpServiceName, bool autostart);\ static int remove\_services (LPCTSTR lpServiceName);\ static int start();\ static void WINAPI service\_start (DWORD argc, LPTSTR \* argv);\ static DWORD WINAPI ctrl\_handler (DWORD dwControl, DWORD dwEventType,\ LPVOID lpEventData, LPVOID lpContext);\ static TCHAR \*service\_status\_name\[\];\ protected:\ static service\_manager \*this\_for\_static;\ vector &lt; service \* &gt; service\_list;\ }; \#endif //\_SERVICE\_H\_ ---------------------------------------- ------------service.cpp----------------- // service.cpp : 定义控制台应用程序的入口点。\ // \#include "stdafx.h" \#define PRINTERROR(x) \_tprintf (\_T ("%s failed, errorcode 0x%0.8Xn"), (x), GetLastError ()) service\_manager \*service\_manager::this\_for\_static = NULL;\ TCHAR \*service\_manager::service\_status\_name\[\] = {\ \_T ("SERVICE\_UNKNOWN"),\ \_T ("SERVICE\_STOPPED"),\ \_T ("SERVICE\_START\_PENDING"),\ \_T ("SERVICE\_STOP\_PENDING"),\ \_T ("SERVICE\_RUNNING"),\ \_T ("SERVICE\_CONTINUE\_PENDING"),\ \_T ("SERVICE\_PAUSE\_PENDING"),\ \_T ("SERVICE\_PAUSED")\ }; service::service ()\ {\ if (service\_manager::get\_service\_manager () == NULL)\ new service\_manager ();\ service\_manager::get\_service\_manager ()-&gt;register\_service (this);\ } service::\~service ()\ {\ if (service\_manager::get\_service\_manager () == NULL)\ return;\ service\_manager::get\_service\_manager ()-&gt;unregister\_service (this);\ } LPTSTR service::get\_dependence ()\ {\ return NULL;\ } DWORD service::get\_service\_type ()\ {\ return 0;\ } DWORD service::get\_contral\_accepts ()\ {\ return SERVICE\_ACCEPT\_PAUSE\_CONTINUE | SERVICE\_ACCEPT\_SHUTDOWN |\ SERVICE\_ACCEPT\_STOP;\ } DWORD service::on\_start (DWORD argc, LPTSTR \* argv)\ {\ return SERVICE\_RUNNING;\ } DWORD service::on\_stop ()\ {\ return SERVICE\_STOPPED;\ } DWORD service::on\_interrogate ()\ {\ return SERVICE\_RUNNING;\ } DWORD service::on\_pause ()\ {\ return SERVICE\_PAUSED;\ } DWORD service::on\_continue ()\ {\ return SERVICE\_RUNNING;\ } DWORD service::on\_shutdown ()\ {\ return SERVICE\_STOPPED;\ } void service::pre\_start (SERVICE\_STATUS\_HANDLE hServiceStatus,\ DWORD argc, LPTSTR \* argv)\ {\ this-&gt;hServiceStatus = hServiceStatus;\ ServiceStatus.dwServiceType = SERVICE\_WIN32;\ ServiceStatus.dwCurrentState = SERVICE\_START\_PENDING;\ ServiceStatus.dwControlsAccepted = 0;\ ServiceStatus.dwWin32ExitCode = 0;\ ServiceStatus.dwServiceSpecificExitCode = 0;\ ServiceStatus.dwCheckPoint = 0;\ ServiceStatus.dwWaitHint = 10000;\ SetServiceStatus (0); ServiceStatus.dwCurrentState = on\_start (argc, argv); if (ServiceStatus.dwCurrentState == SERVICE\_STOPPED)\ ServiceStatus.dwWin32ExitCode = ServiceStatus.dwCurrentState;\ ServiceStatus.dwCheckPoint = 0;\ ServiceStatus.dwWaitHint = 0;\ ServiceStatus.dwControlsAccepted = get\_contral\_accepts ();\ SetServiceStatus (0);\ return;\ } BOOL service::SetServiceStatus (DWORD dwState)\ {\ TCHAR lpOutString\[0x400\];\ if (dwState != 0)\ ServiceStatus.dwCurrentState = dwState;\ if (ServiceStatus.dwCurrentState &gt; 7)\ return 0;\ BOOL rslt =::SetServiceStatus (hServiceStatus, &ServiceStatus);\ if (rslt)\ \_stprintf (lpOutString,\ \_T ("%s set service status %s successed.n"),\ get\_service\_name (),\ service\_manager::service\_status\_name\[ServiceStatus.\ dwCurrentState\]);\ else\ \_stprintf (lpOutString,\ \_T\ ("%s set service status %s failed, errorcode 0x%0.8Xn"),\ get\_service\_name (),\ service\_manager::service\_status\_name\[ServiceStatus.\ dwCurrentState\],\ GetLastError ());\ OutputDebugString ((LPCTSTR) lpOutString);\ return rslt;\ } service\_manager::service\_manager ()\ {\ if (this\_for\_static != NULL)\ return;\ this\_for\_static = this;\ } service\_manager::\~service\_manager ()\ {\ this\_for\_static = NULL;\ } DWORD service\_manager::register\_service (service \* s)\ {\ vector &lt; service \* &gt;::iterator iter;\ iter = service\_list.begin ();\ for (; iter != service\_list.end (); iter++)\ if (\*iter == s)\ return 1;\ service\_list.push\_back (s);\ return 0;\ } DWORD service\_manager::unregister\_service (service \* s)\ {\ vector &lt; service \* &gt;::iterator iter;\ iter = service\_list.begin ();\ for (; iter != service\_list.end (); iter++)\ if (\*iter == s) {\ service\_list.erase (iter);\ return 0;\ }\ return -1;\ } LPSERVICE\_TABLE\_ENTRY service\_manager::get\_service\_entries ()\ {\ UINT i;\ LPSERVICE\_TABLE\_ENTRY lte = NULL; lte = new SERVICE\_TABLE\_ENTRY\[service\_list.size () + 1\];\ for (i = 0; i &lt; service\_list.size (); i++) {\ lte\[i\].lpServiceName = service\_list\[i\]-&gt;get\_service\_name ();\ lte\[i\].lpServiceProc = (LPSERVICE\_MAIN\_FUNCTION) service\_start;\ }\ lte\[i\].lpServiceName = NULL;\ lte\[i\].lpServiceProc = NULL; return lte;\ } service \*service\_manager::get\_service (LPCTSTR lpName)\ {\ for (UINT i = 0; i &lt; service\_list.size (); i++)\ if (!\_tcscmp (service\_list\[i\]-&gt;get\_service\_name (), lpName))\ return service\_list\[i\];\ return NULL;\ } int service\_manager::install\_services (LPCTSTR lpServiceName, bool autostart)\ {\ UINT i;\ int rslt = 0;\ DWORD service\_type;\ TCHAR binary\_path\[0x400\];\ SC\_HANDLE hSCManager = NULL, hService = NULL;\ service \*pservice; if (lpServiceName == NULL) {\ for (i = 0; i &lt; this\_for\_static-&gt;service\_list.size (); i++)\ install\_services (this\_for\_static-&gt;service\_list\[i\]-&gt;\ get\_service\_name (), autostart);\ return 0;\ }\ pservice = this\_for\_static-&gt;get\_service (lpServiceName);\ if (pservice == NULL) {\ \_tprintf (\_T ("get\_service %s failed, don't have this servicen"),\ lpServiceName);\ return -1;\ }\ if (!GetModuleFileNameEx (GetCurrentProcess (), NULL, binary\_path, 0x400)) {\ PRINTERROR (\_T ("GetModuleFileNameEx"));\ return -1;\ }\ if (this\_for\_static-&gt;service\_list.size () &lt; 2)\ service\_type = SERVICE\_WIN32\_OWN\_PROCESS;\ else\ service\_type = SERVICE\_WIN32\_SHARE\_PROCESS; \ \_\_try {\ hSCManager = OpenSCManager (NULL, NULL, SC\_MANAGER\_ALL\_ACCESS);\ if (hSCManager == NULL) {\ rslt = -1;\ \_\_leave;\ } hService = CreateService (hSCManager, lpServiceName, lpServiceName,\ SC\_MANAGER\_ALL\_ACCESS,\ pservice-&gt;\ get\_service\_type () | service\_type,\ (autostart ?</p>
+          <p>windows系统服务入口的封装类，service是基类，service_manager是管理类。支持UNICODE，可以多服务封装在一个程序里面，过程当然都是自动的。拥有自动防错系统，在服务异常退出的时候会去关闭服务，而不是开着服务直接没了进程。写一个类，继承service，然后在哪里出一个实例，就可以了。service中有很多虚函数，可以重载了监听对应事件(我应该写的比较明白吧)。get_service_name，返回UNICODE的字符串指针，定义服务名称。注意是纯虚函数，必须实现。get_dependence，也是返回UNICODE的字符指针。指明这个服务依赖什么服务。get_service_type返回服务类型，其实也就是是否可以交互。get_contral_accepts，支持的信号(例如是否可以暂停)，默认可以暂停。on_start开始时候调用的函数，下同。 使用方法 #include #include &quot;service.h&quot; class test_service : public service{ public: virtual LPTSTRget_service_name (); virtual DWORD on_start (DWORD argc, LPTSTR * argv); virtual DWORD on_stop (); virtual DWORD on_shutdown (); }; LPTSTR test_service::get_service_name () { return _T (&quot;test_service&quot;); } DWORD test_service::on_start (DWORD argc, LPTSTR * argv) { return service::on_start (argc, argv); } DWORD test_service::on_stop () { return service::on_stop (); } DWORD test_service::on_shutdown () { return service::on_shutdown (); } int _tmain (int argc, _TCHAR * argv[]) { test_service ts; if (argc == 1) service_manager::start (); else if (!_tcscmp (argv[1], _T (&quot;install&quot;))) service_manager::install_services (NULL, false); else if (!_tcscmp (argv[1], _T (&quot;remove&quot;))) service_manager::remove_services (NULL); return 0; } ------------service.h------------------- #include using namespace std; #include #pragma comment(lib, &quot;psapi&quot;) typedef basic_string &lt; TCHAR &gt; tstring; #ifndef _SERVICE_H_ #define _SERVICE_H_ class service { public: service (); ~service (); virtual LPTSTRget_service_name () = 0; virtual LPTSTRget_dependence (); virtual DWORD get_service_type (); virtual DWORD get_contral_accepts (); virtual DWORD on_start (DWORD argc, LPTSTR * argv); virtual DWORD on_stop (); virtual DWORD on_interrogate (); virtual DWORD on_pause (); virtual DWORD on_continue (); virtual DWORD on_shutdown (); voidpre_start (SERVICE_STATUS_HANDLE hServiceStatus, DWORD argc, LPTSTR * argv); BOOL SetServiceStatus (DWORD dwState); protected: SERVICE_STATUS_HANDLE hServiceStatus; SERVICE_STATUS ServiceStatus; }; class service_manager { public: service_manager (); ~service_manager (); DWORDregister_service (service * s); DWORDunregister_service (service * s); LPSERVICE_TABLE_ENTRYget_service_entries (); service *get_service (LPCTSTR lpName); static service_manager *get_service_manager(); static intinstall_services (LPCTSTR lpServiceName, bool autostart); static intremove_services (LPCTSTR lpServiceName); static intstart(); static void WINAPIservice_start (DWORD argc, LPTSTR * argv); static DWORD WINAPIctrl_handler (DWORD dwControl, DWORD dwEventType, LPVOID lpEventData, LPVOID lpContext); static TCHAR *service_status_name[]; protected: static service_manager *this_for_static; vector &lt; service * &gt;service_list; }; #endif //_SERVICE_H_ ---------------------------------------- ------------service.cpp----------------- // service.cpp : 定义控制台应用程序的入口点。 // #include &quot;stdafx.h&quot; #define PRINTERROR(x) _tprintf (_T (&quot;%s failed, errorcode 0x%0.8X\n&quot;),(x), GetLastError ()) service_manager *service_manager::this_for_static = NULL; TCHAR *service_manager::service_status_name[] = { _T (&quot;SERVICE_UNKNOWN&quot;), _T (&quot;SERVICE_STOPPED&quot;), _T (&quot;SERVICE_START_PENDING&quot;), _T (&quot;SERVICE_STOP_PENDING&quot;), _T (&quot;SERVICE_RUNNING&quot;), _T (&quot;SERVICE_CONTINUE_PENDING&quot;), _T (&quot;SERVICE_PAUSE_PENDING&quot;), _T (&quot;SERVICE_PAUSED&quot;) }; service::service () { if (service_manager::get_service_manager () == NULL) new service_manager (); service_manager::get_service_manager ()-&gt;register_service (this); } service::~service () { if (service_manager::get_service_manager () == NULL) return; service_manager::get_service_manager ()-&gt;unregister_service(this); } LPTSTR service::get_dependence () { return NULL; } DWORD service::get_service_type () { return 0; } DWORD service::get_contral_accepts () { return SERVICE_ACCEPT_PAUSE_CONTINUE | SERVICE_ACCEPT_SHUTDOWN | SERVICE_ACCEPT_STOP; } DWORD service::on_start (DWORD argc, LPTSTR * argv) { return SERVICE_RUNNING; } DWORD service::on_stop () { return SERVICE_STOPPED; } DWORD service::on_interrogate () { return SERVICE_RUNNING; } DWORD service::on_pause () { return SERVICE_PAUSED; } DWORD service::on_continue () { return SERVICE_RUNNING; } DWORD service::on_shutdown () { return SERVICE_STOPPED; } void service::pre_start (SERVICE_STATUS_HANDLE hServiceStatus, DWORD argc, LPTSTR * argv) { this-&gt;hServiceStatus = hServiceStatus; ServiceStatus.dwServiceType = SERVICE_WIN32; ServiceStatus.dwCurrentState = SERVICE_START_PENDING; ServiceStatus.dwControlsAccepted = 0; ServiceStatus.dwWin32ExitCode = 0; ServiceStatus.dwServiceSpecificExitCode = 0; ServiceStatus.dwCheckPoint = 0; ServiceStatus.dwWaitHint = 10000; SetServiceStatus (0); ServiceStatus.dwCurrentState = on_start (argc, argv); if (ServiceStatus.dwCurrentState == SERVICE_STOPPED) ServiceStatus.dwWin32ExitCode = ServiceStatus.dwCurrentState; ServiceStatus.dwCheckPoint = 0; ServiceStatus.dwWaitHint = 0; ServiceStatus.dwControlsAccepted = get_contral_accepts (); SetServiceStatus (0); return; } BOOL service::SetServiceStatus (DWORD dwState) { TCHAR lpOutString[0x400]; if (dwState != 0) ServiceStatus.dwCurrentState = dwState; if (ServiceStatus.dwCurrentState &gt; 7) return 0; BOOL rslt =::SetServiceStatus (hServiceStatus, &amp;ServiceStatus); if (rslt) _stprintf (lpOutString, _T (&quot;%s set service status %s successed.\n&quot;), get_service_name (), service_manager::service_status_name[ServiceStatus.</p>
 
           
               <footer>
@@ -258,7 +200,7 @@ ga('send', 'pageview');
 
 
         
-          <p>最近P2P是越来越盛行，按照公司要求，我们要写一个P2P下载支持。老板发话，越小越好。想想有道理，只是要减轻服务器压力，又不是要和P2P下载商抢生意。不过老板又发话，必须保持核心服务器高可用性。偶当场啥掉，怎么办？ 说起P2P下载的原始面目，其实是很简单的技术。假定你一个人在下载一个文件，同时你又知道所有有这个文件或者在下这个文件(那就有一部分)的人的套接字。那么连接上去下载，并且提供你可以提供的部分就好了。其中只有两个问题(也和算法没啥关系)，应该先下谁的，应该先给谁。但是困难在于，你如何知道谁有某个文件呢？ 按照获得这个信息的方法不同，P2P分成三代。 第一代是核心服务器型的，术语叫做中心化拓扑（Centralized Topology）\[1\]，例如Napster\[4\]。这种类型的P2P下载可以说是传统下载和P2P下载的结合体。他同时具备了P2P的特性，例如带宽占用分布，高容错，高可用。也具备了核心模式的特性，例如中心依赖，可模糊搜索。Napster可以说就是因为核心依赖性而输掉了官司。 这代P2P的运作方式是，用户上线的时候把自身的资源提交到服务器。由服务器维护表来做查询，并且定时删除过期的客户。用户查找文件的时候需要向服务器提交请求，服务器返回拥有文件的客户端。由于文件信息提交到服务器端，因此服务器上可以说是拥有版权文件的索引。 第二代是泛洪/限制性泛洪型的，术语叫做全分布式非结构化拓扑（Decentralized Unstructured Topology）\[1\]，代表就是Gnutella\[3\]。这种类型的P2P才是完全意义上的P2P，因为去掉了核心服务器，因此没有中心依赖性。拥有P2P良好的带宽占用分布，高容错，高可用性能。但是致命缺点是，当网络节点扩展时，维护网络的带宽消耗就会成几何扩展。在大规模应用中，这无疑是不可接受的。所以有限制性泛洪的结构，不过限制性泛洪只是增强网络的抗性，没有根本的改变现状。 这类P2P的运作方式是，用户维护自身拥有文件的列表，和其他一些客户的列表。当一个用户需要知道谁有一个文件的时候，就向他所有知道的其他客户查询。如此反复层级查询，并且用SPT或者TTL来做优化，最后可以得到结果。不过可想而知，网络消耗是惊人的。 这代P2P有个变形，术语叫做半分布式拓扑（Partially Decentralized Topology）\[1\]，代表是KaZaa。简单来说就是把核心服务器型的一个核心服务拆成多个分布在某些比较强大的节点上。核心服务间使用泛洪/限制性泛洪型的方式通讯，核心和非核心间还是核心服务器查询的老路子。这类P2P修正了核心服务器型的中心依赖问题，并且可模糊搜索。也修正了泛洪的带宽占用问题。但是资源消耗分布不均匀，结构比较复杂，而且长期运行的核心节点可能莫名其妙就成为了被告，因为核心节点也拥有版权文件的索引。 第三代是DHT型，术语叫做全分布式结构化拓扑（Decentralized Structured Topology）\[1\]，代表就是Chord\[6\]，Pastry\[5\]，Kadamila\[2\]。这种的P2P也是去核心的，拥有P2P良好的带宽占用分布，高容错，高可用性能。同时资源消耗比较平均，网络消耗小，扩展性好，抗网络不稳定能力强。缺点就是失去了模糊搜索的能力，只能变通的模糊搜索。 DHT是Distributed Hash Table的缩写，用于节点搜索的。在此之前，我们先来想想数据结构课程的一些东西(没学的就表看了，看下面的吧，这节看了铁晕)。如果我需要知道一个对象，找出关联的一个对象，那应该用哪种结构？map！那如果要增加map的效率怎么办？hash table！那么hash table的内存布型怎么处理？如果要经常删除添加，那应该用链表。OK，我们想像一下，假设一个节点就持有链表中的一项，上下项的指针改成上下节点的网络描述，那是啥？Bingo，DHT。当然，DHT不会傻到让一个节点就保存两个网络描述，那一旦断裂就全玩完。DHT中是先给予所有节点一个ID，然后定义一个距离算法，再按照ID来保存hash的。一个节点保存和他的ID相邻的一定距离的hash(当然还包括值)，并且保存一些ID近的节点的网络描述和一些节点远的网络描述。就好像在hash table里面，一个节点保存了上下临节点的同时，也保存了很远的节点的指针。这样在链表查询的时候速度可以更快。 DHT的运作原理是，一个节点加入DHT网络，就会生成一个不重复的ID。然后会寻找一些节点来扩充自己的相邻节点列表，并且获取于自己相邻到一定程度的Hash的内容。当节点够多的时候，所有的Hash都会有一个以上的节点来维护，这样就有了足够的容错性，性能，稳定性。在寻取一个内容的时候，会寻找自己的临节点列表中最近的节点，然后向他查询进一步的消息。这个在几次循环后就可以足够近到获得目标信息了。当然，大家可以看出，要寻取一个对象，就必须有这个对象的hash，因此是不可模糊的。 Kadamila是eMule所用的服务，很多BT中也使用了兼容协议。 另外顺便在此提出一个P2P流的思想。传统的P2P下载是基于块的，简单来说就是文件。现在很多P2P技术可以基于流，就是可以在允许一定延时的情况下，将延时允许区域内的数据作为一个块来传送。这种技术对于P2P的要求更高，但是应用范围更加广阔。例如用于视频流播放，广播，股票数据传输等等。现在的流技术都是针对特定协议来展开的，例如视频流点播就用PPstream。我们可以将P2P流封装成一个独立服务，从发起端上连接一个接口，到客户端上监听一个接口，中间过程透明化。简单来说，发送端上运行一个服务，客户端上运行一个服务。发送端上的服务连接到一个特定端口来获得数据，然后通过P2P流来传输给客户端，客户端的P2P服务再监听到一个端口上，向所有(或者有限)连接上的接口提供数据。除去只能接受数据，并且存在一定延迟和丢包外。整个过程就被掩盖在了单纯的网络传输下面。这样很多协议可以在不修改协议(但是至少要可以对抗错包丢包等等网络状况)的情况下直接P2P流化。当然，P2P流在实时性，安全性上的要求会更加高。 顺便说一下网状模型的一个修改吧，几年前的东西了，可惜一直弄不出算法来。当前的网状模型是一个节点传输给其他节点，然后层级传递。理论上应该将发起节点最近的和提供带宽最高的节点放在顶层，以减少网的层数。不过将底层的节点带宽废弃还是可惜了点。我们可以将一个流分成两个部分(如果先天就可以分离最好，例如视频和音频，不过他们不对等)，然后组成两颗树。这样网络中的底层节点就可以在另外一颗树中被定义为次层节点。如此会对带宽利用更加彻底，当然，程序也会更加复杂。 参考和引用: 1.P2P网络的拓扑结构: 2.Kademlia协议: : 3.Gnutella协议: 4.Napster官方网站: 5.Pastry 工程: 6.Chord 工程: 7.对等网络中主流分布式哈希算法比较分析: 8.细说 Kademlia:</p>
+          <p>最近P2P是越来越盛行，按照公司要求，我们要写一个P2P下载支持。老板发话，越小越好。想想有道理，只是要减轻服务器压力，又不是要和P2P下载商抢生意。不过老板又发话，必须保持核心服务器高可用性。偶当场啥掉，怎么办？ 说起P2P下载的原始面目，其实是很简单的技术。假定你一个人在下载一个文件，同时你又知道所有有这个文件或者在下这个文件(那就有一部分)的人的套接字。那么连接上去下载，并且提供你可以提供的部分就好了。其中只有两个问题(也和算法没啥关系)，应该先下谁的，应该先给谁。但是困难在于，你如何知道谁有某个文件呢？ 按照获得这个信息的方法不同，P2P分成三代。 第一代是核心服务器型的，术语叫做中心化拓扑（Centralized Topology）[1]，例如Napster[4]。这种类型的P2P下载可以说是传统下载和P2P下载的结合体。他同时具备了P2P的特性，例如带宽占用分布，高容错，高可用。也具备了核心模式的特性，例如中心依赖，可模糊搜索。Napster可以说就是因为核心依赖性而输掉了官司。 这代P2P的运作方式是，用户上线的时候把自身的资源提交到服务器。由服务器维护表来做查询，并且定时删除过期的客户。用户查找文件的时候需要向服务器提交请求，服务器返回拥有文件的客户端。由于文件信息提交到服务器端，因此服务器上可以说是拥有版权文件的索引。 第二代是泛洪/限制性泛洪型的，术语叫做全分布式非结构化拓扑（Decentralized Unstructured Topology）[1]，代表就是Gnutella[3]。这种类型的P2P才是完全意义上的P2P，因为去掉了核心服务器，因此没有中心依赖性。拥有P2P良好的带宽占用分布，高容错，高可用性能。但是致命缺点是，当网络节点扩展时，维护网络的带宽消耗就会成几何扩展。在大规模应用中，这无疑是不可接受的。所以有限制性泛洪的结构，不过限制性泛洪只是增强网络的抗性，没有根本的改变现状。 这类P2P的运作方式是，用户维护自身拥有文件的列表，和其他一些客户的列表。当一个用户需要知道谁有一个文件的时候，就向他所有知道的其他客户查询。如此反复层级查询，并且用SPT或者TTL来做优化，最后可以得到结果。不过可想而知，网络消耗是惊人的。 这代P2P有个变形，术语叫做半分布式拓扑（Partially Decentralized Topology）[1]，代表是KaZaa。简单来说就是把核心服务器型的一个核心服务拆成多个分布在某些比较强大的节点上。核心服务间使用泛洪/限制性泛洪型的方式通讯，核心和非核心间还是核心服务器查询的老路子。这类P2P修正了核心服务器型的中心依赖问题，并且可模糊搜索。也修正了泛洪的带宽占用问题。但是资源消耗分布不均匀，结构比较复杂，而且长期运行的核心节点可能莫名其妙就成为了被告，因为核心节点也拥有版权文件的索引。 第三代是DHT型，术语叫做全分布式结构化拓扑（Decentralized Structured Topology）[1]，代表就是Chord[6]，Pastry[5]，Kadamila[2]。这种的P2P也是去核心的，拥有P2P良好的带宽占用分布，高容错，高可用性能。同时资源消耗比较平均，网络消耗小，扩展性好，抗网络不稳定能力强。缺点就是失去了模糊搜索的能力，只能变通的模糊搜索。 DHT是Distributed Hash Table的缩写，用于节点搜索的。在此之前，我们先来想想数据结构课程的一些东西(没学的就表看了，看下面的吧，这节看了铁晕)。如果我需要知道一个对象，找出关联的一个对象，那应该用哪种结构？map！那如果要增加map的效率怎么办？hash table！那么hash table的内存布型怎么处理？如果要经常删除添加，那应该用链表。OK，我们想像一下，假设一个节点就持有链表中的一项，上下项的指针改成上下节点的网络描述，那是啥？Bingo，DHT。当然，DHT不会傻到让一个节点就保存两个网络描述，那一旦断裂就全玩完。DHT中是先给予所有节点一个ID，然后定义一个距离算法，再按照ID来保存hash的。一个节点保存和他的ID相邻的一定距离的hash(当然还包括值)，并且保存一些ID近的节点的网络描述和一些节点远的网络描述。就好像在hash table里面，一个节点保存了上下临节点的同时，也保存了很远的节点的指针。这样在链表查询的时候速度可以更快。 DHT的运作原理是，一个节点加入DHT网络，就会生成一个不重复的ID。然后会寻找一些节点来扩充自己的相邻节点列表，并且获取于自己相邻到一定程度的Hash的内容。当节点够多的时候，所有的Hash都会有一个以上的节点来维护，这样就有了足够的容错性，性能，稳定性。在寻取一个内容的时候，会寻找自己的临节点列表中最近的节点，然后向他查询进一步的消息。这个在几次循环后就可以足够近到获得目标信息了。当然，大家可以看出，要寻取一个对象，就必须有这个对象的hash，因此是不可模糊的。 Kadamila是eMule所用的服务，很多BT中也使用了兼容协议。 另外顺便在此提出一个P2P流的思想。传统的P2P下载是基于块的，简单来说就是文件。现在很多P2P技术可以基于流，就是可以在允许一定延时的情况下，将延时允许区域内的数据作为一个块来传送。这种技术对于P2P的要求更高，但是应用范围更加广阔。例如用于视频流播放，广播，股票数据传输等等。现在的流技术都是针对特定协议来展开的，例如视频流点播就用PPstream。我们可以将P2P流封装成一个独立服务，从发起端上连接一个接口，到客户端上监听一个接口，中间过程透明化。简单来说，发送端上运行一个服务，客户端上运行一个服务。发送端上的服务连接到一个特定端口来获得数据，然后通过P2P流来传输给客户端，客户端的P2P服务再监听到一个端口上，向所有(或者有限)连接上的接口提供数据。除去只能接受数据，并且存在一定延迟和丢包外。整个过程就被掩盖在了单纯的网络传输下面。这样很多协议可以在不修改协议(但是至少要可以对抗错包丢包等等网络状况)的情况下直接P2P流化。当然，P2P流在实时性，安全性上的要求会更加高。 顺便说一下网状模型的一个修改吧，几年前的东西了，可惜一直弄不出算法来。当前的网状模型是一个节点传输给其他节点，然后层级传递。理论上应该将发起节点最近的和提供带宽最高的节点放在顶层，以减少网的层数。不过将底层的节点带宽废弃还是可惜了点。我们可以将一个流分成两个部分(如果先天就可以分离最好，例如视频和音频，不过他们不对等)，然后组成两颗树。这样网络中的底层节点就可以在另外一颗树中被定义为次层节点。如此会对带宽利用更加彻底，当然，程序也会更加复杂。 参考和引用: 1.P2P网络的拓扑结构:http://www.intsci.ac.cn/users/luojw/P2P/ch02.html 2.Kademlia协议:http://www.itslife.net/blog/?p=132 :http://blog.csdn.net/colinchan/archive/2006/05/08/712760.aspx 3.Gnutella协议:http://www9.limewire.com/developer/gnutella_protocol_0.4.pdf 4.Napster官方网站:http://www.napster.com/ 5.Pastry 工程:http://research.microsoft.com/~antr/PAST/pastry.pdf 6.Chord 工程:http://pdos.csail.mit.edu/chord/ 7.对等网络中主流分布式哈希算法比较分析:http://www.p2psky.com/tech/article1274.html 8.细说 Kademlia:http://www.vshj.com/Article/2005/200512/Article_18386.shtml</p>
 
           
 
@@ -285,7 +227,7 @@ ga('send', 'pageview');
 
 
         
-          <p>谢天谢地，好久没有正常的用blog了。无论哪里都是能看不能改，痛苦死我。 先写个技术文，关于Boost库的。 首先，你得装Vs2003.net。VC++6的编译器在支持列表里面一片血红，用那个不如用Linux跑GCC。如果有MSVC8(不要脑子转不过来，就是Vs2005.net)，那就比较完美了。基本和Linux下的GCC4.1平分秋色。下面是按照Vs2003.net+windows的例子来讲的。 然后，下载一个boost的库源代码，解压安装，没有一点困难。好的很。 接下来，请在PATH里面确认添加C:Program FilesMicrosoft Visual Studio .NET 2003Vc7bin;C:Program FilesMicrosoft Visual Studio .NET 2003Common7IDE;或者等效路径，关键是要能将cl.exe，link.exe，vcvars32.bat，mspdb71.dll纳入搜索路径。然后切换到boost的目录boost\_1\_33\_1libsregexbuild，运行vcvars32.bat，再运行nmake -f vc71.mak，或者等效的指令(其实就是71还是70 80)。再运行nmake -f vc71.mak install，向VC的lib目录里面添加库。至此boost库的regex组件库算是编译好了能用，如果你不用正则表达式，抱歉，上面的话在耍你。 然后是用法，倒不难。 cmatch what; regex reg("\^abc\$); if(regex\_search(str.c\_str(), what, reg)){ .... } what里面会保存从正则表达式里面匹配出来的东西。 利用这个库可以很好的做字符串拆分，验证的操作，弥补了C++没有正则表达式的缺憾。 我写了一个类，可以从流里面获得每行，然后做匹配，然后派发到相应函数里面去。有需要的可以联系我。</p>
+          <p>谢天谢地，好久没有正常的用blog了。无论哪里都是能看不能改，痛苦死我。 先写个技术文，关于Boost库的。 首先，你得装Vs2003.net。VC++6的编译器在支持列表里面一片血红，用那个不如用Linux跑GCC。如果有MSVC8(不要脑子转不过来，就是Vs2005.net)，那就比较完美了。基本和Linux下的GCC4.1平分秋色。下面是按照Vs2003.net+windows的例子来讲的。 然后，下载一个boost的库源代码，解压安装，没有一点困难。好的很。 接下来，请在PATH里面确认添加C:\Program Files\Microsoft Visual Studio .NET 2003\Vc7\bin;C:\Program Files\Microsoft Visual Studio .NET 2003\Common7\IDE;或者等效路径，关键是要能将cl.exe，link.exe，vcvars32.bat，mspdb71.dll纳入搜索路径。然后切换到boost的目录boost_1_33_1libs\regex\build，运行vcvars32.bat，再运行nmake -f vc71.mak，或者等效的指令(其实就是71还是70 80)。再运行nmake -f vc71.mak install，向VC的lib目录里面添加库。至此boost库的regex组件库算是编译好了能用，如果你不用正则表达式，抱歉，上面的话在耍你。 然后是用法，倒不难。 cmatch what; regex reg(&quot;^abc$); if(regex_search(str.c_str(), what, reg)){ .... } what里面会保存从正则表达式里面匹配出来的东西。 利用这个库可以很好的做字符串拆分，验证的操作，弥补了C++没有正则表达式的缺憾。 我写了一个类，可以从流里面获得每行，然后做匹配，然后派发到相应函数里面去。有需要的可以联系我。</p>
 
           
 
@@ -367,6 +309,60 @@ ga('send', 'pageview');
 
         
           <p>最近碰到朋友——除了问头发，还经常被问到出租屋的事情。好吧好吧，我租出来了。 具体请看这里。 别说我没说过。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/331/">剪发公告</a>
+    </h1>
+    <p class="meta">Nov 6, 2006
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/331/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>最近碰到朋友——老问我，你最近如何。我说还行，就是头发剪了。然后就被要求照片。好，现在特此公告。照片如下。 别说我没说过。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/330/">一只小狗</a>
+    </h1>
+    <p class="meta">Nov 6, 2006
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/330/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>今天老妈跑到我租的房子里面的时候，在门口看到一个小狗。(关于我租房子的事情后面再说，我很懒，就这样)脖子上有个牌子，看来是有主人的狗。看上去很乖巧很可怜的一个小狗，趴在我家门口附近。不知道哪里来的。老妈看看可爱，又看看有主人的，放心的喂了块肉。结果，麻烦大了。 到中午我去吃饭，把早饭时候的锅子带回去。结果出门发现，它还在那里。看到我出来，一下子站起来。有没有搞错，别说我可不是老妈。就算是，也不能在空锅子里面变出肉来阿。赶紧给老妈打了个电话，老妈还说我大惊小怪。好好好，见怪不怪。我出去看到它注意力正被邻居引开了，干脆一溜烟跑下去。 晚上去吃饭，发现还在——有没有搞错阿——就算黑猫叔叔也要休息的好吧。没办法，和老妈说了，你喂的肉，你搞定。老妈想想也没办法，吃了晚饭到我哪里准备抱下去。结果路上看到一个邻居的狗，也跟我们上来了。 两个狗见面了非常有意思，互相闻来闻去。然后邻居的狗居然想骑那个可怜的狗了。它(或者应该叫她？)到处跑。我赶快跑到屋子里面，省得看狗打架。老妈赶快把狗抱到下面去，结果发现110来了。看来是刚刚他们打架的声音太大，吓到谁了。邻居的狗应该没事，不过这只可怜的小狗就麻烦了。虽然有狗牌，但是不能用来查找主人。(狠狠鄙视下中国的动物管理制度，收了钱不管理的么)派出所的人看看也很可怜，问我妈说要不要养。养的话省下1000来挂狗牌，不养的话回去他们也是处理了。(其实就是人道毁灭)我妈听了也很想，问题是这狗可带不回北京阿——即使带回去也没法养。原来的狗就是一个证明。所以很无奈的看着给接走了。</p>
 
           
 
@@ -577,8 +573,6 @@ ga('send', 'pageview');
     
         <a href="/page/91/" class="label-pagination">91</a>
     
-        <a href="/page/92/" class="label-pagination">92</a>
-    
 
     
     
@@ -587,7 +581,7 @@ ga('send', 'pageview');
 
     
     
-        <a href="/page/92/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
+        <a href="/page/91/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
     
 
 </div>

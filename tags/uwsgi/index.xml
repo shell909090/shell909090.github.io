@@ -16,914 +16,169 @@
       <pubDate>Mon, 09 Jul 2012 08:45:28 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2200/</guid>
-      <description>&lt;div&gt;
+      <description>
 
-\# abstract \#
+&lt;h1 id=&#34;abstract&#34;&gt;abstract&lt;/h1&gt;
 
-&lt;/div&gt;
+&lt;p&gt;graphite是一个python写的性能监控系统。这个系统是由多个分离的部分组成的。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;ul&gt;
+&lt;li&gt;graphite-web: 由django写的web界面系统。&lt;/li&gt;
+&lt;li&gt;carbon: 数据收集的守护进程。&lt;/li&gt;
+&lt;li&gt;whisper: 一种python写的数据库，类似rrd，便于大量的性能日志数据收集和处理。上两个组件会调用这个库。&lt;/li&gt;
+&lt;li&gt;collectd: 数据收集守护进程，向carbon中喂数据的数据源。&lt;/li&gt;
+&lt;/ul&gt;
 
-\
+&lt;p&gt;另外，有一点黑色幽默的就是，graphite的意思是石墨，是炭(carbon)的一种同素异形体。因此在graphite项目中，多次出现carbon这个名字。当然，另两个同素异形体是钻石(diamond)和足球烯(footballene)，你就暂时别指望看到他们的身影了。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;另一个用python写的，以元素命名的著名软件是mercurial。化学元素中的汞，俗称水银，符号hg。因此mercurial的命令行简写才是hg。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;以上几个的结构大概是这样的：&lt;/p&gt;
 
-graphite是一个python写的性能监控系统。这个系统是由多个分离的部分组成的。
+&lt;p&gt;collectd(source) -network-&amp;gt; carbon -&amp;gt; writing-&amp;gt; whisper&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;database -&amp;gt; reading-&amp;gt; graphite-web&lt;/p&gt;
 
-&lt;div&gt;
+&lt;p&gt;下文描述了在debian wheezy下，以nginx+uwsgi模式安装graphite的过程。之所以用这个模式，是因为我的大部分系统都是python写的，同样安装在uwsgi下面。一事不烦二主。&lt;/p&gt;
 
-\
+&lt;h1 id=&#34;carbon&#34;&gt;carbon&lt;/h1&gt;
 
-&lt;/div&gt;
+&lt;p&gt;carbon有对应的debian包，可以很简单的安装。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;pre&gt;&lt;code&gt;sudo aptitude install graphite-carbon
+&lt;/code&gt;&lt;/pre&gt;
 
-\* graphite-web: 由django写的web界面系统。
+&lt;p&gt;默认的数据端口是2003，默认的数据路径是/var/lib/graphite/，这个在下文需要用到。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;h1 id=&#34;graphite&#34;&gt;graphite&lt;/h1&gt;
 
-&lt;div&gt;
+&lt;h2 id=&#34;virtual&#34;&gt;virtual&lt;/h2&gt;
 
-\* carbon: 数据收集的守护进程。
+&lt;p&gt;graphite有部分需要安装到系统中，因此最好用virtualenv进行安装。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;pre&gt;&lt;code&gt;cd /var/web/
+sudo aptitude install python-virtualenv
+virtualenv --system-site-packages graphite
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;div&gt;
+&lt;p&gt;我假定你的安装路径是/var/web/graphite，这个在下面要反复用到。&lt;/p&gt;
 
-\* whisper:
-一种python写的数据库，类似rrd，便于大量的性能日志数据收集和处理。上两个组件会调用这个库。
+&lt;h2 id=&#34;install&#34;&gt;install&lt;/h2&gt;
 
-&lt;/div&gt;
+&lt;p&gt;在安装路径下，执行以下内容&lt;/p&gt;
 
-&lt;div&gt;
+&lt;pre&gt;&lt;code&gt;source bin/activite
+pip install graphite-web --install-option=&amp;quot;--prefix=/var/web/graphite&amp;quot; --install-option=&amp;quot;--install-lib=/var/web/graphite/webapp&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
 
-\* collectd: 数据收集守护进程，向carbon中喂数据的数据源。
+&lt;p&gt;注意，/var/web/graphite需要根据上面的设定自行修改，webapp是你的django基础路径。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;h2 id=&#34;configure&#34;&gt;configure&lt;/h2&gt;
 
-&lt;div&gt;
+&lt;p&gt;在/var/web/graphite/webapp/graphite下面，执行以下内容&lt;/p&gt;
 
-\
+&lt;pre&gt;&lt;code&gt;cp local_settings.py.example local_settings.py
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;/div&gt;
+&lt;p&gt;然后编辑local_settings.py&lt;/p&gt;
 
-&lt;div&gt;
+&lt;pre&gt;&lt;code&gt;GRAPHITE_ROOT = &#39;/var/web/graphite&#39;
+WHISPER_DIR = &#39;/var/lib/graphite/whisper&#39;
+DATABASES = ...
+&lt;/code&gt;&lt;/pre&gt;
 
-另外，有一点黑色幽默的就是，graphite的意思是石墨，是炭(carbon)的一种同素异形体。因此在graphite项目中，多次出现carbon这个名字。当然，另两个同素异形体是钻石(diamond)和足球烯(footballene)，你就暂时别指望看到他们的身影了。
+&lt;p&gt;注意databases，不要在settings.py里面修改，要改这里的才有效。我用的是sqlite，如果你高兴，可以改为postgres/mysql。WHISPER_DIR是上文carbon中设定的目录。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;p&gt;最后，执行以下指令，完成数据库初始化。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;pre&gt;&lt;code&gt;python manage.py syncdb
+&lt;/code&gt;&lt;/pre&gt;
 
-\
+&lt;h2 id=&#34;uwsgi&#34;&gt;uwsgi&lt;/h2&gt;
 
-&lt;/div&gt;
+&lt;p&gt;编辑/etc/uwsgi/apps-enabled/graphite.ini，包含以下内容。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;pre&gt;&lt;code&gt;[uwsgi]
+plugins = python
+workers = 1
+chdir = /var/web/graphite/webapp
+pythonpath = /var/web/graphite
+env = DJANGO_SETTINGS_MODULE=graphite.settings
+module = django.core.handlers.wsgi:WSGIHandler()
+&lt;/code&gt;&lt;/pre&gt;
 
-另一个用python写的，以元素命名的著名软件是mercurial。化学元素中的汞，俗称水银，符号hg。因此mercurial的命令行简写才是hg。
+&lt;p&gt;注意，这里的chdir，是你的webapp基础路径。而pythonpath则是virtualenv的路径。两者在上文都有说明的。env里面那个graphite是webapp/graphite这个app(不详细说明，自己学一下django就懂了)。module是django的固定写法。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;h2 id=&#34;nginx&#34;&gt;nginx&lt;/h2&gt;
 
-&lt;div&gt;
+&lt;p&gt;最后，在nginx中包含以下内容，将部分url转发到uwsgi上。&lt;/p&gt;
 
-\
+&lt;pre&gt;&lt;code&gt;location ~ ^/(graphite|content|metrics|dashboard|render|browser|composer)/ {
+    include uwsgi_params;
+    uwsgi_param  UWSGI_SCHEME $scheme;
+    uwsgi_pass unix:/run/uwsgi/app/graphite/socket;
+}
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;/div&gt;
+&lt;h1 id=&#34;collectd&#34;&gt;collectd&lt;/h1&gt;
 
-&lt;div&gt;
+&lt;h2 id=&#34;install-1&#34;&gt;install&lt;/h2&gt;
 
-以上几个的结构大概是这样的：
+&lt;p&gt;collectd的安装很简答，有包，直接安装就好。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;pre&gt;&lt;code&gt;sudo aptitude install collectd
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;div&gt;
+&lt;h2 id=&#34;configure-1&#34;&gt;configure&lt;/h2&gt;
 
-\
+&lt;p&gt;在/etc/collectd/这个路径，能够看到collectd.conf这个文件。反注释掉以下内容：&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;pre&gt;&lt;code&gt;&amp;lt;LoadPlugin python&amp;gt;
+    Globals true
+&amp;lt;/LoadPlugin&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;div&gt;
+&lt;p&gt;然后，再编辑以下内容。&lt;/p&gt;
 
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;
-&lt;/span&gt;collectd(source) -network-&amp;gt; carbon -writing-&amp;gt; whisper
-database -reading-&amp;gt; graphite-web
+&lt;pre&gt;&lt;code&gt;&amp;lt;Plugin python&amp;gt;
+    ModulePath &amp;quot;/etc/collectd/carbon&amp;quot;
+    Import “carbon_writer”
+    &amp;lt;Module “carbon_writer”&amp;gt;
+        LineReceiverHost “localhost″
+        LineReceiverPort 2003
+        DifferentiateCountersOverTime true
+        LowercaseMetricNames true
+        TypesDB &amp;quot;/usr/share/collectd/types.db&amp;quot;
+    &amp;lt;/Module&amp;gt;
+&amp;lt;/Plugin&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;/div&gt;
+&lt;p&gt;上文中假定你把python插件放在了/etc/collectd/carbon下面，所以下文需要按照这个路径安装carbon。&lt;/p&gt;
 
-&lt;div&gt;
+&lt;h2 id=&#34;collectd-carbon&#34;&gt;collectd-carbon&lt;/h2&gt;
 
-\
+&lt;p&gt;在/etc/collectd下面，执行&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;pre&gt;&lt;code&gt;sudo git clone https://github.com/indygreg/collectd-carbon.git carbon
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;div&gt;
+&lt;p&gt;注意，sudo其实是不安全的。不过目前就这样吧，问题不明显。&lt;/p&gt;
 
-下文描述了在debian
-wheezy下，以nginx+uwsgi模式安装graphite的过程。之所以用这个模式，是因为我的大部分系统都是python写的，同样安装在uwsgi下面。一事不烦二主。
+&lt;h2 id=&#34;restart-whole-system&#34;&gt;restart whole system&lt;/h2&gt;
 
-&lt;/div&gt;
+&lt;p&gt;执行以下指令重启服务&lt;/p&gt;
 
-&lt;div&gt;
+&lt;pre&gt;&lt;code&gt;sudo /etc/init.d/nginx restart
+sudo /etc/init.d/uwsgi restart
+sudo /etc/init.d/carbon-cache restart
+sudo /etc/init.d/collectd restart
+&lt;/code&gt;&lt;/pre&gt;
 
-\
+&lt;p&gt;完成这步后，可以在/var/log/syslog中看到collectd的输出，数据确实的被灌入了carbon。而/var/log/uwsgi/app/graphite.log中可以看到uwsgi的输出。如果一切正常的话，你可以去&lt;a href=&#34;http://localhost/graphite/&#34;&gt;http://localhost/graphite/&lt;/a&gt;下面看你要的东西了。&lt;/p&gt;
 
-&lt;/div&gt;
+&lt;h1 id=&#34;评价&#34;&gt;评价&lt;/h1&gt;
 
-&lt;div&gt;
-
-\# carbon \#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-carbon有对应的debian包，可以很简单的安装。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;sudo
-aptitude install graphite-carbon
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-默认的数据端口是2003，默认的数据路径是/var/lib/graphite/，这个在下文需要用到。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\# graphite \#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# virtual \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-graphite有部分需要安装到系统中，因此最好用virtualenv进行安装。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;cd
-/var/web/
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;sudo
-aptitude install python-virtualenv
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;virtualenv
---system-site-packages graphite
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-我假定你的安装路径是/var/web/graphite，这个在下面要反复用到。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# install \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-在安装路径下，执行以下内容
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;source
-bin/activite
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;pip install
-graphite-web --install-option=&#34;--prefix=/var/web/graphite&#34;
---install-option=&#34;--install-lib=/var/web/graphite/webapp&#34;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-注意，/var/web/graphite需要根据上面的设定自行修改，webapp是你的django基础路径。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# configure \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-在/var/web/graphite/webapp/graphite下面，执行以下内容
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;cp
-local\_settings.py.example local\_settings.py
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-然后编辑local\_settings.py
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;
-&lt;/span&gt;GRAPHITE\_ROOT = &#39;/var/web/graphite&#39;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;
-&lt;/span&gt;WHISPER\_DIR = &#39;/var/lib/graphite/whisper&#39;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;DATABASES =
-...
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-注意databases，不要在settings.py里面修改，要改这里的才有效。我用的是sqlite，如果你高兴，可以改为postgres/mysql。WHISPER\_DIR是上文carbon中设定的目录。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-最后，执行以下指令，完成数据库初始化。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;python
-manage.py syncdb
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# uwsgi \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-编辑/etc/uwsgi/apps-enabled/graphite.ini，包含以下内容。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;\[uwsgi\]
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;plugins    
-    = python
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;workers    
-    = 1
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;chdir      
-    = /var/web/graphite/webapp
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;pythonpath
-     = /var/web/graphite
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;env        
-    = DJANGO\_SETTINGS\_MODULE=graphite.settings
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;module    
-     = django.core.handlers.wsgi:WSGIHandler()
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-注意，这里的chdir，是你的webapp基础路径。而pythonpath则是virtualenv的路径。两者在上文都有说明的。env里面那个graphite是webapp/graphite这个app(不详细说明，自己学一下django就懂了)。module是django的固定写法。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# nginx \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-最后，在nginx中包含以下内容，将部分url转发到uwsgi上。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;location \~
-\^/(graphite|content|metrics|dashboard|render|browser|composer)/ {
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;include
-       uwsgi\_params;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;
-&lt;/span&gt;uwsgi\_param    UWSGI\_SCHEME \$scheme;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;uwsgi\_pass
-    unix:/run/uwsgi/app/graphite/socket;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;}
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\# collectd \#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# install \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-collectd的安装很简答，有包，直接安装就好。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;sudo
-aptitude install collectd
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# configure \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-在/etc/collectd/这个路径，能够看到collectd.conf这个文件。反注释掉以下内容：
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;
-&lt;/span&gt;&amp;lt;LoadPlugin python&amp;gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;Globals
-true
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;
-&lt;/span&gt;&amp;lt;/LoadPlugin&amp;gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-然后，再编辑以下内容。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;&amp;lt;Plugin
-python&amp;gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;
-&lt;/span&gt;ModulePath &#34;/etc/collectd/carbon&#34;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;Import
-“carbon\_writer”
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;
-&lt;/span&gt;&amp;lt;Module “carbon\_writer”&amp;gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;
-&lt;/span&gt;LineReceiverHost “localhost″
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;
-&lt;/span&gt;LineReceiverPort 2003
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;
-&lt;/span&gt;DifferentiateCountersOverTime true
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;
-&lt;/span&gt;LowercaseMetricNames true
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;TypesDB
-&#34;/usr/share/collectd/types.db&#34;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    &lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt;
-&lt;/span&gt;&amp;lt;/Module&amp;gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    &amp;lt;/Plugin&amp;gt;
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-上文中假定你把python插件放在了/etc/collectd/carbon下面，所以下文需要按照这个路径安装carbon。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# collectd-carbon \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-在/etc/collectd下面，执行
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;sudo git
-clone &lt;https://github.com/indygreg/collectd-carbon.git&gt; carbon
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-注意，sudo其实是不安全的。不过目前就这样吧，问题不明显。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\#\# restart whole system \#\#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-执行以下指令重启服务
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;sudo
-/etc/init.d/nginx restart
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;sudo
-/etc/init.d/uwsgi restart
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;sudo
-/etc/init.d/carbon-cache restart
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;span class=&#34;Apple-tab-span&#34; style=&#34;white-space:pre&#34;&gt; &lt;/span&gt;sudo
-/etc/init.d/collectd restart
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-完成这步后，可以在/var/log/syslog中看到collectd的输出，数据确实的被灌入了carbon。而/var/log/uwsgi/app/graphite.log中可以看到uwsgi的输出。如果一切正常的话，你可以去\[[http://localhost/graphite/\](http://localhost/graphite/)下面看你要的东西了](http://localhost/graphite/%5D%28http://localhost/graphite/)%E4%B8%8B%E9%9D%A2%E7%9C%8B%E4%BD%A0%E8%A6%81%E7%9A%84%E4%B8%9C%E8%A5%BF%E4%BA%86)。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\# 评价 \#
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-数据收集的挺完整的。既然是基于collectd，那么应当没什么问题的，openwrt也可以支持的。问题是拿到数据后展现的一方面。由于默认配置太差，因此需要很长时间调教。我没那个功夫，搞定测试后就直接删除了。
-
-&lt;/div&gt;
+&lt;p&gt;数据收集的挺完整的。既然是基于collectd，那么应当没什么问题的，openwrt也可以支持的。问题是拿到数据后展现的一方面。由于默认配置太差，因此需要很长时间调教。我没那个功夫，搞定测试后就直接删除了。&lt;/p&gt;
 </description>
     </item>
     
