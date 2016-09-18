@@ -99,6 +99,33 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/1903/">gnupg密钥签署原理和过程</a>
+    </h1>
+    <p class="meta">Sep 7, 2011
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/1903/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>gnupg的密钥基础运用比较简单，有能力跑过来看我blog的应该都比较清楚了。不过最近接触了gnupg密钥的一些复杂运用，才发现——这玩意，居然能构造类似于PKI的复杂密码体系呢。 gnupg的密码体系和PKI类似，又有区别。PKI密码体系有数个根节点，负责验证服务。然而gnupg没有这种根节点，一切都是以社会关系网络运作的。更加复杂，也更加接近自然社会体系。 首先是gnupg的基本密码原理，公钥和私钥对。利用私钥签署，公钥验证。公钥加密，私钥解密。这是最基础的两种用法，我们略过不谈。密钥签署的问题提出来源于，我如何相信我得到的密钥，真的来自他所声称的这个人？ 例如，我得到了来自Linus Benedict Torvalds的一封邮件，上面说blahblah。当然，听起来应当高兴，不过暂缓，这个信真的是linus本人写的么？这时候，我可以导入linus的公钥，验证签名——当然，如果有签名的话。不过问题又来了，你如何保证得到的是linus本人的公钥，而不是某个试图破坏系统的人伪造的呢？ 好吧，为了解决这个问题，gnupg设计了互相签署机制。当我签署了某个人的公钥，并且将我的签署上传到公钥服务器（或者发送回给本人）的时候，我就为这个人的真实性做出了背书。例如，当我为thomas做了公钥签署，然后上传到了公钥服务器。然后thomas向某个他并不直接认识的我的朋友发送了一封邮件——例如发送给了julia。julia收到信的时候，会从服务器上下载thomas的公钥，然后看到我的背书。如果julia相信(trust)我，那么gnupg就会自动完成验证。当然，将公钥上传到服务器会略微降低安全性，所以如果限于安全考虑，我没有上传到公钥服务器，而是传回给本人。那么thomas就必须在给julia发送邮件的时候，附上公钥。julia一样能看到公钥上我的签名。 下面是如何操作。 首先你必须获得公钥，以下是从公钥服务器上下载的方法。 gpg --keyserver &lt;keyserver&gt; --recv-keys &lt;Key\_ID&gt; 而后，你需要看到这个公钥的fingerprint。 gpg --fingerprint &lt;Key\_ID&gt; 再然后，就是比较困难的部分。你需要和这个公钥的拥有者碰头，找个地方喝个咖啡，或者一起出来玩什么的。然后，查看他的有效证件，和本人对照，并且取得他本人认可的fingerprint。 这点非常重要，不要轻易的使用线上fingerprint交换来替代这个过程，也不要随意的为别人进行签署。你必须*确定*你签署了本人的密钥，线上获得的key，是完全可能被修改的，这是对所有信任你的人的负责。 再然后，就是简单的签署。 gpg --default-key &lt;Key\_to\_use&gt; --sign-key &lt;Key\_ID&gt; 最后，上传公钥，或者传回给本人。以下例子是上传到服务器的，不过记得先征求对方同意——除非你原本也是从服务器上取得的公钥。 gpg --keyserver &lt;keyserver&gt; --send-key &lt;Key\_ID&gt; 至于revoke什么的，暂且就不说了。 其中最麻烦的，就是上述过程中，两个人碰头的部分。为了简化这个部分，gnupg使用者经常有种gnupg keysigning party[2]的聚会，互相交换和签署密钥。 reference: [1].The GNU Privacy Handbookhttp://www.gnupg.org/gph/en/manual.html [2].GnuPG Keysigning Party HOWTOhttp://alfie.ist.org/projects/gpg-party/gpg-party.zh-tw.html</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/1901/">为什么恳谈行不通</a>
     </h1>
     <p class="meta">Sep 6, 2011
@@ -329,37 +356,6 @@ ga('send', 'pageview');
         
           <p>I bought a Phenom II X4 955 CPU month ago, recently I find that HWMonitor can&rsquo;t read core temp, just motherboard temp. I googled it and find this article. This article said that ACC is a tech will make AMD X3 work like X4 byunlock cores in BIOS. But CPU core temp sensors will not work, even use a real four cores CPU. 贝壳一个月前买了一块羿龙IIX4955（黑盒），但是最近发现HWMonitor读不出核心温度，只有主板温度。放狗搜了一下，找到这篇文章。根据这篇文章说，ACC是一种能够让AMD三核CPU像四核一样工作的技术，只要在BIOS中打开unlock cores选项就好。但是这个会使得CPU的核心温度传感器不工作，即使你真的有四个核，而不是仿冒四核。</p>
 
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/1883/">linux下的文件系统选型</a>
-    </h1>
-    <p class="meta">Aug 15, 2011
-         - 2 minute read 
-         - <a href="http://shell909090.org/blog/archives/1883/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>贝壳原来一直认为文件系统可以随便选，结果最近吃了两次苦头。一个是btrfs对虚拟机支持不良，另一个是特定情况下xfs性能比ext3高20倍。痛定思痛，打算列一下文件系统选型的方法和依据，欢迎拍砖。 下面我列一下纳入参考的文件系统，当然，ntfs就不要出来搞基了，玩嵌入式/光盘live之类的朋友也不要来凑热闹了阿。btrfs(简介), ext3, ext4(简介), jfs(简介), reiserfs, xfs，基本涵盖常用文件系统。最下面加入ntfs和zfs对比，实际上不参与选型。以下进制换算为1024，大小依次为KB,MB,GB,TB,PB,EB,ZB。 --------------- --------- -------------- ---------------- ---------------- ---------------- ------------------ --------- ----------- ------------ 文件系统 btrfs ext3 ext4 jfs reiserfs reiser4 xfs ntfs zfs 最大卷容量 16 EB 32 TB 1 EB (16TB) 32 PB 16 TB ?? 16 EB 256 TB 16 EB 最大文件容量 16 EB 2 TB 16 TB 4 PB 8TB 8TB 8 EB 16 TB 16 EB 目录结构 B tree list/tree list/Htree B tree B+ tree dancing B\* tree B+ tree B+ tree hash table 文件分配 extents bitmap/table bitmap/extents bitmap/extents bitmap ??</p>
-
-          
-              <footer>
-                  <a href="http://shell909090.org/blog/archives/1883/" rel="full-article">Read On &rarr;</a>
-              </footer>
           
 
         
@@ -630,6 +626,10 @@ ga('send', 'pageview');
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2841/">最近的阿里月饼事件</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2840/">使用Jupyter制作slides</a>
           </li>
         
@@ -663,10 +663,6 @@ ga('send', 'pageview');
         
           <li class="post">
             <a href="/blog/archives/2822/">一个有趣的问题</a>
-          </li>
-        
-          <li class="post">
-            <a href="/blog/archives/2820/">一次升级故障的排查</a>
           </li>
         
       </ul>
