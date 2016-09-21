@@ -153,7 +153,7 @@ np.array(q(s)).var()
 
 <h2 id="函数调用开销">函数调用开销</h2>
 
-<p>使用<a href="https://gitcafe.com/shell909090/context/blob/master/s_call.c">s_call</a>来测试性能，循环1G次。</p>
+<p>使用<a href="https://github.com/shell909090/context/blob/master/s_call.c">s_call</a>来测试性能，循环1G次。</p>
 
 <pre><code>2.35,0.00,17,0,0,0,99%
 2.34,0.00,13,0,0,0,99%
@@ -174,7 +174,7 @@ np.array(q(s)).var()
 
 <h2 id="内核调用开销">内核调用开销</h2>
 
-<p>使用<a href="https://gitcafe.com/shell909090/context/blob/master/s_syscall.c">s_syscall</a>来测试性能，循环1G次。这里特意选用了一个不可能失败的内核函数，getpid，来衡量每次进入getpid的开销。</p>
+<p>使用<a href="https://github.com/shell909090/context/blob/master/s_syscall.c">s_syscall</a>来测试性能，循环1G次。这里特意选用了一个不可能失败的内核函数，getpid，来衡量每次进入getpid的开销。</p>
 
 <pre><code>4.37,0.00,76,0,0,0,99%
 4.34,0.00,43,0,0,0,99%
@@ -218,7 +218,7 @@ np.array(q(s)).var()
 
 <h2 id="进程fork开销">进程fork开销</h2>
 
-<p>使用<a href="https://gitcafe.com/shell909090/context/blob/master/s_fork.c">s_fork</a>程序(注释语句关闭模式)，循环1M次，重复6次，原始数据如下：</p>
+<p>使用<a href="https://github.com/shell909090/context/blob/master/s_fork.c">s_fork</a>程序(注释语句关闭模式)，循环1M次，重复6次，原始数据如下：</p>
 
 <pre><code>49.04,26.83,29784,0,0,0,55%
 51.53,26.38,32057,0,0,0,52%
@@ -248,7 +248,7 @@ switch(有趣的是，这个取决于fork后是优先执行子进程还是父进
 
 <h2 id="fork模式强制优先执行子进程">fork模式强制优先执行子进程</h2>
 
-<p>在<a href="https://gitcafe.com/shell909090/context/blob/master/s_fork.c">s_fork</a>中，注意那句注释。当优先执行子进程时，会发生什么现象？</p>
+<p>在<a href="https://github.com/shell909090/context/blob/master/s_fork.c">s_fork</a>中，注意那句注释。当优先执行子进程时，会发生什么现象？</p>
 
 <p>预期来说，应当不发生变化，或者轻微的变慢。因为我们预期系统优先执行子进程(以减少exec前的page cow)。如果发生变化，那么说明这个假定是不正确的。真实情况是优先执行父进程或者无保证。</p>
 
@@ -285,7 +285,7 @@ switch(有趣的是，这个取决于fork后是优先执行子进程还是父进
 
 <h2 id="线程建立销毁开销">线程建立销毁开销</h2>
 
-<p>使用<a href="https://gitcafe.com/shell909090/context/blob/master/t_thread.c">t_thread</a>程序，循环1M次，重复6次，原始数据如下：</p>
+<p>使用<a href="https://github.com/shell909090/context/blob/master/t_thread.c">t_thread</a>程序，循环1M次，重复6次，原始数据如下：</p>
 
 <pre><code>9.57,8.22,21098,0,0,0,104%
 9.77,8.40,29704,0,0,0,104%
@@ -308,7 +308,7 @@ switch(有趣的是，这个取决于fork后是优先执行子进程还是父进
 
 <h2 id="纯线程切换开销">纯线程切换开销</h2>
 
-<p>使用<a href="https://gitcafe.com/shell909090/context/blob/master/t_yield.c">t_yield.c</a>程序研究线程切换开销。具体过程单独整理了一个文件，下面只贴出结论：</p>
+<p>使用<a href="https://github.com/shell909090/context/blob/master/t_yield.c">t_yield.c</a>程序研究线程切换开销。具体过程单独整理了一个文件，下面只贴出结论：</p>
 
 <p><img src="https://raw.githubusercontent.com/shell909090/slides/master/context/t_yield.png" alt="t\_yield.png" /></p>
 
@@ -321,7 +321,7 @@ switch(有趣的是，这个取决于fork后是优先执行子进程还是父进
 
 <h2 id="sleep切换开销">sleep切换开销</h2>
 
-<p>使用<a href="https://gitcafe.com/shell909090/context/blob/master/t_sleep.c">t_sleep.c</a>程序来测试usleep(0)的性能。100线程，1M次循环。下面是结论：</p>
+<p>使用<a href="https://github.com/shell909090/context/blob/master/t_sleep.c">t_sleep.c</a>程序来测试usleep(0)的性能。100线程，1M次循环。下面是结论：</p>
 
 <pre><code>66.55,90.62,4160,0,0,0,149%
 65.60,87.08,3238,0,0,0,145%
@@ -361,7 +361,7 @@ switch(有趣的是，这个取决于fork后是优先执行子进程还是父进
 
 <h2 id="lock切换开销">lock切换开销</h2>
 
-<p>使用<a href="https://gitcafe.com/shell909090/context/blob/master/t_lock.c">t_lock.c</a>来研究pthread
+<p>使用<a href="https://github.com/shell909090/context/blob/master/t_lock.c">t_lock.c</a>来研究pthread
 mutex的性能。</p>
 
 <p><img src="https://raw.githubusercontent.com/shell909090/slides/master/context/t_lock.png" alt="t\_lock.png" /></p>
@@ -378,7 +378,7 @@ mutex的性能。</p>
 
 <h2 id="yield模式性能测试">yield模式性能测试</h2>
 
-<p>python下的测试就不用time了，我们改用python的timeit，循环100M次。具体可以看<a href="https://gitcafe.com/shell909090/context/blob/master/py_yield.py">py_yield.py</a>。数据结果如下：</p>
+<p>python下的测试就不用time了，我们改用python的timeit，循环100M次。具体可以看<a href="https://github.com/shell909090/context/blob/master/py_yield.py">py_yield.py</a>。数据结果如下：</p>
 
 <pre><code>7.64262938499 9.2919304393e-06
 5.41777145863 4.94284924931e-06
@@ -388,7 +388,7 @@ mutex的性能。</p>
 
 <h2 id="greenlet模式性能测试">greenlet模式性能测试</h2>
 
-<p>这次代码在<a href="https://gitcafe.com/shell909090/context/blob/master/py_greenlet.py">py_greenlet.py</a>，循环10M次。数据结果如下：</p>
+<p>这次代码在<a href="https://github.com/shell909090/context/blob/master/py_greenlet.py">py_greenlet.py</a>，循环10M次。数据结果如下：</p>
 
 <pre><code>5.35270996888 7.44085846125e-05
 5.31448976199 5.82336765673e-05
@@ -400,7 +400,7 @@ mutex的性能。</p>
 
 <h2 id="yield-from性能测试">yield from性能测试</h2>
 
-<p>这次代码在<a href="https://gitcafe.com/shell909090/context/blob/master/py_yield_from.py">py_yield_from.py</a>，循环100M次。数据结果如下：</p>
+<p>这次代码在<a href="https://github.com/shell909090/context/blob/master/py_yield_from.py">py_yield_from.py</a>，循环100M次。数据结果如下：</p>
 
 <pre><code>11.3753386545 2.05564687993e-05
 8.83233247434 7.92599097725e-05
@@ -428,7 +428,7 @@ from的上下文切换速度是会减慢的。两者呈明显的线性关系。<
 
 <h2 id="goroutine创建开销">goroutine创建开销</h2>
 
-<p>下面是一组golang有关的测试，首先使用<a href="https://gitcafe.com/shell909090/context/blob/master/g_goroutine.go">g_goroutine.go</a>来测试goroutine创建和销毁开销，执行10M次：</p>
+<p>下面是一组golang有关的测试，首先使用<a href="https://github.com/shell909090/context/blob/master/g_goroutine.go">g_goroutine.go</a>来测试goroutine创建和销毁开销，执行10M次：</p>
 
 <pre><code>5.70,0.11,598,0,0,0,99%
 5.70,0.12,77,0,0,0,99%
@@ -449,7 +449,7 @@ from的上下文切换速度是会减慢的。两者呈明显的线性关系。<
 
 <h2 id="调度开销">调度开销</h2>
 
-<p>我们使用<a href="https://gitcafe.com/shell909090/context/blob/master/g_sched.go">g_sched.go</a>来研究golang的调度。</p>
+<p>我们使用<a href="https://github.com/shell909090/context/blob/master/g_sched.go">g_sched.go</a>来研究golang的调度。</p>
 
 <p><img src="https://raw.githubusercontent.com/shell909090/slides/master/context/g_sched.png" alt="g\_sched.png" /></p>
 
@@ -457,7 +457,7 @@ from的上下文切换速度是会减慢的。两者呈明显的线性关系。<
 
 <h2 id="chan开销">chan开销</h2>
 
-<p>我们使用<a href="https://gitcafe.com/shell909090/context/blob/master/g_chan.go">g_chan.go</a>来研究chan上的调度。</p>
+<p>我们使用<a href="https://github.com/shell909090/context/blob/master/g_chan.go">g_chan.go</a>来研究chan上的调度。</p>
 
 <p><img src="https://raw.githubusercontent.com/shell909090/slides/master/context/g_chan.png" alt="g\_chan.png" /></p>
 
@@ -465,7 +465,7 @@ from的上下文切换速度是会减慢的。两者呈明显的线性关系。<
 
 <h2 id="lock开销">lock开销</h2>
 
-<p>我们使用<a href="https://gitcafe.com/shell909090/context/blob/master/g_lock.go">g_lock.go</a>来研究chan上的调度。</p>
+<p>我们使用<a href="https://github.com/shell909090/context/blob/master/g_lock.go">g_lock.go</a>来研究chan上的调度。</p>
 
 <p><img src="https://raw.githubusercontent.com/shell909090/slides/master/context/g_lock.png" alt="g\_lock.png" /></p>
 
@@ -475,7 +475,7 @@ from的上下文切换速度是会减慢的。两者呈明显的线性关系。<
 
 <h2 id="setjmp-longjmp测试">setjmp/longjmp测试</h2>
 
-<p>使用<a href="https://gitcafe.com/shell909090/context/blob/master/s_jmp.c">s_jmp</a>程序来测试setjmp的性能。1G次循环。下面是结论：</p>
+<p>使用<a href="https://github.com/shell909090/context/blob/master/s_jmp.c">s_jmp</a>程序来测试setjmp的性能。1G次循环。下面是结论：</p>
 
 <pre><code>5.77,0.00,29,0,0,0,99%
 5.70,0.00,30,0,0,0,99%
@@ -496,7 +496,7 @@ from的上下文切换速度是会减慢的。两者呈明显的线性关系。<
 
 <h2 id="makecontext-swapcontext测试">makecontext/swapcontext测试</h2>
 
-<p>使用<a href="https://gitcafe.com/shell909090/context/blob/master/s_context.c">s_context</a>程序来测试ucontext的性能。100M次循环。下面是结论：</p>
+<p>使用<a href="https://github.com/shell909090/context/blob/master/s_context.c">s_context</a>程序来测试ucontext的性能。100M次循环。下面是结论：</p>
 
 <pre><code>33.42,13.08,163,0,0,0,99%
 33.43,13.40,147,0,0,0,99%
