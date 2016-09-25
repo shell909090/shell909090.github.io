@@ -99,6 +99,33 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/171/">利用API插接替换破解软件</a>
+    </h1>
+    <p class="meta">Jun 2, 2005
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/171/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>刚刚在看软件破解教程，看到一个人说怎么怎么破解软件。然后突然想到，许多软件破解其实不用修改出flag或者找注册算法。只要对话框不出来，软件照常好用就可以了。OK，基于这个原理，试试用DLL注入插接API的方法RIP破解软件。 首先是对话框弹出机理。先写了个MFC程序，然后跑一跑，在运行中按着DoModel()一路F11下去，跟进了CWnd::CreateDialogIndirectPreamA云云的一个函数里面（名字忘记了）。然后就是一个API调用了。（__IMP__Creat&hellip;肯定是调用别的DLL的函数了）API内容看不到……我晕。编译一个Release版的出来，然后上Ollydbg。经过跟踪，确定了窗体句柄是在USER32.CreateDialogIndirectPreamAorW里面生成的。如果没有窗体句柄呢？ 貌似有两种可能，一种是没事，对话框没了。一种是报错。按照试验，Readbook至少是没事情的。哈哈，这样简单多了。整理下顺序，基本就可以做RIP破解了。 首先是用OllyDbg等等软件定位USER32.CreateDialogIndirectPreamAorW（其实USER32.CreateDialogIndirectPreamA更好，如果只用这个的话比较好确定参数类型）。然后下断点，跑到软件里面触发窗口广告……然后记录对话框的模板位置，调试的任务就结束了。因为没有啥要判断的东西，这个应该说简单到顶点了。 然后写一个DLL注入程序，运行目标程序并且Suspend。然后注入DLL，挂接API。详细参看windows核心编程，现在我们假定挂接了USER32.CreateDialogIndirectPreamA。现在有了一个自主的处理函数，只要在里面判断模板是否为特定模板就好……这个是module的一个res，理论上不是动态生成的，所以位置不变。而且一个对话框一个模板，很好认不会出错。如果是特定模板就返回NULL，否则正常调用。这样程序的提示框就永远弹不出来了。 这个其实是将软件的对话框禁止技术搬到了API层去实现，由于API层代码相对稳定，通用性强，所以破解相对简单。不过也是有代价的。如果软件无法生成对话框会导致出错……这个就没戏了。而且要写注入程序（可以写个注入的模板，或者一次写好可以多次用……），毕竟不是直接运行程序，使用不大方便。而且速度会受影响，如果程序里面对话框满天飞的话……</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/170/">首次面试</a>
     </h1>
     <p class="meta">Jun 2, 2005
@@ -343,33 +370,6 @@ ga('send', 'pageview');
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/161/">无题</a>
-    </h1>
-    <p class="meta">May 16, 2005
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/161/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>今天心情不错，数码相机（姑且叫数码相机吧）到了。拿出去拍了N多东西，街道，美女，天空。我拍，我拍。啊，生活真美好。 刚刚想到一个问题，曾经在网络上看到一个文章，是在ring3如何运行ring0代码的。方法是利用Admin权限申请Token，访问DriverPhysicsMemory对象。而后修改进程表，从而隐藏自身。我刚刚突然想到，是否可以隐藏某个HANDLE呢？例如winsock HANDLE。或者直接注入某个sys去和网络连接。这样防火墙不就是一个废物了？ 想想似乎可行，过两天找个机会做做看好了。呵呵，Kernel Debug真好玩。 另外想了一个问题，关于时空结构内在形成逻辑的考虑。我预期逻辑的成因是因为时空的特性。如果时空的特性变化就产生不同的逻辑。以因果律为例，如果静止的物体具备速度了。那么它必定被外力作用过。但是如果时空可以重组合，那么一个物体的加速未必存在动力原因。例如一个人留下一个可以穿越时空的方法，而后有人实现，将方法带到过去留下。如此组成循环，那么在未来会出现穿越时空的方法，但是却没有形成的原因。同理，目前的所有逻辑可能都是时空所造成的。如果逻辑不出错，则时空无法逆转。例如考虑超过光速会出现何等现象等等，首先推论的逻辑即无法使用。因为物体运动具备有限速度亦是时空的限制。 我们要假设考虑弯曲并且重新组合时空，则必须有两个条件。首先是存在第五维度，其次是时空可以黎曼形变，这样才有折叠回去的可能。假如时空交叉组合了。那么回到过去的反馈会产生什么效应呢？ 我们假设时空的点状态在一个N维空间中，这个N可以无穷大。时空的状态就在N维中变化。时空的变化可能为三。 一个是耗散态，对过去的回馈在量级上等同于过去的量子不定性造成的热变化（布朗效应）。于是对过去的回馈不造成多余的结果。这个等于变性的时空流，没有对外的效应。说例子嘛，寻秦可能基于这个思路。 一个是稳定态，对于过去的回馈造成的结果阻碍对于过去的回馈。于是未来处在一个与原来不同的稳定状态。例如刚刚回到过去那个例子。 另外一个就是非稳定态，对于过去的回馈加大对于过去的回馈。除非时空在回馈中出现非线性的因素，否则如此回馈的结果必定导致未来的不唯一。换言就是没有一个稳恒的未来。例如一个人将金子带回过去，利用知识发财。则下次回到过去可以带更多的金子，等等等等。 不过实话来说，上述推论都仅仅为科幻推论。因为推理的基石，因果率在时空重组下即不成立了。所以一旦时空重组，会产生如何效应并非我们这些三维的人可以理解的。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -573,12 +573,17 @@ ga('send', 'pageview');
     
         <a href="/page/91/" class="label-pagination">91</a>
     
-
+        <a href="/page/92/" class="label-pagination">92</a>
     
 
     
     
-        <a href="/page/91/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
+        <a href="/page/92/" aria-label="Next" class="label-pagination"><i class="fa fa-angle-right fa-lg"></i></a>
+    
+
+    
+    
+        <a href="/page/92/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
     
 
 </div>
@@ -631,6 +636,10 @@ ga('send', 'pageview');
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2842/">生活中总有一些小精灵会来敲你的门</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2841/">最近的阿里月饼事件</a>
           </li>
         
@@ -664,10 +673,6 @@ ga('send', 'pageview');
         
           <li class="post">
             <a href="/blog/archives/2829/">潜水的一些简单解说</a>
-          </li>
-        
-          <li class="post">
-            <a href="/blog/archives/2822/">一个有趣的问题</a>
           </li>
         
       </ul>
