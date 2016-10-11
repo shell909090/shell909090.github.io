@@ -99,6 +99,37 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/272/">apache2服务器证书生成过程</a>
+    </h1>
+    <p class="meta">Dec 6, 2005
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/272/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>首先为 CA 创建一个 RSA 私用密钥 openssl genrsa -des3 -out ca.key 1024 利用 CA 的 RSA 密钥创建一个自签署的 CA 证书（X.509结构） openssl req -new -x509 -days 3650 -key ca.key -out ca.crt 首先为你的 Apache 创建一个 RSA 私用密钥 openssl genrsa -des3 -out server.key 1024 用 server.key 生成证书签署请求 CSR openssl req -new -key server.key -out server.csr 签署证书 openssl x509 -md5 -days 3560 -req -signkey server.key -CAcreateserial -CAserial ca.crt -in server.csr -out server.crt 最后apache设置，将下面的参数改为 SSLCertificateFILE /usr/local/apache/conf/server.crt SSLCertificateKeyFile</p>
+
+          
+              <footer>
+                  <a href="http://shell909090.org/blog/archives/272/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/271/">无溪游记一</a>
     </h1>
     <p class="meta">Dec 6, 2005
@@ -337,37 +368,6 @@ ga('send', 'pageview');
         
           <p>首先我们给这个话题增加一个基础，就是您的C++代码没有用到native的部分。具体哪些部分我会列出让你慢慢检查的，不过用到了还想跨平台，你做梦去吧…… 我们假定你代码是在windows的VC++下面写的，因为VC++的转换过去有点麻烦，反向的转换基本可以自动生成。 首先请检查你的头文件依赖性，如果是引用了标准的头文件，那么不需要额外的设定。一般g++的设置中都会自动设定标准的头文件和库。如果引用了某个自己写的文件，那么请检查相对路径是否正确。尤其请着重检查大小写。因为windows不会管大小写的，但是却会将大小写带入*nix。 另外VC++中有一个头文件预编译的加速选项，默认是开启的。将stdafx.cpp(which is empty)预编译次，就得到了stdafx.h的编译结果。在*nix里面我目前还不知道怎么支持，所以stdafx.cpp可以不用理会。 然后请检查标准函数，部分VC++声明在STDLIB.H中的函数其实是VC自带的。用这种函数的结果就是编译100%的失败。遇到这种函数可以自己写一个代替，反正一般都不是特别麻烦。 另外一般不需要关心数据类型和端点型，多数库文件中都会自动处理。不过两种情况需要手工干预。一个是程序中使用了windows特有类型例如DWORD或者linux特有类型le32。这样用typedef重新定义就好了。还有就是跨平台的时候连同芯片类别一起跨过去。这样就要手工确定所有库文件会自动处理数据类型，并且人工定义一组会使用的数据类型扩展宏来处理跨平台的问题。最明显的例子就是int在不同平台的大小问题，对此还有一个特殊的建议就是使用char short long来代替，这三者在所有系统上的长度是相同的。 下面是使用sh脚本来编译代码。其实可以使用make文件来做的，不过俺不会。所以用sh来做好了，反正一般跨平台的程序都不会过于复杂，凑合下就过去了。 g++的编译对象一般是cpp文件，如果是一般的可执行文件，那么编译的指令是g++ *.cpp -o oufile。我这次编译的对象是共享库，所以指令是g++ -shared*.cpp -o outfile。 g++处理extren的比较特殊。如果extren在编译成目标文件时还没有指定链接到哪个符号，那么g++就自动将这个定义为从动态库中引入。不过多数情况下，这应该会出错的。所以要多个cpp文件一起编译，或者使用-c编译到.o文件后再ld起来。否则单个cpp的编译结果根本无法使用。 如果需要使用少量native的方法，也可以按下面说的方法跨平台。 在VC++中定义一个win.cpp，其中将native的方法封装成函数。在主程序中使用C++标准函数和这些函数。 在linux中定义一个linux.cpp，然后用linux的native函数实现对应的函数。在编译的时候略过win.cpp。 VC++中工程引入的时候不要加入linux.cpp。 这样可以保证在两个系统下分别对应不同的函数，当然更好的方法是使用平台相关宏。 附录1，windows下的专有编程技巧： 使用了nativeAPI的绝对无法移植，它们有的甚至无法跨越2000/XP的差异。 使用windowsAPI的，一般不可以移植。这类API多数声明在windows.h中。 使用winsock的没有希望啦，要用socket2才可以。winsock的特征是WSAStartup。 使用了__try{的无法移植，而try{可以。前者是SEH的捕获模块，后者是C++异常捕获模块，在windows下异常捕获是用SEH实现的，不过linux下面不是。linux根本没有SEH。 使用了windows或者VC专用宏的无法移植。 使用C++库和std库的可以移植，包括cout。 使用STL可以移植，不过注意平台差异性。 附录2，linux项目在VC++中引入的方法。 新建一个工程，然后copy所有源代码到工程下面。再然后添加文件到工程，然后F7编译。over</p>
 
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/262/">Debian GNU/Linux下安装Oracle 9i</a>
-    </h1>
-    <p class="meta">Nov 21, 2005
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/262/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>最近因为工作需要，在Debian GNU/Linux安装了Oracle 9i。Debian代号sarge，版本号release 3.1，testing发行。Oracle代号9ir2,版本号9.2.0.4。安装文件名称为ship_9204_linux_disk1.cpio.gz ship_9204_linux_disk2.cpio.gz ship_9204_linux_disk3.cpio.gz。需要一个补丁，文件名为p3006854_9204_LINUX.zip。Oracle 9i安装的是Enterprise Datebase。 先执行以下脚本： #! /bin/bash #变更内核参数 cd /proc/sys/kernel #1G内存状况，按照需要调整 echo 4294967295 &gt; shmmax touch /etc/rac_on #增加一个link，debian需要 apt-get install libstdc++-glibc ; 或者使用aptitude cd /usr/lib ln -s libstdc++-libc6.2-2.so.3 libstdc++-libc6.1-1.so.2 #增加用户 cd /home mkdir oracle groupadd dba useradd -g dba -d /home/oracle -s /bin/bash oracle #注意-s参数，如果不指定下面的初试化脚本不一定跑的起来 passwd -d oracle chown -cR oracle:dba oracle cd /usr mkdir oracle chown -cR oracle:dba oracle cd /var mkdir oracle chown -cR oracle:dba oracle #增加初试化脚本 cd /home/oracle echo &quot;export DISPLAY=''&quot;&gt;.bash_profile echo &quot;export BASH_ENV=$HOME/.bashrc&quot;&gt;&gt;.bash_profile echo &quot;export LD_ASSUME_KERNEL=2.4.1&quot;&gt;&gt;.bash_profile echo &quot;ORACLE_HOME=/usr/oracle; export ORACLE_HOME&quot;&gt;&gt;.bash_profile echo &quot;ORACLE_BASE=/var/oracle; export ORACLE_BASE&quot;&gt;&gt;.bash_profile echo &quot;ORACLE_SID=oracle; export ORACLE_SID&quot;&gt;&gt;.bash_profile echo &quot;ORACLE_TERM=xterm; export ORACLE_TERM&quot;&gt;&gt;.bash_profile echo &quot;TNS_ADMIN=/home/oracle/config/9.0.1; export TNS_ADMIN&quot;&gt;&gt;.bash_profile echo &quot;NLS_LANG=american_america.ZHS16GBK; export NLS_LANG&quot;&gt;&gt;.bash_profile echo &quot;ORA_NLS33=$ORACLE_HOME/ocommon/nls/admin/data; export ORA_NLS33&quot;&gt;&gt;.bash_profile echo &quot;LD_LIBRARY_PATH=$ORACLE_HOME/lib;export LD_LIBRARY_PATH&quot;&gt;&gt;.bash_profile echo &quot;PATH=$PATH:/bin:/usr/bin:/usr/sbin:/etc:/opt/bin:/usr/ccs/bin:/usr/openwin&quot;&gt;&gt;.bash_profile echo &quot;PATH=$PATH:/opt/local/bin:/opt/NSCPnav/bin:$ORACLE_HOME/bin&quot;&gt;&gt;.bash_profile echo &quot;PATH=$PATH:/usr/local/samba/bin:/usr/ucb&quot;&gt;&gt;.bash_profile echo &quot;export PATH&quot;&gt;&gt;.bash_profile echo &quot;CLASSPATH=$ORACLE_HOME/JRE:$ORACLE_HOME/jlib:$ORACLE_HOME/rdbms/jlib&quot;&gt;&gt;.bash_profile echo &quot;CLASSPATH=$CLASSPATH:$ORACLE_HOME/network/jlib&quot;&gt;&gt;.bash_profile echo &quot;TMPDIR=/tmp;export TMPDIR&quot;&gt;&gt;.bash_profile echo &quot;umask 022&quot;&gt;&gt;.bash_profile 然后，复制oracle安装程序到用户目录，执行以下脚本： #!</p>
-
-          
-              <footer>
-                  <a href="http://shell909090.org/blog/archives/262/" rel="full-article">Read On &rarr;</a>
-              </footer>
           
 
         
@@ -640,6 +640,10 @@ ga('send', 'pageview');
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2843/">贝加尔湖旅游指南</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2842/">生活中总有一些小精灵会来敲你的门</a>
           </li>
         
@@ -673,10 +677,6 @@ ga('send', 'pageview');
         
           <li class="post">
             <a href="/blog/archives/2832/">三亚潜水体验</a>
-          </li>
-        
-          <li class="post">
-            <a href="/blog/archives/2829/">潜水的一些简单解说</a>
           </li>
         
       </ul>
