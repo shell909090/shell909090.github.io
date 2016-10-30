@@ -99,6 +99,33 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/283/">Runas系统管理方法</a>
+    </h1>
+    <p class="meta">Jan 25, 2006
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/283/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>一个系统，做一个管理员（不是administrator），做一个受限用户。然后用受限用户，不用管理员。做一个链接。 C:WINDOWS\system32\runas.exe /user:user C:WINDOWSsystem32cmd.exe 然后启动后输入管理秘密，就可以用管理员身份来做管理了，启动注册表编辑或者啥都很方便。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/282/">IE屏蔽方法</a>
     </h1>
     <p class="meta">Jan 21, 2006
@@ -328,33 +355,6 @@ ga('send', 'pageview');
 
         
           <p>今天偶终于见识到了传说中的服务器是如何组装的。话说我们公司准备用台Linux服务器来做发布。偶就负责了服务器的采购大业。最终抱回来的是一个如下配置的大怪兽： Xeon x2 KSTDDR2 1G Registed ECC x4 MT 73G SCSI x3Adpetec 2120S RAID Card Hatekey 550W Power SuperMicro&hellip;.(I forgot it, but it&rsquo;s E7320MCH) 从昨天下午开始，我们就坐在店里面死等服务器组件到。结果服务器组件姗姗来迟。等掉了三个钟头，逛了两圈，遇到四个熟人，聊了不知道多少时间天。还让我知道IDE居然可以插根线用USB口拖，上帝阿……我的旧硬盘有救了。 昨天下午服务器组件到货后我们就开始组装，具体请看贝壳上传的图片。不过看着闪闪发光的两个大纯铜风扇，真是让没见过啥好货的贝壳流口水阿。本来贝壳还对着SuperMicro的板子留口水，然后一个人看不过去，带去看了看顶尖主板。然后贝壳口水不流了，眼睛掉出来了，知道自己孤陋寡闻了。 时间跳阿跳，直接到今天。搞定所有部件，将最后的SCSI线插上去后。OK，开机正常了。大家不要听过程简单，其实很麻烦的。最关键是机箱，只要配合上有点错误，就装不上去了。整个过程就像在螺丝壳里做道场。真不知道1U的机箱怎么混的……麻烦装机器的师傅了。 Adpetec卡还不错，真的不错。上去后驱动没装就认出来了，省却我很多麻烦。否则我先要重编译一个合适的内核，然后上驱动，再放到安装盘里面刻录一个新的，以这个内核为基础的安装盘。这样才认的出来，然后可以安装。只要基础系统出的来，剩下的东西就好办了。装好系统直接上了一个ProE1000的驱动，居然上去了……厉害的。然后Copy下所有需要安装的，再下面就和服务器无关了……</p>
-
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/273/">linux2.6.14-3内核编译与安装,iptables1.3.4与模块</a>
-    </h1>
-    <p class="meta">Dec 12, 2005
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/273/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>这次讲的是贝壳的一次比较顺利的经历，安装linux2.6.14-3内核。并且在其上使用iptables时出现问题和解决的方法。 cd /usr/src tar -zxvf linux... ln -s linux... linux cd linux make mrproper make menuconfig make dep make bzImage make modules make modules_install mkinitrd initrd-2.6.14-3.img 2.6.14.3 cp initrd-2.6.14-3.img /boot cp System.map /boot/System.map-2.6.14-3 cp arch/i386/boot/bzImage /boot/vmlinuz-2.6.14-3 cp .config /boot/config-2.6.14-3 cd /boot vi grub/menu.lst 以上就完成了内核编译的工作，按照经典流程走的，没有啥问题，问题在后面。 重启，然后运行到iptables的时候报错。所以升级两个东西，iptables-1.3.4和module-init-tools-3.2.2。然后发现还是有问题。然后我打入lsmod。发现什么模块也没有，这样不出错才见鬼了呢。多试验几次，可以发现要加载iptable_filter模块。而他又依赖于ip_tables模块。OK，用modprobe加载。再启动，还是报错。 仔细看看设置，是在REJECT行报错，所以应该是加载REJECT模块，ipt_REJECT。成功，加载的具体方法是在/etc/init.d/iptables里面添加。 /usr/local/sbin/modprobe -a ip_tables iptable_filter ipt_REJECT 很简单吧。</p>
 
           
 
@@ -628,6 +628,10 @@ ga('send', 'pageview');
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/album/">相册</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2843/">贝加尔湖旅游指南</a>
           </li>
         
@@ -661,10 +665,6 @@ ga('send', 'pageview');
         
           <li class="post">
             <a href="/blog/archives/2835/">唐僧被吃了</a>
-          </li>
-        
-          <li class="post">
-            <a href="/blog/archives/2832/">三亚潜水体验</a>
           </li>
         
       </ul>
