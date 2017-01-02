@@ -99,6 +99,33 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/274/">服务器，好漂亮</a>
+    </h1>
+    <p class="meta">Dec 17, 2005
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/274/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>今天偶终于见识到了传说中的服务器是如何组装的。话说我们公司准备用台Linux服务器来做发布。偶就负责了服务器的采购大业。最终抱回来的是一个如下配置的大怪兽： Xeon x2 KSTDDR2 1G Registed ECC x4 MT 73G SCSI x3Adpetec 2120S RAID Card Hatekey 550W Power SuperMicro&hellip;.(I forgot it, but it&rsquo;s E7320MCH) 从昨天下午开始，我们就坐在店里面死等服务器组件到。结果服务器组件姗姗来迟。等掉了三个钟头，逛了两圈，遇到四个熟人，聊了不知道多少时间天。还让我知道IDE居然可以插根线用USB口拖，上帝阿……我的旧硬盘有救了。 昨天下午服务器组件到货后我们就开始组装，具体请看贝壳上传的图片。不过看着闪闪发光的两个大纯铜风扇，真是让没见过啥好货的贝壳流口水阿。本来贝壳还对着SuperMicro的板子留口水，然后一个人看不过去，带去看了看顶尖主板。然后贝壳口水不流了，眼睛掉出来了，知道自己孤陋寡闻了。 时间跳阿跳，直接到今天。搞定所有部件，将最后的SCSI线插上去后。OK，开机正常了。大家不要听过程简单，其实很麻烦的。最关键是机箱，只要配合上有点错误，就装不上去了。整个过程就像在螺丝壳里做道场。真不知道1U的机箱怎么混的……麻烦装机器的师傅了。 Adpetec卡还不错，真的不错。上去后驱动没装就认出来了，省却我很多麻烦。否则我先要重编译一个合适的内核，然后上驱动，再放到安装盘里面刻录一个新的，以这个内核为基础的安装盘。这样才认的出来，然后可以安装。只要基础系统出的来，剩下的东西就好办了。装好系统直接上了一个ProE1000的驱动，居然上去了……厉害的。然后Copy下所有需要安装的，再下面就和服务器无关了……</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/273/">linux2.6.14-3内核编译与安装,iptables1.3.4与模块</a>
     </h1>
     <p class="meta">Dec 12, 2005
@@ -336,37 +363,6 @@ ga('send', 'pageview');
           
               <footer>
                   <a href="http://shell909090.org/blog/archives/265/" rel="full-article">Read On &rarr;</a>
-              </footer>
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/264/">Linux内存计数详解</a>
-    </h1>
-    <p class="meta">Nov 24, 2005
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/264/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>又中计了…… 近几天用oracle，发现oracle狂用内存，经常内存小到10M的规模。汗一个，赶快让经理买了新的1G内存来装，上去后发现根本认不出来。加班一多小时才发现386内核根本不认高端内存(HIGHMEM)，所以内存极限一直是896M。以前是1G内存，所以看不出来，现在换了1.5G，看出来了。 赶快上了一个2.6.12-1-686的内核，然后重启，认出来了。不过free还是只有32M左右，我们大惊小怪的打电话到oracle那里去咨询，得到的答复是要安装完整的补丁，并且要用oracle认证过的服务器。oracle认证了啥服务器？RedHatEnterpriseAS3/4,那个东西要收费的，而且绝对不便宜。最后无奈，做了一次不启动oracle的测试。出乎我们意料的，mysql吃了多数的内存。具体造成这种状况的原因是啥呢？ 偶查阅了linux内存管理资料，发现linux的内存管理计数上讲的东西和windows讲的有很大差异。下面具体列举下几种计数、查看方式和含义。 total mem，可以用top free查看出来。 free mem，可以用top free vmstat查看出来。 used mem，可以用top free查看出来. buffer mem，可以用top free vmstat查看出来。 shared mem，可以用free查看出来。 swap mem，可以用top查看出来。 swap used，可以用top vmstat查看出来。 cached mem，可以用top free vmstat查看出来。 active mem，可以用free vmstat -a查看出来，即cached used。 inactive mem，可以用free vmstat -a查看出来，即cached free。 其中total mem是除去系统外的可用内存，系统大约占1M多。然后分配给free mem和used mem。used mem又包括了内核表使用（例如GDT），程序使用，buffer，cached。所以 cached mem=active mem+inactive mem total mem=free mem+used mem used mem=内核表使用+程序使用物理内存+buffer mem+cached mem 略去内核表使用，这个式子可以变形成这样： 程序使用总内存=swap used+程序使用物理内存 =swap used+used mem-buffer mem-cached mem =total mem-free mem+swap used-buffer mem-cached mem</p>
-
-          
-              <footer>
-                  <a href="http://shell909090.org/blog/archives/264/" rel="full-article">Read On &rarr;</a>
               </footer>
           
 
@@ -640,6 +636,10 @@ ga('send', 'pageview');
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2845/">phuket旅游和潜水指南</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/album/">相册</a>
           </li>
         
@@ -675,10 +675,6 @@ ga('send', 'pageview');
             <a href="/blog/archives/2836/">Pulau Perhentian</a>
           </li>
         
-          <li class="post">
-            <a href="/blog/archives/2835/">唐僧被吃了</a>
-          </li>
-        
       </ul>
     </section>
   
@@ -689,7 +685,7 @@ ga('send', 'pageview');
 </div>
 
 <footer role="contentinfo">
-  <p>Copyright &copy; 2016  - <a href="http://shell909090.org/license/">License</a> -
+  <p>Copyright &copy; 2017  - <a href="http://shell909090.org/license/">License</a> -
   <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
 </p>
 

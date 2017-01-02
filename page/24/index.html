@@ -99,6 +99,33 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/2118/">kvm虚拟化的性能对比</a>
+    </h1>
+    <p class="meta">Mar 19, 2012
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/2118/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>废话不多说，4G的机器，debian testing，amd64内核32位环境。用kvm切出一个768m的机器，debian testing，64位内核64位环境。对比起来有点不公平，不过基本说明问题。 用lmbench对比两者的性能，报告我就不贴了。基本结论如下： 1.纯计算: kvm内比真机还快，或者至少性能相当。估计是32位环境的关系。 2.syscall, read, write, select: 都是kvm快。 3.Protection fault,AF_UNIX sock stream latency,fork+exit,fork+execve: 真机比kvm快至少4倍，最多可达6倍。 4.文件读写api: 真机比kvm快3倍以上。 5.socket性能: pipe是kvm快，unix file是真机快。 6.iozone: 两者吞吐性能几乎一致，有时kvm比真机还快。可能和真机的ext3上面堆满碎片结构有关。 基本结论，kvm在计算和io上都没什么太大问题，主要问题在于各种涉及ring0指令的内核调用方面（好像这也是虚拟化的通病）。在虚拟化系统中，尽量避免大量的内核调用，尽量减少碎片调用，增大IO块。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/2116/">答一封读者来信——同机构内不同组织合作的分析</a>
     </h1>
     <p class="meta">Mar 16, 2012
@@ -333,33 +360,6 @@ ga('send', 'pageview');
               <footer>
                   <a href="http://shell909090.org/blog/archives/2100/" rel="full-article">Read On &rarr;</a>
               </footer>
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/2098/">有一种错误，叫做太常见了以至于视而不见</a>
-    </h1>
-    <p class="meta">Feb 20, 2012
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/2098/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>最近整XEN，出了一个奇怪的错误。 ERROR (SrvDaemon:355) Exception starting xend((22, 'Invalid argument')) Traceback (most recent call last): File &quot;/usr/lib/xen-4.0/lib/python/xen/xend/server/SrvDaemon.py&quot;, line 335, in run xinfo = xc.xeninfo() Error: (22, 'Invalid argument') 根据网络上的内容，首先排除没有xen模块——有了，然后是/proc/xen目录是否mount——有了，然后是/sys/hypervisor/下面的一堆属性——有了，然后是版本——不对。xen-utils-4.1是4.1.2版本，而xen-tools是4.2版本。不过xen-utils并不依赖xen-tools，没有后者应当也可以运行这些玩意。hypervisor和xen-utils的版本是一致的。那问题是什么？ 出错的文件是/usr/lib/xen-4.1/lib/python/xen/lowlevel/xc.so里面发生的异常，下载xen的源码检查，这个函数主要是检查属性。属性检查会出什么错？ 正在一头雾水的时候，突然想起一个问题。我安装的是xen-hypervisor-4.1-amd64，因为kernel是linux-image-3.1.0-1-amd64。然而，我这个系统有一个非常大的特殊——在64位CPU上运行的32位系统。因此，实际上xen-utils是32位的。行了行了，下面的事情用膝盖都能想到。 叹气，这世界上，真的有种错误，叫做太常见了以至于视而不见。不要认为自己不会犯。</p>
-
           
 
         
@@ -632,6 +632,10 @@ ga('send', 'pageview');
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2845/">phuket旅游和潜水指南</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/album/">相册</a>
           </li>
         
@@ -667,10 +671,6 @@ ga('send', 'pageview');
             <a href="/blog/archives/2836/">Pulau Perhentian</a>
           </li>
         
-          <li class="post">
-            <a href="/blog/archives/2835/">唐僧被吃了</a>
-          </li>
-        
       </ul>
     </section>
   
@@ -681,7 +681,7 @@ ga('send', 'pageview');
 </div>
 
 <footer role="contentinfo">
-  <p>Copyright &copy; 2016  - <a href="http://shell909090.org/license/">License</a> -
+  <p>Copyright &copy; 2017  - <a href="http://shell909090.org/license/">License</a> -
   <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
 </p>
 

@@ -99,6 +99,37 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/324/">网络性能测试和标准</a>
+    </h1>
+    <p class="meta">Sep 30, 2006
+         - 2 minute read 
+         - <a href="http://shell909090.org/blog/archives/324/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>前两天弄有线通的事情弄的郁闷了，所以就研究了网络性能测试。以后不用也是浪费，大家需要就看看吧。 1.目标 测试目的往往是测试清楚几个值，包括:IP包传输往返时延(RTT)，IP包时延变化(抖动)，IP包丢失率(Lost rate)，IP业务可用性，还有带宽(Bandwidth)。 2.适用标准 RFC 1242， RFC1944， RFC2285， RFC2432。 ** 中华人民共和国信息产业部令第36号(http://www.chinanetcom.com.cn/mj/dxsc.asp?Unid=3810) ** IP网络技术要求&ndash; 网络性能参数与指标(YD/T 1171-2001) 3.测试平台和工具 我们假定基于POSIX兼容平台测试，演示用的例子来自Debian Etch/Kernel 2.6.17-2-686。Windows下所需要工具可以参考移植工具。 iperf 网络带宽测试工具 paratrace 被动路由测试工具 hping2 网络联通和时延测试工具 wireshark(ethereal) 抓包分析工具 p0f 被动指纹分析工具 4.测试对象，方法，和结果分析 以下为实例测试，参数需要根据具体情况变化。 4.1.测试网络带宽 在服务器端运行iperf -s。 在客户端运行iperf -c 192.168.0.2 100Mbps网络环境下，得到结果为92.6Mbps，折合为11.5MB/s。即数据极限传输速度。 4.2.测试网络IP包传输往返时延(RTT)和IP包时延变化(抖动) 分主动被动方法，被动方法用wireshark抓包分析。下面主要介绍主动方法： 运行hping2 www.google.com -p 80。得到 56 packets transmitted, 56 packets received, 0% packet loss round-trip min/avg/max = 242.5/269.9/381.1 ms 即在主动建立的到www.google.com的TCP连接中(默认为TCP，可以使用UDP，ICMP，IP，具体请看hping2 &ndash;help)，丢包率为0。平均传输延迟为269.9，抖动为138.6。 注：按照《中华人民共和国信息产业部令第36号》，往返时延平均值≤200毫秒，时延变化平均值≤80毫秒。此处已经超标。但因为测试环境和适用条件不完全吻合，因此无法作为有效证据。 4.3.IP包丢失率(Lost rate) 也分主动方法和被动方法，主动方法见上。被动方法是用wireshark抓包后，通过tpc.analysis.lost_segment标志分析丢包数量和总体数量。具体为。 用wireshark抓包。 用( tcp.srcport == 7007</p>
+
+          
+              <footer>
+                  <a href="http://shell909090.org/blog/archives/324/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/323/">从踢牙老奶奶到火星文，从火星文到人工智能</a>
     </h1>
     <p class="meta">Sep 30, 2006
@@ -332,33 +363,6 @@ ga('send', 'pageview');
 
         
           <p>最近贝壳要换ISP了。大家知道，贝壳用了5年多的上海有线通。虽然速度不快，偶尔还有降到半速的现象，但是总体来说还是不错的。TTL跃点主要在12到16上下(经过12-16个路由器)，极限上传一般在55K/s上下。虽然说和标称有一定区别，不过考虑IP封包头问题，也还可以。只是最近有线通不怎么像话，封了P2P不说，还不告知。去询问，又不承认。幸好贝壳两个月后包年到期，到时就跑了结束。 开始(8.30左右)贝壳的ED速度突然从50K/s持续上传下跌到7K/s持续上传。贝壳以为是电信故障维修，造成数个连线失效，路由重生成后形成瓶颈。这现象照理不会在电信这种大公司发生。不过按照莫菲定律，什么坏事都可能发生。就随他去了。24小时以后，贝壳打电话到96877报修。对方开始说会不会是系统问题，windows新出病毒云云。贝壳两台电脑，平台不一样(Intel和AMD64)，系统不一样(WindowsXP和Debian/GNU Linux)，所用软件不一样(eMuleVC，BC0.70和aMule)。不会都是出这个问题吧？再说windows出病毒，关linux啥事情？ 维修人员看看没法说的通，换了口风。说这种问题不能算是问题，他需要“提交”一下。OK，你本身做维护的，还向谁提交问题？我也不管他，这几天忙，没空和他唠叨。说好好，你提交下看看。 过两天空了，看问题照旧，贝壳坐不住了。莫非我碰到了P2P封锁？贝壳先查看了网络上的评论，说上海有线通有这问题，已经有人在315网上提交了抱怨。贝壳下面做了几个测试。 首先将eMule复制一份，保留原先的配置。然后关闭所有共享，只共享一个文件。名字起的奇怪点，这样就没有别的下载客户了。然后找一个朋友来做下载，速度是5K上下，而且一般有下没上。 然后贝壳打开apache2，共享同一个文件，打开端口映射(ED等软件的端口映射也是做好的，经EtherReal核查没有问题)。下载速度是50K上下，一般有上没下。 再打开BT，勾选其中“加密数据包头”为“优先”。然后在传输测试中，多数客户的速度是2K-3K，但是一个也是BC0.70的客户，本地发起连接，速度高达50K。后面偶尔也会出现这样的客户，估计是因为不是所有BT客户端全支持加密数据包头的。 最后，测试Debian/GNU Linux从ftp.linuxforum.net下载更新的速度。这是ftp和http混用协议，一般在70K以上，最高甚至达到120K。 至此，基本可以下结论，有线通封锁了P2P类软件的使用。 最可笑的是，我再次打电话过去。他们的服务人员开始还跟我念叨机器问题等等。然后我把测试方法一说，他们立刻改口，说从不保证任何P2P类软件的稳定。只保证Http协议的传输速度。什么时候宽带还有条款，说只能保证Http协议的速度了？如果说只衡量HTTP协议速度，那条款应该重新修订。如果说网络速度，一般都是指IP封包的传输速度。或者放松说，底层网络封包的传输速度。有线通此举就是明显的侵权。上述电话可以向有线通查询的，工号7061。 任何愿意起诉有线通的同志，贝壳这里免费提供技术支持，提供有线通的网络数据统计(ntop统计结果)。大家高兴起诉的，贝壳提供声援和支持。并且贝壳郑重表示，有生之年，见到用有线通的就游说用别的宽带，即使他道歉并且解除封锁也不例外。自10月底有线通到期后，贝壳即抽空银行资金，签订解约协议，改用ADSL。</p>
-
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/314/">Helix关键提示</a>
-    </h1>
-    <p class="meta">Aug 7, 2006
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/314/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>今天被整死了，好久不用Helix，结果细节忘记光了。 开启Helix后的测试是http://localhost:port/admin/index.html，其中port是安装时候指定的管理端口。然后要输入安装时候指定的用户和密码。开的开吧——那就用不着它了。 在HelixProducer中的设置是Push, user &amp; pass，然后用户和密码就填写管理员的（要么刚刚的管理界面里面自己新建一个去）。端口改安装时候设置的http端口，千万别搞错了。path可以不写，传输方式UDP。最后要记得流名字。 然后我们的点播URL就是rtsp://ip:port/path/filename。port是你指定的rtsp端口，path是HelixProducer指定的，不写就没有，filename是流名字。 希望大家顺利吧。</p>
 
           
 
@@ -632,6 +636,10 @@ ga('send', 'pageview');
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2845/">phuket旅游和潜水指南</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/album/">相册</a>
           </li>
         
@@ -667,10 +675,6 @@ ga('send', 'pageview');
             <a href="/blog/archives/2836/">Pulau Perhentian</a>
           </li>
         
-          <li class="post">
-            <a href="/blog/archives/2835/">唐僧被吃了</a>
-          </li>
-        
       </ul>
     </section>
   
@@ -681,7 +685,7 @@ ga('send', 'pageview');
 </div>
 
 <footer role="contentinfo">
-  <p>Copyright &copy; 2016  - <a href="http://shell909090.org/license/">License</a> -
+  <p>Copyright &copy; 2017  - <a href="http://shell909090.org/license/">License</a> -
   <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
 </p>
 
