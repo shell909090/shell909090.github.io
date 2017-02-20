@@ -99,6 +99,33 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/2720/">Charlie and Dave</a>
+    </h1>
+    <p class="meta">Jan 27, 2015
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/2720/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>公司希望弄一套双授权的安全系统，老大提供了一套算法，求大家review。如果这个方案确实可行，那么我们会做完然后开源出来给大家用。 Author and License Author: 韩拓 保留所有权利 All Rights Reserved 以下内容不以cc-by-sa3.0发布。(因为根本不是我的创作) 场景 Alice希望登录到Bob上执行操作。 两者的基本控制协议为ssh。 假定 攻击者名叫Mallory。 如果Alice的私钥泄漏，管理者必须有权停止Alice到Bob的访问而不需要更换所有Bob的公钥。 除去Alice和Bob外，参与通讯过程的所有机器(即下文中的Charlie和Dave)中可能随机被攻破一台。 服务都在内网，但是如果网关和被攻破的机器是同类系统，Mallory即可具有内网监听和伪造数据报文的权限。 Alice不会利用获得的Bob的权限故意执行危害性指令(但是可能被诱骗)。 Alice和Bob不会被攻破。 方案 假定有两台机器，Charlie和Dave，Dave和网关不得是同类系统。根据假定4，两台机器不会同时被攻破。 Alice通过SSL和Dave建立连接，上报自己的用户名，需要访问的设备和帐号，并提交一个临时生成的ssh pubkey(username, account, host, pubkey)。 Dave根据预先设的IP-username-sslkey验证用户身份为Alice，并且根据ACL确认其具有访问权限。 如果通过验证，那么Dave用自己的key，通过SSL联系Bob上的某个程序，将Alice的pubkey提交到Bob的合适帐号上(account, pubkey)。 Bob通过sslkey验证提交者确系Dave，将pubkey临时加入account中。 Bob完成此事后，通过Dave向Alice返回成功。 Alice通过SSL和Charlie联系，上报自己的(username, account, host)。 Charlie根据预设的IP-username-sslkey验证用户身份为Alice，并且根据ACL确认其具有访问权限。 如果通过验证，那么Charlie用自己的key，通过SSL联系Bob上某个程序，为Alice开通到Bob的22端口的tcp盲转发。 Alice利用开启的tcp通道，和自己的临时ssh private key验证登录Bob。 在Alice连接Bob上的程序后，删除alice留在Bob上的临时pubkey。 验证 假定Charlie被攻破。 方案1-5没有影响。 Charlie拥有能够在任意一台机器上开启盲转发的权限。 但是Charlie并不能影响Dave去添加pubkey。 假定Dave被攻破。 Dave拥有在任意一台机器上添加pubkey的权限。 但是Dave并不具有打开到任意一台机器ssh端口的权限。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/2717/">无题</a>
     </h1>
     <p class="meta">Jan 5, 2015
@@ -340,33 +367,6 @@ ga('send', 'pageview');
 
         
           <p>函数调用开销 使用s_call来测试性能，循环1G次。 2.35,0.00,17,0,0,0,99% 2.34,0.00,13,0,0,0,99% 2.34,0.00,10,0,0,0,100% 2.35,0.00,10,0,0,0,99% 2.34,0.00,14,0,0,0,99% 2.34,0.00,6,0,0,0,99% 统计结果如下： time mean = 2.34 time var = 0.000022 每次call的开销为2.34ns，约7个指令周期。当然，这些并没有考虑调用压栈和数据返回。 内核调用开销 使用s_syscall来测试性能，循环1G次。这里特意选用了一个不可能失败的内核函数，getpid，来衡量每次进入getpid的开销。 4.37,0.00,76,0,0,0,99% 4.34,0.00,43,0,0,0,99% 4.37,0.00,124,0,0,0,99% 4.37,0.00,63,0,0,0,99% 4.36,0.00,48,0,0,0,99% 4.36,0.00,47,0,0,0,99% 统计结果如下： time mean = 4.36 time var = 0.00011 这里可以看到，纯粹的内核进入开销小到非常惊人，只有4.36ns，约合13个指令周期，而且这里还要进行数据的查询和返回。所以内核调用开销在下面的测试中全部忽略不计。</p>
-
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/2684/">context切换测试——python有关部分请求review</a>
-    </h1>
-    <p class="meta">Oct 29, 2014
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/2684/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>python yield模式性能测试 python下的测试就不用time了，我们改用python的timeit，循环100M次。具体可以看py_yield.py。数据结果如下： 7.64262938499 9.2919304393e-06 5.41777145863 4.94284924931e-06 从结果来看，100M次循环的平均时间是5.4s，平均每次大约54ns。使用yield后变为76ns，增加了22ns。 python greenlet模式性能测试 这次代码在py_greenlet.py，循环10M次。数据结果如下： 5.35270996888 7.44085846125e-05 5.31448976199 5.82336765673e-05 单次循环时间消耗为535ns。比最初的54ns，增加了481ns。基本来说，时间增长了10倍率。 这是预料中的，因为greenlet早就声明自己通过堆栈拷贝来实现上下文切换。这会消耗大量CPU时间。从原理上说，栈越深，消耗越大。但是测试结果表明两者几乎没有差异，栈深反而性能更加优异(TODO: why?)。</p>
 
           
 
@@ -640,6 +640,10 @@ ga('send', 'pageview');
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2847/">Disney Shanghai信息</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2846/">广东游记</a>
           </li>
         
@@ -673,10 +677,6 @@ ga('send', 'pageview');
         
           <li class="post">
             <a href="/blog/archives/2838/">gpg pubkey ID碰撞</a>
-          </li>
-        
-          <li class="post">
-            <a href="/blog/archives/2837/">更换blog声明</a>
           </li>
         
       </ul>

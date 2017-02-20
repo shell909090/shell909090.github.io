@@ -99,6 +99,33 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/1681/">freenas和解决方案</a>
+    </h1>
+    <p class="meta">Jan 19, 2011
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/1681/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>freenas是一个基于freebsd构建的免费网络存储系统(network storage system)，关于他的简介可以看这里（http://beacon.blog.51cto.com/442731/109961），主页在这里（http://freenas.org/FreeNAS）。 freenas的一个特点是结构简单，易于安装和管理，可以在非常低的硬件环境下工作。例如低端的2.5&rdquo;硬盘或者U盘，基于mini-ITX板子的EPIA等。512M内存的低端EPIA不带硬盘大约在250元上下，加上机箱不超过400。加上几块硬盘就可以组建可用的大型存储系统，稳定工作。安装freenas所需的知识基本不超过英语，当然，要组建微型服务器和RAID还是要正确理解服务器结构和配置的。支持smb/ftp/iscsi/http访问内容，通常在小型公司中可以处理掉大多数的文件共享需求。 freenas最强大的一点，就是使用“解决方案”级别提供。freenas的载体是一张安装光盘，而非一个freebsd下的软件包。这张光盘在服务器上的安装是通过特定的功能来完成，而不是复杂的安装向导，因此要安装使用非常简单。如果是基于freebsd的软件包，那么为了安装这个软件，首先必须freebsd的系统管理员来安装一个系统，并配置到合适状态。再在这个系统上安装软件包，再配置，整个过程就艰难无比了。 同样适合类似的解决方案提供的，还有邮件服务器。虽然很多空间商提供了邮箱服务，但是部分公司对邮件系统的需求远远超出空间商能提供的服务。对于企业邮箱系统，不仅仅是邮件发送和接收服务（esmtp/pop3/imap），而且包括一定的用户数据库（ldap）和在线交互系统（im）。严格来说，这已经不是普通的企业级邮箱系统，而是整合办公环境。对于这种整合环境，要完整配置出来还是有一定难度的。对此采用简化的方法，将一套系统作成整合解决方案，不失为一个简单好用低成本的方案。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/1680/">万税万税万万税</a>
     </h1>
     <p class="meta">Jan 17, 2011
@@ -333,37 +360,6 @@ ga('send', 'pageview');
         
           <p>在python-cn的maillist上，刚刚爆发了一场关于动态语言合并出错的争论。问题的起源，来自于这样一个问题。 一个程序员A，写了一个函数，function1。程序员B对函数进行了调用。现在两个人分别在svn上工作，A修改了function1，而b修改了其他内容。 由于python并不在编译时检查类别问题，因此当两人的svn merge后，运行并没有出错。现在，问题只有等上线后客户提出来了。 几乎所有的人都同意，这问题的根源不是一个语言的问题。本质上说，这是一个工作流程问题。即使是C，也只检查参数的个数和类别，对于行为的变化和参数意义的变化还是无能为力的。 1.当你公开了一个函数，并要修改这个函数的外观行为的时候，必须向其他人通告。 2.python代码要通过unittest和黑盒检查覆盖。 3.代码应当cross review。 争论的焦点主要是在python下如何避免这个问题。楼主Zhang Jiawei的观点是使用pydev，加上工具来检查。我，沈崴，ZQ的意见是通过行为来避免这个问题。所谓行为，主要包括以下几个。 1.互相review代码。 2.修改通告。 3.编写无检查和无处理的代码，并大量运行。如果代码中有错，程序会持续崩溃。因此当大量运行程序不崩溃时，代码就无错了。 为什么我们并不推荐使用自动化工具来检测错误呢？主要是因为自动化工具可以*找到*问题，但是却不能*保证*是找到问题最彻底的一种。我举个最简单的例子： 网络工程师A，用了pylint，找到了自己code中的15个低级bug。他很高兴，因为工具使用起来很方便。 A向领导汇报了自己的心得，建议全公司推行这个工具。假定他的领导是项目经理B。 A：这个工具太好了，一下就找出了我15个bug，我发现用这个工具很方便，blahblahblah。 B：恩，很好，过两天你在公司里面讲讲这个工具。对了，你的code review做了么？ A：我用工具查过拉。 B：你确定他找出了你的*所有*bug么？ 问题的关键，就是*所有*。我们当然不可能找出程序中的所有bug。我所知的bug最少的程序是TeX，据说在数年的时间内只有数个bug。但是其版本号仍旧是3.1415926——正好是祖率的密率——而不是pi。我们毕竟不敢——高伯伯也不敢——保证没有bug。但是通过cross review，不处理加覆盖性检测，我们可以保证bug出现的概率在某个水平以下。 自动化工具寻找出的bug，是在这个水准以上的。就是说，自动化工具看的出的，人应该看的出。人看的出的，自动化工具不一定看的出。如果做不到这点，说明你的水准还不足。 所以，当我们需要一个尽量无错的code时，当你pydev/pylint，或者其他工具做了检测，问题是否解决了呢？没有，你仍旧需要review来保证没有bug。这样一来，工具的意义在哪里呢？ 当然，这并非说在做code review之前，你*不能*去做一遍代码扫描。只是说这样做并*不能替代*对错误的人工控制行为。 除非你的目标是使用最低的成本，将错误减少到一个可接受的规模——而不是最低。就像我们在外包中常做的那样。这种情况下使用工具是比较合适的。 而且一旦使用工具，很多程序员会产生依赖。所谓依赖，并不是讲从逻辑上他们不清楚在代码扫描外还需要独立的人工检测。但是在检测时，心里就会抱有一种放松的心态。尤其是其中某些虫族程序员让人无语叹息的行为。在中国的程序员界，有着诸多非常有创造力的bug提供者。例如擅长用str+=的java网页程序员很常见，这属于常见问题。但是自己写一套字典映射规则以完成数字到字符转换的（就是c下面的itoa）.net程序员真的让我大开眼界——而且他同时犯下了str+=错误。要指望工具修正+=是可以的，要指望工具找出这类极品代码，估计下面会有更极品的人犯下更极品的错误。。。</p>
 
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/1661/">elisp的简单介绍</a>
-    </h1>
-    <p class="meta">Dec 25, 2010
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/1661/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>emacs是利用elisp写成的，而elisp是lisp的一个方言。lisp语言是出名的优美和晦涩，当然，更出名的是括号。。。 emacs利用elisp作为上层抽象。首先，emacs提供了基本的编辑器框架，包括文件操作函数API，buffer，frame，windows的API。而后，emacs附带了很多函数实现，并且和按键一一绑定。例如Ctrl+N（简写为C-N）就被绑定到“换到下一行”这个API上。于是，我们按下Ctrl+N的时候，就会触发“换到下一行”这个函数的执行。dired等插件也是基于类似的原理写成。 我们可以用类似的方法，来编写自己的函数，扩充emacs的功能。下面我们看一个例子： (defun popup-term () (interactive) (apply 'start-process &quot;terminal&quot; nil popup-terminal-command)) 首先先说明一下，elisp的基于规则是利用括号匹配的s表达式，通过特定规则计算表达式。每个表达式由多个原子构成，一个原子可以是符号，对象（数字或者字符串），序对，表（包括空表），树，以及他们的嵌套。求值的时候，第一个原子做动词，先求值第一个原子，直到得到一个对象，再根据第一个原子的特性决定正则序和应用序。应用序的先对每个后续原子求值，再调用第一个原子对应的对象。正则序直接交给第一个原子对应对象处理。上文那个表达式，最外层的是(defun)列表，defun是函数定义函数，popup-term是符号。这部分混合起来，就是定义(interactive) (apply &lsquo;start-process &ldquo;terminal&rdquo; nil popup-terminal-command)为一个函数，并在上层框架空间内把内容赋值给popup-term这个符号。说的更直白一点，就是定义函数。 当我们执行popup-term这个函数的时候（M-x加上函数名就可以手工调用），首先执行interactive过程。这个函数可以在这里（http://www.gnu.org/software/emacs/manual/html_node/elisp/index.html）查到，基本上，可以认为执行了这个函数，才能够和前台交互。而后是apply函数，这个函数将后面的几个值作用于紧跟着的那个符号所对应的函数。用python语言来描述，大概是这个样子。 def apply(func, \*param): return globals()\[func\](\*param) 这个函数真正的部分，是从start-process到括号结束。其意义是启动一个子进程，名为terminal，没有对应的buffer（熟悉emacs的应该知道这是什么），命令为popup-terminal-command。这个命令在windows下和linux下有不同定义，所以我将这个定义放在了emacs-win.el和emacs-linux.el里面。在linux下，他是这么定义的。 (setq popup-terminal-command '(&quot;x-terminal-emulator&quot;)) setq是设定一个全局变量。整句合起来的意思是，在执行popup-term的时候，启动一个子进程，执行x-terminal-emulator。最后，将popup-term绑定到keymap上。 (global-set-key \[(control c) (s)\] 'popup-term) 现在，在任何一个buffer中按下C-c s，就可以弹出当前目录对应的term了。 我们在emacs中所做的所有配置，插件安装，其实本质上是写代码控制其他代码的载入，变更环境变量。只要有合适的文档，或者有时间阅读源码，我们就可以对其他程序进行扩充。下面介绍一个对dired进行扩充的例子，我们向dired中加入copy-from和rename-from，还有dired-open功能。dired的copy和rename必须在源目录中，选择文件，按C，输入目标路径。有的时候我们在某个目录工作到一半，突然需要从另外一个目录复制一个文件过来。这时候打开对方目录进行复制动作太繁琐，因此我编写了两个函数，分别绑定到r和c上。dired-open则是另外一个文件，有时我们需要通过其他程序打开某个文件，例如播放电影。在dired中直接用&amp;可以实现这个目标，但是需要自行输入播放命令，而且会新开一个buffer。以下是代码。 (defun dired-open-file (&amp;optional arg) (interactive) (apply 'start-process &quot;dired-open&quot; nil (append (split-string (read-shell-command &quot;command: &quot; (dired-guess-cmd (dired-get-filename)))) (list (dired-get-filename))))) (defun dired-copy-from (&amp;optional arg) (interactive) (let ((source-path (read-file-name &quot;filepath: &quot;))) (copy-file source-path (file-name-nondirectory source-path)))) (defun</p>
-
-          
-              <footer>
-                  <a href="http://shell909090.org/blog/archives/1661/" rel="full-article">Read On &rarr;</a>
-              </footer>
           
 
         
@@ -636,6 +632,10 @@ ga('send', 'pageview');
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2847/">Disney Shanghai信息</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2846/">广东游记</a>
           </li>
         
@@ -669,10 +669,6 @@ ga('send', 'pageview');
         
           <li class="post">
             <a href="/blog/archives/2838/">gpg pubkey ID碰撞</a>
-          </li>
-        
-          <li class="post">
-            <a href="/blog/archives/2837/">更换blog声明</a>
           </li>
         
       </ul>

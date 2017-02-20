@@ -99,6 +99,33 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/2016/">从python-support改为dh_python2的方法</a>
+    </h1>
+    <p class="meta">Dec 15, 2011
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/2016/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>在debian/rules里面，将这个： %: dh $@ 改为这个： %: dh $@ --with python2 其余看这里。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/2012/">家庭网关，三网融合</a>
     </h1>
     <p class="meta">Dec 12, 2011
@@ -332,33 +359,6 @@ ga('send', 'pageview');
 
         
           <p>在做分词核心词典数据结构分析的时候需要，就先写一篇吧。 具体可以参考python源码解析读书笔记（一）——内置对象，这里面有说： 7.dict对象的索引方案 dict对象的索引方案使用的是哈希表，而且是开放地址法的哈希表。当装载率达到一定规模后，会新申请一块内存，将有效数据复制过去。最小的表空间为8个对象，当装载率超过2/3时，会扩大规模到当前active的4倍（超过50000个对象为2倍）。目前为止，在对象被删除后，其表空间并不释放。因此曾经增长的非常大的dict对象，可以定期复制以回收空间。 最初的表项空间为6个以内，满了之后，会自动扩张到24个，有效16个。从大致来说，如果要放下N个表项，大概就要扩张T次，他们满足以下关系。 A0*(8/3)^(T-1)&lt;N&lt;A0*(8/3)^T 而每次扩张，就要进行全表项复制，因此复杂度大约是O(N)量级。当扩张到放下N个表项时，就需要进行的复制的总数是： sum(i, 0, T-1){A0*(8/3)^i} 这是一个典型的等比数列求和问题，我们知道问题的答案应当是： A0*3*((8/3)^T-1)/5=A0*(3/5)*(8/3)^T-(3/5)*A0 因此，(3/5)(N-A0)&lt;O&lt;(3/5)\*((8/3)\*N-A0)。如果只考虑数量级的话，插入的复杂度量级为O(n)，即哈希表的平均插入复杂度为n级。 也许有人奇怪，哈希表的插入复杂度为1级阿，怎么得到n级的结论的？看上面，都说是放下N个表项时的总复杂度了。 我们可以和红黑树对比一下，红黑树的平均插入复杂度为logn级，平均查找复杂度为logn级。哈希表的平均插入复杂度为1级，查找复杂度为1级。但是红黑树在一点上比hash优秀——他的插入时间基本稳定，hash table的插入时间有可能会暴长。 于是，当我们有N个元素，需要进行排重的时候，我们可以set化。假定set和dict基于一样原理运作，我们的时间复杂度为O(n+m)级，m为排重后元素个数。其实按照最差情况来说，也可以认为是O(n)级。</p>
-
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/1994/">正好聊到django——论他的模板问题</a>
-    </h1>
-    <p class="meta">Nov 24, 2011
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/1994/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>首先先广播一个纠错，我那篇《几个模板的性能对比》，对cheetah模板没有做渲染处理，只生成了对象。因此性能出现严重误差，在此向所有被误导的朋友致歉。 ——不过这并不影响django慢到渣的结果。 Shell: 他们用了django的orm，映射到了mysql 我一点办法都没有 mysql唯一能做的，就是一写多读 或者可以加入handlesocket Bill: 为什么facebook以前好像用mysql能处理那么NB. Shell: 多久以前的事情啊？ 而且你得想，他们以前还用php呢 他们自己开发了hiphop，把php编译为了C 同样，我估计mysql他们也做了手脚 那玩意我学不来 而且，即使学的来，也不可能在django固定了范式的前提下 ——起码得给我修改范式的机会吧 Bill: 你可以改django嘛. Shell: 太麻烦了 django已经积重难返了 这个问题，并不来自于django本身，而是来自于所有学django的人 Bill: 为什么这么说? Shell: 由于他们的努力，django变成了一个固定的商业标准 试图对django进行修改的行为，哪怕是正面的努力，都会受到已经存在于上面的系统的抵制 例如，我开发一个django的分支，允许使用其他模板，你觉得会如何？ 压根不会有人理我 因为大家都使用现有的模板系统，并且在上面做了无数的代码 很多人甚至无法升级django的版本 很多app也已经使用了现有的模板 如果我对django整合cheetah，那只能限于自用的范畴 Bill: 这么说还真是一条不归路了.. Shell: 除非他们的维护者作出很大的努力 说白了，就是官方强推 Bill: 不过到时候遇到瓶颈了,怎么办.. Shell: 但是，这样一来，很多人就根本不会升级了 怎么办？ 要是有办法，他们还会找我么？ Bill: 靠硬件.. Shell: 他的页面就是3-5秒的打开时间 硬件上再增加，一个花钱，另一方面，也不可能增速啊 只能增加并发访问量 Bill: 也有点增速效果吧..处理速度快乐 快了 Shell: 怎么会呢？ 你想，靠硬件是怎么靠的？ 换更高频率的机器，还是加同样的机器？</p>
 
           
 
@@ -632,6 +632,10 @@ ga('send', 'pageview');
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2847/">Disney Shanghai信息</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2846/">广东游记</a>
           </li>
         
@@ -665,10 +669,6 @@ ga('send', 'pageview');
         
           <li class="post">
             <a href="/blog/archives/2838/">gpg pubkey ID碰撞</a>
-          </li>
-        
-          <li class="post">
-            <a href="/blog/archives/2837/">更换blog声明</a>
           </li>
         
       </ul>

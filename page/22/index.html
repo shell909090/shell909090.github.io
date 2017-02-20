@@ -99,6 +99,33 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/2164/">升调降调的规则</a>
+    </h1>
+    <p class="meta">May 7, 2012
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/2164/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>为什么C加一个升调变成G？ 这个要从大调式讲起。 大调式是以大三度为基础构建的调式，主音到中音为大三度，中音到属音为小三度，两者构成大三和弦。主音到属音为纯五度，属音到主音为纯四度，大调式的三个基础音之间，都是和谐音程关系。以C大调而言，就是do mi so。 好吧，C大调之所以叫做C大调，是因为以中音C为do。那么G大调呢？以中音G为do？对的，问题是，C大调的所有音，是否能够不做任何变化的构成G大调的音？ 这是不可能的，C大调的音不做变化唯一能够构成的只有a小调。G大调一定需要对C大调的音做升降的。 为什么？因为C大调的音程关系是全全半全全全半，这个在小学就教了。通过这个，你可以数出上面说的三个纯音关系。当我们位移到G=do的时候，你会发现，不做变化的话，音程就变成了全全半全全半全，这就糟了。所以，需要对C调的fa(即F)升半个音，来回复大调调式。 常识上我们知道，12平均率是对称关系，所以上述过程可以运用数学归纳法作用于整个中音音阶。即，每个大调可以通过升该调中的fa半个音，变成另一个大调。后者刚刚好比前者高一个纯五度。 降调关系亦然，可以类比。 小调关系亦然，不过小调使用全半全全半全全作为结构，主音到中音为小三度，中音到属音为大三度，两者构成小三和弦。主音到属音为纯五度，属音到主音为纯四度，小调式的三个基础音之间，也都是和谐音程关系。 稍微数一下就知道，小调式上的所有音，可以构成比自己高小三度的大调，两者称为关系大调和关系小调。 虽然音是一样的，然而主音中音属音的位置完全不同，因此调式色彩完全不同。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/2162/">关于翻墙服务几句</a>
     </h1>
     <p class="meta">May 4, 2012
@@ -329,37 +356,6 @@ ga('send', 'pageview');
         
           <p>好吧，这是常识，我说快点。 C * c = get_c(); 这是指针返回。 C c = get_c(): 这是值返回。 指针返回的缺点是，你必须检测返回指针的有效性，也就是NULL。并且，你需要手工管理指针释放。而优点则是避免了值拷贝，还有可以返回空值，即通过返回NULL表示没有值的情况。 而引用返回最大的优势在于，变量的生存周期和作用域相同，你无需管理释放问题。然而缺陷就是庞大的拷贝开销。 在get_c返回的时候，会return一个对象。这个对象是子函数作用域对象(sub function scope)，会随着子函数退出而失效。因此，在返回值的时候会引发拷贝。这种拷贝有两种可能。 拷贝构造 当返回值被用于某个对象的声明时，会触发拷贝构造函数。被返回的对象会作为拷贝构造参数传递(引用传递)，而拷贝出的对象就是被生成对象。 赋值算子 即operator =。当对某个已经声明对象进行赋值时，会发生这种现象。 当然，近代编译器对于“在返回时进行构造用于返回后的构造”这种情况做了优化，通称RVO优化。例如上文，如果get_c中使用return C(a, b);进行返回，实际上只有C::C(a, b)的调用，而没有C::C(const C &amp; c)的调用。</p>
 
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/2144/">vps上应当装什么</a>
-    </h1>
-    <p class="meta">Apr 17, 2012
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/2144/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>假定你有一台debian vps，上面需要装一些东西来——你懂。你应该装一些什么呢？ 基础部分 ssh 没啥好多说，没有ssh，你甚至无法管理机器。不过注意，安全的ssh方式应当只允许使用key登录，禁止一切密码登录。而且对于没必要登录的某些用户，需要在/etc/passwd中将shell改为/bin/false。至于端口改不改，这个不重要，看你心情。 vim debian默认装的是vim-tiny，很不好用。建议改为vim，改配置的时候让自己舒服点。 安全部分 iptables-persistent 这是debian内用于iptables规则持久化的工具，你可以编辑/etc/iptables/rules.v4来修改防火墙规则。注意，目前debian stable(squeeze)中的版本还没有4/6区分，你可以弄一个testing(wheezy)中的来装。 一般来说，你的规则中至少要包含以下内容： -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT -A INPUT -i lo -j ACCEPT -A INPUT -i tun+ -j ACCEPT -A INPUT -i ppp+ -j ACCEPT -A INPUT -p tcp -m multiport --dport 22,xxx,xxx,xxx -j ACCEPT -A INPUT -p udp -m multiport --dport xxx,xxx,xxx -j ACCEPT 而且强烈建议，先保存一个没问题的iptables，然后直接修改iptables，再保存。这样的好处是，当你脑残改错了导致你自己都无法管理的时候，只要重启就可以恢复vps工作，而不用更麻烦的动作。 denyhosts 这是ssh的连接防御进程，用python编写。如果有人试图尝试你的ssh密码，这个程序就会踢掉他的ip。 如果你已经用了我说的，通过key的连接方式，你可以一次就直接踢掉对方ip。 管理部分 ifstat ifstat是用于网络流量管理的工具，可以告诉你网络目标的流量是多少。 dnsutils dnsutils里面包含了不少用于管理dns的工具，包括我们常用的nslookup，还有相对少用的dig。 mtr-tiny mtr是一个traceroute工具，比后者好用很多。这个工具可以快速跟踪路由。 vnstat vnstat是用于跟踪网卡流量的工具，尤其对于每个月都有限额的vps，这个工具更有意义。 注意安装完成后需要初始化每个网卡，然后重启服务，而不是马上能够工作。 网络部分 pptp pptp是一个经典的vpn服务，直接安装pptpd就好。注意，部分手机不支持128bit的mppe，关闭后可以连接。但是windows只支持128bit的mppe，关掉就无法连接。So，自己权衡。 openvpn openpn是一个非常稳定而强大的vpn程序，他使用udp作为连接协议。其实openvpn有tcp协议模式，但是速度比udp慢很多。 openvpn的配置很长，我也写过，就不赘述了，可以参考这三篇文章(1.</p>
-
-          
-              <footer>
-                  <a href="http://shell909090.org/blog/archives/2144/" rel="full-article">Read On &rarr;</a>
-              </footer>
           
 
         
@@ -632,6 +628,10 @@ ga('send', 'pageview');
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2847/">Disney Shanghai信息</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2846/">广东游记</a>
           </li>
         
@@ -665,10 +665,6 @@ ga('send', 'pageview');
         
           <li class="post">
             <a href="/blog/archives/2838/">gpg pubkey ID碰撞</a>
-          </li>
-        
-          <li class="post">
-            <a href="/blog/archives/2837/">更换blog声明</a>
           </li>
         
       </ul>
