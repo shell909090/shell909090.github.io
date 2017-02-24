@@ -99,6 +99,33 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/2329/">修正问题，让debian testing使用lxc</a>
+    </h1>
+    <p class="meta">Jan 23, 2013
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/2329/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>目前debian testing里面的lxc是无法运作的。原因是live-debconfig这个包只在sid中存在，而lxc是借助这个包来做系统初始化设定的。没有设定就结束初始化会挂掉系统。 解决方法如下： dget -x http://ftp.de.debian.org/debian/pool/main/l/lxc/lxc_0.9.0~alpha2-4.dsc 可能因为没有key而无法解压，用dpkg-source -x解压开内容即可。 aptitude install autotools-dev docbook2x libapparmor-dev libcap-dev linux-libc-dev 然后进入目录，dpkg-buildpackage -rfakeroot -d进行编译。 退出目录，dpkg -i lxc&hellip;进行安装。 到/usr/share/lxc/packages/，wget http://ftp.cn.debian.org/debian/pool/main/l/live-debconfig/live-debconfig_4.0~a15-1_all.deb。 然后再执行常规操作。 lxc-create -n vm0 -t debian lxc-start -n vm0 启动正常了。 在debian wheezy 3.2.0-4-686-pae下测试通过。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/2325/">封抢票插件究竟封的谁</a>
     </h1>
     <p class="meta">Jan 19, 2013
@@ -333,33 +360,6 @@ ga('send', 'pageview');
               <footer>
                   <a href="http://shell909090.org/blog/archives/2287/" rel="full-article">Read On &rarr;</a>
               </footer>
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/2282/">异常和错误的几条军规</a>
-    </h1>
-    <p class="meta">Nov 27, 2012
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/2282/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>如果处理不了，就地崩溃，留尸不埋，供后人评价。 偷偷埋尸，100军棍。处理不了偷偷埋尸，拉出去先轮后杀。 忽略错误只有两种合法情况。 逻辑上可以忽略，记log，忽略。 逻辑上期待异常，不记log，忽略。 逻辑上不可以忽略的忽略，100军棍。 逻辑上可以忽略，没有记log，50军棍。 错误在函数间传递的唯一理由，是可以期待别人那里有个错误处理函数，能够对的上这个错误。 没人处理错误的乱传递，20军棍。 该你处理的，处理，不该你处理的，别乱处理。 乱处理错误的，先轮后杀。</p>
-
           
 
         
@@ -632,6 +632,10 @@ ga('send', 'pageview');
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2848/">2848</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2847/">Disney Shanghai信息</a>
           </li>
         
@@ -665,10 +669,6 @@ ga('send', 'pageview');
         
           <li class="post">
             <a href="/blog/archives/2839/">CentOS 6下安装Python2.7</a>
-          </li>
-        
-          <li class="post">
-            <a href="/blog/archives/2838/">gpg pubkey ID碰撞</a>
           </li>
         
       </ul>

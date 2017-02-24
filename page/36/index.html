@@ -99,6 +99,37 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/1877/">linux下多种文件系统在小规模追加写下的性能</a>
+    </h1>
+    <p class="meta">Aug 9, 2011
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/1877/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>因为公司需要，所以贝壳最近做了一个比较。多种文件系统，在小规模写下的性能。 首先要说明的一点是，贝壳的blog为了保持便于传播，因此惯例是不贴图。这次的图，全部在blog同空间的相册上，通过引用方式放原始连接，可以保持原味查看。我知道中国不少站长复制粘帖大法厉害，不过大家手下留情，可以的话自己找个图床，贝壳可以提供所有原始图片。万一相册过载，blog也会跟着挂掉，谢谢谢谢。 这次的内容，对于有些类型的应用很有价值，具体哪些——懂行的自然了解，就不多嘴了。测试的目标，是测试在同样的环境下，不同文件系统对于散碎的写文件的支撑能力。测试方法如下。 首先，贝壳写了一个程序，可以开N个子进程。每个进程打开4个文件，分别写出16, 32, 64, 256字节大小的块。间隔m秒写一次。当磁盘吞吐耗尽的时候，大量的线程会排队在iowait上，因此造成iowait和loadavg快速上升。当loadavg明显超过CPU数时，宣告文件系统压力达到极限。具体测试方法，使用自己设计的压力系统对磁盘造成压力，然后通过压力读取系统读取系统参数，输出到文件。通过一个filter重新组织文件，计算移动平均数等。最后通过gnuplot输出图像。由于具体有些涉及公司业务，贝壳避嫌，就不贴出源码了。draw.plot的代码在最后。 这个业务情况的核心问题是，对同一个文件，在一段时间内会写多次。正常情况下，这些数据会堆积在系统的Dirty区域，直到dirty_ratio的限制到了，或者dirty_expire_centisecs的限制到了，系统才会开始强制写出。否则每隔dirty_writeback_centisecs的时间，系统会写出部分数据。虽然理论上说，一个磁盘的IOPS应当在每秒600-700次上下，但是实际上并不是只能支撑150个并发的。然而设计的好的文件系统，支撑并发数会比设计的差的文件系统明显高。 这个测试环境和实际的另一个差异，在于读写平衡上。这个业务和大部分的日志系统是很类似的（其实我们系统的业务就是日志）。但是商业用日志系统的特点是在高散碎文件写的情况下还有高随机读。这点在测试中并没有涉及，测试是单纯的大量文件追加写，请读者自行注意。 首先是400进程，间隔1秒写出，测试对象是ext3, ext4, ntfs, jfs, xfs, btrfs，基本涵盖常见的linux文件系统。ntfs不属于常见的linux文件系统，本轮只做对比测试。首先可以看到的是ext3糟糕到吐血的表现，磁盘写io只有500上下，400个进程最多有280多个在排队。这货不是坑爹呢么。ext4的结果就正常很多，io在100上下，开始的高开是因为前一个测试的静默时间不足。jfs的结果很搞笑，队列load倒是不高，可是Dirty缓存一路上涨，让人不禁怀疑到底有没有写出。xfs的表现中规中矩，半分钟一次写出，和贝壳机器上的dirty_expire_centisecs相吻合，Dirty也不高。btrfs和jfs的情况类似。 上一轮中，筛掉ntfs和ext3，其余进行1000进程，间隔1秒写出测试。测试对象是，ext4, [jfs](), xfs, btrfs。这次ext4也表现出了坑爹的一面，Dirty最高250M多，load也明显超过了2，写io大约在700上下，就此出局。btrfs这次的Dirty控制还不错，在25-40M徘徊，写出也不多。看似情况略好，实际上暴露出btrfs一个非常大的弱点，突发响应能力差，服务不稳定。一次集中写出，就能让排队数飞速上涨。jfs虽然曲线类似，但是队列可从没有超过1。综合考虑，后期平均load也明显超过了2，一样出局。xfs还是一样中规中矩的写出，非常低的io和Dirty。jfs依然是高速上涨的Dirty和超级低的io。 测试到这里，只剩下了jfs和xfs。jfs的特点是大量使用Dirty，平均io很低。xfs的特点是Dirty使用比较低，io输出比较平均。不过我们的服务器内核对xfs的支持比jfs要好一点，所以使用xfs已成定局，下面就是测试两者的极限性能而已。 第三轮的参数是2000个进程，0.75秒间隔。jfs和xfs表现非常相似，让贝壳差点怀疑自己是测试错了东西。核查之后，确实没有。所以就下狠手，测试了一把高压力的。 第四轮的参数是3200个进程，0.5秒间隔。从绝对量上，大概是基础测试的16倍。在jfs测试开始后的三分钟内，load上升到了60，宣告出局，因此贝壳这里没有jfs的图像。但是xfs还是完美的顶住了压力。Dirty已经上涨到了80-120M，平均io也到了300。然而平均load只有1左右，最高load也只有1.4。 最终测试的参数是4000个进程，0.5秒间隔，基础测试的20倍。xfs的表现万分惊艳，平均io300-400，Dirty100-160M，平均load大约是1，最高也只有2。也就是说，到最后贝壳还是没有测试出xfs的最高压力。 另外，贝壳也通过iozone对两者进行了测试，结论是，xfs在读写性能上比ext3高一些，但是在随机读写上大幅低于ext3。无论哪个数据，都无法出现这种20倍以上差距的现象。因此贝壳又对文件系统选择发生了兴趣，具体写在下一篇blog上。 从最终结论上说，我们确定了xfs比ext3的巨大提升（20倍以上），并准备对xfs进行可用性测试。如果您有什么经验，欢迎和我联系。 -------------draw.plot------------- set terminal png size 1920,1080 set output &quot;out.png&quot; set xdata time set timefmt &quot;%H:%M:%S&quot; set y2tics set origin 0,0 set size 1,1 set multiplot set origin 0,0.5 set size 1,0.5 plot 'out.dat' using 1:2 with lines title 'Buffer', 'out.dat' using 1:3 with lines title</p>
+
+          
+              <footer>
+                  <a href="http://shell909090.org/blog/archives/1877/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/1875/">从C&#43;&#43;的一个特性到设计原则再到哲学</a>
     </h1>
     <p class="meta">Aug 8, 2011
@@ -333,33 +364,6 @@ ga('send', 'pageview');
               <footer>
                   <a href="http://shell909090.org/blog/archives/1859/" rel="full-article">Read On &rarr;</a>
               </footer>
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/1858/">btrfs上使用虚拟机效率很差</a>
-    </h1>
-    <p class="meta">Jul 19, 2011
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/1858/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>试图在linux中使用虚拟机的同学请注意，刚刚测试下来的结果，vmware和kvm在btrfs上的IO效率极端的差。 首先是vmware，win2003，512M的实例，开机大约需要40分钟。这种效率已经远远超出了我的预期，于是我改用libvirt管理的kvm。结果依然出乎意料，debian实例的安装需要超过5分钟。由于怀疑是raw格式而非qcow2格式造成的速度差异，因此新建了一个实例，一时偷懒就放在了/下面，这个分区是ext3而非btrfs。结果安装大约在3分钟内结束，这似乎证明了我的猜想。于是我开始使用btrfs下的raw格式进行安装，结果速度依然异常缓慢。由此我怀疑到是btrfs文件系统的问题。 在ext3上创建一个qcow2格式的实例后，证实了我的猜想。问题在于btrfs的某种机制上。在网络上寻找类似问题，并没有发现。因此在blog上提出警告和问题。 有人知道为什么在btrfs上使用虚拟机会导致极端的效率问题么？hdparm和文件读写测试表明btrfs的平均效率并没有问题，磁盘也没有问题。</p>
-
           
 
         
@@ -632,6 +636,10 @@ ga('send', 'pageview');
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2848/">2848</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2847/">Disney Shanghai信息</a>
           </li>
         
@@ -665,10 +673,6 @@ ga('send', 'pageview');
         
           <li class="post">
             <a href="/blog/archives/2839/">CentOS 6下安装Python2.7</a>
-          </li>
-        
-          <li class="post">
-            <a href="/blog/archives/2838/">gpg pubkey ID碰撞</a>
           </li>
         
       </ul>

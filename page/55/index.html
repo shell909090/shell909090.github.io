@@ -99,6 +99,37 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/100/">emacs配置系统</a>
+    </h1>
+    <p class="meta">Mar 3, 2010
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/100/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>emacs是个超级复杂的程序，尤其在配置问题上。贝壳的emacs要跨越三个环境。环境一，WindowsXP+Emacs23。环境二，Debian Testing + Xfce4。环境三，CentOS + Ssh。而整个的操作方式，个性设定需要保持一致。因此，引出一个问题。配置如何设置，跨平台，同步。 首先解决配置的同步问题，贝壳建立了一个svn仓库，用于存储该配置系统。然后在各个系统中co出这个仓库，当有需要调整时ci就可以保持同步了。Linux下可以使用ln连接文件，Windows下比较麻烦点，NTFS格式(大多都是NTFS格式了吧)可以去sysinternals下一个叫做junction的工具，以建立目录的工具链接，当然，.emacs文件只能手工拷贝了。 然后是配置的切分问题，如果只有一个文件，即使使用了版本控制，意义也不大。同时，将配置切割成不同的部分，控制载入过程，也可以跨平台和加速。以下是贝壳的.emacs文件。 ;; .emacs profile, written by shell.xu ;; load other set (add-to-list 'load-path &quot;~/.emacs.d/&quot;) (add-to-list 'load-path &quot;~/.emacs.d/auto-complete/&quot;) (add-to-list 'load-path &quot;~/.emacs.d/plugins/&quot;) (load &quot;emacs-setup&quot;) (load &quot;emacs-redef&quot;) (load &quot;emacs-plugin&quot;) (cond ((not (boundp 'initial-window-system)) (load &quot;emacs-console&quot;)) ((memq initial-window-system '(x w32)) (cond ((memq system-type '(windows-nt cygwin)) (load &quot;emacs-win&quot;)) ((memq system-type '(gnu/linux)) (load &quot;emacs-linux&quot;))))) (load &quot;emacs-keymap&quot;) 从上可以看出，我们先设定了.emacs.d作为默认加载路径——大多数文件都是放在这里。plugins是各种第三方程序的安装路径，这样这些程序就无需在各个平台上各自安装一次。而auto-complete单独拆出来纯粹是因为文件太多了。而后，我们加载了setup，这个文件内定义了emacs的基本配置，redef文件内定义了各种自定义函数和变量，plugin内控制了需要加载的各个插件和配置。 下面就有点复杂，简单来说，设定无Windows系统的时候加载emacs-console文件，有Windows的情况下，在windows下加载emacs-win，在linux下加载emacs-linux。这是实现跨平台设置的核心。 最后是keymap，经过上面复杂的设定，按键设置是统一的。 setup文件就不细说了，大家按照自己的习惯设定就好。下面我说几个redef中定义的函数。 (defun switch-windows-buffer () (interactive) (let ((this-buffer (window-buffer))) (switch-to-buffer (window-buffer</p>
+
+          
+              <footer>
+                  <a href="http://shell909090.org/blog/archives/100/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/99/">android历史记录备份和应用三例</a>
     </h1>
     <p class="meta">Mar 2, 2010
@@ -332,33 +363,6 @@ ga('send', 'pageview');
 
         
           <p>最近，技术圈里面在争论CNNIC的证书被加入到信任根证书里面的问题。本文章试图和专业人士探讨这一变化的过程，以及向非专业人士说明会造成的影响。所有段落前会标明针对的群体。 事情的起源，是有人发现CNNIC的证书被加入了Mozilla和系统的信任根证书链里。这引发了大家对早年CNNIC所做的流氓软件的回忆，因此大量技术人士强烈反对。所做的反应包括发起BUG讨论提请Mozilla删除CNNIC的证书，发起投票，写信给Entrust阐述问题等。下面会简述一下信任根证书链，还有CNNIC的背景和历史。 本段适合非专业人士阅读。我们在访问一个网页的时候，通常有两种常见的通讯方式。http和https。区别在于，https会使用网站证书加密通讯过程。证书加密包含了几重的意义，首先，证书保证了你们的通讯没有第三者能截获。其次，证书验证了你访问的网站，是否是他号称的那个网站。也许很多人无法理解，这两种攻击怎么可能发生。要理解一点，中国电信也不是铁板一块，你完全无法指望他们的员工也绝对安全。否则的话，为什么所有银行都使用https来加密访问过程呢？ 本段适合专业人士阅读。那么，不使用证书会发生如何的攻击呢？一旦有某个人更改DNS(这东西让百度都吃了亏)，以某个服务器替换了你的银行(或者gmail)。那么，你访问你的目标域名的时候，就会被定位到他的中间机器上，他再使用代理技术，通过ssl访问目标服务器。整个过程如同走代理一样，唯一的问题就是你的密码泄露了。那么证书是如何防御这个攻击的呢？如果你访问目标机器，目标机器会让你验证一份证书，标明他的域名(用于防止域名劫持的)，签署者。一旦域名不符合，或者你不信任证书，就会报警。那么攻击者如何复制这个证书呢？首先他无法通过访问的方式获得证书原文，因为证书给你的其实只有公钥部分。其次他无法将这个过程也代理下来，因为如果这么做，下面的内容就全是不可解的了，那他就纯粹花钱把自己弄成代理服务器了。最后，他也无法生成，因为按照规定，只有域名的拥有者可以向特定的单位申请证书。于是，他无法复制证书，攻击就会失败。 本段适合非专业人士阅读。然而，你需要信任什么证书呢？如果你要一家一家的信任证书，会发生什么？你见到是否信任就会习惯的去点，这对安全于事无补。因此，这里引申出一个证书链的问题。通常系统内内置了一些证书，这些证书叫做信任根证书。这些证书的权限是，可以让你信任其他证书。而被他们授权的证书，则分为可以继续授权和不可以继续授权两种。一旦被他们签署授权的证书，最起码你访问的时候不会有警告了。现在，CNNIC加入了这个根证书链。那CNNIC是个什么公司呢？他自称是中国科学院下属的中国互联网络信息中心，服务于科学和研究的机构，但很多人指出CNNIC的直接主管是工信部。当年，CNNIC推出中文域名服务，这项服务需要在几乎所有人的电脑内安装插件。他为了提高安装率，使用了不可删除的保护技术。这导致很多人的电脑安装后，无法卸载程序。至于安装呢？也不全是自愿安装(我不排除自愿者，绿霸还有自愿的呢)。他们曾经利用系统漏洞，向大量电脑上强行安装插件。而且CNNIC还借助官方身份，大量推行中文域名——其实他们根本就不是政府机构，而是非营利机构。并且，在前两年拼命忽悠CN域名，最近又突然停止域名解析(虽然是国家规定的)，道歉赔偿啥都没有。大家自己想，真的可以信任这种公司么？ 本段适合所有人阅读。现在CNNIC已经进入了信任根证书链，如果配合国家级的DNS劫持技术，理论上可以构造一个假的mail.google.com，或者www.hotmail.com。走代理，自己给自己签署一个证书。从而获得你的完整会话。这里(http://autoproxy.org/zh-CN/node/66)有比较大的说明和讨论。 我对这个事情的观点是。作为Mozilla或者任何根证书的发行机构，在没有直接证据的情况下，不大可能拒绝一个国家级机构的要求。然而，无论任何原因，信任一个机构，就代表你要为他的行为负责。如果CNNIC做出任何危害用户安全的行为，Moziila，微软，Debian.org会被我作为同罪者考虑和抵制。同时，系统发行的根证书系统，是否要去信任，是我们每个人的问题。如果你觉得CNNIC根本不值得信任，那么你可以删除他的所有证书，以及签署了他的所有证书。目前而言，我删除了CNNIC和Entrust的所有证书。</p>
-
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/90/">手机又丢了</a>
-    </h1>
-    <p class="meta">Feb 1, 2010
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/90/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>昨天出去玩，拉小黄出来溜冰，结果被还了一个电脑。我还要买一个键盘给别人，手上一堆东西，再打车去见人。时间紧，手上大包小包一大堆，下车的时候两手满满的。下车了再一拍兜——杯具啊～～～～手机丢了。 估计是放兜里面没放的太进去，于是联系去找。大众的调度��嗦嗦的，问你上车时间下车时间车号前后排什么的，问了一堆。我当时心就一凉。司机每天要开车的，总算还比乘客靠谱点。下一个乘客上来，那可就彻底讲不清了。要验证我的身份，大可以等东西找到再说。估计这堆罗嗦问题就是要等到说下个乘客可以上车，然后再推说可能是乘客问题，让你无话可说的。所以大家车上丢了东西，就别指望调度了。 消息回来，果然找不到，手机满电的，也关机了。于是只有紧急停机，外加修改了所有在上面涉及过的密码，包括我的QQ，MSN/Hotmail，Gtalk/Gmail，还有张老师的blog。这里普及一个常识，手机使用的时候，一定要将手机设定为和SIM卡绑定。然后在手机丢了以后，立刻停机。这样做的主要目的是防止手机诈骗，例如打给你朋友，说你车祸了在急救，这里是医院，赶紧汇钱到XX账户啥的。我的朋友一般还比较懂行，肯定会挂了拨我号码以验证是否是我本人——问题是，那还是打到他手机上啊。人家和你够铁够仗义才付钱，万一被骗了，你好意思不赔他损失么？所以，丢了一定要停机。而SIM卡绑定，对于专业人士来说不难解，而对于业余人士则不好解。如果是外行捡到，卖给玩手机的就要被宰一刀，所以最好的思路是打上面几个人的电话问问要不要把手机买回去什么的。如果手机没绑定，大多都是拿到就用了，这个选项根本不可能。至于记录IMEI号什么的——你还没那个面子让移动封掉这个手机。另外上面如果用过QQMSN什么的，也赶紧改密码。不要心存侥幸，一天也许没事，两三天万一他解锁出来了，你哭都来不及。 至于数据么，大部分都有备份，但是所有人的联系方式肯定都泄密了。大家如果看到其他人，用别人的手机，宣称我如何如何的——别信他。半年内的联系人可能需要重新添加，回头我会一一联系。 至于其他么，半年内和我发过短信的，你们的短信都曝光了。和我照过相的，你们的照片都曝光了(这可不限半年，实际上我刚买的时候照的都还在)。其他数据应该没什么风险了，以上。 以下不算钱: 啊～～～～我的手机啊，又要买新的了，怨念。</p>
 
           
 
@@ -632,6 +636,10 @@ ga('send', 'pageview');
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2848/">2848</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2847/">Disney Shanghai信息</a>
           </li>
         
@@ -665,10 +673,6 @@ ga('send', 'pageview');
         
           <li class="post">
             <a href="/blog/archives/2839/">CentOS 6下安装Python2.7</a>
-          </li>
-        
-          <li class="post">
-            <a href="/blog/archives/2838/">gpg pubkey ID碰撞</a>
           </li>
         
       </ul>

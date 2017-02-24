@@ -99,6 +99,33 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/347/">构造过程</a>
+    </h1>
+    <p class="meta">Jan 13, 2007
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/347/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>在进入正题前，我们首先回顾下我们的基础C++常识。如果调用某个对象的某个方法，那么会调用到什么？ 一般来说，如果这个方法是普通函数，则按照这个对象的声明类型去调用。就好像(&amp;obj)-&gt;obj_type::function(param&hellip;);。而如果是虚函数，则是按照这个对象的构造类型去调用。就好像(&amp;obj)-&gt;((&amp;obj)-&gt;_v_ptr[n])(param&hellip;);。或者说简单点，一个是按照这个类看起来像是哪个类来调用，一个是按照这个类实际是哪个类来调用。 那么，如果在一个基类的某个成员里面调用这个类的另外一个虚函数，调用的是哪个呢？ 任何正常人来说，都应该说是，按照这个类的构造类型来确定。基本上没错，不过有一个函数例外。 那么先看一个问题。 class B { public: B(){test ();} virtual void test (){printf (&quot;parentn&quot;);} void out (){test ();} }; class D:public B { public: virtual void test (){printf (&quot;childn&quot;);} }; int _tmain(int argc, _TCHAR* argv[]){ D d; d.out(); return 0; } 想像下输出，再运行下。想想为什么，再看下面。想通了就不用看了。 &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;我是无敌的分割线&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash; C++标准规定，任何一个带有虚函数的类都有一个_v_ptr成员，这个成员必须存放在这个类内存地址中头部。这个成员指向了这个类的虚函数表。于是，调用虚函数的时候，我们首先确定这个是虚函数。(按照这个逻辑，如果父类不声明为虚函数，子类重载为虚函数，还是没用的)然后，我们确定这是第几个虚函数(严格来说，这并不符合面对对象的设计规范，应该是按照函数名字查表的，_v_ptr也不应该仅仅指向虚函数表，而应该是类形态表)。最后，我们去虚函数表中取得入口地址进行调用。 那么为什么在构造函数中调用就无法调用子类的虚函数呢？问题在于_v_ptr的初始化时间上。某个类的构造函数启动前，这个类的_v_ptr才能完成初始化。如果是多重继承，那么首先调用最初类的，然后是次类的，最后是子类的。_v_ptr首先指向基类的，再是继承类，最后是子类。我们在父类构造函数中，_v_ptr指针还指向了父类的虚函数表，所以调用不到子类的虚函数。 其实我们可以这么说，构造函数以前，子类不存在。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/346/">IDE</a>
     </h1>
     <p class="meta">Jan 12, 2007
@@ -345,33 +372,6 @@ ga('send', 'pageview');
               <footer>
                   <a href="http://shell909090.org/blog/archives/338/" rel="full-article">Read On &rarr;</a>
               </footer>
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/337/">出差到宁波</a>
-    </h1>
-    <p class="meta">Dec 19, 2006
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/337/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>名义上是出差，其实基本没干嘛。倒是看到了Gigi同学去过的天一广场。因为没带相机，所以啥也没有，就这样。</p>
-
           
 
         
@@ -644,6 +644,10 @@ ga('send', 'pageview');
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2848/">2848</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2847/">Disney Shanghai信息</a>
           </li>
         
@@ -677,10 +681,6 @@ ga('send', 'pageview');
         
           <li class="post">
             <a href="/blog/archives/2839/">CentOS 6下安装Python2.7</a>
-          </li>
-        
-          <li class="post">
-            <a href="/blog/archives/2838/">gpg pubkey ID碰撞</a>
           </li>
         
       </ul>

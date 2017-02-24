@@ -99,6 +99,33 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/2722/">vpn不要走tcp协议</a>
+    </h1>
+    <p class="meta">Feb 2, 2015
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/2722/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>和大家唠叨一件小事。 vpn不要走tcp协议。 我原本以为这是个常识。因为当网络发生丢包时，vpn的那个tcp会等到超时，然后重发。但是vpn里面封装的tcp链路多半也超时了，也要重发。所以一旦发生丢包，整个链路上就会突然一下子变拥堵了。 那么能不能调整链路超时重发机制呢？这个比较困难。链路的超时重发是靠RTT(round-trip time)来工作的，因此VPN的RTT一定小于里面所封装tcp的RTT。如果你的vpn工作在一根很好的链路上，而tcp链路的对端要通过一个延迟非常高的网络。那么vpn的重发对tcp链路的影响并不大。但是我看到的大部分情况下，vpn是穿越互联网(而且大多是跨国或者跨洲网络)的，而vpn的双端都落在内部网络里。因此vpn构成延迟主体。这时候，vpn的RTT和里面所封装tcp的RTT几乎相差无几，两者会几乎同时超时。 什么时候会发生丢包呢？最常见的理由是带宽跑满。当路由器来不及处理数据的时候，就只有丢包了。例如某出国网络丢包三成，这就是拥塞爆了。当然我们也不否认其他理由，例如无线，天生就是有丢包的。即便没有上述理由，有的时候就是运气不好，无理由的发生一下丢包，也完全不需要奇怪。 所以，在大部分网络上，丢包是常态。而丢包后，内外两层tcp同时超时会引起严重的重传问题。所以tcp协议不是特别适合做vpn。 结果某vpn居然被配置到了tcp模式，而且还不能改。。。郁闷啊。。。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/2720/">Charlie and Dave</a>
     </h1>
     <p class="meta">Jan 27, 2015
@@ -340,33 +367,6 @@ ga('send', 'pageview');
 
         
           <p>线程模式开销 使用t_thread程序，循环1M次，重复6次，原始数据如下： 9.57,8.22,21098,0,0,0,104% 9.77,8.40,29704,0,0,0,104% 9.36,8.17,10390,0,0,0,106% 9.56,8.50,14514,0,0,0,107% 9.35,8.34,7244,0,0,0,108% 9.57,8.43,26351,0,0,0,106% 统计结果如下： time mean = 9.53 time var = 0.02 kernel mean = 8.34 kernel var = 0.013 解读数据可以看到，thread模式的开销为9530ns(已经降到纳秒级了)，CPU将为8340ns，精确级别在20ns级别。粗略换算一下每次create的开销大约是30k个时钟周期。简单对比可以看出，thread模式比fork模式大约快了5倍。</p>
-
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/2690/">context切换测试——调用开销有关部分请求review</a>
-    </h1>
-    <p class="meta">Oct 30, 2014
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/2690/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>函数调用开销 使用s_call来测试性能，循环1G次。 2.35,0.00,17,0,0,0,99% 2.34,0.00,13,0,0,0,99% 2.34,0.00,10,0,0,0,100% 2.35,0.00,10,0,0,0,99% 2.34,0.00,14,0,0,0,99% 2.34,0.00,6,0,0,0,99% 统计结果如下： time mean = 2.34 time var = 0.000022 每次call的开销为2.34ns，约7个指令周期。当然，这些并没有考虑调用压栈和数据返回。 内核调用开销 使用s_syscall来测试性能，循环1G次。这里特意选用了一个不可能失败的内核函数，getpid，来衡量每次进入getpid的开销。 4.37,0.00,76,0,0,0,99% 4.34,0.00,43,0,0,0,99% 4.37,0.00,124,0,0,0,99% 4.37,0.00,63,0,0,0,99% 4.36,0.00,48,0,0,0,99% 4.36,0.00,47,0,0,0,99% 统计结果如下： time mean = 4.36 time var = 0.00011 这里可以看到，纯粹的内核进入开销小到非常惊人，只有4.36ns，约合13个指令周期，而且这里还要进行数据的查询和返回。所以内核调用开销在下面的测试中全部忽略不计。</p>
 
           
 
@@ -640,6 +640,10 @@ ga('send', 'pageview');
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2848/">2848</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2847/">Disney Shanghai信息</a>
           </li>
         
@@ -673,10 +677,6 @@ ga('send', 'pageview');
         
           <li class="post">
             <a href="/blog/archives/2839/">CentOS 6下安装Python2.7</a>
-          </li>
-        
-          <li class="post">
-            <a href="/blog/archives/2838/">gpg pubkey ID碰撞</a>
           </li>
         
       </ul>
