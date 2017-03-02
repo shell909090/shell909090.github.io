@@ -7,8 +7,164 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Fri, 24 Feb 2017 11:11:24 +0800</lastBuildDate>
+    <lastBuildDate>Thu, 02 Mar 2017 12:55:37 +0800</lastBuildDate>
     <atom:link href="http://shell909090.org/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>模拟网络丢包延迟和TC的使用</title>
+      <link>http://shell909090.org/blog/archives/2849/</link>
+      <pubDate>Thu, 02 Mar 2017 12:55:37 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/2849/</guid>
+      <description>
+
+&lt;h1 id=&#34;iptables方案&#34;&gt;iptables方案&lt;/h1&gt;
+
+&lt;p&gt;这个方案纯基于iptables，不需要内核模块，对容器更加友好一些。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;iptables -A OUTPUT -d xx.xx.xx.xx -m statistic --mode random --probability 0.1 -j DROP
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;但是这个方案有个副作用。ping的时候，能看到错误“不允许的操作”。&lt;/p&gt;
+
+&lt;h1 id=&#34;tc方案&#34;&gt;tc方案&lt;/h1&gt;
+
+&lt;p&gt;tc方案相对比较复杂。我们先不说这些复杂的事情，先说结果。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;tc qd add dev wlan0 root netem delay 100ms
+tc qd change dev wlan0 root netem loss 50%
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;一个是延迟一个是丢包，一个是设定一个是修改。netem还允许你做乱序和重复。方法就不细写了。删除是这么干。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;tc qd del dev wlan0 root netem
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;你再用&lt;code&gt;tc qd show&lt;/code&gt;看看是不是规则已经没了？&lt;/p&gt;
+
+&lt;h1 id=&#34;tc简述&#34;&gt;tc简述&lt;/h1&gt;
+
+&lt;p&gt;tc是linux下面用来控制网络发包（注意是发包）的一套系统。基本的设计目标是确定优先级，限流，也有测试性的丢包之类的策略。可以配合iptables和route协同工作。&lt;/p&gt;
+
+&lt;h1 id=&#34;基本原理&#34;&gt;基本原理&lt;/h1&gt;
+
+&lt;p&gt;包从进入tc开始，分为多个qd(qdisc)。每个qd可以包含多个子qd，qd彼此连接形成一颗树。每个qd上可以附加filter，选择进入哪个child。如果都没命中，那就看本身规则。&lt;/p&gt;
+
+&lt;p&gt;我们先从最简单的例子开始。将root qd改为prio。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sudo tc qdisc add dev eth0 root handle 1: prio
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;使用&lt;code&gt;tc qd show&lt;/code&gt;查看变化。完成后使用&lt;code&gt;sudo tc qdisc del dev eth root&lt;/code&gt;删除变化，还原为默认的pfifo_fast。&lt;/p&gt;
+
+&lt;h1 id=&#34;使用filter来分类&#34;&gt;使用filter来分类&lt;/h1&gt;
+
+&lt;p&gt;要分类，最低是两类。一类父，一类子。具体进入哪个sub-class可以用filter来设定。filter可以用&lt;code&gt;sudo tc filter show dev eth0&lt;/code&gt;来查看。注意，这里必须附加dev。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sudo tc qdisc del dev eth0 root
+sudo tc qdisc add dev eth0 root handle 1: prio
+sudo tc qdisc add dev eth0 parent 1:1 handle 10: netem delay 1s loss 2%
+sudo tc filter del dev eth0
+sudo tc filter add dev eth0 protocol ip parent 1: prio 1 u32 match ip dst 192.168.33.1 flowid 1:1
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;完成后，192.168.33.1被延迟，192.168.33.2无效果。&lt;/p&gt;
+
+&lt;p&gt;注意prio的默认bands是3，因此直接插入parent 1:4会报错。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sudo tc qdisc del dev eth0 root
+sudo tc qdisc add dev eth0 root handle 1: prio
+sudo tc qdisc add dev eth0 parent 1:3 handle 30: netem delay 1s loss 2%
+sudo tc qdisc add dev eth0 parent 1:4 handle 40: sfq
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;将bands改为5问题消失。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sudo tc qdisc del dev eth0 root
+sudo tc qdisc add dev eth0 root handle 1: prio bands 5
+sudo tc qdisc add dev eth0 parent 1:3 handle 30: netem delay 1s loss 2%
+sudo tc qdisc add dev eth0 parent 1:4 handle 40: sfq
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;将flowid更换为classid将会导致不起作用。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sudo tc qdisc del dev eth0 root
+sudo tc qdisc add dev eth0 root handle 1: prio
+sudo tc qdisc add dev eth0 parent 1:1 handle 10: netem delay 1s loss 2%
+sudo tc filter del dev eth0
+sudo tc filter add dev eth0 protocol ip parent 1: prio 1 u32 match ip dst 192.168.33.1 flowid 20:
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;此时ping 192.168.33.1，结果没有延迟。&lt;/p&gt;
+
+&lt;h1 id=&#34;多个sub-class的例子&#34;&gt;多个sub-class的例子&lt;/h1&gt;
+
+&lt;p&gt;更复杂的例子。在prio下面分了多个sub-class。命中IP的进入延迟，未命中IP的按照prio的规则走。在prio里，使用priomap将prio映射到不同的sub-class。测试下来，ICMP报文的默认规则将是1:2。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sudo tc qdisc del dev eth0 root
+sudo tc qdisc add dev eth0 root handle 1: prio
+sudo tc qdisc add dev eth0 parent 1:1 handle 10: netem delay 1s loss 2%
+sudo tc qdisc add dev eth0 parent 1:2 handle 20: netem delay 2s loss 2%
+sudo tc qdisc add dev eth0 parent 1:3 handle 30: netem delay 3s loss 2%
+sudo tc filter del dev eth0
+sudo tc filter add dev eth0 protocol ip parent 1: prio 1 u32 match ip dst 192.168.33.1 flowid 1:1
+sudo tc filter add dev eth0 protocol ip parent 1: prio 1 u32 match ip dst 192.168.33.2 flowid 1:2
+sudo tc filter add dev eth0 protocol ip parent 1: prio 1 u32 match ip dst 192.168.33.3 flowid 1:3
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;测试ping 192.168.33.4，结果是延迟2s。&lt;/p&gt;
+
+&lt;h1 id=&#34;tc-filter方案&#34;&gt;tc+filter方案&lt;/h1&gt;
+
+&lt;p&gt;运用&amp;rsquo;多个sub-class的例子&amp;rsquo;的同类方法可以用于将特定IP延迟丢包，其他走默认的pfifo_fast。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sudo tc qdisc del dev eth0 root
+sudo tc qdisc add dev eth0 root handle 1: prio
+sudo tc qdisc add dev eth0 parent 1:1 handle 10: netem delay 1s loss 2%
+sudo tc qdisc add dev eth0 parent 1:2 handle 20: pfifo_fast
+sudo tc filter del dev eth0
+sudo tc filter add dev eth0 protocol ip parent 1: prio 1 u32 match ip dst 192.168.33.1 flowid 1:1
+sudo tc filter add dev eth0 protocol ip parent 1: prio 1 u32 match ip dst 192.168.33.2 flowid 1:1
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1 id=&#34;tc-iptables方案&#34;&gt;tc+iptables方案&lt;/h1&gt;
+
+&lt;p&gt;我们也可以不用内置的u32 filter来做流量分离，而是先用iptables做mark，然后根据mark来做流量分离。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sudo tc qdisc del dev eth0 root
+sudo tc qdisc add dev eth0 root handle 1: prio
+sudo tc qdisc add dev eth0 parent 1:1 handle 10: netem delay 1s
+sudo tc qdisc add dev eth0 parent 1:3 handle 30: netem delay 2s
+sudo tc filter del dev eth0
+sudo tc filter add dev eth0 parent 1:0 prio 1 protocol ip handle 5 fw flowid 1:1
+sudo tc filter add dev eth0 parent 1:0 prio 0 protocol ip handle 6 fw flowid 1:3
+sudo iptables -F OUTPUT -t mangle
+sudo iptables -A OUTPUT -t mangle -p icmp -d 192.168.33.1 -j MARK --set-mark 5
+sudo iptables -A OUTPUT -t mangle -p icmp -d 192.168.33.2 -j MARK --set-mark 6
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这个方案和filter方案没有什么本质性区别，但是使用iptables完成，个人觉得更加灵活一些。&lt;/p&gt;
+
+&lt;h1 id=&#34;清除和持久化&#34;&gt;清除和持久化&lt;/h1&gt;
+
+&lt;p&gt;刚刚把脚本全部跑了的同学，别忘了执行一下语句清理环境。不然残留各种垃圾配置的话，上网的时候会很慢哦。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sudo iptables -F OUTPUT -t mangle
+sudo tc filter del dev eth0
+sudo tc qdisc del dev eth0 root
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;如果希望效果持久，可以将语句添加到rc.local里。但是实话说，我还没见过谁希望自己的系统一开机就变慢呢。QoS倒是有可能。&lt;/p&gt;
+
+&lt;h1 id=&#34;参考&#34;&gt;参考&lt;/h1&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.voidcn.com/blog/deyangliu/article/p-632719.html&#34;&gt;网络模拟：丢包，延迟，乱序&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://blog.csdn.net/weiweicao0429/article/details/17578011&#34;&gt;linux 下使用 tc 模拟网络延迟和丢包&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.ibm.com/developerworks/cn/linux/1412_xiehy_tc/&#34;&gt;Linux 高级流控&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+    </item>
     
     <item>
       <title>两台机器上TCP状态不一致的排查</title>
@@ -793,48 +949,6 @@ Max: 7, Avg: 5, Vis: 5&lt;/p&gt;
 &lt;p&gt;悟空呆若木鸡，不知如何自处。&lt;/p&gt;
 
 &lt;p&gt;PS：其实昨天就写完了，拿给霍叔叔看。霍叔叔说，你这类比太绕了。我说好，我想办法改改。结果还没等我改，取经事故联合调查委员会已经宣布了调查结果。再等下去怕是连西游记都要被查禁。所以赶紧出一版，大家凑合看看吧。&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>三亚潜水体验</title>
-      <link>http://shell909090.org/blog/archives/2832/</link>
-      <pubDate>Mon, 11 Apr 2016 00:00:00 +0000</pubDate>
-      
-      <guid>http://shell909090.org/blog/archives/2832/</guid>
-      <description>
-
-&lt;p&gt;最近去三亚玩了，我就说潜水吧。&lt;/p&gt;
-
-&lt;h1 id=&#34;水况&#34;&gt;水况&lt;/h1&gt;
-
-&lt;p&gt;潜水地点是在分界州，水不算太好。水下景点一般在深度5-15米范围内，有两艘沉船，一个飞机残骸。小沉船离岸比较近比较浅，水深不超过10米。大沉船需要再游一刻钟，深度15-18米左右。飞机残骸也差不多深度，不过只看到一点。水下危险生物包括&lt;a href=&#34;https://zh.wikipedia.org/wiki/%E7%8D%85%E5%AD%90%E9%AD%9A&#34;&gt;狮子鱼&lt;/a&gt; ，&lt;a href=&#34;https://zh.wikipedia.org/wiki/%E6%AF%92%E9%AE%8B%E7%A7%91&#34;&gt;石头鱼&lt;/a&gt; ，&lt;a href=&#34;https://zh.wikipedia.org/wiki/%E6%A3%98%E5%86%A0%E6%B5%B7%E6%98%9F&#34;&gt;棘冠海星&lt;/a&gt;（魔鬼海星），水母。这次潜导在水下就被水母蜇了，被蛰的还很神奇。他下水就戴了面镜，升上水面就开始痛了，还被蛰在眼皮上。到底水母是怎么进去的就鬼知道了。不过问题也不严重，痛了一会就没事了。&lt;/p&gt;
-
-&lt;p&gt;能见度分别比较大。在10米左右有一个明显的分界面。在分界面上，能见度大约是10米左右，下面只有3-5米。从上面明显能看到下面像一潭池塘一样。水底温度21-22度。我去的时候是四月上旬，所以只能代表这个时间点的情况。据说6月前后的时候能见度会好很多，水温也会比较高。亚龙湾和蜈支州的情况据说要好点，不过从我看到的水色来说，估计好不了太多。&lt;/p&gt;
-
-&lt;p&gt;洋流情况还好，0.5m/s以下，一般都不构成问题。那天浪在0.5m左右，水面上有点晕。周围潜水环境还行，只是偶尔有人炸鱼，可能有巨响。另外水面上有摩托艇在开，和潜导分开的话，没有SMB上浮会比较危险。&lt;/p&gt;
-
-&lt;h1 id=&#34;潜店&#34;&gt;潜店&lt;/h1&gt;
-
-&lt;p&gt;这次潜水是走的 &lt;a href=&#34;http://www.chinadiveschool.com/&#34;&gt;中仁潜水&lt;/a&gt; 的持证fun dive，价格是880两支气瓶。价格包括接送，上岛费用，一顿午饭。还包括了海豚表演门票。但是fun dive来说，根本没时间去看。&lt;/p&gt;
-
-&lt;p&gt;BCD，fin，regulator是潜店提供的，他们问了我的身高体重来配fin和防寒衣。不过防寒衣是岛上提供的。我的体型比较大，所以穿了他们最大的防寒服。5mm的，比较适合水况，也很新，估计是穿的人不多的缘故。本来还问了我是否有度数，不过我的面镜和呼吸管是自带的，所以用不到。我还自带了3mm的手套，考虑到这里的水下危险生物，这个举措其实非常明智。&lt;/p&gt;
-
-&lt;p&gt;岛上有免费的更衣和冲凉，但是寄包要20元。气瓶是中潜自己打的，一般都超过200bar。但是配重是公用的，比较烂。&lt;/p&gt;
-
-&lt;p&gt;我们潜FD是岸潜，水面游动100-200米。DSD有一个平台，跳下去就行。平台那里比较浅，据说在5米左右。&lt;/p&gt;
-
-&lt;h1 id=&#34;三亚潜水&#34;&gt;三亚潜水&lt;/h1&gt;
-
-&lt;p&gt;除了分界州外，我还去了一趟亚龙湾。在那里，我碰上了三亚名产——体验潜水。&lt;/p&gt;
-
-&lt;p&gt;下车之后我就看到有人在做潜水培训。仔细看了一下，是一个潜水体验旅游的报名点。名义价格是400左右。我仔细观察了一下，整个点没有任何标志。没有PADI或者CMAS的标。&lt;/p&gt;
-
-&lt;p&gt;在我吃饭的时候有人过来拉生意，鼓动我们潜水。我直接说我是PADI的持证潜水员，然后他就消失了。&lt;/p&gt;
-
-&lt;p&gt;不做任何评论，大家自己分析。&lt;/p&gt;
-
-&lt;p&gt;注意，在三亚海滩上是有打着PADI标志的潜店的，在PADI上也可以查到这家。不要以为我说的是他们。我其实在他们店里休息过一会，听了他们和客户的一些对话，觉得他们做生意还基本不过分吧。&lt;/p&gt;
 </description>
     </item>
     

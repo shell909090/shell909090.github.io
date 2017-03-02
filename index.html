@@ -99,6 +99,37 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/2849/">模拟网络丢包延迟和TC的使用</a>
+    </h1>
+    <p class="meta">Mar 2, 2017
+         - 4 minute read 
+         - <a href="http://shell909090.org/blog/archives/2849/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>iptables方案 这个方案纯基于iptables，不需要内核模块，对容器更加友好一些。 iptables -A OUTPUT -d xx.xx.xx.xx -m statistic --mode random --probability 0.1 -j DROP 但是这个方案有个副作用。ping的时候，能看到错误“不允许的操作”。 tc方案 tc方案相对比较复杂。我们先不说这些复杂的事情，先说结果。 tc qd add dev wlan0 root netem delay 100ms tc qd change dev wlan0 root netem loss 50% 一个是延迟一个是丢包，一个是设定一个是修改。netem还允许你做乱序和重复。方法就不细写了。删除是这么干。 tc qd del dev wlan0 root netem 你再用tc qd show看看是不是规则已经没了？ tc简述 tc是linux下面用来控制网络发包（注意是发包）的一套系统。基本的设计目标是确定优先级，限流，也有测试性的丢包之类的策略。可以配合iptables和route协同工作。 基本原理 包从进入tc开始，分为多个qd(qdisc)。每个qd可以包含多个子qd，qd彼此连接形成一颗树。每个qd上可以附加filter，选择进入哪个child。如果都没命中，那就看本身规则。 我们先从最简单的例子开始。将root qd改为prio。 sudo tc qdisc add dev eth0 root handle 1: prio 使用tc qd show查看变化。完成后使用sudo tc qdisc del dev</p>
+
+          
+              <footer>
+                  <a href="http://shell909090.org/blog/archives/2849/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/2848/">两台机器上TCP状态不一致的排查</a>
     </h1>
     <p class="meta">Feb 24, 2017
@@ -337,37 +368,6 @@ ga('send', 'pageview');
         
           <p>Jupyter是ipython notebook的新名字。可能很少有人知道，这个玩意居然还能制作slide。 可能有人有印象，我做过一个markdown to slides生成器，底下用的是reveal.js。今天才发现，jupyter也有类似的功能，底层也是reveal.js。不过用起来比我自己写的东西方便多了。 用法很简单。首先在View菜单里，使用Toggle Toolbar功能打开toolbar（如果已经打开就不用管）。在toolbar里能看到一项叫做Cell Toolvar的，后面一般是None。请转换为Slideshow。此时你能看到每个Cell都会多出一条来，上面有Slide Type。 Slide Type有六个选项，默认是啥都没有。后面依次是Slide，Sub-Slide，Fragment，Skip，Notes。Slide和Sub-Slide是主要的选项。在reveal.js里，Slide是指左右切换的那些页，而Sub-Slide则是你切到一个Slide后，按向下逐渐出现的一些页。这类似于章和节的关系。章和章之间左右切换，节和节之间上下切换。而如果选择为默认，那么就不开新页，跟在前面的页面里。 Skip的话，这个Cell会在Slide里跳过看不见。有很多时候，我们需要在Slide里嵌入Python代码。但是代码又有的时候需要做一些额外事情，我们不希望出现在Slide里面。如果将这些额外代码运行后删除，又恐怕下一次跑这个notebook跑不动。这时候就可以设定为Skip。 Notes原则来说是给slide里面加注释用的。照理说在页面上按s就可以跳出提示，但是我测试下来跳出来却是空的。看了一下页面源码，确实是有东西的。可能是因为我使用的是静态的文件，而没有开启服务的关系。 Fragment我也不知道干什么用的。看名字好像是代码碎片一类的，如果有知道的可以告诉我一下。 最后，用nbconvert就可以把结果转换为html来用。方法是： ipython nbconvert --to slides --reveal-prefix &quot;http://cdn.jsdelivr.net/reveal.js/2.6.2&quot; ... 之所以要加reveal-prefix，是因为最新的reveal和jupyter生成的html不兼容。 生成过程需要使用nodejs，记得安装。 生成出来的Html就是个彻头彻尾的slide了。原则上，同一个ipynb也可以生成html或者pdf（借助reveal.js自身的pdf打印功能）。这样的话slide也有分发能力。 玩的愉快。</p>
 
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/2839/">CentOS 6下安装Python2.7</a>
-    </h1>
-    <p class="meta">Aug 24, 2016
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/2839/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>我以为只有我不知道，不过看来大家都不知道。 很多时候，我们还得维护CentOS 6的设备。这件事很大程度上不是我们能决定的。但是CentOS 6的默认Python是2.6，很多最新的代码无法执行。例如Django，必须使用Python2.7&frasl;3.4&frasl;3.5。ansible好像也要求新版本Python。 作为CentOS管理员，第一个想法当然是编译。但是在CentOS 6下，不应该自行编译Python。因为Python的编译有很多坑，例如默认没有内置readline，没有内置sqlite。你不信编译了试试看？我直接从源码编译是不行的。 有的同学提出想法说，可以下在srpm包然后和Python2.7的source code做compatible。但是我要说一个比这个简单的多的官方方法——RHSCL。 RHSCL的全称是Red Hat Software Collections。旨在于在长期支持版本中提供最新版本的动态语言和数据库支持。这里是RHSCL支持的基础工具和版本。这里是说明性文档。具体方法如下： # 1. Install a package with repository for your system: # On CentOS, install package centos-release-scl available in CentOS repository: $ sudo yum install centos-release-scl # On RHEL, enable RHSCL repository for you system: $ sudo yum-config-manager --enable rhel-server-rhscl-7-rpms # 2. Install the collection: $ sudo yum install python27 # 3. Start using software collections: $ scl enable</p>
-
-          
-              <footer>
-                  <a href="http://shell909090.org/blog/archives/2839/" rel="full-article">Read On &rarr;</a>
-              </footer>
           
 
         
@@ -637,6 +637,10 @@ ga('send', 'pageview');
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2849/">模拟网络丢包延迟和TC的使用</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2848/">两台机器上TCP状态不一致的排查</a>
           </li>
         
@@ -670,10 +674,6 @@ ga('send', 'pageview');
         
           <li class="post">
             <a href="/blog/archives/2840/">使用Jupyter制作slides</a>
-          </li>
-        
-          <li class="post">
-            <a href="/blog/archives/2839/">CentOS 6下安装Python2.7</a>
           </li>
         
       </ul>

@@ -99,6 +99,33 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/318/">Linux配置文件测序</a>
+    </h1>
+    <p class="meta">Sep 11, 2006
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/318/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>CopyRight: Written by Shell.E.Xu. Published under GPL. KeyWord: Linux bash profile 配置文件。 Abstract: 利用变量声明次序测定多个配置文件是否被调用以及调用的次序。 环境： Debian/GNU Linux starg 3.1 Kernel:2.6.16-686-2 测定方法，加入变量TEST=XXX。此方法可能被某些变量解除函数解除，因此不予执行的反应未必是真，不过执行次序一般假不了。 1.tty登录时 /etc/environment;/etc/profile;~/.bash_profile-&gt;~/.bashrc-&gt;/etc/bashrc; /etc/environment;/etc/profile;~/.bash_login /etc/environment;/etc/profile;~/.profile 当上级启动过程中文件不存在时，才进行下面的过程。 2.GDM登录时 /etc/environment 3.新启动bash时 /etc/bash.bashrc;~/.bashrc-&gt;/etc/bashrc; 4.~/.inputrc 根据文档，这个函数在readline函数初始化时启用。 5.结论 如果需要有效执行命令，需要同时修改/etc/profile和/etc/bash.bashrc。因为GDM登录的时候不执行登录脚本顺序，所以仅仅修改/etc/profile会造成对GUI下面开的term无效。虽然/etc/bashrc在理论上也有效，但是一旦~/.bashrc中没有引用，则无效(例如Debian中的root，由于安装系统的时候没有copy skel，所以缺少很多.XX文件)。如果仅仅是设定变量，可以用/etc/environment。该文件没有找到资料，其中仅可以设定变量(不用export，应当是被某程序作为配置读取而非脚本执行)，据分析是登录时当即起效。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/317/">有线通封锁变通办法</a>
     </h1>
     <p class="meta">Sep 9, 2006
@@ -336,33 +363,6 @@ ga('send', 'pageview');
 
         
           <p>大家知道，从3721首开记录后，很多软件都有卸不掉的情况。多数是插一个dll到explorer里面，让你无法UnloadLib，也不能kill。然后保护一堆文件不能删除，再放注册表项目。3721还加了一个驱动，这样就是神仙也删不掉。 骂人不多骂了，方法两个。http://www.sysinternals.com/Utilities/PendMoves.html有一个项目，可以延迟删除。换句话说就是在启动的时候，讨厌的流氓加载前让内核做删除动作。很方便，重起下就没了。至于怎么找这些流氓的位置。http://www.sysinternals.com/Utilities/Autoruns.html同样公司，这个项目可以将开机所有自动加载的模块全部找出来。IE的插入组件也可以找出来。 不过这个办法虽然好，可是还是会有破绽。万一连这两个软件运行都屏蔽呢？这个时候可以用linux live+ntfs r/w modules，这样删除任何东西的时候，神仙也挡不住。 BTW,做live的时候，千万记得放一个ntfsfix在盘里面。贝壳的/dev/hda1有个logfile没有clean，结果死活不能写挂载……</p>
-
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/308/">论linux引导过程</a>
-    </h1>
-    <p class="meta">Jul 13, 2006
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/308/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>keywords 引导过程, initrd, init, rc copyright Shell.E.Xu撰写，按GPL发布。 abstract 简要介绍了引导流程的流转。 main 1.grub&amp;lilo 引导的第一步，是启动引导管理器。这个种类非常复杂，从最早的MBR+专用引导扇区到现在的NTLDR,LILO,GRUB，大小和功能都有非常大的变化。但是主要来讲目的都是一样的。当今引导程序一般都分两个部分，引导扇区和主引导模块。NTLDR来说，C:NTLDR文件即是主引导模块。GRUB的主引导模块在/boot/grub/stage2，至于引导扇区，不用太过关心的。 主引导模块在加载后都会读取引导配置文件，当代流行引导管理器其实都有命令交互功能，可是你总不能指望每次启动都先敲堆命令吧。GRUB来说，配置文件是/boot/grub/menu.lst。注意，GRUB是在启动的时候读取配置的，但是LILO是根据配置来安装的。所以LILO在改变配置的时候需要重新安装。 2.vmlinuz&amp;initrd 引导管理器会自动的将vmlinuz安置在内存中，然后寻找initrd传给vmlinuz。在没有initrd的情况下也可以引导，不过当下的趋势是将引导过程用脚本管理，放置在initrd中。这样引导参数解析，模块加载，设备管理都纳入了脚本的范围内。用linux哪能不会脚本，因此linux引导就有非常强的可以定制特性。 initrd分两种，cpio-initrd和ramfs。这里主要介绍 cpio-initrd。cpio-initrd的建立方法很简单，我上篇文章中有介绍。大致来说，就是把一些内容打包备份而已。vmlinuz会启动根下面的init脚本，我下篇文章会专门解析debian中配置的initrd.img的init脚本。现在大致说下。 init首先建立两个目录，建立/dev系统，并且建立null和console文件，否则udev的运做会出错。然后解析引导参数，解析到每个变量。而后依次运作init-top,init-premount,init-bottom（这些目录内的文件）。在init-bottom运行前会运行包含指定的脚本，这个脚本由BOOT参数指定，并且内部包含mount函数。这样可以通过指定BOOT参数定制mountroot的过程。最后是迁移大部分的系统过去（主要是/sys和/proc），最后通过run-init直接chroot和init。 3.init&amp;rc init运行的开始，会寻找inittab。其中指定了系统的很多特性，最主要的是runlevel。首先是寻找/etc/init.d/rc并且运行，并且把运行级别作为第一参数传递。然后rc会寻找/etc/init.d/rcS和/etc/default/rcS，如果有的话则包含或者运行。然后rc会以参数S运行自身，过程和正常启动一样。这个作为基础启动参数，无论你以何种级别运行都会运行rcS.d里面的脚本。 4.service service启动的时候，是用rc?.d的脚本启动的。多数会用start-stop-daemon作为另外一个身份启动成守护进程。 5.bash&amp;gdm 6.conf files reference: [1].</p>
 
           
 
@@ -636,6 +636,10 @@ ga('send', 'pageview');
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2849/">模拟网络丢包延迟和TC的使用</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2848/">两台机器上TCP状态不一致的排查</a>
           </li>
         
@@ -669,10 +673,6 @@ ga('send', 'pageview');
         
           <li class="post">
             <a href="/blog/archives/2840/">使用Jupyter制作slides</a>
-          </li>
-        
-          <li class="post">
-            <a href="/blog/archives/2839/">CentOS 6下安装Python2.7</a>
           </li>
         
       </ul>

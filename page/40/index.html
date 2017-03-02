@@ -99,6 +99,33 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/1811/">使用uwsgi搭建python应用</a>
+    </h1>
+    <p class="meta">May 25, 2011
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/1811/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>wsgi是python的一个标准web服务接口，具体去google pep文档，不解释。在李木头的忽悠下，贝壳试用了一下uwsgi搭建python服务器，感觉还不错。 首先，贝壳将uwsgi打包成deb包，因为这东西和python基本没什么关系，就是一个标准的系统守护服务程序。其中贝壳测试了一下，uwsgi编译的时候是依赖版本的。所以请教了一下thomas，打了uwsgi2.6和uwsgi2.7两个包。没办法，mercurial对python2.7的支持不是很好，每次都出问题。具体的可以加贝壳的repos: http://shell909090.org/debian/ testing，然后通过一下贝壳的key，就可以直接安装uwsgi2.6了。当然，不通过key也可以，只是每次安装升级都有警告。 贝壳写了一个很简单的init.d，使用&ndash;vhost来启动uwsgi为服务模式。这种模式的好处是，uwsgi的具体执行的应用都是由nginx来确定的，因此所有的映射只需要修改nginx配置就好。uwsgi参数很多，包括可以指定内存限制，工作进程/线程，定时重启工作进程，多解释器等等。是一个高效的，功能强大的服务器。具体可以自己参考调整。最好的的地方是，uwsgi还支持virtualenv，你可以给不同的应用建立不同的工作环境，从而在环境中使用指定的包，而不是系统包。 下面是一个nginx配置的例子。 location /ticket { include uwsgi_params; uwsgi_param UWSGI_PYHOME /usr; uwsgi_param UWSGI_CHDIR /home/shell/workspace/hg/thost; uwsgi_param UWSGI_SCRIPT main; uwsgi_pass unix:/var/run/uwsgi.socket; } location /mlocate { include uwsgi_params; uwsgi_param UWSGI_PYHOME /usr; uwsgi_param UWSGI_CHDIR /home/shell/workspace/hg/thost; uwsgi_param UWSGI_SCRIPT main; uwsgi_pass unix:/var/run/uwsgi.socket; } location /hg { include uwsgi_params; uwsgi_param UWSGI_PYHOME /usr; uwsgi_param UWSGI_CHDIR /home/shell/workspace/hg; uwsgi_param UWSGI_SCRIPT hgweb; uwsgi_param SCRIPT_NAME /; uwsgi_param SERVER_NAME hgweb; uwsgi_pass unix:/var/run/uwsgi.socket; } 这里面设定了三个应用。由于贝壳不需要virtualenv，所以PYHOME设定了/usr。第一二个应用的基础路径在/home/shell/workspace/hg/thost，脚本叫做main.py。第三个应用的基础路径在/home/shell/workspace/hg，脚本叫做hgweb.py。需要注意的是，uwsgi会以模块方式导入这些脚本，然后使用其中的application对象作为wsgi处理函数。所以不要把application对象赋值放在if __name__ == &lsquo;__main__&lsquo;里面，那没用的。第三个应用指定了SCRIPT_NAME和SERVER_NAME，是因为hg的wsgi模块没有SCRIPT_NAME不工作，而这个应用和前两个不在一起，所以如果不指定SERVER_NAME会导致覆盖冲突。 这种部署模式的好处是，我可以使用一个宿主来管理所有的应用，而不必每个应用启动一个宿主，省去了多个宿主管理的麻烦。而多进程，压力分布等等问题都被uwsgi的配置系统搞定了。于是应用程序宿主做到了彻底的免管理，即装即用，只用调节性能匹配即可。具体程序配置下放到nginx中，要修改映射关系只用管理一个位置。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/1809/">debian中文初学者引导——中文化</a>
     </h1>
     <p class="meta">May 24, 2011
@@ -332,33 +359,6 @@ ga('send', 'pageview');
 
         
           <p>前几天才说纸质书电子书怎么怎么的，今天就爆出一条新闻，新华书店指责当当网倾销。 能不指责么，上回说到书籍成本中，有大约三成是流通成本，也就是运输，仓储，退换，宣传成本。网络书店可以省去仓储成本，宣传也是搭的实体店的车。通常的东西，网上卖的都比实体的便宜，这都成了一个共识了。衣服尚有合不合适的问题，书就只有哪个出版社的问题了，可以说是全国标准化产品。对于这种产品，从网络上购买，除非碰到假货，否则几无不合适的可能。实体书店可以先看一下，网络书店还可以找到大段内容呢，例如china-pub就有。甚至部分书同时出版电子版和纸质书，effective stl中文版，我是先看了电子书，然后才买了一本纸质的。当然，现在很后悔，能不能光付钱不要纸阿。 对于标准化物件销售，网络对上传统销售几乎是没有悬念的。书籍，U盘，电子器件，化妆品，这些都是一旦确定买什么产品，型号代码一定，哪里买都一样的。在店里转两圈，地板一走，口水一噴，老板就是10多元的成本，一件东西不赚个20-30根本回不了本。在网络上，一台服务器2W一年成本计的话，够上千人连续逛一年，合一个人连续不断，不分白天黑夜逛一年才10元成本。当然，网络更多的是开发和运营费用，但是随着规模的上升，这些费用是会降下来的。这也就是为什么网络公司做上规模后来钱很快的原因。对上这种架子越大赚钱越多的对手，传统零售业的失败是已经注定的。 那么新华书店指责当当倾销，这话是怎么说的呢？倾销，常见于美国对中国的一些政策上。最早指的是一种商业手法，以低于成本的方式供货，打压对手，淘汰出市场。当成功占领市场后，再拉高价格，补回亏损。倾销往往是和垄断联系在一起的，在现代商业社会中，由于倾销通常会导致垄断，从而造成公司被拆分，所以本国对本国倾销的很少，多数都是对其他国家玩这手。也有用于本国某某协会抗议对方倾销，导致本国协会工人失业的例子。当然，这些事情在中国这个神奇的国度都是不存在的。 当当网算不算倾销呢？未必是，未必不是。当当的供货成本是比实体书低了很多没错，但是不是说所有的差价都一定是来自技术造成的成本降低。对于互联网公司，急于上市的情况下，拿钱补贴产品，造成消费者竞相抢购，从而让报表非常好看的手法屡见不鲜。我不确定当当网一定是这样，也不确定一定不是。但是一个当当倒下了，又会有别人站起来。互联网销售的成本太低了，是土地，就会有花要发芽。人不来种，自然生之。 另外还有一点问题，见于网络营销很多。就是通过实体店打样，网络上购买。这其实是一种并不公平的模式，因为靠山山倒，靠人人跑。实体店败局是个定数，实体店倒了，怎么打样呢？没地方打样，网络销售也玩不起来。这是一个会把自己玩死的胜利。今后更加现实的模式可能是格子屋形态的样品店。网络销售者租一个格子，放他们的样品。看好样子，网络订货。实在想要，可以把样品买走，销售者再补货就是。这种模式兼顾了网络营销的低成本和实体营销的可打样，似乎平衡的更好一些。不过最终形态，应当是借助新技术普及，发展虚拟打样为主的。 另外，网络销售如此，一些其他的事情上，大致也能看出，现在的世界，和以前不一样了。以前觉得理所应当天经地义的事情，现在也要重新考虑了。毕竟MJ走了，拉登也走了。虽然世界还没有完成更替，我们却也可以说，纸质书会成为历史，人们都将看电子书。我们也可以说电视将成为历史，人们都看网络视频。甚至也可以说，电话将成为历史，我们会打网络视频电话。当新东西出来时，虽然会相对弱小，需要一定时间的发展。但是最终必然会将陈旧的技术，乃至社会形态彻底摧毁。</p>
-
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/1792/">android常用软件</a>
-    </h1>
-    <p class="meta">May 6, 2011
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/1792/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>专为职业用户介绍，菜鸟就别看了。 barnacle wifi tether，将手机变成3G无线路由器，紧急的时候可以拿来让普通笔记本上网。当然，如果你3G带宽或者流量不够，就别考虑了。 comicbricks，漫画阅读器，支持从网络上拖一堆漫画离线慢慢看。 connectbot，功能强大的ssh客户端，支持密钥方式连接服务器，可以做简单的操作。适合在车站，想看看服务器状态的时候用。 es文件浏览器，还算不错，支持ftp和smb方式文件共享。很容易使用windows文件共享进行操作。 gtasks，如果你平时使用google calendar的任务列表管理自己的任务，gtasks就是你需要的东西。 keepassdroid，平时各种密码一大堆，是不是记不住？用keepassdroid，支持linux和windows共享密码文件，记忆一个密码就可以到处用。 openvpn settings，不解释，翻墙必备。倒是自带的pptp客户端连接不上去，很奇怪。 QQ影音，虽说腾讯到处抄，但是QQ影音做的确实不错。功能中规中矩，大部分格式都能放，而且程序体积不大。 realcalc，计算器，不解释。 seesmic，twitter客户端，支持api代理，功能强大，不解释。 sshdroid，ssh服务器端。有了这个东西后，你就不需要连接usb连线并且安装adb这个大家伙了。凡是能操作ssh的机器都能登录操作，支持文件上下传(sftp)，支持密码和密钥。 安全隧道，翻墙必备，不过是走ssh代理的。 大众点评，出门吃饭消费必备。我所知的信息最全的LBS。 静读天下，小型阅读器，可堪一用。体积比ireader小，也没那么多花哨的功能。打开文件的时候有点慢，没有别的缺点。 快图浏览，强烈推荐替代android自己的图库。速度如飞一般，图片瞬间出来。不过仔细看的话，从出来到清晰化大约有一秒的间隔，可见底下还是用模糊运算的。 麦当劳优惠券，打折优惠应用。这类应用都差不多，从网络上下载一段时间的某品牌优惠组合，然后统一显示给你，方便你直接挑合适的组合去。严格来说，麦当劳优惠券不算真的优惠券，只能算优惠组合。当然，有些品牌的产品还是需要看一眼优惠券的，这时候这类应用也提供图片的优惠券。总之，在外面混的时候，带上这个应用，不知道什么时候就有点小折扣。 迷你飞信，不介绍了。比较小巧，消息存储在系统信息里面。和系统自身整合做的不错。 墨迹天气，体积比较大，不过支持多个地区天气，预报比较准（有几个预报误差太大），皮肤不错。 淘宝，什么都不说了，在超市里尤其有用。就是家附近的沃尔玛没信号&hellip;&hellip; 天天动听，播放器，支持网络自动搜索，找封面和歌词。 宜搜小说，自动从网络上找最新的小说来看，追连载的利器。用这个软件连找都不必了，上下班直接看就好。 注意，此处comicbricks和宜搜小说有违反版权的问题，请对版权敏感的人不要用。</p>
 
           
 
@@ -632,6 +632,10 @@ ga('send', 'pageview');
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2849/">模拟网络丢包延迟和TC的使用</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2848/">两台机器上TCP状态不一致的排查</a>
           </li>
         
@@ -665,10 +669,6 @@ ga('send', 'pageview');
         
           <li class="post">
             <a href="/blog/archives/2840/">使用Jupyter制作slides</a>
-          </li>
-        
-          <li class="post">
-            <a href="/blog/archives/2839/">CentOS 6下安装Python2.7</a>
           </li>
         
       </ul>

@@ -99,6 +99,33 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/358/">CPUID</a>
+    </h1>
+    <p class="meta">Feb 5, 2007
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/358/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>近两天研究了下CPUID指令。虽然原本是准备作为加密技术的储备的，不过后来发现作为加密技术实在不可行，倒是平台识别有很大用途。 CPUID指令可以看做一个汇编中的函数，预先设定一个EAX的编号，就可以返回EAX,EBX,ECX,EDX四个数据。根据不同EAX，返回不同的数据。问题在于，对于EAX和返回的约定上，AMD和Intel是完全不同的。其中AMD根本不支持CPU编号特性。 我先给出我所用的函数： void getCpuID (PDWORD pData, DWORD ID) { __asm { push ebx push ecx push edx push esi mov eax, ID cpuid mov esi, pData mov [esi], eax mov [esi+4], ebx mov [esi+8], ecx mov [esi+12], edx pop esi pop ecx pop ebx pop edx } } 其中pData是一个足够大的数组，ID是入口编号。根据Intel和AMD的约定，0,1,80000001-80000003是共同的。0在EBX,EDX,ECX中返回了厂商标识，例如目前机器上就是AuthenticAMD。(注意，不是顺序存放的，按照我刚刚写的顺序)80000001-80000003在返回中顺序存放了CPU的标识，例如目前机器上是AMD Sempron&trade; Processor 2500+。1在EAX中返回了CPU的系列编号，EDX中返回了特性编号。以上都是标准的返回，可以看出在识别平台的时候很方便。 Intel的CPU在2中存放了配置参数，3中存放了序列编号。而AMD在这两者上都是0。由此大家就知道为什么无法用来作为加密技术了，难道这个程序只能在Intel芯片上跑吗？</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/357/">继承类静态对象虚拟化</a>
     </h1>
     <p class="meta">Feb 2, 2007
@@ -340,37 +367,6 @@ ga('send', 'pageview');
           
               <footer>
                   <a href="http://shell909090.org/blog/archives/349/" rel="full-article">Read On &rarr;</a>
-              </footer>
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/348/">查找重复文件</a>
-    </h1>
-    <p class="meta">Jan 15, 2007
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/348/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>算是介绍一个奇淫巧技吧。查找重复的文件，这个应该有很多软件都可以做的。不过在Linux里面，利用系统工具，一句语句查找应该就比较少见了。 $find . -name &quot;*&quot; -type f -size +0 -exec md5sum {} ; | sort | uniq -d -w 32 原理是这样的，先用find查找当前所有文件。我们加上限定类型必须是文件，目录不要。限定大小不为0，空文件不要。然后对所有满足条件的执行md5sum，获得md5和文件的列表。然后排序，再针对md5的部分做唯一限定。就得到了所有md5相同的文件的列表。 问题是，这时候我们得到的还只是一堆重复的文件的md5。我们可以把以上步骤拆开来获得完整的输出。 $find . -name &quot;*&quot; -type f -size +0 -exec md5sum {} ; | sort &gt; file_md5 $cat file_md5 | uniq -d -w 32 $grep &quot;...&quot; file_md5 相信大家都看出是怎么回事情了，就不赘言了。 Windows下以前我总是执行不出，原因在于要这么写。 find . -type f -size +0 -exec md5sum {} ; | sort &gt; report.txt 差一个转义，因为不需要。 总结一下，我们可以用一个脚本来处理这些问题。 --------------------------fine_rep------------------------------ find $1 -type</p>
-
-          
-              <footer>
-                  <a href="http://shell909090.org/blog/archives/348/" rel="full-article">Read On &rarr;</a>
               </footer>
           
 
@@ -644,6 +640,10 @@ ga('send', 'pageview');
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2849/">模拟网络丢包延迟和TC的使用</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2848/">两台机器上TCP状态不一致的排查</a>
           </li>
         
@@ -677,10 +677,6 @@ ga('send', 'pageview');
         
           <li class="post">
             <a href="/blog/archives/2840/">使用Jupyter制作slides</a>
-          </li>
-        
-          <li class="post">
-            <a href="/blog/archives/2839/">CentOS 6下安装Python2.7</a>
           </li>
         
       </ul>

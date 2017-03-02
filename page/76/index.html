@@ -99,6 +99,33 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/328/">通过LPIC1</a>
+    </h1>
+    <p class="meta">Oct 21, 2006
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/328/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>总算正式通过LPIC1了，搞了半年这个东西，真的差点让我崩溃。通过可以有两种方法，背考古题，或者拥有深厚的功底。 里面最让我觉得不爽的就是很多莫名其妙的参数还需要记忆。例如tracroute -n的n，是阻止R-DNS的意思。这个如果是RHCE，一个man就知道了——可是这里，就需要人自行记忆。除非相当长时间的使用，让你对这些参数了如指掌，否则——考古题。 不过里面对于功底的考察蛮细致的，有的题目会问你一些正常不会细究的东西。我为了通过考试，自行研究了整个Linux引导的详细过程。从开机到initrd，然后从服务到启动X，到自动执行脚本。非常详细的了解了整个Linux的基础，并且可以自行定制一个Live系统。这里面需要非常详细的研究，一般的大路货考试好像还没有这个必要—— 不过我要说的是——这些东西——纯粹是自己吓自己。事实上，LPI-101我考了550分，LPI-102我考了640。不是啥高分，不过远远超过通过分数。原因是对于考试评价过高——还特意拖了很久——等很多事情稳定了，而且功底扎实了才去。没想到这么简单，扫兴。 总体来说——考试通过的感觉还不错，不过没有什么好惊讶的。意料中的事情——除了多出来的1300块钞票——我的钱阿——</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/327/">LPI的表述问题</a>
     </h1>
     <p class="meta">Oct 17, 2006
@@ -336,33 +363,6 @@ ga('send', 'pageview');
 
         
           <p>1.startx启动流程 /usr/bin/startx +-&gt;/etc/X11/xinit/xinitrc |-&gt;/etc/X11/Xsession |-&gt;~/.xinitrc |-&gt;/etc/X11/xinit/xserverrc |-&gt;/usr/bin/X11/X -&gt;~/.xserverrc startx脚本会分析用户主目录下是否存在特殊配置文件，如果不存在则使用系统默认脚本。默认脚本分两个部份，xinitrc启动客户端部份，xserverrc启动服务器端部份。 xserverrc内容仅为启动X。xinitrc会执行/etc/X11/Xsession，而后进入session分析。 2.Xsession /etc/X11/Xsession -&gt; /etc/X11/Xsession.d/* /etc/X11/Xsession和/etc/init.d/rc很类似，是用来循环依次启动其他脚本的控制脚本。他负责启动/etc/X11/Xsession.d/下的所有文件。其中50xfree86-common_determine-startup文件会依次检测以下3个文件，并且设置到STARTUP变量中。x-session-manager;x-window-manager;x-terminal-emulator;最后99xfree86-common_start文件会执行exec $STARTUP;完成整个系统的启动过程。 3.gdm gdm服务被/etc/init.d/gdm启动，而后读取/etc/gdm/gdm.conf配置自身。后面是基于理论分析，没有加以验证。 |-gdm---gdm-+-Xorg | `-x-session-manag-+-scim | `-ssh-agent 上面是pstree的结果，第1个gdm是/etc/init.d/gdm，第2个gdm是/usr/bin/gdm。gdm先启动一个X作为服务端，否则自身也无法以图形方式显示登录界面。而后gdm成为此X界面的唯一用户，显示登录系统。在用户登录后，gdm启动/etc/gdm/Xsession。这个脚本的内容和/etc/X11/Xsession非常类似，我怀疑为什么他们不用链接的方式(可能是因为包的关系？)。这时整个启动活动就结束了。</p>
-
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/318/">Linux配置文件测序</a>
-    </h1>
-    <p class="meta">Sep 11, 2006
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/318/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>CopyRight: Written by Shell.E.Xu. Published under GPL. KeyWord: Linux bash profile 配置文件。 Abstract: 利用变量声明次序测定多个配置文件是否被调用以及调用的次序。 环境： Debian/GNU Linux starg 3.1 Kernel:2.6.16-686-2 测定方法，加入变量TEST=XXX。此方法可能被某些变量解除函数解除，因此不予执行的反应未必是真，不过执行次序一般假不了。 1.tty登录时 /etc/environment;/etc/profile;~/.bash_profile-&gt;~/.bashrc-&gt;/etc/bashrc; /etc/environment;/etc/profile;~/.bash_login /etc/environment;/etc/profile;~/.profile 当上级启动过程中文件不存在时，才进行下面的过程。 2.GDM登录时 /etc/environment 3.新启动bash时 /etc/bash.bashrc;~/.bashrc-&gt;/etc/bashrc; 4.~/.inputrc 根据文档，这个函数在readline函数初始化时启用。 5.结论 如果需要有效执行命令，需要同时修改/etc/profile和/etc/bash.bashrc。因为GDM登录的时候不执行登录脚本顺序，所以仅仅修改/etc/profile会造成对GUI下面开的term无效。虽然/etc/bashrc在理论上也有效，但是一旦~/.bashrc中没有引用，则无效(例如Debian中的root，由于安装系统的时候没有copy skel，所以缺少很多.XX文件)。如果仅仅是设定变量，可以用/etc/environment。该文件没有找到资料，其中仅可以设定变量(不用export，应当是被某程序作为配置读取而非脚本执行)，据分析是登录时当即起效。</p>
 
           
 
@@ -636,6 +636,10 @@ ga('send', 'pageview');
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2849/">模拟网络丢包延迟和TC的使用</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2848/">两台机器上TCP状态不一致的排查</a>
           </li>
         
@@ -669,10 +673,6 @@ ga('send', 'pageview');
         
           <li class="post">
             <a href="/blog/archives/2840/">使用Jupyter制作slides</a>
-          </li>
-        
-          <li class="post">
-            <a href="/blog/archives/2839/">CentOS 6下安装Python2.7</a>
           </li>
         
       </ul>

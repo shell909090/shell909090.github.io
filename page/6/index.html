@@ -99,6 +99,37 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/2724/">openvpn的几种基本模式</a>
+    </h1>
+    <p class="meta">Feb 4, 2015
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/2724/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>vpn的原始模式 vpn的最简模型，相当于在两台机器上插一块虚拟网卡，然后中间连一根虚拟网线连通。因此vpn才得名vpn(virtual private network)。 其复杂之处在于，这块虚拟网卡如何配置网络，和别的网卡是什么关系。再加上多个节点间如何通讯。种种都够新手喝一壶。 虽然openvpn在科学上网上是废了，但是在不出国的网络上用来保护通讯，还是非常好用的。 tap模式 tap模式的特点是二层打通。典型场景是从外部打一条隧道到本地网络。进来的机器就像本地的机器一样参与通讯，你分毫看不出这些机器是在远程。 优点： 配置简单。 不需要在所有机器上配置或者动网关。 缺点： tap在部分设备上不支持(例如移动设备)。 wlan加入网桥后不一定可以工作。 广播包会散发到虚拟网络中，可能极大消耗流量。 特别解说一下wlan。部分AP对一个客户只接受一个MAC地址，因此无法做网桥。这应该是wifi网络的常规问题了。解决方法是换AP，或者做mac-nat。 操作方法： 你需要先在当前网络中，为vpn预留一些地址。这些地址应该足够拨入用户使用，不应和dhcp撞车，不应有其他人使用。 而后，建立一个br，将当前工作的eth迁移过去。(具体细节就不说了，每个系统小有差别)再建立一个tap vpn，在启动脚本中指定加入这个br。 example 假定内网地址为172.19.0.0/24，其中保留172.19.0.16-172.19.0.31供vpn使用。 服务器配置: port [port num] proto udp ; 参考我上一篇[vpn不要走tcp协议](http://shell909090.org/blog/archives/2722) dev tap ca ca.crt cert server.crt key server.key server-bridge 172.19.0.16 255.255.255.0 172.19.0.17 172.19.0.31 ; 或者可以采用这句 ; server 172.19.0.16 255.255.255.240 ; 注意掩码实际上等于/28，做掩码运算后，这段地址和上面的保留地址重合 script-security 2 up vpn-start ; 建议使用绝对路径，避免版本坑 down vpn-stop vpn-start: brctl add br0 $dev vpn-stop: brctl del br0 $dev 客户端配置:</p>
+
+          
+              <footer>
+                  <a href="http://shell909090.org/blog/archives/2724/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/2722/">vpn不要走tcp协议</a>
     </h1>
     <p class="meta">Feb 2, 2015
@@ -340,33 +371,6 @@ ga('send', 'pageview');
 
         
           <p>setjmp/longjmp测试 使用s_jmp程序来测试setjmp的性能。1G次循环。下面是结论： 5.77,0.00,29,0,0,0,99% 5.70,0.00,30,0,0,0,99% 5.71,0.00,22,0,0,0,99% 5.71,0.00,23,0,0,0,99% 5.70,0.00,30,0,0,0,100% 5.70,0.00,23,0,0,0,99% 统计结果如下： time mean = 5.715 time var = 0.000625 单次调度开销只有5.7ns，在所有测试中性能最优。(glibc-2.19/sysdeps/x86_64/setjmp.S) getcontext/setcontext测试 使用s_context程序来测试setcontext的性能。100M次循环。下面是结论： 12.96,5.88,79,0,0,0,99% 13.13,5.94,105,0,0,0,99% 12.95,6.18,57,0,0,0,99% 13.13,5.90,64,0,0,0,99% 12.95,5.88,82,0,0,0,99% 12.96,5.80,51,0,0,0,99% 统计结果如下： time mean = 13.01 time var = 0.0068 单次调度开销高达130ns，仅比系统的sched在高线程下略快。这事很奇怪，因为根据我看到的源码(glibc-2.19/sysdeps/unix/sysv/linux/x86_64/setcontext.S)，getcontext/setcontext在glibc中是用汇编实现的。其中陷入内核只是为了设定signal mask。</p>
-
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/2693/">context切换测试——线程创建有关部分请求review</a>
-    </h1>
-    <p class="meta">Oct 31, 2014
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/2693/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>线程模式开销 使用t_thread程序，循环1M次，重复6次，原始数据如下： 9.57,8.22,21098,0,0,0,104% 9.77,8.40,29704,0,0,0,104% 9.36,8.17,10390,0,0,0,106% 9.56,8.50,14514,0,0,0,107% 9.35,8.34,7244,0,0,0,108% 9.57,8.43,26351,0,0,0,106% 统计结果如下： time mean = 9.53 time var = 0.02 kernel mean = 8.34 kernel var = 0.013 解读数据可以看到，thread模式的开销为9530ns(已经降到纳秒级了)，CPU将为8340ns，精确级别在20ns级别。粗略换算一下每次create的开销大约是30k个时钟周期。简单对比可以看出，thread模式比fork模式大约快了5倍。</p>
 
           
 
@@ -640,6 +644,10 @@ ga('send', 'pageview');
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2849/">模拟网络丢包延迟和TC的使用</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2848/">两台机器上TCP状态不一致的排查</a>
           </li>
         
@@ -673,10 +681,6 @@ ga('send', 'pageview');
         
           <li class="post">
             <a href="/blog/archives/2840/">使用Jupyter制作slides</a>
-          </li>
-        
-          <li class="post">
-            <a href="/blog/archives/2839/">CentOS 6下安装Python2.7</a>
           </li>
         
       </ul>
