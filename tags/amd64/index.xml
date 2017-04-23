@@ -8,7 +8,9 @@
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
     <lastBuildDate>Thu, 18 Aug 2011 15:42:49 +0800</lastBuildDate>
-    <atom:link href="http://shell909090.org/tags/amd64/index.xml" rel="self" type="application/rss+xml" />
+    
+	<atom:link href="http://shell909090.org/tags/amd64/index.xml" rel="self" type="application/rss+xml" />
+    
     
     <item>
       <title>一次系统和数据迁移</title>
@@ -16,26 +18,16 @@
       <pubDate>Thu, 18 Aug 2011 15:42:49 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/1889/</guid>
-      <description>&lt;p&gt;在文件系统选型后，贝壳骤然发现用ext3保存媒体文件是一件很傻的事情。耗费空间多，性能差，安全性低。根据文章结论，其实最好的文件系统是xfs。同时，贝壳的mini-itx空间基本满了(/home分区75-80%)。所以，贝壳准备买一块新的硬盘，然后将数据迁移过去。&lt;/p&gt;
-
-&lt;p&gt;硬件选择上，贝壳询问了熟悉的硬件商。他说日立没货，WD的盘问题比较多，推荐希捷的。而且只有绿盘，具体型号是ST2000DL003-9VT166，SataIII，常规转速5900。ST的2T盘入手后，贝壳做了一下基础测试，hdparm分数是，原本的WD硬盘90M/s，新的ST硬盘70M/s，公司的硬盘99M/s。看来硬盘性能还是WD的比较好一点，当然，也可能是因为新硬盘本身就是低档硬盘。&lt;/p&gt;
-
-&lt;p&gt;贝壳的第一选择，是按照原本的&lt;a href=&#34;http://shell909090.org/blog/archives/1646/&#34;&gt;U盘安装设置&lt;/a&gt;，安装debian系统。不过前后两次都可耻的失败了，主要原因是mini-itx对U盘启动的支持并不是很好。被迫，用新买的大型电脑安装，又失败。原因是6.0的安装镜像对boot.img.gz方式的U盘启动支持不良。算了，先装5.0升级。没想到，这个原因直接导致了贝壳两次系统安装完毕后无法引导升级。为什么？因为硬盘的尺寸刚刚好比2T大了点。gurb升级到grub2的时候，为了让你支持全部空间，很好心的帮你升级到了gpt。然而gpt需要一个分区来保存一些信息，新多出来的空间又刚好不足以保存这个数据。因此，grub-pc就升级失败，而且救都没法救——因为没空间了。&lt;/p&gt;
-
-&lt;p&gt;两次折腾下来，贝壳基本搞明白了为什么。然而要解决这个问题，就要手工分区，计算大小，产生lvm，设定，然后debootstrap，再设定。或者就直接使用debian&lt;/p&gt;
-
-&lt;p&gt;6.0的安装镜像。这个时候，悲崔的事情来了——U盘安装那篇文章的上一节，就说明了如何直接使用usb启动iso，直接cat iso &amp;gt; /dev/sdX就可以了。早知道这么简单，何必折腾那么一大套呢，哎。&lt;/p&gt;
-
-&lt;p&gt;debian 6.0的安装系统比5.0的好了很多，磁盘分区支持gpt，直接就生成了bios_grub分区。lvm2的支持增加了vg级别的控制，而不仅仅只能控制lv的生成和删除。同时增加了软raid的支持。这就很好的解决了贝壳当前的问题。&lt;/p&gt;
-
-&lt;p&gt;贝壳的分区方案是，gpt分区表，一个bios_grub分区，一个ext2的boot分区，一个lvm分区。lvm上面分8G的root，ext4格式。4G的swap，可以适应当前内存和升级到4G的内存(linux swap推荐是，4G以下两倍于内存，4G以上和内存一致)。1.7T的home，xfs格式。剩余268G。为什么要剩余？因为xfs只能扩展不能缩小，如果我需要扩展root和swap，或者需要产生新的lv来做虚拟机，不留下一定空间会出问题的。如果home不足，我再扩展150G基本可以解决问题。&lt;/p&gt;
-
-&lt;p&gt;分区和安装都很顺利，然而approx对新的系统基本没有缓冲作用。我略微想了一下，大概明白了为什么——原有系统是用i386架构和amd64内核，而新系统则是架构内核都是amd64。或者通俗来说，原系统是64位内核下的32位混合系统，而新系统是彻底的64位系统。32位的包对64位的系统一点用都没有，所以approx原有的包都白缓存了。&lt;/p&gt;
-
-&lt;p&gt;好吧，瑕不掩瑜，这次升级基本还是成功的。安装对应软件包，复制数据（推荐首次cp -a，速度快，后面用rsync保证同步），修改属主（否则很多程序无法启动）。尤其需要注意，mldonkey在downloads.ini中，不但保存了以哪个用户启动，同时也保存了用户id。新系统中用户名和id对应关系会发生变化，因此要修改正确。基本——事情就完了。&lt;/p&gt;
-
-&lt;p&gt;一个小细节是，uwsgi由于amd64升级，所以无法使用。贝壳解决了一下问题，重新编译这个包。另外，debian官方的包出来了，目前处于sid状态，大家可以等着什么时候进入testing状态了。&lt;/p&gt;
-</description>
+      <description>在文件系统选型后，贝壳骤然发现用ext3保存媒体文件是一件很傻的事情。耗费空间多，性能差，安全性低。根据文章结论，其实最好的文件系统是xfs。同时，贝壳的mini-itx空间基本满了(/home分区75-80%)。所以，贝壳准备买一块新的硬盘，然后将数据迁移过去。
+硬件选择上，贝壳询问了熟悉的硬件商。他说日立没货，WD的盘问题比较多，推荐希捷的。而且只有绿盘，具体型号是ST2000DL003-9VT166，SataIII，常规转速5900。ST的2T盘入手后，贝壳做了一下基础测试，hdparm分数是，原本的WD硬盘90M/s，新的ST硬盘70M/s，公司的硬盘99M/s。看来硬盘性能还是WD的比较好一点，当然，也可能是因为新硬盘本身就是低档硬盘。
+贝壳的第一选择，是按照原本的U盘安装设置，安装debian系统。不过前后两次都可耻的失败了，主要原因是mini-itx对U盘启动的支持并不是很好。被迫，用新买的大型电脑安装，又失败。原因是6.0的安装镜像对boot.img.gz方式的U盘启动支持不良。算了，先装5.0升级。没想到，这个原因直接导致了贝壳两次系统安装完毕后无法引导升级。为什么？因为硬盘的尺寸刚刚好比2T大了点。gurb升级到grub2的时候，为了让你支持全部空间，很好心的帮你升级到了gpt。然而gpt需要一个分区来保存一些信息，新多出来的空间又刚好不足以保存这个数据。因此，grub-pc就升级失败，而且救都没法救——因为没空间了。
+两次折腾下来，贝壳基本搞明白了为什么。然而要解决这个问题，就要手工分区，计算大小，产生lvm，设定，然后debootstrap，再设定。或者就直接使用debian
+6.0的安装镜像。这个时候，悲崔的事情来了——U盘安装那篇文章的上一节，就说明了如何直接使用usb启动iso，直接cat iso &amp;gt; /dev/sdX就可以了。早知道这么简单，何必折腾那么一大套呢，哎。
+debian 6.0的安装系统比5.0的好了很多，磁盘分区支持gpt，直接就生成了bios_grub分区。lvm2的支持增加了vg级别的控制，而不仅仅只能控制lv的生成和删除。同时增加了软raid的支持。这就很好的解决了贝壳当前的问题。
+贝壳的分区方案是，gpt分区表，一个bios_grub分区，一个ext2的boot分区，一个lvm分区。lvm上面分8G的root，ext4格式。4G的swap，可以适应当前内存和升级到4G的内存(linux swap推荐是，4G以下两倍于内存，4G以上和内存一致)。1.7T的home，xfs格式。剩余268G。为什么要剩余？因为xfs只能扩展不能缩小，如果我需要扩展root和swap，或者需要产生新的lv来做虚拟机，不留下一定空间会出问题的。如果home不足，我再扩展150G基本可以解决问题。
+分区和安装都很顺利，然而approx对新的系统基本没有缓冲作用。我略微想了一下，大概明白了为什么——原有系统是用i386架构和amd64内核，而新系统则是架构内核都是amd64。或者通俗来说，原系统是64位内核下的32位混合系统，而新系统是彻底的64位系统。32位的包对64位的系统一点用都没有，所以approx原有的包都白缓存了。
+好吧，瑕不掩瑜，这次升级基本还是成功的。安装对应软件包，复制数据（推荐首次cp -a，速度快，后面用rsync保证同步），修改属主（否则很多程序无法启动）。尤其需要注意，mldonkey在downloads.ini中，不但保存了以哪个用户启动，同时也保存了用户id。新系统中用户名和id对应关系会发生变化，因此要修改正确。基本——事情就完了。
+一个小细节是，uwsgi由于amd64升级，所以无法使用。贝壳解决了一下问题，重新编译这个包。另外，debian官方的包出来了，目前处于sid状态，大家可以等着什么时候进入testing状态了。</description>
     </item>
     
     <item>
@@ -44,12 +36,9 @@
       <pubDate>Tue, 16 Aug 2011 14:55:36 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/1885/</guid>
-      <description>&lt;p&gt;I bought a Phenom II X4 955 CPU month ago, recently I find that HWMonitor can&amp;rsquo;t read core temp, just motherboard temp. I googled it and find &lt;a href=&#34;http://www.tomshardware.com/forum/284971-28-temp-reading-phenom&#34;&gt;this article&lt;/a&gt;.&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&#34;http://www.tomshardware.com/reviews/unlock-phenom-ii,2273.html&#34;&gt;This article&lt;/a&gt; said that ACC is a tech will make AMD X3 work like X4 byunlock cores in BIOS. But CPU core temp sensors will not work, even use a real four cores CPU.&lt;/p&gt;
-
-&lt;p&gt;贝壳一个月前买了一块&lt;a href=&#34;http://detail.zol.com.cn/cpu/index189569.shtml&#34;&gt;羿龙IIX4955（黑盒）&lt;/a&gt;，但是最近发现HWMonitor读不出核心温度，只有主板温度。放狗搜了一下，找到&lt;a href=&#34;http://www.tomshardware.com/forum/284971-28-temp-reading-phenom&#34;&gt;这篇文章&lt;/a&gt;。根据&lt;a href=&#34;http://www.tomshardware.com/reviews/unlock-phenom-ii,2273.html&#34;&gt;这篇文章&lt;/a&gt;说，ACC是一种能够让AMD三核CPU像四核一样工作的技术，只要在BIOS中打开unlock cores选项就好。但是这个会使得CPU的核心温度传感器不工作，即使你真的有四个核，而不是仿冒四核。&lt;/p&gt;
-</description>
+      <description>I bought a Phenom II X4 955 CPU month ago, recently I find that HWMonitor can&amp;rsquo;t read core temp, just motherboard temp. I googled it and find this article.
+This article said that ACC is a tech will make AMD X3 work like X4 byunlock cores in BIOS. But CPU core temp sensors will not work, even use a real four cores CPU.
+贝壳一个月前买了一块羿龙IIX4955（黑盒），但是最近发现HWMonitor读不出核心温度，只有主板温度。放狗搜了一下，找到这篇文章。根据这篇文章说，ACC是一种能够让AMD三核CPU像四核一样工作的技术，只要在BIOS中打开unlock cores选项就好。但是这个会使得CPU的核心温度传感器不工作，即使你真的有四个核，而不是仿冒四核。</description>
     </item>
     
   </channel>

@@ -8,7 +8,9 @@
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
     <lastBuildDate>Mon, 15 Aug 2011 10:07:03 +0800</lastBuildDate>
-    <atom:link href="http://shell909090.org/tags/btrfs/index.xml" rel="self" type="application/rss+xml" />
+    
+	<atom:link href="http://shell909090.org/tags/btrfs/index.xml" rel="self" type="application/rss+xml" />
+    
     
     <item>
       <title>linux下的文件系统选型</title>
@@ -16,273 +18,10 @@
       <pubDate>Mon, 15 Aug 2011 10:07:03 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/1883/</guid>
-      <description>&lt;p&gt;贝壳原来一直认为文件系统可以随便选，结果最近吃了两次苦头。一个是btrfs对虚拟机支持不良，另一个是特定情况下xfs性能比ext3高20倍。痛定思痛，打算列一下文件系统选型的方法和依据，欢迎拍砖。
-&lt;div&gt;&lt;/p&gt;
+      <description>贝壳原来一直认为文件系统可以随便选，结果最近吃了两次苦头。一个是btrfs对虚拟机支持不良，另一个是特定情况下xfs性能比ext3高20倍。痛定思痛，打算列一下文件系统选型的方法和依据，欢迎拍砖。 
+ 下面我列一下纳入参考的文件系统，当然，ntfs就不要出来搞基了，玩嵌入式/光盘live之类的朋友也不要来凑热闹了阿。btrfs(简介), ext3, ext4(简介), jfs(简介), reiserfs, xfs，基本涵盖常用文件系统。最下面加入ntfs和zfs对比，实际上不参与选型。以下进制换算为1024，大小依次为KB,MB,GB,TB,PB,EB,ZB。
 
-&lt;p&gt;   
-下面我列一下纳入参考的文件系统，当然，ntfs就不要出来搞基了，玩嵌入式/光盘live之类的朋友也不要来凑热闹了阿。&lt;a href=&#34;http://zh.wikipedia.org/wiki/Btrfs&#34;&gt;btrfs&lt;/a&gt;(&lt;a href=&#34;http://www.ibm.com/developerworks/cn/linux/l-cn-btrfs/&#34;&gt;简介&lt;/a&gt;), &lt;a href=&#34;http://zh.wikipedia.org/wiki/Ext3&#34;&gt;ext3&lt;/a&gt;, &lt;a href=&#34;http://zh.wikipedia.org/wiki/Ext4&#34;&gt;ext4&lt;/a&gt;(&lt;a href=&#34;http://www.ibm.com/developerworks/cn/linux/l-anatomy-ext4/&#34;&gt;简介&lt;/a&gt;), &lt;a href=&#34;http://en.wikipedia.org/wiki/JFS_(file_system)&#34;&gt;jfs&lt;/a&gt;(&lt;a href=&#34;http://www.ibm.com/developerworks/cn/linux/filesystem/jfs/jfs/&#34;&gt;简介&lt;/a&gt;), &lt;a href=&#34;http://zh.wikipedia.org/wiki/ReiserFS&#34;&gt;reiserfs&lt;/a&gt;, &lt;a href=&#34;http://zh.wikipedia.org/wiki/XFS&#34;&gt;xfs&lt;/a&gt;，基本涵盖常用文件系统。最下面加入ntfs和zfs对比，实际上不参与选型。以下进制换算为1024，大小依次为KB,MB,GB,TB,PB,EB,ZB。&lt;/p&gt;
-
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
-
-&lt;div&gt;
-
-  --------------- --------- -------------- ---------------- ---------------- ---------------- ------------------ --------- ----------- ------------
-  文件系统        btrfs     ext3           ext4             jfs              reiserfs         reiser4            xfs       ntfs        zfs
-
-  最大卷容量      16 EB     32 TB          1 EB (16TB)      32 PB            16 TB            ??                 16 EB     256 TB      16 EB
-
-  最大文件容量    16 EB     2 TB           16 TB            4 PB             8TB              8TB                8 EB      16 TB       16 EB
-
-  目录结构        B tree    list/tree      list/Htree       B tree           B+ tree          dancing B\* tree   B+ tree   B+ tree     hash table
-
-  文件分配        extents   bitmap/table   bitmap/extents   bitmap/extents   bitmap           ??                 extents   bitmap      ??
-
-  ACLS            Yes       Yes            Yes              Yes              No               No                 Yes       ACLS only   Yes
-
-  checksum        Yes       No             journal          No               No               No                 No        No          Yes
-
-  透明压缩        Yes       No             No               No               No               Plugin             No        Yes         Yes
-
-  透明加密        No        No             No               No               No               Plugin             No        Yes         Yes
-
-  online defrag   Yes       No             Yes              Yes              No               Yes                Yes       Yes         Yes
-
-  shrink          Yes       Yes            Yes              No               Offline resize   Offline            No        Yes         No
-
-  特性            SSD       \              \                \                \                \                  \         Stream      \
-                                                                                                                                       
-  --------------- --------- -------------- ---------------- ---------------- ---------------- ------------------ --------- ----------- ------------
-
-&lt;div&gt;
-
-   
-首先，文件系统选择上要考虑现实性和支持情况。如果你希望得到广泛的支持，在移动硬盘上被多个系统挂载，应用于老内核，或者不使用/boot分区，那么可选项目基本只有ext3。作为老牌文件系统，ext3的支持是最广泛的，工具组也相对全面。无论其他文件系统拥有多大的优势，在现实情况考虑下往往会败给ext3，基本就是因为广泛的使用和支持。另外，btrfs我所知还没有fsck工具，出了问题全看RP，而且在上面使用虚拟机速度特别慢。reiser4作者目前在监狱中，出了问题能否获得支持全靠RP。jfs用的人相对xfs少一些，也比较不活跃。这些虽然并不出现在数据上，但是最好特别注意。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-其次，文件系统的选择要考虑必要特性。例如如果你希望使用SSD支持，你可选的项目就只有btrfs。如果需要透明加密，那只有reiser4。当然，在决定必要特性前，请仔细考虑，自己是否真的必须使用这些特性。为了一个不必须的特性选用一个不合适的文件系统会付出极大代价。linux下文件系统还是比较单调和弱小了点，基本不支持透明压缩，全部不支持透明加密，ext两兄弟更是没有完全实现Btree目录结构（ext4其实有用Htree，一种改过的Btree，不过为了兼容ext3，好像升级来的目录不使用）。不过好佳在，大部分都支持online
-defrag/growing，否则不如一头撞死算了。ext3/4,
-btrfs是支持shrink的，但是jfs, xfs只支持growing，reiser4必须offline
-shrink。xfs的growing在1T（一说2T）以上有点问题，非64位内核在1T以上可能无法创建inode。本来是会在1T内创建inode，使用高位空间。但是growing的时候可能地位空间已经满了，会报没有空间的错误。解决方案是将老文件移出再移回，或者看看用inode64参数是否解决。如果你确定需要shrink，最佳选项是使用ext4。另外补充一点，ntfs的online
-shrink也不是完美无缺，他只能shrink到未被使用的地方。也就是说，如果有不可移动文件，有可能就无法shrink到以下内容。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
- 
- 第三个要确定的问题，是你的系统服务的数据大小。即使是表里面最小的ext3，一次也可以使用2T的卷。贝壳全部数据加起来大概2T多一点，家用绝对不成问题。然而作为商业用途，动辄数百T的数据正常到不能再正常，ext3就可以直接出局了，同理reiser4也直接出局。jfs是唯一没有达到EB级别的文件系统，不过32PB也可堪一用，大部分商业系统都到不了这个量级。在管理大型卷的时候，bitmap比extents会消耗更大的空间进行管理。因此不支持bitmap的文件系统可以少考虑，ext3/4虽说支持extents，但是ext3中默认不开启，必须手工指定挂载参数。ext4中一旦启用extents，就无法兼容于ext3。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-最后是性能考量。在贝壳在公司的测试中，xfs会性能高于ext3达20倍。因为根据[这篇文章](http://www.evanhoffman.com/evan/2011/07/22/benchmarking-disk-io-on-ext3-vs-ext4-with-fio/)，xfs的随机写性能比ext兄弟差很多，但是顺序写的性能比ext要强上无数倍。我们的业务大部分情况下是顺序写，因此差异非常明显。所以，当你的特性要求差不多的时候，性能和稳定性是另一个考量因素。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-文件系统
-btrfs
-ext3
-ext4
-jfs
-reiserfs
-xfs
-全填充速率
-1m22.083s
-1m34.821s
-1m15.495s
-1m5.819s
-1m34.310s
-1m38.953s
-全填充利用率
-0.8945
-0.9065
-0.9047
-0.9959
-0.9927
-0.9918
-大文件效率
-14.676
-17.435
-10.7255
-13.7493
-14.319
-12.7093
-大文件删除
-2.693
-5.262
-2.422
-0.037
-1.802
-0.296
-小文件效率
-9.949
-5.131
-2.7866
-40.949
-13.605
-8.978
-小文件删除
-6.737
-10.7227
-1.39
-16.116
-2.756
-5.653
-循环列文件
-0.124
-0.089
-0.002
-0.094
-0.19
-0.099
-大文件read
-2046206
-1931451
-1946598
-2003912
-1537752
-1970242
-大文件write
-1279625
-565960
-926461
-962617
-446841
-812466
-大文件rndread
-2012771
-1926287
-1934420
-1985273
-1490199
-1976056
-大文件rndwrite
-1380404
-1187010
-1294689
-1446011
-1308210
-1384804
-小文件read
-2375893
-2934815
-3019732
-2708437
-2559371
-2236197
-小文件write
-926602
-526469
-681710
-844237
-395810
-939536
-小文件rndread
-3324647
-3544566
-2702282
-3737551
-4045575
-2666753
-小文件rndwrite
-910277
-1525970
-1244240
-1910756
-1790393
-1311261
-    以上数据，在公司的debian testing上测定。机器型号Dell Inspiron
-560s，CPU Dual-Core E5700，4G内存，硬盘WDC
-WD3200AAKS-75L9A0。系统是debian
-testing，内核2.6.39-2-amd64。全填充是用time dd if=/dev/zero
-of=abc来测试填满一个分区的速度和容量。大文件是四个ISO文件，共1.3G，从tmpfs上复制到目标设备上的时间平均值，三次平均。小文件是pypy/python2.7/linux
-kernel2.6.39所有源码，总计49242个文件，629M。从tmpfs上复制到目标设备的时间平均值，三次平均。循环列文件是通过time
-find .测试效率。下面测试单位为bytes/sec，是iozone测试结果。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-首先是文件利用率，btrfs/ext3/ext4会消耗10%左右的空间作为系统消耗。如果你需要比较高的磁盘利用率，请不要考虑这三种系统。也许你会认为，放文件又不会放满，必须空出部分来才能减少文件碎片。实际上，被消耗掉的空间也并不是白白消耗，你的所有数据，都会增加10%的系统消耗空间。因此ntfs的防碎片阀值（为了防止碎片化，磁盘使用率不应当高于）大约是85%，而ext3就只有75%-80%。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-其次是大文件效率，除了ext3不予考虑外，其余系统都过的去。btrfs/ext4在删除大文件的时候耗时略多，大概是和管理特性有关。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-   
-第三是小文件效率。如果你需要用小文件，千万不要考虑jfs，慢到我无法相信。ext4比btrfs和xfs快了四倍左右，非常适合操作大量小文件。例如源码编译，有blog说ext4比xfs快数倍。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    最后是循环列文件效率，同样，ext4一枝独秀，其余水准相去不远。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-    综合以上几个考量，linux中比较推荐的文件系统是ext4,
-xfs两种。大量文件存储用xfs，小规模文件密集使用用ext4。在特定情况下，可以使用btrfs（它的特性非常全）或者jfs（小文件操作慢，但是随机读写快）。兼容考量下，可以用ext3。不推荐使用reiser4。
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-\
-
-&lt;/div&gt;
-
-&lt;div&gt;
-
-参考：
-
-&lt;/div&gt;
-
-&lt;ol&gt;
-&lt;li&gt;&lt;a href=&#34;http://www.ilsistemista.net/index.php/linux-a-unix/6-linux-filesystems-benchmarked-ext3-vs-ext4-vs-xfs-vs-btrfs.html&#34;&gt;Linux filesystems benchmarked: EXT3 vs EXT4 vs XFS vs BTRFS -
-Bonnie++ random seeks and file
-handling&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://www.kuqin.com/linux/20090204/34063.html&#34;&gt;Ext4 ReiserFS Btrfs
-等7种文件系统性能比拼&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://www.debian-administration.org/articles/388&#34;&gt;Filesystems (ext3, reiser, xfs, jfs) comparison on Debian
-Etch&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;span
-style=&#34;font-family:Verdana, &#39;Lucida Grande&#39;, &#39;Lucida Sans Unicode&#39;, Tahoma, Arial, sans-serif;font-size:12px;line-height:19px;background-color:rgb(244, 244, 238)&#34;&gt;&lt;a href=&#34;http://lists.mysql.com/benchmarks/131&#34;&gt;XFS,
-Reiser, JFS &amp;amp; ext3 performance on Suse 9
-Enterprise&lt;/a&gt;&lt;/span&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://securfox.wordpress.com/tag/filesystem-jfs-xfs-ext3/&#34;&gt;Filesystems (jfs, xfs, ext3) comparison
-on Debian&lt;/a&gt;&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;/div&gt;&lt;/p&gt;
-</description>
+ --------------- --------- -------------- ---------------- ---------------- ---------------- ------------------ --------- ----------- ------------ 文件系统 btrfs ext3 ext4 jfs reiserfs reiser4 xfs ntfs zfs 最大卷容量 16 EB 32 TB 1 EB (16TB) 32 PB 16 TB ?? 16 EB 256 TB 16 EB 最大文件容量 16 EB 2 TB 16 TB 4 PB 8TB 8TB 8 EB 16 TB 16 EB 目录结构 B tree list/tree list/Htree B tree B+ tree dancing B\* tree B+ tree B+ tree hash table 文件分配 extents bitmap/table bitmap/extents bitmap/extents bitmap ?</description>
     </item>
     
     <item>
@@ -291,14 +30,10 @@ on Debian&lt;/a&gt;&lt;/li&gt;
       <pubDate>Tue, 19 Jul 2011 14:38:06 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/1858/</guid>
-      <description>&lt;p&gt;试图在linux中使用虚拟机的同学请注意，刚刚测试下来的结果，vmware和kvm在btrfs上的IO效率极端的差。&lt;/p&gt;
-
-&lt;p&gt;首先是vmware，win2003，512M的实例，开机大约需要40分钟。这种效率已经远远超出了我的预期，于是我改用libvirt管理的kvm。结果依然出乎意料，debian实例的安装需要超过5分钟。由于怀疑是raw格式而非qcow2格式造成的速度差异，因此新建了一个实例，一时偷懒就放在了/下面，这个分区是ext3而非btrfs。结果安装大约在3分钟内结束，这似乎证明了我的猜想。于是我开始使用btrfs下的raw格式进行安装，结果速度依然异常缓慢。由此我怀疑到是btrfs文件系统的问题。&lt;/p&gt;
-
-&lt;p&gt;在ext3上创建一个qcow2格式的实例后，证实了我的猜想。问题在于btrfs的某种机制上。在网络上寻找类似问题，并没有发现。因此在blog上提出警告和问题。&lt;/p&gt;
-
-&lt;p&gt;有人知道为什么在btrfs上使用虚拟机会导致极端的效率问题么？hdparm和文件读写测试表明btrfs的平均效率并没有问题，磁盘也没有问题。&lt;/p&gt;
-</description>
+      <description>试图在linux中使用虚拟机的同学请注意，刚刚测试下来的结果，vmware和kvm在btrfs上的IO效率极端的差。
+首先是vmware，win2003，512M的实例，开机大约需要40分钟。这种效率已经远远超出了我的预期，于是我改用libvirt管理的kvm。结果依然出乎意料，debian实例的安装需要超过5分钟。由于怀疑是raw格式而非qcow2格式造成的速度差异，因此新建了一个实例，一时偷懒就放在了/下面，这个分区是ext3而非btrfs。结果安装大约在3分钟内结束，这似乎证明了我的猜想。于是我开始使用btrfs下的raw格式进行安装，结果速度依然异常缓慢。由此我怀疑到是btrfs文件系统的问题。
+在ext3上创建一个qcow2格式的实例后，证实了我的猜想。问题在于btrfs的某种机制上。在网络上寻找类似问题，并没有发现。因此在blog上提出警告和问题。
+有人知道为什么在btrfs上使用虚拟机会导致极端的效率问题么？hdparm和文件读写测试表明btrfs的平均效率并没有问题，磁盘也没有问题。</description>
     </item>
     
   </channel>

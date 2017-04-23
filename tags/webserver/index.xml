@@ -8,7 +8,9 @@
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
     <lastBuildDate>Tue, 16 Nov 2010 10:18:00 +0800</lastBuildDate>
-    <atom:link href="http://shell909090.org/tags/webserver/index.xml" rel="self" type="application/rss+xml" />
+    
+	<atom:link href="http://shell909090.org/tags/webserver/index.xml" rel="self" type="application/rss+xml" />
+    
     
     <item>
       <title>为什么高性能框架都是http的</title>
@@ -16,14 +18,10 @@
       <pubDate>Tue, 16 Nov 2010 10:18:00 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/1613/</guid>
-      <description>&lt;p&gt;很多高性能的web框架，例如沈崴的euraisa，fackbook的tornado（这两个都是python）框架，都是http的。这和我们的印象相反，python，或者其他高级语言不是都很慢么？为什么都用这个来做http服务器呢？&lt;/p&gt;
-
-&lt;p&gt;这个我们得从服务器架构开始说起。最初的时候，没得说，所有的都在同一个机器上，甚至可能使用cgi模式。在访问压力上去后，为了增强性能，首先被拆出去的应该是数据库服务器。而后会考虑使用fastcgi或者scgi进行部署，前面使用apache或者nginx做前端。在这个时候，fastcgi是有道理的。因为apache在静态文件处理的性能上远高于python框架（而且快数倍），而nginx在大规模静止长连接的情况下性能更优异。而且，更进一步说，在性能压力加大的时候，应用服务器会被拆分，这时候apache/nginx做反向代理很容易做到负载均衡集群。&lt;/p&gt;
-
-&lt;p&gt;然而，如果压力再上去呢？在这种情况下，通常考虑的两件事情是静态文件拆分单独的服务器和应用服务器的硬件负载均衡（没钱的话也得考虑LVS了）。道理很简单，即使服务器性能能无限提升，网络接口的性能也不会无限制的上升的。完成这两步后，我们再来看整个架构，会发现反向代理变成了一个鸡肋。静态文件处理？不在这些服务器上了。负载均衡，系统级有了。apache/nginx有什么用呢？难道就是把http协议转换为fastcgi协议？&lt;/p&gt;
-
-&lt;p&gt;所以说，要达到高性能，框架应当是直接处理http的，并且支持大量的客户进行长连接。当压力小的时候，使用nginx的反向代理模式进行工作（而不是fastcgi协议）。当压力大的时候，拆开静态文件，直接上去服务全社会。&lt;/p&gt;
-</description>
+      <description>很多高性能的web框架，例如沈崴的euraisa，fackbook的tornado（这两个都是python）框架，都是http的。这和我们的印象相反，python，或者其他高级语言不是都很慢么？为什么都用这个来做http服务器呢？
+这个我们得从服务器架构开始说起。最初的时候，没得说，所有的都在同一个机器上，甚至可能使用cgi模式。在访问压力上去后，为了增强性能，首先被拆出去的应该是数据库服务器。而后会考虑使用fastcgi或者scgi进行部署，前面使用apache或者nginx做前端。在这个时候，fastcgi是有道理的。因为apache在静态文件处理的性能上远高于python框架（而且快数倍），而nginx在大规模静止长连接的情况下性能更优异。而且，更进一步说，在性能压力加大的时候，应用服务器会被拆分，这时候apache/nginx做反向代理很容易做到负载均衡集群。
+然而，如果压力再上去呢？在这种情况下，通常考虑的两件事情是静态文件拆分单独的服务器和应用服务器的硬件负载均衡（没钱的话也得考虑LVS了）。道理很简单，即使服务器性能能无限提升，网络接口的性能也不会无限制的上升的。完成这两步后，我们再来看整个架构，会发现反向代理变成了一个鸡肋。静态文件处理？不在这些服务器上了。负载均衡，系统级有了。apache/nginx有什么用呢？难道就是把http协议转换为fastcgi协议？
+所以说，要达到高性能，框架应当是直接处理http的，并且支持大量的客户进行长连接。当压力小的时候，使用nginx的反向代理模式进行工作（而不是fastcgi协议）。当压力大的时候，拆开静态文件，直接上去服务全社会。</description>
     </item>
     
     <item>
@@ -32,28 +30,17 @@
       <pubDate>Sun, 13 Jun 2010 13:39:00 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/121/</guid>
-      <description>&lt;p&gt;以前有一帮医生，帮一个城市看病。当然，医生少人多，政府就开始动脑筋，怎么样让医生给更多的人看病。&lt;/p&gt;
-
-&lt;p&gt;最开始是医生去病人那里看病的，医生花在路上的时间很长，于是成立了医院。让病人过来，节省医生的时间。当然，病人肯定比医生多的，这是整个文章的假定。为了保持原来的模式，病人到了医院后，会有自己独立的一间屋子，完全模拟在家的感觉。这样会有什么问题呢？问题在于病人独占了医生，在病人抽血，验血的时候，医生无所事事，因此效率很低。&lt;/p&gt;
-
-&lt;p&gt;后来转换了一个模式，医生过一段时间就离开当前病人，看看哪个病人那里空着就过去。这样的目地是为了防止一个病人拉住医生不放，将医生的时间平均分配到多个病人头上。这样的动作快多了，但是医院受不了了。原本8个医生，一人一个病房。现在8个医生要在N间屋子里穿梭，万一每个屋子里的病人都是在抽血，那这个N就会无穷大了，现在是屋子不足了。&lt;/p&gt;
-
-&lt;p&gt;然后又换了个模式，对不起，现在不是一人一间屋子了，是一堆人一间屋子。每个人只要一个床和一个病例记录，其他的设备可以有限的共享。这样屋子不足的问题得到了部分的缓解。问题是医生又不干了。一方面离开病人再找空病人费事又费精力，另一方面抢设备也是个困扰。医生需要设备的时候会让护士去看看，如果有就拿过来。可是两个医生一起下这个医嘱就会出问题，一个护士看看还有，回去说有，再去拿的时候另一个护士已经拿着最后一个离开了。就算是同一个医生，下这个医嘱的时候，两个执行的护士也会这么打起来。&lt;/p&gt;
-
-&lt;p&gt;医院方面动了动脑筋，干脆这样吧。一个病房里只能一个医生负责，多个病房公用的设备看到有就可以预定起来。这样病房里的设备是不会抢起来的，而病房外的设备先到先得，也算公平。医生在病人去抽血等等活动的时候再离开病人，而不是每隔固定的时间。每隔一个很长的时间护士会去巡房，如果医生还在被同一个病人纠缠，护士就会让这个病人强制休息。&lt;/p&gt;
-
-&lt;p&gt;不知道有多少人看懂了？下面是答案。&lt;/p&gt;
-
-&lt;p&gt;第一种模式叫做服务队列模式。医生是资源池，病人是待处理请求。这个模式的问题是请求过程中往往会有大量IO出现，此时CPU陷入等待，很不合算。&lt;/p&gt;
-
-&lt;p&gt;第二种模式叫做多线程。医生是CPU，病房是进程。一个病人新建一个进程，系统将CPU在多个进程间调度。此时的问题是进程对系统资源的消耗比较大。&lt;/p&gt;
-
-&lt;p&gt;第三种模式叫做多线程，医生是CPU，病房是进程，床是线程。每个请求新建一个线程，CPU在多个线程间调度。此时系统资源消耗的问题得到一定缓解，问题变成上下文切换和资源锁定造成的浪费。&lt;/p&gt;
-
-&lt;p&gt;第四种模式叫做协程。CPU只在必要的时候离开当前请求。什么是必要的时候呢？就是大规模IO之前。IO完成后，CPU会再度调度回来，这样避免了频繁的上下文切换。而在一个CPU的情况下，这样的模式不会造成竞争。（多线程模式就算只有一个CPU一样竞争，因为CPU可能在任何时间离开线程，包括原子操作内部）&lt;/p&gt;
-
-&lt;p&gt;沈游侠曾说过，好的构架是让瓶颈只出现的CPU上。当然，从更广义的来说是只让瓶颈出现在最紧张的资源上。显然，如果是服务器，CPU和总线带宽多数是最紧张的资源。&lt;/p&gt;
-</description>
+      <description>以前有一帮医生，帮一个城市看病。当然，医生少人多，政府就开始动脑筋，怎么样让医生给更多的人看病。
+最开始是医生去病人那里看病的，医生花在路上的时间很长，于是成立了医院。让病人过来，节省医生的时间。当然，病人肯定比医生多的，这是整个文章的假定。为了保持原来的模式，病人到了医院后，会有自己独立的一间屋子，完全模拟在家的感觉。这样会有什么问题呢？问题在于病人独占了医生，在病人抽血，验血的时候，医生无所事事，因此效率很低。
+后来转换了一个模式，医生过一段时间就离开当前病人，看看哪个病人那里空着就过去。这样的目地是为了防止一个病人拉住医生不放，将医生的时间平均分配到多个病人头上。这样的动作快多了，但是医院受不了了。原本8个医生，一人一个病房。现在8个医生要在N间屋子里穿梭，万一每个屋子里的病人都是在抽血，那这个N就会无穷大了，现在是屋子不足了。
+然后又换了个模式，对不起，现在不是一人一间屋子了，是一堆人一间屋子。每个人只要一个床和一个病例记录，其他的设备可以有限的共享。这样屋子不足的问题得到了部分的缓解。问题是医生又不干了。一方面离开病人再找空病人费事又费精力，另一方面抢设备也是个困扰。医生需要设备的时候会让护士去看看，如果有就拿过来。可是两个医生一起下这个医嘱就会出问题，一个护士看看还有，回去说有，再去拿的时候另一个护士已经拿着最后一个离开了。就算是同一个医生，下这个医嘱的时候，两个执行的护士也会这么打起来。
+医院方面动了动脑筋，干脆这样吧。一个病房里只能一个医生负责，多个病房公用的设备看到有就可以预定起来。这样病房里的设备是不会抢起来的，而病房外的设备先到先得，也算公平。医生在病人去抽血等等活动的时候再离开病人，而不是每隔固定的时间。每隔一个很长的时间护士会去巡房，如果医生还在被同一个病人纠缠，护士就会让这个病人强制休息。
+不知道有多少人看懂了？下面是答案。
+第一种模式叫做服务队列模式。医生是资源池，病人是待处理请求。这个模式的问题是请求过程中往往会有大量IO出现，此时CPU陷入等待，很不合算。
+第二种模式叫做多线程。医生是CPU，病房是进程。一个病人新建一个进程，系统将CPU在多个进程间调度。此时的问题是进程对系统资源的消耗比较大。
+第三种模式叫做多线程，医生是CPU，病房是进程，床是线程。每个请求新建一个线程，CPU在多个线程间调度。此时系统资源消耗的问题得到一定缓解，问题变成上下文切换和资源锁定造成的浪费。
+第四种模式叫做协程。CPU只在必要的时候离开当前请求。什么是必要的时候呢？就是大规模IO之前。IO完成后，CPU会再度调度回来，这样避免了频繁的上下文切换。而在一个CPU的情况下，这样的模式不会造成竞争。（多线程模式就算只有一个CPU一样竞争，因为CPU可能在任何时间离开线程，包括原子操作内部）
+沈游侠曾说过，好的构架是让瓶颈只出现的CPU上。当然，从更广义的来说是只让瓶颈出现在最紧张的资源上。显然，如果是服务器，CPU和总线带宽多数是最紧张的资源。</description>
     </item>
     
     <item>
@@ -62,53 +49,8 @@
       <pubDate>Fri, 02 Apr 2010 03:40:00 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/108/</guid>
-      <description>
-
-&lt;p&gt;本文系电脑资料，同步到blog上。小黄姐姐不必看了，可以帮我留个言。
-nginx性能不错，可惜不支持WebDAV，因此没法拿来作为subversion的http服务。于是考虑开一个nginx作为前端，后端就跑一个apache来作为容器。配置这么写的(节选)：
-=========/etc/nginx/sites-enabled/default========= server { listen  
-443; server_name  OOXX ssl  on; ssl_certificate  keys/server.crt;
-ssl_certificate_key  keys/server.key; ssl_session_timeout  5m;
-ssl_protocols  SSLv2 SSLv3 TLSv1; ssl_ciphers 
-ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP;
-ssl_prefer_server_ciphers   on; access_log 
-/var/log/nginx/localhost.access.log; include            
-/etc/nginx/mapping-ssl; error_page   500 502 503 504  /50x.html;&lt;/p&gt;
-
-&lt;h1 id=&#34;location-50x-html-root-var-www-nginx-default&#34;&gt;location = /50x.html { root   /var/www/nginx-default; } }&lt;/h1&gt;
-
-&lt;p&gt;打开了一个https的服务，这是当然的，svn传输的数据使用http很危险。
-===========/etc/nginx/mapping-ssl============= location \^~ /svn {
-proxy_set_header    Destination \$http_destination;
-proxy_pass          &lt;a href=&#34;http://apache_svr&#34;&gt;http://apache_svr&lt;/a&gt;; proxy_set_header   
-Host            \$host; proxy_set_header    X-Real-IP      
-\$remote_addr; proxy_set_header    X-Forwarded-Host \$host;
-proxy_set_header    X-Forwarded-Proto https; proxy_set_header   
-X-Forwarded-Server \$host; proxy_set_header    X-Forwarded-For&lt;/p&gt;
-
-&lt;h1 id=&#34;proxy-add-x-forwarded-for&#34;&gt;\$proxy_add_x_forwarded_for; }&lt;/h1&gt;
-
-&lt;p&gt;将/svn下面的所有请求交给apache2。
-=====/etc/apache2/mods-enabled/dav_svn.conf===== &amp;lt;Location
-/svn/main&amp;gt; DAV svn SVNPath /var/web/svn/main AuthType Basic AuthName
-&amp;ldquo;Subversion Repository&amp;rdquo; Require valid-user AuthUserFile
-/var/web/svn/main/conf/passwd AuthzSVNAccessFile&lt;/p&gt;
-
-&lt;h1 id=&#34;var-web-svn-main-conf-authz-lt-location-gt&#34;&gt;/var/web/svn/main/conf/authz &amp;lt;/Location&amp;gt;&lt;/h1&gt;
-
-&lt;p&gt;看起来很美，但是在使用中会发生502错误，原因是来自文件移动后，svn会使用COPY作为Verb去请求服务器端，这时候发生了这样一条日志：
-==========/var/log/apache2/access.log========== 127.0.0.1 - {user}
-[02/Apr/2010:11:07:31 +0800] &amp;ldquo;COPY {path} HTTP/1.0&amp;rdquo; 502 546 &amp;ldquo;-&amp;rdquo;&lt;/p&gt;
-
-&lt;h1 id=&#34;svn-1-5-4-r33841-tortoisesvn-1-5-5-14361-neon-0-28-3&#34;&gt;&amp;ldquo;SVN/1.5.4 (r33841)/TortoiseSVN-1.5.5.14361 neon/0.28.3&amp;rdquo;&lt;/h1&gt;
-
-&lt;p&gt;搜索了一下，这是因为使用https作为http服务的前端造成的，这里(&lt;a href=&#34;https://secure.bonkabonka.com/blog/2008/01/04/nginx_fronting_for_subversion.html)&#34;&gt;https://secure.bonkabonka.com/blog/2008/01/04/nginx_fronting_for_subversion.html)&lt;/a&gt;提到了解决方案，而它又引用了另一个网页(&lt;a href=&#34;http://silmor.de/49)&#34;&gt;http://silmor.de/49)&lt;/a&gt;解释细节。不幸的是，这个细节是错误的。关键在于这句上
-LoadModule headers_module /usr/lib/apache2/modules/mod_headers_too.so
-仔细看一下就会发现，mod_headers_too应当是mod_headers。在debian下，应当执行这几条指令。
-cd /etc/apache2/mods-enabled ln -s ../mods-available/headers.load
-headers.load 然后，在/etc/apache2/httpd.conf中写入以下内容：
-RequestHeader edit Destination \^https http early 问题解决，Q.E.D。&lt;/p&gt;
-</description>
+      <description>本文系电脑资料，同步到blog上。小黄姐姐不必看了，可以帮我留个言。 nginx性能不错，可惜不支持WebDAV，因此没法拿来作为subversion的http服务。于是考虑开一个nginx作为前端，后端就跑一个apache来作为容器。配置这么写的(节选)： =========/etc/nginx/sites-enabled/default========= server { listen 443; server_name OOXX ssl on; ssl_certificate keys/server.crt; ssl_certificate_key keys/server.key; ssl_session_timeout 5m; ssl_protocols SSLv2 SSLv3 TLSv1; ssl_ciphers ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP; ssl_prefer_server_ciphers on; access_log /var/log/nginx/localhost.access.log; include /etc/nginx/mapping-ssl; error_page 500 502 503 504 /50x.html;
+location = /50x.html { root /var/www/nginx-default; } } 打开了一个https的服务，这是当然的，svn传输的数据使用http很危险。 ===========/etc/nginx/mapping-ssl============= location \^~ /svn { proxy_set_header Destination \$http_destination; proxy_pass http://apache_svr; proxy_set_header Host \$host; proxy_set_header X-Real-IP \$remote_addr; proxy_set_header X-Forwarded-Host \$host; proxy_set_header X-Forwarded-Proto https; proxy_set_header X-Forwarded-Server \$host; proxy_set_header X-Forwarded-For</description>
     </item>
     
     <item>
@@ -117,68 +59,7 @@ RequestHeader edit Destination \^https http early 问题解决，Q.E.D。&lt;/p&
       <pubDate>Mon, 07 Dec 2009 09:58:00 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/82/</guid>
-      <description>&lt;p&gt;&lt;span style=&#34;font-family: Verdana; font-size: 13px;&#34;&gt;
-我们上面说过，Prefork模式有着先天的缺陷。针对http这种大量短请求的应用(当然，http1.1以来，有不少客户端使用了长连接)，Prefork的最高并发很让人不满。并且，无论是否高并发，Prefork的性能都非常不好。现在我们介绍一下Thread模式。
-和Prefork非常类似，每Thread模式通过新建的线程来控制对象的传输。和Prefork模式不同的是，一个用户能够建立多少个线程并没有限制。在系统上似乎有限制，65535个，但是同样，文件句柄最高也就能打开65535个，因此通常而言一个服务器最高也就能顶50000并发，无法再高了(nginx就能够支撑5W并发，再高要使用一些特殊手法来均衡负载)。而且线程的建立和销毁的开销非常小——没有独立的空间，不用复制句柄，只要复制一份栈和上下文对象就可以。但是，由于所有线程运行在同一个进程空间中，因此每线程模式有几个非常麻烦的瓶颈。
-首先是对象锁定和同步，在每进程模式中，由于进程空间独立，因此一个对象被两个进程使用的时候，他们使用了两个完全不同的对象。而线程模式下，他们访问的是同一个对象。如果两个线程需要进行排他性访问，就必须使用锁，或者其他线程同步工具来进行线程同步。其次，由于使用同一个进程空间，因此一旦有一个连接处理的时候发生错误，整个程序就会崩溃。对于这一问题，可以通过watchdog方式来进行部分规避。原理是通过一个父进程启动子进程，子进程使用每线程处理请求。如果子进程崩溃，父进程的wait就会返回结果。此时父进程重启子进程。使用了watchdog后，服务不会中断，但是程序崩溃时正在处理的连接会全部丢失。最后，是python特有的问题——GIL。由于GIL的存在，因此无论多少线程，实际上只有一个线程可以处理请求，这无形中降低了效率。下面我们看一下Thread模式的测试结果：
-测试指令： ab -n 1000 -c 100 &lt;a href=&#34;http://localhost:8000/py-web-server&#34;&gt;http://localhost:8000/py-web-server&lt;/a&gt;
-返回结果： Document Path:          /py-web-server Document
-Length:        1682 bytes&lt;/span&gt; Concurrency Level:      100 Time taken
-for tests:   3.834 seconds Complete requests:      1000 Failed
-requests:        0 Write errors:           0 Total transferred:     
-1723000 bytes HTML transferred:       1682000 bytes Requests per
-second:    260.85 [#/sec] (mean) Time per request:       383.362
-[ms] (mean) Time per request:       3.834 [ms] (mean, across all
-concurrent requests) Transfer rate:          438.91 [Kbytes/sec]
-received Connection Times (ms) min  mean[+/-sd] median   max
-Connect:        0   75 468.4      0    3001 Processing:     2   32 
-84.0     20    1593 Waiting:        1   30  84.0     18    1592
-Total:          2  107 511.0     20    3828 测试指令： ab -n 10000 -c
-1000 &lt;a href=&#34;http://localhost:8000/py-web-server&#34;&gt;http://localhost:8000/py-web-server&lt;/a&gt; 返回结果： Document
-Path:          /py-web-server Document Length:        1682 bytes
-Concurrency Level:      1000 Time taken for tests:   37.510 seconds
-Complete requests:      10000 Failed requests:        0 Write
-errors:           0 Total transferred:      17231723 bytes HTML
-transferred:       16821682 bytes Requests per second:    266.60
-[#/sec] (mean) Time per request:       3751.004 [ms] (mean) Time
-per request:       3.751 [ms] (mean, across all concurrent requests)
-Transfer rate:          448.62 [Kbytes/sec] received Connection Times
-(ms) min  mean[+/-sd] median   max Connect:        0  695 2422.8     
-0   21004 Processing:     0   67 341.1     28    9855 Waiting:       
-0   64 340.5     26    9855 Total:          0  762 2516.6     29   30856
-根据结果可以看到，Thread模式在1000并发的时候还工作良好，每秒处理请求数在250-300req/sec，但是每个请求的总处理时间已经高达760ms。并且从中我们可以看出，大量的时间都是消耗在等待上，说明线程的建立逐渐成为问题(为什么？下面说明)。实际性能测试的结果，也表明大约一半的时间花费在了等待上，而另一半花费在了线程建立上。加上销毁的开销，整个系统主要的瓶颈在于由于大量线程建立和销毁造成的CPU开销上。
-结合上述情况，我们同时也想到一些问题，Thread模式在一个进程中，到底能创建多少个线程？上文上说大约是5W个，其实太理论了。实际上如果按照Windows来计算，最高不超过1000个，Linux下也在这个数量级上。为什么？由于进程内存空间的问题。一个线程在创建时，默认需要1M的内存空间来作为栈。对于专用的高速系统，我们建议将这个值调整到500K，一般一个session的内存消耗就在500K上下，考虑还有堆消耗，500K是一个比较安全的值。单一进程，32位访问的寻址空间是4G，然而系统需要使用其中的2G作为系统空间——这一状态可以经由启动时的3G参数调整(针对Windows)。然而由于使用了系统空间，因此系统中很多表项空间不足，对稳定性也有不利影响，通常我们建议不要进行这种“优化”。而系统的基础使用和库使用需要数百M的空间，安全起见，能够自由的用于栈的可分配自由空间只有1G的大小。这1G的空间，以创建1M的栈计算，只能同时开1000线程。这就是单一进程中线程的极限。
-实际上，是根本做不出这么多的线程的。贝壳的小型测试机上只观测到过10-20个线程/每进程。这是由于线程的建立也需要时间，在创建下一个线程之前，工作进程已经跑了一些了。创建几个工作线程后，第一个工作线程已经完成工作。因此我们在实际中看到的是，压力越高，连接建立的速度越慢。因为负责创立新线程的线程获得越少的CPU时间用于工作。为了增加处理速度，通常我们可以采取一个CPU建立一个进程的策略，这被称为多线程/多进程模式。下面我们来测量其工作效率：
-测试指令： ab -n 10000 -c 1000 &lt;a href=&#34;http://localhost:8000/&#34;&gt;http://localhost:8000/&lt;/a&gt; 返回结果：
-Document Path:          / Document Length:        3318 bytes Concurrency
-Level:      1000 Time taken for tests:   20.319 seconds Complete
-requests:      10000 Failed requests:        0 Write errors:           0
-Total transferred:      33590000 bytes HTML transferred:       33180000
-bytes Requests per second:    492.14 [#/sec] (mean) Time per
-request:       2031.939 [ms] (mean) Time per request:       2.032
-[ms] (mean, across all concurrent requests) Transfer rate:         
-1614.36 [Kbytes/sec] received Connection Times (ms) min  mean[+/-sd]
-median   max Connect:        0  160 912.4      0    9008 Processing:    
-0   28 174.7     12    4738 Waiting:        0   27 174.3     12    4738
-Total:          0  188 987.5     13   12758
-这是台双核的机器，性能差不多提升了一倍，这就是多进程/多线程模式的威力。按照这个数据外推，在常见的8核处理器上，将达到2000req/sec的处理速度，甚至更高。
-当然，也不用高兴太早，我们看一下apache2的每线程模式： 测试指令： ab -n
-10000 -c 1000 &lt;a href=&#34;http://localhost:8000/&#34;&gt;http://localhost:8000/&lt;/a&gt; 返回结果： Concurrency
-Level:      1000 Time taken for tests:   6.147 seconds Complete
-requests:      10000 Failed requests:        0 Write errors:           0
-Total transferred:      3213925 bytes HTML transferred:       453375
-bytes Requests per second:    1626.87 [#/sec] (mean) Time per
-request:       614.678 [ms] (mean) Time per request:       0.615
-[ms] (mean, across all concurrent requests) Transfer rate:         
-510.61 [Kbytes/sec] received Connection Times (ms) min  mean[+/-sd]
-median   max Connect:        0  111 398.3     59    3087 Processing:   
-28  126  99.0    113    1772 Waiting:       10  104  98.7     92    1745
-Total:         78  237 423.1    175    3691 Percentage of the requests
-served within a certain time (ms) 50%    175 66%    188 75%    207
-80%    217 90%    235 95%    256 98%   1016 99%   3222 100%   3691
-(longest request)
-这种效率在8路的CPU上，性能将达到6400req/sec。所以想用python实现真正高效的前端本身就是个错误的逻辑。&lt;/p&gt;
-</description>
+      <description>我们上面说过，Prefork模式有着先天的缺陷。针对http这种大量短请求的应用(当然，http1.1以来，有不少客户端使用了长连接)，Prefork的最高并发很让人不满。并且，无论是否高并发，Prefork的性能都非常不好。现在我们介绍一下Thread模式。 和Prefork非常类似，每Thread模式通过新建的线程来控制对象的传输。和Prefork模式不同的是，一个用户能够建立多少个线程并没有限制。在系统上似乎有限制，65535个，但是同样，文件句柄最高也就能打开65535个，因此通常而言一个服务器最高也就能顶50000并发，无法再高了(nginx就能够支撑5W并发，再高要使用一些特殊手法来均衡负载)。而且线程的建立和销毁的开销非常小——没有独立的空间，不用复制句柄，只要复制一份栈和上下文对象就可以。但是，由于所有线程运行在同一个进程空间中，因此每线程模式有几个非常麻烦的瓶颈。 首先是对象锁定和同步，在每进程模式中，由于进程空间独立，因此一个对象被两个进程使用的时候，他们使用了两个完全不同的对象。而线程模式下，他们访问的是同一个对象。如果两个线程需要进行排他性访问，就必须使用锁，或者其他线程同步工具来进行线程同步。其次，由于使用同一个进程空间，因此一旦有一个连接处理的时候发生错误，整个程序就会崩溃。对于这一问题，可以通过watchdog方式来进行部分规避。原理是通过一个父进程启动子进程，子进程使用每线程处理请求。如果子进程崩溃，父进程的wait就会返回结果。此时父进程重启子进程。使用了watchdog后，服务不会中断，但是程序崩溃时正在处理的连接会全部丢失。最后，是python特有的问题——GIL。由于GIL的存在，因此无论多少线程，实际上只有一个线程可以处理请求，这无形中降低了效率。下面我们看一下Thread模式的测试结果： 测试指令： ab -n 1000 -c 100 http://localhost:8000/py-web-server 返回结果： Document Path: /py-web-server Document Length: 1682 bytes Concurrency Level: 100 Time taken for tests: 3.834 seconds Complete requests: 1000 Failed requests: 0 Write errors: 0 Total transferred: 1723000 bytes HTML transferred: 1682000 bytes Requests per second: 260.85 [#/sec] (mean) Time per request: 383.362 [ms] (mean) Time per request: 3.834 [ms] (mean, across all concurrent requests) Transfer rate: 438.91 [Kbytes/sec] received Connection Times (ms) min mean[+/-sd] median max Connect: 0 75 468.</description>
     </item>
     
     <item>
@@ -187,91 +68,13 @@ served within a certain time (ms) 50%    175 66%    188 75%    207
       <pubDate>Wed, 21 Oct 2009 10:31:00 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/80/</guid>
-      <description>&lt;p&gt;要实现webserver，首先需要一个tcp server。作为python的设计原则，最好是使用SocketServer或者封装更好的BaseHTTPServer来复用。不过既然我们的目的是为了学习，那么就不能用这两个内置对象。我们先实现一个最古典的每进程模式实现。而我们标题上的Prefork，则是apache服务器对这个模式的称呼。&lt;/p&gt;
-
-&lt;p&gt;每进程模式，顾名思义，就是每个新连接开启一个进程进行处理。首先创建一个socket，bind到一个套接字上。当有请求时，accept。(好多英文，不是我有意cheglish，全是api的名称)accept会返回一个通讯用的socket，这时fork出一个新的进程，处理这个socket。&lt;/p&gt;
-
-&lt;p&gt;主进程在每次进入accept后阻塞，子进程在每次进入recv后阻塞。这样会带来几方面的好处。首先是模型分离，即使一个子进程崩溃，也不会影响到其他子进程。其次是身份分离，当你需要让http server以高于常规运行(常规都是以apache, www-data, nobody运行的)用户的权限进行工作时，每进程模式是唯一安全的模式。其他模式都会造成同一进程内的其他session也暂时获得这个权限的问题。但是同样，这样有几方面的问题，主要就是性能问题。&lt;/p&gt;
-
-&lt;p&gt;由于每个连接都需要fork出一个新进程去处理。因此针对大量小连接的时候，fork和exit消耗了大量CPU。问题更严重的是，由于用户进程总数是有限的(PEM或者ulimit都会限制这个数量)，因此压力大到一定程度时(通常是1024或者2048)，就会出现无法创建连接的情况。而对小型服务器而言，在压力还没大道这个程度以前，服务器就会由于性能达到限制而造成段错误。以下是实际试验指令和结果：&lt;/p&gt;
-
-&lt;p&gt;测试指令：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;ab -n 10000 -c 100 &amp;lt;http://localhost:8000/py-web-server&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;服务器报错：&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&#34;:&#34;&gt;20090924 05:51:18&lt;/a&gt;: Traceback (most recent call last):
-&lt;a href=&#34;:&#34;&gt;20090924 05:51:18&lt;/a&gt;: File &amp;ldquo;main.py&amp;rdquo;, line 19, in &lt;module&gt;
-&lt;a href=&#34;:&#34;&gt;20090924 05:51:18&lt;/a&gt;:
-&lt;a href=&#34;:&#34;&gt;20090924 05:51:18&lt;/a&gt;: sock.run ();
-&lt;a href=&#34;:&#34;&gt;20090924 05:51:18&lt;/a&gt;: File &amp;ldquo;/home/shell/py-web-server/server.py&amp;rdquo;, line 30, in run
-&lt;a href=&#34;:&#34;&gt;20090924 05:51:18&lt;/a&gt;:
-&lt;a href=&#34;:&#34;&gt;20090924 05:51:18&lt;/a&gt;: while loop_func (): pass
-&lt;a href=&#34;:&#34;&gt;20090924 05:51:18&lt;/a&gt;: File &amp;ldquo;/home/shell/py-web-server/server.py&amp;rdquo;, line 56, in do_loop
-&lt;a href=&#34;:&#34;&gt;20090924 05:51:18&lt;/a&gt;: &lt;a href=&#34;:&#34;&gt;20090924 05:51:18&lt;/a&gt;: if os.fork () == 0:&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&#34;:&#34;&gt;20090924 05:51:18&lt;/a&gt;: [Errno 11] Resource temporarily unavailable&lt;/p&gt;
-
-&lt;p&gt;测试指令：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;ab -n 1000 -c 100 &amp;lt;http://localhost:8000/py-web-server&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;返回结果：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;Document Path: /py-web-server Document Length: 1320 bytes
-Concurrency Level: 100 Time taken for tests: 14.189 seconds
-Complete requests: 1000 Failed requests: 0 Write
-errors: 0 Total transferred: 1361000 bytes HTML
-transferred: 1320000 bytes Requests per second: 70.48
-[#/sec] (mean) Time per request: 1418.851 [ms] (mean) Time
-per request: 14.189 [ms] (mean, across all concurrent requests)
-Transfer rate: 93.67 [Kbytes/sec] received Connection Times
-(ms) min mean[+/-sd] median max Connect: 0 18 328.4
-0 9000 Processing: 4 109 211.0 95 3335 Waiting: 4
-100 211.1 86 3324 Total: 8 127 498.3 95 12332
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;为什么只有100并发？因为200并发的时候测试机上的服务器已经崩溃了。而且我们看到服务器的效率大约是70req/sec。等过两天，讲到&lt;/p&gt;
-
-&lt;p&gt;Thread模式的时候，大家可以对比一下Thread模式的效率。基本上说，针对普通服务器，个人觉得Prefork模式并发数量尽量控制在&lt;/p&gt;
-
-&lt;p&gt;100-800这个级别比较合适。更高的也许能承受，可是就可能发生不稳定(原因上面有说，就是进程数量限制)。那么Prefork模式通常用在哪里呢？&lt;/p&gt;
-
-&lt;p&gt;数据库！Oracle和Postgresql全是Prefork模式的(其中Oracle的Prefork模式还经过一次分发，更复杂一些)。压力通常在&lt;/p&gt;
-
-&lt;p&gt;100-200这个级别，连接基本不断开，连接的请求和销毁开销很小，但是处理的过程开销很大。并且，由于处理过程复杂，一个链接的处理错误不能殃及整个&lt;/p&gt;
-
-&lt;p&gt;系统。对于这种问题，最好采用Prefork模式进行处理。同类的问题还有一些EJB服务器，复杂中间件等等。&lt;/p&gt;
-
-&lt;p&gt;那么反过来，作为客户，我在面对Prefork模式的时候，如何才能高效处理呢？——对，大家都想到了，连接池模式。通过连接池存放空闲连接，避免连接的建立和释放开销，从而增加服务器性能。&lt;/p&gt;
-
-&lt;p&gt;另外，python实现其实性能是很有问题的，我们对比一下apache2的测试结果：&lt;/p&gt;
-
-&lt;p&gt;测试指令：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;ab -n 1000 -c 100 &amp;lt;http://localhost:8000/py-web-server&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;返回结果：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;Document Path: / Document Length: 45 bytes
-Concurrency Level: 1000 Time taken for tests: 7.914 seconds
-Complete requests: 10000 Failed requests: 0 Write
-errors: 0 Total transferred: 3204355 bytes HTML
-transferred: 452025 bytes Requests per second: 1263.56
-[#/sec] (mean) Time per request: 791.413 [ms] (mean) Time per
-request: 0.791 [ms] (mean, across all concurrent requests)
-Transfer rate: 395.40 [Kbytes/sec] received Connection Times
-(ms) min mean[+/-sd] median max Connect: 0 70 432.8
-3 3028 Processing: 0 193 733.0 88 6629 Waiting: 0
-190 732.4 85 6621 Total: 46 263 950.7 93 7895 --
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;与其相濡以沫，不如相忘于江湖&lt;/p&gt;
-</description>
+      <description>要实现webserver，首先需要一个tcp server。作为python的设计原则，最好是使用SocketServer或者封装更好的BaseHTTPServer来复用。不过既然我们的目的是为了学习，那么就不能用这两个内置对象。我们先实现一个最古典的每进程模式实现。而我们标题上的Prefork，则是apache服务器对这个模式的称呼。
+每进程模式，顾名思义，就是每个新连接开启一个进程进行处理。首先创建一个socket，bind到一个套接字上。当有请求时，accept。(好多英文，不是我有意cheglish，全是api的名称)accept会返回一个通讯用的socket，这时fork出一个新的进程，处理这个socket。
+主进程在每次进入accept后阻塞，子进程在每次进入recv后阻塞。这样会带来几方面的好处。首先是模型分离，即使一个子进程崩溃，也不会影响到其他子进程。其次是身份分离，当你需要让http server以高于常规运行(常规都是以apache, www-data, nobody运行的)用户的权限进行工作时，每进程模式是唯一安全的模式。其他模式都会造成同一进程内的其他session也暂时获得这个权限的问题。但是同样，这样有几方面的问题，主要就是性能问题。
+由于每个连接都需要fork出一个新进程去处理。因此针对大量小连接的时候，fork和exit消耗了大量CPU。问题更严重的是，由于用户进程总数是有限的(PEM或者ulimit都会限制这个数量)，因此压力大到一定程度时(通常是1024或者2048)，就会出现无法创建连接的情况。而对小型服务器而言，在压力还没大道这个程度以前，服务器就会由于性能达到限制而造成段错误。以下是实际试验指令和结果：
+测试指令：
+ab -n 10000 -c 100 &amp;lt;http://localhost:8000/py-web-server&amp;gt;  服务器报错：
+20090924 05:51:18: Traceback (most recent call last): 20090924 05:51:18: File &amp;ldquo;main.py&amp;rdquo;, line 19, in  20090924 05:51:18: 20090924 05:51:18: sock.run (); 20090924 05:51:18: File &amp;ldquo;/home/shell/py-web-server/server.py&amp;rdquo;, line 30, in run 20090924 05:51:18: 20090924 05:51:18: while loop_func (): pass 20090924 05:51:18: File &amp;ldquo;/home/shell/py-web-server/server.py&amp;rdquo;, line 56, in do_loop 20090924 05:51:18: 20090924 05:51:18: if os.fork () == 0:</description>
     </item>
     
     <item>
@@ -280,20 +83,9 @@ Transfer rate: 395.40 [Kbytes/sec] received Connection Times
       <pubDate>Fri, 09 Oct 2009 16:01:00 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/79/</guid>
-      <description>&lt;p&gt;本系列文章的所有代码，都发布在&lt;a href=&#34;http://code.google.com/p/py-web-server/%E3%80%82&#34;&gt;http://code.google.com/p/py-web-server/。&lt;/a&gt;项目的目的，是通过写作一个可用的http web server，学习服务器程序编写中的一些方法，以及http协议的细节。&lt;/p&gt;
-
-&lt;p&gt;如同我在项目介绍中说的，项目遵循以下几个设计原则。&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;[]()&lt;/li&gt;
-&lt;li&gt;[]()&lt;/li&gt;
-&lt;li&gt;[]()&lt;/li&gt;
-&lt;li&gt;[]()&lt;/li&gt;
-&lt;li&gt;[]()&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;有兴趣的，可以也通过本文的介绍，不看代码写一个类似的东西。而后对比代码，找出设计上的异同和优劣。如果您也设计了一个，请告诉我，我很高兴能够得到大家的指正。&lt;/p&gt;
-</description>
+      <description>本系列文章的所有代码，都发布在http://code.google.com/p/py-web-server/。项目的目的，是通过写作一个可用的http web server，学习服务器程序编写中的一些方法，以及http协议的细节。
+如同我在项目介绍中说的，项目遵循以下几个设计原则。
+ []() []() []() []() []()  有兴趣的，可以也通过本文的介绍，不看代码写一个类似的东西。而后对比代码，找出设计上的异同和优劣。如果您也设计了一个，请告诉我，我很高兴能够得到大家的指正。</description>
     </item>
     
     <item>
@@ -302,39 +94,12 @@ Transfer rate: 395.40 [Kbytes/sec] received Connection Times
       <pubDate>Tue, 06 Dec 2005 19:42:04 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/272/</guid>
-      <description>&lt;p&gt;首先为 CA 创建一个 RSA 私用密钥&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;openssl genrsa -des3 -out ca.key 1024
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;利用 CA 的 RSA 密钥创建一个自签署的 CA 证书（X.509结构）&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;openssl req -new -x509 -days 3650 -key ca.key -out ca.crt
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;首先为你的 Apache 创建一个 RSA 私用密钥&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;openssl genrsa -des3 -out server.key 1024
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;用 server.key 生成证书签署请求 CSR&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;openssl req -new -key server.key -out server.csr
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;签署证书&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;openssl x509 -md5 -days 3560 -req -signkey server.key -CAcreateserial -CAserial ca.crt -in server.csr -out server.crt
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;最后apache设置，将下面的参数改为&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;SSLCertificateFILE /usr/local/apache/conf/server.crt
-SSLCertificateKeyFile /usr/local/apache/conf/server.key
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;当然你也可以拿ca.key和ca.crt顶上去，这两个是自签署的。&lt;/p&gt;
-</description>
+      <description>首先为 CA 创建一个 RSA 私用密钥
+openssl genrsa -des3 -out ca.key 1024  利用 CA 的 RSA 密钥创建一个自签署的 CA 证书（X.509结构）
+openssl req -new -x509 -days 3650 -key ca.key -out ca.crt  首先为你的 Apache 创建一个 RSA 私用密钥
+openssl genrsa -des3 -out server.key 1024  用 server.key 生成证书签署请求 CSR
+openssl req -new -key server.key -out server.csr  签署证书
+openssl x509 -md5 -days 3560 -req -signkey server.key -CAcreateserial -CAserial ca.crt -in server.csr -out server.crt  最后apache设置，将下面的参数改为</description>
     </item>
     
     <item>
@@ -343,26 +108,10 @@ SSLCertificateKeyFile /usr/local/apache/conf/server.key
       <pubDate>Tue, 06 Dec 2005 17:17:59 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/270/</guid>
-      <description>&lt;p&gt;make不通过&lt;/p&gt;
-
-&lt;p&gt;出错如下&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;clude/linux -I../common -DCPU=&amp;quot;i386&amp;quot; -DOS= -c -o ssl.o ssl.c
-In file included from /usr/include/openssl/ssl.h:179,
-from ssl.c:62:
-/usr/include/openssl/kssl.h:72:18: krb5.h: No such file or directory
-In file included from /usr/include/openssl/ssl.h:179,
-from ssl.c:62:
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;解决方法：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;export LOCALDEFS=&amp;quot;-DOPENSSL_NO_KRB5&amp;quot;
-export C_INCLUDE_PATH=&amp;quot;/usr/kerberos/include&amp;quot;
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;引用自&lt;a href=&#34;http://www.thinkjam.org/meteor/archives/2005/04/as3resin.html&#34;&gt;http://www.thinkjam.org/meteor/archives/2005/04/as3resin.html&lt;/a&gt;&lt;/p&gt;
-</description>
+      <description>make不通过
+出错如下
+clude/linux -I../common -DCPU=&amp;quot;i386&amp;quot; -DOS= -c -o ssl.o ssl.c In file included from /usr/include/openssl/ssl.h:179, from ssl.c:62: /usr/include/openssl/kssl.h:72:18: krb5.h: No such file or directory In file included from /usr/include/openssl/ssl.h:179, from ssl.c:62:  解决方法：
+export LOCALDEFS=&amp;quot;-DOPENSSL_NO_KRB5&amp;quot; export C_INCLUDE_PATH=&amp;quot;/usr/kerberos/include&amp;quot;  引用自http://www.thinkjam.org/meteor/archives/2005/04/as3resin.html</description>
     </item>
     
     <item>
@@ -371,42 +120,14 @@ export C_INCLUDE_PATH=&amp;quot;/usr/kerberos/include&amp;quot;
       <pubDate>Tue, 29 Nov 2005 00:26:52 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/266/</guid>
-      <description>&lt;p&gt;别的不说了，先用debian自带的apt安装apache2,记得安装dev部分，还有libapr0,libapr-dev,libapr0-dev。千万别忘记安装后面的部分，否则你在下面编译的时候就要出现问题。&lt;/p&gt;
-
-&lt;p&gt;拿到resin，放在目标目录下面，然后tar -jxvf。完成后用ln -s做一个链接上去，使用resin的名字，这样可以方便的替换版本。然后在主目录下面运行./configure，make一下。一般来说，会出不少错误，最后生成一个libresin.so放到libexec下面，并且更新了resin的主执行程序。这个so很具有迷惑性，开始贝壳就被他骗了。这个so貌似是resin在本地平台下的加速程序，而不是嵌入到apache系列服务器中的整合插件。其中最大的差异是没有caucho_module导出符号，在apache加载的时候肯定会失败。&lt;/p&gt;
-
-&lt;p&gt;跑到src/c/plugins/apache2下面运行make。可能会报错，可能没有。贝壳这里报了错，不过贝壳运行configure的时候没有加任何参数，也许加了参数就正常了。如果不正常，出错的代码可能分别是httpd.h找不到或者apr_time.h找不到。运行vi Makefile，看到有INCLUDE的目录吗？那里面要包含/usr/include/apache2和/usr/include/apr-0两个目录，没有就肯定出错。好了，修改然后重新make。得到的文件是mod_caucho.so。将它cp到$RESIN_HOME/libexec下面，这个动态库导出了caucho_module符号。&lt;/p&gt;
-
-&lt;p&gt;在/etc/apache2/httpd.conf里面编辑一下，添加这个内容。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;LoadModule caucho_module /usr/resin/libexec/mod_caucho.so
-&amp;lt;IfModule mod_caucho.c&amp;gt;
-    CauchoConfigFile ......../resin.conf
-    &amp;lt;Location /caucho-status&amp;gt;
-        SetHandler caucho-status
-    &amp;lt;/Location&amp;gt;
-&amp;lt;/IfModule&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;在/usr/resin/conf/resin.conf里面，添加这些内容。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;&amp;lt;doc-dir&amp;gt;/var/www/htdocs&amp;lt;/doc-dir&amp;gt;
-&amp;lt;war-dir id=&#39;/var/www/htdocs&#39;/&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;在/etc/apache2/sites-available/default中可能要修改如下配置。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;DocumentRoot /var/www/htdocs/
-&amp;lt;Directory /var/www/htdocs/&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;然后注销&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;RedirectMatch ^/$ /apache2-default/
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;OK，这样就基本完成了整个系统的整合配置。&lt;/p&gt;
-</description>
+      <description>别的不说了，先用debian自带的apt安装apache2,记得安装dev部分，还有libapr0,libapr-dev,libapr0-dev。千万别忘记安装后面的部分，否则你在下面编译的时候就要出现问题。
+拿到resin，放在目标目录下面，然后tar -jxvf。完成后用ln -s做一个链接上去，使用resin的名字，这样可以方便的替换版本。然后在主目录下面运行./configure，make一下。一般来说，会出不少错误，最后生成一个libresin.so放到libexec下面，并且更新了resin的主执行程序。这个so很具有迷惑性，开始贝壳就被他骗了。这个so貌似是resin在本地平台下的加速程序，而不是嵌入到apache系列服务器中的整合插件。其中最大的差异是没有caucho_module导出符号，在apache加载的时候肯定会失败。
+跑到src/c/plugins/apache2下面运行make。可能会报错，可能没有。贝壳这里报了错，不过贝壳运行configure的时候没有加任何参数，也许加了参数就正常了。如果不正常，出错的代码可能分别是httpd.h找不到或者apr_time.h找不到。运行vi Makefile，看到有INCLUDE的目录吗？那里面要包含/usr/include/apache2和/usr/include/apr-0两个目录，没有就肯定出错。好了，修改然后重新make。得到的文件是mod_caucho.so。将它cp到$RESIN_HOME/libexec下面，这个动态库导出了caucho_module符号。
+在/etc/apache2/httpd.conf里面编辑一下，添加这个内容。
+LoadModule caucho_module /usr/resin/libexec/mod_caucho.so &amp;lt;IfModule mod_caucho.c&amp;gt; CauchoConfigFile ......../resin.conf &amp;lt;Location /caucho-status&amp;gt; SetHandler caucho-status &amp;lt;/Location&amp;gt; &amp;lt;/IfModule&amp;gt;  在/usr/resin/conf/resin.conf里面，添加这些内容。
+&amp;lt;doc-dir&amp;gt;/var/www/htdocs&amp;lt;/doc-dir&amp;gt; &amp;lt;war-dir id=&#39;/var/www/htdocs&#39;/&amp;gt;  在/etc/apache2/sites-available/default中可能要修改如下配置。
+DocumentRoot /var/www/htdocs/ &amp;lt;Directory /var/www/htdocs/&amp;gt;  然后注销
+RedirectMatch ^/$ /apache2-default/  OK，这样就基本完成了整个系统的整合配置。</description>
     </item>
     
   </channel>

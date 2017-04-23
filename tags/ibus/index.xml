@@ -8,7 +8,9 @@
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
     <lastBuildDate>Wed, 08 Apr 2009 23:30:00 +0800</lastBuildDate>
-    <atom:link href="http://shell909090.org/tags/ibus/index.xml" rel="self" type="application/rss+xml" />
+    
+	<atom:link href="http://shell909090.org/tags/ibus/index.xml" rel="self" type="application/rss+xml" />
+    
     
     <item>
       <title>debian testing下的ibus安装</title>
@@ -16,46 +18,19 @@
       <pubDate>Wed, 08 Apr 2009 23:30:00 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/62/</guid>
-      <description>&lt;p&gt;贝壳经过N个人的宣传，决定试用一下传说中的Ibus，下面是试用安装手记。文章参考了后面的参考1，特此鸣谢。&lt;/p&gt;
-
-&lt;p&gt;apt-get install git-core python-gtk2-dev cvs libtool automake python-enchant libgtk2.0-dev libdbus-1-dev libdbus-glib-1-dev python-xdg&lt;/p&gt;
-
-&lt;p&gt;在安装以上依赖后，运行。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;# 安装ibus
-git clone git://github.com/phuang/ibus.git ibus
-cd ibus
-./autogen.sh
-chmod +x debian/rules
-dpkg-buildpackage
-# 安装ibus-pinyin
-git clone git://github.com/phuang/ibus-pinyin.git ibus-pinyin
-cd ibus-pinyin
-./autogen.sh
-chmod +x debian/rules
-dpkg-buildpackage
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;而后，在根目录会生成两个文件。贝壳的是ibus_0.1.1.20080908-1_amd64.deb ibus-pinyin_0.1.1.20080901-1_amd64.deb。名字比较旧，但是查看git log的话，是2009年4月8日的版本。先安装前者，再安装后者(顺序不要弄错)。而后就是设定部分。&lt;/p&gt;
-
-&lt;p&gt;设定的话，请不要按照参考文去设定。这是贝壳血的教训，足足弄了4个小时。正确的做法是用root用户im-switch -c。而后选择ibus作为输入法。&lt;/p&gt;
-
-&lt;p&gt;而后，稍等，先不要着急重启。在两个包里面还有个bug？？&lt;/p&gt;
-
-&lt;p&gt;在ibus包中，有这么一个文件。 /usr/etc/xdg/autostart/ibus.desktop在debian testing中，这个位置的自启动是无效的！ 正确的做法是，&lt;code&gt;cp /usr/etc/xdg/autostart/ibus.desktop /etc/xdg/autostart/ibus.desktop&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;如果不按照上文修正，结果就是ibus会正确启动，但是没有托盘区和输入条，全凭感觉选字(汗-_-|||)。&lt;/p&gt;
-
-&lt;p&gt;其实这应当是一个bug，scim可以在/etc/X11/xinit/xinput.d/scim中设定好守护进程，而后在系统界面出现后自动出现(这也是为什么每次启动的时候scim总是先看到的原因)。而ibus尚不支持界面出现后再去注册托盘区，因此必须试用autostart来启动守护进程。&lt;/p&gt;
-
-&lt;p&gt;总体感觉而言，ibus比scim更加漂亮干净，据说对kde的支持也更好。不过试用过程中还是有点问题，主要是以下几个(2009年04月08日列表)：&lt;/p&gt;
-
-&lt;p&gt;1.�字没有！我相信，其实是很多字没有！&lt;/p&gt;
-
-&lt;p&gt;2.firefox就在贝壳写这篇文章的时候，崩溃了一次。以前贝壳的firefox很稳定的，从来没有崩溃过——&lt;/p&gt;
-
-&lt;p&gt;参考： [1].debian 5.0 安装 ibus中文输入法.&lt;a href=&#34;http://hi.baidu.com/cvwolf/blog/item/3d812b4e8c4fe201b3de0591.html&#34;&gt;http://hi.baidu.com/cvwolf/blog/item/3d812b4e8c4fe201b3de0591.html&lt;/a&gt;&lt;/p&gt;
-</description>
+      <description>贝壳经过N个人的宣传，决定试用一下传说中的Ibus，下面是试用安装手记。文章参考了后面的参考1，特此鸣谢。
+apt-get install git-core python-gtk2-dev cvs libtool automake python-enchant libgtk2.0-dev libdbus-1-dev libdbus-glib-1-dev python-xdg
+在安装以上依赖后，运行。
+# 安装ibus git clone git://github.com/phuang/ibus.git ibus cd ibus ./autogen.sh chmod +x debian/rules dpkg-buildpackage # 安装ibus-pinyin git clone git://github.com/phuang/ibus-pinyin.git ibus-pinyin cd ibus-pinyin ./autogen.sh chmod +x debian/rules dpkg-buildpackage  而后，在根目录会生成两个文件。贝壳的是ibus_0.1.1.20080908-1_amd64.deb ibus-pinyin_0.1.1.20080901-1_amd64.deb。名字比较旧，但是查看git log的话，是2009年4月8日的版本。先安装前者，再安装后者(顺序不要弄错)。而后就是设定部分。
+设定的话，请不要按照参考文去设定。这是贝壳血的教训，足足弄了4个小时。正确的做法是用root用户im-switch -c。而后选择ibus作为输入法。
+而后，稍等，先不要着急重启。在两个包里面还有个bug？？
+在ibus包中，有这么一个文件。 /usr/etc/xdg/autostart/ibus.desktop在debian testing中，这个位置的自启动是无效的！ 正确的做法是，cp /usr/etc/xdg/autostart/ibus.desktop /etc/xdg/autostart/ibus.desktop
+如果不按照上文修正，结果就是ibus会正确启动，但是没有托盘区和输入条，全凭感觉选字(汗-_-|||)。
+其实这应当是一个bug，scim可以在/etc/X11/xinit/xinput.d/scim中设定好守护进程，而后在系统界面出现后自动出现(这也是为什么每次启动的时候scim总是先看到的原因)。而ibus尚不支持界面出现后再去注册托盘区，因此必须试用autostart来启动守护进程。
+总体感觉而言，ibus比scim更加漂亮干净，据说对kde的支持也更好。不过试用过程中还是有点问题，主要是以下几个(2009年04月08日列表)：
+1.�字没有！我相信，其实是很多字没有！
+2.firefox就在贝壳写这篇文章的时候，崩溃了一次。以前贝壳的firefox很稳定的，从来没有崩溃过——
+参考： [1].debian 5.0 安装 ibus中文输入法.http://hi.baidu.com/cvwolf/blog/item/3d812b4e8c4fe201b3de0591.html</description>
     </item>
     
   </channel>

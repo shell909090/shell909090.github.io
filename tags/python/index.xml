@@ -8,7 +8,9 @@
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
     <lastBuildDate>Fri, 19 Jul 2013 14:33:14 +0800</lastBuildDate>
-    <atom:link href="http://shell909090.org/tags/python/index.xml" rel="self" type="application/rss+xml" />
+    
+	<atom:link href="http://shell909090.org/tags/python/index.xml" rel="self" type="application/rss+xml" />
+    
     
     <item>
       <title>一种新的python局部调试手法</title>
@@ -16,24 +18,10 @@
       <pubDate>Fri, 19 Jul 2013 14:33:14 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2450/</guid>
-      <description>&lt;p&gt;我们都知道，python里面可以用pdb来调试代码。但是pdb往往不大好用。有时候调试代码往往在多重条件里面，直接用pdb需要下条件断点，设定复杂的条件。&lt;/p&gt;
-
-&lt;p&gt;一个简单的办法就是这么干。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;    __import__(&#39;pdb&#39;).set_trace()
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;但是有的时候，连这个出现的条件都不满足。例如，代码必须在一个受限环境中运行，很难拿到console，或者其他林林总总的毛病。这时候，我们还有一招秘技。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;    import pdb, socket
-    s = socket.socket()
-    s.connect((&#39;127.0.0.1&#39;, 8888))
-    f = s.makefile()
-    pdb.Pdb(stdin=f, stdout=f).set_trace()
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;在连接到的目标端口上，提前用nc做好监听，就可以在触发断点的时候直接连接上来调试。&lt;/p&gt;
-</description>
+      <description>我们都知道，python里面可以用pdb来调试代码。但是pdb往往不大好用。有时候调试代码往往在多重条件里面，直接用pdb需要下条件断点，设定复杂的条件。
+一个简单的办法就是这么干。
+ __import__(&#39;pdb&#39;).set_trace()  但是有的时候，连这个出现的条件都不满足。例如，代码必须在一个受限环境中运行，很难拿到console，或者其他林林总总的毛病。这时候，我们还有一招秘技。
+ import pdb, socket s = socket.socket() s.connect((&#39;127.0.0.1&#39;, 8888)) f = s.makefile() pdb.Pdb(stdin=f, stdout=f).set_trace()  在连接到的目标端口上，提前用nc做好监听，就可以在触发断点的时候直接连接上来调试。</description>
     </item>
     
     <item>
@@ -42,97 +30,23 @@
       <pubDate>Wed, 20 Mar 2013 11:18:03 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2344/</guid>
-      <description>
-
-&lt;h1 id=&#34;简述和通则&#34;&gt;简述和通则&lt;/h1&gt;
-
-&lt;p&gt;何谓插件。&lt;/p&gt;
-
-&lt;p&gt;在实现某个功能时，经常需要对一个功能提供多种实现。例如短信网关接口各异，但是对系统而言，发送代码是一样的。
-通过一套特定的机制，在成型的产品中，增加一个独立的文件，即可实现定制化实现。这套机制被称为插件机制。插件必须满足下面几个要求。&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;对于已经发出去的产品，插件机制可以通过增加文件，并少量修改（一般1-3行）产品源码，即可为产品添加新的功能。&lt;/li&gt;
-&lt;li&gt;对于产品主分支，带有插件不会影响主分支的正常工作。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;插件机制的以上两个特性对产品定制非常有帮助。因为使用插件进行定制开发的项目，不需要独立建立分支。只需要在主分支上添加几个文件即可。分发补丁时也格外容易。&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;禁止在python主目录下直接放置插件，所有插件必须在python下级目录下存放。&lt;/li&gt;
-&lt;li&gt;插件的命名必须使用前缀师命名规则，所有同类型插件，要么在一个目录下独立存放（目录下没有其他代码），要么在一个目录下拥有同样的前缀（其他代码不得使用这个前缀）。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h1 id=&#34;替换型插件&#34;&gt;替换型插件&lt;/h1&gt;
-
-&lt;p&gt;最简单的插件手法，就是某个文件提供提供某些函数，在变更功能时用另一个同样实现这些函数的文件替换掉原始文件。这甚至称不上一个插件手法，只能算打补丁。&lt;/p&gt;
-
-&lt;p&gt;替换型插件的提升，就是在文件中不直接提供函数，而是从某个其他文件载入这些函数。例如以下代码：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;from abc import *
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;原始是从abc文件中取得所有符号。当有新的文件abc2提供时，将原始文件替换为abc2，补上去，即可改变代码。注意这行代码一般不在一个大的文件中的某一行，而一般存放于一个独立文件。因为大文件相对容易修改，不能用新的代码替换。而独立文件相对固定，在打补丁时可以用新的代码直接替换。&lt;/p&gt;
-
-&lt;p&gt;替换型插件适用于，对于某个客户而言，只需要在多组实现中静态的选择一组的情况。替换型插件的优点是工作原理简单直观，排查容易。缺点是对于一个功能不能提供复数组实现。&lt;/p&gt;
-
-&lt;h1 id=&#34;配置型插件&#34;&gt;配置型插件&lt;/h1&gt;
-
-&lt;p&gt;另一种插件手法基于文件或配置。在某个目录中，放置某个功能的多个实现。在加载时，载入全部插件。在使用时，根据配置动态选择。这种手法被称为配置型插件。&lt;/p&gt;
-
-&lt;p&gt;配置型插件是一种非常重要的编程技巧，他为程序提供了非常优良的可扩展性。&lt;/p&gt;
-
-&lt;p&gt;例如下面的例子，简述了一种配置型插件的实现：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;funcmap = {}
-
-def register_func(name):
-    def _inner(func):
-        funcmap[name] = func
-        return func
-    return _inner
-
-在具体实现中
-
-@register_func(name)
-def func1(....):
-    pass
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;在__init__.py中，import一下新的文件。在原本的funcmap中，即可出现新的name和func的对应。&lt;/p&gt;
-
-&lt;p&gt;配置型插件适用于大多数场景，其优点是工作原理简单，可以为一个功能提供复数组实现。缺点是使用上限制比较大，必须和逻辑结合，思考困难。&lt;/p&gt;
-
-&lt;h1 id=&#34;动态加载&#34;&gt;动态加载&lt;/h1&gt;
-
-&lt;p&gt;动态加载插件是一种插件技巧，并不特定用于替换型或配置型插件。&lt;/p&gt;
-
-&lt;p&gt;当需要加载插件时，通过python代码访问文件系统，枚举出特定文件并加载的技巧，称为动态加载。以下代码是配合上面的配置型插件的例子，实现动态加载的例子。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;def load_plugins():
-    for filename in os.listdir(&#39;plugins&#39;):
-        if filename.endswith(&#39;py&#39;): __import__(filename[:-3])
-        if filename.endswith(&#39;pyc&#39;): __import__(filename[:-4])
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;动态加载的优点是，可以通过放置文件来增加/修改功能，而不需要修改代码。缺点是，由于需要访问文件系统，因此效率并不高。如果每次加载都需要动态查询，那么系统效率会大幅下降。&lt;/p&gt;
-
-&lt;h1 id=&#34;热加载插件&#34;&gt;热加载插件&lt;/h1&gt;
-
-&lt;p&gt;热加载是一种比较高级的技巧。在程序执行中，不退出进程而动态的将最新的组件加载进来的能力，被称为热加载。&lt;/p&gt;
-
-&lt;p&gt;简单的热加载就是在每次执行功能的时候，检查是否有新的组件。由于这样会带来很高的系统负载，因此除非必要，否则不要滥用热加载。&lt;/p&gt;
-
-&lt;p&gt;更复杂一些的热加载，需要用新的实现替换原有实现。这涉及几个编程上的限制。&lt;/p&gt;
-
-&lt;p&gt;热加载有几个限制，必须严格遵循：&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;在所有访问前，必须检查文件。&lt;/li&gt;
-&lt;li&gt;如果要进行热替换，不得将原有文件的导出符号作为值使用。即，无论是文件的导出数据，导出函数，都不得作为其他对象的赋值内容。&lt;/li&gt;
-&lt;li&gt;热替换内，不得保存私有数据。所有数据必须在上下文中，或者全局中存放。&lt;/li&gt;
-&lt;/ol&gt;
-</description>
+      <description>简述和通则 何谓插件。
+在实现某个功能时，经常需要对一个功能提供多种实现。例如短信网关接口各异，但是对系统而言，发送代码是一样的。 通过一套特定的机制，在成型的产品中，增加一个独立的文件，即可实现定制化实现。这套机制被称为插件机制。插件必须满足下面几个要求。
+ 对于已经发出去的产品，插件机制可以通过增加文件，并少量修改（一般1-3行）产品源码，即可为产品添加新的功能。 对于产品主分支，带有插件不会影响主分支的正常工作。  插件机制的以上两个特性对产品定制非常有帮助。因为使用插件进行定制开发的项目，不需要独立建立分支。只需要在主分支上添加几个文件即可。分发补丁时也格外容易。
+ 禁止在python主目录下直接放置插件，所有插件必须在python下级目录下存放。 插件的命名必须使用前缀师命名规则，所有同类型插件，要么在一个目录下独立存放（目录下没有其他代码），要么在一个目录下拥有同样的前缀（其他代码不得使用这个前缀）。  替换型插件 最简单的插件手法，就是某个文件提供提供某些函数，在变更功能时用另一个同样实现这些函数的文件替换掉原始文件。这甚至称不上一个插件手法，只能算打补丁。
+替换型插件的提升，就是在文件中不直接提供函数，而是从某个其他文件载入这些函数。例如以下代码：
+from abc import *  原始是从abc文件中取得所有符号。当有新的文件abc2提供时，将原始文件替换为abc2，补上去，即可改变代码。注意这行代码一般不在一个大的文件中的某一行，而一般存放于一个独立文件。因为大文件相对容易修改，不能用新的代码替换。而独立文件相对固定，在打补丁时可以用新的代码直接替换。
+替换型插件适用于，对于某个客户而言，只需要在多组实现中静态的选择一组的情况。替换型插件的优点是工作原理简单直观，排查容易。缺点是对于一个功能不能提供复数组实现。
+配置型插件 另一种插件手法基于文件或配置。在某个目录中，放置某个功能的多个实现。在加载时，载入全部插件。在使用时，根据配置动态选择。这种手法被称为配置型插件。
+配置型插件是一种非常重要的编程技巧，他为程序提供了非常优良的可扩展性。
+例如下面的例子，简述了一种配置型插件的实现：
+funcmap = {} def register_func(name): def _inner(func): funcmap[name] = func return func return _inner 在具体实现中 @register_func(name) def func1(....): pass  在__init__.py中，import一下新的文件。在原本的funcmap中，即可出现新的name和func的对应。
+配置型插件适用于大多数场景，其优点是工作原理简单，可以为一个功能提供复数组实现。缺点是使用上限制比较大，必须和逻辑结合，思考困难。
+动态加载 动态加载插件是一种插件技巧，并不特定用于替换型或配置型插件。
+当需要加载插件时，通过python代码访问文件系统，枚举出特定文件并加载的技巧，称为动态加载。以下代码是配合上面的配置型插件的例子，实现动态加载的例子。
+def load_plugins(): for filename in os.listdir(&#39;plugins&#39;): if filename.endswith(&#39;py&#39;): __import__(filename[:-3]) if filename.endswith(&#39;pyc&#39;): __import__(filename[:-4])  动态加载的优点是，可以通过放置文件来增加/修改功能，而不需要修改代码。缺点是，由于需要访问文件系统，因此效率并不高。如果每次加载都需要动态查询，那么系统效率会大幅下降。
+热加载插件 热加载是一种比较高级的技巧。在程序执行中，不退出进程而动态的将最新的组件加载进来的能力，被称为热加载。
+简单的热加载就是在每次执行功能的时候，检查是否有新的组件。由于这样会带来很高的系统负载，因此除非必要，否则不要滥用热加载。</description>
     </item>
     
     <item>
@@ -141,52 +55,12 @@ def func1(....):
       <pubDate>Thu, 22 Nov 2012 14:19:46 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2278/</guid>
-      <description>
-
-&lt;h2 id=&#34;abstract&#34;&gt;abstract&lt;/h2&gt;
-
-&lt;p&gt;本文的目的，在于教授使用virtualenv创立python环境，对环境的管理和使用，以及代码和部署的用法范例。在阅读完本文后，你应当可以。&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;创立，部署，管理virtualenv环境&lt;/li&gt;
-&lt;li&gt;使用virtualenv环境进行编码&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&#34;virtualenv环境建立&#34;&gt;virtualenv环境建立&lt;/h2&gt;
-
-&lt;p&gt;virtualenv是python的虚环境管理包，他的主要目的是为了隔离环境。其中包含以下两个范畴。&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;在虚环境中安装包，不需要对系统进行修改，不会对系统造成污染。&lt;/li&gt;
-&lt;li&gt;在系统中安装的包，不会对虚环境造成污染。这主要是出于版本安全考虑。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;因此，virtualenv默认会阻止你使用系统中安装的包。要解决这个问题，需要在建立虚拟环境时指定参数&amp;ndash;system-site-packages。
-virtualenv的环境可以通过执行virtualenv
-path加以建立。当建立完成后&lt;strong&gt;不可移动&lt;/strong&gt;，需要一些特殊调整，使用参数&amp;ndash;relocatable对此没有帮助。&lt;/p&gt;
-
-&lt;h2 id=&#34;virtualenv环境的激活和反激活&#34;&gt;virtualenv环境的激活和反激活&lt;/h2&gt;
-
-&lt;p&gt;virtualenv环境是通过替换系统环境变量工作的。在激活后会替换系统的提示符，提示你进入环境。一般我们使用source
-\$VIRTUALENVPATH/bin/activate来激活。激活后直接执行deactivate反激活。
-virtualenv替换系统环境变量的方式是在path前加入virtualenv的bin路径，使自己的python优于系统python执行。同时替换pythonhome，变更lib查找路径。因此，对于某些可以指定pythonhome的应用（例如网络部署），直接指定pythonpath为virtualenv路径即可。
-注意，由于virtualenv的工作方式，因此当你执行su/sudo
-bash后，virtualenv环境都有可能消失，但是提示符仍旧生效。建议通过sudo执行脚本，脚本内进行source比较安全。或者直接sudo目标程序也可以，&lt;strong&gt;不要新建上下文&lt;/strong&gt;。
-如果需要保持持续的环境激活，可以将source
-\$VIRTUALENVPATH/bin/activate加入~/.bashrc。
-当virtualenv激活后，后续的pip安装和python使用都会使用virtualenv内的版本。因此下文未经特殊说明，都是指在激活环境后进行操作。&lt;/p&gt;
-
-&lt;h2 id=&#34;virtualenv环境的管理&#34;&gt;virtualenv环境的管理&lt;/h2&gt;
-
-&lt;p&gt;主要包括两种手段，安装和删除。一般使用pip install package
-name进行安装。pip uninstall package name进行删除。&lt;/p&gt;
-
-&lt;h2 id=&#34;virtualenv环境的保存和恢复&#34;&gt;virtualenv环境的保存和恢复&lt;/h2&gt;
-
-&lt;p&gt;virtualenv环境可以保存和恢复。所谓保存和恢复，是指在安装过包的环境中保存包列表（和具体版本），在未安装（或版本错误）的环境中启用。
-一般通过pip freeze &amp;gt; filename进行保存。在目标机器上执行pip install -r
-filename进行恢复。&lt;/p&gt;
-</description>
+      <description>abstract 本文的目的，在于教授使用virtualenv创立python环境，对环境的管理和使用，以及代码和部署的用法范例。在阅读完本文后，你应当可以。
+ 创立，部署，管理virtualenv环境 使用virtualenv环境进行编码  virtualenv环境建立 virtualenv是python的虚环境管理包，他的主要目的是为了隔离环境。其中包含以下两个范畴。
+ 在虚环境中安装包，不需要对系统进行修改，不会对系统造成污染。 在系统中安装的包，不会对虚环境造成污染。这主要是出于版本安全考虑。  因此，virtualenv默认会阻止你使用系统中安装的包。要解决这个问题，需要在建立虚拟环境时指定参数&amp;ndash;system-site-packages。 virtualenv的环境可以通过执行virtualenv path加以建立。当建立完成后不可移动，需要一些特殊调整，使用参数&amp;ndash;relocatable对此没有帮助。
+virtualenv环境的激活和反激活 virtualenv环境是通过替换系统环境变量工作的。在激活后会替换系统的提示符，提示你进入环境。一般我们使用source \$VIRTUALENVPATH/bin/activate来激活。激活后直接执行deactivate反激活。 virtualenv替换系统环境变量的方式是在path前加入virtualenv的bin路径，使自己的python优于系统python执行。同时替换pythonhome，变更lib查找路径。因此，对于某些可以指定pythonhome的应用（例如网络部署），直接指定pythonpath为virtualenv路径即可。 注意，由于virtualenv的工作方式，因此当你执行su/sudo bash后，virtualenv环境都有可能消失，但是提示符仍旧生效。建议通过sudo执行脚本，脚本内进行source比较安全。或者直接sudo目标程序也可以，不要新建上下文。 如果需要保持持续的环境激活，可以将source \$VIRTUALENVPATH/bin/activate加入~/.bashrc。 当virtualenv激活后，后续的pip安装和python使用都会使用virtualenv内的版本。因此下文未经特殊说明，都是指在激活环境后进行操作。
+virtualenv环境的管理 主要包括两种手段，安装和删除。一般使用pip install package name进行安装。pip uninstall package name进行删除。
+virtualenv环境的保存和恢复 virtualenv环境可以保存和恢复。所谓保存和恢复，是指在安装过包的环境中保存包列表（和具体版本），在未安装（或版本错误）的环境中启用。 一般通过pip freeze &amp;gt; filename进行保存。在目标机器上执行pip install -r filename进行恢复。</description>
     </item>
     
     <item>
@@ -195,156 +69,22 @@ filename进行恢复。&lt;/p&gt;
       <pubDate>Mon, 19 Nov 2012 10:11:49 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2272/</guid>
-      <description>
-
-&lt;h1 id=&#34;前言&#34;&gt;前言&lt;/h1&gt;
-
-&lt;p&gt;其实我也不知道python怎么入门，由我来写这个真的不是很合适。我学python是直接找了dive
-into
-python来看。然后照着写了几个例子。大概两天后，就能磕磕绊绊的上路了。就好像拿筷子，都不记得怎么学会的拿筷子，怎么来教人呢？&lt;/p&gt;
-
-&lt;p&gt;不过最近在python-cn的列表里面，我大概连续数周都持续看到“python入门看哪本教程比较好”，实在是不堪其扰。干脆就写个简单的guide，有心的人自己看。没心的——那我也没办法了。&lt;/p&gt;
-
-&lt;h1 id=&#34;基本知识&#34;&gt;基本知识&lt;/h1&gt;
-
-&lt;p&gt;首先，你要了解一个事情。很多你不会的东西并不属于python。例如你不知道网络通讯的流程，你不知道文件的权限和打开标志用法，你不知道fork和stdin/stdout的关系。这些python教不会你。如果你缺乏这些和语言/库无关的相关知识，请自行补课。如果你缺乏计算机基础理论，请自行补课。&lt;/p&gt;
-
-&lt;p&gt;因此不要随便给我发邮件/留言/咨询，为什么这个问题在python里无法解决。为什么python无法所见即所得，为什么python无法热部署，为什么python无法用于嵌入式开发。在问这个问题之前，请先确认“这是一个python的问题”。例如GIL，或者脑残lambda。如果你不确定，请自己搜索一下相关的文章，确认一下。在提问前，看看“提问的智慧”。如果你确实搜过了，找不到，那就问吧，没办法。&lt;/p&gt;
-
-&lt;h1 id=&#34;入门&#34;&gt;入门&lt;/h1&gt;
-
-&lt;p&gt;在网络上，python入门的两大基础书籍分别是(后面有朋友补充了一本，我也加上)：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;http://www.swaroopch.com/notes/python/&#34;&gt;A Byte of Python&lt;/a&gt;
-&lt;a href=&#34;http://woodpecker.org.cn/abyteofpython_cn/chinese/&#34;&gt;中文版&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://www.diveintopython.net/&#34;&gt;Dive Into Python&lt;/a&gt;
-&lt;a href=&#34;http://woodpecker.org.cn/diveintopython/&#34;&gt;中文版&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://learnpythonthehardway.org/book/&#34;&gt;Learn Python The Hard Way, 2nd
-Edition&lt;/a&gt;
-&lt;a href=&#34;https://learn-python-the-hard-way-zh_cn-translation.readthedocs.org/en/latest/&#34;&gt;中文版&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;后面基本就是看&lt;a href=&#34;http://www.python.org/doc/&#34;&gt;python-doc&lt;/a&gt;，我推荐你跳过一堆有的没的，直接看&lt;a href=&#34;http://docs.python.org/2/library/&#34;&gt;Library
-Reference&lt;/a&gt;。python本身就是易读性极强的代码，文档又相当漂亮，内置库又全。大部分情况下，python-doc都应当能解决你的问题。&lt;/p&gt;
-
-&lt;h2 id=&#34;web&#34;&gt;web&lt;/h2&gt;
-
-&lt;p&gt;web是程序员的一大去向。python程序员入门必须要过的一个框架就是django。不要纠结了，django在python社区中名气太大，用的人太多。因此入门材料是最多的，社区最大，门槛最低。如果你要入门web，必然从django开始。在不熟悉python的情况下，我不推荐你贸然从其他框架开始入门。&lt;/p&gt;
-
-&lt;p&gt;当然，如果你已经熟悉python了，考虑入门web框架，可以参考专精一节。&lt;/p&gt;
-
-&lt;h2 id=&#34;爬虫&#34;&gt;爬虫&lt;/h2&gt;
-
-&lt;p&gt;python下说到爬虫开发，入门首选Scrapy。原因和上面一样，社区最大，用的人最多。好不好用就见仁见智了。反正我的所有爬虫框架都是用自己基于gevent写的库。&lt;/p&gt;
-
-&lt;h2 id=&#34;ui&#34;&gt;ui&lt;/h2&gt;
-
-&lt;p&gt;python的ui框架也很多，很复杂。同样，如果是入门，我建议从qt的两个框架，pyqt和pyside开始入门。关于这两家的恩怨我就不多废话了。&lt;/p&gt;
-
-&lt;h1 id=&#34;专精&#34;&gt;专精&lt;/h1&gt;
-
-&lt;p&gt;所谓专精，是指使用python在特定工作上。我们基本分为几个领域。&lt;/p&gt;
-
-&lt;h2 id=&#34;系统和部署&#34;&gt;系统和部署&lt;/h2&gt;
-
-&lt;ul&gt;
-&lt;li&gt;virtualenv：基本凡是在商用环境中部署的，建议都用这个。可以将python自带在源码里面，避免迁移/集成问题。&lt;/li&gt;
-&lt;li&gt;python-daemon：写daemon的时候比较方便。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&#34;网络&#34;&gt;网络&lt;/h2&gt;
-
-&lt;p&gt;说到网络，基本就是除web外。&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;twisted：非常强大的网络库，各种协议支持全面，不过reactor模式真是纠结。&lt;/li&gt;
-&lt;li&gt;gevent：异步协程模式的网络库。&lt;/li&gt;
-&lt;li&gt;Scapy：强大的网络库，基本啥都能干。&lt;/li&gt;
-&lt;li&gt;pyzmq：我一直不觉得zeromq是一个mq。我觉得他是一个抽象网络层。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&#34;web容器&#34;&gt;web容器&lt;/h2&gt;
-
-&lt;p&gt;python web框架的一大特点，是容器/框架/ORM/template可以分开自己玩。&lt;/p&gt;
-
-&lt;p&gt;注意，容器和框架是两码事情。容器是python
-web运行的环境，框架是解析环境的玩意。两者间一般都使用&lt;a href=&#34;http://www.python.org/dev/peps/pep-0333&#34;&gt;wsgi接口&lt;/a&gt;进行连接。这是python的标准做法，fastcgi/scgi也会被转换为wsgi进行连接。但是也不是没有其他选择。一般我们有以下模式：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;cgi：python-doc中自带了cgi模块。&lt;/li&gt;
-&lt;li&gt;mod_python：embed in apache。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;下面是wsgi接口的容器。wsgi的优点在于我们可以在这些容器上运行任意一款支持wsgi的框架。&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;flup：支持提供fastcgi, scgi, AJP接口，web
-server可以用这三种协议进行连接。&lt;/li&gt;
-&lt;li&gt;Google App Engine：PaaS服务。&lt;/li&gt;
-&lt;li&gt;Gunicorn：直接提供http服务。&lt;/li&gt;
-&lt;li&gt;mod_wsgi：使用内部协议和apache集成。&lt;/li&gt;
-&lt;li&gt;twisted：直接提供http服务。&lt;/li&gt;
-&lt;li&gt;tornado：直接提供http服务。&lt;/li&gt;
-&lt;li&gt;uWSGI：使用内部协议和nginx集成。&lt;/li&gt;
-&lt;li&gt;werkzeug：直接提供http服务。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;建议的部署模式是，用apache的，去mode_wsgi。用nginx的，去uwsgi。用GAE的，直接可用。其他，通通转发。&lt;/p&gt;
-
-&lt;h2 id=&#34;web-1&#34;&gt;web&lt;/h2&gt;
-
-&lt;p&gt;你可以参考飞龙的&lt;a href=&#34;http://feilong.me/2011/01/talk-about-python-web-framework&#34;&gt;这篇文章&lt;/a&gt;，里面介绍了数种框架。你可以通通玩一下，反正也不麻烦，然后选择一种最适合自己的玩意。&lt;/p&gt;
-
-&lt;p&gt;python中有一种不得不提的玩意就是Zope。这个东西我不知道该如何评价，有兴趣的自己看吧。&lt;/p&gt;
-
-&lt;h2 id=&#34;orm&#34;&gt;ORM&lt;/h2&gt;
-
-&lt;p&gt;ORM：python的ORM系统比较单一，一般都是sqlalchemy。这个框架非常强大，但是很消耗资源。有兴趣的可以去&lt;a href=&#34;http://www.sqlalchemy.org/&#34;&gt;官网&lt;/a&gt;上自己了解。偶尔也见用SQLObject的，不多。&lt;/p&gt;
-
-&lt;p&gt;ORM的另一大选择是ZODB，不过用的比较少。希望了解的自己去咨询老潘。&lt;/p&gt;
-
-&lt;h2 id=&#34;template&#34;&gt;template&lt;/h2&gt;
-
-&lt;p&gt;python
-wiki上&lt;a href=&#34;http://wiki.python.org/moin/Templating&#34;&gt;有篇文章&lt;/a&gt;提到了python
-template
-engine的分类和列表。作为专精，我建议你至少玩一下string.Template，webhelpers，mako，jinja2，Genshi这几个玩意。&lt;/p&gt;
-
-&lt;h2 id=&#34;爬虫-1&#34;&gt;爬虫&lt;/h2&gt;
-
-&lt;p&gt;关于python爬虫的进阶，就比较不好说。我正在写一篇长篇blog，介绍python爬虫的种种。不过至少来说，你需要了解以下几个东西：celery，beautifulsoap，lxml，selenium，phantomjs，pyquery。&lt;/p&gt;
-
-&lt;h2 id=&#34;ui-1&#34;&gt;ui&lt;/h2&gt;
-
-&lt;p&gt;gui库的列表可以看&lt;a href=&#34;http://wiki.python.org/moin/GuiProgramming&#34;&gt;这里&lt;/a&gt;，其中我推荐你看一下玩玩的有：PyGtk，TkInter，WxPython，Glade，pygame。&lt;/p&gt;
-
-&lt;h2 id=&#34;科学计算&#34;&gt;科学计算&lt;/h2&gt;
-
-&lt;p&gt;不用废话，你可以看这篇文档&lt;a href=&#34;http://hyry.dip.jp:8000/pydoc/index.html&#34;&gt;用Python做科学计算&lt;/a&gt;。作者出书了，你可以支持一下。&lt;/p&gt;
-
-&lt;h2 id=&#34;图形处理&#34;&gt;图形处理&lt;/h2&gt;
-
-&lt;p&gt;那必然要提到的就是pil，python imaging
-library。另一样要介绍的是pydot，pygraph或者pygraphviz。这不是图形库，准确的说，应当是图论库。他可以使用graphviz将图论结构转换为图像。&lt;/p&gt;
-
-&lt;h2 id=&#34;文档&#34;&gt;文档&lt;/h2&gt;
-
-&lt;ul&gt;
-&lt;li&gt;pygments：格式化代码的库，可以将文本代码格式化为不同格式的，带颜色的代码。&lt;/li&gt;
-&lt;li&gt;markdown：格式化markdown文档为html的库。不过我觉得实现的和标准不一致，没用。&lt;/li&gt;
-&lt;li&gt;reStructured：docutils工具组，可以转换为多种格式。&lt;/li&gt;
-&lt;li&gt;sphinx：同样是rst的工具，可以生成多种格式。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h1 id=&#34;进阶&#34;&gt;进阶&lt;/h1&gt;
-
-&lt;p&gt;首先，你应当去看沈游侠在某次cpug聚会上的讲话&lt;a href=&#34;http://www.slideshare.net/wilhelmshen/py-art&#34;&gt;Python编程艺术&lt;/a&gt;，这是python程序员进阶的必读。不过很可惜，slide是高桥流的，本身不是为了让你看内容而出的。而当时的演讲又没有录像（如果有的话，请给我一份拷贝，我会问沈游侠能不能放出，找空间，搞定相关问题，感谢），因此理解上相当困难。不过这里的每一句话都相当有道理，是数十年程序经验的总结。&lt;/p&gt;
-
-&lt;p&gt;另外，作为进阶，你可以适当的看python3的一些内容。&lt;a href=&#34;http://getpython3.com/diveintopython3/&#34;&gt;Dive Into Python3&lt;/a&gt;&lt;a href=&#34;http://woodpecker.org.cn/diveintopython3/&#34;&gt;中文版&lt;/a&gt;。还有&lt;a href=&#34;http://pypy.org/&#34;&gt;pypy&lt;/a&gt;和&lt;a href=&#34;http://cython.org/&#34;&gt;cython&lt;/a&gt;。&lt;/p&gt;
-
-&lt;p&gt;作为python进阶人士，你一定要在手头备一份常用发行的&lt;a href=&#34;http://www.python.org/download/&#34;&gt;源码&lt;/a&gt;，不要求小版本一致，至少大版本一致（2.7.x，最后一位可以不对齐）。适当的阅读源码，尤其是Objects目录。经常重新阅读python-doc。&lt;/p&gt;
-</description>
+      <description>前言 其实我也不知道python怎么入门，由我来写这个真的不是很合适。我学python是直接找了dive into python来看。然后照着写了几个例子。大概两天后，就能磕磕绊绊的上路了。就好像拿筷子，都不记得怎么学会的拿筷子，怎么来教人呢？
+不过最近在python-cn的列表里面，我大概连续数周都持续看到“python入门看哪本教程比较好”，实在是不堪其扰。干脆就写个简单的guide，有心的人自己看。没心的——那我也没办法了。
+基本知识 首先，你要了解一个事情。很多你不会的东西并不属于python。例如你不知道网络通讯的流程，你不知道文件的权限和打开标志用法，你不知道fork和stdin/stdout的关系。这些python教不会你。如果你缺乏这些和语言/库无关的相关知识，请自行补课。如果你缺乏计算机基础理论，请自行补课。
+因此不要随便给我发邮件/留言/咨询，为什么这个问题在python里无法解决。为什么python无法所见即所得，为什么python无法热部署，为什么python无法用于嵌入式开发。在问这个问题之前，请先确认“这是一个python的问题”。例如GIL，或者脑残lambda。如果你不确定，请自己搜索一下相关的文章，确认一下。在提问前，看看“提问的智慧”。如果你确实搜过了，找不到，那就问吧，没办法。
+入门 在网络上，python入门的两大基础书籍分别是(后面有朋友补充了一本，我也加上)：
+ A Byte of Python 中文版 Dive Into Python 中文版 Learn Python The Hard Way, 2nd Edition 中文版  后面基本就是看python-doc，我推荐你跳过一堆有的没的，直接看Library Reference。python本身就是易读性极强的代码，文档又相当漂亮，内置库又全。大部分情况下，python-doc都应当能解决你的问题。
+web web是程序员的一大去向。python程序员入门必须要过的一个框架就是django。不要纠结了，django在python社区中名气太大，用的人太多。因此入门材料是最多的，社区最大，门槛最低。如果你要入门web，必然从django开始。在不熟悉python的情况下，我不推荐你贸然从其他框架开始入门。
+当然，如果你已经熟悉python了，考虑入门web框架，可以参考专精一节。
+爬虫 python下说到爬虫开发，入门首选Scrapy。原因和上面一样，社区最大，用的人最多。好不好用就见仁见智了。反正我的所有爬虫框架都是用自己基于gevent写的库。
+ui python的ui框架也很多，很复杂。同样，如果是入门，我建议从qt的两个框架，pyqt和pyside开始入门。关于这两家的恩怨我就不多废话了。
+专精 所谓专精，是指使用python在特定工作上。我们基本分为几个领域。
+系统和部署  virtualenv：基本凡是在商用环境中部署的，建议都用这个。可以将python自带在源码里面，避免迁移/集成问题。 python-daemon：写daemon的时候比较方便。  网络 说到网络，基本就是除web外。
+ twisted：非常强大的网络库，各种协议支持全面，不过reactor模式真是纠结。 gevent：异步协程模式的网络库。 Scapy：强大的网络库，基本啥都能干。 pyzmq：我一直不觉得zeromq是一个mq。我觉得他是一个抽象网络层。  web容器 python web框架的一大特点，是容器/框架/ORM/template可以分开自己玩。
+注意，容器和框架是两码事情。容器是python web运行的环境，框架是解析环境的玩意。两者间一般都使用wsgi接口进行连接。这是python的标准做法，fastcgi/scgi也会被转换为wsgi进行连接。但是也不是没有其他选择。一般我们有以下模式：
+ cgi：python-doc中自带了cgi模块。 mod_python：embed in apache。  下面是wsgi接口的容器。wsgi的优点在于我们可以在这些容器上运行任意一款支持wsgi的框架。
+ flup：支持提供fastcgi, scgi, AJP接口，web server可以用这三种协议进行连接。 Google App Engine：PaaS服务。 Gunicorn：直接提供http服务。 mod_wsgi：使用内部协议和apache集成。 twisted：直接提供http服务。 tornado：直接提供http服务。 uWSGI：使用内部协议和nginx集成。 werkzeug：直接提供http服务。  建议的部署模式是，用apache的，去mode_wsgi。用nginx的，去uwsgi。用GAE的，直接可用。其他，通通转发。</description>
     </item>
     
     <item>
@@ -353,17 +93,11 @@ library。另一样要介绍的是pydot，pygraph或者pygraphviz。这不是图
       <pubDate>Thu, 25 Oct 2012 11:12:09 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2259/</guid>
-      <description>&lt;p&gt;两点简述：&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;&lt;p&gt;可以使用cython &amp;ndash;embed来编译一个pyx，生成带main的代码，然后用gcc直接编译过去。大概样例是这样的：&lt;/p&gt;
-
-&lt;p&gt;cython &amp;ndash;embed $^
-gcc $(shell python-config &amp;ndash;includes) $(shell python-config &amp;ndash;libs) -O2 -o $@ $^&lt;/p&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;pyx的文件名会被转换为变量，所以所有在变量中不应当出现的符号也别出现，例如-。&lt;/p&gt;&lt;/li&gt;
-&lt;/ol&gt;
-</description>
+      <description>两点简述：
+ 可以使用cython &amp;ndash;embed来编译一个pyx，生成带main的代码，然后用gcc直接编译过去。大概样例是这样的：
+cython &amp;ndash;embed $^ gcc $(shell python-config &amp;ndash;includes) $(shell python-config &amp;ndash;libs) -O2 -o $@ $^
+ pyx的文件名会被转换为变量，所以所有在变量中不应当出现的符号也别出现，例如-。
+  </description>
     </item>
     
     <item>
@@ -372,144 +106,36 @@ gcc $(shell python-config &amp;ndash;includes) $(shell python-config &amp;ndash;
       <pubDate>Tue, 23 Oct 2012 14:27:34 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2257/</guid>
-      <description>
-
-&lt;p&gt;今天第一天在大型会议上演讲，其实挺紧张的。不过还不错，虽然临场反应并不热烈，但是至少不冷场。下面是我今天看到内容的回忆，有些印象不神，记得不清楚了。&lt;/p&gt;
-
-&lt;h1 id=&#34;第一天上午&#34;&gt;第一天上午&lt;/h1&gt;
-
-&lt;h2 id=&#34;视频播放&#34;&gt;视频播放&lt;/h2&gt;
-
-&lt;p&gt;上来先是sting先给我们放了一堆视频，我基本啥都没记住。就记住一个在日本的pythoner说教孩子编程时大家的评语了——python穷三代，编程毁一生。我后面接的是，用scheme子子孙孙都完了。&lt;/p&gt;
-
-&lt;h2 id=&#34;python产品构建和发布指南&#34;&gt;python产品构建和发布指南&lt;/h2&gt;
-
-&lt;p&gt;沈游侠的主题，彻底干货。基本要点就是利用cython和pypy来编译类python语言，变成C语言代码。这样不但速度快，而且C代码都是可以跨平台的。后面又列举了如何用cython和pypy来编译库。这样基本可以完成python到多数平台的移植。&lt;/p&gt;
-
-&lt;p&gt;我做了一下简单测试。cython对速度的增加主要是静态类型编译，如果保持代码不动，速度反而会略微下降。因此在速度提升上，作用并不如想像中那么明显。但是在跨平台上，效果就非常好。rpython则完全相反，经过rpython编译的代码，在基本不修改的情况下（当然，前提是你需要符合rpython），执行比C还快。&lt;/p&gt;
-
-&lt;p&gt;不过游侠在后面的答疑中也说了，pypy的rpython编译把握难度比较高，不建议在产品中使用。&lt;/p&gt;
-
-&lt;p&gt;另外，他后面也提了溜宝的例子，在python和js之间可以远过程调用，还可以回调。熟悉http的应该可以听出来，这个在现在浏览器中必然是要用到long
-pull技术的。因此底层框架不肖说，必然是Eurasia。&lt;/p&gt;
-
-&lt;h2 id=&#34;让程序运行更快&#34;&gt;让程序运行更快&lt;/h2&gt;
-
-&lt;p&gt;我们几个都在说，土豆的一贯风格是分享内容是和技术有关的干货，但是都和python不搭边。最多在最后说一句，这个技术在我们这里是利用python做的。上次黄东的演讲就是，讲如何算流量带宽费，最后来一句，这个是python实现的。这次李小红的分享也是，很技术，但是和python没啥关系。讲到一半还来了一句，“我对python不熟悉，前几天特意看了一下，dict是利用开放地址法实现而不是开链实现的，这让我对python顿时有了信心”。微薄上无数吐槽高级黑啊。&lt;/p&gt;
-
-&lt;p&gt;土豆的分享其实很简单，核心就是如何通过代理让网站的响应速度更快。干货是干货，但是不是非常熟悉http协议，能够将http本身优化到相当程度的，听了等于白听。因为上面讲的大部分，都是内存命中和交换，磁盘写出，cpu调度，poll和epoll内核模式差异之类的话题。在python下面，poll和epoll基本都看不出差别，大部分优化都围绕着模式打转。研究这种命中技巧不是南辕北辙么？&lt;/p&gt;
-
-&lt;p&gt;但是这不表示这个主题没用，只是如果你不把其他方面的问题解决的很彻底，先没头没脑在CPU和内存缓存命中上下功夫，多半是做不过别人的。&lt;/p&gt;
-
-&lt;h1 id=&#34;第一天下午&#34;&gt;第一天下午&lt;/h1&gt;
-
-&lt;h2 id=&#34;openerp-即将推出的第-7-版的功能和新的编程框架介绍&#34;&gt;OpenERP 即将推出的第 7 版的功能和新的编程框架介绍&lt;/h2&gt;
-
-&lt;p&gt;演讲者是个法国人，中文相当不错。不过和Thomas比起来还是差点。旁边的老外哥们说，那是因为Thomas有个好中国老婆。&lt;/p&gt;
-
-&lt;p&gt;基本是广告。除了让我们体验了一把openerp的风格外，啥都没看着。不过openerp看起来确实够屌的，直接去下一个插件，应用，然后就直接换掉了语言。这基本和php差不多。还有一堆的良好的交互特性，看起来非常像应用。此外，啥技术都没有。&lt;/p&gt;
-
-&lt;h2 id=&#34;元编程在-redis-orm-中的应用&#34;&gt;元编程在 Redis ORM 中的应用&lt;/h2&gt;
-
-&lt;p&gt;我自己的题目，会场反应并不很热烈。总共两个选项，我问认为是1的举手，几个。认为2的举手，几个。剩下的是啥？&lt;/p&gt;
-
-&lt;p&gt;其实元编程本身就不好讲，这个题目我写完文档算了一下，大概1个小时到一个半小时。问题是我问sting多要点时间，没有。好容易给我加到45分钟。我对着文档左砍右砍，还是紧紧张张的25分钟讲完。要在30分钟出头讲完整个题目，也难怪听众反应不良。&lt;/p&gt;
-
-&lt;p&gt;具体我也就不展开了，希望看到的可以看我的slide。另外我说一下，这个slide也是我用python做的。&lt;/p&gt;
-
-&lt;h2 id=&#34;用-tornado-开发-restful-api-应用&#34;&gt;用 Tornado 开发 RESTful API 应用&lt;/h2&gt;
-
-&lt;p&gt;其实以这个应用而言，是适合GAE的项目。不过飞龙只是借这个题目讲Tornado而已。&lt;/p&gt;
-
-&lt;h2 id=&#34;阿里云之移动开发者上云&#34;&gt;阿里云之移动开发者上云&lt;/h2&gt;
-
-&lt;p&gt;纯粹广告。不过既然是lighting
-topic，也不算太难受。我也顺便看了一下阿里云的架构。不过主讲完全没讲到要点，他们到底是卖IaaS业务，还是卖PaaS业务，还是云存储，还是三者都有？另外，用IaaS来做PaaS的可伸缩？我还真不觉得这是个好主意。。。&lt;/p&gt;
-
-&lt;h2 id=&#34;python如何帮助-逆转三国-获得成功&#34;&gt;Python如何帮助「逆转三国」获得成功&lt;/h2&gt;
-
-&lt;p&gt;广告中的广告。今天唯一一个妹纸上场的主题，我还在想，终于有妹纸上去做分享了，还是个美女。结果介绍完了心里就凉了半截——市场总监，这姐们是个非技术的角色。演讲的主要内容是，python很好，python没出过乱子。完了，总共15分钟不到，我连拍第二张照片的机会都没有。其余时间全在说游戏是如何成功，左右还有海报助阵。最后还出来一个美女发传单。&lt;/p&gt;
-
-&lt;p&gt;最后主办方出来道歉，他们也以为这个topic是正规演讲，没想到讲成了lighting
-topic。&lt;/p&gt;
-
-&lt;h2 id=&#34;网页游戏的跨界开发&#34;&gt;网页游戏的跨界开发&lt;/h2&gt;
-
-&lt;p&gt;董诣的题目，主要讲他如何训练公司的策划使用python。他用的方法基本就是元编程的路数。&lt;/p&gt;
-
-&lt;p&gt;策划将配置写入excel，然后他们的程序读取excel，写出一个python的文件，再由服务器加载。这是典型的字符处理型元编程的例子。早知道他们这么用，我满可以顺手拿来举例的。&lt;/p&gt;
-
-&lt;p&gt;最后他的例子倒是让我们吐槽了一把。print后面可以不加空格，这是他们公司美工教的。&lt;/p&gt;
-
-&lt;h2 id=&#34;实战游戏客户端&#34;&gt;实战游戏客户端&lt;/h2&gt;
-
-&lt;p&gt;林伟每年来都是带来大量干货。今年他是特别从北京飞过来，在演讲前刚刚到场。&lt;/p&gt;
-
-&lt;p&gt;他的题目是用python做客户端，并不是很好讲。因为python做游戏客户端不是很多。他举了一个pygame的例子，超级玛丽的企鹅复刻版，玩的挺欢乐的。&lt;/p&gt;
-
-&lt;p&gt;后面他大概讲解了一下游戏界面编程的几代模式变化。不过我印象最深的还是说到flash在苹果上。后面他运行flash的那个模拟的时候，我彻底吓一跳。我偷偷和沈游侠说，林伟说的完全没错，乔帮主抹黑flash完全是为了抢app的地位。&lt;/p&gt;
-
-&lt;p&gt;大家可以想象一下，如果flash拿到了硬件驱动加速会如何？Apple
-Store上的程序还有谁会花钱？都直接用网页跑一个Flash游戏就直接玩了。PC上能跑的，在苹果上自然也能跑，效果还不差。那还用Objective
-C做什么？只有性能要求特别高的才会用到。如果不需要Objective C，那Apple
-Store还怎么赚钱？从Flash能够做到这点，还有Adobe的战略布局，以及Apple
-Store目前的情况。我们多半可以得出这么个结论，苹果抹黑Flash的主要目地是将Flash踢出移动平台。而只有将Flash踢出了移动平台，才能保护移动设备开发市场的封闭性，从而从中牟利。&lt;/p&gt;
-
-&lt;p&gt;另外，他讲到的FlashCC也很有意思。在一个语言内调用其他语言，这非常有利于Flash的开发。不过后面林伟的一句口误让全场都笑了。他说：“我今天来就是告诉大家，从今以后，大家可以用Flash开发python程序了。”得，又是一堆高级黑评价。&lt;/p&gt;
-
-&lt;h1 id=&#34;第二天上午&#34;&gt;第二天上午&lt;/h1&gt;
-
-&lt;h2 id=&#34;网游开发中的-python-组件&#34;&gt;网游开发中的 Python 组件&lt;/h2&gt;
-
-&lt;p&gt;赖总的topic，基本讲的其实是模式。&lt;/p&gt;
-
-&lt;p&gt;对我来说其实也挺有用的，尤其是关于对象可调用方法的那个idea。写程序到了一定程度，实现已经不是问题。只要有明确的实现方法，你给足够的时间干，肯定是干的出的。问题是思路，也就是idea。一个好的思路往往是经过很久的总结，在实践中不停摔倒，才能真正用上去。&lt;/p&gt;
-
-&lt;p&gt;另外，最后的吐槽，其实是自行实现语法，或者至少是语法糖。我和赖总说，scheme其实很容易嵌入，而且很容易实现这样的要求——lisp类语言的宏天下闻名。赖总在研究的是基于python自己的Parser的方案，我回头有空也看一下。&lt;/p&gt;
-
-&lt;h2 id=&#34;python-in-gentoo-linux&#34;&gt;Python in Gentoo Linux&lt;/h2&gt;
-
-&lt;p&gt;Patrick
-Lauer的主题，主要是讲了Gentoo下面如何使用python，每个版本的python在gentoo下面的支持情况如何。按照数据来看，python3的支持接近完成了。而pypy大概只有2/3的支持比例。&lt;/p&gt;
-
-&lt;h2 id=&#34;其余大部分人的topic&#34;&gt;其余大部分人的topic&lt;/h2&gt;
-
-&lt;p&gt;我都没印象了，或者在睡觉。&lt;/p&gt;
-
-&lt;h1 id=&#34;问题节录&#34;&gt;问题节录&lt;/h1&gt;
-
-&lt;h2 id=&#34;元编程的情况下-如何使用sphinx处理文档&#34;&gt;元编程的情况下，如何使用sphinx处理文档&lt;/h2&gt;
-
-&lt;p&gt;其实我不写文档，我可以拿代码当文档读。python讲的就是可读性，好的代码应该能做到这点。不过要用sphinx来处理文档，他获得的是对象的__doc__。既然在元编程中可以操作主体，也当然可以操作文档。但是元编程操作文档毕竟太蛋疼了点，如果不是必要我是不干的。&lt;/p&gt;
-
-&lt;p&gt;另外，sphinx的多半是代码文档，也就是你写的代码是给程序员看的。你完全可以在整个目录下面写一个markdown来讲解要点。那些不够要点的就让他去吧。&lt;/p&gt;
-
-&lt;h2 id=&#34;入门推荐哪些书&#34;&gt;入门推荐哪些书&lt;/h2&gt;
-
-&lt;p&gt;我的推荐是看任何一本入门指引，然后直接看python-doc。python的文档写的很好，你完全可以直接看。在熟悉python后，再去看一些比较深的专门讲解。&lt;/p&gt;
-
-&lt;h1 id=&#34;组织问题&#34;&gt;组织问题&lt;/h1&gt;
-
-&lt;p&gt;回顾完了，我们得数数活动中的问题。今年北京的会议上来就被人吐槽。李小红的topic还没结束，我就看到微薄里面有吐槽说北京这里已经上了两个广告了。上午过去，cpug和weibo上看到无数吐槽。基本都是集中在一点。花了100多参加活动，为什么看到的全是广告？&lt;/p&gt;
-
-&lt;p&gt;首先说明一点，100多的活动费用真的不贵。我们公司里面有人买票了（我们是金牌赞助商，有票的），大家听到100多，都估计不会带午饭的。我按照去年的经验估计有午饭还被怀疑了。按照官网报价，30的午餐。北京有人吐槽说不够吃，上海这里我基本看到都是够吃了。连续两天的必胜客，我觉得自己出去30绝对吃不到。茶歇饮料10元也是很实诚的价格。40的礼品和衣服绝对属于成本价，您要是下次能操作到比这个还低的执行成本，我们明年就找您了。这样100里面已经去掉80了。&lt;/p&gt;
-
-&lt;p&gt;前200人是99的票，等于只有20的其他费用。后面200人是118的票，等于40的其他费用。我问过sting，报名只有250人（我们场地是14人的宽度，250人要坐17排以上，我看到坐了15排多了）。即使全是付费客户，也只有6000的其他费用。我们的工作人员都是志愿者，不付费的（去年我就是志愿者）。主要的费用是场地费。6000租那么个场地，两天，你开玩笑呢吧。还有外地演讲者来回的差旅费，也是肯定要报销的。一趟北京/广州飞机来回加上住宿就是2000，你自己算算总数多少？&lt;/p&gt;
-
-&lt;p&gt;所以大会非找赞助商不可，我们公司就是金牌赞助商。但是赞助商和赞助商不一样。去年的赞助商和我们差不多，都是为了在圈子里面打知名度的，或者说基本就是做贡献了。今年我们公司可是又出赞助又出干货。但是有些公司就需要一些更直观的东西——赞助商不是都有演讲时间么？给丫广告。广告还和广告不一样。oneclick的topic虽然是个纯粹的广告，可是大家都不反感——至少我不反感。他们可是又派妹纸，又不废话，上去讲了10多分钟。我照相还没来得及拍第二张，讲完了。反观淘宝的那个广告我就很有意见了。您讲半天，我都还没听明白您广告的到底是个啥。您那slide大家心里都有数，纯粹是骗外行老板的。下回来技术广告，直接点，专业点。上去说，我们是卖IaaS的，俗称虚拟机。我们的虚拟机有几个技术点。我们还有存储产品，类似S3。我们的存储有几个技术点。大部分来技术会议的都不是做决策的，讲那么花哨纯属浪费时间。&lt;/p&gt;
-
-&lt;p&gt;应该说，主办方在和厂商打交道的手腕和组织能力在这里就看出分别来了。怎么看赞助商是不是广告（他们可没法提前拿到slide，而题目——去，题目有啥用），如果是广告，怎么控制广告时间和数量。怎么把广告分散在干货里面，让大家在给干货打的晕头转向的时候可以缓一缓。这是很看水平的。我甚至看到一条weibo，说感谢openerp的广告，我睡了一会，在元编程的时候还能精神奕奕的跟进。。。&lt;/p&gt;
-
-&lt;p&gt;不得不说，ZQ在这方面和sting还是有很大差异的，sting毕竟基本是职业的活动主办方了。&lt;/p&gt;
-
-&lt;p&gt;当然，另一个方案是放弃其他费用。按照sting的经验，去掉午饭绝对不行，出去吃时间不够，还零零散散。去掉茶歇和饮料也不行，听那会议不停下来歇一下会疯的。能去的只有礼品和衣服。可是去掉礼品和衣服，来的人就会没留念感。再说，每个人省下40，250人省下10000，还是凑不出场地费。&lt;/p&gt;
-
-&lt;p&gt;这么数数看，其实办社区活动很苦逼的。大牛比例太少，赞助商和听众都不来，那事情就办不成。大牛比例太高，听众是高兴了，可是赞助商不足，没经费。没经费怎么请大牛？难道让赖总在广州开个视频给我们讲么？人家又写slide，又搭两天来参加，再要自费差旅——这得算赞助商吧。要真这么搞，我一点也不会奇怪赖总的题目会变成游戏推介会。&lt;/p&gt;
-
-&lt;p&gt;这么看起来，100来参加，听到广告就不是件很奇怪的事情了，听不到才奇怪。但是控制广告的数量和时间，怎么总体把控，还需要组织者多多上心。毕竟来的人花钱都是看大牛的，要是满眼看过去全是广告，那也没人来了。&lt;/p&gt;
-
-&lt;p&gt;另外一点批评。我去年整的wifi不好用，好歹还是能上去的。今年连上都上不去了，全靠自己的流量顶。也幸好是这个会议室，手机还有信号。同事说隔壁会议室手机一点信号都没有，要再没有wifi绝对会疯的。&lt;/p&gt;
-</description>
+      <description>今天第一天在大型会议上演讲，其实挺紧张的。不过还不错，虽然临场反应并不热烈，但是至少不冷场。下面是我今天看到内容的回忆，有些印象不神，记得不清楚了。
+第一天上午 视频播放 上来先是sting先给我们放了一堆视频，我基本啥都没记住。就记住一个在日本的pythoner说教孩子编程时大家的评语了——python穷三代，编程毁一生。我后面接的是，用scheme子子孙孙都完了。
+python产品构建和发布指南 沈游侠的主题，彻底干货。基本要点就是利用cython和pypy来编译类python语言，变成C语言代码。这样不但速度快，而且C代码都是可以跨平台的。后面又列举了如何用cython和pypy来编译库。这样基本可以完成python到多数平台的移植。
+我做了一下简单测试。cython对速度的增加主要是静态类型编译，如果保持代码不动，速度反而会略微下降。因此在速度提升上，作用并不如想像中那么明显。但是在跨平台上，效果就非常好。rpython则完全相反，经过rpython编译的代码，在基本不修改的情况下（当然，前提是你需要符合rpython），执行比C还快。
+不过游侠在后面的答疑中也说了，pypy的rpython编译把握难度比较高，不建议在产品中使用。
+另外，他后面也提了溜宝的例子，在python和js之间可以远过程调用，还可以回调。熟悉http的应该可以听出来，这个在现在浏览器中必然是要用到long pull技术的。因此底层框架不肖说，必然是Eurasia。
+让程序运行更快 我们几个都在说，土豆的一贯风格是分享内容是和技术有关的干货，但是都和python不搭边。最多在最后说一句，这个技术在我们这里是利用python做的。上次黄东的演讲就是，讲如何算流量带宽费，最后来一句，这个是python实现的。这次李小红的分享也是，很技术，但是和python没啥关系。讲到一半还来了一句，“我对python不熟悉，前几天特意看了一下，dict是利用开放地址法实现而不是开链实现的，这让我对python顿时有了信心”。微薄上无数吐槽高级黑啊。
+土豆的分享其实很简单，核心就是如何通过代理让网站的响应速度更快。干货是干货，但是不是非常熟悉http协议，能够将http本身优化到相当程度的，听了等于白听。因为上面讲的大部分，都是内存命中和交换，磁盘写出，cpu调度，poll和epoll内核模式差异之类的话题。在python下面，poll和epoll基本都看不出差别，大部分优化都围绕着模式打转。研究这种命中技巧不是南辕北辙么？
+但是这不表示这个主题没用，只是如果你不把其他方面的问题解决的很彻底，先没头没脑在CPU和内存缓存命中上下功夫，多半是做不过别人的。
+第一天下午 OpenERP 即将推出的第 7 版的功能和新的编程框架介绍 演讲者是个法国人，中文相当不错。不过和Thomas比起来还是差点。旁边的老外哥们说，那是因为Thomas有个好中国老婆。
+基本是广告。除了让我们体验了一把openerp的风格外，啥都没看着。不过openerp看起来确实够屌的，直接去下一个插件，应用，然后就直接换掉了语言。这基本和php差不多。还有一堆的良好的交互特性，看起来非常像应用。此外，啥技术都没有。
+元编程在 Redis ORM 中的应用 我自己的题目，会场反应并不很热烈。总共两个选项，我问认为是1的举手，几个。认为2的举手，几个。剩下的是啥？
+其实元编程本身就不好讲，这个题目我写完文档算了一下，大概1个小时到一个半小时。问题是我问sting多要点时间，没有。好容易给我加到45分钟。我对着文档左砍右砍，还是紧紧张张的25分钟讲完。要在30分钟出头讲完整个题目，也难怪听众反应不良。
+具体我也就不展开了，希望看到的可以看我的slide。另外我说一下，这个slide也是我用python做的。
+用 Tornado 开发 RESTful API 应用 其实以这个应用而言，是适合GAE的项目。不过飞龙只是借这个题目讲Tornado而已。
+阿里云之移动开发者上云 纯粹广告。不过既然是lighting topic，也不算太难受。我也顺便看了一下阿里云的架构。不过主讲完全没讲到要点，他们到底是卖IaaS业务，还是卖PaaS业务，还是云存储，还是三者都有？另外，用IaaS来做PaaS的可伸缩？我还真不觉得这是个好主意。。。
+Python如何帮助「逆转三国」获得成功 广告中的广告。今天唯一一个妹纸上场的主题，我还在想，终于有妹纸上去做分享了，还是个美女。结果介绍完了心里就凉了半截——市场总监，这姐们是个非技术的角色。演讲的主要内容是，python很好，python没出过乱子。完了，总共15分钟不到，我连拍第二张照片的机会都没有。其余时间全在说游戏是如何成功，左右还有海报助阵。最后还出来一个美女发传单。
+最后主办方出来道歉，他们也以为这个topic是正规演讲，没想到讲成了lighting topic。
+网页游戏的跨界开发 董诣的题目，主要讲他如何训练公司的策划使用python。他用的方法基本就是元编程的路数。
+策划将配置写入excel，然后他们的程序读取excel，写出一个python的文件，再由服务器加载。这是典型的字符处理型元编程的例子。早知道他们这么用，我满可以顺手拿来举例的。
+最后他的例子倒是让我们吐槽了一把。print后面可以不加空格，这是他们公司美工教的。
+实战游戏客户端 林伟每年来都是带来大量干货。今年他是特别从北京飞过来，在演讲前刚刚到场。
+他的题目是用python做客户端，并不是很好讲。因为python做游戏客户端不是很多。他举了一个pygame的例子，超级玛丽的企鹅复刻版，玩的挺欢乐的。
+后面他大概讲解了一下游戏界面编程的几代模式变化。不过我印象最深的还是说到flash在苹果上。后面他运行flash的那个模拟的时候，我彻底吓一跳。我偷偷和沈游侠说，林伟说的完全没错，乔帮主抹黑flash完全是为了抢app的地位。
+大家可以想象一下，如果flash拿到了硬件驱动加速会如何？Apple Store上的程序还有谁会花钱？都直接用网页跑一个Flash游戏就直接玩了。PC上能跑的，在苹果上自然也能跑，效果还不差。那还用Objective C做什么？只有性能要求特别高的才会用到。如果不需要Objective C，那Apple Store还怎么赚钱？从Flash能够做到这点，还有Adobe的战略布局，以及Apple Store目前的情况。我们多半可以得出这么个结论，苹果抹黑Flash的主要目地是将Flash踢出移动平台。而只有将Flash踢出了移动平台，才能保护移动设备开发市场的封闭性，从而从中牟利。
+另外，他讲到的FlashCC也很有意思。在一个语言内调用其他语言，这非常有利于Flash的开发。不过后面林伟的一句口误让全场都笑了。他说：“我今天来就是告诉大家，从今以后，大家可以用Flash开发python程序了。”得，又是一堆高级黑评价。
+第二天上午 网游开发中的 Python 组件 赖总的topic，基本讲的其实是模式。
+对我来说其实也挺有用的，尤其是关于对象可调用方法的那个idea。写程序到了一定程度，实现已经不是问题。只要有明确的实现方法，你给足够的时间干，肯定是干的出的。问题是思路，也就是idea。一个好的思路往往是经过很久的总结，在实践中不停摔倒，才能真正用上去。
+另外，最后的吐槽，其实是自行实现语法，或者至少是语法糖。我和赖总说，scheme其实很容易嵌入，而且很容易实现这样的要求——lisp类语言的宏天下闻名。赖总在研究的是基于python自己的Parser的方案，我回头有空也看一下。
+Python in Gentoo Linux Patrick Lauer的主题，主要是讲了Gentoo下面如何使用python，每个版本的python在gentoo下面的支持情况如何。按照数据来看，python3的支持接近完成了。而pypy大概只有2/3的支持比例。</description>
     </item>
     
     <item>
@@ -518,22 +144,11 @@ Lauer的主题，主要是讲了Gentoo下面如何使用python，每个版本的
       <pubDate>Mon, 23 Jul 2012 08:03:45 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2206/</guid>
-      <description>&lt;p&gt;要去马尔代夫渡蜜月了，闪人前最后一贴。&lt;/p&gt;
-
-&lt;p&gt;方法是用python准备数据，然后用timeit进行测试。虽然因为python框架的干扰，具体时值不是很准。但是用来做数量级对比和计算足够了。原生数据是一个屏幕截图，4M的数据块。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;zlib.compress: 0.054105230093
-snappy.compress: 0.00374100804329
-zlib.decompress: 0.0157685602903
-snappy.decompress: 0.0051297039032
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;从结果分析，zlib是典型的非对称压缩算法，压缩/解压速度比大约是3.5:1。而snappy的压缩和解压速度在同一个数量级上，甚至在具体的数值上，压缩比解压还要快那么一点。以解压速度为基础的对比，snappy大概比zlib快了3倍。而压缩速度上，则是快了14.5倍。&lt;/p&gt;
-
-&lt;p&gt;由于python的干扰是在每个的时间上面增加了一定开销，通常会使得速度比更接近1。也就是说，实际上snappy和zlib的速度比比这个还要大。&lt;/p&gt;
-
-&lt;p&gt;另外说一句题外话。按照我们测试下来的数值计算，snappy和zlib的压缩比大概在1:2之间。zlib压缩图形资料时的典型比例是0.05，而snappy则是0.1左右。对于熵比较高的数据，zlib大约是0.33左右的时候，snappy是0.5。都是比2倍大小略小。&lt;/p&gt;
-</description>
+      <description>要去马尔代夫渡蜜月了，闪人前最后一贴。
+方法是用python准备数据，然后用timeit进行测试。虽然因为python框架的干扰，具体时值不是很准。但是用来做数量级对比和计算足够了。原生数据是一个屏幕截图，4M的数据块。
+zlib.compress: 0.054105230093 snappy.compress: 0.00374100804329 zlib.decompress: 0.0157685602903 snappy.decompress: 0.0051297039032  从结果分析，zlib是典型的非对称压缩算法，压缩/解压速度比大约是3.5:1。而snappy的压缩和解压速度在同一个数量级上，甚至在具体的数值上，压缩比解压还要快那么一点。以解压速度为基础的对比，snappy大概比zlib快了3倍。而压缩速度上，则是快了14.5倍。
+由于python的干扰是在每个的时间上面增加了一定开销，通常会使得速度比更接近1。也就是说，实际上snappy和zlib的速度比比这个还要大。
+另外说一句题外话。按照我们测试下来的数值计算，snappy和zlib的压缩比大概在1:2之间。zlib压缩图形资料时的典型比例是0.05，而snappy则是0.1左右。对于熵比较高的数据，zlib大约是0.33左右的时候，snappy是0.5。都是比2倍大小略小。</description>
     </item>
     
     <item>
@@ -542,170 +157,22 @@ snappy.decompress: 0.0051297039032
       <pubDate>Mon, 09 Jul 2012 08:45:28 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2200/</guid>
-      <description>
-
-&lt;h1 id=&#34;abstract&#34;&gt;abstract&lt;/h1&gt;
-
-&lt;p&gt;graphite是一个python写的性能监控系统。这个系统是由多个分离的部分组成的。&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;graphite-web: 由django写的web界面系统。&lt;/li&gt;
-&lt;li&gt;carbon: 数据收集的守护进程。&lt;/li&gt;
-&lt;li&gt;whisper: 一种python写的数据库，类似rrd，便于大量的性能日志数据收集和处理。上两个组件会调用这个库。&lt;/li&gt;
-&lt;li&gt;collectd: 数据收集守护进程，向carbon中喂数据的数据源。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;另外，有一点黑色幽默的就是，graphite的意思是石墨，是炭(carbon)的一种同素异形体。因此在graphite项目中，多次出现carbon这个名字。当然，另两个同素异形体是钻石(diamond)和足球烯(footballene)，你就暂时别指望看到他们的身影了。&lt;/p&gt;
-
-&lt;p&gt;另一个用python写的，以元素命名的著名软件是mercurial。化学元素中的汞，俗称水银，符号hg。因此mercurial的命令行简写才是hg。&lt;/p&gt;
-
-&lt;p&gt;以上几个的结构大概是这样的：&lt;/p&gt;
-
-&lt;p&gt;collectd(source) -network-&amp;gt; carbon -&amp;gt; writing-&amp;gt; whisper&lt;/p&gt;
-
-&lt;p&gt;database -&amp;gt; reading-&amp;gt; graphite-web&lt;/p&gt;
-
-&lt;p&gt;下文描述了在debian wheezy下，以nginx+uwsgi模式安装graphite的过程。之所以用这个模式，是因为我的大部分系统都是python写的，同样安装在uwsgi下面。一事不烦二主。&lt;/p&gt;
-
-&lt;h1 id=&#34;carbon&#34;&gt;carbon&lt;/h1&gt;
-
-&lt;p&gt;carbon有对应的debian包，可以很简单的安装。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;sudo aptitude install graphite-carbon
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;默认的数据端口是2003，默认的数据路径是/var/lib/graphite/，这个在下文需要用到。&lt;/p&gt;
-
-&lt;h1 id=&#34;graphite&#34;&gt;graphite&lt;/h1&gt;
-
-&lt;h2 id=&#34;virtual&#34;&gt;virtual&lt;/h2&gt;
-
-&lt;p&gt;graphite有部分需要安装到系统中，因此最好用virtualenv进行安装。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;cd /var/web/
-sudo aptitude install python-virtualenv
-virtualenv --system-site-packages graphite
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;我假定你的安装路径是/var/web/graphite，这个在下面要反复用到。&lt;/p&gt;
-
-&lt;h2 id=&#34;install&#34;&gt;install&lt;/h2&gt;
-
-&lt;p&gt;在安装路径下，执行以下内容&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;source bin/activite
-pip install graphite-web --install-option=&amp;quot;--prefix=/var/web/graphite&amp;quot; --install-option=&amp;quot;--install-lib=/var/web/graphite/webapp&amp;quot;
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;注意，/var/web/graphite需要根据上面的设定自行修改，webapp是你的django基础路径。&lt;/p&gt;
-
-&lt;h2 id=&#34;configure&#34;&gt;configure&lt;/h2&gt;
-
-&lt;p&gt;在/var/web/graphite/webapp/graphite下面，执行以下内容&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;cp local_settings.py.example local_settings.py
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;然后编辑local_settings.py&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;GRAPHITE_ROOT = &#39;/var/web/graphite&#39;
-WHISPER_DIR = &#39;/var/lib/graphite/whisper&#39;
-DATABASES = ...
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;注意databases，不要在settings.py里面修改，要改这里的才有效。我用的是sqlite，如果你高兴，可以改为postgres/mysql。WHISPER_DIR是上文carbon中设定的目录。&lt;/p&gt;
-
-&lt;p&gt;最后，执行以下指令，完成数据库初始化。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;python manage.py syncdb
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2 id=&#34;uwsgi&#34;&gt;uwsgi&lt;/h2&gt;
-
-&lt;p&gt;编辑/etc/uwsgi/apps-enabled/graphite.ini，包含以下内容。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;[uwsgi]
-plugins = python
-workers = 1
-chdir = /var/web/graphite/webapp
-pythonpath = /var/web/graphite
-env = DJANGO_SETTINGS_MODULE=graphite.settings
-module = django.core.handlers.wsgi:WSGIHandler()
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;注意，这里的chdir，是你的webapp基础路径。而pythonpath则是virtualenv的路径。两者在上文都有说明的。env里面那个graphite是webapp/graphite这个app(不详细说明，自己学一下django就懂了)。module是django的固定写法。&lt;/p&gt;
-
-&lt;h2 id=&#34;nginx&#34;&gt;nginx&lt;/h2&gt;
-
-&lt;p&gt;最后，在nginx中包含以下内容，将部分url转发到uwsgi上。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;location ~ ^/(graphite|content|metrics|dashboard|render|browser|composer)/ {
-    include uwsgi_params;
-    uwsgi_param  UWSGI_SCHEME $scheme;
-    uwsgi_pass unix:/run/uwsgi/app/graphite/socket;
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h1 id=&#34;collectd&#34;&gt;collectd&lt;/h1&gt;
-
-&lt;h2 id=&#34;install-1&#34;&gt;install&lt;/h2&gt;
-
-&lt;p&gt;collectd的安装很简答，有包，直接安装就好。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;sudo aptitude install collectd
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2 id=&#34;configure-1&#34;&gt;configure&lt;/h2&gt;
-
-&lt;p&gt;在/etc/collectd/这个路径，能够看到collectd.conf这个文件。反注释掉以下内容：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;&amp;lt;LoadPlugin python&amp;gt;
-    Globals true
-&amp;lt;/LoadPlugin&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;然后，再编辑以下内容。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;&amp;lt;Plugin python&amp;gt;
-    ModulePath &amp;quot;/etc/collectd/carbon&amp;quot;
-    Import “carbon_writer”
-    &amp;lt;Module “carbon_writer”&amp;gt;
-        LineReceiverHost “localhost″
-        LineReceiverPort 2003
-        DifferentiateCountersOverTime true
-        LowercaseMetricNames true
-        TypesDB &amp;quot;/usr/share/collectd/types.db&amp;quot;
-    &amp;lt;/Module&amp;gt;
-&amp;lt;/Plugin&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;上文中假定你把python插件放在了/etc/collectd/carbon下面，所以下文需要按照这个路径安装carbon。&lt;/p&gt;
-
-&lt;h2 id=&#34;collectd-carbon&#34;&gt;collectd-carbon&lt;/h2&gt;
-
-&lt;p&gt;在/etc/collectd下面，执行&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;sudo git clone https://github.com/indygreg/collectd-carbon.git carbon
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;注意，sudo其实是不安全的。不过目前就这样吧，问题不明显。&lt;/p&gt;
-
-&lt;h2 id=&#34;restart-whole-system&#34;&gt;restart whole system&lt;/h2&gt;
-
-&lt;p&gt;执行以下指令重启服务&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;sudo /etc/init.d/nginx restart
-sudo /etc/init.d/uwsgi restart
-sudo /etc/init.d/carbon-cache restart
-sudo /etc/init.d/collectd restart
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;完成这步后，可以在/var/log/syslog中看到collectd的输出，数据确实的被灌入了carbon。而/var/log/uwsgi/app/graphite.log中可以看到uwsgi的输出。如果一切正常的话，你可以去&lt;a href=&#34;http://localhost/graphite/&#34;&gt;http://localhost/graphite/&lt;/a&gt;下面看你要的东西了。&lt;/p&gt;
-
-&lt;h1 id=&#34;评价&#34;&gt;评价&lt;/h1&gt;
-
-&lt;p&gt;数据收集的挺完整的。既然是基于collectd，那么应当没什么问题的，openwrt也可以支持的。问题是拿到数据后展现的一方面。由于默认配置太差，因此需要很长时间调教。我没那个功夫，搞定测试后就直接删除了。&lt;/p&gt;
-</description>
+      <description>abstract graphite是一个python写的性能监控系统。这个系统是由多个分离的部分组成的。
+ graphite-web: 由django写的web界面系统。 carbon: 数据收集的守护进程。 whisper: 一种python写的数据库，类似rrd，便于大量的性能日志数据收集和处理。上两个组件会调用这个库。 collectd: 数据收集守护进程，向carbon中喂数据的数据源。  另外，有一点黑色幽默的就是，graphite的意思是石墨，是炭(carbon)的一种同素异形体。因此在graphite项目中，多次出现carbon这个名字。当然，另两个同素异形体是钻石(diamond)和足球烯(footballene)，你就暂时别指望看到他们的身影了。
+另一个用python写的，以元素命名的著名软件是mercurial。化学元素中的汞，俗称水银，符号hg。因此mercurial的命令行简写才是hg。
+以上几个的结构大概是这样的：
+collectd(source) -network-&amp;gt; carbon -&amp;gt; writing-&amp;gt; whisper
+database -&amp;gt; reading-&amp;gt; graphite-web
+下文描述了在debian wheezy下，以nginx+uwsgi模式安装graphite的过程。之所以用这个模式，是因为我的大部分系统都是python写的，同样安装在uwsgi下面。一事不烦二主。
+carbon carbon有对应的debian包，可以很简单的安装。
+sudo aptitude install graphite-carbon  默认的数据端口是2003，默认的数据路径是/var/lib/graphite/，这个在下文需要用到。
+graphite virtual graphite有部分需要安装到系统中，因此最好用virtualenv进行安装。
+cd /var/web/ sudo aptitude install python-virtualenv virtualenv --system-site-packages graphite  我假定你的安装路径是/var/web/graphite，这个在下面要反复用到。
+install 在安装路径下，执行以下内容
+source bin/activite pip install graphite-web --install-option=&amp;quot;--prefix=/var/web/graphite&amp;quot; --install-option=&amp;quot;--install-lib=/var/web/graphite/webapp&amp;quot;  注意，/var/web/graphite需要根据上面的设定自行修改，webapp是你的django基础路径。
+configure 在/var/web/graphite/webapp/graphite下面，执行以下内容
+cp local_settings.py.example local_settings.py  然后编辑local_settings.py
+GRAPHITE_ROOT = &#39;/var/web/graphite&#39; WHISPER_DIR = &#39;/var/lib/graphite/whisper&#39; DATABASES = .</description>
     </item>
     
     <item>
@@ -714,74 +181,40 @@ sudo /etc/init.d/collectd restart
       <pubDate>Fri, 15 Jun 2012 07:19:45 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2194/</guid>
-      <description>&lt;p&gt;劳资明天要结婚了，今天婚前最后一个blog。&lt;/p&gt;
-
-&lt;p&gt;1.hello, world&lt;/p&gt;
-
-&lt;p&gt;目标：屏幕上打印出hello, world。&lt;/p&gt;
-
-&lt;p&gt;原因：不解释。&lt;/p&gt;
-
-&lt;p&gt;进阶：当命令行给与不同参数的时候，打印hello,&lt;/p&gt;
-
-&lt;p&gt;名字。给与开关的时候，打印hello, 123。&lt;/p&gt;
-
-&lt;p&gt;2.正则提取&lt;/p&gt;
-
-&lt;p&gt;目标：写一个正则表达式(或者类似的东西)，从一段网页源码中找到某个标签的内容，去掉前后空格，显示。&lt;/p&gt;
-
-&lt;p&gt;原因：测试字符串处理能力。&lt;/p&gt;
-
-&lt;p&gt;进阶：支持正则扩展&lt;/p&gt;
-
-&lt;p&gt;3.扫描排重&lt;/p&gt;
-
-&lt;p&gt;目标：将某个目录和子目录下的所有文件扫描，排除重复的文件。&lt;/p&gt;
-
-&lt;p&gt;原因：测试文件系统操作能力。&lt;/p&gt;
-
-&lt;p&gt;进阶：多线程处理，注意吞吐颠簸。&lt;/p&gt;
-
-&lt;p&gt;4.做24点自动计算程序&lt;/p&gt;
-
-&lt;p&gt;目标：写一个程序，能够计算24点。要求能够自定义扩展算符。&lt;/p&gt;
-
-&lt;p&gt;原因：检查深度优先搜索，栈，结构设计，抽象处理能力等等。&lt;/p&gt;
-
-&lt;p&gt;进阶：做并发处理。有数种语言可能无法实现并发，或并发实现难度大，不美观，例如python。&lt;/p&gt;
-
-&lt;p&gt;5.做一个计算器&lt;/p&gt;
-
-&lt;p&gt;目标：做一个计算器，要求能计算1+2*3=7，并支持()。&lt;/p&gt;
-
-&lt;p&gt;原因：表达式解析和处理需要用到程序的方方面面，字符串处理等等。&lt;/p&gt;
-
-&lt;p&gt;进阶：做一个本语言的eval函数出来。&lt;/p&gt;
-
-&lt;p&gt;7.抓网页&lt;/p&gt;
-
-&lt;p&gt;目标：实现一个服务，定期下载符合规则的一批网页，解析，获得格式化的数据，并存入数据库。&lt;/p&gt;
-
-&lt;p&gt;原因：测试系统开发能力，基础网络库，字符串处理能力。&lt;/p&gt;
-
-&lt;p&gt;进阶：分布化抓取。&lt;/p&gt;
-
-&lt;p&gt;8.留言板&lt;/p&gt;
-
-&lt;p&gt;目标：设计一个留言板，将所有人提交的话保存起来，能一并展示。提交不需验证，展示不需分页。&lt;/p&gt;
-
-&lt;p&gt;原因：测试网络服务能力，数据库支持和多国语言支持。&lt;/p&gt;
-
-&lt;p&gt;进阶：防止XSS攻击。&lt;/p&gt;
-
-&lt;p&gt;9.异步大并发服务器&lt;/p&gt;
-
-&lt;p&gt;目标：设计一个异步http服务器，能对请求做出响应，添加，删除，修改数据库中的数据。不得使用现有的http框架和容器。&lt;/p&gt;
-
-&lt;p&gt;原因：集成性测试&lt;/p&gt;
-
-&lt;p&gt;进阶：不使用现有数据库，自己写一个。。。&lt;/p&gt;
-</description>
+      <description>劳资明天要结婚了，今天婚前最后一个blog。
+1.hello, world
+目标：屏幕上打印出hello, world。
+原因：不解释。
+进阶：当命令行给与不同参数的时候，打印hello,
+名字。给与开关的时候，打印hello, 123。
+2.正则提取
+目标：写一个正则表达式(或者类似的东西)，从一段网页源码中找到某个标签的内容，去掉前后空格，显示。
+原因：测试字符串处理能力。
+进阶：支持正则扩展
+3.扫描排重
+目标：将某个目录和子目录下的所有文件扫描，排除重复的文件。
+原因：测试文件系统操作能力。
+进阶：多线程处理，注意吞吐颠簸。
+4.做24点自动计算程序
+目标：写一个程序，能够计算24点。要求能够自定义扩展算符。
+原因：检查深度优先搜索，栈，结构设计，抽象处理能力等等。
+进阶：做并发处理。有数种语言可能无法实现并发，或并发实现难度大，不美观，例如python。
+5.做一个计算器
+目标：做一个计算器，要求能计算1+2*3=7，并支持()。
+原因：表达式解析和处理需要用到程序的方方面面，字符串处理等等。
+进阶：做一个本语言的eval函数出来。
+7.抓网页
+目标：实现一个服务，定期下载符合规则的一批网页，解析，获得格式化的数据，并存入数据库。
+原因：测试系统开发能力，基础网络库，字符串处理能力。
+进阶：分布化抓取。
+8.留言板
+目标：设计一个留言板，将所有人提交的话保存起来，能一并展示。提交不需验证，展示不需分页。
+原因：测试网络服务能力，数据库支持和多国语言支持。
+进阶：防止XSS攻击。
+9.异步大并发服务器
+目标：设计一个异步http服务器，能对请求做出响应，添加，删除，修改数据库中的数据。不得使用现有的http框架和容器。
+原因：集成性测试
+进阶：不使用现有数据库，自己写一个。。。</description>
     </item>
     
     <item>
@@ -790,13 +223,8 @@ sudo /etc/init.d/collectd restart
       <pubDate>Wed, 06 Jun 2012 03:29:57 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2188/</guid>
-      <description>&lt;p&gt;re_tmpl = re.compile(&amp;rsquo;&amp;lt;%(.*?)%&amp;gt;&amp;lsquo;)
-    def template(s, d):
-        return re_tmpl.sub(lambda m: str(eval(m.group(1), globals(), d)), s)
-    template(&amp;rsquo;&amp;lt;%&amp;ldquo;ddd&amp;rdquo; if abc else &amp;ldquo;eee&amp;rdquo;%&amp;gt;&amp;lsquo;, {&amp;lsquo;abc&amp;rsquo;: 1})&lt;/p&gt;
-
-&lt;p&gt;限制挺多，只能在&amp;lt;%%&amp;gt;中写一行代码，不能多行。不能用跨区块的if for等控制结构。但是对于功能需求不复杂，需要可变性强，又不希望引入额外库的地方还是非常实用的。&lt;/p&gt;
-</description>
+      <description>re_tmpl = re.compile(&amp;rsquo;&amp;lt;%(.*?)%&amp;gt;&amp;lsquo;) def template(s, d): return re_tmpl.sub(lambda m: str(eval(m.group(1), globals(), d)), s) template(&amp;rsquo;&amp;lt;%&amp;ldquo;ddd&amp;rdquo; if abc else &amp;ldquo;eee&amp;rdquo;%&amp;gt;&amp;lsquo;, {&amp;lsquo;abc&amp;rsquo;: 1})
+限制挺多，只能在&amp;lt;%%&amp;gt;中写一行代码，不能多行。不能用跨区块的if for等控制结构。但是对于功能需求不复杂，需要可变性强，又不希望引入额外库的地方还是非常实用的。</description>
     </item>
     
     <item>
@@ -805,26 +233,16 @@ sudo /etc/init.d/collectd restart
       <pubDate>Mon, 28 May 2012 02:13:32 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2182/</guid>
-      <description>&lt;p&gt;在总结前，我们首先搞明白三个问题的差异“效率的决定因素”，“语言效率差异”和“日常使用中造成运行效率差异的因素”。&lt;/p&gt;
-
-&lt;p&gt;代码的效率最根本因素绝对不是语言的效率，我一直这么确信。代码效率的决定因素必然是算法的正确选择和实现的优秀程度。这里面包括了正确评估问题，选择合适的数据结构，使用合适的算法等。例如对给定数据的高速查询，用红黑树去跑查询肯定跑不过预编译的哈希算法和哈希表。即使前者使用汇编实现，而后者只是python实现。(对于这点，我对比过一个大规模数据的查询，数据是固定的。数据库效率最差，C++用红黑树的map次之，效率最好的是python的dict，底层是hashtable。当然，为了防止某些人补充，我自己先说了——我最后用了stlport的hash_map)&lt;/p&gt;
-
-&lt;p&gt;语言效率的差异，有很多因素。例如编译型/解释型语言，动态语言和静态语言，是否带jit优化等，都会造成很大的性能差异。甚至同样是C，不同的编译和优化参数也会造成很大规模的差异，做优化的朋友一定心里有数。然而大多数情况下，决定语言效率的关键因素都不在语言自身的效率上，而是在于底层库实现的效率上。当然，如果底层库使用该种语言直接写成(我也比较喜欢这种风格)，那么归根结底还是考验语言本身的效率问题的。以正则测试为例，实际上python是一种性能很差的语言，但是在测试上并不很低。因为python的库实现是直接引用了C库，其效率仅仅是C加上一个不高的值。而lua得分不足只能说是库的实现比python差。&lt;/p&gt;
-
-&lt;p&gt;最后一个问题相信大家最关心，即日常使用中造成运行效率差异的关键。到底是什么，决定了我们每天写的代码的效率？&lt;/p&gt;
-
-&lt;p&gt;可能要出乎大家的意料，从实际测试来看，实际上是测试能力和可变性。我们能够大致预料某些性能特别差的情况，然而对于性能在50%-200%以内变化的细节，实际上是很难提前预测的。也许我们会“猜测”某种情况性能比较优秀，但是实现下来情况可能完全不是这么回事。例如我曾经就一个C代码进行优化，预期应当能提高4倍性能，当时测试的结果是性能提高3-5倍，但是实际生产环境跑下来觉得没区别。后来发现，我自己测试用的是-O0，而生产系统是-O2。我的优化实际上在-O2的时候就全部被自动优化掉了。如果你觉得你的经验够丰富，能够预测-O2会优化你的哪些代码。那么你可以考虑一下，CPU的指令流水优化呢？系统上所安装版本的libc的实现细节和内核细节呢？如果都能精通，您可以忽略我这篇文章。但是对于我自己而言，我只能预计某个做法可能优化，而不能确定。&lt;/p&gt;
-
-&lt;p&gt;这时候，对于这个优化的实现难易程度，和实现完成后进行测量的难度就成为了关键。尤其是精确测量耗费时间的代码，执行时的瓶颈，这些能力才是优化代码的关键所在。我曾经写过为什么python效率不比C低，有人不服。我说了，并且反复强调了，这个仅限于“两者的生产速度一致”这个前提下。实际上如果真满足这个前提，大部分情况下C这边都输的没法测试的。因为完成同样任务，python的编码时间大约只有C的一半到1/4。即使算上优化，python完成项目的时间，C都不一定能写的完代码。更不提后面还要进行泄漏测试，复查，复杂的调试。等全部通过，开始关注效率问题，生产时间早超了。&lt;/p&gt;
-
-&lt;p&gt;作为日常生产，我想大部分程序员都有这么个经验。决定代码质量的实际上是项目的时间是否充裕，程序员是否用心严谨，生产流程管理是否到位。除非程序员太差劲，否则技术性代码质量差异并不特别多——一般都是远远小于赶代码造成的严重问题的。如果您那里不是这样，我建议您更换一批靠谱的程序员。同样，在真实的日常生产中，大部分项目都没有那个机会对代码进行多次的复查，深层次优化所有问题。基本是写，写完了查，没有什么表面问题。然后检查一下，用户体验效率是不是很差，找最差的地方优化一下，然后直接交货。很少有像理论代码那样，反复优化和测试，甚至受到来自不同程序员的交叉检测和沟通。如果有这种级别的反复优化，毫无疑问的，C会是常用语言中的效率之王。在&lt;a href=&#34;http://shootout.alioth.debian.org/u64q/which-programming-languages-are-fastest.php&#34;&gt;shootout&lt;/a&gt;&amp;gt;给出的速度评测上，仅有Intel自己实现的fortran超越了C。当然，我相信汇编会更加优秀。&lt;/p&gt;
-
-&lt;p&gt;然而杯具的是，日常生产中恰恰相反，至少我是没什么时间去优化每行代码的。大部分时候，为了处理一个排序问题，我不会去网络上找一个vector库，而是直接开一个100的数组，然后qsort。前方报错了，改1000的数组。在写python的时候，也不会精细的考虑每个地方是否都用了合适的方法，某点是生成器好还是list好。大不了觉得某个程序慢了，cProfile一把，然后对着花时间最长的几个点看看是否有问题。自我感觉而言，python项目在做完之余，我还能泡个茶聊会天，自然也有功夫去看两眼代码，是否有哪里写的太难看了。而C代码就是不停的debug，即使我好容易喘口气，也绝对不会想去再看了。&lt;/p&gt;
-
-&lt;p&gt;最后说一下sbcl，在自身性能测试中，是当之无愧的语言之王。速度是python的一倍不到，代码量是python的一半。常规来说，出错概率，维护难度，都是和代码行数直接相关。一半的代码量基本就意味着维护成本削减一半，而一倍的速度基本和java持平，在C后面紧追不舍。但是，以上常理对lisp均不适用。lisp的学习难度惊人不说，维护难度和代码行数没有直接关系，而是取决于写作者的水平。水平越好的写作者，代码越容易维护，反之，初心者写出来的玩意那是看都看不懂的。冰河在博客上说他找了个职业lisp程序员的工作，人家视若珍宝。我不知道是哪年的blog，但是从老板的角度来说，这才是程序员的悲哀。老板喜欢什么语言？最好有个点子，跑去人才市场插个牌子，上书“我要人”。然后就会有一堆人云集过来，脖子上面都套着“五行一元”，“精通XXX”的草标。抓一只大个的，给个项目经理的头衔，让他管着别人。每个月扔一麻袋饲料下去，过两个月就能收程序了。&lt;/p&gt;
-
-&lt;p&gt;看起来和农场有点像，不是么？遗憾的是，lisp看来是达不到这个要求了。全国能用的python程序员不会超过5000，lisp程序员大概连500都不到。如果哪个老板不幸脑残，用了lisp来做项目，那么在招人这个问题上会比python更难执行。从这个意义上说，这才是lisp程序员不流行的关键——不好找工作。即使运行效率再高，语言本身再好，也没法过老板那关。&lt;/p&gt;
-</description>
+      <description>在总结前，我们首先搞明白三个问题的差异“效率的决定因素”，“语言效率差异”和“日常使用中造成运行效率差异的因素”。
+代码的效率最根本因素绝对不是语言的效率，我一直这么确信。代码效率的决定因素必然是算法的正确选择和实现的优秀程度。这里面包括了正确评估问题，选择合适的数据结构，使用合适的算法等。例如对给定数据的高速查询，用红黑树去跑查询肯定跑不过预编译的哈希算法和哈希表。即使前者使用汇编实现，而后者只是python实现。(对于这点，我对比过一个大规模数据的查询，数据是固定的。数据库效率最差，C++用红黑树的map次之，效率最好的是python的dict，底层是hashtable。当然，为了防止某些人补充，我自己先说了——我最后用了stlport的hash_map)
+语言效率的差异，有很多因素。例如编译型/解释型语言，动态语言和静态语言，是否带jit优化等，都会造成很大的性能差异。甚至同样是C，不同的编译和优化参数也会造成很大规模的差异，做优化的朋友一定心里有数。然而大多数情况下，决定语言效率的关键因素都不在语言自身的效率上，而是在于底层库实现的效率上。当然，如果底层库使用该种语言直接写成(我也比较喜欢这种风格)，那么归根结底还是考验语言本身的效率问题的。以正则测试为例，实际上python是一种性能很差的语言，但是在测试上并不很低。因为python的库实现是直接引用了C库，其效率仅仅是C加上一个不高的值。而lua得分不足只能说是库的实现比python差。
+最后一个问题相信大家最关心，即日常使用中造成运行效率差异的关键。到底是什么，决定了我们每天写的代码的效率？
+可能要出乎大家的意料，从实际测试来看，实际上是测试能力和可变性。我们能够大致预料某些性能特别差的情况，然而对于性能在50%-200%以内变化的细节，实际上是很难提前预测的。也许我们会“猜测”某种情况性能比较优秀，但是实现下来情况可能完全不是这么回事。例如我曾经就一个C代码进行优化，预期应当能提高4倍性能，当时测试的结果是性能提高3-5倍，但是实际生产环境跑下来觉得没区别。后来发现，我自己测试用的是-O0，而生产系统是-O2。我的优化实际上在-O2的时候就全部被自动优化掉了。如果你觉得你的经验够丰富，能够预测-O2会优化你的哪些代码。那么你可以考虑一下，CPU的指令流水优化呢？系统上所安装版本的libc的实现细节和内核细节呢？如果都能精通，您可以忽略我这篇文章。但是对于我自己而言，我只能预计某个做法可能优化，而不能确定。
+这时候，对于这个优化的实现难易程度，和实现完成后进行测量的难度就成为了关键。尤其是精确测量耗费时间的代码，执行时的瓶颈，这些能力才是优化代码的关键所在。我曾经写过为什么python效率不比C低，有人不服。我说了，并且反复强调了，这个仅限于“两者的生产速度一致”这个前提下。实际上如果真满足这个前提，大部分情况下C这边都输的没法测试的。因为完成同样任务，python的编码时间大约只有C的一半到1/4。即使算上优化，python完成项目的时间，C都不一定能写的完代码。更不提后面还要进行泄漏测试，复查，复杂的调试。等全部通过，开始关注效率问题，生产时间早超了。
+作为日常生产，我想大部分程序员都有这么个经验。决定代码质量的实际上是项目的时间是否充裕，程序员是否用心严谨，生产流程管理是否到位。除非程序员太差劲，否则技术性代码质量差异并不特别多——一般都是远远小于赶代码造成的严重问题的。如果您那里不是这样，我建议您更换一批靠谱的程序员。同样，在真实的日常生产中，大部分项目都没有那个机会对代码进行多次的复查，深层次优化所有问题。基本是写，写完了查，没有什么表面问题。然后检查一下，用户体验效率是不是很差，找最差的地方优化一下，然后直接交货。很少有像理论代码那样，反复优化和测试，甚至受到来自不同程序员的交叉检测和沟通。如果有这种级别的反复优化，毫无疑问的，C会是常用语言中的效率之王。在shootout&amp;gt;给出的速度评测上，仅有Intel自己实现的fortran超越了C。当然，我相信汇编会更加优秀。
+然而杯具的是，日常生产中恰恰相反，至少我是没什么时间去优化每行代码的。大部分时候，为了处理一个排序问题，我不会去网络上找一个vector库，而是直接开一个100的数组，然后qsort。前方报错了，改1000的数组。在写python的时候，也不会精细的考虑每个地方是否都用了合适的方法，某点是生成器好还是list好。大不了觉得某个程序慢了，cProfile一把，然后对着花时间最长的几个点看看是否有问题。自我感觉而言，python项目在做完之余，我还能泡个茶聊会天，自然也有功夫去看两眼代码，是否有哪里写的太难看了。而C代码就是不停的debug，即使我好容易喘口气，也绝对不会想去再看了。
+最后说一下sbcl，在自身性能测试中，是当之无愧的语言之王。速度是python的一倍不到，代码量是python的一半。常规来说，出错概率，维护难度，都是和代码行数直接相关。一半的代码量基本就意味着维护成本削减一半，而一倍的速度基本和java持平，在C后面紧追不舍。但是，以上常理对lisp均不适用。lisp的学习难度惊人不说，维护难度和代码行数没有直接关系，而是取决于写作者的水平。水平越好的写作者，代码越容易维护，反之，初心者写出来的玩意那是看都看不懂的。冰河在博客上说他找了个职业lisp程序员的工作，人家视若珍宝。我不知道是哪年的blog，但是从老板的角度来说，这才是程序员的悲哀。老板喜欢什么语言？最好有个点子，跑去人才市场插个牌子，上书“我要人”。然后就会有一堆人云集过来，脖子上面都套着“五行一元”，“精通XXX”的草标。抓一只大个的，给个项目经理的头衔，让他管着别人。每个月扔一麻袋饲料下去，过两个月就能收程序了。
+看起来和农场有点像，不是么？遗憾的是，lisp看来是达不到这个要求了。全国能用的python程序员不会超过5000，lisp程序员大概连500都不到。如果哪个老板不幸脑残，用了lisp来做项目，那么在招人这个问题上会比python更难执行。从这个意义上说，这才是lisp程序员不流行的关键——不好找工作。即使运行效率再高，语言本身再好，也没法过老板那关。</description>
     </item>
     
     <item>
@@ -833,48 +251,20 @@ sudo /etc/init.d/collectd restart
       <pubDate>Tue, 22 May 2012 03:12:44 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2176/</guid>
-      <description>
-
-&lt;h1 id=&#34;引言&#34;&gt;引言&lt;/h1&gt;
-
-&lt;p&gt;别废话了，我觉得这都应当是常识的。除去最后几种包装框架，剩下都是基本知识问题。即使不知道怎么做，也应该知道有这种方法。所谓经验，很多时候不是把知识装脑子里，而是把索引装内存，数据丢硬盘。&lt;/p&gt;
-
-&lt;h1 id=&#34;c模块&#34;&gt;C模块&lt;/h1&gt;
-
-&lt;p&gt;最基本的方法，直接写个C模块。具体很长，你去找python-doc，看“Extending&lt;/p&gt;
-
-&lt;p&gt;and Embedding”这章，全看完就差不多了。如果没空，看几个例子就上也可以。&lt;/p&gt;
-
-&lt;p&gt;优点：基本没有，写起来很麻烦，要维护额外的C代码，还有交叉版本固定，跟随C升级等等麻烦。唯一的优点，就是这是唯一一个“绝对没有问题”的方法，而且没有额外依赖。如果下面几个路子全出了问题，就用C模块吧。&lt;/p&gt;
-
-&lt;h1 id=&#34;ctypes&#34;&gt;ctypes&lt;/h1&gt;
-
-&lt;p&gt;去看python-doc的ctypes模块。本质上是提供一个C模块，去载入和使用其他模块。&lt;/p&gt;
-
-&lt;p&gt;优点：写起来很方便，修改便捷，而且跨各个python实现。&lt;/p&gt;
-
-&lt;p&gt;缺点：只能调用动态库，对静态库没啥办法。某些复杂数据类型的转换很麻烦，据说有时还有效率问题。&lt;/p&gt;
-
-&lt;h1 id=&#34;swig&#34;&gt;swig&lt;/h1&gt;
-
-&lt;p&gt;自己找，一个叫做swig的项目，目标是制作C语言的各种平台包装。实现上看，会生成一个动态库和一个py。&lt;/p&gt;
-
-&lt;p&gt;优点：跨平台多。如果你的C代码不仅是python需要调用，还有其他语言（例如php），那么swig用起来很舒服。&lt;/p&gt;
-
-&lt;p&gt;缺点：编译时引入额外依赖，而且调用范式也是受限的。不过别担心，一般你也用不到范围以外的范式。&lt;/p&gt;
-
-&lt;h1 id=&#34;boost-python&#34;&gt;boost.python&lt;/h1&gt;
-
-&lt;p&gt;boost的自带库，只能用于C++。&lt;/p&gt;
-
-&lt;p&gt;优点：对C++的支持是极好的。&lt;/p&gt;
-
-&lt;p&gt;缺点：要依赖boost这么个坑爹玩意，摔。&lt;/p&gt;
-
-&lt;h1 id=&#34;pyrex&#34;&gt;Pyrex&lt;/h1&gt;
-
-&lt;p&gt;我知道douban的python-libmemcached是使用这个来包装的，不过没用过，不是很清楚。&lt;/p&gt;
-</description>
+      <description>引言 别废话了，我觉得这都应当是常识的。除去最后几种包装框架，剩下都是基本知识问题。即使不知道怎么做，也应该知道有这种方法。所谓经验，很多时候不是把知识装脑子里，而是把索引装内存，数据丢硬盘。
+C模块 最基本的方法，直接写个C模块。具体很长，你去找python-doc，看“Extending
+and Embedding”这章，全看完就差不多了。如果没空，看几个例子就上也可以。
+优点：基本没有，写起来很麻烦，要维护额外的C代码，还有交叉版本固定，跟随C升级等等麻烦。唯一的优点，就是这是唯一一个“绝对没有问题”的方法，而且没有额外依赖。如果下面几个路子全出了问题，就用C模块吧。
+ctypes 去看python-doc的ctypes模块。本质上是提供一个C模块，去载入和使用其他模块。
+优点：写起来很方便，修改便捷，而且跨各个python实现。
+缺点：只能调用动态库，对静态库没啥办法。某些复杂数据类型的转换很麻烦，据说有时还有效率问题。
+swig 自己找，一个叫做swig的项目，目标是制作C语言的各种平台包装。实现上看，会生成一个动态库和一个py。
+优点：跨平台多。如果你的C代码不仅是python需要调用，还有其他语言（例如php），那么swig用起来很舒服。
+缺点：编译时引入额外依赖，而且调用范式也是受限的。不过别担心，一般你也用不到范围以外的范式。
+boost.python boost的自带库，只能用于C++。
+优点：对C++的支持是极好的。
+缺点：要依赖boost这么个坑爹玩意，摔。
+Pyrex 我知道douban的python-libmemcached是使用这个来包装的，不过没用过，不是很清楚。</description>
     </item>
     
     <item>
@@ -883,241 +273,11 @@ sudo /etc/init.d/collectd restart
       <pubDate>Fri, 18 May 2012 07:14:24 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2174/</guid>
-      <description>
-
-&lt;h1 id=&#34;问题&#34;&gt;问题&lt;/h1&gt;
-
-&lt;p&gt;为了更深入的测试语言，我做了一个经典问题——24点。&lt;/p&gt;
-
-&lt;p&gt;这个问题主要是测试递归，循环效率，还有数组和树的复制性能。&lt;/p&gt;
-
-&lt;p&gt;为了简化问题，方便测试，我的问题是这样描述的：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;有一个数组，里面有多个正整数。有一个操作数组，其中每个都是双目操作符。找出以两者构成算式，其值等于给定值的所有表达式组合。
-要求不得遗漏，可以有少量重复。例如可交换算符的交换同构暂不做排重。
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;实际运行的时候，取+-*/和3 4 6 8，运行100次，查看时间消耗。正确的单次输出结果应当是这样的。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;(((8 + 4) / 3) * 6) = 24
-(6 / (3 / (8 + 4))) = 24
-(((8 + 4) * 6) / 3) = 24
-(((8 / 4) + 6) * 3) = 24
-(((8 - 6) * 3) * 4) = 24
-(((8 - 6) * 4) * 3) = 24
-(((3 * 4) - 8) * 6) = 24
-((8 - (6 / 3)) * 4) = 24
-(((4 + 8) / 3) * 6) = 24
-(6 / (3 / (4 + 8))) = 24
-(((4 + 8) * 6) / 3) = 24
-(((8 / 4) + 6) * 3) = 24
-(((4 * 3) - 8) * 6) = 24
-(((8 - 6) * 3) * 4) = 24
-(((8 - 6) * 4) * 3) = 24
-((8 - (6 / 3)) * 4) = 24
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h1 id=&#34;python&#34;&gt;python&lt;/h1&gt;
-
-&lt;p&gt;python的解很复杂，长达31行，以下是我写的解。当然，还有更简单的版本，我可以用eval来干这个事情，代码只有24行，但是确实给人很evil的感觉。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;from itertools import combinations
-
-class opt(object):
-
-    def __init__(self, name, func, ex=True):
-        self.name, self.func, self.exchangable = name, func, ex
-
-    def __str__(self): return self.name
-
-    def __call__(self, l, r): return self.func(l, r)
-
-    def fmt(self, l, r):
-        return &#39;(%s %s %s)&#39; % (fmt_exp(l), str(self), fmt_exp(r))
-
-    def eval_exp(e):
-        if not isinstance(e, tuple): return e
-        try:
-            return e[0](eval_exp(e[1]), eval_exp(e[2]))
-        except:
-            return None
-
-    def fmt_exp(e): return e[0].fmt(e[1], e[2]) if isinstance(e, tuple) else str(e)
-
-    def print_exp(e): print fmt_exp(e), eval_exp(e)
-
-    def chkexp(target):
-        def do_exp(e):
-            if abs(eval_exp(e) - target) &amp;lt; 0.001: print fmt_exp(e), &#39;=&#39;, target
-            return
-        do_exp
-
-    def iter_all_exp(f, ops, ns, e=None):
-        if not ns: return f(e)
-        for r in set(ns):
-            ns.remove(r)
-        if e is None: iter_all_exp(f, ops, ns, r)
-        else:
-            for op in ops:
-                iter_all_exp(f, ops, ns, (op, e, r))
-        if not op.exchangable:
-            iter_all_exp(f, ops, ns, (op, r, e))
-        ns.append(r)
-
-opts = [
-    opt(&#39;+&#39;, lambda x, y: x+y),
-    opt(&#39;-&#39;, lambda x, y: x-y, False),
-    opt(&#39;*&#39;, lambda x, y: x*y),
-    opt(&#39;/&#39;, lambda x, y: float(x)/y, False),]
-
-if __name__ == &#39;__main__&#39;:
-for i in xrange(100): iter_all_exp(chkexp(24), opts, [3, 4, 6, 8])
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;以下是100次的时间：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;real 0m2.259s
-user 0m2.248s
-sys  0m0.004s
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h1 id=&#34;common-lisp&#34;&gt;common lisp&lt;/h1&gt;
-
-&lt;p&gt;lisp来解这个问题简直是作弊，难怪被叫做人工智能语言。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;(defun chkexp (target)
-  (lambda (e)
-    (if (equal (ignore-errors (eval e)) target) (print e))))
-
-(defun exchangeable (op)
-  (not (member op &#39;(- /))))
-
-(defun iter-all-exp (f ops ns &amp;amp;optional e)
-  (cond
-    ((not ns) (funcall f e))
-    ((not e) (dolist (r (remove-duplicates ns))
-           (iter-all-exp f ops (remove r ns :count 1) r)))
-    (t (dolist (r (remove-duplicates ns))
-     (let ((nss (remove r ns :count 1)))
-       (dolist (op ops)
-         (iter-all-exp f ops nss `(,op ,e ,r))
-         (if (not (exchangeable op))
-         (iter-all-exp f ops nss `(,op ,r ,e)))))))))
-
-(iter-all-exp (chkexp 24) `(+ - * /) `(3 4 6 8))
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;只有短短17行。原因在于，lisp本身的ast即是用数据结构表示的，因此根本不需要我做eval函数，也不需要画蛇添足的弄自定义算符，直接用系统算符上。显示，打印，都是现成的。需要写的只有主体逻辑。结果也很特别：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;(* (- (* 3 4) 8) 6)
-(* (- 8 (/ 6 3)) 4)
-(* (- (* 4 3) 8) 6)
-(* (/ (+ 4 8) 3) 6)
-(/ 6 (/ 3 (+ 4 8)))
-(/ (* (+ 4 8) 6) 3)
-(* (+ (/ 8 4) 6) 3)
-(* (- 8 (/ 6 3)) 4)
-(* (* (- 8 6) 3) 4)
-(* (* (- 8 6) 4) 3)
-(* (/ (+ 8 4) 3) 6)
-(/ 6 (/ 3 (+ 8 4)))
-(/ (* (+ 8 4) 6) 3)
-(* (+ (/ 8 4) 6) 3)
-(* (* (- 8 6) 3) 4)
-(* (* (- 8 6) 4) 3)
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;不但行数只有一半，速度也很让人吐血，比python快了近一倍，这是100次的结果。&lt;/p&gt;
-
-&lt;p&gt;Evaluation&lt;/p&gt;
-
-&lt;p&gt;took: 1.379 seconds of real time 1.372086 seconds of total run time (1.372086 user, 0.000000 system)
-[ Run times consist of 0.012 seconds GC time, and 1.361 seconds non-GC time. ]
-99.49% CPU 3,628,800 forms interpreted 4,127,047,350 processor cycles 102,577,080 bytes consed&lt;/p&gt;
-
-&lt;h1 id=&#34;go&#34;&gt;go&lt;/h1&gt;
-
-&lt;h1 id=&#34;lua&#34;&gt;lua&lt;/h1&gt;
-
-&lt;p&gt;lua的代码是所有语言中最罗嗦的，足足长达60行，超过python许多。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;function find_item(tbl, obj)
-    for i, v in pairs(tbl) do
-        if v == obj then return i end
-    end
-    return nil
-end
-
-function remove_duplicates (tbl)
-    local newtbl = {}
-    for i, v in pairs(tbl) do
-        if find_item(newtbl, v) == nil then
-       table.insert(newtbl, v)
-    end
-    end
-    return newtbl
-end
-
-function fmt_exp (e)
-    if type(e) \~= &#39;table&#39; then
-       return tostring(e)
-    else
-    return &#39;(&#39; .. fmt_exp(e[3]) .. e[1] .. fmt_exp(e[4]) .. &#39;)&#39;
-    end
-end
-
-function eval_exp (e)
-    if type(e) \~= &#39;table&#39; then
-       return tonumber(e)
-    else
-    return e[2](eval_exp(e[3]), eval_exp(e[4]))
-    end
-end
-
-function chkexp (target)
-    return function (e)
-        if eval_exp(e) == target then
-        print(fmt_exp(e))
-    end
-    end
-end
-
-function iter_all_exp (f, ops, ns, e)
-    if table.maxn(ns) == 0 then return f(e) end
-    for i, r in pairs(remove_duplicates(ns)) do
-        table.remove(ns, find_item(ns, r))
-    if e == nil then
-        iter_all_exp(f, ops, ns, r)
-    else
-        for op, fp in pairs(ops) do
-            iter_all_exp(f, ops, ns, {op, fp, e, r})
-        if find_item(exchangable, op) == nil then
-            iter_all_exp(f, ops, ns, {op, fp, r, e})
-        end
-        end
-    end
-    table.insert(ns, r)
-    end
-end
-
-exchangable = {&#39;+&#39;, &#39;*&#39;}
-opts = {
-     [&#39;+&#39;] = function (a, b) return a + b end,
-     [&#39;-&#39;] = function (a, b) return a - b end,
-     [&#39;*&#39;] = function (a, b) return a * b end,
-     [&#39;/&#39;] = function (a, b) return a / b end,
-}
-
-iter_all_exp(chkexp(24), opts, {3, 4, 6, 8})
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;其实lua的代码很好看，自然语言风格，语言写出来后都能看懂。然而lua秉持了最小化内核的方针，死活不提供一些很常用的函数。我上来近15行全在写常用函数，查找某个值在表中的位置，还有除去表中的重复元素。实现下来，效率也不是特别高，基本和python相当。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;real 0m2.222s
-user 0m2.184s
-sys  0m0.000s
-&lt;/code&gt;&lt;/pre&gt;
-</description>
+      <description>问题 为了更深入的测试语言，我做了一个经典问题——24点。
+这个问题主要是测试递归，循环效率，还有数组和树的复制性能。
+为了简化问题，方便测试，我的问题是这样描述的：
+有一个数组，里面有多个正整数。有一个操作数组，其中每个都是双目操作符。找出以两者构成算式，其值等于给定值的所有表达式组合。 要求不得遗漏，可以有少量重复。例如可交换算符的交换同构暂不做排重。  实际运行的时候，取+-*/和3 4 6 8，运行100次，查看时间消耗。正确的单次输出结果应当是这样的。
+(((8 + 4) / 3) * 6) = 24 (6 / (3 / (8 + 4))) = 24 (((8 + 4) * 6) / 3) = 24 (((8 / 4) + 6) * 3) = 24 (((8 - 6) * 3) * 4) = 24 (((8 - 6) * 4) * 3) = 24 (((3 * 4) - 8) * 6) = 24 ((8 - (6 / 3)) * 4) = 24 (((4 + 8) / 3) * 6) = 24 (6 / (3 / (4 + 8))) = 24 (((4 + 8) * 6) / 3) = 24 (((8 / 4) + 6) * 3) = 24 (((4 * 3) - 8) * 6) = 24 (((8 - 6) * 3) * 4) = 24 (((8 - 6) * 4) * 3) = 24 ((8 - (6 / 3)) * 4) = 24  python python的解很复杂，长达31行，以下是我写的解。当然，还有更简单的版本，我可以用eval来干这个事情，代码只有24行，但是确实给人很evil的感觉。</description>
     </item>
     
     <item>
@@ -1126,133 +286,16 @@ sys  0m0.000s
       <pubDate>Mon, 14 May 2012 02:52:27 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2172/</guid>
-      <description>
-
-&lt;h1 id=&#34;问题&#34;&gt;问题&lt;/h1&gt;
-
-&lt;p&gt;为了测试语言的效率，做一个正则解析。&lt;/p&gt;
-
-&lt;p&gt;预先说好，正则解析的问题是老板正在做的一个实际问题，我把其他和效率无关的部分去了。因此我接受“用法不正确”这样的反驳理由，但是不接受“这不是典型用例”的理由。我欢迎你指正我的用法错误，或者对语言不了解导致的效率低下，但是别来和我吵吵这种例子太特殊。另外，在调整代码和评估速度的时候，顺便注意一下代码行数。我知道用汇编逐行写和优化会很优秀，但是这对实际工作基本没有帮助。&lt;/p&gt;
-
-&lt;p&gt;问题是这样的：&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;有一个文本文件，每行两个数，要求解析出来这两个数。&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;我用python生成了数据，代码是这样的&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;with open(sys.argv[1], &#39;w&#39;) as fo:
-    for i in xrange(500000):
-        fo.write(&#39;%d %dn&#39; % (i, random.randint(0, 10000)))
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;正则分析速率，是个典型的CPU密集操作。对于非编译型语言而言(这里的编译是指正则表达式的解析预编译，实际上除了lisp还真没有编译型的，即使是go也是现场拿到正则进行解析的)，这主要是看正则库的实现效率。很多时候，语言的效率问题并不取决于语言本身，还取决于语言的库的实现。大部分情况下我们都不可能砍掉系统的库重新来一个，那还不如换一门语言。&lt;/p&gt;
-
-&lt;h1 id=&#34;python&#34;&gt;python&lt;/h1&gt;
-
-&lt;p&gt;我首先贴出python语言的解答。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;reline = re.compile(&#39;(d+) (d+)&#39;)
-def main():
-    with open(sys.argv[1], &#39;r&#39;) as fi:
-        for line in fi: reline.match(line).groups()
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;这是性能&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;real  0m0.466s
-user  0m0.436s
-sys   0m0.012s
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h1 id=&#34;common-lisp&#34;&gt;common lisp&lt;/h1&gt;
-
-&lt;p&gt;我找了N个正则包，实际能用的只有ppcre。有些包号称很快，实际测试下来还不如ppcre。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;(require :cl-ppcre)
-
-(defun grepfile (filename)
-  (let*
-      ((cl-ppcre:*use-bmh-matchers* t)
-       (cl-ppcre:*regex-char-code-limit* 256)
-       (scanner
-    (cl-ppcre:create-scanner &amp;quot;d+ d+&amp;quot;)))
-    (with-open-file (in filename)
-      (loop
-     for line = (read-line in nil) while line do
-       (cl-ppcre:split scanner line)))))
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;代码在slime里面测试(time (grepfile &amp;ldquo;data.dat&amp;rdquo;))，下面是结果&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;CL-USER&amp;gt; (time (main))
-Evaluation took: 0.398 seconds of real time 0.392025 seconds of total run time (0.384024 user, 0.008001 system)
-[ Run times consist of 0.016 seconds GC time, and 0.377 seconds non-GC time. ]
-98.49% CPU 1,188,481,425 processor cycles 72,242,256 bytes consed
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h1 id=&#34;go&#34;&gt;go&lt;/h1&gt;
-
-&lt;p&gt;go的代码是现学现卖的，不知道是不是哪里写出问题了。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;func main()
-{
-    f, _ := os.Open(&amp;quot;data.txt&amp;quot;)
-    r := bufio.NewReader(f)
-    rex, _ := regexp.Compile(&amp;quot;(d+) (d+)&amp;quot;)
-    for line, isPrefix, err := r.ReadLine();err == nil &amp;amp;&amp;amp; !isPrefix; line, isPrefix, err = r.ReadLine() {
-        rex.FindSubmatch(line)
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;结果居然要差一个数量级！&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;real 0m8.699s
-user 0m8.593s
-sys 0m0.036s
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;这太出乎我的意料了。google的v8引擎赫赫有名，我猜想也应当用到了go上面才是，怎么会性能差成这样？gary说过正则在他那里很快，我希望是我用错了。&lt;/p&gt;
-
-&lt;h1 id=&#34;lua&#34;&gt;lua&lt;/h1&gt;
-
-&lt;p&gt;lua没有使用正则包，更准确的说，lua内置的字符串处理函数可以处理这个情况。以下是我的代码：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;for line in io.lines(&amp;quot;data.txt&amp;quot;) do
-    for w in string.gmatch(line, &amp;quot;%d+&amp;quot;) do
-        print(w)
-    end
-end
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;以下是执行结果：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;real 0m0.796s
-user 0m0.792s
-sys  0m0.000s
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;lua的代码的却很好看，但是效率上却不见得高。这是当然的，gmatch可是每工作一次就要解析一次阿。&lt;/p&gt;
-
-&lt;h1 id=&#34;lua-rex-pcre&#34;&gt;lua-rex-pcre&lt;/h1&gt;
-
-&lt;p&gt;装一个支持pcre的正则包，lua-rex-pcre。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;r = require &amp;quot;rex_pcre&amp;quot;.new(&amp;quot;(d+) (d+)&amp;quot;, 0)
-for line in io.lines(&amp;quot;data.txt&amp;quot;) do
-    r.match(r, line)
-end
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;OK，速度一下就快了不少：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;real 0m0.643s
-user 0m0.632s
-sys  0m0.008s
-&lt;/code&gt;&lt;/pre&gt;
-</description>
+      <description>问题 为了测试语言的效率，做一个正则解析。
+预先说好，正则解析的问题是老板正在做的一个实际问题，我把其他和效率无关的部分去了。因此我接受“用法不正确”这样的反驳理由，但是不接受“这不是典型用例”的理由。我欢迎你指正我的用法错误，或者对语言不了解导致的效率低下，但是别来和我吵吵这种例子太特殊。另外，在调整代码和评估速度的时候，顺便注意一下代码行数。我知道用汇编逐行写和优化会很优秀，但是这对实际工作基本没有帮助。
+问题是这样的：
+ 有一个文本文件，每行两个数，要求解析出来这两个数。
+ 我用python生成了数据，代码是这样的
+with open(sys.argv[1], &#39;w&#39;) as fo: for i in xrange(500000): fo.write(&#39;%d %dn&#39; % (i, random.randint(0, 10000)))  正则分析速率，是个典型的CPU密集操作。对于非编译型语言而言(这里的编译是指正则表达式的解析预编译，实际上除了lisp还真没有编译型的，即使是go也是现场拿到正则进行解析的)，这主要是看正则库的实现效率。很多时候，语言的效率问题并不取决于语言本身，还取决于语言的库的实现。大部分情况下我们都不可能砍掉系统的库重新来一个，那还不如换一门语言。
+python 我首先贴出python语言的解答。
+reline = re.compile(&#39;(d+) (d+)&#39;) def main(): with open(sys.argv[1], &#39;r&#39;) as fi: for line in fi: reline.match(line).groups()  这是性能
+real 0m0.466s user 0m0.436s sys 0m0.012s  common lisp 我找了N个正则包，实际能用的只有ppcre。有些包号称很快，实际测试下来还不如ppcre。
+(require :cl-ppcre) (defun grepfile (filename) (let* ((cl-ppcre:*use-bmh-matchers* t) (cl-ppcre:*regex-char-code-limit* 256) (scanner (cl-ppcre:create-scanner &amp;quot;d+ d+&amp;quot;))) (with-open-file (in filename) (loop for line = (read-line in nil) while line do (cl-ppcre:split scanner line)))))  代码在slime里面测试(time (grepfile &amp;ldquo;data.</description>
     </item>
     
     <item>
@@ -1261,26 +304,663 @@ sys  0m0.008s
       <pubDate>Thu, 10 May 2012 02:14:04 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2168/</guid>
-      <description>&lt;p&gt;&amp;gt;&amp;gt;&amp;gt; for i in [(i, j, 12 * math.log(float(j)/i, 2)) for i, j in itertools.permutations([1,2,3,4,5,6], 2) if i &amp;lt; j]: print i&lt;/p&gt;
+      <description>&amp;gt;&amp;gt;&amp;gt; for i in [(i, j, 12 * math.log(float(j)/i, 2)) for i, j in itertools.permutations([1,2,3,4,5,6], 2) if i &amp;lt; j]: print i
+... (1, 2, 12.0) (1, 3, 19.019550008653876) (1, 4, 24.0) (1, 5, 27.863137138648348) (1, 6, 31.019550008653873) (2, 3, 7.019550008653875) (2, 4, 12.0) (2, 5, 15.863137138648348) (2, 6, 19.019550008653876) (3, 4, 4.980449991346124) (3, 5, 8.843587129994475) (3, 6, 12.0) (4, 5, 3.863137138648348) (4, 6, 7.019550008653875) (5, 6, 3.1564128700055254)  </description>
+    </item>
+    
+    <item>
+      <title>语义的精密表达</title>
+      <link>http://shell909090.org/blog/archives/2148/</link>
+      <pubDate>Thu, 19 Apr 2012 03:25:34 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/2148/</guid>
+      <description>辨析语言的微妙差异，使得语言精密的符合目的语义，此为程序员基本功的最高要求。对精密语义的追求，应当凌驾于排版美观，代码美感，代码简化之上，也凌驾于运行时效率之上。除非为特定目的小幅的修正，否则不应破坏此原则。
+以此为指导，我们看几个if。
+if a in python 以下代码的目标语义是，如果a不为None，就运行代码。
+if a: do something  有什么问题？
+有没有考虑a=0的情况？a=[]呢？
+if a is not None: do something  这样才是严密表达。
+if a in C 以下代码的目标语义是，a是一个int数，对a!=0的情况下，执行代码。
+if (a) do something  有什么问题？
+没问题，因为C是静态语言，这限定了a的使用。除了代码并没有体现a!=0的条件，没有太大问题。但是鉴于语言表达语义，最好改为以下代码。
+if (a != 0)  相对的，如果a是bool型，就可以直接用了。
+if (a)  如果a是char*形，那么合适的语义表达应当是。
+if (a != NULL)  他们生成的汇编代码都没有差异。
+if a in C++ 概念上同C，不过a是一个复杂对象。
+if (a) do something  有什么问题？
+问题大了去了，和python一样，C++可以重载行为。谁知道type(a)::opreator bool(const type(a) &amp;amp;a)函数被定义为什么鬼逻辑。这就是为什么我憎恨默认行为重载的原因——因为他们对精密语义表达有破坏作用。</description>
+    </item>
+    
+    <item>
+      <title>segment的核心数据结构空间和时间效率估量</title>
+      <link>http://shell909090.org/blog/archives/2138/</link>
+      <pubDate>Thu, 12 Apr 2012 01:55:37 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/2138/</guid>
+      <description>首先我们简述核心词典的目标。词典最主要的目标是，给定一句句子S，匹配出所有和句子开始拥有完整匹配的词语。所谓完整匹配，就是句子开始的一定长度的连续序列和词语相等。例如，中华，中华人民，中华人民共和国，都是句子：中华人民共和国今天成立了，的完整匹配。
+要解决这个问题，直观方式是使用tied tree。但是中文的tied tree非常不好实现。英文的tied tree在一个节点上最多拥有不超过26个子节点，而中文的在根上面会拥有6000个以上的子节点，使用同样的结构在子节点上会浪费大量内存。
+我们先跳过tied树本身的细节，来讨论如何使用python内置数据结构高效简洁的完成这一工作。作为一个读比写高频很多的结构，无疑hash table是一个非常适合的结构。我在hash table的性能分析中说过，hash table的查询性能是O(1)量级的。无疑，可以使用hash tree来高速完成查找。同时注意一点，词语的最小长度是2，因此不存在只有一级的结构。所以，hash tree的第一级结构可以从2开始，而不是1。
+实现效果如何？我们正式给出的词典拥有127K的词汇量，平均第二级宽度为6.8，因此大致可以推算出，第一级的词典含有元素19K个左右。python源码解析中说过，当表项小于50000个时，扩张大小为当前活跃表项的4倍，最高填充率不超过2/3，即填充率最低25%，最高66%。平均来说，填充率应当在45%上下波动，我们以0.5计算，实际上一级词典的Entry个数应当是40K个上下。在源码Include/dictobject.h:50有给出Entry的结构，这应当是三个平台相关的数据结构，以贝壳的64位系统而言，长度应当是24字节。忽略掉辅助结构，一级词典的大小应当是960K，即约1M。而词典指向的数据，即2字长的str对象本身头部长度24字节，辅助数据长度12字节，数据长度4字节（utf-16编码的两个unicode），null term1字节，共计41字节。由于python对象是8字节对齐，因此实际占用48字节。19K个数据总计占用912K。
+二级表项平均长度6.8，这个长度很难估量。因为5的话总表项刚好是8，而6就会增长到24，我们取中间数20做一个估量值（因为6.8毕竟大大偏离了5），一个词典的大小应当是480字节，加上头部大约是512字节（算的粗糙点吧），19K个词典就是8.5M左右。指向的对象长度更加难估量，我们粗糙点按照96字节一个对象（别忘记了，unicode对象不但成员多，而且超出了BOM，一个字占4字节），127K个对象大约是12M内存。而float内部使用C的double类型，一个对象占据32字节，127K个对象占据4M内存。
+以上总计，初级词典本身占用1M，关键字占1M。二级索引占据10M，关键字占12M，频率数据占4M。总计28M内存，基本上一个12.7W词的词典，大小2.5M，占据30M内存，这就是dict核心词典的空间效率估量。
+时间复杂度估量更加复杂，不过我们可以简化来说。初级索引需要多少时间？O(1)量级，毋庸置疑。问题是二级词典的复杂度，异常难算。凑合一下，按照比较6.8次计算（因为必须通过遍历才能知道全部的匹配）索引出一个句子所有的完整匹配的时间复杂度O应当为O(n)，其中n是平均二级索引宽度。目前而言，实际测量结果，平均6.8。当词汇量大于一定值后，随着词典的加大，这个值基本是线性增加的，我们粗略的可以认为O(n)即是正比于词典大小。
+而后我们顺便给出分词核心算法在处理一句话时的效率估量吧，证明太长，这里写不下。假定句子长度S，词典大小N，匹配数目M，分词算法的时间复杂度量级为O(N*M*S)，有兴趣的可以帮我复核一下，这个证明颇为困难，不知道有没有证错。在实际运行的时候，匹配数目会跟着词典的增长而增长，而句子长度则相对固定。当然，明眼人一眼就可以看出，所谓匹配数据随着词典增长而增长，其中并不是正比的。而是O(1)&amp;lt;O&amp;lt;O(n)。因此我们可以看作时间复杂度为O(N)&amp;lt;O&amp;lt;O(N\^2)，具体是什么，做不出来。
+然后是纯粹的tied tree的性能估量。讲到tied tree，我们就必须要提到如何实现一个有效的tied tree。实际上纯粹用区域哈希映射太浪费内存了，而顺序查找太浪费时间。比较折衷的办法还是只有——dynamic hash table。
+不过这次我们就可以控制一下哈希表的大小了。对于大小不超过6W的哈希，我建议采用crc32，虽然离散度并不高，但是作为一个近似填满的hash table的hash key足矣（这点需要实际考察一下）。如果是自己实现，表项直接存字符串，连指针都不需要，采用开链法。总计大小1M即可以保存所有的一级数据。
+二级数据就无法这么偷懒了，因为二级结构中字符串长度不定。但是以数据展开大小只有2.4M来看，无论这一级别如何扩张，字符串本身大小不应当超过3M。开链法一个节点24字节，平均填充率0.5计算，14个表项一个词典（这个也可以自行控制了），336个字节一个词典，乘以19K个dict。大约6.23M。127K个频率数据1M，这是常规占用。
+以上总计，初级词典本身占用1M，二级结构本身占用10M，不超过20M应当就可以构建起一个高效的核心数据结构。由于实现类似，时间复杂度也类似，就不详细推论了。
+以上还有一点可改进之处，dict作为二级存储的绝对劣势在于，必须要对比全部词典才能确定完全匹配数量，于是时间复杂度正比于词典大小。严格的tied树只需要沿着顺序进行几次索引即可，复杂度取决于词语长度——基本来说和词典大小无关。按照这个推论，实现一个紧凑的，高效的二级小结构，可能比较有利于减小总体大小，增加工作速度。</description>
+    </item>
+    
+    <item>
+      <title>python的字符串相加效率</title>
+      <link>http://shell909090.org/blog/archives/2070/</link>
+      <pubDate>Wed, 18 Jan 2012 01:51:37 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/2070/</guid>
+      <description>今天文章被人纠了错，就跑去人家主页上逛。结果看到有篇文章说字符串相加速度的，看看结论很奇怪。就做了一下实验。原文可以看这里。我们只讨论python部分的行为。首先是论证我观点的测试，无关部分就跳过了，大家应当可以自行补上。
+def f(): s = &#39;&#39; for i in range(3): s += &#39;123&#39; print id(s) return s f() f()  输出：
+138190216 138276992 138276992 138190216 138276992 138276992  至少在几十的规模，这个结论还是成立的。说明对象确实被缓存了，这导致了字符串相加的多次测试中，后续次数都没有实际的执行字符串分配动作。召dis来问之。
+14 0 LOAD_CONST 1 (u&#39;&#39;) 3 STORE_FAST 0 (s) 15 6 SETUP_LOOP 46 (to 55) 9 LOAD_GLOBAL 0 (range) 12 LOAD_CONST 2 (3) 15 CALL_FUNCTION 1 18 GET_ITER &amp;gt;&amp;gt; 19 FOR_ITER 32 (to 54) 22 STORE_FAST 1 (i) 16 25 LOAD_FAST 0 (s) 28 LOAD_CONST 3 (u&#39;123&#39;) 31 INPLACE_ADD 32 STORE_FAST 0 (s) 17 35 LOAD_GLOBAL 1 (print) 38 LOAD_GLOBAL 2 (id) 41 LOAD_FAST 0 (s) 44 CALL_FUNCTION 1 47 CALL_FUNCTION 1 50 POP_TOP 51 JUMP_ABSOLUTE 19 &amp;gt;&amp;gt; 54 POP_BLOCK 18 &amp;gt;&amp;gt; 55 LOAD_FAST 0 (s) 58 RETURN_VALUE  我们看到s是local变量，这个符合我们的预期。但是后续确实发生了add，而string的+算法，我们可以参考Objects/stringobject.</description>
+    </item>
+    
+    <item>
+      <title>语言的继承和历史包袱</title>
+      <link>http://shell909090.org/blog/archives/2048/</link>
+      <pubDate>Sun, 01 Jan 2012 02:03:01 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/2048/</guid>
+      <description>出去玩，在阳朔过的新年，随便发点吧。
+我们知道，C++继承了C语言的语法，并且号称完全兼容。实际玩下来，C标准自己也不怎么统一，说基本兼容大家是没异议的。这个给C++带来了无限的好处，从一开始，C++的用户数量和其他语言就不在一个数量级上。《C++语言的设计和演化》一书中说，作者设计出来后没多久，基本没有做宣传，就有无数人给他打电话，用户数量飙升。作为一个新出的语言，即使是Go也没有如此的待遇，这就是继承了C的好处。
+有好处就有包袱，C++兼容C，出现的包袱也很大。想做GC？想使用智能指针？那就没法兼容C（具体不细说）。此外里面有无数的问题是因为“需要兼容C”而变成一个四不像的。再后来，为了在语言上更进一步，Java继承和吸收了C++的部分语法。这给Java带来好处，也带来问题。
+继承一个东西的好处，就会带来一定的包袱。这个也同时体现在Zope社区和Python社区里面。Zope3把2直接推倒重来，导致了用户纷纷出走（当然还有别的原因）。从而出现目前Python
+Web框架满天飞，各自为战的局面。而Python3则是不完全兼容Python2，导致目前上面的可用库依然不足。在Python3.2的时候，几乎是被迫的做了一些前向兼容，来换取用户可接受的过渡。同样，前几天我在说Django的演进的时候，也说过。如果我要做一个jinja版本的Django出来，大家接受度如何？当然，这不代表你无法在Django中使用jinja，不过发行版中不会作为标配。
+还有什么语言继承和革新的事情？大家不妨想想。自己做的时候，对照一下，谨慎取舍。</description>
+    </item>
+    
+    <item>
+      <title>Py 有什么缺点?!</title>
+      <link>http://shell909090.org/blog/archives/2029/</link>
+      <pubDate>Wed, 21 Dec 2011 22:06:20 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/2029/</guid>
+      <description>在 2011年12月21日 下午2:24，Zoom.Quiet 写道： &amp;gt;
+在昨天内部分享交流中,俺回顾了 PyCon2011China 中透露出的 Py
+最新使用/发展和体验; &amp;gt; 最后有同学问: &amp;gt; Python 有什么缺点!? &amp;gt;
+ 直接HOLD 住了俺的思路&amp;hellip; &amp;gt; - 是也乎!? &amp;gt; -
+ 世界上没有完美的语言 &amp;gt; - Python 相比各种开发语言也有缺点,当然的!
+ 可是,是什么呢?! &amp;gt; &amp;gt; - 没有 {} ? &amp;gt; - 不支持多CPU ? &amp;gt;
+大家在学习使用过程中,对 Python 有什么失望的地方?! &amp;gt; - 兼听则明
+ 现在不满意的,就是我们努力的方向.. &amp;gt; &amp;gt; PS: &amp;gt; -   俺现场憋出的回答是: &amp;gt; - 由于 Py
+历史上积累的好用模块太多，会导致开发人员更加懒惰，不思进取，不论什么都可以直接搜出可用的现成模块来!
+  &amp;ndash; &amp;gt; 人生苦短, Pythonic!</description>
+    </item>
+    
+    <item>
+      <title>python为什么叫好不叫座</title>
+      <link>http://shell909090.org/blog/archives/2008/</link>
+      <pubDate>Thu, 08 Dec 2011 10:15:31 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/2008/</guid>
+      <description>python的招聘，看似火爆，各家都在抢人，还抢不到。但是实际操作一下，发现实际上还是较好不叫座。八成以上的人去应聘，都找不到心仪的工作。当然这个原因很多，我只说我听闻的几个。
+1.python的快速开发名气
+这是中枪最多的原因，这个传说是从阿北开始的。想当年他一人做豆瓣，几个月就出活了。后来一帮做系统的一听这名声，都投靠了python，而且无一例外的都是django。他们的希望，就是超越阿北的传奇。一个人三个月出个系统，那我们找三个人，加班加班，一个月也能出个系统了。好，后来的事情大家都懂了。
+当然这个故事纯属虚构，很多公司在计划上还是半年出系统的。但是实际执行上，老板要求能多快就多快，工资能多低多低。这种公司你指望他开多少薪水？15K？别傻了。偏偏python这东西学的贼快，有三个月就能出来混事了，你和他们比工资低，傻了吧。
+这帮人也许接触过网络开发，也许没有，不过他们应当都没看过“人月传说”。即使没看过，傻子也应该想到，阿北当时的工作状态和水准，要给自己发工资该发多少？找一帮接触电脑都没满一年的人来搞人海战术，那铁定是找虐的。
+2.在找第二主程
+我和thomas说过一个观点，一家IT公司永远也不应当停止招聘，他们只有提高标准和降低标准两个情况而已。在公司里面缺人的时候，标准低一点。在不缺人的时候，标准高一点。一旦停止招聘，停止HR相关的工作，有些大牛刚好出来你就抢不到。
+去这样的招聘是很容易被鄙视的，因为标准很高。他们也不担心招不到人，反正只是碰碰运气而已么。有一些大公司发招聘你去了什么消息都没有，就是这种情况。
+所以，对一些已经成熟的团队，你还是认识一下里面的人，多接触多聊聊比较好。一方面可以学一些东西，另一方面搞清楚里面现在是缺人还是爆仓。也许一家靠谱的公司，本来处于爆仓状态。讨论决定做一个产品，一下子就缺人了呢。
+3.其实我们在找披着python皮的其他工种
+python用途很广，所以老耿说过，我们不招python程序员。他的本意大概是，你是个好程序员，又刚好会点python，那就是我们找的人。如果不会python，学一下就是我们找的人。很多公司在表达的时候，其实反了过来。他们要找一个sa，会一些python，能够写程序，于是HR的需求出炉就是——python程序员。系统程序员，抓取分析，报表统计，凡是需要你会一些python，但是主要是其他工作的时候，这其实都是一样的。他们找的是披着python皮的其他工种。
+你要是个程序，去了一准被鄙视。</description>
+    </item>
+    
+    <item>
+      <title>python conf 2011无线组网总结和分享</title>
+      <link>http://shell909090.org/blog/archives/2002/</link>
+      <pubDate>Mon, 05 Dec 2011 10:44:38 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/2002/</guid>
+      <description>这次python conf 2011结束了，具体成败sting去总结。我主要负责网络部分，把网络部分的总结一下吧。总体来说，网络不算成功也不算失败。在现有条件下，资源没有都发挥出来。但是万幸的是，关键部分还没有掉链子。下面是具体总结。
+1.没在场地里面拉好线并且实地测定过所有地点信号的不算部署完毕。
+这次的会场平时不允许进入，只能在工作日去，所以只能在会议前一天跑现场。而且进入时没有长网线，墙壁上也没有网线接口。因此是会议前一天先根据具体环境完成了设定，支支下午去买了线，第二天早上部署的。这留下一个严重隐患，我把设备间当成了贵宾室，凭经验估计信号覆盖范围的时候出了错，信号没有覆盖到贵宾室，而且没有考虑门口。第一天的嘉宾和志愿者们，是否感觉信号像渣一样（尤其是杨毅涛）。其实这主要就是因为根本没有考虑到信号覆盖的问题所致的。
+要解决这个问题，必须先知道会场结构，包括贵宾室，设备间，签到处等等重要但是部署时又不容易想起来的地方。然后估算需要多少个多强的AP才能覆盖。例如本次的贵宾室，最佳方案是拉40米网线到贵宾室，然后再架一个AP。会场往往没有线，需要自带网线。因此最好是有人知道会场大致结构（手绘亦可，但是标注一下承重墙），然后计算AP位置和网线长度，再去购买。或者直接买一箱网线，配上水晶头打线剪自己做。会议前至少一天去部署，用android测试每个点的信号强度，最好都达到-70db以上。完成后把电线和网线都用胶带封在地上，以防绊倒。
+2.足够的AP和信号。
+在估算AP和信号的时候，这次经验是，多一个天线，信号强10db。支支的三天线AP信号明显强于我的双天线AP。AP的信号是和距离的立方成反比的，一个AP保证20-30米的无阻挡会场是没问题的。但是每穿一道墙，信号就会下降大约20db。低于-70db就开始出现大量掉包了，-80db的时候tcp重传严重，导致基本无法使用。
+一个AP可以接入的客户端是有限的，按照我看下来，大约在50上下（TP-LINK）。这个和事先估计一致。本来我想用6个AP，但是很难凑够这么多，而且带宽不足，就没借这么多。预定就是需要一些人没有设备或者接不上去的，否则就是所有人都不能顺利上网了。结果有一个AP在连接10个设备后就会崩溃，所以等于无法容纳用户。大部分用户都拥挤在同一个AP上，导致踢掉非常严重。会场峰值时刻，300人，有120个设备试图获得IP或者已经获得成功，但是AP在线只有20/50（AP1/AP2），即40%左右的设备被踢掉或者自动断开了Wifi（部分手机为了省电会发生这样的事情）。如果三个AP完好，120人在线刚刚好支撑的起来（20/50/50），但是这样的话连线设备可能还要多一些。
+下次部署的时候，除了要考虑信号覆盖问题，还要考虑预留一些AP作为备用。因为会场AP都是民用过去支持，这些设备以前也没有做过大容量测试。我只能说TP-LINK的两台机器很给力，说到50就到50，多了就不能支撑，但是不死机。有台机器就频频死机，这样就需要备机更换。
+另外，我们这次最高三个AP，因此分别设定为1/6/11频道就行了。如果AP还要多，请注意让同样频段的设备分到会场的远端。
+3.世界真的很麻烦，有的时候有位置却没有电源。
+这次电源还算给力，从墙上引出了不少拖线板，基本满足组委需求。至于普通听众就抱歉了，自带拖线板坐到边上的，互相交错给便携设备还能充个电。中间听众只有依靠地接。偏偏地接基本都拉给了组委的摄像机，周围一圈的人可以沾沾摄像机拖线板的光，其他人就只能相信电池续航了。
+我们的AP3，第二天搬到了贵宾室那个方向。反正上面只能接不到10个人，给贵宾室小规模用用还可以。结果线只有30米，拉不到贵宾室。合适的位置又没有电源。只好委屈在后门口接了一下，把贵宾室的信号提高了不到10db。
+据说有的会场更恶心，只有一两个电源接口。这种会场就必须带够插线板和移动设备来保证电力。
+3.留出会议运营所需资源。
+这次还算成功的一点，是为大会组委和志愿者/嘉宾保留了一路AP。大会的签到系统，嘉宾演讲都需要Wifi支持，为了让听众上网导致演讲失败就本末倒置了。为嘉宾保留的是AP1，上面还有一些比较活跃，或者着急使用网络的普通听众，一般大约20人左右，相对比较空。可是这个AP又不敢开放给听众使用，一使用就怕嘉宾没法演讲了。
+wifi管理者比较怕的问题，主要就是有人使用wifi下载比较大的内容。因此开始的时候，会议需要网络的时候，我都用平板监控网络使用状况。如果有人正在使用大流量，就准备踢人。幸好，大家都很安分（或者是AP上不来）。后来也就放松警惕了，结果老外演讲的时候延迟很厉害，我差点就跑去拔掉AP2的电源了。这会断开所有人的网络，但是演讲者的使用就通畅了。
+按照雨苍说的，组委wifi组一个重要任务往往就是封锁各个debian/ubuntu镜像的下载。我们这次没有出现这么恶劣的问题，谢天谢地。
+4.会场的网络使用有非常强的峰值效应
+这次会议只有2M带宽，因此我一直担心不够。后来开始看看还不错。但是休息的时候一直接到wifi很慢的投诉，空下来一直测不出。我第二天休息的时候去测试了一下，我的天，带宽全满，延时超高。说明演讲者水准很不错，大家专心听会，不怎么用网络。一休息，得，网络不够了。
+这个没法解决，要解决只有增加带宽，或者在不休息的时候再使用一些比较耗费流量的业务。一个缓解的办法是使用qos系统，但是这次dir-825没有前往会场，所以没机会调试qos系统。
+相对来说，路由器的NAT让我很放心。TP-LINK普通路由器的NAT在支撑80-90人的极限在线的时候仍然很稳健，速度不快是带宽问题，路由器没有崩溃就是万幸。
+5.根据具体情况配置。
+WEP比较节约资源，所以我们开始配置的是WEP信号。但是测试下来，苹果系统对WEP的支持非常差，基本接不上去。所以就不要节约了，使用WPA/WPA2。
+运营商的接入情况比较多变，而且很难控制。这次运营商给我们的是一个内网IP，192.168.1.2。他们已经有了一个路由器在前面。我使用了双重NAT方案，而且避开192.168.1.x网段，来避免修改它们的路由器（我们无权控制）。
+这次我们使用的是192.168.0.1&amp;frasl;24网段，三台AP的连接模式是一主多桥。一个主router负责DHCP和NAT，其余的全部当单纯的AP使用。从1到3分别分配0.1-3的IP，2/3的DHCP关闭，1的DHCP从20开始分配起，直到254，共计最高容纳234人在线。20以前的IP让组委的人作为静态IP预留。如果还要多，建议使用192.168.2.0/23网段，最高可以容纳500人不到，足够大部分的会展使用。如果再不够——你们考虑10网段吧。
+最后的经验总结。
+1.会前勘察真的很重要，尤其是会场平面结构，承重墙位置，会场部署，电源插座位置，一定要提前至少三天确认。提前一天的时候要配好所有AP，备件和网线到会场部署，然后测试信号。
+2.会场带宽一定要大，万一实在不够大，想办法ban掉debian/ubuntu的镜像，然后做qos或者squid。
+3.自带足够材料，如果没有胶带/接线板/剪刀，那很多事情就要抓瞎。
+4.据说TP-LINK之类的路由器在人数多到一定程度的时候会自爆，推荐使用高级设备或者电脑来做NAT/DHCP。不过我至少肯定100人的时候还没问题。</description>
+    </item>
+    
+    <item>
+      <title>python中dict的插入复杂度估算和排重复杂度估算</title>
+      <link>http://shell909090.org/blog/archives/1996/</link>
+      <pubDate>Mon, 28 Nov 2011 10:22:43 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/1996/</guid>
+      <description>在做分词核心词典数据结构分析的时候需要，就先写一篇吧。
+具体可以参考python源码解析读书笔记（一）——内置对象，这里面有说：
+7.dict对象的索引方案
+dict对象的索引方案使用的是哈希表，而且是开放地址法的哈希表。当装载率达到一定规模后，会新申请一块内存，将有效数据复制过去。最小的表空间为8个对象，当装载率超过2/3时，会扩大规模到当前active的4倍（超过50000个对象为2倍）。目前为止，在对象被删除后，其表空间并不释放。因此曾经增长的非常大的dict对象，可以定期复制以回收空间。
+最初的表项空间为6个以内，满了之后，会自动扩张到24个，有效16个。从大致来说，如果要放下N个表项，大概就要扩张T次，他们满足以下关系。
+A0*(8/3)^(T-1)&amp;lt;N&amp;lt;A0*(8/3)^T  而每次扩张，就要进行全表项复制，因此复杂度大约是O(N)量级。当扩张到放下N个表项时，就需要进行的复制的总数是：
+sum(i, 0, T-1){A0*(8/3)^i}  这是一个典型的等比数列求和问题，我们知道问题的答案应当是：
+A0*3*((8/3)^T-1)/5=A0*(3/5)*(8/3)^T-(3/5)*A0  因此，(3/5)(N-A0)&amp;lt;O&amp;lt;(3/5)\*((8/3)\*N-A0)。如果只考虑数量级的话，插入的复杂度量级为O(n)，即哈希表的平均插入复杂度为n级。
+也许有人奇怪，哈希表的插入复杂度为1级阿，怎么得到n级的结论的？看上面，都说是放下N个表项时的总复杂度了。
+我们可以和红黑树对比一下，红黑树的平均插入复杂度为logn级，平均查找复杂度为logn级。哈希表的平均插入复杂度为1级，查找复杂度为1级。但是红黑树在一点上比hash优秀——他的插入时间基本稳定，hash table的插入时间有可能会暴长。
+于是，当我们有N个元素，需要进行排重的时候，我们可以set化。假定set和dict基于一样原理运作，我们的时间复杂度为O(n+m)级，m为排重后元素个数。其实按照最差情况来说，也可以认为是O(n)级。</description>
+    </item>
+    
+    <item>
+      <title>正好聊到django——论他的模板问题</title>
+      <link>http://shell909090.org/blog/archives/1994/</link>
+      <pubDate>Thu, 24 Nov 2011 16:54:56 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/1994/</guid>
+      <description>首先先广播一个纠错，我那篇《几个模板的性能对比》，对cheetah模板没有做渲染处理，只生成了对象。因此性能出现严重误差，在此向所有被误导的朋友致歉。
+——不过这并不影响django慢到渣的结果。
+Shell: 他们用了django的orm，映射到了mysql
+我一点办法都没有 mysql唯一能做的，就是一写多读 或者可以加入handlesocket
+Bill: 为什么facebook以前好像用mysql能处理那么NB.
+Shell: 多久以前的事情啊？
+而且你得想，他们以前还用php呢 他们自己开发了hiphop，把php编译为了C 同样，我估计mysql他们也做了手脚 那玩意我学不来 而且，即使学的来，也不可能在django固定了范式的前提下 ——起码得给我修改范式的机会吧
+Bill: 你可以改django嘛.
+Shell: 太麻烦了
+django已经积重难返了
+这个问题，并不来自于django本身，而是来自于所有学django的人 Bill: 为什么这么说?
+Shell: 由于他们的努力，django变成了一个固定的商业标准
+试图对django进行修改的行为，哪怕是正面的努力，都会受到已经存在于上面的系统的抵制 例如，我开发一个django的分支，允许使用其他模板，你觉得会如何？
+压根不会有人理我 因为大家都使用现有的模板系统，并且在上面做了无数的代码 很多人甚至无法升级django的版本 很多app也已经使用了现有的模板 如果我对django整合cheetah，那只能限于自用的范畴
+Bill: 这么说还真是一条不归路了..
+Shell: 除非他们的维护者作出很大的努力
+说白了，就是官方强推
+Bill: 不过到时候遇到瓶颈了,怎么办..
+Shell: 但是，这样一来，很多人就根本不会升级了
+怎么办？
+要是有办法，他们还会找我么？
+Bill: 靠硬件..
+Shell: 他的页面就是3-5秒的打开时间
+硬件上再增加，一个花钱，另一方面，也不可能增速啊 只能增加并发访问量
+Bill: 也有点增速效果吧..处理速度快乐 快了
+Shell: 怎么会呢？
+你想，靠硬件是怎么靠的？
+换更高频率的机器，还是加同样的机器？</description>
+    </item>
+    
+    <item>
+      <title>python-segment使用示例</title>
+      <link>http://shell909090.org/blog/archives/1990/</link>
+      <pubDate>Tue, 22 Nov 2011 10:18:15 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/1990/</guid>
+      <description>项目的主页是http://code.google.com/p/python-segment/，如果有问题，可以在上面提交issue，我会收到邮件（google code会么？应该会吧）。如果你希望协助开发，可以加入项目。一些简单问题可以直接看项目的WIKI，Wiki中有的一些内容我不会进一步解释，只会告诉你在那里可以看到。
+1.如何获得源码
+你可以使用以下代码，直接从版本库中复制一个可用版本出来。
+hg clone https://shell909090@code.google.com/p/python-segment/  或者可以从这里下载一个最新版本的包。
+2.如何准备环境
+你可以看INSTALL，里面讲解的比较详细了。如果你不准备进行安装部署，可以跳过安装和打包这两步。但是如果你打算使用cutter工具，请安装chardet。如果你打算使用spider工具，请安装html2text。
+首先按照如下方式生成词典。
+gunzip dict.tar.gz ./ps_dbmgr create dict.txt  然后，你可以看到生成了frq.db，这是词典的默认文件名。注意，词典文件的格式和具体的版本有关，换用版本后最好重新生成词典。
+3.试验分词
+假定有一个文本文件，test.txt，里面内容是中文平文本，编码任意。
+./ps_cutter cutshow test.txt  cutter会自动推测编码。
+4.代码使用
+假如当前有一个frq.db词库。
+import segment cut = segment.get_cutter(&#39;frq.db&#39;) print list(cut.parse(u&#39;工信处女干事每月经过下属科室都要亲口交代24口交换机等技术性器件的安装工作&#39;))  注意，仅仅使用parse是不会进行分词的，因为parse返回的是一个生成器。</description>
+    </item>
+    
+    <item>
+      <title>几个模板系统的性能对比</title>
+      <link>http://shell909090.org/blog/archives/1975/</link>
+      <pubDate>Wed, 09 Nov 2011 14:52:47 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/1975/</guid>
+      <description>对比目标，jinja2，cheetah，mako，webpy，bottle，tornado，django的性能。 
+ 方法，随机生成一个二维数组，第一列是自增数据，第二列是长度为100的随机字符串，然后生成html，比较一次生成的时间。
 
-&lt;pre&gt;&lt;code&gt;...
-(1, 2, 12.0)
-(1, 3, 19.019550008653876)
-(1, 4, 24.0)
-(1, 5, 27.863137138648348)
-(1, 6, 31.019550008653873)
-(2, 3, 7.019550008653875)
-(2, 4, 12.0)
-(2, 5, 15.863137138648348)
-(2, 6, 19.019550008653876)
-(3, 4, 4.980449991346124)
-(3, 5, 8.843587129994475)
-(3, 6, 12.0)
-(4, 5, 3.863137138648348)
-(4, 6, 7.019550008653875)
-(5, 6, 3.1564128700055254)
-&lt;/code&gt;&lt;/pre&gt;
-</description>
+ 说明，如果模板有编译缓存，打开。有其他方法加速，打开。生成缓存，关闭。不计算随机数据生成时间，一次生成后一直使用。   以下是文件有效内容，没用的都略去了。最后的顺序是因为我根据结果整理了一下调用次序。   -----testcheetah.tmpl-----    &amp;lt;table&amp;gt;   \#for \$i in \$l   &amp;lt;tr&amp;gt;   &amp;lt;td&amp;gt;\$i\[0\]&amp;lt;/td&amp;gt;   &amp;lt;td&amp;gt;\$i\[1\]&amp;lt;/td&amp;gt;   &amp;lt;/tr&amp;gt;   \#end for   &amp;lt;/table&amp;gt;  
+ -----testdjango.html-----    &amp;lt;table&amp;gt;   {% for i in l %}   &amp;lt;tr&amp;gt;   &amp;lt;td&amp;gt;{{ i.0 }}&amp;lt;/td&amp;gt;   &amp;lt;td&amp;gt;{{ i.1 }}&amp;lt;/td&amp;gt;   &amp;lt;/tr&amp;gt;   {% endfor %}   &amp;lt;/table&amp;gt;</description>
+    </item>
+    
+    <item>
+      <title>python内存不释放原理</title>
+      <link>http://shell909090.org/blog/archives/1921/</link>
+      <pubDate>Wed, 28 Sep 2011 09:57:04 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/1921/</guid>
+      <description>在maillist里面看到无数次的有人问，python速度为什么这么慢，python内存管理很差。实话说，我前面已经说过了。如果你在意内存/CPU，不要用python，改用C吧。就算C不行，起码也用个go或者java。不过今天还是说说，python的内存为什么不释放。
+首先，python的初始内存消耗比C大，而且大很多。这个主要来自python解释器的开销，没什么好解释的。用解释器，就得承担解释器运行开销。然后，python中的每个对象，都有一定的对象描述成本。因此一个long为例，在C下面一般是4个字节（不用int是因为int在不同平台下是变长的），而python下面至少是16个字节。如果你生成100W个对象，那么C的内存消耗是4M，python的是16M。这些都是常规内存消耗，搞不明白的就别问了，不再解释。
+下面解释一下python的内存释放情况。
+如果是C，通常是用long array[1024 * 1024]的方法来生成1M个对象空间。当然，实际这样是不一定能运行的。因为linux的默认栈空间是8M，而Windows默认栈空间只有1M。所以代码在linux下可以通过，而windows下会跑爆掉。怎么办？下面说。当这个函数执行完毕后，当RET的时候，会自动退栈，空间就会自动释放掉（虽然在逻辑上这部分空间还是保留没有释放的，然而空间不活跃了，不过统计的时候还是占用的）。当然，更好的办法是使用malloc。malloc会从系统中自动提取和管理空间，free自动释放。这样无论是linux还是windows，都没有栈空间不足的问题。free后就会自动交还系统（4M已经超过了交还的最大阀值，一般glibc不会自己闷掉不交给系统的）。如果你忘记free，这部分内存就会一直占用，直到进程退出未知，这就是很有名的内存泄露。
+python下的情况更加复杂一些，python没有直接使用malloc为对象分配细粒度内存，而是使用了三层堆结构，加上三色标记进行回收。所谓三层堆，细节我们不说了，在源码阅读笔记里面写的比较详细。但是有一点需要我们记住的——当我们分配某个大小的内存的时候，内存管理器实际上是向上对齐到8字节，然后去对应的内存池中切一块出来用的。也就是说，如果我们运气比较差，申请了10个对象，偏偏每个对象大小差8字节。这样系统就要给我们分配10个堆，而不是刚刚好。如果你的对象粒度都比较散，那么内存开销比较大也不奇怪。
+python下还有一个更坑爹的事情，也是大部分内存不释放的根本原因。在int/str等对象的模块中，有个模块级别的对象缓存链表，static PyObject * free_list。当对象释放的时候，压根不会还到池中，而是直接在free_list中缓存。根据我的搜索，python内部没有地方对此进行干预。就是说，一旦你真的生成了1M个数字对象，然后释放。这1M个对象会在free_list链表中等待重用，直到天荒地老，这16M内存压根不会返还。而且，int的对象缓存链表和str的还不通用。如果你又做了1M个str对象，他的开销还是会继续上涨。几乎所有的内建对象都有这种机制，因此对于大规模对象同时生成，python会消耗大量内存，并且永不释放。
+解决的机制，基本只有用yield来将列表对象转换为生成器对象。列表对象会同时生成所有元素，从而直接分配所有内存。而生成器则是一次生成一个元素，比较节约内存。</description>
+    </item>
+    
+    <item>
+      <title>uwsgi under debian</title>
+      <link>http://shell909090.org/blog/archives/1919/</link>
+      <pubDate>Tue, 27 Sep 2011 10:28:02 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/1919/</guid>
+      <description>好了，debian官方的uwsgi总算出来了。包已经到了testing，stable暂时别指望了，等下一次release吧。这次打的包，比贝壳打的复杂多了。贝壳自己只打了python专用的包，debian官方的包将多个语言分别打成了plugins。
+下面说说，使用debian官方的包如何做uwsgi发布，还是vhost模式哦。
+首先安装uwsgi，uwsgi-plugin-python这两个包。uwsgi-plugin-greenlet-python也可以考虑，装不装看你的需求。
+然后在/etc/uwsgi/apps-available/sites.xml下面写一个文本文件，内容如下：
+&amp;lt;uwsgi&amp;gt; &amp;lt;vhost/&amp;gt; &amp;lt;no-site/&amp;gt; &amp;lt;/uwsgi&amp;gt;  再从/etc/uwsgi/apps-enabled/sites.xml链接过去，重启uwsgi服务，事情就搞定了。
+默认的配置在/usr/share/uwsgi/conf/default.ini，可以看看是否都满意了。一般来说，master和no-orphans都建议打开，chmod-socket最高660，改成600应该也可以工作。贝壳的机器负载小，只用一个worker就够了，所以完整的配置是这样的：
+&amp;lt;uwsgi&amp;gt; &amp;lt;plugins&amp;gt;greenlet,ugreen&amp;lt;/plugins&amp;gt; &amp;lt;workers&amp;gt;1&amp;lt;/workers&amp;gt; &amp;lt;reload-on-as&amp;gt;128&amp;lt;/reload-on-as&amp;gt; &amp;lt;vhost/&amp;gt; &amp;lt;no-site/&amp;gt; &amp;lt;/uwsgi&amp;gt;  nginx里面如此设定：
+location /asdf { include uwsgi\_params; uwsgi\_param UWSGI\_PYHOME /usr; uwsgi\_param UWSGI\_CHDIR /var/web/hosts; uwsgi\_param UWSGI\_SCRIPT main; uwsgi\_pass unix:/run/uwsgi/sites/socket; }  其中，我的程序放在/var/web/hosts底下，使用系统环境来运行（而不是virtualenv），主脚本（带applications那个）是main.py。unix
+socket和上文default.ini里面的socket正好对应上。
+同理，我们其实还可以开多个uwsgi应用，只要放置多个xml配置就好。不过既然都采用了vhost模式，何必还开多个呢？这毕竟不是虚拟网站，要给其他人使用的。</description>
+    </item>
+    
+    <item>
+      <title>从C&#43;&#43;的一个特性到设计原则再到哲学</title>
+      <link>http://shell909090.org/blog/archives/1875/</link>
+      <pubDate>Mon, 08 Aug 2011 09:59:46 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/1875/</guid>
+      <description>最近在看C++的设计和演化，里面讲到算符重载。关于这个，Effactive C++里面明确说明，不要试图重载&amp;amp;&amp;amp;和||算符。因为这个重载造成的结果和默认不符(Not same with the default)。
+&amp;amp;&amp;amp;和||有什么特殊？熟悉C的朋友考虑这么一个问题。if(i &amp;amp;&amp;amp; ++i)的作用是什么？基本来说，这个语句是判断i是否为0或者-1的，并且有个额外效果就是对i进行自增。但是，如果i == 0，则不进行自增，这就是&amp;amp;&amp;amp;的短路求值原则。这个原则产生了一系列写法，例如sh中常见的[ -z &amp;ldquo;\$ABC&amp;rdquo; ] &amp;amp;&amp;amp; { &amp;hellip; }。
+不过当重载了&amp;amp;&amp;amp;或者||后，就破坏了短路求值原则。因为C系列语言是应用序语言，参数先求值。所以后参数*一定*会被求值，无论前参数的值是多少。
+更加悲崔的是，这个破坏了最小惊讶原则，或者叫做知识内隐原则。当你使用一个知识的时候，你会根据自己的经验对这个知识做内隐的预期。例如，虽然螺丝有左螺纹也有右螺纹，然而你在拧螺丝的时候，多数预期是顺时针拧紧。不论其理由，这个已经成为常态。同样，有下压把手的门是扇页门，画着杯子的店家是咖啡店和茶馆，画着裙子的厕所是女厕，这些都是你对知识内隐的预期。破坏这个预期，相当于把螺丝改为反向，下压把手的门改成移门，画着杯子的店家是古董店，男厕画裙子一样，会让人感到不知所措。大家会莫名其妙的绕出去，确认门上画的确实是裙子，走进去再看到男厕，感到世界莫名其妙。
+同样的道理，如果一个对象使用了&amp;amp;&amp;amp;重载，程序员唯一能够快速发现的机会就是在调试时单步了&amp;amp;&amp;amp;的语句。如果他运气不好，可能在数个小时内都找不到理由，直到反汇编目标代码为止。
+那C++为什么设计算符重载？那是设计给需要的算符用的。其实C++一直是一个矛盾的设计，一方面他认为，程序员是不可信的，所以C++里面有隔离保护系统，例如私有成员函数和变量。另一方面，他又认为程序员应当对自己的行为负责，因此他设计了复杂的算符重载，复杂的继承系统，并期待程序员能够按照正确的方法使用。这是一个奇妙的，矛盾的设计思路，反映设计者自身的冲突（例如多人设计），或者C++设计者的实用主义倾向（选择最实用的设计）。python语言的思路相对统一，他认为程序员应当为自己的行为负责，所以python的隔离系统都是伪系统。而java的思路也相对统一，他认为程序员是不可信的，所以java才会搞出复杂的架构哲学。</description>
+    </item>
+    
+    <item>
+      <title>如果你的python项目一定要源码保密，你一定用错语言了</title>
+      <link>http://shell909090.org/blog/archives/1871/</link>
+      <pubDate>Wed, 03 Aug 2011 14:13:37 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/1871/</guid>
+      <description>python的特征在于快速编写代码，快速运行得到结果。通常而言，就是高开发速度。
+如果你的项目需要源码保密，那通常不会是高速开发的项目。因为能够高速开发的，就能够高速复制。别人在看到你的概念和基本逻辑后，可以非常快的抄一份出来。代码什么的根本是浮云。</description>
+    </item>
+    
+    <item>
+      <title>使用uwsgi搭建python应用</title>
+      <link>http://shell909090.org/blog/archives/1811/</link>
+      <pubDate>Wed, 25 May 2011 11:08:38 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/1811/</guid>
+      <description>wsgi是python的一个标准web服务接口，具体去google pep文档，不解释。在李木头的忽悠下，贝壳试用了一下uwsgi搭建python服务器，感觉还不错。 首先，贝壳将uwsgi打包成deb包，因为这东西和python基本没什么关系，就是一个标准的系统守护服务程序。其中贝壳测试了一下，uwsgi编译的时候是依赖版本的。所以请教了一下thomas，打了uwsgi2.6和uwsgi2.7两个包。没办法，mercurial对python2.7的支持不是很好，每次都出问题。具体的可以加贝壳的repos: http://shell909090.org/debian/ testing，然后通过一下贝壳的key，就可以直接安装uwsgi2.6了。当然，不通过key也可以，只是每次安装升级都有警告。 贝壳写了一个很简单的init.d，使用&amp;ndash;vhost来启动uwsgi为服务模式。这种模式的好处是，uwsgi的具体执行的应用都是由nginx来确定的，因此所有的映射只需要修改nginx配置就好。uwsgi参数很多，包括可以指定内存限制，工作进程/线程，定时重启工作进程，多解释器等等。是一个高效的，功能强大的服务器。具体可以自己参考调整。最好的的地方是，uwsgi还支持virtualenv，你可以给不同的应用建立不同的工作环境，从而在环境中使用指定的包，而不是系统包。 下面是一个nginx配置的例子。 location /ticket { include uwsgi_params; uwsgi_param UWSGI_PYHOME /usr; uwsgi_param UWSGI_CHDIR /home/shell/workspace/hg/thost; uwsgi_param UWSGI_SCRIPT main; uwsgi_pass unix:/var/run/uwsgi.socket; } location /mlocate { include uwsgi_params; uwsgi_param UWSGI_PYHOME /usr; uwsgi_param UWSGI_CHDIR /home/shell/workspace/hg/thost; uwsgi_param UWSGI_SCRIPT main; uwsgi_pass unix:/var/run/uwsgi.socket; } location /hg { include uwsgi_params; uwsgi_param UWSGI_PYHOME /usr; uwsgi_param UWSGI_CHDIR /home/shell/workspace/hg; uwsgi_param UWSGI_SCRIPT hgweb; uwsgi_param SCRIPT_NAME /; uwsgi_param SERVER_NAME hgweb; uwsgi_pass unix:/var/run/uwsgi.socket; } 这里面设定了三个应用。由于贝壳不需要virtualenv，所以PYHOME设定了/usr。第一二个应用的基础路径在/home/shell/workspace/hg/thost，脚本叫做main.py。第三个应用的基础路径在/home/shell/workspace/hg，脚本叫做hgweb.py。需要注意的是，uwsgi会以模块方式导入这些脚本，然后使用其中的application对象作为wsgi处理函数。所以不要把application对象赋值放在if __name__ == &amp;lsquo;__main__&amp;lsquo;里面，那没用的。第三个应用指定了SCRIPT_NAME和SERVER_NAME，是因为hg的wsgi模块没有SCRIPT_NAME不工作，而这个应用和前两个不在一起，所以如果不指定SERVER_NAME会导致覆盖冲突。 这种部署模式的好处是，我可以使用一个宿主来管理所有的应用，而不必每个应用启动一个宿主，省去了多个宿主管理的麻烦。而多进程，压力分布等等问题都被uwsgi的配置系统搞定了。于是应用程序宿主做到了彻底的免管理，即装即用，只用调节性能匹配即可。具体程序配置下放到nginx中，要修改映射关系只用管理一个位置。</description>
+    </item>
+    
+    <item>
+      <title>python源码解析读书笔记（四）——杂项</title>
+      <link>http://shell909090.org/blog/archives/1760/</link>
+      <pubDate>Thu, 31 Mar 2011 11:04:43 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/1760/</guid>
+      <description>1.GIL的影响
+很多人讨论python性能的时候都提到一个概念，GIL。我在python源码中搜了一下，这个函数调用并不多，但是位置很要命。每个线程，生成的时候请求一下，退出的时候释放一下。在每次运行字节码前也会短暂的释放一下，让其他线程有获得运行的机会。说白了，除非程序显式的调用release_lock去释放资源，否则python是没有任何多线程能力的。这种机会并不很多，通常只发生在阻塞的时候。
+而python原子化的粒度也比较清晰，就是每个字节码内部一定是原子的，字节码和字节码之间是非原子的。当我们操作l.append的时候，不用担心线程竞争导致数据结构损坏。但是如果我们操作del l[len(l)]的时候，存在发生异常的概率。
+2.对象缓存池
+python对小内存对象（碎片对象）提供了小内存对象缓存池。默认情况下，256字节以下的内存由小内存缓存池管理，以上的直接向系统申请，申请大小每8字节对齐。
+对象缓存池的分配和收集技术采用了自由资源链表，在2.5之后，当某个尺度的资源不再需要时，会整体释放。
+3.python的GC机制
+python的GC机制是基于引用计数的，因此当引用计数归零，对象一定会被释放（如果是碎片对象，内存不一定直接释放，可能归对象缓存池）。
+python的辅助垃圾收集算法是三色标记法和分代垃圾收集模型（generation），由于要跟踪所有的容器对象，因此容器对象上有跟踪链表。
+4.字符编码处理方案
+无论从何种来源，只要是字符串，并可能交给一个和当前代码并不紧密耦合的代码处理，就应当被转换为unicode。或者换一个更简洁的说法，应当使用unicode作为接口数据类型。
+str对象是很难猜测编码的，当离开了数据源代码后，再分析编码是个不靠谱的方案。</description>
+    </item>
+    
+    <item>
+      <title>python源码解析读书笔记（三）——对象和函数</title>
+      <link>http://shell909090.org/blog/archives/1759/</link>
+      <pubDate>Wed, 30 Mar 2011 10:19:16 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/1759/</guid>
+      <description>1.mro
+算法，自身先入栈，而后按声明顺序继承每个父类的mro，内部对象在最后。简单来说，深度优先，从左向右。
+当类对象创建时，会将父类所有函数全部复制过来（很明显，应当是符号复制）。
+2.super规则
+&amp;gt;&amp;gt;&amp;gt; class A(object):
+&amp;hellip; def f(self): print &amp;lsquo;A&amp;rsquo;
+&amp;hellip;
+&amp;gt;&amp;gt;&amp;gt; class B(object):
+&amp;hellip; def f(self): print &amp;lsquo;B&amp;rsquo;
+&amp;hellip;
+&amp;gt;&amp;gt;&amp;gt; class C(A):
+&amp;hellip; def f(self): print &amp;lsquo;C&amp;rsquo;
+&amp;hellip;
+&amp;gt;&amp;gt;&amp;gt; class D(C, B):
+&amp;hellip; def f(self): super(D, self).f()
+&amp;hellip;
+&amp;gt;&amp;gt;&amp;gt; d = D()
+&amp;gt;&amp;gt;&amp;gt; d.f()
+C
+&amp;gt;&amp;gt;&amp;gt; D.__base__
+&amp;lt;class &amp;lsquo;__main__.C&amp;rsquo;&amp;gt;
+&amp;gt;&amp;gt;&amp;gt; D.__bases__
+(&amp;lt;class &amp;lsquo;__main__.C&amp;rsquo;&amp;gt;, &amp;lt;class &amp;lsquo;__main__.B&amp;rsquo;&amp;gt;)
+&amp;gt;&amp;gt;&amp;gt; class A(object):
+&amp;hellip; def f(self): print &amp;lsquo;A&amp;rsquo;
+&amp;hellip;
+&amp;gt;&amp;gt;&amp;gt; class B(object):</description>
+    </item>
+    
+    <item>
+      <title>python源码解析读书笔记（二）——函数特性</title>
+      <link>http://shell909090.org/blog/archives/1757/</link>
+      <pubDate>Tue, 29 Mar 2011 10:55:21 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/1757/</guid>
+      <description>1.函数的性质    &amp;gt;&amp;gt;&amp;gt; def outer(o1, o2):   ... def inner(i1 = 10, i2 = \[\]):   ... return i1+o1+o2   ... return inner   ...   &amp;gt;&amp;gt;&amp;gt; a1 = outer(50, 30)   &amp;gt;&amp;gt;&amp;gt; a2 = outer(50, 30)   &amp;gt;&amp;gt;&amp;gt; a1.func\_closure   (&amp;lt;cell at 0xb75454f4: int object at 0x8455ddc&amp;gt;, &amp;lt;cell at 0xb7545524: int object at 0x8455cec&amp;gt;)   &amp;gt;&amp;gt;&amp;gt; a2.func\_closure   (&amp;lt;cell at 0xb754541c: int object at 0x8455ddc&amp;gt;, &amp;lt;cell at 0xb75453a4: int object at 0x8455cec&amp;gt;)   两次生成的函数对象拥有不同的闭包空间。    &amp;gt;&amp;gt;&amp;gt; a1.</description>
+    </item>
+    
+    <item>
+      <title>python源码解析读书笔记（一）——内置对象</title>
+      <link>http://shell909090.org/blog/archives/1756/</link>
+      <pubDate>Sun, 27 Mar 2011 22:48:11 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/1756/</guid>
+      <description>1.类型的类型  
+ obj int(10).ob_type -&amp;gt; PyInt_Type
+
+ PyInt\_Type.ob\_type -&amp;gt; PyType\_Type   PyInt\_Type.tp\_base -&amp;gt; PyBaseObject\_Type   PyBaseObject\_Type.ob\_type -&amp;gt; PyType\_Type   PyType\_Type.ob\_type -&amp;gt; PyType\_Type   更精确的参考源码解析262页图。   \   2.小整数对象   if (-NSMALLNEGINTS &amp;lt;= ival &amp;&amp; ival &amp;lt; NSMALLPOSINTS) {   v = small\_ints\[ival + NSMALLNEGINTS\];   Py\_INCREF(v);   }   \   3.大整数对象，空对象池，对象缓存    &amp;gt;&amp;gt;&amp;gt; a = 1000000   &amp;gt;&amp;gt;&amp;gt; b = 2000000   &amp;gt;&amp;gt;&amp;gt; id(a) == id(1000000)   False    &amp;gt;&amp;gt;&amp;gt; id(100000) == id(100000)   True   最后一个是因为python解析器在解析对象的时候，对前后生成的对象进行了缓存。经过测试，对文件也有效。   \   4.</description>
+    </item>
+    
+    <item>
+      <title>hack comix for windows use gbk as filename code</title>
+      <link>http://shell909090.org/blog/archives/1727/</link>
+      <pubDate>Mon, 14 Mar 2011 09:44:00 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/1727/</guid>
+      <description>Comix is a python application to view comic. it use pygtk as GUI library, so technically, it can be used under windows. But unfortunately, it has code problem under windows. OK, 2 fix it, open src/filechooser.py:214.
+gbkpath = paths\[0\].decode(&#39;utf-8&#39;).encode(&#39;gbk&#39;) self.\_window.file\_handler.open\_file(gbkpath)  done.</description>
+    </item>
+    
+    <item>
+      <title>nginx使用fastcgi连接django时的细节</title>
+      <link>http://shell909090.org/blog/archives/1694/</link>
+      <pubDate>Tue, 15 Feb 2011 11:10:00 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/1694/</guid>
+      <description>django使用PATH_INFO和SCRIPT_NAME来计算urls.py中的匹配路径，当两者都设定时，会出现URL计算结果为空，导致无法访问的问题。具体看这里。
+http://aftnn.org/2009/jan/23/nginx-django-fastcgi/</description>
+    </item>
+    
+    <item>
+      <title>python试题</title>
+      <link>http://shell909090.org/blog/archives/1668/</link>
+      <pubDate>Tue, 04 Jan 2011 14:27:00 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/1668/</guid>
+      <description>前两年在公司用过的试题，不知道发过没有。在我的blog上搜了搜，没找着。大家可以看看玩。
+1.py文件在运行时会产生pyc文件，用于缓存编译后代码(3分)：
+a.正确
+b.错误
+c.不完全正确
+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-
+c
+2.python支持多线程，能够单进程无缝发挥多路CPU的优势(4分)：
+a.支持，能够
+b.支持，不能够
+c.不支持，能够
+d.不支持，不能够
+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-
+b
+3.在python中，使用for从列表中删除元素是错误的做法，会导致___________。
+正确的做法是使用python内置的____________函数(4分)。
+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-
+漏删元素，filter。(一空2分)
+4.请改正以下程序中的错误，并写出结果(12分，本题禁止使用python运行):
+a=10
+def test (*b):
+print (a,type(b));
+a = 20;
+print a;
+print b[0](b[0])
+if __name__ == &amp;ldquo;__main__&amp;ldquo;:
+print test (*[test]);
+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-
+答对一处错误给3分，答对结果给6分，结果其他部分对但type(b)错误给4分。
+答其他错误倒扣2分，扣完为止。
+a = 10;
+def test (*b):
+global a;
+print (a, type(b));
+a = 20;
+print a;
+if __name__ == &amp;ldquo;__main__&amp;ldquo;:
+print test (*[test]);
+以下是结果。
+(10, &amp;lt;type &amp;lsquo;tuple&amp;rsquo;&amp;gt;)
+20</description>
+    </item>
+    
+    <item>
+      <title>为什么我说框架和工具不是解决安全性的良好方案</title>
+      <link>http://shell909090.org/blog/archives/1663/</link>
+      <pubDate>Thu, 30 Dec 2010 16:24:00 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/1663/</guid>
+      <description>在python-cn的maillist上，刚刚爆发了一场关于动态语言合并出错的争论。问题的起源，来自于这样一个问题。
+一个程序员A，写了一个函数，function1。程序员B对函数进行了调用。现在两个人分别在svn上工作，A修改了function1，而b修改了其他内容。
+由于python并不在编译时检查类别问题，因此当两人的svn merge后，运行并没有出错。现在，问题只有等上线后客户提出来了。
+几乎所有的人都同意，这问题的根源不是一个语言的问题。本质上说，这是一个工作流程问题。即使是C，也只检查参数的个数和类别，对于行为的变化和参数意义的变化还是无能为力的。
+1.当你公开了一个函数，并要修改这个函数的外观行为的时候，必须向其他人通告。 2.python代码要通过unittest和黑盒检查覆盖。 3.代码应当cross review。
+争论的焦点主要是在python下如何避免这个问题。楼主Zhang Jiawei的观点是使用pydev，加上工具来检查。我，沈崴，ZQ的意见是通过行为来避免这个问题。所谓行为，主要包括以下几个。
+1.互相review代码。 2.修改通告。 3.编写无检查和无处理的代码，并大量运行。如果代码中有错，程序会持续崩溃。因此当大量运行程序不崩溃时，代码就无错了。
+为什么我们并不推荐使用自动化工具来检测错误呢？主要是因为自动化工具可以*找到*问题，但是却不能*保证*是找到问题最彻底的一种。我举个最简单的例子：
+网络工程师A，用了pylint，找到了自己code中的15个低级bug。他很高兴，因为工具使用起来很方便。
+A向领导汇报了自己的心得，建议全公司推行这个工具。假定他的领导是项目经理B。
+A：这个工具太好了，一下就找出了我15个bug，我发现用这个工具很方便，blahblahblah。
+B：恩，很好，过两天你在公司里面讲讲这个工具。对了，你的code review做了么？
+A：我用工具查过拉。
+B：你确定他找出了你的*所有*bug么？
+问题的关键，就是*所有*。我们当然不可能找出程序中的所有bug。我所知的bug最少的程序是TeX，据说在数年的时间内只有数个bug。但是其版本号仍旧是3.1415926——正好是祖率的密率——而不是pi。我们毕竟不敢——高伯伯也不敢——保证没有bug。但是通过cross review，不处理加覆盖性检测，我们可以保证bug出现的概率在某个水平以下。
+自动化工具寻找出的bug，是在这个水准以上的。就是说，自动化工具看的出的，人应该看的出。人看的出的，自动化工具不一定看的出。如果做不到这点，说明你的水准还不足。
+所以，当我们需要一个尽量无错的code时，当你pydev/pylint，或者其他工具做了检测，问题是否解决了呢？没有，你仍旧需要review来保证没有bug。这样一来，工具的意义在哪里呢？
+当然，这并非说在做code review之前，你*不能*去做一遍代码扫描。只是说这样做并*不能替代*对错误的人工控制行为。
+除非你的目标是使用最低的成本，将错误减少到一个可接受的规模——而不是最低。就像我们在外包中常做的那样。这种情况下使用工具是比较合适的。
+而且一旦使用工具，很多程序员会产生依赖。所谓依赖，并不是讲从逻辑上他们不清楚在代码扫描外还需要独立的人工检测。但是在检测时，心里就会抱有一种放松的心态。尤其是其中某些虫族程序员让人无语叹息的行为。在中国的程序员界，有着诸多非常有创造力的bug提供者。例如擅长用str+=的java网页程序员很常见，这属于常见问题。但是自己写一套字典映射规则以完成数字到字符转换的（就是c下面的itoa）.net程序员真的让我大开眼界——而且他同时犯下了str+=错误。要指望工具修正+=是可以的，要指望工具找出这类极品代码，估计下面会有更极品的人犯下更极品的错误。。。</description>
+    </item>
+    
+    <item>
+      <title>重载造成的隐蔽错误</title>
+      <link>http://shell909090.org/blog/archives/1626/</link>
+      <pubDate>Wed, 01 Dec 2010 10:03:00 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/1626/</guid>
+      <description>大家看看下面的代码在什么情况下才会出错？情况很特殊，想自己思考的不要先看第二段。
+if ton in self.ftol: self.ftol.remove(ton)  ftol是一个list，报出的错误是ValueError。经过上文的打印，赫然发现——self.ftol中真的没有ton！
+好吧，我们揭秘谜底。
+ton是TimeoutObject类型，这种类型的对象通常放在一个list中进行堆排序，来确定最早的一个timeout对象。为了实现堆排序，我使用了heapq。而为了heapq是没有key或者是cmp参数的，因此我重载了TimeoutObject.__cmp__对象。然而根据python源码，list对象在进行in计算，以及基于in的remove计算的时候，__cmp__先于内置算法，内置算法先于id相同。因此，in函数在进行对象是否在列表中的计算的时候，实际上使用的是一个比较函数&amp;hellip;这肯定无疑的会导致乱糟糟的结果。
+为了解决这个问题，我又重载了__eq__函数，定义为self is o。问题立刻解决了。
+之所以python内置的算法，会定义__cmp__先于内置算法，内置算法先于id相同，是因为有很多对象需要人工定义比较算法。如果id相同优先，那么这种自定义的能力将无法实现。然而为了in算符中为何会调用__cmp__，只能说是一个不解之谜。</description>
+    </item>
+    
+    <item>
+      <title>如何做一个mercurial的http发布</title>
+      <link>http://shell909090.org/blog/archives/1618/</link>
+      <pubDate>Mon, 22 Nov 2010 09:29:00 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/1618/</guid>
+      <description>我假定你了解hg，了解python，理解nginx或者其他cgi/fcgi的配置过程。现在想用http发布自己的mercurial仓库，而且可能发布一群，怎么操作呢？
+首先，复制模板文件过来，你可以挑选其中之一。以下是debian的文件位置，其他发布请自行查询。
+/usr/share/doc/mercurial-common/examples/hgweb.wsgi /usr/share/doc/mercurial-common/examples/hgweb.fcgi /usr/share/doc/mercurial-common/examples/hgweb.cgi  我使用nginx+fastcgi模式部署，因此复制了hgweb.fcgi。我假定你的仓库在~/hg下面，有很多子仓库。复制hgweb.fcgi到~/hg/下，改名为hgweb.py，并修改以下两行。
+config = &amp;quot;/path/to/you/config&amp;quot; WSGIServer(application, bindAddress=&#39;hgweb.sock&#39;).run()  其中bindAddress为你需要监听的unixsocket路径，没有前缀表示在当前目录生成。而后建立配置文件，大概为以下内容。
+[web] allow_push = someone push_ssl = false [paths] /hg/proj1=/path/to/proj1 /hg/proj2=/path/to/proj2  以上就完成了hgweb的服务配置，/hg/proj1是你的url映射路径，/path/to/proj1是物理路径。someone是允许进行push的人，而push_ssl是允许http推送。而后，启动服务。
+python hgweb.py &amp;amp; chmod 666 hgweb.sock  注意，这里要用screen之类的程序来启动hgweb，否则term关闭后服务进程停止，就没的玩了。修改权限是因为debian下的nginx使用www-data运行，对/home/user/hg没有读写权限，导致无法使用unixsock。
+在nginx中做以下配置。
+location ^~ /hg/ { limit_except GET { auth_basic &amp;quot;Restricted&amp;quot;; auth_basic_user_file /home/user/hg/users; } fastcgi_pass unix:/home/user/hg/hgweb.sock; include fastcgi_params; }  如果你不需要auth，可以自行参照nginx的配置修改。其他web服务器以此类推。重启服务后，http://domains/hg/proj1 就可以访问到proj1了。
+当然，其实最后还要提一句，如果你不需要web界面，可以直接设定将文件内容直接发出去，这样也是可以做pull/push的。
+参考： http://mercurial.selenic.com/wiki/PublishingRepositories</description>
+    </item>
+    
+    <item>
+      <title>用python实现webserver(二)――Thread</title>
+      <link>http://shell909090.org/blog/archives/82/</link>
+      <pubDate>Mon, 07 Dec 2009 09:58:00 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/82/</guid>
+      <description>我们上面说过，Prefork模式有着先天的缺陷。针对http这种大量短请求的应用(当然，http1.1以来，有不少客户端使用了长连接)，Prefork的最高并发很让人不满。并且，无论是否高并发，Prefork的性能都非常不好。现在我们介绍一下Thread模式。 和Prefork非常类似，每Thread模式通过新建的线程来控制对象的传输。和Prefork模式不同的是，一个用户能够建立多少个线程并没有限制。在系统上似乎有限制，65535个，但是同样，文件句柄最高也就能打开65535个，因此通常而言一个服务器最高也就能顶50000并发，无法再高了(nginx就能够支撑5W并发，再高要使用一些特殊手法来均衡负载)。而且线程的建立和销毁的开销非常小——没有独立的空间，不用复制句柄，只要复制一份栈和上下文对象就可以。但是，由于所有线程运行在同一个进程空间中，因此每线程模式有几个非常麻烦的瓶颈。 首先是对象锁定和同步，在每进程模式中，由于进程空间独立，因此一个对象被两个进程使用的时候，他们使用了两个完全不同的对象。而线程模式下，他们访问的是同一个对象。如果两个线程需要进行排他性访问，就必须使用锁，或者其他线程同步工具来进行线程同步。其次，由于使用同一个进程空间，因此一旦有一个连接处理的时候发生错误，整个程序就会崩溃。对于这一问题，可以通过watchdog方式来进行部分规避。原理是通过一个父进程启动子进程，子进程使用每线程处理请求。如果子进程崩溃，父进程的wait就会返回结果。此时父进程重启子进程。使用了watchdog后，服务不会中断，但是程序崩溃时正在处理的连接会全部丢失。最后，是python特有的问题——GIL。由于GIL的存在，因此无论多少线程，实际上只有一个线程可以处理请求，这无形中降低了效率。下面我们看一下Thread模式的测试结果： 测试指令： ab -n 1000 -c 100 http://localhost:8000/py-web-server 返回结果： Document Path: /py-web-server Document Length: 1682 bytes Concurrency Level: 100 Time taken for tests: 3.834 seconds Complete requests: 1000 Failed requests: 0 Write errors: 0 Total transferred: 1723000 bytes HTML transferred: 1682000 bytes Requests per second: 260.85 [#/sec] (mean) Time per request: 383.362 [ms] (mean) Time per request: 3.834 [ms] (mean, across all concurrent requests) Transfer rate: 438.91 [Kbytes/sec] received Connection Times (ms) min mean[+/-sd] median max Connect: 0 75 468.</description>
+    </item>
+    
+    <item>
+      <title>用python实现webserver(一)――Prefork</title>
+      <link>http://shell909090.org/blog/archives/80/</link>
+      <pubDate>Wed, 21 Oct 2009 10:31:00 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/80/</guid>
+      <description>要实现webserver，首先需要一个tcp server。作为python的设计原则，最好是使用SocketServer或者封装更好的BaseHTTPServer来复用。不过既然我们的目的是为了学习，那么就不能用这两个内置对象。我们先实现一个最古典的每进程模式实现。而我们标题上的Prefork，则是apache服务器对这个模式的称呼。
+每进程模式，顾名思义，就是每个新连接开启一个进程进行处理。首先创建一个socket，bind到一个套接字上。当有请求时，accept。(好多英文，不是我有意cheglish，全是api的名称)accept会返回一个通讯用的socket，这时fork出一个新的进程，处理这个socket。
+主进程在每次进入accept后阻塞，子进程在每次进入recv后阻塞。这样会带来几方面的好处。首先是模型分离，即使一个子进程崩溃，也不会影响到其他子进程。其次是身份分离，当你需要让http server以高于常规运行(常规都是以apache, www-data, nobody运行的)用户的权限进行工作时，每进程模式是唯一安全的模式。其他模式都会造成同一进程内的其他session也暂时获得这个权限的问题。但是同样，这样有几方面的问题，主要就是性能问题。
+由于每个连接都需要fork出一个新进程去处理。因此针对大量小连接的时候，fork和exit消耗了大量CPU。问题更严重的是，由于用户进程总数是有限的(PEM或者ulimit都会限制这个数量)，因此压力大到一定程度时(通常是1024或者2048)，就会出现无法创建连接的情况。而对小型服务器而言，在压力还没大道这个程度以前，服务器就会由于性能达到限制而造成段错误。以下是实际试验指令和结果：
+测试指令：
+ab -n 10000 -c 100 &amp;lt;http://localhost:8000/py-web-server&amp;gt;  服务器报错：
+20090924 05:51:18: Traceback (most recent call last): 20090924 05:51:18: File &amp;ldquo;main.py&amp;rdquo;, line 19, in  20090924 05:51:18: 20090924 05:51:18: sock.run (); 20090924 05:51:18: File &amp;ldquo;/home/shell/py-web-server/server.py&amp;rdquo;, line 30, in run 20090924 05:51:18: 20090924 05:51:18: while loop_func (): pass 20090924 05:51:18: File &amp;ldquo;/home/shell/py-web-server/server.py&amp;rdquo;, line 56, in do_loop 20090924 05:51:18: 20090924 05:51:18: if os.fork () == 0:</description>
+    </item>
+    
+    <item>
+      <title>用python实现webserver(零)――导言</title>
+      <link>http://shell909090.org/blog/archives/79/</link>
+      <pubDate>Fri, 09 Oct 2009 16:01:00 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/79/</guid>
+      <description>本系列文章的所有代码，都发布在http://code.google.com/p/py-web-server/。项目的目的，是通过写作一个可用的http web server，学习服务器程序编写中的一些方法，以及http协议的细节。
+如同我在项目介绍中说的，项目遵循以下几个设计原则。
+ []() []() []() []() []()  有兴趣的，可以也通过本文的介绍，不看代码写一个类似的东西。而后对比代码，找出设计上的异同和优劣。如果您也设计了一个，请告诉我，我很高兴能够得到大家的指正。</description>
+    </item>
+    
+    <item>
+      <title>24点计算原理和程序</title>
+      <link>http://shell909090.org/blog/archives/50/</link>
+      <pubDate>Tue, 20 Jan 2009 14:49:00 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/50/</guid>
+      <description>最近开心上狂算24点，于是贝壳搞了一个24点计算程序，并且说明原理。
+我们将24点问题一般化，变成一个搜索问题。假定从一个初始表开始，里面有一些原子。我们定义一个操作，结合。每次操作任意从中选择出两个(或者以上)原子，使用算符连接，成为一个新的原子。那么，一般来说，24点就是计算所有可能的路径，从初始表开始，持续进行结合，直到只剩下一个原子，并且对这个原子求值得24。
+有人可能在算符优先级上想不开，其实不用考虑这个问题，每次求值的时候，按照求值顺序优先就可以。你想到的另外一种优先级可能，会在穷举的时候被列举出来算掉，不用担心遗漏。
+同时，算子必须是两目以上算子，因为单目算子可以持续作用于同一个对象，因此原子表中的原子个数并不严格单调减少，造成无法肯定路径收敛于有限步骤上。并且，如果允许单目算子，那么我只需要求导和阶乘就可以对任何数字求24点。
+((a&#39;)!+(b&#39;)!+(c&#39;)!+(d&#39;)!)!=24  因此，单目算符是没有意义的。
+另外，注意算符分可交换和非可交换的。例如：a+b=b+a，但是a-b!=b-a。如果不注意这点，倒是不会漏算，但是会造成搜索空间增大，并且有重复结果。
+以下是24点计算程序，python版本的。有兴趣的朋友可以用scheme重写，相信会更简洁有效。回头会用django封装一下，做成网页给大家玩玩。
+#!/usr/bin/python import sys symbol_list = [ (&amp;quot;%s+%s&amp;quot;, True), (&amp;quot;%s-%s&amp;quot;, False), (&amp;quot;%s*%s&amp;quot;, True), (&amp;quot;%s/%s&amp;quot;, False), (&amp;quot;%s**%s&amp;quot;, False), ] def diff_seq(length): for i in range(0, length): for j in range(i + 1, length): yield (i, j) def get_less_state(input_state): for i, j in diff_seq(len(input_state)): temp = input_state[:] del temp[j] del temp[i] for s in symbol_list: rslt = s[0] % (input_state[i], input_state[j]) rslt = &amp;quot;(%s)&amp;quot; % rslt temp.</description>
+    </item>
+    
+    <item>
+      <title>分词算法的具体实践</title>
+      <link>http://shell909090.org/blog/archives/40/</link>
+      <pubDate>Sun, 12 Oct 2008 09:27:00 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/40/</guid>
+      <description>说到分词算法，可能很多人都很陌生，然而说起百度，google，很多人却是耳熟能详。google，百度在搜索的时候，输入关键词后瞬间就可以得到结果，如果用通用数据库是无法做到的。实行这个加速的关键就是分词算法。例如&amp;rdquo;项羽是萝莉控&amp;rdquo;这句句子，我们一般搜索都是搜索项羽，或者萝莉控，萝莉。你见过有去搜&amp;rdquo;是萝&amp;rdquo;这个关键字的么？因此系统通过分词，将句子分解为&amp;rdquo;项羽/是/萝莉控&amp;rdquo;，去处单字常见词&amp;rdquo;是&amp;rdquo;(如果要索引&amp;rdquo;是&amp;rdquo;，可以想像有多少文章没有&amp;rdquo;是&amp;rdquo;的)，我们就得到了项羽和萝莉控两个词。再通过反向关联，建立项羽，萝莉控指向文章的连接，就可以完成瞬间的搜索了(具体原理不说了，只要有一定数据库基础的人都应当能想明白原理)。并且通过关联性，某种程度上也可以提供&amp;rdquo;是萝&amp;rdquo;的搜索(带&amp;rdquo;是&amp;rdquo;的词，带&amp;rdquo;萝&amp;rdquo;的词，相关度最高)。
+那么，如何来计算分词呢？方法很多，大家可以在网络上搜索下，贝壳就不赘述了。贝壳现在要说的是这次贝壳主要试验的方向，基于词典的机械分词中的最大分词算法。
+机械分词算法是当今的主流，关键原因在于速度问题。虽然正确的分词很有价值，然而如果速度太慢，一样没有什么用处。机械分词一般可以保证 98%-99.5%以上的正确率，同时提供极高的分词速度。而机械分词一般来说，都是基于词典的。主要有正向分词算法，逆向分词算法，最大匹配分词算法。其中最大匹配分词算法具备最高的灵活性，只要你能评价一个切分的优秀程度，算法能把所有可能算出来让你评价。然而大家可以想像，这个是非常耗费CPU的。贝壳在这个基础上，做了一个具体的实现和细化加速。并且有准备做为一个开源项目来长期运作(只要有人有意向接手合作)。
+首先我们先说贝壳这个算法的评价原则。贝壳认为，评价原则应当有以下几点。同时也必须要说明，以下原则是无法正确评价所有情况的。不过以下原则在原则正确的基础上比较便于优化。一、无法分析的词最少(这是全局最大匹配的理论核心)。二、匹配出的原子最少(这是保证分词优秀性的指标)。三、匹配出原子的出现概率和最高(这是纯粹没有办法了从概率上提高匹配正确的可能)。
+当我们分析一句话的时候，我们可以想像，这句话应当是正常的，可被理解的。换句话说，句子中应当都是有意义的词。那么，在匹配后无法理解的词是什么呢？一种是匹配错误，一种是新单词，一种是单字成词和无意义助词。单字成词的例子有上面的&amp;rdquo;是&amp;rdquo;，我们可以通过一个比较小的词典去除。那么，假定词典够大的情况下，无法理解和分析的词越少的组合越正确。而同样一句话，匹配出的原子越少，在搜索的时候效率越高。因此我们有规定了原子最少原则。至于最后一个，在无法分析词一致，原子个数一致的情况下，我们只能通过出现概率来猜测可能性。
+然后，现在让我们分析一下分词的特点，并且做一定的优化。首先就从最著名的例子，&amp;rdquo;长春/市长/春节/致辞&amp;rdquo;开始。
+长春市长春节致辞  首先，匹配算法一定要先搜索到一个出现的词，有词才有匹配优化问题。没有词的话，你试试看分词&amp;rdquo;嗡嘛呢呗咪吽&amp;rdquo;。根本无法可分。因此首先我们要计算出一个出现的单词。贝壳是从正向开始计算的(主要是因为词典的加速方法是头索引的)。
+*长春*{市长春节致辞} *长春市*{长春节致辞}  好的，我们匹配到了两个，不过这就是全部可能么？不是，否则就变成了正向最大搜索。你可以看看&amp;rdquo;有意见分歧&amp;rdquo;。如果从头一个匹配到开始计算，无论如何都是&amp;rdquo;有意/见/分歧&amp;rdquo;，而事实是&amp;rdquo;有/意见/分歧&amp;rdquo;。因此我们还有一种可能，在头一个匹配到的位置，其实并不匹配。不匹配多长呢？最大长度不会超过最短的匹配词。为什么？我们来看下面一个例子。
+*长春*{市长春节致辞} *长/春/(这两个字不是词，而是两个无法理解的字){市长春节致辞}  很明显，后一种分法违背了我们的第一原则，无法分析的词最少。无论后面怎么计算，其最优结果是相同的。在后续结果相同的情况下，头一次匹配到词后，所有可能的跳空(搜索可能的不匹配)最大长度严格小于最短匹配词的长度。
+那么是否所有跳空都要搜索呢？也不，我们可以继续剪枝。对于情况&amp;rdquo;有意见分歧&amp;rdquo;来说，这个路径是必须搜索的。但是对于我们的例子来说，是无需搜索的。为什么呢？我们看以下计算。
+*长/{春市长春节致辞}(下一个匹配是什么？总不会是春市吧，所以应当是&amp;quot;市长&amp;quot;) *长/春/市长*{春节致辞} *长春*{市长春节致辞}  大家可以看到，其实这个路径是无需计算的。那什么情况下需要计算呢？
+一旦跳空，其跳空后寻找到的下个词的位置必须严格小于最短词的词尾位置。否则就没有搜索价值。具体可以看以下示例。
+XXXXXXXNNNNNNNNNNN(X是词，N是无关紧要的)
+SSSSSSSXXNNNNNNNNN(S是跳空或者跳空后形成的无法理解字，X是词，在这种情况下，无论后面怎么评价，都不影响该匹配被剔除)
+OK，我们回到例子，刚刚我们说了，有&amp;rdquo;长&amp;rdquo;的匹配。但是通过刚刚的剪枝，又被剪了出去。我们下面分别计算两个情况。
+市长春节致辞 *市/{长春节致辞} *市长*{春节致辞} 长春节致辞  好，我们先不计算下去了。通过上面的计算，我们发现，在计算过程中经常需要计算同一内容的结果。我们可以想一下，同样的分词，同样的算法，出现的应当是同样的结果。就是说，分词函数是状态无关的算法。通过分解一个单词，得到一个最优结果。那么，我们对于同样的数据，何必需要计算两次呢？贝壳上文中提到过记忆函数，这次就用上了。根据贝壳的试验结果，如果记忆全部词的分解结果，会造成大量的记忆-释放，而内容基本没有用到，造成效率下降。如果只记忆长词的分解结果，往往又会因为太长，大多数句子无法达到长度而根本没用。这中间有个平衡值，具体多少贝壳就不说了。我们可以按照上文的方法计算以下两个过程，得到结果。大家可以自行验证。
+春节致辞 *春节*致辞* 长春节致辞 *长/春节*致辞* *长春*节/致辞*  结合上面的过程，我们推算得到结果。
+*长春*{市长春节致辞} *长春*市长*春节*致辞* *长春市*{长春节致辞} *长春市*长/春节*致辞* *长春市*长春*节/致辞*  按照上面的评价原则，我们得到了正确的结果。
+大家可以看看其他例子，这里着重说一下&amp;rdquo;有意见分歧&amp;rdquo;。
+有意见分歧 *有*意见*分歧* *有意*见/分歧*  注意，有是单字成词，见可不是。如果见单字成词，做看见讲，那这句话就彻底成歧义句了。可以理解为，有意的要看到(或者让其表现出)分歧。这一般是古文语法。由此也可以看出上述原则在理解古文的时候往往会出现问题。同时还要指出的是，在匹配&amp;rdquo;长春市长春药店&amp;rdquo;的时候，会出现以下结果。
+长春市长春药店 *长春*市长*春药店* *长春市*长春*药店*  两者的无法理解词都没有，切分数一致，最后硬是因为春药店出现概率低而被筛掉。可见系统有的时候是依赖概率和人品在工作的。
+经过上面的原则和算法，贝壳实现了一个python的分词程序，1000行代码，原型系统。90W条词情况下，在AMD MK36上(2G主频)分词效率66K/s上下，具体看分词的选项(例如顺序分词就比较节约资源，分词排除重复就比较慢，启用多线程后在单CPU 机器上更慢)，内存使用114M。使用C++写的核心词典后，90W条词的情况下分词速度80K/s，比python的核心词典快了20%，内存70M，节约内存40%。不过可惜，这个核心词典是公司产权，贝壳无权公布。并且贝壳做了一些工作，准备使用分词程序来生成分词词表。这个么贝壳就不准备讲了。前面讲的内容贝壳准备放到试验型站点 http://shell909090.3322.org/split_word/split_show/ 上面去，08年内有效。有兴趣联系我的可以发 mail给我，shell909090+split@gmail.com，欢迎大家试验并提出意见。</description>
+    </item>
+    
+    <item>
+      <title>苏博婚礼回来暨python2.6发布</title>
+      <link>http://shell909090.org/blog/archives/39/</link>
+      <pubDate>Mon, 06 Oct 2008 15:50:00 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/39/</guid>
+      <description>这次10.1算是个大日子，因为我们可爱的苏博终于和他美丽的新娘结婚了。据说两个人相识10年拍拖7年，找的高中班主任做证婚人。实在有点为难人家，到底说高中就好上了呢？还是高中没好上？不过总而言之，他们总算结婚了。具体苏博是怎么被我们蹂躏的，以及婚礼的起因经过什么的就不写了，毕竟我不是新闻记者。这次就写一些有趣的事情和感想。
+首先是去震泽的车子，因为10.1的关系，并不怎么好去。不过坐在车上晃晃悠悠两个小时，看旁边的河跟路一起走，感觉还是很不错的。江南不愧是水乡，有条河就在我们的路旁跟了10多分钟，还有条船跟我们并排跑。震泽古镇也很灵的，宝塔街古香古色，保证没有现代元素，除了大头发现的几个公共厕所外。建议大家有空可以去看看，苏博的家乡。
+而后是新郎和新娘的一个让我比较震撼的问题。婚礼上，主持人问新娘的大学同学，是否在校园里面经常看到新郎。人家说，一直以为苏於良是南大学生。我吓一跳，南大啊，我一直以为王苏瑾在上海念大学。由此我得到一个结论，远距离恋爱是否会失败，和双方爱对方的程度无关，而和双方把爱付诸行动的程度有关。其实不光远距离恋爱，婚姻也是一样。认识我的人都知道我的两个总结。夫妻双方性格相近或相反，价值观一致。今天看来还要加一条，愿意将爱付诸行动。
+然后是婚礼前一天，阿丁同学打过来跟我哭诉她和她男友的情况。实话说，虽然被哭诉半天，但是我还是搞不清楚她和她男友的状态，总之是非常复杂一团浆糊。因为隐私关系，我不打算说她和她男友的具体状况。不过大致就是她很喜欢他男友，喜欢到没有自我没有尊严。他男友呢，则是有点——不知道怎么说。说有问题吧，说不出来，说没有问题吧，情况确实——不怎么好。而且她本人处理事情上也不是没有问题，我觉得这个应当叫孽缘吧。不过无论如何，我的建议是——分手。
+然后我就建议阿丁同学到震泽来玩一天，反正黄禹同学正好没来。然后她跑来玩了一天，回去和我说了一句雷晕人的话。我彻底无语了——
+无论如何，那是她的家事。
+再后面就是苏州到上海的车，同样也不怎么好弄。我问今天又没有去上海的车，最好是动车。回答说有，动车。我说来两张票（帮人代买一张），售票员说，晚上11点半的哦～～
+我彻底无语。
+后面一个朋友则更悲惨。他问，今天到南京的车票还有么？没了。明天的呢？也没了。后天的呢？我们只发售今明两天的～～
+最后我们坐大巴回来的。
+最后的最后，说一下，python2.6发布了，虽然我不打算用。比以前在构架上有了不少进步，不过很多东西暂时没有这么快迁移过去。我打算等3.0出了后直接用3.0，反正程序是一样写的。</description>
+    </item>
+    
+    <item>
+      <title>C&#43;&#43;下的Variant</title>
+      <link>http://shell909090.org/blog/archives/32/</link>
+      <pubDate>Sat, 06 Sep 2008 22:50:00 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/32/</guid>
+      <description>所谓C++语言，是一种强类型语言。即是说，C++种的某个变量，在使用时类型是已经确定的。这个并不是设计者的喜好或者是偏心，而是C++中的变量都会被翻译成准确的内存地址和大小，如果类型不确定是不可能处理的。但是在事实中，我们经常要处理一种&amp;rdquo;变类型&amp;rdquo;。例如，我们可能需要解析表达式，这个时候我们可能用一个或者两个栈来解决这个问题。可栈里面塞的东西就精彩了，对象，函数，数据，都在里面。这时候，如果是python，我们可以直接用list，他是弱类型的。但是C++怎么办？
+一般来说，我们会使用Variant类型来解决这个问题。这是C++面对对象机制和算子机制所派生出来的产物，能够让用户自行定义对象的行为。如果一个对象，可以表现的像这个又像那个，那不就解决问题了？因此在COM中就有一个variant。不过贝壳看过机制，是一堆东西的集合，非常的不美丽。今天贝壳又看到一个variant的实现，漂亮多了。
+废话少说，上代码。
+#include using namespace std; #include using namespace boost; int _tmain(int argc, _TCHAR* argv[]) { any a; a = 10; printf (&amp;quot;%s: %dn&amp;quot;, a.type ().name (), any_cast(a)); a = 10.5; printf (&amp;quot;%s: %fn&amp;quot;, a.type ().name (), any_cast(a)); a = string (&amp;quot;str&amp;quot;); printf (&amp;quot;%s: %sn&amp;quot;, a.type ().name (), any_cast(a).c_str ()); return 0; }  当类型错误时，出现bad_cast exception。</description>
+    </item>
+    
+    <item>
+      <title>python的性能问题</title>
+      <link>http://shell909090.org/blog/archives/31/</link>
+      <pubDate>Wed, 27 Aug 2008 22:18:00 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/31/</guid>
+      <description>贝壳最近在一个朋友的网站上看到了关于SICP零钱兑换问题的python求解，使用了记忆机制，然后他给出了代码。然而他的代码计时上有点小问题，也没有用包装器(奇怪的是，有写)，而且python的栈深度有限。因此贝壳做了几个修改的版本，需要测试下性能，下面就是关于性能的几个问题和过程。
+本文详细论述了python语言下和C++语言下使用各种方法测试代码性能的方法，以及粗略的关于两种语言不同算法性能对比。
+原始的python代码是这样的：
+def change_coins(money): first_denomination = { 1: 1, 2: 5, 3: 10, 4: 25, 5: 50, } def cc(amount, kinds_of_coins): if amount == 0: return 1 elif amount &amp;lt; 0 or kinds_of_coins == 0: return 0 else: kind = cc(amount, kinds_of_coins - 1) kind += cc( amount-first_denomination[kinds_of_coins], kinds_of_coins) return kind print(&amp;quot;change_coins return %s&amp;quot; % cc(money, 5)) change_coins(300)  利用记忆原理包装后是这样的：
+def memoiza(fun): cache = {} def proc(*arg): if arg in cache: return cache[arg] else: x = fun(*arg) cache[arg] = x return x return proc def decorator_change_coins(money): first_denomination = { 1: 1, 2: 5, 3: 10, 4: 25, 5: 50, } @memoiza def cc(amount, kinds_of_coins): if amount == 0: return 1 elif amount &amp;lt; 0 or kinds_of_coins == 0: return 0 else: kind = cc(amount, kinds_of_coins - 1) kind += cc( amount - first_denomination[kinds_of_coins], kinds_of_coins) return kind print(&amp;quot;decorator_change_coins return %s&amp;quot; % cc(money, 5)) decorator_change_coins(300)  不记忆，利用栈模拟递归展开是这样的：</description>
+    </item>
+    
+    <item>
+      <title>python的几个改进</title>
+      <link>http://shell909090.org/blog/archives/17/</link>
+      <pubDate>Sun, 11 May 2008 19:35:00 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/17/</guid>
+      <description>首先需要增加的就是kill掉线程的方法，目前我们统统是调用系统函数。有没有搞错阿，需要针对系统写代码不说，还不安全。在线程关闭的过程中没有辗转开解和安全捕获。从最安全的角度上说，要关闭线程最方便的就是给其他线程抛异常。python并非不可以给其他线程抛异常，可非常麻烦不说，具体执行的时候发现，其实根本不是抛异常，而是在执行过程中检查异常。这样当程序在调用外部代码的时候死循环，想kill线程的时候根本不可行。所以安全的关闭线程的异常和直接kill掉线程的方法都要有。
+其次，这东西没有什么可以快速辅助处理集合的工具类，例如STL中的set_union等等。虽说每个都不难，可是统一的实现和各自的实现毕竟是有差别的。很多时候，我们只需要抽象的计算两个集合，一个和一个的交集，就OK了。</description>
+    </item>
+    
+    <item>
+      <title>python的非经典错误</title>
+      <link>http://shell909090.org/blog/archives/11/</link>
+      <pubDate>Tue, 08 Apr 2008 14:05:00 +0800</pubDate>
+      
+      <guid>http://shell909090.org/blog/archives/11/</guid>
+      <description>def comp_tuple_file(tuple_file1, tuple_file2): for i in tuple_file1: if i in tuple_file2: tuple_file1.remove(i) tuple_file2.remove(i)
+if __name__ == &amp;quot;__main__&amp;quot;: t1 = [(1, &amp;quot;1&amp;quot;), (2, &amp;quot;2&amp;quot;), (3, &amp;quot;3&amp;quot;)] t2 = [(1, &amp;quot;1&amp;quot;), (3, &amp;quot;3&amp;quot;), (2, &amp;quot;2&amp;quot;), (4, &amp;quot;2&amp;quot;)] comp_tuple_file(t1, t2) print(t1) print(t2)  错在哪里？
+头一次循环，i=(1,&amp;ldquo;1&amp;rdquo;)被正确移除了。但是接下来，i=(3,&amp;ldquo;3&amp;rdquo;)？
+这个叠代器的行为很有意思哦，貌似叠代器内存储的是集合的索引。
+def comp_tuple_file(tuple_file1, tuple_file2): collection = tuple_file1[:] for i in collection: if i in tuple_file2: tuple_file1.remove(i) tuple_file2.remove(i) if __name__ == &amp;quot;__main__&amp;quot;: t1 = [(1, &amp;quot;1&amp;quot;), (2, &amp;quot;2&amp;quot;), (3, &amp;quot;3&amp;quot;)] t2 = [(1, &amp;quot;1&amp;quot;), (3, &amp;quot;3&amp;quot;), (2, &amp;quot;2&amp;quot;), (4, &amp;quot;2&amp;quot;)] comp_tuple_file(t1, t2) print(t1) print(t2)  这才是正确的代码。</description>
     </item>
     
   </channel>
