@@ -8,9 +8,7 @@
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
     <lastBuildDate>Mon, 07 Dec 2009 09:58:00 +0800</lastBuildDate>
-    
-	<atom:link href="http://shell909090.org/tags/coroutine/index.xml" rel="self" type="application/rss+xml" />
-    
+    <atom:link href="http://shell909090.org/tags/coroutine/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>用python实现webserver(二)――Thread</title>
@@ -18,7 +16,68 @@
       <pubDate>Mon, 07 Dec 2009 09:58:00 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/82/</guid>
-      <description>我们上面说过，Prefork模式有着先天的缺陷。针对http这种大量短请求的应用(当然，http1.1以来，有不少客户端使用了长连接)，Prefork的最高并发很让人不满。并且，无论是否高并发，Prefork的性能都非常不好。现在我们介绍一下Thread模式。 和Prefork非常类似，每Thread模式通过新建的线程来控制对象的传输。和Prefork模式不同的是，一个用户能够建立多少个线程并没有限制。在系统上似乎有限制，65535个，但是同样，文件句柄最高也就能打开65535个，因此通常而言一个服务器最高也就能顶50000并发，无法再高了(nginx就能够支撑5W并发，再高要使用一些特殊手法来均衡负载)。而且线程的建立和销毁的开销非常小——没有独立的空间，不用复制句柄，只要复制一份栈和上下文对象就可以。但是，由于所有线程运行在同一个进程空间中，因此每线程模式有几个非常麻烦的瓶颈。 首先是对象锁定和同步，在每进程模式中，由于进程空间独立，因此一个对象被两个进程使用的时候，他们使用了两个完全不同的对象。而线程模式下，他们访问的是同一个对象。如果两个线程需要进行排他性访问，就必须使用锁，或者其他线程同步工具来进行线程同步。其次，由于使用同一个进程空间，因此一旦有一个连接处理的时候发生错误，整个程序就会崩溃。对于这一问题，可以通过watchdog方式来进行部分规避。原理是通过一个父进程启动子进程，子进程使用每线程处理请求。如果子进程崩溃，父进程的wait就会返回结果。此时父进程重启子进程。使用了watchdog后，服务不会中断，但是程序崩溃时正在处理的连接会全部丢失。最后，是python特有的问题——GIL。由于GIL的存在，因此无论多少线程，实际上只有一个线程可以处理请求，这无形中降低了效率。下面我们看一下Thread模式的测试结果： 测试指令： ab -n 1000 -c 100 http://localhost:8000/py-web-server 返回结果： Document Path: /py-web-server Document Length: 1682 bytes Concurrency Level: 100 Time taken for tests: 3.834 seconds Complete requests: 1000 Failed requests: 0 Write errors: 0 Total transferred: 1723000 bytes HTML transferred: 1682000 bytes Requests per second: 260.85 [#/sec] (mean) Time per request: 383.362 [ms] (mean) Time per request: 3.834 [ms] (mean, across all concurrent requests) Transfer rate: 438.91 [Kbytes/sec] received Connection Times (ms) min mean[+/-sd] median max Connect: 0 75 468.</description>
+      <description>&lt;p&gt;&lt;span style=&#34;font-family: Verdana; font-size: 13px;&#34;&gt;
+我们上面说过，Prefork模式有着先天的缺陷。针对http这种大量短请求的应用(当然，http1.1以来，有不少客户端使用了长连接)，Prefork的最高并发很让人不满。并且，无论是否高并发，Prefork的性能都非常不好。现在我们介绍一下Thread模式。
+和Prefork非常类似，每Thread模式通过新建的线程来控制对象的传输。和Prefork模式不同的是，一个用户能够建立多少个线程并没有限制。在系统上似乎有限制，65535个，但是同样，文件句柄最高也就能打开65535个，因此通常而言一个服务器最高也就能顶50000并发，无法再高了(nginx就能够支撑5W并发，再高要使用一些特殊手法来均衡负载)。而且线程的建立和销毁的开销非常小——没有独立的空间，不用复制句柄，只要复制一份栈和上下文对象就可以。但是，由于所有线程运行在同一个进程空间中，因此每线程模式有几个非常麻烦的瓶颈。
+首先是对象锁定和同步，在每进程模式中，由于进程空间独立，因此一个对象被两个进程使用的时候，他们使用了两个完全不同的对象。而线程模式下，他们访问的是同一个对象。如果两个线程需要进行排他性访问，就必须使用锁，或者其他线程同步工具来进行线程同步。其次，由于使用同一个进程空间，因此一旦有一个连接处理的时候发生错误，整个程序就会崩溃。对于这一问题，可以通过watchdog方式来进行部分规避。原理是通过一个父进程启动子进程，子进程使用每线程处理请求。如果子进程崩溃，父进程的wait就会返回结果。此时父进程重启子进程。使用了watchdog后，服务不会中断，但是程序崩溃时正在处理的连接会全部丢失。最后，是python特有的问题——GIL。由于GIL的存在，因此无论多少线程，实际上只有一个线程可以处理请求，这无形中降低了效率。下面我们看一下Thread模式的测试结果：
+测试指令： ab -n 1000 -c 100 &lt;a href=&#34;http://localhost:8000/py-web-server&#34;&gt;http://localhost:8000/py-web-server&lt;/a&gt;
+返回结果： Document Path:          /py-web-server Document
+Length:        1682 bytes&lt;/span&gt; Concurrency Level:      100 Time taken
+for tests:   3.834 seconds Complete requests:      1000 Failed
+requests:        0 Write errors:           0 Total transferred:     
+1723000 bytes HTML transferred:       1682000 bytes Requests per
+second:    260.85 [#/sec] (mean) Time per request:       383.362
+[ms] (mean) Time per request:       3.834 [ms] (mean, across all
+concurrent requests) Transfer rate:          438.91 [Kbytes/sec]
+received Connection Times (ms) min  mean[+/-sd] median   max
+Connect:        0   75 468.4      0    3001 Processing:     2   32 
+84.0     20    1593 Waiting:        1   30  84.0     18    1592
+Total:          2  107 511.0     20    3828 测试指令： ab -n 10000 -c
+1000 &lt;a href=&#34;http://localhost:8000/py-web-server&#34;&gt;http://localhost:8000/py-web-server&lt;/a&gt; 返回结果： Document
+Path:          /py-web-server Document Length:        1682 bytes
+Concurrency Level:      1000 Time taken for tests:   37.510 seconds
+Complete requests:      10000 Failed requests:        0 Write
+errors:           0 Total transferred:      17231723 bytes HTML
+transferred:       16821682 bytes Requests per second:    266.60
+[#/sec] (mean) Time per request:       3751.004 [ms] (mean) Time
+per request:       3.751 [ms] (mean, across all concurrent requests)
+Transfer rate:          448.62 [Kbytes/sec] received Connection Times
+(ms) min  mean[+/-sd] median   max Connect:        0  695 2422.8     
+0   21004 Processing:     0   67 341.1     28    9855 Waiting:       
+0   64 340.5     26    9855 Total:          0  762 2516.6     29   30856
+根据结果可以看到，Thread模式在1000并发的时候还工作良好，每秒处理请求数在250-300req/sec，但是每个请求的总处理时间已经高达760ms。并且从中我们可以看出，大量的时间都是消耗在等待上，说明线程的建立逐渐成为问题(为什么？下面说明)。实际性能测试的结果，也表明大约一半的时间花费在了等待上，而另一半花费在了线程建立上。加上销毁的开销，整个系统主要的瓶颈在于由于大量线程建立和销毁造成的CPU开销上。
+结合上述情况，我们同时也想到一些问题，Thread模式在一个进程中，到底能创建多少个线程？上文上说大约是5W个，其实太理论了。实际上如果按照Windows来计算，最高不超过1000个，Linux下也在这个数量级上。为什么？由于进程内存空间的问题。一个线程在创建时，默认需要1M的内存空间来作为栈。对于专用的高速系统，我们建议将这个值调整到500K，一般一个session的内存消耗就在500K上下，考虑还有堆消耗，500K是一个比较安全的值。单一进程，32位访问的寻址空间是4G，然而系统需要使用其中的2G作为系统空间——这一状态可以经由启动时的3G参数调整(针对Windows)。然而由于使用了系统空间，因此系统中很多表项空间不足，对稳定性也有不利影响，通常我们建议不要进行这种“优化”。而系统的基础使用和库使用需要数百M的空间，安全起见，能够自由的用于栈的可分配自由空间只有1G的大小。这1G的空间，以创建1M的栈计算，只能同时开1000线程。这就是单一进程中线程的极限。
+实际上，是根本做不出这么多的线程的。贝壳的小型测试机上只观测到过10-20个线程/每进程。这是由于线程的建立也需要时间，在创建下一个线程之前，工作进程已经跑了一些了。创建几个工作线程后，第一个工作线程已经完成工作。因此我们在实际中看到的是，压力越高，连接建立的速度越慢。因为负责创立新线程的线程获得越少的CPU时间用于工作。为了增加处理速度，通常我们可以采取一个CPU建立一个进程的策略，这被称为多线程/多进程模式。下面我们来测量其工作效率：
+测试指令： ab -n 10000 -c 1000 &lt;a href=&#34;http://localhost:8000/&#34;&gt;http://localhost:8000/&lt;/a&gt; 返回结果：
+Document Path:          / Document Length:        3318 bytes Concurrency
+Level:      1000 Time taken for tests:   20.319 seconds Complete
+requests:      10000 Failed requests:        0 Write errors:           0
+Total transferred:      33590000 bytes HTML transferred:       33180000
+bytes Requests per second:    492.14 [#/sec] (mean) Time per
+request:       2031.939 [ms] (mean) Time per request:       2.032
+[ms] (mean, across all concurrent requests) Transfer rate:         
+1614.36 [Kbytes/sec] received Connection Times (ms) min  mean[+/-sd]
+median   max Connect:        0  160 912.4      0    9008 Processing:    
+0   28 174.7     12    4738 Waiting:        0   27 174.3     12    4738
+Total:          0  188 987.5     13   12758
+这是台双核的机器，性能差不多提升了一倍，这就是多进程/多线程模式的威力。按照这个数据外推，在常见的8核处理器上，将达到2000req/sec的处理速度，甚至更高。
+当然，也不用高兴太早，我们看一下apache2的每线程模式： 测试指令： ab -n
+10000 -c 1000 &lt;a href=&#34;http://localhost:8000/&#34;&gt;http://localhost:8000/&lt;/a&gt; 返回结果： Concurrency
+Level:      1000 Time taken for tests:   6.147 seconds Complete
+requests:      10000 Failed requests:        0 Write errors:           0
+Total transferred:      3213925 bytes HTML transferred:       453375
+bytes Requests per second:    1626.87 [#/sec] (mean) Time per
+request:       614.678 [ms] (mean) Time per request:       0.615
+[ms] (mean, across all concurrent requests) Transfer rate:         
+510.61 [Kbytes/sec] received Connection Times (ms) min  mean[+/-sd]
+median   max Connect:        0  111 398.3     59    3087 Processing:   
+28  126  99.0    113    1772 Waiting:       10  104  98.7     92    1745
+Total:         78  237 423.1    175    3691 Percentage of the requests
+served within a certain time (ms) 50%    175 66%    188 75%    207
+80%    217 90%    235 95%    256 98%   1016 99%   3222 100%   3691
+(longest request)
+这种效率在8路的CPU上，性能将达到6400req/sec。所以想用python实现真正高效的前端本身就是个错误的逻辑。&lt;/p&gt;
+</description>
     </item>
     
     <item>
@@ -27,13 +86,91 @@
       <pubDate>Wed, 21 Oct 2009 10:31:00 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/80/</guid>
-      <description>要实现webserver，首先需要一个tcp server。作为python的设计原则，最好是使用SocketServer或者封装更好的BaseHTTPServer来复用。不过既然我们的目的是为了学习，那么就不能用这两个内置对象。我们先实现一个最古典的每进程模式实现。而我们标题上的Prefork，则是apache服务器对这个模式的称呼。
-每进程模式，顾名思义，就是每个新连接开启一个进程进行处理。首先创建一个socket，bind到一个套接字上。当有请求时，accept。(好多英文，不是我有意cheglish，全是api的名称)accept会返回一个通讯用的socket，这时fork出一个新的进程，处理这个socket。
-主进程在每次进入accept后阻塞，子进程在每次进入recv后阻塞。这样会带来几方面的好处。首先是模型分离，即使一个子进程崩溃，也不会影响到其他子进程。其次是身份分离，当你需要让http server以高于常规运行(常规都是以apache, www-data, nobody运行的)用户的权限进行工作时，每进程模式是唯一安全的模式。其他模式都会造成同一进程内的其他session也暂时获得这个权限的问题。但是同样，这样有几方面的问题，主要就是性能问题。
-由于每个连接都需要fork出一个新进程去处理。因此针对大量小连接的时候，fork和exit消耗了大量CPU。问题更严重的是，由于用户进程总数是有限的(PEM或者ulimit都会限制这个数量)，因此压力大到一定程度时(通常是1024或者2048)，就会出现无法创建连接的情况。而对小型服务器而言，在压力还没大道这个程度以前，服务器就会由于性能达到限制而造成段错误。以下是实际试验指令和结果：
-测试指令：
-ab -n 10000 -c 100 &amp;lt;http://localhost:8000/py-web-server&amp;gt;  服务器报错：
-20090924 05:51:18: Traceback (most recent call last): 20090924 05:51:18: File &amp;ldquo;main.py&amp;rdquo;, line 19, in  20090924 05:51:18: 20090924 05:51:18: sock.run (); 20090924 05:51:18: File &amp;ldquo;/home/shell/py-web-server/server.py&amp;rdquo;, line 30, in run 20090924 05:51:18: 20090924 05:51:18: while loop_func (): pass 20090924 05:51:18: File &amp;ldquo;/home/shell/py-web-server/server.py&amp;rdquo;, line 56, in do_loop 20090924 05:51:18: 20090924 05:51:18: if os.fork () == 0:</description>
+      <description>&lt;p&gt;要实现webserver，首先需要一个tcp server。作为python的设计原则，最好是使用SocketServer或者封装更好的BaseHTTPServer来复用。不过既然我们的目的是为了学习，那么就不能用这两个内置对象。我们先实现一个最古典的每进程模式实现。而我们标题上的Prefork，则是apache服务器对这个模式的称呼。&lt;/p&gt;
+
+&lt;p&gt;每进程模式，顾名思义，就是每个新连接开启一个进程进行处理。首先创建一个socket，bind到一个套接字上。当有请求时，accept。(好多英文，不是我有意cheglish，全是api的名称)accept会返回一个通讯用的socket，这时fork出一个新的进程，处理这个socket。&lt;/p&gt;
+
+&lt;p&gt;主进程在每次进入accept后阻塞，子进程在每次进入recv后阻塞。这样会带来几方面的好处。首先是模型分离，即使一个子进程崩溃，也不会影响到其他子进程。其次是身份分离，当你需要让http server以高于常规运行(常规都是以apache, www-data, nobody运行的)用户的权限进行工作时，每进程模式是唯一安全的模式。其他模式都会造成同一进程内的其他session也暂时获得这个权限的问题。但是同样，这样有几方面的问题，主要就是性能问题。&lt;/p&gt;
+
+&lt;p&gt;由于每个连接都需要fork出一个新进程去处理。因此针对大量小连接的时候，fork和exit消耗了大量CPU。问题更严重的是，由于用户进程总数是有限的(PEM或者ulimit都会限制这个数量)，因此压力大到一定程度时(通常是1024或者2048)，就会出现无法创建连接的情况。而对小型服务器而言，在压力还没大道这个程度以前，服务器就会由于性能达到限制而造成段错误。以下是实际试验指令和结果：&lt;/p&gt;
+
+&lt;p&gt;测试指令：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;ab -n 10000 -c 100 &amp;lt;http://localhost:8000/py-web-server&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;服务器报错：&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;:&#34;&gt;20090924 05:51:18&lt;/a&gt;: Traceback (most recent call last):
+&lt;a href=&#34;:&#34;&gt;20090924 05:51:18&lt;/a&gt;: File &amp;ldquo;main.py&amp;rdquo;, line 19, in &lt;module&gt;
+&lt;a href=&#34;:&#34;&gt;20090924 05:51:18&lt;/a&gt;:
+&lt;a href=&#34;:&#34;&gt;20090924 05:51:18&lt;/a&gt;: sock.run ();
+&lt;a href=&#34;:&#34;&gt;20090924 05:51:18&lt;/a&gt;: File &amp;ldquo;/home/shell/py-web-server/server.py&amp;rdquo;, line 30, in run
+&lt;a href=&#34;:&#34;&gt;20090924 05:51:18&lt;/a&gt;:
+&lt;a href=&#34;:&#34;&gt;20090924 05:51:18&lt;/a&gt;: while loop_func (): pass
+&lt;a href=&#34;:&#34;&gt;20090924 05:51:18&lt;/a&gt;: File &amp;ldquo;/home/shell/py-web-server/server.py&amp;rdquo;, line 56, in do_loop
+&lt;a href=&#34;:&#34;&gt;20090924 05:51:18&lt;/a&gt;: &lt;a href=&#34;:&#34;&gt;20090924 05:51:18&lt;/a&gt;: if os.fork () == 0:&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;:&#34;&gt;20090924 05:51:18&lt;/a&gt;: [Errno 11] Resource temporarily unavailable&lt;/p&gt;
+
+&lt;p&gt;测试指令：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;ab -n 1000 -c 100 &amp;lt;http://localhost:8000/py-web-server&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;返回结果：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Document Path: /py-web-server Document Length: 1320 bytes
+Concurrency Level: 100 Time taken for tests: 14.189 seconds
+Complete requests: 1000 Failed requests: 0 Write
+errors: 0 Total transferred: 1361000 bytes HTML
+transferred: 1320000 bytes Requests per second: 70.48
+[#/sec] (mean) Time per request: 1418.851 [ms] (mean) Time
+per request: 14.189 [ms] (mean, across all concurrent requests)
+Transfer rate: 93.67 [Kbytes/sec] received Connection Times
+(ms) min mean[+/-sd] median max Connect: 0 18 328.4
+0 9000 Processing: 4 109 211.0 95 3335 Waiting: 4
+100 211.1 86 3324 Total: 8 127 498.3 95 12332
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;为什么只有100并发？因为200并发的时候测试机上的服务器已经崩溃了。而且我们看到服务器的效率大约是70req/sec。等过两天，讲到&lt;/p&gt;
+
+&lt;p&gt;Thread模式的时候，大家可以对比一下Thread模式的效率。基本上说，针对普通服务器，个人觉得Prefork模式并发数量尽量控制在&lt;/p&gt;
+
+&lt;p&gt;100-800这个级别比较合适。更高的也许能承受，可是就可能发生不稳定(原因上面有说，就是进程数量限制)。那么Prefork模式通常用在哪里呢？&lt;/p&gt;
+
+&lt;p&gt;数据库！Oracle和Postgresql全是Prefork模式的(其中Oracle的Prefork模式还经过一次分发，更复杂一些)。压力通常在&lt;/p&gt;
+
+&lt;p&gt;100-200这个级别，连接基本不断开，连接的请求和销毁开销很小，但是处理的过程开销很大。并且，由于处理过程复杂，一个链接的处理错误不能殃及整个&lt;/p&gt;
+
+&lt;p&gt;系统。对于这种问题，最好采用Prefork模式进行处理。同类的问题还有一些EJB服务器，复杂中间件等等。&lt;/p&gt;
+
+&lt;p&gt;那么反过来，作为客户，我在面对Prefork模式的时候，如何才能高效处理呢？——对，大家都想到了，连接池模式。通过连接池存放空闲连接，避免连接的建立和释放开销，从而增加服务器性能。&lt;/p&gt;
+
+&lt;p&gt;另外，python实现其实性能是很有问题的，我们对比一下apache2的测试结果：&lt;/p&gt;
+
+&lt;p&gt;测试指令：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;ab -n 1000 -c 100 &amp;lt;http://localhost:8000/py-web-server&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;返回结果：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Document Path: / Document Length: 45 bytes
+Concurrency Level: 1000 Time taken for tests: 7.914 seconds
+Complete requests: 10000 Failed requests: 0 Write
+errors: 0 Total transferred: 3204355 bytes HTML
+transferred: 452025 bytes Requests per second: 1263.56
+[#/sec] (mean) Time per request: 791.413 [ms] (mean) Time per
+request: 0.791 [ms] (mean, across all concurrent requests)
+Transfer rate: 395.40 [Kbytes/sec] received Connection Times
+(ms) min mean[+/-sd] median max Connect: 0 70 432.8
+3 3028 Processing: 0 193 733.0 88 6629 Waiting: 0
+190 732.4 85 6621 Total: 46 263 950.7 93 7895 --
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;与其相濡以沫，不如相忘于江湖&lt;/p&gt;
+</description>
     </item>
     
     <item>
@@ -42,9 +179,20 @@ ab -n 10000 -c 100 &amp;lt;http://localhost:8000/py-web-server&amp;gt;  服务�
       <pubDate>Fri, 09 Oct 2009 16:01:00 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/79/</guid>
-      <description>本系列文章的所有代码，都发布在http://code.google.com/p/py-web-server/。项目的目的，是通过写作一个可用的http web server，学习服务器程序编写中的一些方法，以及http协议的细节。
-如同我在项目介绍中说的，项目遵循以下几个设计原则。
- []() []() []() []() []()  有兴趣的，可以也通过本文的介绍，不看代码写一个类似的东西。而后对比代码，找出设计上的异同和优劣。如果您也设计了一个，请告诉我，我很高兴能够得到大家的指正。</description>
+      <description>&lt;p&gt;本系列文章的所有代码，都发布在&lt;a href=&#34;http://code.google.com/p/py-web-server/%E3%80%82&#34;&gt;http://code.google.com/p/py-web-server/。&lt;/a&gt;项目的目的，是通过写作一个可用的http web server，学习服务器程序编写中的一些方法，以及http协议的细节。&lt;/p&gt;
+
+&lt;p&gt;如同我在项目介绍中说的，项目遵循以下几个设计原则。&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;[]()&lt;/li&gt;
+&lt;li&gt;[]()&lt;/li&gt;
+&lt;li&gt;[]()&lt;/li&gt;
+&lt;li&gt;[]()&lt;/li&gt;
+&lt;li&gt;[]()&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;有兴趣的，可以也通过本文的介绍，不看代码写一个类似的东西。而后对比代码，找出设计上的异同和优劣。如果您也设计了一个，请告诉我，我很高兴能够得到大家的指正。&lt;/p&gt;
+</description>
     </item>
     
   </channel>

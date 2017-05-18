@@ -8,9 +8,7 @@
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
     <lastBuildDate>Sun, 03 Jul 2005 23:04:20 +0800</lastBuildDate>
-    
-	<atom:link href="http://shell909090.org/tags/ntfs/index.xml" rel="self" type="application/rss+xml" />
-    
+    <atom:link href="http://shell909090.org/tags/ntfs/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>实践NTFS格式解析</title>
@@ -18,18 +16,48 @@
       <pubDate>Sun, 03 Jul 2005 23:04:20 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/185/</guid>
-      <description>刚刚在想NTFS格式的问题，感叹没有个实例拿来看看。然后在看小说的时候不知道怎么回事，想到点子上了。不由骂自己白痴，这个问题其实早就解决了阿。直接用CreateFile去读[\.c]():文件不就好了……
-OK，明天写个程序看看NTFS的实质……也许还有别的用途，再说了。
-另外写个想法，也许NTFS中很多MFT表项没有被某个目录引用成为文件，而其引用计数大于一（这样会被chkdsk查出来吗？等于0会吗？会删除吗？表问咯，偶都不知道……）。这样就会造成系统空间的神秘减少。例如上次系统文件复制时候空出来的硬盘，上面全空，但是使用了400M多的空间。估计就是这么搞出来的。具体要察看chkdsk的机理才知道，因为偶的硬盘经常chkdsk的。如果是属于能查的出来的错误，肯定就不会延迟到换硬盘才发现。可能是chkdsk不检查这个……
-另外回头准备看看内核的机制，试试记录或者反木马能不能提前挂在内核态上……嘿嘿，里席必争，咏春的要诀……
-这次仔细看了MFT的格式。有点心得，先写下来。
-首先是从MBR定位到每个BOOT区的BPB，这样才可以获得BPB中的\$MFT和\$MFTMirr的LCN。并且会获得卷因子（多数都是0x08吧，4k的簇）。\$MFT的LCN多数是4，定位就是32(0x20)。而后就会定位到MFT表上去。
-MFT的表项分析起来是遵循链式结构的，不过为什么有那么好的性能和抗崩溃能力呢？可能在于USN和LSN吧。每个表项有个头部（详细看linux的ntfs/layout.h去），指明了大小，关联了相关MFT表项和上下MFT表项，以及这个MFT表项的全局属性。由其中可以引出首个属性的相对偏移。
-每个属性都有个公用的属性头部，这个头部说明了属性的类型和大小，还有属性是否直接存储，如何存储等等信息。由上个属性可以推知下个属性偏移，所以属性应该是链式存储的。不知道这里是否具有超长链溢出的问题（长度超过最大值的一半）。
-另外，在文件名称属性中具有引用目录项目，所以上面猜测的可能无法成立。不过引用目录和硬连接是违背的阿……下次再分析好了，困了困了……
-OK,继续分析。根据刚刚的阅读，一个文件可以分散在多个MFT中，而后就会引入一个叫attribute
-list的属性。这个属性指明了每个属性属于那个MFT引用中。其中VCN的换算关系比较特别，基本MFT算-1，下面依次排开，扩展MFT也算进去的。似乎一个MFT就算一簇。不过VCN和LCN的映射关系让我头痛了半个钟头，最后也没有在linux的头文件中找到。到是在NTFS.com中文件恢复上找到了说明。原文如下：
-00012580 2E 00 70 00 70 00 74 00 80 00 00 00 48 00 00 00 ..p.p.t.Ђ...H... 00012590 01 00 00 00 00 00 04 00 00 00 00 00 00 00 00 00 ................ 000125A0 6D 00 00 00 00 00 00 00 40 00 00 00 00 00 00 00 m.......@....... 000125B0 00 DC 00 00 00 00 00 00 00 DC 00 00 00 00 00 00 .</description>
+      <description>&lt;p&gt;刚刚在想NTFS格式的问题，感叹没有个实例拿来看看。然后在看小说的时候不知道怎么回事，想到点子上了。不由骂自己白痴，这个问题其实早就解决了阿。直接用CreateFile去读[\.c]():文件不就好了……&lt;/p&gt;
+
+&lt;p&gt;OK，明天写个程序看看NTFS的实质……也许还有别的用途，再说了。&lt;/p&gt;
+
+&lt;p&gt;另外写个想法，也许NTFS中很多MFT表项没有被某个目录引用成为文件，而其引用计数大于一（这样会被chkdsk查出来吗？等于0会吗？会删除吗？表问咯，偶都不知道……）。这样就会造成系统空间的神秘减少。例如上次系统文件复制时候空出来的硬盘，上面全空，但是使用了400M多的空间。估计就是这么搞出来的。具体要察看chkdsk的机理才知道，因为偶的硬盘经常chkdsk的。如果是属于能查的出来的错误，肯定就不会延迟到换硬盘才发现。可能是chkdsk不检查这个……&lt;/p&gt;
+
+&lt;p&gt;另外回头准备看看内核的机制，试试记录或者反木马能不能提前挂在内核态上……嘿嘿，里席必争，咏春的要诀……&lt;/p&gt;
+
+&lt;p&gt;这次仔细看了MFT的格式。有点心得，先写下来。&lt;/p&gt;
+
+&lt;p&gt;首先是从MBR定位到每个BOOT区的BPB，这样才可以获得BPB中的\$MFT和\$MFTMirr的LCN。并且会获得卷因子（多数都是0x08吧，4k的簇）。\$MFT的LCN多数是4，定位就是32(0x20)。而后就会定位到MFT表上去。&lt;/p&gt;
+
+&lt;p&gt;MFT的表项分析起来是遵循链式结构的，不过为什么有那么好的性能和抗崩溃能力呢？可能在于USN和LSN吧。每个表项有个头部（详细看linux的ntfs/layout.h去），指明了大小，关联了相关MFT表项和上下MFT表项，以及这个MFT表项的全局属性。由其中可以引出首个属性的相对偏移。&lt;/p&gt;
+
+&lt;p&gt;每个属性都有个公用的属性头部，这个头部说明了属性的类型和大小，还有属性是否直接存储，如何存储等等信息。由上个属性可以推知下个属性偏移，所以属性应该是链式存储的。不知道这里是否具有超长链溢出的问题（长度超过最大值的一半）。&lt;/p&gt;
+
+&lt;p&gt;另外，在文件名称属性中具有引用目录项目，所以上面猜测的可能无法成立。不过引用目录和硬连接是违背的阿……下次再分析好了，困了困了……&lt;/p&gt;
+
+&lt;p&gt;OK,继续分析。根据刚刚的阅读，一个文件可以分散在多个MFT中，而后就会引入一个叫attribute&lt;/p&gt;
+
+&lt;p&gt;list的属性。这个属性指明了每个属性属于那个MFT引用中。其中VCN的换算关系比较特别，基本MFT算-1，下面依次排开，扩展MFT也算进去的。似乎一个MFT就算一簇。不过VCN和LCN的映射关系让我头痛了半个钟头，最后也没有在linux的头文件中找到。到是在NTFS.com中文件恢复上找到了说明。原文如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;00012580   2E 00 70 00 70 00 74 00  80 00 00 00 48 00 00 00   ..p.p.t.Ђ...H...
+00012590   01 00 00 00 00 00 04 00  00 00 00 00 00 00 00 00   ................
+000125A0   6D 00 00 00 00 00 00 00  40 00 00 00 00 00 00 00   m.......@.......
+000125B0   00 DC 00 00 00 00 00 00  00 DC 00 00 00 00 00 00   .U.......U......
+000125C0   00 DC 00 00 00 00 00 00  31 6E EB C4 04 00 00 00   .U......1neA....
+000125D0   FF FF FF FF 82 79 47 11  00 00 00 00 00 00 00 00   yyyy‚yG.........
+
+Data Runs need to be decrypted. First byte (0x31) shows how many bytes
+are allocated for the length of the run (0x1 in our case) and for the
+first cluster offset (0x3 in our case). Next, we take one byte (0x6E)
+that points to the length of the run. Next, we pick up 3 bytes pointing
+to the start cluster offset (0xEBC404). Changing bytes order we get
+first cluster of the file 312555 (equals 0x04C4EB). Starting from this
+cluster we need to pick up 110 clusters (equals 0x6E). Next byte (0x00)
+tells us that no more data runs exist. Our file is not fragmented, so we
+have the only one data run.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;按照上面的说法，这个映射对也是一个链表。而且是一个非定项长非定长的链表，Null-trim的。每个段的起始一字节分成高低两个区域，高四位记录了多少字节用于记录LCN，低字节记录了多少字节用于记录运行长度。后面跟了不定长的运行长度和LCN（注意先是运行长度）。如果举\$Boot的\$DATA的例子来说，数值上就是11 02 00 00。描述了分区的头两个扇区，也就是Boot区，BPB表的位置。这样安排，可以使得整个分区全部规划在16个主要MFT的树型属性下面。世界完美了……&lt;/p&gt;
+</description>
     </item>
     
   </channel>

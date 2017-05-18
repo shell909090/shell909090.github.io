@@ -8,9 +8,7 @@
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
     <lastBuildDate>Thu, 03 May 2012 03:28:18 +0800</lastBuildDate>
-    
-	<atom:link href="http://shell909090.org/tags/versioncontrol/index.xml" rel="self" type="application/rss+xml" />
-    
+    <atom:link href="http://shell909090.org/tags/versioncontrol/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>dvc和vc简评</title>
@@ -18,18 +16,49 @@
       <pubDate>Thu, 03 May 2012 03:28:18 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2160/</guid>
-      <description>我有必要换git么 实话说，这得分干吗。目前的推荐是，如果是企业级项目，对权限要求比较严格，你必须用svn。如果是普通项目，你可以尝试使用git，但是这并不表示git是最适合你项目的。有的时候svn比git合用的多。
-svn是什么模式 svn的核心思路是，取出，修改，提交，合并。即，你从核心库中取得数据，修改，然后提交上去。如果有两个一样的修改，那么要求你进行合并。当然，svn工具会首先尝试自动合并，然后再让你手工干。但即使如此，合并的时候还是很费力。
-svn的模式很容易理解，然而在使用中却有两个实际缺陷。
- 保存数据的唯一方式就是提交，而提交是不可撤销的。 必须连接核心库使用。  第一点问题，就是说，如果你希望暂时保存一下当前的修改状态，然后进行某个测试性修改。如果失败，退回当前。抱歉，做不到。你的提交一定会进入svn库。虽然你可以退回到你提交前的版本，但是很麻烦，而且版本记录不会消失。而第二个问题更加致命。如果在网络不稳定/没网络的时候，还干不干活了？
-因此，svn的设计模式并不鼓励你提交。当你有修改的时候，你必须保持修改的状态，直到某个稳定的状态。你需要检查代码是基本可用的，然后才应当提交。svn提交有个基础原则，不能塞住head，讲的就是这个。
-所以有了hg hg正是为了解决上述问题而出现的。hg实际上是用python实现的，解决上两个问题的svn。
-hg拥有本地版本库，这解决了离线模式。至于暂存性提交，你可以在本地随便提交。只要不提交到核心库上，就不会导致塞住。如果你觉得本地库不行，可以直接重新co，而不进行push。
-git和hg哪个好 锤子和扳手哪个好？我永远无法回答你这个问题，因为这两个的目标根本不同，因此根本没有可比性。同样，git和hg的工作流程和模式完全是两回事，因此不要问这个问题，没意义。
-哦，那么git是 git的设计核心思路，是取出，分支，修改，提交，合并分支。git的分支是处理工作的利器。
-要彻底理解git，你必须接受平行世界假定。假设世界并不是顺序发展的，由于你的选择不同，而会变成不同的几个分支。git可以让你在分支间自由穿越，并且让世界变成某个分支上的某个点的状态。你可以重新选择，产生一个不同的分支。当你需要时，可以对两个分支进行合并。如果两个分支从源头分开后，对世界的影响各自不同，那么合并就是自动的。
-git的同步就是在同步这颗世界树。树扩展成什么样子和你在树的什么位置没有关系，因此fetch后如果不chechout，那么就不会应用最新的修改。
-我没看出多大区别 实际是非常大的。有了平行世界假定，我可以正交的对一个源码做两件以上不同的事情。而在hg中，虽然也可以做两个不同的分支，然而却很难在两个分支间切换，从而使得切换到做另一件事情非常困难。这也导致了一个人实际上只能做一件事情，否则就无法将过程同时纳入vc管理，又满足正交。</description>
+      <description>
+
+&lt;h1 id=&#34;我有必要换git么&#34;&gt;我有必要换git么&lt;/h1&gt;
+
+&lt;p&gt;实话说，这得分干吗。目前的推荐是，如果是企业级项目，对权限要求比较严格，你必须用svn。如果是普通项目，你可以尝试使用git，但是这并不表示git是最适合你项目的。有的时候svn比git合用的多。&lt;/p&gt;
+
+&lt;h1 id=&#34;svn是什么模式&#34;&gt;svn是什么模式&lt;/h1&gt;
+
+&lt;p&gt;svn的核心思路是，取出，修改，提交，合并。即，你从核心库中取得数据，修改，然后提交上去。如果有两个一样的修改，那么要求你进行合并。当然，svn工具会首先尝试自动合并，然后再让你手工干。但即使如此，合并的时候还是很费力。&lt;/p&gt;
+
+&lt;p&gt;svn的模式很容易理解，然而在使用中却有两个实际缺陷。&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;保存数据的唯一方式就是提交，而提交是不可撤销的。&lt;/li&gt;
+&lt;li&gt;必须连接核心库使用。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;第一点问题，就是说，如果你希望暂时保存一下当前的修改状态，然后进行某个测试性修改。如果失败，退回当前。抱歉，做不到。你的提交一定会进入svn库。虽然你可以退回到你提交前的版本，但是很麻烦，而且版本记录不会消失。而第二个问题更加致命。如果在网络不稳定/没网络的时候，还干不干活了？&lt;/p&gt;
+
+&lt;p&gt;因此，svn的设计模式并不鼓励你提交。当你有修改的时候，你必须保持修改的状态，直到某个稳定的状态。你需要检查代码是基本可用的，然后才应当提交。svn提交有个基础原则，不能塞住head，讲的就是这个。&lt;/p&gt;
+
+&lt;h1 id=&#34;所以有了hg&#34;&gt;所以有了hg&lt;/h1&gt;
+
+&lt;p&gt;hg正是为了解决上述问题而出现的。hg实际上是用python实现的，解决上两个问题的svn。&lt;/p&gt;
+
+&lt;p&gt;hg拥有本地版本库，这解决了离线模式。至于暂存性提交，你可以在本地随便提交。只要不提交到核心库上，就不会导致塞住。如果你觉得本地库不行，可以直接重新co，而不进行push。&lt;/p&gt;
+
+&lt;h1 id=&#34;git和hg哪个好&#34;&gt;git和hg哪个好&lt;/h1&gt;
+
+&lt;p&gt;锤子和扳手哪个好？我永远无法回答你这个问题，因为这两个的目标根本不同，因此根本没有可比性。同样，git和hg的工作流程和模式完全是两回事，因此不要问这个问题，没意义。&lt;/p&gt;
+
+&lt;h1 id=&#34;哦-那么git是&#34;&gt;哦，那么git是&lt;/h1&gt;
+
+&lt;p&gt;git的设计核心思路，是取出，分支，修改，提交，合并分支。git的分支是处理工作的利器。&lt;/p&gt;
+
+&lt;p&gt;要彻底理解git，你必须接受平行世界假定。假设世界并不是顺序发展的，由于你的选择不同，而会变成不同的几个分支。git可以让你在分支间自由穿越，并且让世界变成某个分支上的某个点的状态。你可以重新选择，产生一个不同的分支。当你需要时，可以对两个分支进行合并。如果两个分支从源头分开后，对世界的影响各自不同，那么合并就是自动的。&lt;/p&gt;
+
+&lt;p&gt;git的同步就是在同步这颗世界树。树扩展成什么样子和你在树的什么位置没有关系，因此fetch后如果不chechout，那么就不会应用最新的修改。&lt;/p&gt;
+
+&lt;h1 id=&#34;我没看出多大区别&#34;&gt;我没看出多大区别&lt;/h1&gt;
+
+&lt;p&gt;实际是非常大的。有了平行世界假定，我可以正交的对一个源码做两件以上不同的事情。而在hg中，虽然也可以做两个不同的分支，然而却很难在两个分支间切换，从而使得切换到做另一件事情非常困难。这也导致了一个人实际上只能做一件事情，否则就无法将过程同时纳入vc管理，又满足正交。&lt;/p&gt;
+</description>
     </item>
     
     <item>
@@ -38,8 +67,53 @@ git的同步就是在同步这颗世界树。树扩展成什么样子和你在�
       <pubDate>Fri, 02 Apr 2010 03:40:00 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/108/</guid>
-      <description>本文系电脑资料，同步到blog上。小黄姐姐不必看了，可以帮我留个言。 nginx性能不错，可惜不支持WebDAV，因此没法拿来作为subversion的http服务。于是考虑开一个nginx作为前端，后端就跑一个apache来作为容器。配置这么写的(节选)： =========/etc/nginx/sites-enabled/default========= server { listen 443; server_name OOXX ssl on; ssl_certificate keys/server.crt; ssl_certificate_key keys/server.key; ssl_session_timeout 5m; ssl_protocols SSLv2 SSLv3 TLSv1; ssl_ciphers ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP; ssl_prefer_server_ciphers on; access_log /var/log/nginx/localhost.access.log; include /etc/nginx/mapping-ssl; error_page 500 502 503 504 /50x.html;
-location = /50x.html { root /var/www/nginx-default; } } 打开了一个https的服务，这是当然的，svn传输的数据使用http很危险。 ===========/etc/nginx/mapping-ssl============= location \^~ /svn { proxy_set_header Destination \$http_destination; proxy_pass http://apache_svr; proxy_set_header Host \$host; proxy_set_header X-Real-IP \$remote_addr; proxy_set_header X-Forwarded-Host \$host; proxy_set_header X-Forwarded-Proto https; proxy_set_header X-Forwarded-Server \$host; proxy_set_header X-Forwarded-For</description>
+      <description>
+
+&lt;p&gt;本文系电脑资料，同步到blog上。小黄姐姐不必看了，可以帮我留个言。
+nginx性能不错，可惜不支持WebDAV，因此没法拿来作为subversion的http服务。于是考虑开一个nginx作为前端，后端就跑一个apache来作为容器。配置这么写的(节选)：
+=========/etc/nginx/sites-enabled/default========= server { listen  
+443; server_name  OOXX ssl  on; ssl_certificate  keys/server.crt;
+ssl_certificate_key  keys/server.key; ssl_session_timeout  5m;
+ssl_protocols  SSLv2 SSLv3 TLSv1; ssl_ciphers 
+ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP;
+ssl_prefer_server_ciphers   on; access_log 
+/var/log/nginx/localhost.access.log; include            
+/etc/nginx/mapping-ssl; error_page   500 502 503 504  /50x.html;&lt;/p&gt;
+
+&lt;h1 id=&#34;location-50x-html-root-var-www-nginx-default&#34;&gt;location = /50x.html { root   /var/www/nginx-default; } }&lt;/h1&gt;
+
+&lt;p&gt;打开了一个https的服务，这是当然的，svn传输的数据使用http很危险。
+===========/etc/nginx/mapping-ssl============= location \^~ /svn {
+proxy_set_header    Destination \$http_destination;
+proxy_pass          &lt;a href=&#34;http://apache_svr&#34;&gt;http://apache_svr&lt;/a&gt;; proxy_set_header   
+Host            \$host; proxy_set_header    X-Real-IP      
+\$remote_addr; proxy_set_header    X-Forwarded-Host \$host;
+proxy_set_header    X-Forwarded-Proto https; proxy_set_header   
+X-Forwarded-Server \$host; proxy_set_header    X-Forwarded-For&lt;/p&gt;
+
+&lt;h1 id=&#34;proxy-add-x-forwarded-for&#34;&gt;\$proxy_add_x_forwarded_for; }&lt;/h1&gt;
+
+&lt;p&gt;将/svn下面的所有请求交给apache2。
+=====/etc/apache2/mods-enabled/dav_svn.conf===== &amp;lt;Location
+/svn/main&amp;gt; DAV svn SVNPath /var/web/svn/main AuthType Basic AuthName
+&amp;ldquo;Subversion Repository&amp;rdquo; Require valid-user AuthUserFile
+/var/web/svn/main/conf/passwd AuthzSVNAccessFile&lt;/p&gt;
+
+&lt;h1 id=&#34;var-web-svn-main-conf-authz-lt-location-gt&#34;&gt;/var/web/svn/main/conf/authz &amp;lt;/Location&amp;gt;&lt;/h1&gt;
+
+&lt;p&gt;看起来很美，但是在使用中会发生502错误，原因是来自文件移动后，svn会使用COPY作为Verb去请求服务器端，这时候发生了这样一条日志：
+==========/var/log/apache2/access.log========== 127.0.0.1 - {user}
+[02/Apr/2010:11:07:31 +0800] &amp;ldquo;COPY {path} HTTP/1.0&amp;rdquo; 502 546 &amp;ldquo;-&amp;rdquo;&lt;/p&gt;
+
+&lt;h1 id=&#34;svn-1-5-4-r33841-tortoisesvn-1-5-5-14361-neon-0-28-3&#34;&gt;&amp;ldquo;SVN/1.5.4 (r33841)/TortoiseSVN-1.5.5.14361 neon/0.28.3&amp;rdquo;&lt;/h1&gt;
+
+&lt;p&gt;搜索了一下，这是因为使用https作为http服务的前端造成的，这里(&lt;a href=&#34;https://secure.bonkabonka.com/blog/2008/01/04/nginx_fronting_for_subversion.html)&#34;&gt;https://secure.bonkabonka.com/blog/2008/01/04/nginx_fronting_for_subversion.html)&lt;/a&gt;提到了解决方案，而它又引用了另一个网页(&lt;a href=&#34;http://silmor.de/49)&#34;&gt;http://silmor.de/49)&lt;/a&gt;解释细节。不幸的是，这个细节是错误的。关键在于这句上
+LoadModule headers_module /usr/lib/apache2/modules/mod_headers_too.so
+仔细看一下就会发现，mod_headers_too应当是mod_headers。在debian下，应当执行这几条指令。
+cd /etc/apache2/mods-enabled ln -s ../mods-available/headers.load
+headers.load 然后，在/etc/apache2/httpd.conf中写入以下内容：
+RequestHeader edit Destination \^https http early 问题解决，Q.E.D。&lt;/p&gt;
+</description>
     </item>
     
   </channel>

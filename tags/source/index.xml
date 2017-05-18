@@ -8,9 +8,7 @@
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
     <lastBuildDate>Mon, 19 Dec 2011 16:08:11 +0800</lastBuildDate>
-    
-	<atom:link href="http://shell909090.org/tags/source/index.xml" rel="self" type="application/rss+xml" />
-    
+    <atom:link href="http://shell909090.org/tags/source/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>linux tty部分源码阅读</title>
@@ -18,12 +16,30 @@
       <pubDate>Mon, 19 Dec 2011 16:08:11 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2020/</guid>
-      <description>1.事情从file开始 file的定义在include/linux/fs.h中，其中有两个field，一个叫file_operations
-*f_op，一个叫void *private_data。file_operations定义了所有file能够进行的操作，在tty这个层面而言，drivers/tty/tty_io.c能看到有个叫做file_operations tty_fops的东西，下面有个叫console_fops的东西。两者区别不大，就是write函数进行了一下包装而已。从这里可以看出，系统将某个file的读写操作，转包给了tty_io.c这个文件。这个转包的手法非常类似虚函数。如果将tty_io.c里面的函数看作一个类的所有成员，那么tty_fops就是虚函数表，而f_op就是虚函数指针_v_ptr。
-2.tty_io的二转包 tty_io做了什么？他直接转包给了ldisc来处理这个事情。从tty_struct的结构我们能够看到，有这么一个field，tty_ldisc *ldisc。而tty_ldisc.h文件里面，我们能看到这个结构又有这么一个成员，tty_ldisc_ops *ops。同样手法，第二次使用。目标是tty/下面很多n_开始的文件，例如n_gsm，估计是处理手机的。我们的目标看起来像是n_tty.c中的tty_ldisc_ops tty_ldisc_N_TTY对象。
-3.n_tty做了些什么 n_tty也做了很多转包，例如对于n_tty_write而言，他使用了tty-&amp;gt;ops-&amp;gt;write这个函数。我们从struct tty_struct中可以看到这个field，tty_operations *ops。目标是谁？看起来像是pty.c，他里面有很多定义，例如tty_operations master_pty_ops_bsd，tty_operations slave_pty_ops_bsd，tty_operations ptm_unix98_ops，tty_operations pty_unix98_ops。
-4.pty总不转包了吧 以write而言，pty.c做的很简单，就是tty_insert_flip_string而已。不过之后调用了tty_flip_buffer_push，这个又会调用flush_to_ldisc，这个里面会调用ldisc-&amp;gt;ops。从上文中我们知道，这个函数的实体在n_tty.c的n_tty_receive_buf。
-5.n_tty_receive_buf做了些什么 这个函数对每个字符依次处理，如果是普通字符，就调用n_tty_receive_char。这个函数会调用put_tty_queue，经过两次转手，最终，这个字符进入了read_buf。这是一个循环队列。</description>
+      <description>
+
+&lt;h1 id=&#34;1-事情从file开始&#34;&gt;1.事情从file开始&lt;/h1&gt;
+
+&lt;p&gt;file的定义在include/linux/fs.h中，其中有两个field，一个叫file_operations&lt;/p&gt;
+
+&lt;p&gt;*f_op，一个叫void *private_data。file_operations定义了所有file能够进行的操作，在tty这个层面而言，drivers/tty/tty_io.c能看到有个叫做file_operations tty_fops的东西，下面有个叫console_fops的东西。两者区别不大，就是write函数进行了一下包装而已。从这里可以看出，系统将某个file的读写操作，转包给了tty_io.c这个文件。这个转包的手法非常类似虚函数。如果将tty_io.c里面的函数看作一个类的所有成员，那么tty_fops就是虚函数表，而f_op就是虚函数指针_v_ptr。&lt;/p&gt;
+
+&lt;h1 id=&#34;2-tty-io的二转包&#34;&gt;2.tty_io的二转包&lt;/h1&gt;
+
+&lt;p&gt;tty_io做了什么？他直接转包给了ldisc来处理这个事情。从tty_struct的结构我们能够看到，有这么一个field，tty_ldisc *ldisc。而tty_ldisc.h文件里面，我们能看到这个结构又有这么一个成员，tty_ldisc_ops *ops。同样手法，第二次使用。目标是tty/下面很多n_开始的文件，例如n_gsm，估计是处理手机的。我们的目标看起来像是n_tty.c中的tty_ldisc_ops tty_ldisc_N_TTY对象。&lt;/p&gt;
+
+&lt;h1 id=&#34;3-n-tty做了些什么&#34;&gt;3.n_tty做了些什么&lt;/h1&gt;
+
+&lt;p&gt;n_tty也做了很多转包，例如对于n_tty_write而言，他使用了tty-&amp;gt;ops-&amp;gt;write这个函数。我们从struct tty_struct中可以看到这个field，tty_operations *ops。目标是谁？看起来像是pty.c，他里面有很多定义，例如tty_operations master_pty_ops_bsd，tty_operations slave_pty_ops_bsd，tty_operations ptm_unix98_ops，tty_operations pty_unix98_ops。&lt;/p&gt;
+
+&lt;h1 id=&#34;4-pty总不转包了吧&#34;&gt;4.pty总不转包了吧&lt;/h1&gt;
+
+&lt;p&gt;以write而言，pty.c做的很简单，就是tty_insert_flip_string而已。不过之后调用了tty_flip_buffer_push，这个又会调用flush_to_ldisc，这个里面会调用ldisc-&amp;gt;ops。从上文中我们知道，这个函数的实体在n_tty.c的n_tty_receive_buf。&lt;/p&gt;
+
+&lt;h1 id=&#34;5-n-tty-receive-buf做了些什么&#34;&gt;5.n_tty_receive_buf做了些什么&lt;/h1&gt;
+
+&lt;p&gt;这个函数对每个字符依次处理，如果是普通字符，就调用n_tty_receive_char。这个函数会调用put_tty_queue，经过两次转手，最终，这个字符进入了read_buf。这是一个循环队列。&lt;/p&gt;
+</description>
     </item>
     
   </channel>

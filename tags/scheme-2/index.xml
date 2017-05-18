@@ -8,9 +8,7 @@
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
     <lastBuildDate>Tue, 09 Oct 2012 15:38:44 +0800</lastBuildDate>
-    
-	<atom:link href="http://shell909090.org/tags/scheme-2/index.xml" rel="self" type="application/rss+xml" />
-    
+    <atom:link href="http://shell909090.org/tags/scheme-2/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Y Combinator</title>
@@ -18,18 +16,187 @@
       <pubDate>Tue, 09 Oct 2012 15:38:44 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2249/</guid>
-      <description>不动点理论 假定我们有一个函数f，例如，f(x) = x^2。对于某些点，f(x) = x。在这个例子里面，0和1很明显就是两个点。这样的点称为不动点。
-不动点理论在各种领域有广泛应用，我记得其中之一就是在血型比例上。当ABO遗传规则固定后，存在一些ABO血型比例，这些比例的人随机通婚，生下来的孩子的血型比例亦保持不变。这是三种血型千百年来存在的基础，否则随着遗传规则比例转变，其中某些血型可能已经在地球上消失了。
-也许你很好奇，当我们有了一个规则后，例如f(x) = x^2，或者ABO遗传规则（这也可以当作一个函数，将父代ABO比例转换为子代的），如何才能计算出函数的不动点。
-答案是不动点算子。
-高阶抽象函数的不动点 我们先不继续讨论不动点算子，让我们先讨论一下抽象函数。上面，我们的f都是具体的演算规则，x是一个数（例如x），或者一个矩阵（例如ABO，也可以当作一种数来考虑）。如果x是一个函数会如何？
-我们先看一个递归的阶乘计算函数：
-(define fact (lambda (n) (if (&amp;lt; n 2) 1 (* n (fact (- n 1))))))  这是一个典型的阶乘计算函数，没错。问题是，我们在lambda里面调用了fact。从语言层面上说，这样做合法。然而从语言的研究角度说，这难免会带来一个问题。函数的名字，到底是一个可有可无的别名，还是一个在递归中必须的东西。如果是前者，我们可以完全用lambda构造递归函数。而如果是后者，我们无论如何努力，也无法仅仅使用lambda来构造一个递归。
-OK，这和不动点有什么关系？这时，我们先假定函数f，是真正的阶乘计算函数。即f(n) = n!。那么对于以下函数，((F f) n) = (f n)。
-F = (lambda (h) (lambda (n) (if (&amp;lt; n 2) 1 (* n (h (- n 1))))))  看不懂为什么？这是一个柯里化函数。当我们传递真正的阶乘函数f给F的时候，在函数体内，他叫做h。而按照f(n-1)的定义，我们得到的值和(f n)没有区别。因此，我们有(F f) = f，你也可以写作F(f) = f。
-是不是觉得眼熟？是的，f是函数F的一个不动点。要获得真正的阶乘函数f，我们只要对F计算不动点即可。
-Y算子 Y算子(或者叫做Y组合子)是另一种高阶函数，用于计算任意函数的不动点。
-假定对于函数f，存在不动点x，有f(x) = x，那么Y(f) = x，这是Y算子的基础。按照上文代入，我们可以得到f(Y(f)) = Y(f)，或者可以写作scheme格式：(f (Y f)) = (Y f)，这就是Y算子。</description>
+      <description>
+
+&lt;h1 id=&#34;不动点理论&#34;&gt;不动点理论&lt;/h1&gt;
+
+&lt;p&gt;假定我们有一个函数f，例如，f(x) = x^2。对于某些点，f(x) = x。在这个例子里面，0和1很明显就是两个点。这样的点称为不动点。&lt;/p&gt;
+
+&lt;p&gt;不动点理论在各种领域有广泛应用，我记得其中之一就是在血型比例上。当ABO遗传规则固定后，存在一些ABO血型比例，这些比例的人随机通婚，生下来的孩子的血型比例亦保持不变。这是三种血型千百年来存在的基础，否则随着遗传规则比例转变，其中某些血型可能已经在地球上消失了。&lt;/p&gt;
+
+&lt;p&gt;也许你很好奇，当我们有了一个规则后，例如f(x) = x^2，或者ABO遗传规则（这也可以当作一个函数，将父代ABO比例转换为子代的），如何才能计算出函数的不动点。&lt;/p&gt;
+
+&lt;p&gt;答案是不动点算子。&lt;/p&gt;
+
+&lt;h1 id=&#34;高阶抽象函数的不动点&#34;&gt;高阶抽象函数的不动点&lt;/h1&gt;
+
+&lt;p&gt;我们先不继续讨论不动点算子，让我们先讨论一下抽象函数。上面，我们的f都是具体的演算规则，x是一个数（例如x），或者一个矩阵（例如ABO，也可以当作一种数来考虑）。如果x是一个函数会如何？&lt;/p&gt;
+
+&lt;p&gt;我们先看一个递归的阶乘计算函数：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(define fact
+  (lambda (n)
+    (if (&amp;lt; n 2) 1 (* n (fact (- n 1))))))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这是一个典型的阶乘计算函数，没错。问题是，我们在lambda里面调用了fact。从语言层面上说，这样做合法。然而从语言的研究角度说，这难免会带来一个问题。函数的名字，到底是一个可有可无的别名，还是一个在递归中必须的东西。如果是前者，我们可以完全用lambda构造递归函数。而如果是后者，我们无论如何努力，也无法仅仅使用lambda来构造一个递归。&lt;/p&gt;
+
+&lt;p&gt;OK，这和不动点有什么关系？这时，我们先假定函数f，是真正的阶乘计算函数。即f(n)
+= n!。那么对于以下函数，((F f) n) = (f n)。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;F = (lambda (h) (lambda (n) (if (&amp;lt; n 2) 1 (* n (h (- n 1))))))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;看不懂为什么？这是一个柯里化函数。当我们传递真正的阶乘函数f给F的时候，在函数体内，他叫做h。而按照f(n-1)的定义，我们得到的值和(f n)没有区别。因此，我们有(F f) = f，你也可以写作F(f) = f。&lt;/p&gt;
+
+&lt;p&gt;是不是觉得眼熟？是的，f是函数F的一个不动点。要获得真正的阶乘函数f，我们只要对F计算不动点即可。&lt;/p&gt;
+
+&lt;h1 id=&#34;y算子&#34;&gt;Y算子&lt;/h1&gt;
+
+&lt;p&gt;Y算子(或者叫做Y组合子)是另一种高阶函数，用于计算任意函数的不动点。&lt;/p&gt;
+
+&lt;p&gt;假定对于函数f，存在不动点x，有f(x) = x，那么Y(f) = x，这是Y算子的基础。按照上文代入，我们可以得到f(Y(f)) = Y(f)，或者可以写作scheme格式：(f (Y f)) = (Y f)，这就是Y算子。&lt;/p&gt;
+
+&lt;p&gt;我们先跳过Y算子的推导过程，直接给出他的scheme表达式：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(define Y
+  (lambda (f)
+    (let ((g (lambda (h)
+           (lambda (x) ((f (h h)) x)))))
+      (g g))))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1 id=&#34;验证&#34;&gt;验证&lt;/h1&gt;
+
+&lt;p&gt;对于上文的F，我们有他的scheme定义，而要获得真正的阶乘函数，只要用Y作用于F的原始定义即可。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(let ((f (Y (lambda (h)
+             (lambda (n)
+              (if (&amp;lt; n 2) 1 (* n (h (- n 1)))))))))
+  (display (f 10)))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这里就可以获得f(10)。&lt;/p&gt;
+
+&lt;p&gt;我们验证一下，看看事情是怎么走的。&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;首先let需要计算f，而f = (Y F)。F为以下函数，在let之后，F的值被唯一确定(赋值)。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(lambda (h)
+  (lambda (n)
+    (if (&amp;lt; n 2) 1 (* n (h (- n 1))))))
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;因此，我们考虑以参数F计算以下表达式。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(let ((g (lambda (h)
+       (lambda (x) ((F (h h)) x)))))
+  (g g))
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;这里，第二个let需要计算g，不过他已经很明显了。这很重要，因为在这个let中，g的值被唯一确定。他是一个lambda表达式，虽然这个表达式内有一些东西没被算出来(例如h)。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;我们计算f = (g g) = (lambda (x) ((F (g g)) x))。在这个表达式内，f的值也被唯一确定，是一个lambda表达式。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;现在，我们有了f，可以计算(f 10)了。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;(f 10) = ((F (g g)) 10) = ((F f) 10)。看到没有，不动点。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;上文真正需要计算的是((F (g g)) 10)，其中，(g g)需要被展开。而恰好，我们知道他的展开结果。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;((F (lambda (x) ((F (g g)) x))) 10)，这时才会对F进行计算。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;上面的展开结果是((lambda (n) (if (&amp;lt; n 2) 1 (* n ((lambda (x) ((F (g g)) x)) (- n 1))))) 10)。而这就是一个纯粹的计算问题了。结果很明确，是(* 10 ((lambda (x) ((F (g g)) x)) 9))。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;这时((lambda (x) ((F (g g)) x)) 9)会被求值，结果应该是((F (g g)) 9)。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;此时我们就跳回了步骤7。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;直到n=1，递归会逐步退回（很遗憾，这还不是尾递归。不过看过sicp的人都应当能想到如何改为尾递归）。&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;而这里就解决了一个有趣的问题。当lambda内没有自己的名字时，如何调用自身？方法是将函数体包装在另一个lambda内。外层的lambda接收一个参数，这个参数就是自身。而最后得到的整一个函数，又需要用Y算子运算过。这样会还原出原始的递归定义。或者你可以说，Y算子帮助lambda函数实现了无名字的递归。&lt;/p&gt;
+
+&lt;h1 id=&#34;注意&#34;&gt;注意&lt;/h1&gt;
+
+&lt;p&gt;而我们也注意到，(lambda (x) ((f (h h)) x)) = (f (h h))。但是如果你胆敢这么写，就等着循环到溢出吧。我们可以看一下原因。&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;和上一节的1一样，略。&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;我们修改一下表达式。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(let ((g (lambda (h) (F (h h)))))
+  (g g))
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;同样，g是唯一确定的。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;f = (g g) = (F (g g))。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;和上面的4不一样，那时f是一个lambda表达式，可以延迟求值。这里的f可是一个表达式，必须先求值。但是对(g g)求值的结果是什么？死循环。&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;为什么？通常而言，第二种写法不可以，除非这个语言是应用序的。&lt;/p&gt;
+
+&lt;h1 id=&#34;推导&#34;&gt;推导&lt;/h1&gt;
+
+&lt;p&gt;我们现在说一下Y算子的推导过程。&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;首先，我们的算法是这样的。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(define fact
+  (lambda (n)
+   (if (&amp;lt; n 2) 1 (* n (fact (- n 1))))))
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;你应当可以理解下面的手法，利用重复传入递归函数本身，避免自身引用的问题。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(let ((g (lambda (h n)
+       (if (&amp;lt; n 2) 1 (* n (h h (- n 1)))))))
+  (g g 10))
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;我们可以将上面的函数柯里化，转换为下面的函数。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(let ((g (lambda (h)
+       (lambda (n)
+        (if (&amp;lt; n 2) 1 (* n ((h h) (- n 1))))))))
+  ((g g) 10))
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;我们可以将上面的函数转换为下面的样子。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(let ((g (lambda (h)
+       (lambda (n)
+         (let ((f (lambda (q n)
+            (if (&amp;lt; n 2) 1 (* n (q (- n 1)))))))
+           (f (h h) n))))))
+  (display ((g g) 10)))
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;再柯里化一遍。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(let ((g (lambda (h)
+       (lambda (n)
+         (let ((f (lambda (q)
+            (lambda (n)
+              (if (&amp;lt; n 2) 1 (* n (q (- n 1))))))))
+           ((f (h h)) n))))))
+  (display ((g g) 10)))
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;是不是看着眼熟？Y的定义出来了吧？&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h1 id=&#34;引用&#34;&gt;引用&lt;/h1&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.dreamsongs.com/Files/WhyOfY.pdf#search=%22The%20Why%20of%20Y%22&#34;&gt;The Why of Y&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+</description>
     </item>
     
     <item>
@@ -38,40 +205,74 @@ Y算子 Y算子(或者叫做Y组合子)是另一种高阶函数，用于计算�
       <pubDate>Fri, 15 Jun 2012 07:19:45 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2194/</guid>
-      <description>劳资明天要结婚了，今天婚前最后一个blog。
-1.hello, world
-目标：屏幕上打印出hello, world。
-原因：不解释。
-进阶：当命令行给与不同参数的时候，打印hello,
-名字。给与开关的时候，打印hello, 123。
-2.正则提取
-目标：写一个正则表达式(或者类似的东西)，从一段网页源码中找到某个标签的内容，去掉前后空格，显示。
-原因：测试字符串处理能力。
-进阶：支持正则扩展
-3.扫描排重
-目标：将某个目录和子目录下的所有文件扫描，排除重复的文件。
-原因：测试文件系统操作能力。
-进阶：多线程处理，注意吞吐颠簸。
-4.做24点自动计算程序
-目标：写一个程序，能够计算24点。要求能够自定义扩展算符。
-原因：检查深度优先搜索，栈，结构设计，抽象处理能力等等。
-进阶：做并发处理。有数种语言可能无法实现并发，或并发实现难度大，不美观，例如python。
-5.做一个计算器
-目标：做一个计算器，要求能计算1+2*3=7，并支持()。
-原因：表达式解析和处理需要用到程序的方方面面，字符串处理等等。
-进阶：做一个本语言的eval函数出来。
-7.抓网页
-目标：实现一个服务，定期下载符合规则的一批网页，解析，获得格式化的数据，并存入数据库。
-原因：测试系统开发能力，基础网络库，字符串处理能力。
-进阶：分布化抓取。
-8.留言板
-目标：设计一个留言板，将所有人提交的话保存起来，能一并展示。提交不需验证，展示不需分页。
-原因：测试网络服务能力，数据库支持和多国语言支持。
-进阶：防止XSS攻击。
-9.异步大并发服务器
-目标：设计一个异步http服务器，能对请求做出响应，添加，删除，修改数据库中的数据。不得使用现有的http框架和容器。
-原因：集成性测试
-进阶：不使用现有数据库，自己写一个。。。</description>
+      <description>&lt;p&gt;劳资明天要结婚了，今天婚前最后一个blog。&lt;/p&gt;
+
+&lt;p&gt;1.hello, world&lt;/p&gt;
+
+&lt;p&gt;目标：屏幕上打印出hello, world。&lt;/p&gt;
+
+&lt;p&gt;原因：不解释。&lt;/p&gt;
+
+&lt;p&gt;进阶：当命令行给与不同参数的时候，打印hello,&lt;/p&gt;
+
+&lt;p&gt;名字。给与开关的时候，打印hello, 123。&lt;/p&gt;
+
+&lt;p&gt;2.正则提取&lt;/p&gt;
+
+&lt;p&gt;目标：写一个正则表达式(或者类似的东西)，从一段网页源码中找到某个标签的内容，去掉前后空格，显示。&lt;/p&gt;
+
+&lt;p&gt;原因：测试字符串处理能力。&lt;/p&gt;
+
+&lt;p&gt;进阶：支持正则扩展&lt;/p&gt;
+
+&lt;p&gt;3.扫描排重&lt;/p&gt;
+
+&lt;p&gt;目标：将某个目录和子目录下的所有文件扫描，排除重复的文件。&lt;/p&gt;
+
+&lt;p&gt;原因：测试文件系统操作能力。&lt;/p&gt;
+
+&lt;p&gt;进阶：多线程处理，注意吞吐颠簸。&lt;/p&gt;
+
+&lt;p&gt;4.做24点自动计算程序&lt;/p&gt;
+
+&lt;p&gt;目标：写一个程序，能够计算24点。要求能够自定义扩展算符。&lt;/p&gt;
+
+&lt;p&gt;原因：检查深度优先搜索，栈，结构设计，抽象处理能力等等。&lt;/p&gt;
+
+&lt;p&gt;进阶：做并发处理。有数种语言可能无法实现并发，或并发实现难度大，不美观，例如python。&lt;/p&gt;
+
+&lt;p&gt;5.做一个计算器&lt;/p&gt;
+
+&lt;p&gt;目标：做一个计算器，要求能计算1+2*3=7，并支持()。&lt;/p&gt;
+
+&lt;p&gt;原因：表达式解析和处理需要用到程序的方方面面，字符串处理等等。&lt;/p&gt;
+
+&lt;p&gt;进阶：做一个本语言的eval函数出来。&lt;/p&gt;
+
+&lt;p&gt;7.抓网页&lt;/p&gt;
+
+&lt;p&gt;目标：实现一个服务，定期下载符合规则的一批网页，解析，获得格式化的数据，并存入数据库。&lt;/p&gt;
+
+&lt;p&gt;原因：测试系统开发能力，基础网络库，字符串处理能力。&lt;/p&gt;
+
+&lt;p&gt;进阶：分布化抓取。&lt;/p&gt;
+
+&lt;p&gt;8.留言板&lt;/p&gt;
+
+&lt;p&gt;目标：设计一个留言板，将所有人提交的话保存起来，能一并展示。提交不需验证，展示不需分页。&lt;/p&gt;
+
+&lt;p&gt;原因：测试网络服务能力，数据库支持和多国语言支持。&lt;/p&gt;
+
+&lt;p&gt;进阶：防止XSS攻击。&lt;/p&gt;
+
+&lt;p&gt;9.异步大并发服务器&lt;/p&gt;
+
+&lt;p&gt;目标：设计一个异步http服务器，能对请求做出响应，添加，删除，修改数据库中的数据。不得使用现有的http框架和容器。&lt;/p&gt;
+
+&lt;p&gt;原因：集成性测试&lt;/p&gt;
+
+&lt;p&gt;进阶：不使用现有数据库，自己写一个。。。&lt;/p&gt;
+</description>
     </item>
     
     <item>
@@ -80,14 +281,94 @@ Y算子 Y算子(或者叫做Y组合子)是另一种高阶函数，用于计算�
       <pubDate>Wed, 03 Mar 2010 16:51:00 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/100/</guid>
-      <description>emacs是个超级复杂的程序，尤其在配置问题上。贝壳的emacs要跨越三个环境。环境一，WindowsXP+Emacs23。环境二，Debian Testing + Xfce4。环境三，CentOS + Ssh。而整个的操作方式，个性设定需要保持一致。因此，引出一个问题。配置如何设置，跨平台，同步。
-首先解决配置的同步问题，贝壳建立了一个svn仓库，用于存储该配置系统。然后在各个系统中co出这个仓库，当有需要调整时ci就可以保持同步了。Linux下可以使用ln连接文件，Windows下比较麻烦点，NTFS格式(大多都是NTFS格式了吧)可以去sysinternals下一个叫做junction的工具，以建立目录的工具链接，当然，.emacs文件只能手工拷贝了。
-然后是配置的切分问题，如果只有一个文件，即使使用了版本控制，意义也不大。同时，将配置切割成不同的部分，控制载入过程，也可以跨平台和加速。以下是贝壳的.emacs文件。
-;; .emacs profile, written by shell.xu ;; load other set (add-to-list &#39;load-path &amp;quot;~/.emacs.d/&amp;quot;) (add-to-list &#39;load-path &amp;quot;~/.emacs.d/auto-complete/&amp;quot;) (add-to-list &#39;load-path &amp;quot;~/.emacs.d/plugins/&amp;quot;) (load &amp;quot;emacs-setup&amp;quot;) (load &amp;quot;emacs-redef&amp;quot;) (load &amp;quot;emacs-plugin&amp;quot;) (cond ((not (boundp &#39;initial-window-system)) (load &amp;quot;emacs-console&amp;quot;)) ((memq initial-window-system &#39;(x w32)) (cond ((memq system-type &#39;(windows-nt cygwin)) (load &amp;quot;emacs-win&amp;quot;)) ((memq system-type &#39;(gnu/linux)) (load &amp;quot;emacs-linux&amp;quot;))))) (load &amp;quot;emacs-keymap&amp;quot;)  从上可以看出，我们先设定了.emacs.d作为默认加载路径——大多数文件都是放在这里。plugins是各种第三方程序的安装路径，这样这些程序就无需在各个平台上各自安装一次。而auto-complete单独拆出来纯粹是因为文件太多了。而后，我们加载了setup，这个文件内定义了emacs的基本配置，redef文件内定义了各种自定义函数和变量，plugin内控制了需要加载的各个插件和配置。
-下面就有点复杂，简单来说，设定无Windows系统的时候加载emacs-console文件，有Windows的情况下，在windows下加载emacs-win，在linux下加载emacs-linux。这是实现跨平台设置的核心。
-最后是keymap，经过上面复杂的设定，按键设置是统一的。
-setup文件就不细说了，大家按照自己的习惯设定就好。下面我说几个redef中定义的函数。
-(defun switch-windows-buffer () (interactive) (let ((this-buffer (window-buffer))) (switch-to-buffer (window-buffer (next-window (selected-window)))) (switch-to-buffer-other-window this-buffer) (other-window 1)))  这个函数的目标是用热键交换两个窗口的位置。如果你经常用C-x 3分栏，并且在两者间跳来跳去的话，有的时候往往希望两者的位置换一下。通常都是C-x b切换当前的窗口，然后C-x o切到隔壁去再换。这个太繁琐了。</description>
+      <description>&lt;p&gt;emacs是个超级复杂的程序，尤其在配置问题上。贝壳的emacs要跨越三个环境。环境一，WindowsXP+Emacs23。环境二，Debian Testing + Xfce4。环境三，CentOS + Ssh。而整个的操作方式，个性设定需要保持一致。因此，引出一个问题。配置如何设置，跨平台，同步。&lt;/p&gt;
+
+&lt;p&gt;首先解决配置的同步问题，贝壳建立了一个svn仓库，用于存储该配置系统。然后在各个系统中co出这个仓库，当有需要调整时ci就可以保持同步了。Linux下可以使用ln连接文件，Windows下比较麻烦点，NTFS格式(大多都是NTFS格式了吧)可以去sysinternals下一个叫做junction的工具，以建立目录的工具链接，当然，.emacs文件只能手工拷贝了。&lt;/p&gt;
+
+&lt;p&gt;然后是配置的切分问题，如果只有一个文件，即使使用了版本控制，意义也不大。同时，将配置切割成不同的部分，控制载入过程，也可以跨平台和加速。以下是贝壳的.emacs文件。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;;; .emacs profile, written by shell.xu
+
+;; load other set
+(add-to-list &#39;load-path &amp;quot;~/.emacs.d/&amp;quot;)
+(add-to-list &#39;load-path &amp;quot;~/.emacs.d/auto-complete/&amp;quot;)
+(add-to-list &#39;load-path &amp;quot;~/.emacs.d/plugins/&amp;quot;)
+(load &amp;quot;emacs-setup&amp;quot;)
+(load &amp;quot;emacs-redef&amp;quot;)
+(load &amp;quot;emacs-plugin&amp;quot;)
+(cond
+ ((not (boundp &#39;initial-window-system)) (load &amp;quot;emacs-console&amp;quot;))
+ ((memq initial-window-system &#39;(x w32))
+  (cond
+   ((memq system-type &#39;(windows-nt cygwin)) (load &amp;quot;emacs-win&amp;quot;))
+   ((memq system-type &#39;(gnu/linux)) (load &amp;quot;emacs-linux&amp;quot;)))))
+(load &amp;quot;emacs-keymap&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;从上可以看出，我们先设定了.emacs.d作为默认加载路径——大多数文件都是放在这里。plugins是各种第三方程序的安装路径，这样这些程序就无需在各个平台上各自安装一次。而auto-complete单独拆出来纯粹是因为文件太多了。而后，我们加载了setup，这个文件内定义了emacs的基本配置，redef文件内定义了各种自定义函数和变量，plugin内控制了需要加载的各个插件和配置。&lt;/p&gt;
+
+&lt;p&gt;下面就有点复杂，简单来说，设定无Windows系统的时候加载emacs-console文件，有Windows的情况下，在windows下加载emacs-win，在linux下加载emacs-linux。这是实现跨平台设置的核心。&lt;/p&gt;
+
+&lt;p&gt;最后是keymap，经过上面复杂的设定，按键设置是统一的。&lt;/p&gt;
+
+&lt;p&gt;setup文件就不细说了，大家按照自己的习惯设定就好。下面我说几个redef中定义的函数。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(defun switch-windows-buffer ()
+  (interactive)
+  (let ((this-buffer (window-buffer)))
+    (switch-to-buffer (window-buffer (next-window (selected-window))))
+    (switch-to-buffer-other-window this-buffer)
+    (other-window 1)))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这个函数的目标是用热键交换两个窗口的位置。如果你经常用C-x 3分栏，并且在两者间跳来跳去的话，有的时候往往希望两者的位置换一下。通常都是C-x b切换当前的窗口，然后C-x o切到隔壁去再换。这个太繁琐了。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(defun popup-term ()
+  (interactive)
+  (apply &#39;start-process &amp;quot;terminal&amp;quot; nil popup-terminal-command))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这个函数是用于在当前文件所在路径弹出一个term的。也许有人说了，emacs有term啊。问题是，那个term只能开一个，而且有些东西操作不了。例如你如果想在这个term里面跑aptitude&amp;hellip;&lt;/p&gt;
+
+&lt;p&gt;注意这个函数里面的popup-terminal-command，这个需要跨平台的，因此在windows和linux下设定各自不同。以下是两个典型设定，至于哪个是哪个我想都看得懂。注意console下面没必要搞这个。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(setq popup-terminal-command &#39;(&amp;quot;xfce4-terminal&amp;quot;))
+(setq popup-terminal-command &#39;(&amp;quot;cmd&amp;quot; &amp;quot;/c&amp;quot; &amp;quot;start&amp;quot;))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;然后我们说plugin，这个文件其实很简单，加载插件，然后设定就好。下面是一部分范例。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;;; load template
+(require &#39;template)
+;;here set the templates directory
+(setq template-subdirectories &#39;(&amp;quot;./&amp;quot; &amp;quot;Templates/&amp;quot; &amp;quot;~/.emacs.d/templates/&amp;quot;))
+(template-initialize)
+(setq template-auto-insert t)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这部分范例说明了如何载入template，并且进行设定。&lt;/p&gt;
+
+&lt;p&gt;下面是一点细节问题，tool-bar-mode这个设定相信多数人都有做。问题是，如果你在console下用过就知道，如果你设定了(tool-bar-mode -1)，立刻会报错——因为console下面根本没这个东西。所以，记得把这个设定放到各个平台上。&lt;/p&gt;
+
+&lt;p&gt;最后，这些设定，必须经过编译才能起效。包括所有第三方插件，都必须编译生效。而显然，每个平台编译一遍是个脑残的事情。因此，我们需要写一个Makefile。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;DEPENDS=auto-complete plugins
+SOURCES=emacs-console.el emacs-keymap.el emacs-linux.el emacs-redef.el emacs-setup.el emacs-win.el
+
+build: $(SOURCES) emacs-plugin.el
+for i in $(DEPENDS); do $(MAKE) -C $$i build || exit 1; done
+emacs --batch -f batch-byte-compile $(SOURCES)
+emacs --batch -l ~/.emacs -f batch-byte-compile emacs-plugin.el
+
+clean:
+rm -rf *.elc
+for i in $(DEPENDS); do $(MAKE) -C $$i clean || exit 1; done
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;注意，在每个目录中也要分别写Makefile，不过内容简单多了，基本就是emacs &amp;ndash;batch -f batch-byte-compile *.el而已。而plugin这个文件比较特殊——他必须依赖于所有插件才能工作，所以最后才进行编译。&lt;/p&gt;
+
+&lt;p&gt;以上工作，基本完成了一个跨平台的emacs配置系统的组建。当然，如果你高兴向其中加入更多的内容，可以遵循以上规范进行。&lt;/p&gt;
+</description>
     </item>
     
     <item>
@@ -96,14 +377,85 @@ setup文件就不细说了，大家按照自己的习惯设定就好。下面我
       <pubDate>Tue, 20 Jan 2009 14:49:00 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/50/</guid>
-      <description>最近开心上狂算24点，于是贝壳搞了一个24点计算程序，并且说明原理。
-我们将24点问题一般化，变成一个搜索问题。假定从一个初始表开始，里面有一些原子。我们定义一个操作，结合。每次操作任意从中选择出两个(或者以上)原子，使用算符连接，成为一个新的原子。那么，一般来说，24点就是计算所有可能的路径，从初始表开始，持续进行结合，直到只剩下一个原子，并且对这个原子求值得24。
-有人可能在算符优先级上想不开，其实不用考虑这个问题，每次求值的时候，按照求值顺序优先就可以。你想到的另外一种优先级可能，会在穷举的时候被列举出来算掉，不用担心遗漏。
-同时，算子必须是两目以上算子，因为单目算子可以持续作用于同一个对象，因此原子表中的原子个数并不严格单调减少，造成无法肯定路径收敛于有限步骤上。并且，如果允许单目算子，那么我只需要求导和阶乘就可以对任何数字求24点。
-((a&#39;)!+(b&#39;)!+(c&#39;)!+(d&#39;)!)!=24  因此，单目算符是没有意义的。
-另外，注意算符分可交换和非可交换的。例如：a+b=b+a，但是a-b!=b-a。如果不注意这点，倒是不会漏算，但是会造成搜索空间增大，并且有重复结果。
-以下是24点计算程序，python版本的。有兴趣的朋友可以用scheme重写，相信会更简洁有效。回头会用django封装一下，做成网页给大家玩玩。
-#!/usr/bin/python import sys symbol_list = [ (&amp;quot;%s+%s&amp;quot;, True), (&amp;quot;%s-%s&amp;quot;, False), (&amp;quot;%s*%s&amp;quot;, True), (&amp;quot;%s/%s&amp;quot;, False), (&amp;quot;%s**%s&amp;quot;, False), ] def diff_seq(length): for i in range(0, length): for j in range(i + 1, length): yield (i, j) def get_less_state(input_state): for i, j in diff_seq(len(input_state)): temp = input_state[:] del temp[j] del temp[i] for s in symbol_list: rslt = s[0] % (input_state[i], input_state[j]) rslt = &amp;quot;(%s)&amp;quot; % rslt temp.</description>
+      <description>&lt;p&gt;最近开心上狂算24点，于是贝壳搞了一个24点计算程序，并且说明原理。&lt;/p&gt;
+
+&lt;p&gt;我们将24点问题一般化，变成一个搜索问题。假定从一个初始表开始，里面有一些原子。我们定义一个操作，结合。每次操作任意从中选择出两个(或者以上)原子，使用算符连接，成为一个新的原子。那么，一般来说，24点就是计算所有可能的路径，从初始表开始，持续进行结合，直到只剩下一个原子，并且对这个原子求值得24。&lt;/p&gt;
+
+&lt;p&gt;有人可能在算符优先级上想不开，其实不用考虑这个问题，每次求值的时候，按照求值顺序优先就可以。你想到的另外一种优先级可能，会在穷举的时候被列举出来算掉，不用担心遗漏。&lt;/p&gt;
+
+&lt;p&gt;同时，算子必须是两目以上算子，因为单目算子可以持续作用于同一个对象，因此原子表中的原子个数并不严格单调减少，造成无法肯定路径收敛于有限步骤上。并且，如果允许单目算子，那么我只需要求导和阶乘就可以对任何数字求24点。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;((a&#39;)!+(b&#39;)!+(c&#39;)!+(d&#39;)!)!=24
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;因此，单目算符是没有意义的。&lt;/p&gt;
+
+&lt;p&gt;另外，注意算符分可交换和非可交换的。例如：a+b=b+a，但是a-b!=b-a。如果不注意这点，倒是不会漏算，但是会造成搜索空间增大，并且有重复结果。&lt;/p&gt;
+
+&lt;p&gt;以下是24点计算程序，python版本的。有兴趣的朋友可以用scheme重写，相信会更简洁有效。回头会用django封装一下，做成网页给大家玩玩。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;#!/usr/bin/python
+import sys
+
+symbol_list = [
+    (&amp;quot;%s+%s&amp;quot;, True),
+    (&amp;quot;%s-%s&amp;quot;, False),
+    (&amp;quot;%s*%s&amp;quot;, True),
+    (&amp;quot;%s/%s&amp;quot;, False),
+    (&amp;quot;%s**%s&amp;quot;, False),
+]
+
+
+def diff_seq(length):
+    for i in range(0, length):
+        for j in range(i + 1, length):
+            yield (i, j)
+
+
+def get_less_state(input_state):
+    for i, j in diff_seq(len(input_state)):
+        temp = input_state[:]
+        del temp[j]
+        del temp[i]
+
+        for s in symbol_list:
+            rslt = s[0] % (input_state[i], input_state[j])
+            rslt = &amp;quot;(%s)&amp;quot; % rslt
+            temp.append(rslt)
+            yield temp
+            temp.remove(rslt)
+            if s[1]:
+                continue
+            rslt = s[0] % (input_state[j], input_state[i])
+            rslt = &amp;quot;(%s)&amp;quot; % rslt
+            temp.append(rslt)
+            yield temp
+            temp.remove(rslt)
+
+
+def do_node(input_state, output):
+    for i in get_less_state(input_state):
+        if len(i) &amp;gt; 1:
+            do_node(i, output)
+            continue
+        try:
+            rslt = eval(i[0])
+        except:
+            continue
+        if rslt == 24.0:
+            output.add(i[0].replace(&amp;quot;.0&amp;quot;, &amp;quot;&amp;quot;))
+
+
+if __name__ == &amp;quot;__main__&amp;quot;:
+    rslt = []
+    for i in sys.argv[1:]:
+        rslt.append(float(i))
+        output = set([])
+        do_node(rslt, output)
+        for i in list(output):
+            print(&amp;quot;%s=24&amp;quot; % i)
+&lt;/code&gt;&lt;/pre&gt;
+</description>
     </item>
     
     <item>
@@ -112,8 +464,47 @@ setup文件就不细说了，大家按照自己的习惯设定就好。下面我
       <pubDate>Mon, 10 Nov 2008 14:08:00 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/45/</guid>
-      <description>贝壳最近在看SCIP，感觉受益匪浅。其中有一个2.6，使用函数表达数字，很难理解。贝壳查了查资料，这篇（http://blogs.sun.com/yongsun/entry/lambda%E6%BC%94%E7%AE%97%E4%B8%8Echurch%E8%AE%A1%E6%95%B0 ）写的很好，贝壳就不多说了。贝壳把自己写的内容贴上来，作为一个借鉴。
-(define zero (lambda (f) (lambda (x) x))) (define one (lambda (f) (lambda (x) (f x)))) (define two (lambda (f) (lambda (x) (f (f x))))) (define three (lambda (f) (lambda (x) (f (f (f x)))))) (define (add-1 n) (lambda (f) (lambda (x) (f ((n f) x))))) (define (add m n) (lambda (f) (lambda (x) ((m f) ((n f) x))))) (define (mult m n) (lambda (f) (m (n f)))) (define (show-func-number n) (define (inc x) (+ x 1)) ((n inc) 0)) (display (show-func-number zero)) (newline) (display (show-func-number one)) (newline) (display (show-func-number (add-1 one))) (newline) (display (show-func-number (add one two))) (newline) (display (show-func-number (mult two three))) (newline)  结果：</description>
+      <description>&lt;p&gt;贝壳最近在看SCIP，感觉受益匪浅。其中有一个2.6，使用函数表达数字，很难理解。贝壳查了查资料，这篇（&lt;a href=&#34;http://blogs.sun.com/yongsun/entry/lambda%E6%BC%94%E7%AE%97%E4%B8%8Echurch%E8%AE%A1%E6%95%B0&#34;&gt;http://blogs.sun.com/yongsun/entry/lambda%E6%BC%94%E7%AE%97%E4%B8%8Echurch%E8%AE%A1%E6%95%B0&lt;/a&gt; ）写的很好，贝壳就不多说了。贝壳把自己写的内容贴上来，作为一个借鉴。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(define zero (lambda (f) (lambda (x) x)))
+(define one (lambda (f) (lambda (x) (f x))))
+(define two (lambda (f) (lambda (x) (f (f x)))))
+(define three (lambda (f) (lambda (x) (f (f (f x))))))
+(define (add-1 n)
+  (lambda (f) (lambda (x) (f ((n f) x)))))
+(define (add m n)
+  (lambda (f)
+    (lambda (x) ((m f) ((n f) x)))))
+(define (mult m n)
+  (lambda (f) (m (n f))))
+(define (show-func-number n)
+  (define (inc x)
+    (+ x 1))
+  ((n inc) 0))
+
+(display (show-func-number zero))
+(newline)
+(display (show-func-number one))
+(newline)
+(display (show-func-number (add-1 one)))
+(newline)
+(display (show-func-number (add one two)))
+(newline)
+(display (show-func-number (mult two three)))
+(newline) 
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;结果：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;0
+1
+2
+3
+6
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;show-func-number这个函数是将高阶抽象函数序列映射到一个具体的数上的。工作方法是，建立一个函数x=x+1，然后使用给定的高阶函数来映射这个函数。n次高阶函数会映射这个函数n次，于是结果函数就是x=x+n。然后将这个函数作用于0，不难得到结果吧？&lt;/p&gt;
+</description>
     </item>
     
   </channel>

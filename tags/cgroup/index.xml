@@ -8,9 +8,7 @@
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
     <lastBuildDate>Fri, 06 Jun 2014 14:34:45 +0800</lastBuildDate>
-    
-	<atom:link href="http://shell909090.org/tags/cgroup/index.xml" rel="self" type="application/rss+xml" />
-    
+    <atom:link href="http://shell909090.org/tags/cgroup/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>cgroup限定内存</title>
@@ -18,12 +16,127 @@
       <pubDate>Fri, 06 Jun 2014 14:34:45 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2642/</guid>
-      <description>机器配置 ubuntu 12.04
-内核版本：3.11.0-20-generic
-ulimit的限制效果  ulimit -m 8192 当内存突破8M时，什么事情都没有发生。直到38M都没任何反应。
- ulimit -v 65536 python抛出MemoryError
-  cgroup的限制效果  echo 8388608 &amp;gt; memory.limit_in_bytes  大小不对，cgroup的内存量计算方法和ps/status不一致。因此限制计数需要根据具体情况调整。
-内核计数 /proc/[pid]/statm size (1) total program size (same as VmSize in /proc/[pid]/status) resident (2) resident set size (same as VmRSS in /proc/[pid]/status) share (3) shared pages (i.e., backed by a file) text (4) text (code) lib (5) library (unused in Linux 2.6) data (6) data + stack dt (7) dirty pages (unused in Linux 2.</description>
+      <description>
+
+&lt;h1 id=&#34;机器配置&#34;&gt;机器配置&lt;/h1&gt;
+
+&lt;p&gt;ubuntu 12.04&lt;/p&gt;
+
+&lt;p&gt;内核版本：3.11.0-20-generic&lt;/p&gt;
+
+&lt;h1 id=&#34;ulimit的限制效果&#34;&gt;ulimit的限制效果&lt;/h1&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;ulimit -m 8192
+当内存突破8M时，什么事情都没有发生。直到38M都没任何反应。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;ulimit -v 65536 python抛出MemoryError&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h1 id=&#34;cgroup的限制效果&#34;&gt;cgroup的限制效果&lt;/h1&gt;
+
+&lt;ol&gt;
+&lt;li&gt;echo 8388608 &amp;gt; memory.limit_in_bytes&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;大小不对，cgroup的内存量计算方法和ps/status不一致。因此限制计数需要根据具体情况调整。&lt;/p&gt;
+
+&lt;h1 id=&#34;内核计数&#34;&gt;内核计数&lt;/h1&gt;
+
+&lt;h2 id=&#34;proc-pid-statm&#34;&gt;/proc/[pid]/statm&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code&gt;size       (1) total program size
+(same as VmSize in /proc/[pid]/status)
+resident   (2) resident set size
+(same as VmRSS in /proc/[pid]/status)
+share      (3) shared pages (i.e., backed by a file)
+text       (4) text (code)
+lib        (5) library (unused in Linux 2.6)
+data       (6) data + stack
+dt         (7) dirty pages (unused in Linux 2.6)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;proc-pid-status&#34;&gt;/proc/[pid]/status&lt;/h2&gt;
+
+&lt;p&gt;statm的size和resident分别乘以pagesize等于VmSize和VmRSS。&lt;/p&gt;
+
+&lt;h2 id=&#34;pmap&#34;&gt;pmap&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code&gt;pmap -p [pid]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;可以看到某个进程内部，用户地址空间分配情况。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;pmap -d [pid] | grep &#39;rw&#39; | awk &#39;{a += $2} END {print a}&#39;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;可以看到所有可写入的内存大小，应当正好等于正常显示的writeable/private。&lt;/p&gt;
+
+&lt;p&gt;这个值，应当等于status的VmHWM+VmStk。不知为何，VmStk和pmap里面显示的stack正好差了一个4k。怀疑是关于目前在正在使用的页的计算差异。&lt;/p&gt;
+
+&lt;p&gt;而high water
+mark，从分析上说，即是某个进程内部，不是stack的，所有可写的地址空间。当然，这些页并不一定立刻映射了物理内存。因此VmHWM
+&amp;gt; VmRSS应当没什么问题。&lt;/p&gt;
+
+&lt;h2 id=&#34;ps&#34;&gt;ps&lt;/h2&gt;
+
+&lt;p&gt;ps和top都是读的status，不废话。&lt;/p&gt;
+
+&lt;h1 id=&#34;资源限制实践&#34;&gt;资源限制实践&lt;/h1&gt;
+
+&lt;h2 id=&#34;准备&#34;&gt;准备&lt;/h2&gt;
+
+&lt;p&gt;安装cgroup-bin&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;aptitude install cgroup-bin
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;setup-cgroup-bin&#34;&gt;setup cgroup-bin&lt;/h2&gt;
+
+&lt;p&gt;修改/etc/cgconfig.conf:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;mount {
+        cpu = /sys/fs/cgroup/cpu;
+        cpuacct = /sys/fs/cgroup/cpuacct;
+        devices = /sys/fs/cgroup/devices;
+        memory = /sys/fs/cgroup/memory;
+        freezer = /sys/fs/cgroup/freezer;
+}
+
+group memimage {
+        perm {
+                admin {
+                        gid = root;
+                }
+                task {
+                        uid = user;
+                }
+        }
+        memory {
+                memory.swappiness = 0;
+                memory.limit_in_bytes = 2048000000;
+        }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;限定内存用量2G。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;service cgconfig start
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;执行效果&#34;&gt;执行效果&lt;/h2&gt;
+
+&lt;p&gt;头部加入&lt;code&gt;nice -n 19 cgexec -g memory:memimage&lt;/code&gt;。&lt;/p&gt;
+
+&lt;p&gt;注意：使用内存限制，务必配置&lt;strong&gt;OOM日志告警通知&lt;/strong&gt;。当重启时，管理者必须知道。当重复发生时，必须重新考虑内存限制问题。&lt;/p&gt;
+
+&lt;h2 id=&#34;监测&#34;&gt;监测&lt;/h2&gt;
+
+&lt;p&gt;查看group内存状态&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;watch cat /sys/fs/cgroup/memory/memimage/memory.stat
+&lt;/code&gt;&lt;/pre&gt;
+</description>
     </item>
     
     <item>
@@ -32,12 +145,52 @@ ulimit的限制效果  ulimit -m 8192 当内存突破8M时，什么事情都没�
       <pubDate>Wed, 19 Feb 2014 10:14:23 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2561/</guid>
-      <description>setup Add to /etc/fstab.
-cgroup /sys/fs/cgroup cgroup defaults 0 2  Then sudo mount -a.
-Change directory to /sys/fs/cgroup/. Use mkdir to create a new group, and initalize it like those.
-echo 0-3 &amp;gt;&amp;gt; cpuset.cpus echo 0 &amp;gt; cpuset.mems  Without those two step, next operator will failure.
-echo 0 &amp;gt; memory.swappiness echo 52428800 &amp;gt; memory.limit_in_bytes  Set memory limit 50M, and forbidden swap.
-python test code import os, sys, time, random, string def main(): l = [] random.</description>
+      <description>
+
+&lt;h1 id=&#34;setup&#34;&gt;setup&lt;/h1&gt;
+
+&lt;p&gt;Add to /etc/fstab.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;cgroup                  /sys/fs/cgroup  cgroup  defaults        0       2
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Then &lt;code&gt;sudo mount -a&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Change directory to /sys/fs/cgroup/. Use mkdir to create a new group,
+and initalize it like those.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;echo 0-3 &amp;gt;&amp;gt; cpuset.cpus
+echo 0 &amp;gt; cpuset.mems
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Without those two step, next operator will failure.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;echo 0 &amp;gt; memory.swappiness
+echo 52428800 &amp;gt; memory.limit_in_bytes
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Set memory limit 50M, and forbidden swap.&lt;/p&gt;
+
+&lt;h1 id=&#34;python-test-code&#34;&gt;python test code&lt;/h1&gt;
+
+&lt;pre&gt;&lt;code&gt;import os, sys, time, random, string
+def main():
+    l = []
+    random.seed()
+    raw_input()
+    for i in xrange(1000000):
+        for j in xrange(1000):
+            t = list(string.letters)
+            random.shuffle(t)
+            s = &#39;&#39;.join(t)
+            l.append(s)
+        time.sleep(0.01)
+
+if __name__ == &#39;__main__&#39;: main()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Finally, it triggered OOM.&lt;/p&gt;
+</description>
     </item>
     
   </channel>

@@ -38,10 +38,10 @@
   <meta name="description" content="">
   <meta name="keywords" content="">
 
-  <meta name="author" content="Shell Xu">
+  <meta name="author" content="">
 
   
-  <meta name="generator" content="Hugo 0.21-DEV" />
+  <meta name="generator" content="Hugo 0.17-DEV" />
 
   
   
@@ -49,7 +49,7 @@
 (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
 (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
 m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
 ga('create', 'UA-48816091-1', 'auto');
 ga('send', 'pageview');
@@ -99,6 +99,33 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/360/">广州出差记</a>
+    </h1>
+    <p class="meta">Feb 12, 2007
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/360/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>这次被公司派去广州出差了，又去了次广州。没啥好说的，挑几个有意思的事情写写吧。 公司给订了一个旅馆，我住进去，当然不花我的钱咯。然后累了，换上拖鞋，也是免费的。(拖鞋篮里面有张纸，免费擦鞋——)然后看旁边有烧水的，下面居然还有小冰箱，可乐啤酒一应俱全。哇——不愧是专业的。拿了罐可乐刚刚想开，发现旁边有张纸。《如果您用了小吧台中的饮料，请填写本单，费用会结算到您的房费中。》后面赫然是，可乐10块。 不知道是公司付费还是我付费，干脆放回去了。 后来刘凯知道这事情，说随便喝好了。一个人住宿是300的额度，我们三个才676，平均一人226。没问题，喝。后面又跟了句，回头让李胜昊从外面带一罐回来补上就得了。 我靠—— 不过后来发现可乐包装挺特殊，怕补不上。我当时也不渴了，没试试看。 回上海的时候，从对方公司出来，立刻叫车，然后往白云山机场跑。我坐前排右边，车窗开着的。我看风大就没拿相机出来照相。过一个立交桥的时候，发现桥那里有个雕像。两腿叉开，双手插腰，挺有气势的。我心说这年头了这里还有这种雕像，不容易。车开近点看看，好像是个活人哎，而且还是裸的——OGM——绝对是传说中的裸奔—— 啊，相机啊相机——来不及了—— 过去了—— 你看到了吗？ 打电话给南方，又有新闻了。 别傻了，人家说不定已经看习惯了，还笑话我们没见过市面。 那怎么办？ 你不想学的话就当不存在了。 嗯，都是幻觉，吓不倒我的。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/359/">内存泄露检测简说</a>
     </h1>
     <p class="meta">Feb 7, 2007
@@ -111,8 +138,7 @@ ga('send', 'pageview');
 
 
         
-          <p>我们首先从一段代码说起。
-#define _CRTDBG_MAP_ALLOC #include #include class test { public: test () { lpBuffer = new char[0x1000]; }; \~test () { delete lpBuffer; }; void *operator new (size_t s) { return malloc (s); }; void operator delete (void *pvMem) { if (pvMem != NULL) free (pvMem); }; void *operator new[] (size_t s) { return malloc (s); }; void operator delete[] (void *pvMem) { if (pvMem != NULL) free (pvMem); }; char *lpBuffer; }; test &amp; tt () { static test t; return t; } //test t; void process () { test tf; // _CrtDumpMemoryLeaks (); } int _tmain (int argc, _TCHAR * argv[]) { // test tf; test* tp=new test(); _CrtSetReportMode (_CRT_WARN, _CRTDBG_MODE_FILE); _CrtSetReportFile (_CRT_WARN, _CRTDBG_FILE_STDERR); _CrtSetDbgFlag (_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF); process (); // printf(&quot;hello, world.</p>
+          <p>我们首先从一段代码说起。 #define _CRTDBG_MAP_ALLOC #include #include class test { public: test () { lpBuffer = new char[0x1000]; }; \~test () { delete lpBuffer; }; void *operator new (size_t s) { return malloc (s); }; void operator delete (void *pvMem) { if (pvMem != NULL) free (pvMem); }; void *operator new[] (size_t s) { return malloc (s); }; void operator delete[] (void *pvMem) { if (pvMem != NULL) free (pvMem); }; char *lpBuffer; }; test &amp; tt () { static test t; return t; } //test t; void process () { test tf; // _CrtDumpMemoryLeaks (); } int _tmain (int argc, _TCHAR * argv[]) { // test tf; test* tp=new test(); _CrtSetReportMode (_CRT_WARN, _CRTDBG_MODE_FILE); _CrtSetReportFile (_CRT_WARN, _CRTDBG_FILE_STDERR); _CrtSetDbgFlag (_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF); process (); // printf(&quot;hello, world.n&quot;, t.lpBuffer); printf (&quot;hello, world.n&quot;, tt ().lpBuffer); // _CrtDumpMemoryLeaks (); // printf(&quot;hello, world.n&quot;, t.lpBuffer); return 0; } 以上代码，大家可以分别注释不同位置，来查看不同效果。不过我们还是从最基础的如何检测开始说起吧。 首先在头中引入。 #define _CRTDBG_MAP_ALLOC #include #include 在引入后，程序结束的时候调用_CrtDumpMemoryLeaks ();就可以打印出来内存泄露的情况。不过有几个问题，首先，打印出来的位置是在调试中。也就是说，如果不使用调试信息查看工具，是看不到信息的。这个问题不难解决。我们可以在程序开始的时候设定。 _CrtSetReportMode (_CRT_WARN, _CRTDBG_MODE_FILE); _CrtSetReportFile (_CRT_WARN, _CRTDBG_FILE_STDERR); 将出错信息打印到Console输出中。当然如果程序是BCB或者是MFC，也大可打印到文件中。 其次，打印出来的出错信息可能是这样的。 c:program filesmicrosoft visual studio .net 2003vc7includecrtdbg.h(692) {44} normal block at 0x00342A28, 4096 bytes long.</p>
 
           
               <footer>
@@ -143,11 +169,7 @@ ga('send', 'pageview');
 
 
         
-          <p>近两天研究了下CPUID指令。虽然原本是准备作为加密技术的储备的，不过后来发现作为加密技术实在不可行，倒是平台识别有很大用途。
-CPUID指令可以看做一个汇编中的函数，预先设定一个EAX的编号，就可以返回EAX,EBX,ECX,EDX四个数据。根据不同EAX，返回不同的数据。问题在于，对于EAX和返回的约定上，AMD和Intel是完全不同的。其中AMD根本不支持CPU编号特性。
-我先给出我所用的函数：
-void getCpuID (PDWORD pData, DWORD ID) { __asm { push ebx push ecx push edx push esi mov eax, ID cpuid mov esi, pData mov [esi], eax mov [esi+4], ebx mov [esi+8], ecx mov [esi+12], edx pop esi pop ecx pop ebx pop edx } }  其中pData是一个足够大的数组，ID是入口编号。根据Intel和AMD的约定，0,1,80000001-80000003是共同的。0在EBX,EDX,ECX中返回了厂商标识，例如目前机器上就是AuthenticAMD。(注意，不是顺序存放的，按照我刚刚写的顺序)80000001-80000003在返回中顺序存放了CPU的标识，例如目前机器上是AMD Sempron&trade; Processor 2500+。1在EAX中返回了CPU的系列编号，EDX中返回了特性编号。以上都是标准的返回，可以看出在识别平台的时候很方便。
-Intel的CPU在2中存放了配置参数，3中存放了序列编号。而AMD在这两者上都是0。由此大家就知道为什么无法用来作为加密技术了，难道这个程序只能在Intel芯片上跑吗？</p>
+          <p>近两天研究了下CPUID指令。虽然原本是准备作为加密技术的储备的，不过后来发现作为加密技术实在不可行，倒是平台识别有很大用途。 CPUID指令可以看做一个汇编中的函数，预先设定一个EAX的编号，就可以返回EAX,EBX,ECX,EDX四个数据。根据不同EAX，返回不同的数据。问题在于，对于EAX和返回的约定上，AMD和Intel是完全不同的。其中AMD根本不支持CPU编号特性。 我先给出我所用的函数： void getCpuID (PDWORD pData, DWORD ID) { __asm { push ebx push ecx push edx push esi mov eax, ID cpuid mov esi, pData mov [esi], eax mov [esi+4], ebx mov [esi+8], ecx mov [esi+12], edx pop esi pop ecx pop ebx pop edx } } 其中pData是一个足够大的数组，ID是入口编号。根据Intel和AMD的约定，0,1,80000001-80000003是共同的。0在EBX,EDX,ECX中返回了厂商标识，例如目前机器上就是AuthenticAMD。(注意，不是顺序存放的，按照我刚刚写的顺序)80000001-80000003在返回中顺序存放了CPU的标识，例如目前机器上是AMD Sempron&trade; Processor 2500+。1在EAX中返回了CPU的系列编号，EDX中返回了特性编号。以上都是标准的返回，可以看出在识别平台的时候很方便。 Intel的CPU在2中存放了配置参数，3中存放了序列编号。而AMD在这两者上都是0。由此大家就知道为什么无法用来作为加密技术了，难道这个程序只能在Intel芯片上跑吗？</p>
 
           
 
@@ -174,13 +196,7 @@ Intel的CPU在2中存放了配置参数，3中存放了序列编号。而AMD在�
 
 
         
-          <p>其实这个标题不准确，准确的说，应该是继承类拥有自己的基类静态对象。
-我们知道，类中的静态对象本质上是全局变量，不过名字在类命名空间里面。如果类B有静态对象S，D继承了B(先按照public继承讨论，其他其实也一样)。那么在D里面访问S的时候，其实是访问的B命名空间里面的静态对象S。验证代码如下：
-class B { protected: static int S; }; int B::S = 0; class D:public B { public: void print () { printf (&quot;%dn&quot;, S); }; }; class E:public B { public: static void rewrite () { S = 1; }; }; int _tmain (int argc, _TCHAR * argv[]){ D d; d.print (); E::rewrite (); d.print (); return 0; }  上例中可以看到，两个继承类，其实都是将父类的命名空间导入而已。假定我们要使得每类专有一个静态成员，例如我们要计算每个类的生成对象个数，怎么办呢？
-如果不用继承，我们可以在每个类里面加一个静态成员。然后在构造函数中加1，析构中减1。但是如果我们想把这个功能放到基类中，事情就麻烦了。因为所有类从同一个基类派生，我们算出来的其实是所有从基类继承的类的总对象生成个数。
-当然，我们可以用实现的方法来做。把所需要的功能抽离出来，放到一个单独的计数类中。然后构造的时候调用加1，析构的时候减1。听起来很蠢，那是因为例子容易的关系。比较复杂的时候，这样抽象相对简单的。计数类可以用于多个类，实现了代码重用。但是仍旧没有解决关键问题，怎么让继承类特化基类的静态对象？(虚拟化和特化的意思差不多，就是针对具体对象使用具体方法)
-答案最后被我在More Effective C++中找到了，正确的方法不是寻找一个特化的方法，而是继承不同的基类，使用同一套代码。既然是不同基类，怎么具备同一套代码呢？想到了吧，模版。
-template&lt;T&gt; class B { protected: static int S; }; class D:public B&lt;D&gt; { public: void print () { printf (&quot;%dn&quot;, S); }; }; int B&lt;D&gt;::S = 0; class E:public B&lt;E&gt; { public: static void rewrite () { S = 1; }; }; int B&lt;E&gt;::S = 0; int _tmain (int argc, _TCHAR * argv[]) { D d; d.</p>
+          <p>其实这个标题不准确，准确的说，应该是继承类拥有自己的基类静态对象。 我们知道，类中的静态对象本质上是全局变量，不过名字在类命名空间里面。如果类B有静态对象S，D继承了B(先按照public继承讨论，其他其实也一样)。那么在D里面访问S的时候，其实是访问的B命名空间里面的静态对象S。验证代码如下： class B { protected: static int S; }; int B::S = 0; class D:public B { public: void print () { printf (&quot;%dn&quot;, S); }; }; class E:public B { public: static void rewrite () { S = 1; }; }; int _tmain (int argc, _TCHAR * argv[]){ D d; d.print (); E::rewrite (); d.print (); return 0; } 上例中可以看到，两个继承类，其实都是将父类的命名空间导入而已。假定我们要使得每类专有一个静态成员，例如我们要计算每个类的生成对象个数，怎么办呢？ 如果不用继承，我们可以在每个类里面加一个静态成员。然后在构造函数中加1，析构中减1。但是如果我们想把这个功能放到基类中，事情就麻烦了。因为所有类从同一个基类派生，我们算出来的其实是所有从基类继承的类的总对象生成个数。 当然，我们可以用实现的方法来做。把所需要的功能抽离出来，放到一个单独的计数类中。然后构造的时候调用加1，析构的时候减1。听起来很蠢，那是因为例子容易的关系。比较复杂的时候，这样抽象相对简单的。计数类可以用于多个类，实现了代码重用。但是仍旧没有解决关键问题，怎么让继承类特化基类的静态对象？(虚拟化和特化的意思差不多，就是针对具体对象使用具体方法) 答案最后被我在More Effective C++中找到了，正确的方法不是寻找一个特化的方法，而是继承不同的基类，使用同一套代码。既然是不同基类，怎么具备同一套代码呢？想到了吧，模版。 template&lt;T&gt; class B</p>
 
           
               <footer>
@@ -211,9 +227,7 @@ template&lt;T&gt; class B { protected: static int S; }; class D:public B&lt;D&gt
 
 
         
-          <p>昨天坐轻轨的时候，在海伦路延迟了10分钟，宝山路延迟了4-5分钟，还啥广播都没有。一怒之下干脆打114查询号码，然后打到地铁投诉热线投诉去。当时没说清楚，只说三号线上好像有人跳车，然后答应尽快给出回访结果。
-当天下午回访就过来了，仔细的问了延迟的车站和时间(幸好我平时早上的车为了赶点，时间都算过的，而且算的很准)。然后再三道歉，说是车门故障，下次会记得广播。
-既然人家都诚心诚意的道歉了，而且单位也知道情况，不算迟到，那么这个事情就这样了吧。</p>
+          <p>昨天坐轻轨的时候，在海伦路延迟了10分钟，宝山路延迟了4-5分钟，还啥广播都没有。一怒之下干脆打114查询号码，然后打到地铁投诉热线投诉去。当时没说清楚，只说三号线上好像有人跳车，然后答应尽快给出回访结果。 当天下午回访就过来了，仔细的问了延迟的车站和时间(幸好我平时早上的车为了赶点，时间都算过的，而且算的很准)。然后再三道歉，说是车门故障，下次会记得广播。 既然人家都诚心诚意的道歉了，而且单位也知道情况，不算迟到，那么这个事情就这样了吧。</p>
 
           
 
@@ -240,21 +254,7 @@ template&lt;T&gt; class B { protected: static int S; }; class D:public B&lt;D&gt
 
 
         
-          <p>大家知道贝壳的财务是通过自己写的程序进行跟踪合计的。以前是excel表单上面加VBA宏，后来移动到了Mysql数据库。因为数据存储量大，运行稳定，使用方便，所以贝壳一直很得意。
-昨天贝壳发现自己的财务怎么也算不对，因为单位的工资发到了浦发的卡上，而程序里面是没有浦发的账户的。本质上是由于程序中使用硬编码导致程序对数据库存在非合理依赖(有点专业，听不懂就算了)。所以从理论上说，我需要修改表结构。
-于是贝壳就先备份了表结构(悲惨啊，大家后来就知道了)，然后修改了账户的表结构。然后贝壳发现财务表里面没有使用UNIQ限定，于是又对财务表修改了结构。但是无法通过，原因是因为现有数据中有的不符合UNIQ限定。于是贝壳又合并数据，做了半个小时多的操作，好算添加了UNIQ限定。这时候，贝壳送了口气。处于不可告人的怪癖，贝壳运行了自己写的核算程序，上面赫然写着，当前现金，-1034。
-不用说，一定是合并数据的时候出现了错误，问题是错误在哪里呢？不知道，贝壳只有删除了UNIQ限定，然后恢复数据——shit，没备份。
-开始的时候，贝壳只需要修改表结构，于是就只备份了表结构，数据还是上个月的备份。OMG，怎么办？怎么办？怎么办？
-于是贝壳就开始了悲惨的修复经历。
-首先我确定合并的数据都是在上个月备份以内的。就是说，这个月新添加的数据都是没有经过合并操作的。于是贝壳导出当前错误的数据，并且从中截取出这个月新的数据，这部分数据一定是正确的。然后和上个月的备份合并到一起，放到新的文件里面导入数据库。运行财务核算程序，OK，当前现金380.89。
-贝壳又一次低估了上帝的决心，高高兴兴的删除了临时文件。然后导出新数据，准备关闭程序睡觉去。然而运气的是，贝壳在关闭前看了眼数据。啥？注释是乱码？
-财务软件并不使用注释字段，那个是被贝壳用的，所以财务软件不会报错。可是注释乱糟糟，等于一半的功能被砍掉了。贝壳赶快想怎么解决。当前数据和备份都是错误的，上个月的备份还在，可是少一个月数据。就是说贝壳丢失了一个月的数据！
-没办法，贝壳紧急安装修复软件。但是超级RP的是，贝壳上次Uninstall了一个东东还没reset(这是贝壳的一个坏习惯，Uninstall了以后不reset，等系统自然需要reset)。FinalData的Installer在Uninstall事件没有完成前不能运行。我靠～～～贝壳顿时怒了——上网找了半天，找到一个免安装绿色修复软件，Recover4all。运行，找到了上次导出的数据。
-吃一堑长一智，贝壳先完美的备份了这个文件(包括扔到了U盘上一份)。然后将这个和上月的备份重新合并，切换编码，重新导入——蓝了——
-靠——上帝的决心是无止境的——比客户的变态还无止境——当导入超长的时候，居然诱发了XP64的溢出。由用户输入诱发溢出，我还真是伟大。
-贝壳重启，重新合并，然后切分成两次，切换编码，分次导入。总算数据正常了。然后运行财务核算程序，也正常。去手工看表，也正常。不过贝壳的几个新修改和半小时的合并工作就作废了。
-忙碌两个小时快，总算让数据库恢复到了以前的状态。还真是——
-不说啥了——</p>
+          <p>大家知道贝壳的财务是通过自己写的程序进行跟踪合计的。以前是excel表单上面加VBA宏，后来移动到了Mysql数据库。因为数据存储量大，运行稳定，使用方便，所以贝壳一直很得意。 昨天贝壳发现自己的财务怎么也算不对，因为单位的工资发到了浦发的卡上，而程序里面是没有浦发的账户的。本质上是由于程序中使用硬编码导致程序对数据库存在非合理依赖(有点专业，听不懂就算了)。所以从理论上说，我需要修改表结构。 于是贝壳就先备份了表结构(悲惨啊，大家后来就知道了)，然后修改了账户的表结构。然后贝壳发现财务表里面没有使用UNIQ限定，于是又对财务表修改了结构。但是无法通过，原因是因为现有数据中有的不符合UNIQ限定。于是贝壳又合并数据，做了半个小时多的操作，好算添加了UNIQ限定。这时候，贝壳送了口气。处于不可告人的怪癖，贝壳运行了自己写的核算程序，上面赫然写着，当前现金，-1034。 不用说，一定是合并数据的时候出现了错误，问题是错误在哪里呢？不知道，贝壳只有删除了UNIQ限定，然后恢复数据——shit，没备份。 开始的时候，贝壳只需要修改表结构，于是就只备份了表结构，数据还是上个月的备份。OMG，怎么办？怎么办？怎么办？ 于是贝壳就开始了悲惨的修复经历。 首先我确定合并的数据都是在上个月备份以内的。就是说，这个月新添加的数据都是没有经过合并操作的。于是贝壳导出当前错误的数据，并且从中截取出这个月新的数据，这部分数据一定是正确的。然后和上个月的备份合并到一起，放到新的文件里面导入数据库。运行财务核算程序，OK，当前现金380.89。 贝壳又一次低估了上帝的决心，高高兴兴的删除了临时文件。然后导出新数据，准备关闭程序睡觉去。然而运气的是，贝壳在关闭前看了眼数据。啥？注释是乱码？ 财务软件并不使用注释字段，那个是被贝壳用的，所以财务软件不会报错。可是注释乱糟糟，等于一半的功能被砍掉了。贝壳赶快想怎么解决。当前数据和备份都是错误的，上个月的备份还在，可是少一个月数据。就是说贝壳丢失了一个月的数据！ 没办法，贝壳紧急安装修复软件。但是超级RP的是，贝壳上次Uninstall了一个东东还没reset(这是贝壳的一个坏习惯，Uninstall了以后不reset，等系统自然需要reset)。FinalData的Installer在Uninstall事件没有完成前不能运行。我靠～～～贝壳顿时怒了——上网找了半天，找到一个免安装绿色修复软件，Recover4all。运行，找到了上次导出的数据。 吃一堑长一智，贝壳先完美的备份了这个文件(包括扔到了U盘上一份)。然后将这个和上月的备份重新合并，切换编码，重新导入——蓝了—— 靠——上帝的决心是无止境的——比客户的变态还无止境——当导入超长的时候，居然诱发了XP64的溢出。由用户输入诱发溢出，我还真是伟大。 贝壳重启，重新合并，然后切分成两次，切换编码，分次导入。总算数据正常了。然后运行财务核算程序，也正常。去手工看表，也正常。不过贝壳的几个新修改和半小时的合并工作就作废了。 忙碌两个小时快，总算让数据库恢复到了以前的状态。还真是—— 不说啥了——</p>
 
           
 
@@ -281,15 +281,7 @@ template&lt;T&gt; class B { protected: static int S; }; class D:public B&lt;D&gt
 
 
         
-          <p>设计程序的时候，往往觉得怎么这么困难，基础类为什么不多提供些能力。现在风水轮流转，我开始设计基础类了。
-站着说话不腰疼，设计基础类才发现基础类这东西真不是人做的。调用上讲究非常多。要返回引用呢？还是值？是需要const呢，还是不能const。返回的时候是一次拷贝构造呢？还是两次。算子需要不需要设计成friend，重复代码能不能消除。着重效率还是安全性，线程安全不安全。这些问题真是活活逼死人啊。
-现在正在设计实现一下几个类，有兴趣的可以一起来研究。
-LargeInteger 超大整数实现
-计算RSA的时候很有用，考虑在内部实现一些有用的算法
-Matrix模板类,容器类 矩阵实现
-设计的时候就考虑到内部容纳的不一定是数据，也可能是字符串或者超大数
-vector2D 两维矢量 专门针对平面计算优化
-Line 两维线 专门针对平面计算优化</p>
+          <p>设计程序的时候，往往觉得怎么这么困难，基础类为什么不多提供些能力。现在风水轮流转，我开始设计基础类了。 站着说话不腰疼，设计基础类才发现基础类这东西真不是人做的。调用上讲究非常多。要返回引用呢？还是值？是需要const呢，还是不能const。返回的时候是一次拷贝构造呢？还是两次。算子需要不需要设计成friend，重复代码能不能消除。着重效率还是安全性，线程安全不安全。这些问题真是活活逼死人啊。 现在正在设计实现一下几个类，有兴趣的可以一起来研究。 LargeInteger 超大整数实现 计算RSA的时候很有用，考虑在内部实现一些有用的算法 Matrix模板类,容器类 矩阵实现 设计的时候就考虑到内部容纳的不一定是数据，也可能是字符串或者超大数 vector2D 两维矢量 专门针对平面计算优化 Line 两维线 专门针对平面计算优化</p>
 
           
 
@@ -316,20 +308,7 @@ Line 两维线 专门针对平面计算优化</p>
 
 
         
-          <p>不知道为什么，大家好像都喜欢争来争去。关于Java和C++的优劣不知道听了多少。碰巧我两者都会，怎么说也算是公平了吧。我就大着胆子，比较下两者的情况。
-对程序而言，速度不是最终要素。否则我们都应该去用汇编不是？一个程序有六个特性，易学，易用，安全，高效，可变，成本低。然而他们一般都是两两冲突的，好学了，就不好用。强大了，就不好学。安全了，自然要执行很多检查，高效了，自然不安全。针对某个平添优化了，可变性就很差，又不能移植，又不好修改。成本低了，自然什么都差。
-往往我们写企业应用的时候，都看重可变，低成本，安全，易用。高效呢？企业有钱买大服务器啊，这样的话效率差的不是太多也能接受。易学呢？企业有钱搞推广培训啊，只要有什么功能就加什么功能，不用考虑学不会。写用户应用的时候，则是看重安全，高效，然后易学易用里面要占据一样。可变呢？用户应用有多大？不行重写一个。低成本呢？这就是比较吊诡的事情了，没有啥经济效益的用户程序，往往是写起来最不怕费时最不管经济效益的。
-首先从性能角度来说。也许C++程序员说到这里就得意了，不过先别高兴。如果单论速度，汇编语言还在C之上呢。现在网络上很多人讲C优化好了比汇编快，Java优化好了比C快。听听都要笑掉大牙的。C再怎么快，完成同样的步骤，都需要这些汇编代码。Java再怎么快，完成一个动作，底下C代码也不会少的。所谓Java优化好了能快过C，不过是一个Java高手一门心思搞优化，加上碰到一个C语言白痴而已。
-我们先不讨论上面问题，就一般Java程序员和C++程序员而言(注意为啥我没说是C程序员，因为能自称纯C程序员的人要么非常精通语言，不会使用C++特性，要么就根本是个白痴)，Java程序员编写出的代码效率比C++大约慢5倍上下。这个数据是我个人写两个程序，一个运算，一个读取处理，对比出来的。都是没有优化的代码。经过极端的优化后，C++的代码我大概提高了4-8倍的速度。可惜我不是个很好的Java程序员，Java代码的速度大概提升了一倍还不足。就是说，最终C++代码比Java快了将近15倍。
-但是C++程序员们先别乐，首先我Java语言并不好，这还不是最终的速度比。其次我牺牲了C++的很多特性。运算上几乎就是在写汇编了，接口都直接用了WIN32SDKAPI。没有移植性，没有可维护性，还需要特殊的技巧，怎么想都是牺牲重大。如果要真的这么追求速度，相信汇编会是更好的选择。我们在速度相差5倍左右的情况下就可以使用C++而不用汇编，为什么不能在速度相差5倍的情况下选择Java呢？
-然后我们再看性能的另外一个方面，存储管理。说简单点，就是外围设备吞吐管理和内存管理。这方面上C++也是远远超越了Java。不需要的内存就不要，不必须的吞吐就不吐。C++是门培养人的语言，没有很好的功底是无法驾驭的。C++是门程序员负责一切的语言，任何错误都是程序员的错误。然而对于Java来说，就不必处理复杂而没有意义的内存管理了。假设一个Java程序员需要传一个对象给子函数，他只要传递就可以了。然而如果C++程序员直接传递，那么就会出现参数拷贝过程。不但效率差，还可能出现错误。单单一个参数传递，就有三种方式。传值，传址，引用。又分成四类，静态动态，常量非常量。交叉起来，总共是12种情况，需要量材选用。如此烦琐的管理方式，我们可以想想对于内存来说是很有好处的。嵌入系统中大型程序设计绝对是C的天下。然而这么困难的使用方式，需要多大的人力成本才能做到呢？这明显的违反了低成本的原则。
-Java的内存管理从C++的角度看绝对是具有瑕疵的，内存释放了不管，直到没有空间了才收集。然而很多C++程序高手在特殊情况下，会重载operator
-new算子。其中的行为就很类似这个，Java只是将特殊情况下的应用放到了一般情况。这样对于速度的后果就是，很多的缓存会被持续的从物理内存中挤压出去，导致磁盘吞吐效率降低。对于Java程序，我猜测提升效率的瓶颈将会在和系统交互以取得最佳的垃圾收集时间上。
-下面的论题就可能是C++程序员所不高兴看到的了，安全性和可变性。
-就语言来说，用户输入的检查这种安全性是一点意义都没有的。我们所说的基本包括几个方面，非正常用法安全，线程安全，异常过程安全。就语言来说，分为了解释型和编译型。那么怎么区分呢？我这里有个很简单的方法，如果程序本身能被本身修改，就是编译型的，否则是解释型。注意，不是让你修改了磁盘上的源码再运行。这个能力赋予了C++强大的功能，例如修改游戏，检查病毒，都需要这个能力。但是不可否认的，比起无法修改自身的程序，安全性就差太多了。线程安全性上讲，Java的所有对象都是系统管理的，也就很容易的可以管理互斥。用过C++的都知道，C++自身是没有互斥的，全靠系统的函数库或者第三方库支撑。好用不好用不说，无法移植是一定的！最后是异常过程安全，C++的异常过程是很恐怖的。关键在于C++的异常传递有三种办法，传值，传址，引用。而且在异常过程中还又涉及回了内存管理啥的。天啊，要是异常都不能专心处理异常，我还要异常干嘛？
-至于可变性，那就更别说了。连处理异常都要小心内存泄露的家伙，你指望在修改代码的时候轻松到哪里去？C++是具备了强大的可变性，然而处于效率考虑，很多增强可变性的东西是选项的。例如RTTI，居然要开编译器选项的说。需要使用可变性就要牺牲性能，而且还要你小心的使用。如果使用不小心，抱歉，你又陷入效率和安全的问题里面去了。
-如果你有很好的系统功底，准备往计算机领域发展(注意不是计算领域)。那么C++是门很好的语言，只是非常费时而已。而且建议你学C#，VB或者Java作为第二语言，选择Bash或者Perl作为第三语言。这样在处理问题上可以事半功倍。如果你打算增加自己的计算机能力，方便日常的电脑使用，而不准备深入学习这个领域。那么只学C#，VB或者Java就足够了。
-最后要提到的是易学和易用，这两个特性都是软件设计所赋予的。也就是说，即使是以简单著称的VB.NET，也可以写很好用的程序。以复杂著称的汇编，也可以写很友好的界面。这就不在本文的论题以内了。</p>
+          <p>不知道为什么，大家好像都喜欢争来争去。关于Java和C++的优劣不知道听了多少。碰巧我两者都会，怎么说也算是公平了吧。我就大着胆子，比较下两者的情况。 对程序而言，速度不是最终要素。否则我们都应该去用汇编不是？一个程序有六个特性，易学，易用，安全，高效，可变，成本低。然而他们一般都是两两冲突的，好学了，就不好用。强大了，就不好学。安全了，自然要执行很多检查，高效了，自然不安全。针对某个平添优化了，可变性就很差，又不能移植，又不好修改。成本低了，自然什么都差。 往往我们写企业应用的时候，都看重可变，低成本，安全，易用。高效呢？企业有钱买大服务器啊，这样的话效率差的不是太多也能接受。易学呢？企业有钱搞推广培训啊，只要有什么功能就加什么功能，不用考虑学不会。写用户应用的时候，则是看重安全，高效，然后易学易用里面要占据一样。可变呢？用户应用有多大？不行重写一个。低成本呢？这就是比较吊诡的事情了，没有啥经济效益的用户程序，往往是写起来最不怕费时最不管经济效益的。 首先从性能角度来说。也许C++程序员说到这里就得意了，不过先别高兴。如果单论速度，汇编语言还在C之上呢。现在网络上很多人讲C优化好了比汇编快，Java优化好了比C快。听听都要笑掉大牙的。C再怎么快，完成同样的步骤，都需要这些汇编代码。Java再怎么快，完成一个动作，底下C代码也不会少的。所谓Java优化好了能快过C，不过是一个Java高手一门心思搞优化，加上碰到一个C语言白痴而已。 我们先不讨论上面问题，就一般Java程序员和C++程序员而言(注意为啥我没说是C程序员，因为能自称纯C程序员的人要么非常精通语言，不会使用C++特性，要么就根本是个白痴)，Java程序员编写出的代码效率比C++大约慢5倍上下。这个数据是我个人写两个程序，一个运算，一个读取处理，对比出来的。都是没有优化的代码。经过极端的优化后，C++的代码我大概提高了4-8倍的速度。可惜我不是个很好的Java程序员，Java代码的速度大概提升了一倍还不足。就是说，最终C++代码比Java快了将近15倍。 但是C++程序员们先别乐，首先我Java语言并不好，这还不是最终的速度比。其次我牺牲了C++的很多特性。运算上几乎就是在写汇编了，接口都直接用了WIN32SDKAPI。没有移植性，没有可维护性，还需要特殊的技巧，怎么想都是牺牲重大。如果要真的这么追求速度，相信汇编会是更好的选择。我们在速度相差5倍左右的情况下就可以使用C++而不用汇编，为什么不能在速度相差5倍的情况下选择Java呢？ 然后我们再看性能的另外一个方面，存储管理。说简单点，就是外围设备吞吐管理和内存管理。这方面上C++也是远远超越了Java。不需要的内存就不要，不必须的吞吐就不吐。C++是门培养人的语言，没有很好的功底是无法驾驭的。C++是门程序员负责一切的语言，任何错误都是程序员的错误。然而对于Java来说，就不必处理复杂而没有意义的内存管理了。假设一个Java程序员需要传一个对象给子函数，他只要传递就可以了。然而如果C++程序员直接传递，那么就会出现参数拷贝过程。不但效率差，还可能出现错误。单单一个参数传递，就有三种方式。传值，传址，引用。又分成四类，静态动态，常量非常量。交叉起来，总共是12种情况，需要量材选用。如此烦琐的管理方式，我们可以想想对于内存来说是很有好处的。嵌入系统中大型程序设计绝对是C的天下。然而这么困难的使用方式，需要多大的人力成本才能做到呢？这明显的违反了低成本的原则。 Java的内存管理从C++的角度看绝对是具有瑕疵的，内存释放了不管，直到没有空间了才收集。然而很多C++程序高手在特殊情况下，会重载operator new算子。其中的行为就很类似这个，Java只是将特殊情况下的应用放到了一般情况。这样对于速度的后果就是，很多的缓存会被持续的从物理内存中挤压出去，导致磁盘吞吐效率降低。对于Java程序，我猜测提升效率的瓶颈将会在和系统交互以取得最佳的垃圾收集时间上。 下面的论题就可能是C++程序员所不高兴看到的了，安全性和可变性。 就语言来说，用户输入的检查这种安全性是一点意义都没有的。我们所说的基本包括几个方面，非正常用法安全，线程安全，异常过程安全。就语言来说，分为了解释型和编译型。那么怎么区分呢？我这里有个很简单的方法，如果程序本身能被本身修改，就是编译型的，否则是解释型。注意，不是让你修改了磁盘上的源码再运行。这个能力赋予了C++强大的功能，例如修改游戏，检查病毒，都需要这个能力。但是不可否认的，比起无法修改自身的程序，安全性就差太多了。线程安全性上讲，Java的所有对象都是系统管理的，也就很容易的可以管理互斥。用过C++的都知道，C++自身是没有互斥的，全靠系统的函数库或者第三方库支撑。好用不好用不说，无法移植是一定的！最后是异常过程安全，C++的异常过程是很恐怖的。关键在于C++的异常传递有三种办法，传值，传址，引用。而且在异常过程中还又涉及回了内存管理啥的。天啊，要是异常都不能专心处理异常，我还要异常干嘛？ 至于可变性，那就更别说了。连处理异常都要小心内存泄露的家伙，你指望在修改代码的时候轻松到哪里去？C++是具备了强大的可变性，然而处于效率考虑，很多增强可变性的东西是选项的。例如RTTI，居然要开编译器选项的说。需要使用可变性就要牺牲性能，而且还要你小心的使用。如果使用不小心，抱歉，你又陷入效率和安全的问题里面去了。 如果你有很好的系统功底，准备往计算机领域发展(注意不是计算领域)。那么C++是门很好的语言，只是非常费时而已。而且建议你学C#，VB或者Java作为第二语言，选择Bash或者Perl作为第三语言。这样在处理问题上可以事半功倍。如果你打算增加自己的计算机能力，方便日常的电脑使用，而不准备深入学习这个领域。那么只学C#，VB或者Java就足够了。 最后要提到的是易学和易用，这两个特性都是软件设计所赋予的。也就是说，即使是以简单著称的VB.NET，也可以写很好用的程序。以复杂著称的汇编，也可以写很友好的界面。这就不在本文的论题以内了。</p>
 
           
 
@@ -383,43 +362,12 @@ new算子。其中的行为就很类似这个，Java只是将特殊情况下的�
 
 
         
-          <p>先给大家看个恐怖东西.
-class TIFF2JPEG { public: static void newInstance (tstring &amp; strFilepath, HGLOBAL hGlobal); static void waitObject (); protected: static ULONG_PTR initInstance (); static DWORD WINAPI ThreadProc (LPVOID lpParameter); TIFF2JPEG (); TIFF2JPEG (tstring &amp; str, HGLOBAL hg); int Translate (); static ULONG_PTR gdiplusToken; tstring strFilepath; HGLOBAL hGlobal; DWORD dwSize; }; int ImageInMemory = 0; deque &lt; TIFF2JPEG * &gt;t2j_list; CRITICAL_SECTION CriticalSection_t2j_list; CLSID GifCodec; bool bThreadDelete = 0; vector &lt; HANDLE &gt; vThreads; TIFF2JPEG::TIFF2JPEG () { } TIFF2JPEG::TIFF2JPEG (tstring &amp; str, HGLOBAL hg):strFilepath (str) { hGlobal = hg; dwSize = GlobalSize (hGlobal); return; } ULONG_PTR TIFF2JPEG::initInstance () { int i; HANDLE hThread; GdiplusStartupInput gdiplusStartupInput; ULONG_PTR gdiplusToken; GdiplusStartup (&amp;gdiplusToken, &amp;gdiplusStartupInput, NULL); GetCodecClsid (L&quot;image/jpeg&quot;, &amp;GifCodec); InitializeCriticalSection (&amp;CriticalSection_t2j_list); for (i = 0; i &lt; MAX_THREAD; i++) { hThread = CreateThread (NULL, 0, TIFF2JPEG::ThreadProc, NULL, 0, NULL); SetThreadPriority (hThread, THREAD_PRIORITY_IDLE); vThreads.</p>
+          <p>先给大家看个恐怖东西. class TIFF2JPEG { public: static void newInstance (tstring &amp; strFilepath, HGLOBAL hGlobal); static void waitObject (); protected: static ULONG_PTR initInstance (); static DWORD WINAPI ThreadProc (LPVOID lpParameter); TIFF2JPEG (); TIFF2JPEG (tstring &amp; str, HGLOBAL hg); int Translate (); static ULONG_PTR gdiplusToken; tstring strFilepath; HGLOBAL hGlobal; DWORD dwSize; }; int ImageInMemory = 0; deque &lt; TIFF2JPEG * &gt;t2j_list; CRITICAL_SECTION CriticalSection_t2j_list; CLSID GifCodec; bool bThreadDelete = 0; vector &lt; HANDLE &gt;</p>
 
           
               <footer>
                   <a href="http://shell909090.org/blog/archives/351/" rel="full-article">Read On &rarr;</a>
               </footer>
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/350/">全局初始化</a>
-    </h1>
-    <p class="meta">Jan 17, 2007
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/350/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>大家写代码的时候，假如写了一个组件，自身需要开一个线程的。那么多数是在初始化代码中直接写开线程的。如果要求这个类不在初始化代码中添加函数，怎么做？
-MSDN中有个例子，不是解决这个问题的，但是可以用。
-class DialogWindow{ public: static short GetTextHeight(){ return 1; }; private: static short nTextHeight; }; short DialogWindow :: nTextHeight = GetTextHeight(); int main(){}  在这里，把GetTextHeight里面添加上你需要的代码就可以了。
-但是注意，这些代码的运行时间要早于main(准确的说，是在wmainCRTStartup里面运行的_c_init函数)。所以很多自然而然就有的初始化没做，你自己在main里面调用的初始化(例如WSAStartup啦，GDI+初始化啦)更是没做。所以必须严格测试。</p>
-
           
 
         
@@ -692,6 +640,10 @@ class DialogWindow{ public: static short GetTextHeight(){ return 1; }; private: 
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2851/">/proc/net/dev中bonding网卡的流量计算</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2850/">SI的七个基础单位</a>
           </li>
         
@@ -727,10 +679,6 @@ class DialogWindow{ public: static short GetTextHeight(){ return 1; }; private: 
             <a href="/blog/archives/2842/">生活中总有一些小精灵会来敲你的门</a>
           </li>
         
-          <li class="post">
-            <a href="/blog/archives/2841/">最近的阿里月饼事件</a>
-          </li>
-        
       </ul>
     </section>
   
@@ -741,7 +689,7 @@ class DialogWindow{ public: static short GetTextHeight(){ return 1; }; private: 
 </div>
 
 <footer role="contentinfo">
-  <p>Copyright &copy; 2017 Shell Xu - <a href="http://shell909090.org/license/">License</a> -
+  <p>Copyright &copy; 2017  - <a href="http://shell909090.org/license/">License</a> -
   <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
 </p>
 

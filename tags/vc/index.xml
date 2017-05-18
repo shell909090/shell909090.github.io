@@ -8,9 +8,7 @@
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
     <lastBuildDate>Sun, 28 Apr 2013 16:26:34 +0800</lastBuildDate>
-    
-	<atom:link href="http://shell909090.org/tags/vc/index.xml" rel="self" type="application/rss+xml" />
-    
+    <atom:link href="http://shell909090.org/tags/vc/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>git log的一个吐血问题</title>
@@ -18,13 +16,20 @@
       <pubDate>Sun, 28 Apr 2013 16:26:34 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2397/</guid>
-      <description>刚刚在公司里查了半个多小时，记一下笔记。
-不知道你们有没有这种吐血经历。在git上有两个分支，莫名其妙合并到一起了。这可能是某个人的误操作。你检查log的时候，只看到他不停的把主分支merge到支线上去，却从没有把支线合并到主线上去。但是最终两个线却合并了，主线指向了支线。这是为什么？
-要理解这个问题，我们要搞明白，merge在git里是怎么工作的。当两个分支，来自同一个祖先，但是提交了不同修改，又要合并的时候，就需要进行merge。能够自动merge的，多一个merge commit，被合并分支的HEAD不变，合并入的分支的HEAD加一，指向merge commit。不能够自动merge的，手工处理冲突，其余和自动相同。
-注意这点，“被合并分支的HEAD不变，合并入的分支的HEAD加一”。由于两者在不同的点上，因此修改和提交会形成不同的分支。合并后的两个分支不会发生交汇。
-如果在一次正向的merge后，立刻进行了一次反向merge呢？事情就麻烦了。两个branch的HEAD指向了同一个commit。因此你可以认为支线分支合并到了主线，却没有merge记录。这是当然，因为这只是指针移动，属于fast forward。没有commit，没有log。
-不幸的是，这种操作还经常发生。当我们把支线向主线合并的时候，合并难度可能非常大。此时我们可以将主线向支线合并，然后反向合并。这样的合并难度就小很多了。然而这会使得合并记录不可查。
-所以，当碰到类似问题的时候，考虑两次合并的可能性。</description>
+      <description>&lt;p&gt;刚刚在公司里查了半个多小时，记一下笔记。&lt;/p&gt;
+
+&lt;p&gt;不知道你们有没有这种吐血经历。在git上有两个分支，莫名其妙合并到一起了。这可能是某个人的误操作。你检查log的时候，只看到他不停的把主分支merge到支线上去，却从没有把支线合并到主线上去。但是最终两个线却合并了，主线指向了支线。这是为什么？&lt;/p&gt;
+
+&lt;p&gt;要理解这个问题，我们要搞明白，merge在git里是怎么工作的。当两个分支，来自同一个祖先，但是提交了不同修改，又要合并的时候，就需要进行merge。能够自动merge的，多一个merge commit，被合并分支的HEAD不变，合并入的分支的HEAD加一，指向merge commit。不能够自动merge的，手工处理冲突，其余和自动相同。&lt;/p&gt;
+
+&lt;p&gt;注意这点，“被合并分支的HEAD不变，合并入的分支的HEAD加一”。由于两者在不同的点上，因此修改和提交会形成不同的分支。合并后的两个分支不会发生交汇。&lt;/p&gt;
+
+&lt;p&gt;如果在一次正向的merge后，立刻进行了一次反向merge呢？事情就麻烦了。两个branch的HEAD指向了同一个commit。因此你可以认为支线分支合并到了主线，却没有merge记录。这是当然，因为这只是指针移动，属于fast forward。没有commit，没有log。&lt;/p&gt;
+
+&lt;p&gt;不幸的是，这种操作还经常发生。当我们把支线向主线合并的时候，合并难度可能非常大。此时我们可以将主线向支线合并，然后反向合并。这样的合并难度就小很多了。然而这会使得合并记录不可查。&lt;/p&gt;
+
+&lt;p&gt;所以，当碰到类似问题的时候，考虑两次合并的可能性。&lt;/p&gt;
+</description>
     </item>
     
     <item>
@@ -33,9 +38,12 @@
       <pubDate>Mon, 07 Apr 2008 18:34:00 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/10/</guid>
-      <description>贝壳最近在用库上吃了不少苦头，先是crypto++5.52。编译后怎么也链接不上。后来发现需要用/MT参数编译为多线程。后来又在STLport上又吃一次苦头，可见VC2003的默认单线程模式确实不得人心。
-下面说一下STL的编译手记。下载STLport，解压。运行vcvars32.bat设置环境变量,去build/lib下面，运行 configuare -c msvc71(如果你是2003，否则按configuare &amp;ndash;help察看你的编译器类型)。然后运行nmake -f msvc.mak install。可以看到有两个目录被建立了，bin和lib。把bin的复制到windows/system32下面，把lib的复制到系统目录下面。 安装就OK了。
-上述和boost都差不多，然而和boost不一样的是，编写程序的时候，需要手工指定stlport的头文件路径。boost的可以以&amp;lt;&amp;gt;来引入，因此boost的头可以复制到系统里面去。然而stlport的必须以手工方式指定，否则就要覆盖默认的stl 了。</description>
+      <description>&lt;p&gt;贝壳最近在用库上吃了不少苦头，先是crypto++5.52。编译后怎么也链接不上。后来发现需要用/MT参数编译为多线程。后来又在STLport上又吃一次苦头，可见VC2003的默认单线程模式确实不得人心。&lt;/p&gt;
+
+&lt;p&gt;下面说一下STL的编译手记。下载STLport，解压。运行vcvars32.bat设置环境变量,去build/lib下面，运行 configuare -c msvc71(如果你是2003，否则按configuare &amp;ndash;help察看你的编译器类型)。然后运行nmake -f msvc.mak install。可以看到有两个目录被建立了，bin和lib。把bin的复制到windows/system32下面，把lib的复制到系统目录下面。 安装就OK了。&lt;/p&gt;
+
+&lt;p&gt;上述和boost都差不多，然而和boost不一样的是，编写程序的时候，需要手工指定stlport的头文件路径。boost的可以以&amp;lt;&amp;gt;来引入，因此boost的头可以复制到系统里面去。然而stlport的必须以手工方式指定，否则就要覆盖默认的stl 了。&lt;/p&gt;
+</description>
     </item>
     
   </channel>

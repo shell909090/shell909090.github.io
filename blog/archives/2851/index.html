@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>/proc/net/dev中bonding网卡的流量计算</title>
+
+  
+  
+  <link rel="stylesheet" href="http://shell909090.org/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="http://shell909090.org/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="">
+
+  
+  <meta name="generator" content="Hugo 0.17-DEV" />
+
+  
+  
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-48816091-1', 'auto');
+ga('send', 'pageview');
+</script>
+
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="http://shell909090.org/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         /proc/net/dev中bonding网卡的流量计算 
+    </h1>
+    <p class="meta">May 16, 2017
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/2851/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          
+
+<p>最近有需要，看了一下。我觉得还是讲一下，但是不讲太细了。以下代码是以4.4为基准的，不是的会特别指出。</p>
+
+<h1 id="proc-net-dev的读取问题">/proc/net/dev的读取问题</h1>
+
+<p>procfs的代码在fs/proc/proc_net.c，但是基本没干点啥事。真正的核心代码在net/core/net-procfs.c:dev_seq_show，我这里是105行。这个函数会打印个头，然后调用上面的dev_seq_printf_stats。dev_seq_printf_stats则是取设备最新信息，并打印。</p>
+
+<p>这里要注意的一点是，整个过程并没有锁，只是在fs/seq_file.c:seq_read上面上了一把锁。这把锁的目地更像是排斥两个进程同时读取同一个文件，而不是保证计数器正确。因此，实际上每个设备的性能计数都是单独读取的，而且读取时计数器还在持续递增。</p>
+
+<p>结论是什么？对于/proc/net/dev里的多个设备，做bonding加和是不可靠的。你不能假定设备1和2做了bonding，那么设备1的计数加上2的计数精确等于bonding的计数——虽然实际上就是这么算的。</p>
+
+<h1 id="bonding的数据获取">bonding的数据获取</h1>
+
+<p>我们再看dev_get_stats，这个函数里面实际上是用了ops-&gt;ndo_get_stats来获得设备的数据。对于bonding来说，这个文件在drivers/net/bonding/bond_main.c:bond_get_stats。从下面的实现中，你能看到，实际上bonding网卡的计数就是用各个设备的加和。然而计算没有那么直接，用的是每个设备的当前值减去原来保存值，差值加到bonding的保存值上。换个说法就是，bonding的margin等于各个设备的margin。</p>
+
+<p>这个特性是由这个补丁引入的：<a href="https://github.com/torvalds/linux/commit/5f0c5f73e5efaee2928c4cabcf48b03f6ba99fc8">make global bonding stats more reliable</a>，时间是2014年9月29日，版本是3.17.0-rc6。主要是解决bonding中去掉一块网卡的时候，计数器会掉下来的问题。在这个之前，还有两个补丁。</p>
+
+<ol>
+<li><a href="https://github.com/torvalds/linux/commit/be1f3c2c027cc5ad735df6a45a542ed1db7ec48b">Enable 64-bit net device statistics on 32-bit architectures</a>的引入时间是2010年6月8日，版本是2.6.35-rc1。这个版本首次引入了64位计数器（因此，RH6里面默认配置的2.6.32内核应当是32位计数器），但是写出了bug。</li>
+<li><a href="https://github.com/torvalds/linux/commit/28172739f0a276eb8d6ca917b3974c2edb036da3">fix 64 bit counters on 32 bit arches</a>的引入时间是2010年7月8日，版本同样是2.6.35-rc1。主要是解决补丁1在32位系统上非锁定读写64位计数器造成数据跨越总线宽度，导致多个CPU竞争读写时高低位被分别写入产生不一致的问题。</li>
+</ol>
+
+<p>由这两个补丁，我们可以简单总结出bonding的问题历史。</p>
+
+<ol>
+<li>在2010年，2.6.35之前，内核计数器只有32位，分分钟会出问题。实话说我完全不敢相信，有当时用过/proc/net/dev的朋友来讲讲么？</li>
+<li>2010年的时候，有短暂的bug，只影响2.6.35。这是一个开发内核，我们可以忽略。</li>
+<li>2014年，3.17.0之前。去掉一块网卡的时候，bonding计数器会掉下来。</li>
+</ol>
+
+<p>然而，其实问题并没有结束。如果你仔细看代码的话，会发现，bond_get_stats根本没加锁。如果两个context同时调用，有可能发生这么一个过程。</p>
+
+<ol>
+<li>context1读取数据并计算，计算完成后，写入bond-&gt;bond_stats数据前被switch out。</li>
+<li>context2开始运算，完成计算并写入bond-&gt;bond_stats。很明显，由于context2的启动时间比1晚，context2的数据结果比1大。</li>
+<li>context1被switch in，写入bond-&gt;bond_stats。</li>
+<li>在随后的时间里，计数器的增长比context2和context1的差值大。</li>
+</ol>
+
+<p>满足上述条件的话，bonding计数器就有可能倒涨。当然，里面还有其他竟态情况，可能导致各种问题。由于这是3.17.0内核引入的，因此只会发生在这个版本之后。</p>
+
+<p>当然，有朋友可能会说，/proc/net/dev里有锁啊。问题是，dev_get_stats可不是只有/proc/net/dev会用，rtnetlink也有可能哦。</p>
+
+<p>这个问题是这个补丁修复的：<a href="https://github.com/torvalds/linux/commit/fe30937b65354c7fec244caebbdaae68e28ca797">fix bond_get_stats</a>，时间是2016年3月18日，版本是4.5.0-rc7。在补丁的说明里，说到了这个问题。</p>
+
+<p>因此，我们延伸一下故障列表：</p>
+
+<ol>
+<li>在2010年，2.6.35之前，内核计数器只有32位，分分钟会出问题。实话说我完全不敢相信，有当时用过/proc/net/dev的朋友来讲讲么？</li>
+<li>2010年的时候，有短暂的bug，只影响2.6.35。这是一个开发内核，我们可以忽略。</li>
+<li>2014年，3.17.0之前。去掉一块网卡的时候，bonding计数器会掉下来。</li>
+<li>2014-2016年，3.17.0到4.5.0之间。多个CPU同时读写时，会发生竞争出错。</li>
+<li>2016年，4.5.0版本以上。未知。</li>
+</ol>
+
+<p>另外注意。并不是说3.17.0之前没有竞争问题，而是由于没有写回状态，所以竞争问题并不产生明显影响。</p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn"></span></span>
+    
+    <time>May 16, 2017</time>
+    <span class="categories">
+      Tags:
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="http://shell909090.org/blog/archives/2850/" title="SI的七个基础单位">SI的七个基础单位</a>
+    
+
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2851/">/proc/net/dev中bonding网卡的流量计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2850/">SI的七个基础单位</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2849/">模拟网络丢包延迟和TC的使用</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2848/">两台机器上TCP状态不一致的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2847/">Disney Shanghai信息</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2846/">广东游记</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2845/">phuket旅游和潜水指南</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/album/">相册</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2843/">贝加尔湖旅游指南</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2842/">生活中总有一些小精灵会来敲你的门</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2017  - <a href="http://shell909090.org/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+
