@@ -99,6 +99,37 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/2174/">语言的效率差异2</a>
+    </h1>
+    <p class="meta">May 18, 2012
+         - 4 minute read 
+         - <a href="http://shell909090.org/blog/archives/2174/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>问题 为了更深入的测试语言，我做了一个经典问题——24点。 这个问题主要是测试递归，循环效率，还有数组和树的复制性能。 为了简化问题，方便测试，我的问题是这样描述的： 有一个数组，里面有多个正整数。有一个操作数组，其中每个都是双目操作符。找出以两者构成算式，其值等于给定值的所有表达式组合。 要求不得遗漏，可以有少量重复。例如可交换算符的交换同构暂不做排重。 实际运行的时候，取+-*/和3 4 6 8，运行100次，查看时间消耗。正确的单次输出结果应当是这样的。 (((8 + 4) / 3) * 6) = 24 (6 / (3 / (8 + 4))) = 24 (((8 + 4) * 6) / 3) = 24 (((8 / 4) + 6) * 3) = 24 (((8 - 6) * 3) * 4) = 24 (((8 - 6) * 4) * 3) = 24 (((3 * 4) - 8) * 6) = 24 ((8 - (6 / 3)) * 4) = 24 (((4 + 8) / 3) * 6) = 24 (6 / (3 / (4 + 8))) = 24 (((4 + 8) * 6) / 3) = 24 (((8 / 4) + 6) * 3) = 24 (((4 * 3) - 8) * 6) = 24 (((8 - 6) * 3) * 4) = 24 (((8 - 6) * 4) * 3) = 24 ((8 - (6 / 3)) * 4) = 24 python python的解很复杂，长达31行，以下是我写的解。当然，还有更简单的版本，我可以用eval来干这个事情，代码只有24行，但是确实给人很evil的感觉。 from itertools import combinations class opt(object): def __init__(self, name, func, ex=True): self.name, self.func, self.exchangable = name, func, ex def __str__(self): return self.name def __call__(self, l, r): return self.func(l, r) def fmt(self, l, r): return '(%s %s %s)' % (fmt_exp(l), str(self), fmt_exp(r)) def eval_exp(e): if not isinstance(e, tuple): return e try: return e[0](eval_exp(e[1]), eval_exp(e[2])) except: return None def fmt_exp(e): return e[0].fmt(e[1], e[2]) if isinstance(e, tuple) else str(e) def print_exp(e): print fmt_exp(e), eval_exp(e) def chkexp(target): def do_exp(e): if abs(eval_exp(e) - target) &lt; 0.001: print fmt_exp(e), '=', target return do_exp def iter_all_exp(f, ops, ns, e=None): if not ns: return f(e) for r in set(ns): ns.remove(r) if e is None: iter_all_exp(f, ops, ns, r) else: for op in ops: iter_all_exp(f, ops, ns, (op, e, r)) if not op.exchangable: iter_all_exp(f, ops, ns, (op, r, e)) ns.append(r) opts = [ opt('+', lambda x, y: x+y), opt('-', lambda x, y: x-y, False), opt('*', lambda x, y: x*y), opt('/', lambda x, y: float(x)/y, False),] if __name__ == '__main__': for i in xrange(100): iter_all_exp(chkexp(24), opts, [3, 4, 6, 8]) 以下是100次的时间： real 0m2.259s user 0m2.248s sys 0m0.004s common lisp lisp来解这个问题简直是作弊，难怪被叫做人工智能语言。 (defun chkexp (target) (lambda (e) (if (equal (ignore-errors (eval e)) target) (print e)))) (defun exchangeable (op) (not (member op '(- /)))) (defun iter-all-exp (f ops ns &amp;optional e) (cond ((not ns) (funcall f e)) ((not e) (dolist (r (remove-duplicates ns)) (iter-all-exp f ops (remove r ns :count 1) r))) (t (dolist (r (remove-duplicates ns)) (let ((nss (remove r ns :count 1))) (dolist (op ops) (iter-all-exp f ops nss `(,op ,e ,r)) (if (not (exchangeable op)) (iter-all-exp f ops nss `(,op ,r ,e))))))))) (iter-all-exp (chkexp 24) `(+ - * /) `(3 4 6 8)) 只有短短17行。原因在于，lisp本身的ast即是用数据结构表示的，因此根本不需要我做eval函数，也不需要画蛇添足的弄自定义算符，直接用系统算符上。显示，打印，都是现成的。需要写的只有主体逻辑。结果也很特别： (* (- (* 3 4) 8) 6) (* (- 8 (/ 6 3)) 4) (* (- (* 4 3) 8) 6) (* (/ (+ 4 8) 3) 6) (/ 6 (/ 3 (+ 4 8))) (/ (* (+ 4 8) 6) 3) (* (+ (/ 8 4) 6) 3) (* (- 8 (/ 6 3)) 4) (* (* (- 8 6) 3) 4) (* (* (- 8 6) 4) 3) (* (/ (+ 8 4) 3) 6) (/ 6 (/ 3 (+ 8 4))) (/ (* (+ 8 4) 6) 3) (* (+ (/ 8 4) 6) 3) (* (* (- 8 6) 3) 4) (* (* (- 8 6) 4) 3) 不但行数只有一半，速度也很让人吐血，比python快了近一倍，这是100次的结果。 Evaluation took: 1.379 seconds of real time 1.372086 seconds of total run time (1.372086 user, 0.000000 system) [ Run times consist of 0.012 seconds GC time, and 1.361 seconds non-GC time.</p>
+
+          
+              <footer>
+                  <a href="http://shell909090.org/blog/archives/2174/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/2172/">语言的效率差异1</a>
     </h1>
     <p class="meta">May 14, 2012
@@ -339,33 +370,6 @@ ga('send', 'pageview');
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/2154/">google drive你这是在找死</a>
-    </h1>
-    <p class="meta">Apr 27, 2012
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/2154/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>昨天收到了google drive的邮件，今天就做了个简单的测试。我不确定是否是我的错觉，但是google drive不支持文件夹上传。 ？！ 是的，我找了半天，没找到。即使有这个功能，它也被藏的很深，至少一个熟练用户花了10分钟找不到。据我看到的资料，这是因为谷歌试图抛弃文件概念。 好吧，抛弃文件概念是个先进的理念，我也认为那是对的。但是，当我需要为我的200多个手机小说，一个一个上传，然后再手工建立目录，重新分类，打tag的时候。你连从文件夹直接导入的功能都没有。 告诉我，我为什么要用你。 其余特性我就不多吐槽了，包括中国群众使用的不稳定(虽然不是你们的错，而且dropbox也不稳定)。才5G的免费空间。目前还没有客户端。至少这些问题都是可以改进的(除掉那个不是你们的问题)。 但是拿着已经存在的事实不当回事，只考虑未来是美好的—— ——那就是在找死了。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -571,6 +575,8 @@ ga('send', 'pageview');
     
         <a href="/page/92/" class="label-pagination">92</a>
     
+        <a href="/page/93/" class="label-pagination">93</a>
+    
 
     
     
@@ -579,7 +585,7 @@ ga('send', 'pageview');
 
     
     
-        <a href="/page/92/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
+        <a href="/page/93/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
     
 
 </div>
@@ -632,6 +638,10 @@ ga('send', 'pageview');
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2852/">Puerro Galera游记</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2851/">/proc/net/dev中bonding网卡的流量计算</a>
           </li>
         
@@ -665,10 +675,6 @@ ga('send', 'pageview');
         
           <li class="post">
             <a href="/blog/archives/2843/">贝加尔湖旅游指南</a>
-          </li>
-        
-          <li class="post">
-            <a href="/blog/archives/2842/">生活中总有一些小精灵会来敲你的门</a>
           </li>
         
       </ul>

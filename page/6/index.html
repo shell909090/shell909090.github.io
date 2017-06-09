@@ -99,6 +99,37 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/2734/">EFI和GPT的研究</a>
+    </h1>
+    <p class="meta">Mar 24, 2015
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/2734/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>EFI和GPT的关系 关于EFI和GPT的解释我就不说了，相信来看我blog的人应该能自己搜到。 关于两者的关系，我简要点说吧。如果你需要用EFI引导，你就应该用GPT分区。如果你需要用GPT分区，你就应该用EFI引导。反之交叉组合，不一定会失败，但是折腾和兼容性不保证是必然的。从这两年的经验上看，越来越多的系统开始支持EFI+GPT模式的组合。所以大家可以提前演练一下EFI+GPT模式引导。 GPT和MBR分区互换 在windows下可以用磁盘管理器直接换，在linux下可以用parted或者gdisk来做。当然，如果你有图形界面，可以上gparted这个神器。非常好用。 linux下用parted更换分区表的方法[1]： # parted /dev/sdd GNU Parted 3.1 Using /dev/sdd Welcome to GNU Parted! Type 'help' to view a list of commands. (parted) mklabel New disk label type? gpt (parted) 但是目前我看到的可靠转换方案，都是在无数据情况下进行分区表互换。带数据转换有很多前置条件，而且肯定有风险。所以建议初始化硬盘的时候搞，不然后面可能代价很高。 GPT分区的划分要求 GPT有很多优势，例如没有主分区和扩展分区的区别，硬盘大小可以超过2T，分区可以打很多flags，等等。但是使用GPT也不是说全无要求。基础来说，GPT分区划分有几个建议。 第一个分区划分为EFI分区，并且保留至少20M，推荐100M的大小。 第二个分区划分为GPT分区，保留同上。 其他分区安装使用频繁程度和大小从前向后装。 1是因为EFI推荐为第一个分区。3是因为万一你需要为某个分区扩展大小，你当然希望移动比较小的分区。 EFI引导 终于到了今天的重头戏，EFI引导。EFI+GPT模式下，引导变得异常简单，多重引导的支持也非常容易。大家再也不用去抢MBR了。 在linux下，有个工具叫做efibootmgr，可以man一下看文档。简单来说，这货有三个功能。 efibootmgr -v，查看当前引导表项。 efibootmgr -c，增加引导表项。 efibootmgr -B，删除引导表项。 至于引导表项，具体是什么呢？简单点说，就是某硬盘的某分区，分区ID多少多少，上面的某路径下，有个按照EFI规范写的文件，你给我引导起来。就这么简单。 当然，EFI认识的文件系统格式比较少，我确定的只有FAT一种。但是好在EFI文件引导起来后，后面跑什么文件系统就无关了。所以这也是为什么有EFI分区的原因。这个分区以FAT格式化，然后所有的启动管理器都安装在上面（其实就是放了一个文件）。最后加一个表项就可以引导了。 通常情况下，linux下由grub-efi这个包来提供这个efi文件。当efi文件被引导后，会找到boot分区，并且加载上面的grub主程序和附加模块。最后进入grub主系统。我查看了一下，在我的系统上(debian jessie, 2015-03-24)，efi被挂载到/boot/efi，而efi文件在/boot/efi/EFI/debian/grubx64.efi，大小为119808字节。 硬盘安装windows 上面说了这么多EFI有关的东西，下面说说贝壳最近的烦恼。 最近换了一台机器，挺不错的。但是由于机箱小，所以硬盘拆卸困难，基本就当作内置硬盘了。所以把硬盘拆下来安装系统就做不到了。同时又没有光驱。所以安装系统的方案只有U盘一种。 当然，对于linux来说，这都不是事。debian很快就安装完成，整个系统的重初始化没用两个小时。但是windows上就卡壳了。Windows7不支持dd到U盘引导，而微软推出的iso to udisk工具理所当然的只能跑在windows下——可当时所有windows实例都挂了正在重装中。 所以我就借了一个USB光驱来装系统，然后发现另一个悲剧的事实。当初为了多引导方便，使用了GPT分区模式。而Windows的安装，居然是EFI引导才能往GPT上装，BIOS引导只能往MBR上装。这个为了防错的愚蠢设计的结果就是，Windows7的原始安装光盘，只要从光驱一引导，就必定只能装到MBR上。。。 当然，后面介绍的内容，可以帮助你推理出如何修改安装光盘，来实现EFI下的ISO引导。不过这种事情对当时的我一点帮助都没有。 所以核心问题就是EFI引导了。于是，我开始了上面的研究。而研究完EFI引导，我发现——其实好像连U盘都不用的。因为本质来说，Windows的安装程序也是一个Windows。我只需要分一个FAT的分区，把安装程序丢上去，然后设法添加一项EFI表项，指向正确的EFI加载文件即可。有一份如何制作EFI引导的U盘的文档也支持我这个想法[2]。 所以我做了一个简单的测试，在GPT的尾部分了一个小分区，并格式化为FAT32。在上面展开win7的完整ISO。 然后是关键问题，EFI表项是一个硬盘+分区+路径的组合。硬盘和分区都不是问题，问题是应该指向哪个文件呢？根据我的测试bootmgr.efi和cdboot.efi都是错的，无法完成引导。当然，在文档[2]和文档[3]里，都指明了如何解决这个问题。从一个可引导的win7里面，提取一个bootmgfw.efi文件，改名为bootx64.efi。不过上面说了，我没有一个可用的windows。幸运的是，文档[3]里面提供了一个下载链接，可以让我下载一份。将这份efi丢到分区上，并且添加efi表项后，BIOS引导项中出现了安装器选项。选择后就直接进入windows安装界面，并且可以安装到GPT分区上。 GPT分区的激活 其实我不是很想提到这个事，不过GPT分区安装windows绕不过去的问题就是如何绕过防盗版。 本质上说，目前的软激活，都是通过抢在Windows前启动一个程序，来拦截Windows对SLIC的读取，从而返回一个合法的OEM SLIC。这个加上系统内安装的，和这个合法OEM</p>
+
+          
+              <footer>
+                  <a href="http://shell909090.org/blog/archives/2734/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/2730/">FIN-WAIT-1的问题一例</a>
     </h1>
     <p class="meta">Feb 26, 2015
@@ -347,37 +378,6 @@ ga('send', 'pageview');
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/2700/">上下文切换测试总结报告</a>
-    </h1>
-    <p class="meta">Nov 18, 2014
-         - 2 minute read 
-         - <a href="http://shell909090.org/blog/archives/2700/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>效率测试 测试环境 Intel&reg; Pentium&reg; CPU G2030 @ 3.00GHz 8G内存 debian jessie Linux 3.16-2-amd64 2014年10月27日 附注一下，该CPU有2核心，无HT，1ns3个时钟周期。 测试方法 测试代码如下： time -f &quot;%e,%S,%c,%r,%s,%K,%P&quot; ./perf_fork 数据的意义分别为: 总时间，内核CPU时间，context switch次数，读/写次数，内存耗用，CPU使用百分比。 数据处理方法如下： import numpy as np p = lambda s: [float(line.strip().split(',')[0]) for line in s.splitlines()] q = lambda s: [float(line.strip().split(',')[1]) for line in s.splitlines()] np.array(p(s)).mean() np.array(p(s)).var() np.array(q(s)).mean() np.array(q(s)).var() 基础开销测试 函数调用开销 使用s_call来测试性能，循环1G次。 2.35,0.00,17,0,0,0,99% 2.34,0.00,13,0,0,0,99% 2.34,0.00,10,0,0,0,100% 2.35,0.00,10,0,0,0,99% 2.34,0.00,14,0,0,0,99% 2.34,0.00,6,0,0,0,99% 统计结果如下： time mean = 2.34 time var = 0.000022 每次call的开销为2.34ns，约7个指令周期。当然，这些并没有考虑调用压栈和数据返回。</p>
-
-          
-              <footer>
-                  <a href="http://shell909090.org/blog/archives/2700/" rel="full-article">Read On &rarr;</a>
-              </footer>
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -583,6 +583,8 @@ ga('send', 'pageview');
     
         <a href="/page/92/" class="label-pagination">92</a>
     
+        <a href="/page/93/" class="label-pagination">93</a>
+    
 
     
     
@@ -591,7 +593,7 @@ ga('send', 'pageview');
 
     
     
-        <a href="/page/92/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
+        <a href="/page/93/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
     
 
 </div>
@@ -644,6 +646,10 @@ ga('send', 'pageview');
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2852/">Puerro Galera游记</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2851/">/proc/net/dev中bonding网卡的流量计算</a>
           </li>
         
@@ -677,10 +683,6 @@ ga('send', 'pageview');
         
           <li class="post">
             <a href="/blog/archives/2843/">贝加尔湖旅游指南</a>
-          </li>
-        
-          <li class="post">
-            <a href="/blog/archives/2842/">生活中总有一些小精灵会来敲你的门</a>
           </li>
         
       </ul>
