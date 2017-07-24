@@ -99,6 +99,33 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/1850/">讨论时的态度</a>
+    </h1>
+    <p class="meta">Jul 5, 2011
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/1850/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>发觉错误要认错，不要在乎面子。死不认错才最丢面子。 不要编造事实。如果你不确定，可以给出参考意见，但是不要说，我确信XXX。更不要为了面子问题而编造一个不存在的事情，大家都会验证的。 别怕专家。专家也是人，专家也会错，更别提里面还有不少的“砖家”。 不随便显露自己的身份。说不赢别人就拿出XX博士XX专家来压人最没意思。除非你们讨论的话题说不大清楚，最后归结为“在XX领域的经验谁更丰富”。 对事不对人。关于某个问题，你可以和人在论坛上吵的很凶，但是转头又是一起吃饭的朋友。不过关于这点，中国人有所谓面子问题。你要先掂量对方是不是个死要面子的家伙。如果是，你让人下不来台导致被绝交，请不要怪我。 不要人身攻击。这里包含了不要质疑对方的出身，动机，等等。例如说不赢就骂对方是猪，猪说的话没听的价值，等等。最常见的，也是最容易发生的人身攻击是质疑对方的动机。例如讨论一个政策问题，说不赢对方，就骂对方五毛，收了好处帮政府说话。这种东西是永远辩不清的，听的人只有明者自明。讨论时你只能就事论事说对方错在哪里，而不是扯到对方动机上去。 不要过度扯无关问题。闲聊时候怎样都好，讨论的时候有关话题适当扯，无关的就不要长篇大论了。 谁主张谁举证。千万别搞倒置了。倒置的话我可以先说你是猪，你举证一下为什么你不是？ 不要“敌视”持不同意见者。没有人会永远正确，持有不同意见多数情况下只是意见不同，不是阵营不同。 不要说教，搞一言堂。那是宣讲而非讨论。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/1849/">社区的准则</a>
     </h1>
     <p class="meta">Jul 4, 2011
@@ -329,37 +356,6 @@ ga('send', 'pageview');
         
           <p>说到openwrt，就不能不提一下QoS。尤其是如果你需要用P2P软件（目前对迅雷的支持还不大好），基本就不能不开QoS。QoS的全称是Quality of Service，意即服务质量。是专门用于解决拥堵网络上的信号质量一视同仁的问题。例如，我们有一根宽带，两人共用。一个人视频聊天，一个人bt下载（我还不提迅雷个傻X呢）。玩bt的那个一开软件，视频聊天那个立刻没法用了。bt和视频聊天稍微好一点的是，视频聊天消耗的带宽是恒定的。你可以逐步限速，只要给视频聊天留了足够的带宽，两个就都能一起用了。但是，如果另一个人不是视频聊天，而是网络浏览怎么办？网络浏览，视频聊天，p2p下载一起来怎么办？实际上这是很多朋友家中常常碰到的情况。更不说有合租公寓里面你很难监控对方一定限速，软件无法限速甚至恶意抢占带宽（迅雷）。另一个更加技术的问题是，由于上传带宽不足，ACK包回应过慢，导致你的下载速度也不能达到峰值。玩p2p的常常会给上传限速到真实带宽差一点的位置，下载带宽立刻上去，就是这个道理。 怎么办？用QoS，解决你多年老便秘。QoS的底层是tc，其目的就是决定先发送哪些包。openwrt默认的规则是hfsc，设计了四个优先级。Priority最优先，处理22,53,icmp，以及小于128字节的syn,ack包中，不属于bulk类别的。我们可以看到，DNS，syn/ack的优先响应，保证了你的上传不会影响下载。其次是Express，处理5190和小于500字节的UDP包。这个我也不明白是为什么，好像是视频什么的。然后是Normal，包括20,21,25,80,110,443,993,995这些常见端口。涵盖http/https，ftp，邮件系统。最后是Bulk，包括其他包，尤其是ed和bt。 当你启用QoS后，你的p2p软件速度应当不会上升，反而会下降。下载速度不好说，有可能是上升，也有可能下降。因为原来p2p软件抢占了所有带宽，目前他们只能使用普通应用用剩下的带宽，速度当然慢了。然而，当你使用浏览器，收发邮件的时候，速度应当和不使用p2p的时候一样流畅。这才是使用QoS最大的意义。 方法很简单，安装QoS包，然后修改/etc/config/qos，注意修改你的带宽。不修改的话，流量会被无意义的限制死。 另外，打开QoS后，千万记得把你的p2p软件改为不限速。否则不能达到最高性能。</p>
 
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/1836/">openwrt配置——防火墙规则</a>
-    </h1>
-    <p class="meta">Jun 17, 2011
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/1836/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>如果说路由规则还能讲讲，iptables防火墙规则就彻底没法讲。简直是千变万化无所不能。下面就简单说一下，对于新增的tun0设备如何设定防火墙规则。 ----------config/network---------- config 'interface' 'tun' option 'ifname' 'tun+' option 'proto' 'none' ** ----------config/firewall---------- config 'zone' option 'name' 'tun' option 'input' 'ACCEPT' option 'output' 'ACCEPT' option 'forward' 'REJECT' config 'forwarding' option 'src' 'lan' option 'dest' 'tun' option 'mtu\_fix' '0' config 'forwarding' option 'src' 'tun' option 'dest' 'lan' option 'mtu\_fix' '0' 好了，新增了一个网口，叫做tun，处理所有tun+（就是任何tun设备）的吞吐。默认规则是可以收发，拒绝转发。转发规则是可以和lan互相转发。 /etc/init.d/network restart /etc/init.d/firewall restart 然后你看看你的配置是否正确。 iptables -L -v 另外，这个配置方法有个bug。由于你的网口是tun+，所以在启动时，无法自动启用这个接口。在路由器重启后必须/etc/init.d/network restart才能工作。对我来说，每次路由器重启后都是手工开启openvpn的，问题不大。但是对于某些人就比较麻烦。对此推荐这些人直接修改/etc/firewall.user，直接加入以下指令。 iptables -I INPUT -i tun+ -j ACCEPT iptables -I OUTPUT</p>
-
-          
-              <footer>
-                  <a href="http://shell909090.org/blog/archives/1836/" rel="full-article">Read On &rarr;</a>
-              </footer>
           
 
         
@@ -634,6 +630,10 @@ ga('send', 'pageview');
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2853/">riot.im简介</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2852/">Puerro Galera游记</a>
           </li>
         
@@ -667,10 +667,6 @@ ga('send', 'pageview');
         
           <li class="post">
             <a href="/blog/album/">相册</a>
-          </li>
-        
-          <li class="post">
-            <a href="/blog/archives/2843/">贝加尔湖旅游指南</a>
           </li>
         
       </ul>

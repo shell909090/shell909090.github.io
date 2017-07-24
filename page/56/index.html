@@ -99,6 +99,33 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/95/">PC使用android上网</a>
+    </h1>
+    <p class="meta">Feb 22, 2010
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/95/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>最简单的方法是使用android-wifi-tether，不过我这里使用不成功，原因不明。所以今天我们不去说他，我们说另外一个软件，azlink(http://code.google.com/p/azilink/)。 首先是安装。检查是否满足安装条件，如果满足的话，安装apk，这个不用多说。azlink.ovpn需要复制到电脑上，并且准备好openvpn和adb。另外，推荐在手机上也保存一个azlink.ovpn和adb，openvpn，以便在多个机器上使用。 下面开始正式的连接操作，作为测试，请先关闭手机的wifi上网功能和电脑的wifi，有线，以免影响测试结果。本文中的范例系统是Debian Testing(Squeeze)，网络环境是中国移动的CMNET(8元80M包月，很合算的)。如果环境有所差异，请照您的环境做相应调整。 1.使用usb线连接andriod和PC，此时android上会出现USB已连接的提示。 2.在android上执行azlink，并且勾第一个勾，Service active，保证系统运行。此时状态应当是Warting for connection。 3.在PC上执行adb forward tcp:41927 tcp:41927，此时可能出现service start。这个是首次运行的原因，不影响结果。 4.执行openvpn azlink.ovpn。此时会出现虚拟网络，并且android上的状态发生变化。 5.在android上，设置-&gt;高级属性-&gt;手机信息中，查看下面的GSM信息，一般能看到网关和DNS。请去ping一次网关，如果成功，你的事情已经成功了大半。 如果上面不成功，请联系我。如果成功，请在你的系统内重设DNS。azlink.ovpn将你的DNS指向了手机上，可手机本身无法做DNS的。因此请将你电脑的DNS重设为手机上的值。如果你高兴，也可以将azlink.ovpn中的值改掉，理论上说一个地区的移动网络中，DNS应当都是一样的。不过如果你要跨地区，这个DNS就会发生变化。因此，我无法预先给定值，也无法获得。 这是整个过程中最关键的一步。很多人说为什么无法上网，其实是可以的，只是你的DNS没有指向正确的值而已。 6.如果是CMNET，事情就到此为止了。如果是CMWAP，你还需要做一小步。找一个CMWAP能够访问的代理，设到你的浏览器里面。 作为关闭，其实拔线就可以了。不过作为程序员，我们习惯完美的析构过程。所以，下面是关闭过程。 1.恢复浏览器原先的代理设置。 2.断开openvpn，此时android上的状态会恢复Warting for connection。 3.PC上需要执行adb kill-server。这样会kill掉adb的daemon进程，否则adb会一直假转发，并且始终占用进程号。 4.在android上，关闭Service active的勾。并且，如果你喜欢，可以kill掉进程以回收内存。 5.拔USB线。 如果你曾经关闭了手机的wifi，电脑的wifi和有线，现在也可以恢复了。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/94/">ext3下小文件的恢复</a>
     </h1>
     <p class="meta">Feb 21, 2010
@@ -332,33 +359,6 @@ ga('send', 'pageview');
 
         
           <p>F:google真的准备退出中国了么？ Q:历史告诉我们，两个人谈价的时候，如果出现有人生气要走，那可能是讲价的手段。如果出现扇耳光，那么多数是谈崩了。除非被扇的人授意这么做，否则双方都没有回头路可走。目前google等于明确的在指责中国进行网络监控，并试图进行网络攻击。耳光都扇出去了，下面就不是谈价的问题了。 F:中国政府会怎样处理google的谈判呢？ Q:这也是个挺头痛的问题，要是让google就这么走了，无异于变相承认了中国的网络舆论监控和网络安全问题。但是要答应无控制的搜索，那是绝对不可能 的。可能会派出发炎人，声明，中国要求google进行网络控制的理由是为了防止网络色情和网络暴力，这是我国内政，其他国家无权干涉。目前没有证据表明 入侵google的黑客得到中国政府的授意，任何试图联系两者的人都是邪恶和别有企图的。中国是一个开放的市场，任何人进入和离开是个人自己的选择，中国 依旧欢迎其他公司来中国建厂投资。 F:google退出中国真的是因为不作恶么？还是为求一个体面的退出？ Q:别太把自己当回事了。google在中国的利润有多少？不超过总利润的10%。投资有多少？鬼知道。市场份额多少？33%。我们不看其他，就算中国市场全争取过来，最高也只能将利润增加到25%((10*3)/(100+10*2))。也就是说，中国最多是一块肉丝，而美国是块肥肉。如果肉丝真的有臭掉的风险，宁可丢块肉丝，也别丢肥肉。 而且，一旦明确指责网络舆论控制和网络安全问题，那么，同样进入中国的其他大型厂商就会陷入被动，包括微软，雅虎等。撤吧，他们的市场份额更大，问题也更复杂。不撤吧，他们在美国的形象会受到影响，有利于google在其他地区的业务。 F:google走了，百度得益了？ Q:短期来看，没错，长期来看，市场会重新平衡。由于百度在谈判上的强势地位，因此会导致代理商和广告主非常难做，同时互联网广告的成本会增加。进而加剧劣币驱逐良币，最后让整个互联网的所有广告都变成近乎于废纸，互联网广告业务名存实亡。 而且，一旦google离开，百度就会直面政府。从政府需要&rdquo;团结和依靠&rdquo;的多数，变成需要&rdquo;警惕&rdquo;的&rdquo;怀有异心&rdquo;的人。可以预见，政府对百度的监控和利用会达到一个新的高峰(因为用不着让你活着对付google了)，并且可能会提出注资成为某部下属机构的要求。 F:google走了，我们将会怎样？ Q:google的离开，标志着中国的互联网整体倒退了6年。在IT界，3年是一个时代，6年的倒退，让我们退回了两个时代去，变成了上个世纪网络刚刚兴起的时候，那种上网艰难的状况。这不是用备份邮箱，备份新闻标签等方法可以解决的。 更严重的是，这会严重打击整个业界，工程师，对于中国的网络发展的评价。在这个问题解决前，我们可能落后其他国家10年以上。当然，之所以我这么担忧，其实还是因为这直接影响到了我的饭碗。</p>
-
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/85/">手工删除oracle数据库实例的全部文件</a>
-    </h1>
-    <p class="meta">Jan 11, 2010
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/85/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>今天公司搬家，没啥好写的，简单记录一下前两天删除重建oracle数据库的过程吧。 首先，我重建的是oracle数据库，而不是oracle数据库程序。这几天不知道怎么回事，整个数据库的redo log出问题了，我又懒得去找。加上这个数据库做演示的时候乱糟糟的配置做了一堆，也记不请了，干脆重建。 重建的第一步，需要找到所有程序实例的位置，这个可以看/etc/oraInv什么的一个文件，这里会指向一个目录。这个目录是标准的，里面有各种格式的oracle程序实例的位置。然后，一个程序实例可以运行多个数据库实例，因此，要找出这些数据库实例的配置文件。这个就需要对oracle的数据库基本结构有所了解，这里不赘述oracle数据库的各种基本概念。 oracle的数据库配置文件在一个很怪的位置，/etc/oratab里面。其中有SID到spfile路径的对应关系，通常而言，这个路径位于$ORACLE_HOME/dbs/init$ORACLE_SID。我们首先不要删除这个对应关系和文件，因为启动中其他文件需要通过这个找到。我们首先通过spfile建立pfile，来读取其中的参数。 $ export SID=orcl $ sqlplus / as sysdba &gt; create pfile from spfile &gt; exit OK，这样我们就建立了pfile，现在可以删除$ORACLE_HOME/dbs目录下所有的SID相关的文件，并且删除oratab中的对应关系。完成这步后，数据库就无法启动，也不存在了。但是我们还需要回首数据库相关的文件，主要是收回空间，同时也免除后患。 首先，数据库有三个control files，还有一个到多个data files，以及多个redo log。在默认设置中，这些文件一般放在一起，你可以通过查看pfile确认这些文件的路径。找到之后，直接删除，没啥好多说的。在完成数据基础文件的删除后，我们还需要删除flash_recovery文件，这个也可以通过pfile确认，位置一般在data文件上两级(就是通常$ORACLE_BASE的位置)下面，flash什么的一个目录，很好找。 最后，我们删除admin目录，具体是在$ORACLE_BASE下面的admin下面，以SID命名的，可以通过pfile确认。至此，oracle数据库的删除完成。不过呢——呵呵——让大家失望的是，其实DBCA也可以完成一样的工作&hellip; 不过，dbca的工作必须通过vnc，绝对不要通过ssh + xming，因为那个会让最后一步执行前的确认无法被确认，导致不能执行。实在是很让人郁闷的一个bug，切记切记。</p>
 
           
 
@@ -634,6 +634,10 @@ ga('send', 'pageview');
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2853/">riot.im简介</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2852/">Puerro Galera游记</a>
           </li>
         
@@ -667,10 +671,6 @@ ga('send', 'pageview');
         
           <li class="post">
             <a href="/blog/album/">相册</a>
-          </li>
-        
-          <li class="post">
-            <a href="/blog/archives/2843/">贝加尔湖旅游指南</a>
           </li>
         
       </ul>

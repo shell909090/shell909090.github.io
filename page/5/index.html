@@ -99,6 +99,33 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/2766/">hosts配错导致ldap安装问题一例</a>
+    </h1>
+    <p class="meta">Jun 30, 2015
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/2766/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>不废话了，要装ldap。 ubuntu下，最简单的方法是修改/etc/hosts，添加自己的域名，例如ldap.shell909090.org。然后安装包的时候，就会使用dc=shell909090,dc=org作为basedn。里面自动添加一个admin。 结果在某机器上，丫硬是一直管自己叫nodomain。 当然，内容可以后改。但是很麻烦。先要删除原始的，添加新的。还有一堆杂七杂八的问题。关键是，为啥TMD这么简单一个问题我居然搞不定。 方法1 绕过。 怎么绕？ 经过检查发现，basedn这些东西，其实都是从debconf里读的，而不是直接来自系统。所以我可以重设debconf来修改配置。 echo slapd slapd/domain string shell909090.org | debconf-set-selections echo slapd shared/organization string shell909090.org | debconf-set-selections 然后再安装，就全部正确了。 方法2 为什么？ 检查同样发现了本质的原因。如果debconf里没有配，则去读取hostname -d。在一台机器上，这个配置没事，另一台就不行。 经过我反复测试，发现原因是这样的。 hostname -d读取域名的时候，是寻找/etc/hostname对应的域名作为行尾的那行，而不是127.0.0.1所在的那行。。。 而出问题的那台机器，/etc/hosts配置和没问题的那台严格一致。包括机器编号！ 谁TM抄卷子把名字也抄了？</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/2764/">婚姻平权——写在美高等法院裁定全美同性婚姻合法边上</a>
     </h1>
     <p class="meta">Jun 29, 2015
@@ -332,33 +359,6 @@ ga('send', 'pageview');
 
         
           <p>最近有个朋友问我有没有意向写点和python有关的东西。我说没啥想法。要入门，看dive into python足矣。要学最准确的用法，当然是看python manual。两者都有很不错的中译本了，我还有什么可写的呢。朋友说看了这俩可不代表会写程序啊。我说要真的学会，你只有亲自来看我是怎么写的了。朋友说正好，我们这里就是录电子课程的。。。 所以我就录了这份python代码写给你看。其实录的很粗疏，并不适合纯粹的初学者。因为里面并没有“讲解”python是什么，print是什么，对象是什么。这些东西基本都是在课程中随口提到的。如果没有看过入门书的人，直接看视频的结果就是看一个点卡一个点。也因此，我只推荐“看完了python入门书”，希望“能够像真正的python程序员一样工作”的人来看。 同时，这份视频在求解的时候经常思路卡在那里。因为我追求“必须让观看者看到我真实的代码过程”，所以里面的大部分问题，并没有提前准备过程。我觉得，提前把代码写好，然后到录的时候咔咔敲出来，漂亮是漂亮了，还不如让你直接看源码来的方便。这里的很多问题，我都是当场推论如何解决的。有些问题甚至上来思路错了。但是我觉得这些都不重要。我觉得看到如何使用各种手段去发现，改正错误，比看到正确的代码更有用。 录到最后。我和朋友说，我觉得不能再录下去了。整个视频里提供的问题已经太凌乱没有体系了，再录下去就变成了“现场用python解决各种奇怪问题的，没有人看的大杂烩集合”了。谁愿意总是看一个胖子程序员在那里唠叨一堆问题他是怎么解决的呢？但是我又不大满意。仅仅这里提供的几个例子，并不能完整的反映一个python程序员日常工作中碰到的各种问题和如何解决。比起上百小时的实际工作来说，录像能提供的时间无疑太短了。 无论如何，我最终决定，还是把现在的工作放在这里，放给大家看。希望能够成为大家在python入门之路上的，一颗微不足道的小石子。也希望将来，我能为这份教程去芜存菁。 请大家批评指正，谢谢。 PS：音量的问题就别吐槽了。我们设法改善了几次，最后发现有很多听不清的内容是因为我的“小黄鸭调试法”。简单来说就是没思路的时候就开始自言自语，描述一个个部分的用途，试图发现里面的问题。结果这些自言自语变成了背景里的念经。。。 也许下会我会专门录个“shell读kernel”当睡前读物录音。因为那会更加的颠三倒四语无伦次。。。</p>
-
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/2737/">ppa的使用</a>
-    </h1>
-    <p class="meta">Apr 21, 2015
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/2737/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>最近用ppa做了backport，这里记录一下用法。 编译简述 ppa的大概工作原理，和mentors非常类似。 包一个deb包，然后build这个包，生成dsc，deb，build和changes。 上传这些文件，然后ppa丢弃所有deb（是的，ppa不接受编译好的包，因为可能在编译过程中被做手脚），从源码编译所有文件。 ppa生成了一堆deb文件，并丢到一个特别的目录下。 ppa为这堆deb文件做签署。 最终用户将这个目录添加到apt源中，就可以安装这些包了。 这里有几个细节： 服务器怎么知道是你上传的包？ 答案是在打包时进行签署，所以dput是不验证身份的。也因此，你需要将自己的gpg key上传到服务器。 既然不需要deb，如何构建一个没有deb的编译？ 答案是debuild -S。当然，这也可能有变化。如果是建立一个已经存在的包，是-sd，否则是sa。后面还可以用-k\来指定 最终用户如何构建信任？ 答案是由ppa编译，由ppa签署。用户并不导入维护者的任何key。但是如果用户不信任维护者，那么维护者可以在包内夹杂任何恶意代码。因此ppa只解决安全传递和构建，而不解决维护者信任问题。 申请ppa 不废话，自己去launchpad申请。这个是要ubuntu one帐号的，然后openid认证。不过不算太麻烦。 添加key 首先需要生成gpgkey，这里不解释如何生成key pair。 然后需要将key pair上传到ubuntu key server。我不知道其他key server最终会不会同步，但是即使会，同步时间也是长的那啥。 gpg --keyserver keyserver.ubuntu.com -send &lt;keyid&gt; 这样就行了。 设定dput 在这个页面有解释。在ubuntu 9.10以上版本，可以直接dput ppa:userid/ppa &lt;source.changes&gt;来上传。如果是更老版本（或者像我一样用debian），可以设定~/.dput.cf来工作（刚刚的页面下面有样例，照着改就行）。 添加ppa 使用add-apt-repository ppa:userid/ppa就行了。本质上，他做了两件事。 在/etc/apt/sources.list.d/下面生成一个文件，将你的repository添加到系统中。 将ppa的sign key导入到系统中，并添加信任。</p>
 
           
 
@@ -634,6 +634,10 @@ ga('send', 'pageview');
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2853/">riot.im简介</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2852/">Puerro Galera游记</a>
           </li>
         
@@ -667,10 +671,6 @@ ga('send', 'pageview');
         
           <li class="post">
             <a href="/blog/album/">相册</a>
-          </li>
-        
-          <li class="post">
-            <a href="/blog/archives/2843/">贝加尔湖旅游指南</a>
           </li>
         
       </ul>
