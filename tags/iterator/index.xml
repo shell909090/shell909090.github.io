@@ -8,7 +8,9 @@
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
     <lastBuildDate>Tue, 08 Apr 2008 14:05:00 +0800</lastBuildDate>
-    <atom:link href="http://shell909090.org/tags/iterator/index.xml" rel="self" type="application/rss+xml" />
+    
+	<atom:link href="http://shell909090.org/tags/iterator/index.xml" rel="self" type="application/rss+xml" />
+    
     
     <item>
       <title>python的非经典错误</title>
@@ -16,44 +18,11 @@
       <pubDate>Tue, 08 Apr 2008 14:05:00 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/11/</guid>
-      <description>&lt;p&gt;def comp_tuple_file(tuple_file1, tuple_file2):
-        for i in tuple_file1:
-            if i in tuple_file2:
-                tuple_file1.remove(i)
-                tuple_file2.remove(i)&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;if __name__ == &amp;quot;__main__&amp;quot;:
-    t1 = [(1, &amp;quot;1&amp;quot;), (2, &amp;quot;2&amp;quot;), (3, &amp;quot;3&amp;quot;)]
-    t2 = [(1, &amp;quot;1&amp;quot;), (3, &amp;quot;3&amp;quot;), (2, &amp;quot;2&amp;quot;), (4, &amp;quot;2&amp;quot;)]
-    comp_tuple_file(t1, t2)
-    print(t1)
-    print(t2)
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;错在哪里？&lt;/p&gt;
-
-&lt;p&gt;头一次循环，i=(1,&amp;ldquo;1&amp;rdquo;)被正确移除了。但是接下来，i=(3,&amp;ldquo;3&amp;rdquo;)？&lt;/p&gt;
-
-&lt;p&gt;这个叠代器的行为很有意思哦，貌似叠代器内存储的是集合的索引。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;def comp_tuple_file(tuple_file1, tuple_file2):
-    collection = tuple_file1[:]
-    for i in collection:
-        if i in tuple_file2:
-            tuple_file1.remove(i)
-            tuple_file2.remove(i)
-
-
-if __name__ == &amp;quot;__main__&amp;quot;:
-    t1 = [(1, &amp;quot;1&amp;quot;), (2, &amp;quot;2&amp;quot;), (3, &amp;quot;3&amp;quot;)]
-    t2 = [(1, &amp;quot;1&amp;quot;), (3, &amp;quot;3&amp;quot;), (2, &amp;quot;2&amp;quot;), (4, &amp;quot;2&amp;quot;)]
-    comp_tuple_file(t1, t2)
-    print(t1)
-    print(t2)
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;这才是正确的代码。&lt;/p&gt;
-</description>
+      <description>def comp_tuple_file(tuple_file1, tuple_file2): for i in tuple_file1: if i in tuple_file2: tuple_file1.remove(i) tuple_file2.remove(i)
+if __name__ == &amp;quot;__main__&amp;quot;: t1 = [(1, &amp;quot;1&amp;quot;), (2, &amp;quot;2&amp;quot;), (3, &amp;quot;3&amp;quot;)] t2 = [(1, &amp;quot;1&amp;quot;), (3, &amp;quot;3&amp;quot;), (2, &amp;quot;2&amp;quot;), (4, &amp;quot;2&amp;quot;)] comp_tuple_file(t1, t2) print(t1) print(t2)  错在哪里？
+头一次循环，i=(1,&amp;ldquo;1&amp;rdquo;)被正确移除了。但是接下来，i=(3,&amp;ldquo;3&amp;rdquo;)？
+这个叠代器的行为很有意思哦，貌似叠代器内存储的是集合的索引。
+def comp_tuple_file(tuple_file1, tuple_file2): collection = tuple_file1[:] for i in collection: if i in tuple_file2: tuple_file1.remove(i) tuple_file2.remove(i) if __name__ == &amp;quot;__main__&amp;quot;: t1 = [(1, &amp;quot;1&amp;quot;), (2, &amp;quot;2&amp;quot;), (3, &amp;quot;3&amp;quot;)] t2 = [(1, &amp;quot;1&amp;quot;), (3, &amp;quot;3&amp;quot;), (2, &amp;quot;2&amp;quot;), (4, &amp;quot;2&amp;quot;)] comp_tuple_file(t1, t2) print(t1) print(t2)  这才是正确的代码。</description>
     </item>
     
   </channel>

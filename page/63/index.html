@@ -38,10 +38,10 @@
   <meta name="description" content="">
   <meta name="keywords" content="">
 
-  <meta name="author" content="">
+  <meta name="author" content="Shell Xu">
 
   
-  <meta name="generator" content="Hugo 0.17-DEV" />
+  <meta name="generator" content="Hugo 0.26-DEV" />
 
   
   
@@ -49,7 +49,7 @@
 (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
 (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
 m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
 ga('create', 'UA-48816091-1', 'auto');
 ga('send', 'pageview');
@@ -99,6 +99,36 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/32/">C&#43;&#43;下的Variant</a>
+    </h1>
+    <p class="meta">Sep 6, 2008
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/32/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>所谓C++语言，是一种强类型语言。即是说，C++种的某个变量，在使用时类型是已经确定的。这个并不是设计者的喜好或者是偏心，而是C++中的变量都会被翻译成准确的内存地址和大小，如果类型不确定是不可能处理的。但是在事实中，我们经常要处理一种&rdquo;变类型&rdquo;。例如，我们可能需要解析表达式，这个时候我们可能用一个或者两个栈来解决这个问题。可栈里面塞的东西就精彩了，对象，函数，数据，都在里面。这时候，如果是python，我们可以直接用list，他是弱类型的。但是C++怎么办？
+一般来说，我们会使用Variant类型来解决这个问题。这是C++面对对象机制和算子机制所派生出来的产物，能够让用户自行定义对象的行为。如果一个对象，可以表现的像这个又像那个，那不就解决问题了？因此在COM中就有一个variant。不过贝壳看过机制，是一堆东西的集合，非常的不美丽。今天贝壳又看到一个variant的实现，漂亮多了。
+废话少说，上代码。
+#include using namespace std; #include using namespace boost; int _tmain(int argc, _TCHAR* argv[]) { any a; a = 10; printf (&quot;%s: %dn&quot;, a.type ().name (), any_cast(a)); a = 10.5; printf (&quot;%s: %fn&quot;, a.type ().name (), any_cast(a)); a = string (&quot;str&quot;); printf (&quot;%s: %sn&quot;, a.type ().name (), any_cast(a).c_str ()); return 0; }  当类型错误时，出现bad_cast exception。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/31/">python的性能问题</a>
     </h1>
     <p class="meta">Aug 27, 2008
@@ -111,7 +141,11 @@ ga('send', 'pageview');
 
 
         
-          <p>贝壳最近在一个朋友的网站上看到了关于SICP零钱兑换问题的python求解，使用了记忆机制，然后他给出了代码。然而他的代码计时上有点小问题，也没有用包装器(奇怪的是，有写)，而且python的栈深度有限。因此贝壳做了几个修改的版本，需要测试下性能，下面就是关于性能的几个问题和过程。 本文详细论述了python语言下和C++语言下使用各种方法测试代码性能的方法，以及粗略的关于两种语言不同算法性能对比。 原始的python代码是这样的： def change_coins(money): first_denomination = { 1: 1, 2: 5, 3: 10, 4: 25, 5: 50, } def cc(amount, kinds_of_coins): if amount == 0: return 1 elif amount &lt; 0 or kinds_of_coins == 0: return 0 else: kind = cc(amount, kinds_of_coins - 1) kind += cc( amount-first_denomination[kinds_of_coins], kinds_of_coins) return kind print(&quot;change_coins return %s&quot; % cc(money, 5)) change_coins(300) 利用记忆原理包装后是这样的： def memoiza(fun): cache = {} def proc(*arg): if arg in</p>
+          <p>贝壳最近在一个朋友的网站上看到了关于SICP零钱兑换问题的python求解，使用了记忆机制，然后他给出了代码。然而他的代码计时上有点小问题，也没有用包装器(奇怪的是，有写)，而且python的栈深度有限。因此贝壳做了几个修改的版本，需要测试下性能，下面就是关于性能的几个问题和过程。
+本文详细论述了python语言下和C++语言下使用各种方法测试代码性能的方法，以及粗略的关于两种语言不同算法性能对比。
+原始的python代码是这样的：
+def change_coins(money): first_denomination = { 1: 1, 2: 5, 3: 10, 4: 25, 5: 50, } def cc(amount, kinds_of_coins): if amount == 0: return 1 elif amount &lt; 0 or kinds_of_coins == 0: return 0 else: kind = cc(amount, kinds_of_coins - 1) kind += cc( amount-first_denomination[kinds_of_coins], kinds_of_coins) return kind print(&quot;change_coins return %s&quot; % cc(money, 5)) change_coins(300)  利用记忆原理包装后是这样的：
+def memoiza(fun): cache = {} def proc(*arg): if arg in cache: return cache[arg] else: x = fun(*arg) cache[arg] = x return x return proc def decorator_change_coins(money): first_denomination = { 1: 1, 2: 5, 3: 10, 4: 25, 5: 50, } @memoiza def cc(amount, kinds_of_coins): if amount == 0: return 1 elif amount &lt; 0 or kinds_of_coins == 0: return 0 else: kind = cc(amount, kinds_of_coins - 1) kind += cc( amount - first_denomination[kinds_of_coins], kinds_of_coins) return kind print(&quot;decorator_change_coins return %s&quot; % cc(money, 5)) decorator_change_coins(300)  不记忆，利用栈模拟递归展开是这样的：</p>
 
           
               <footer>
@@ -142,7 +176,13 @@ ga('send', 'pageview');
 
 
         
-          <p>昨天晚上吃完晚饭，觉得应该勤快点，还指不定什么时候回去呢，把衣服洗了。刚刚把衣服放进去，电话过来，说系统出问题了，要赶快去看看。于是，贝壳赶快出门，去看看系统有什么问题。 进去被一顿狂说，怎么这么不稳定，怎么解决。贝壳一个头两个大。马上去看看什么问题，一看把我气个半死。原来新华社的稿件都是一个xml，一个txt，一个图片，主文件名一样，贝壳的程序也是基于这个原理写的。现在到好，只有图片没有xml，或者只有xml没有图片。这叫贝壳做个P啊！据说是因为新华社要推新格式，所以老格式不怎么支持了。问题是，上面说保奥保奥，居然奥运期间来这手，这不是要整死人么？而且通知都没有的，要不过来看，黑锅就我背定了。 抱怨归抱怨，贝壳还是赶快改程序，做了个入新格式的。进度还挺快，虽然差异一堆，但是做到早上三点半基本就做好了。到实验机器上一跑，全部通过。然后到生产环境中一炮——全部报错。 OK，下面可就是贝壳无能为力的了。毕竟数据库那里应该都是一样的，而且也不是贝壳写的，无法调试。于是今天只有这样，回去睡觉。走到电梯里面，贝壳觉得不对，味道不对，一股臭脚的味道。这种味道只有两种可能，一种是中国男足来过了，一种是下雨。出门一看，果然，大雨滂沱。最要命的是，贝壳只带了两套衣服，还有套正在水池里面泡着～～～ 于是贝壳一路狂奔，跑过去没两步，哗的一声，贝壳就不知道陷到什么里面去了。吓了一跳，赶快站直，包举高。仔细看看，原来前面马路修路，旁边的土还没有填完整，给水一冲就变成了泥浆坑。贝壳就是陷到这里去了，水刚好漫过小腿肚。 慢慢爬上来，然后贝壳就不敢跑了。前面毕竟还是有几个没有完成的井的。万一掉里面去，连申诉都不会有人管的，毕竟那是还没修好的工地。于是慢慢慢慢走回去，到宾馆的时候全身湿透，外带两脚泥。而且两套衣服全报销了，连第二天吃饭怎么出门都不知道～～～ 奥运期间，这个运气还真是——无敌了。</p>
+          <p>昨天晚上吃完晚饭，觉得应该勤快点，还指不定什么时候回去呢，把衣服洗了。刚刚把衣服放进去，电话过来，说系统出问题了，要赶快去看看。于是，贝壳赶快出门，去看看系统有什么问题。
+进去被一顿狂说，怎么这么不稳定，怎么解决。贝壳一个头两个大。马上去看看什么问题，一看把我气个半死。原来新华社的稿件都是一个xml，一个txt，一个图片，主文件名一样，贝壳的程序也是基于这个原理写的。现在到好，只有图片没有xml，或者只有xml没有图片。这叫贝壳做个P啊！据说是因为新华社要推新格式，所以老格式不怎么支持了。问题是，上面说保奥保奥，居然奥运期间来这手，这不是要整死人么？而且通知都没有的，要不过来看，黑锅就我背定了。
+抱怨归抱怨，贝壳还是赶快改程序，做了个入新格式的。进度还挺快，虽然差异一堆，但是做到早上三点半基本就做好了。到实验机器上一跑，全部通过。然后到生产环境中一炮——全部报错。
+OK，下面可就是贝壳无能为力的了。毕竟数据库那里应该都是一样的，而且也不是贝壳写的，无法调试。于是今天只有这样，回去睡觉。走到电梯里面，贝壳觉得不对，味道不对，一股臭脚的味道。这种味道只有两种可能，一种是中国男足来过了，一种是下雨。出门一看，果然，大雨滂沱。最要命的是，贝壳只带了两套衣服，还有套正在水池里面泡着～～～
+于是贝壳一路狂奔，跑过去没两步，哗的一声，贝壳就不知道陷到什么里面去了。吓了一跳，赶快站直，包举高。仔细看看，原来前面马路修路，旁边的土还没有填完整，给水一冲就变成了泥浆坑。贝壳就是陷到这里去了，水刚好漫过小腿肚。
+慢慢爬上来，然后贝壳就不敢跑了。前面毕竟还是有几个没有完成的井的。万一掉里面去，连申诉都不会有人管的，毕竟那是还没修好的工地。于是慢慢慢慢走回去，到宾馆的时候全身湿透，外带两脚泥。而且两套衣服全报销了，连第二天吃饭怎么出门都不知道～～～
+奥运期间，这个运气还真是——无敌了。</p>
 
           
 
@@ -169,7 +209,10 @@ ga('send', 'pageview');
 
 
         
-          <p>贝壳问上帝，中国房价什么时候下来。上帝说，通涨结束，或者居民消费上去就下来了。 贝壳问上帝，中国居民消费什么时候上去。上帝说，全民保障体系搞好就上去了。 贝壳问上帝，中国什么时候结束通涨，搞好全民保障体系呢？上帝哭着说，我看不到那天了。 上面是拿中国足球的玩笑改的一个玩笑，不过贝壳真的悟到了房价高的原因。通涨乱高无比，保障一塌糊涂，赚了钱不敢花，也不能放，当然只有买房了。房价上涨，通涨更加高高高。</p>
+          <p>贝壳问上帝，中国房价什么时候下来。上帝说，通涨结束，或者居民消费上去就下来了。
+贝壳问上帝，中国居民消费什么时候上去。上帝说，全民保障体系搞好就上去了。
+贝壳问上帝，中国什么时候结束通涨，搞好全民保障体系呢？上帝哭着说，我看不到那天了。
+上面是拿中国足球的玩笑改的一个玩笑，不过贝壳真的悟到了房价高的原因。通涨乱高无比，保障一塌糊涂，赚了钱不敢花，也不能放，当然只有买房了。房价上涨，通涨更加高高高。</p>
 
           
 
@@ -223,7 +266,19 @@ ga('send', 'pageview');
 
 
         
-          <p>以下题目是应一个朋友问而写的，适用于刚刚入门有志或者有需要做程序的朋友的题目。题目脱胎于日常编程中常见的一些问题，很多是贝壳实际碰到问题的变形。题目不注重所用语言，每道题目可以用不同语言解决。有意思向计算机方向发展的可以试试用不同语言来解决，看看哪种语言最方便解决这种问题。如果打算增加难度的话，请使用C++来做，并且尽量抽象复用。在这个过程中积累下来的可复用代码会对以后编程有很大帮助。 1.读出文件中的以下格式内容，计算逆矩阵，并按照同样格式输出。 1 2 4.5 3 0 1 9 5 2 数字间以空格分割，行以回车分割。 难点： 输入和输出应当可以选择是键盘输入还是文件输入，输出到屏幕还是输出到文件。 逆矩阵计算中有可能求不出，出现除零。设法避免直接的报错。 评价： 很中规中矩的一个问题，有点竞赛的味道。只要做过程序的人一般不会失手。 2.某个XML，其中记录了一些信息。信息是按照时间-地点-人物的顺序记录的，例子如下： &hellip; 现在需要你颠倒一下，变成这样的： &hellip; 难点： 看看能想出多少解决问题的方法。 试试尽量减小内存消耗。 评价： 解决问题的方法很多，比较一下这些方法的优劣。 有一年以上程序经验的就可以最终解决，但要解决的比较完善需要两到三年经验。 3.下载google的首页，跟踪二级连接(二级连接，就是首页中连接指向的页面，上面连接指向的页面)。 并计算其中所有页面，显示出的非空白字符的个数。(显示的文字中的非空白字符) 难点： 试试看跟踪js脚本链接。 登陆后的google首页是不一样的，包括提示，语言类型，设法统计登陆后的首页。 如果是多级呢？ 评价： 宽度优先和深度优先算法的应用，对集合运算有一定要求。 重点在于获取和处理html页面的方法。 一年以上即可解决，完善程度和技术水平关系不大。 4.运行两个程序，A和B，将A的输出输入到B中。 难点： 需要等待A的输出和B的输入，以及程序的终止条件。 评价： 需要对系统熟悉，知道管道和用法。知道进程间交互的API。 需要研究过系统，程序水平没有要求。 5.遍历某个目录，找出其中的特定图片文件。 难点： 怎么分析图片文件？文件名是比较粗略的方法，更好的是使用文件签名分析。 下次遍历的时候速度怎么提高(假定文件不变化)。 评价： 还是深度和宽度搜索题目，分析文件是难点。 扩展要求对于数据缓存有一定要求。 一年以上即可解决，文件签名分析看个人水平。 6.监视某个目录的变化，将新加入的mp3的相关信息(IDv3)邮件发给我。 难点： 怎么监视目录变化？ 怎么提取MP3的内容？ 怎么发邮件？ 怎么保证不漏内容。 评价： 要对系统熟悉，了解mp3格式或者能够自行寻找库扩展语言。 了解邮件发送协议，或者能使用系统库发送邮件。 两年以上可解决，完善需三年以上水准。 7.写一个程序，可以计算加减乘除，支持括号。 难点： 让你的程序算算1+2*3，看看是多少。正确应当是7，设计不良是9。 看看你的程序，2/6*3得多少，是不是1.0(最好是1)。 让你的程序设法支持乘方和函数。 评价： 对数据结构和算法要求很高。 一年以上可解决，要扩展支持算符和算法，需要三年水准。 8.画一只乌龟，保存为图片。</p>
+          <p>以下题目是应一个朋友问而写的，适用于刚刚入门有志或者有需要做程序的朋友的题目。题目脱胎于日常编程中常见的一些问题，很多是贝壳实际碰到问题的变形。题目不注重所用语言，每道题目可以用不同语言解决。有意思向计算机方向发展的可以试试用不同语言来解决，看看哪种语言最方便解决这种问题。如果打算增加难度的话，请使用C++来做，并且尽量抽象复用。在这个过程中积累下来的可复用代码会对以后编程有很大帮助。
+1.读出文件中的以下格式内容，计算逆矩阵，并按照同样格式输出。 1 2 4.5 3 0 1 9 5 2 数字间以空格分割，行以回车分割。 难点： 输入和输出应当可以选择是键盘输入还是文件输入，输出到屏幕还是输出到文件。 逆矩阵计算中有可能求不出，出现除零。设法避免直接的报错。 评价： 很中规中矩的一个问题，有点竞赛的味道。只要做过程序的人一般不会失手。
+2.某个XML，其中记录了一些信息。信息是按照时间-地点-人物的顺序记录的，例子如下：
+&hellip;
+现在需要你颠倒一下，变成这样的：
+&hellip;
+难点： 看看能想出多少解决问题的方法。 试试尽量减小内存消耗。 评价： 解决问题的方法很多，比较一下这些方法的优劣。 有一年以上程序经验的就可以最终解决，但要解决的比较完善需要两到三年经验。
+3.下载google的首页，跟踪二级连接(二级连接，就是首页中连接指向的页面，上面连接指向的页面)。 并计算其中所有页面，显示出的非空白字符的个数。(显示的文字中的非空白字符) 难点： 试试看跟踪js脚本链接。 登陆后的google首页是不一样的，包括提示，语言类型，设法统计登陆后的首页。 如果是多级呢？ 评价： 宽度优先和深度优先算法的应用，对集合运算有一定要求。 重点在于获取和处理html页面的方法。 一年以上即可解决，完善程度和技术水平关系不大。
+4.运行两个程序，A和B，将A的输出输入到B中。 难点： 需要等待A的输出和B的输入，以及程序的终止条件。 评价： 需要对系统熟悉，知道管道和用法。知道进程间交互的API。 需要研究过系统，程序水平没有要求。
+5.遍历某个目录，找出其中的特定图片文件。 难点： 怎么分析图片文件？文件名是比较粗略的方法，更好的是使用文件签名分析。 下次遍历的时候速度怎么提高(假定文件不变化)。 评价： 还是深度和宽度搜索题目，分析文件是难点。 扩展要求对于数据缓存有一定要求。 一年以上即可解决，文件签名分析看个人水平。
+6.监视某个目录的变化，将新加入的mp3的相关信息(IDv3)邮件发给我。 难点： 怎么监视目录变化？ 怎么提取MP3的内容？ 怎么发邮件？ 怎么保证不漏内容。 评价： 要对系统熟悉，了解mp3格式或者能够自行寻找库扩展语言。 了解邮件发送协议，或者能使用系统库发送邮件。 两年以上可解决，完善需三年以上水准。
+7.写一个程序，可以计算加减乘除，支持括号。 难点： 让你的程序算算1+2*3，看看是多少。正确应当是7，设计不良是9。 看看你的程序，2/6*3得多少，是不是1.0(最好是1)。 让你的程序设法支持乘方和函数。 评价： 对数据结构和算法要求很高。 一年以上可解决，要扩展支持算符和算法，需要三年水准。
+8.画一只乌龟，保存为图片。 难点： 让用户动手画？ 试试保存为各种格式的图片。 评价： 实用项目，按照书本教程最多12小时就可以掌握。 然而需要自行解决并做好，至少一年以上。</p>
 
           
               <footer>
@@ -254,7 +309,7 @@ ga('send', 'pageview');
 
 
         
-          <p>引用 Affected Product: Avast4 home edition ext2ifs 1.10c ext2ifs 1.11 Description: avast4 home edition is a free anti-virus tools. In 2008-07-30 it update some files, include some file called &lsquo;aswSP.sys&rsquo;. According infomation in autoruns, it&rsquo;s avast self protection module. [Here is info from autoruns.] aswSPavast! self protection module ALWIL Software c:windowssystem32driversaswsp.sys [Here is info from update-log] 2008-7-30 7:36:14 file Direct move of file: C:Program FilesAlwil SoftwareAvast4SetupINFAMD64aswSP.sys 2008-7-30 7:36:14 file Installed file:C:Program FilesAlwil SoftwareAvast4SetupINFAMD64aswSP.sys 2008-7-30 7:36:14 file Direct move of file: C:Program FilesAlwil SoftwareAvast4SetupINFaswSP.sys 2008-7-30 7:36:59 system Reboot set by changed resident C:WINDOWSsystem32driversaswSP.sys 2008-7-30 7:36:59 system Driver file copied: C:WINDOWSsystem32driversaswSP.sys If u use ext2ifs in system for share date with linux, it&rsquo;ll cause system crash with code BAD_POOL_CALLER.</p>
+          <p>引用 Affected Product: Avast4 home edition ext2ifs 1.10c ext2ifs 1.11 Description: avast4 home edition is a free anti-virus tools. In 2008-07-30 it update some files, include some file called &lsquo;aswSP.sys&rsquo;. According infomation in autoruns, it&rsquo;s avast self protection module. [Here is info from autoruns.] aswSPavast! self protection module ALWIL Software c:windowssystem32driversaswsp.sys [Here is info from update-log] 2008-7-30 7:36:14 file Direct move of file: C:Program FilesAlwil SoftwareAvast4SetupINFAMD64aswSP.sys 2008-7-30 7:36:14 file Installed file:C:Program FilesAlwil SoftwareAvast4SetupINFAMD64aswSP.</p>
 
           
               <footer>
@@ -285,7 +340,9 @@ ga('send', 'pageview');
 
 
         
-          <p>今天贝壳25岁了。 前两天时间紧，赶快找两个人吃了顿当过25。今天早上起来，就收到了六牙四皂小姐的恭喜。这一刻，我总算了解她收到我一堆废纸当生日礼物时的心情了。路上第二个过来，是老妈的。到公司，兔子姐的第三个来了。然后，贝壳把名字改成了今天25岁。猫小姐的第四个和蛆小姐的第五个也来了。才五个，还有两个是提醒的，好失败。 不过无论如何，还是谢谢上述人，在我不长的人生中，还有你们记得我。</p>
+          <p>今天贝壳25岁了。
+前两天时间紧，赶快找两个人吃了顿当过25。今天早上起来，就收到了六牙四皂小姐的恭喜。这一刻，我总算了解她收到我一堆废纸当生日礼物时的心情了。路上第二个过来，是老妈的。到公司，兔子姐的第三个来了。然后，贝壳把名字改成了今天25岁。猫小姐的第四个和蛆小姐的第五个也来了。才五个，还有两个是提醒的，好失败。
+不过无论如何，还是谢谢上述人，在我不长的人生中，还有你们记得我。</p>
 
           
 
@@ -312,7 +369,11 @@ ga('send', 'pageview');
 
 
         
-          <p>有新种病毒出现，大家当心。 病毒症状如下： 有MSN好友给你传一个网址，如同http://[用户名].imagecroco.info/。(贝壳注：现在已经被Mozilla列为欺诈网址)当浏览后中毒，会继续给好友发送网址。发送网址时用户离线，发消息用户不回复。中毒用户提示已经在另外一个地址上登录。 机理估计如下： 当你访问网站时，会被要求输入用户名或密码。或者被挂上马，等登录时被套出用户名和密码。当你不使用时，服务器会自动使用你的用户名登录，给你的好友发送病毒。如果不修改密码，即使本机清理病毒或者设置名称提醒也未必有用。</p>
+          <p>有新种病毒出现，大家当心。
+病毒症状如下：
+有MSN好友给你传一个网址，如同http://[用户名].imagecroco.info/。(贝壳注：现在已经被Mozilla列为欺诈网址)当浏览后中毒，会继续给好友发送网址。发送网址时用户离线，发消息用户不回复。中毒用户提示已经在另外一个地址上登录。
+机理估计如下：
+当你访问网站时，会被要求输入用户名或密码。或者被挂上马，等登录时被套出用户名和密码。当你不使用时，服务器会自动使用你的用户名登录，给你的好友发送病毒。如果不修改密码，即使本机清理病毒或者设置名称提醒也未必有用。</p>
 
           
 
@@ -339,34 +400,8 @@ ga('send', 'pageview');
 
 
         
-          <p>贝壳住的旅馆，屋子的中心是一个浴室。透明玻璃的…… 六牙四皂小姐已经参观过了，评价是很华丽。</p>
-
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/23/">是我太无知，还是世界太疯狂</a>
-    </h1>
-    <p class="meta">Jul 8, 2008
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/23/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>刚刚在用电脑，突然听到空调咔咔狂响(没错，不是硬盘)，然后从里面飞出……一块冰？ 我知道沈阳很凉快，不用这么提醒我吧。 是我太无知，还是世界太疯狂？</p>
+          <p>贝壳住的旅馆，屋子的中心是一个浴室。透明玻璃的……
+六牙四皂小姐已经参观过了，评价是很华丽。</p>
 
           
 
@@ -642,6 +677,10 @@ ga('send', 'pageview');
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2854/">使用Debian作为Router</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2853/">riot.im简介</a>
           </li>
         
@@ -677,10 +716,6 @@ ga('send', 'pageview');
             <a href="/blog/archives/2845/">phuket旅游和潜水指南</a>
           </li>
         
-          <li class="post">
-            <a href="/blog/album/">相册</a>
-          </li>
-        
       </ul>
     </section>
   
@@ -691,7 +726,7 @@ ga('send', 'pageview');
 </div>
 
 <footer role="contentinfo">
-  <p>Copyright &copy; 2017  - <a href="http://shell909090.org/license/">License</a> -
+  <p>Copyright &copy; 2017 Shell Xu - <a href="http://shell909090.org/license/">License</a> -
   <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
 </p>
 

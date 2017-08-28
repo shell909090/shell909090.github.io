@@ -8,7 +8,9 @@
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
     <lastBuildDate>Tue, 20 Jan 2009 14:49:00 +0800</lastBuildDate>
-    <atom:link href="http://shell909090.org/tags/%E5%BC%80%E5%BF%83%E7%BD%91/index.xml" rel="self" type="application/rss+xml" />
+    
+	<atom:link href="http://shell909090.org/tags/%E5%BC%80%E5%BF%83%E7%BD%91/index.xml" rel="self" type="application/rss+xml" />
+    
     
     <item>
       <title>24点计算原理和程序</title>
@@ -16,85 +18,14 @@
       <pubDate>Tue, 20 Jan 2009 14:49:00 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/50/</guid>
-      <description>&lt;p&gt;最近开心上狂算24点，于是贝壳搞了一个24点计算程序，并且说明原理。&lt;/p&gt;
-
-&lt;p&gt;我们将24点问题一般化，变成一个搜索问题。假定从一个初始表开始，里面有一些原子。我们定义一个操作，结合。每次操作任意从中选择出两个(或者以上)原子，使用算符连接，成为一个新的原子。那么，一般来说，24点就是计算所有可能的路径，从初始表开始，持续进行结合，直到只剩下一个原子，并且对这个原子求值得24。&lt;/p&gt;
-
-&lt;p&gt;有人可能在算符优先级上想不开，其实不用考虑这个问题，每次求值的时候，按照求值顺序优先就可以。你想到的另外一种优先级可能，会在穷举的时候被列举出来算掉，不用担心遗漏。&lt;/p&gt;
-
-&lt;p&gt;同时，算子必须是两目以上算子，因为单目算子可以持续作用于同一个对象，因此原子表中的原子个数并不严格单调减少，造成无法肯定路径收敛于有限步骤上。并且，如果允许单目算子，那么我只需要求导和阶乘就可以对任何数字求24点。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;((a&#39;)!+(b&#39;)!+(c&#39;)!+(d&#39;)!)!=24
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;因此，单目算符是没有意义的。&lt;/p&gt;
-
-&lt;p&gt;另外，注意算符分可交换和非可交换的。例如：a+b=b+a，但是a-b!=b-a。如果不注意这点，倒是不会漏算，但是会造成搜索空间增大，并且有重复结果。&lt;/p&gt;
-
-&lt;p&gt;以下是24点计算程序，python版本的。有兴趣的朋友可以用scheme重写，相信会更简洁有效。回头会用django封装一下，做成网页给大家玩玩。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;#!/usr/bin/python
-import sys
-
-symbol_list = [
-    (&amp;quot;%s+%s&amp;quot;, True),
-    (&amp;quot;%s-%s&amp;quot;, False),
-    (&amp;quot;%s*%s&amp;quot;, True),
-    (&amp;quot;%s/%s&amp;quot;, False),
-    (&amp;quot;%s**%s&amp;quot;, False),
-]
-
-
-def diff_seq(length):
-    for i in range(0, length):
-        for j in range(i + 1, length):
-            yield (i, j)
-
-
-def get_less_state(input_state):
-    for i, j in diff_seq(len(input_state)):
-        temp = input_state[:]
-        del temp[j]
-        del temp[i]
-
-        for s in symbol_list:
-            rslt = s[0] % (input_state[i], input_state[j])
-            rslt = &amp;quot;(%s)&amp;quot; % rslt
-            temp.append(rslt)
-            yield temp
-            temp.remove(rslt)
-            if s[1]:
-                continue
-            rslt = s[0] % (input_state[j], input_state[i])
-            rslt = &amp;quot;(%s)&amp;quot; % rslt
-            temp.append(rslt)
-            yield temp
-            temp.remove(rslt)
-
-
-def do_node(input_state, output):
-    for i in get_less_state(input_state):
-        if len(i) &amp;gt; 1:
-            do_node(i, output)
-            continue
-        try:
-            rslt = eval(i[0])
-        except:
-            continue
-        if rslt == 24.0:
-            output.add(i[0].replace(&amp;quot;.0&amp;quot;, &amp;quot;&amp;quot;))
-
-
-if __name__ == &amp;quot;__main__&amp;quot;:
-    rslt = []
-    for i in sys.argv[1:]:
-        rslt.append(float(i))
-        output = set([])
-        do_node(rslt, output)
-        for i in list(output):
-            print(&amp;quot;%s=24&amp;quot; % i)
-&lt;/code&gt;&lt;/pre&gt;
-</description>
+      <description>最近开心上狂算24点，于是贝壳搞了一个24点计算程序，并且说明原理。
+我们将24点问题一般化，变成一个搜索问题。假定从一个初始表开始，里面有一些原子。我们定义一个操作，结合。每次操作任意从中选择出两个(或者以上)原子，使用算符连接，成为一个新的原子。那么，一般来说，24点就是计算所有可能的路径，从初始表开始，持续进行结合，直到只剩下一个原子，并且对这个原子求值得24。
+有人可能在算符优先级上想不开，其实不用考虑这个问题，每次求值的时候，按照求值顺序优先就可以。你想到的另外一种优先级可能，会在穷举的时候被列举出来算掉，不用担心遗漏。
+同时，算子必须是两目以上算子，因为单目算子可以持续作用于同一个对象，因此原子表中的原子个数并不严格单调减少，造成无法肯定路径收敛于有限步骤上。并且，如果允许单目算子，那么我只需要求导和阶乘就可以对任何数字求24点。
+((a&#39;)!+(b&#39;)!+(c&#39;)!+(d&#39;)!)!=24  因此，单目算符是没有意义的。
+另外，注意算符分可交换和非可交换的。例如：a+b=b+a，但是a-b!=b-a。如果不注意这点，倒是不会漏算，但是会造成搜索空间增大，并且有重复结果。
+以下是24点计算程序，python版本的。有兴趣的朋友可以用scheme重写，相信会更简洁有效。回头会用django封装一下，做成网页给大家玩玩。
+#!/usr/bin/python import sys symbol_list = [ (&amp;quot;%s+%s&amp;quot;, True), (&amp;quot;%s-%s&amp;quot;, False), (&amp;quot;%s*%s&amp;quot;, True), (&amp;quot;%s/%s&amp;quot;, False), (&amp;quot;%s**%s&amp;quot;, False), ] def diff_seq(length): for i in range(0, length): for j in range(i + 1, length): yield (i, j) def get_less_state(input_state): for i, j in diff_seq(len(input_state)): temp = input_state[:] del temp[j] del temp[i] for s in symbol_list: rslt = s[0] % (input_state[i], input_state[j]) rslt = &amp;quot;(%s)&amp;quot; % rslt temp.</description>
     </item>
     
     <item>
@@ -103,50 +34,28 @@ if __name__ == &amp;quot;__main__&amp;quot;:
       <pubDate>Mon, 13 Oct 2008 09:28:00 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/41/</guid>
-      <description>&lt;p&gt;好像小时候老师经常出这样的题目，不过我每次都没得可写，总觉得那堆事情太假太做作。没想到，我这两天亲身经历了一件很囧的事情。&lt;/p&gt;
-
-&lt;p&gt;事情是这个样子的。贝壳前两天玩开心（好啦，我知道很无聊，不过发现一堆N久没有联系的同学，很好玩那），然后突然想到搜索高中同学。首先跳出来的是我们的于飞同学，据记载，不出我们所料，去日本了。然后是一位叫江宁的同学，哪位？贝壳怕自己忘记了某些曾经的同学，所以打算点进去看看她的好友里面是否有高中的朋友，然后发现——这是谁？&lt;/p&gt;
-
-&lt;p&gt;她的列表中有一位“阿达”，这位同志刚刚加我，并且和我一样，是赵一搏的朋友，换句话说，是初中和大学圈子里面的。是不是贝壳点错了？还是开心太强大了？&lt;/p&gt;
-
-&lt;p&gt;事实证明，都不是，是事情太巧合了。贝壳联系该同志本人后发现，所谓“阿达”，乃是丁之光同学，正宗的初中和大学同学。而江宁同学在牛栏山高中复读，是杨亮和大佟的同学。他们是同事，我发消息的时候正好在旁边，OMG。&lt;/p&gt;
-
-&lt;p&gt;够囧了吧？好戏还在后面呢——&lt;/p&gt;
-
-&lt;p&gt;贝壳一时高兴，问，那个秦伯韬你认得么？认得。段旭辉呢？认得。张雷？认得。王巍？认得。朱金辉？认得。许智翔？谁？&lt;/p&gt;
-
-&lt;p&gt;shit，怎么就是不认得贝壳，俺这么有名的说。&lt;/p&gt;
-
-&lt;p&gt;不过此同学认出了我一箩筐的高中同学，于是贝壳自己都混了。然后说——段是在上海念书么？不是。那上海念书的是谁？张雷。（到底谁在牛山混的久啊？）哦——我知道，大佟的男友吧——&lt;/p&gt;
-
-&lt;p&gt;刚刚说完——对面发出了一阵吓死人的叫声——&lt;/p&gt;
-
-&lt;p&gt;（贝壳）：说错了么？我记得是杨亮女朋友和我说的（不就是刘莹同学么）——&lt;/p&gt;
-
-&lt;p&gt;（江宁）：张雷很帅的——&lt;/p&gt;
-
-&lt;p&gt;（贝壳）：小声点，大佟也是你朋友——&lt;/p&gt;
-
-&lt;p&gt;（江宁）：呃——&lt;/p&gt;
-
-&lt;p&gt;（贝壳）：好像我记得一起看过他们，那次我去复旦玩，大佟和张雷都来的，朱金辉陪他四中的女友，没来——&lt;/p&gt;
-
-&lt;p&gt;然后对面发出一阵杀气——&lt;/p&gt;
-
-&lt;p&gt;（江宁）：说，朱在复旦有几个女友——&lt;/p&gt;
-
-&lt;p&gt;（贝壳）：啊，我又说错什么了？&lt;/p&gt;
-
-&lt;p&gt;（江宁）：我一个姐们，是朱前女友——&lt;/p&gt;
-
-&lt;p&gt;（贝壳）：（原来是上门讨债的，少说的好）哦，哦，可能我记错了——&lt;/p&gt;
-
-&lt;p&gt;（江宁）：OOXX..**（省略一堆话，具体可以自行想象），不过你是可能记错了，当时王巍的女朋友是四中的——&lt;/p&gt;
-
-&lt;p&gt;（贝壳）：。。。（乌鸦飞过）。。。——&lt;/p&gt;
-
-&lt;p&gt;天啊，贝壳不想活了——&lt;/p&gt;
-</description>
+      <description>好像小时候老师经常出这样的题目，不过我每次都没得可写，总觉得那堆事情太假太做作。没想到，我这两天亲身经历了一件很囧的事情。
+事情是这个样子的。贝壳前两天玩开心（好啦，我知道很无聊，不过发现一堆N久没有联系的同学，很好玩那），然后突然想到搜索高中同学。首先跳出来的是我们的于飞同学，据记载，不出我们所料，去日本了。然后是一位叫江宁的同学，哪位？贝壳怕自己忘记了某些曾经的同学，所以打算点进去看看她的好友里面是否有高中的朋友，然后发现——这是谁？
+她的列表中有一位“阿达”，这位同志刚刚加我，并且和我一样，是赵一搏的朋友，换句话说，是初中和大学圈子里面的。是不是贝壳点错了？还是开心太强大了？
+事实证明，都不是，是事情太巧合了。贝壳联系该同志本人后发现，所谓“阿达”，乃是丁之光同学，正宗的初中和大学同学。而江宁同学在牛栏山高中复读，是杨亮和大佟的同学。他们是同事，我发消息的时候正好在旁边，OMG。
+够囧了吧？好戏还在后面呢——
+贝壳一时高兴，问，那个秦伯韬你认得么？认得。段旭辉呢？认得。张雷？认得。王巍？认得。朱金辉？认得。许智翔？谁？
+shit，怎么就是不认得贝壳，俺这么有名的说。
+不过此同学认出了我一箩筐的高中同学，于是贝壳自己都混了。然后说——段是在上海念书么？不是。那上海念书的是谁？张雷。（到底谁在牛山混的久啊？）哦——我知道，大佟的男友吧——
+刚刚说完——对面发出了一阵吓死人的叫声——
+（贝壳）：说错了么？我记得是杨亮女朋友和我说的（不就是刘莹同学么）——
+（江宁）：张雷很帅的——
+（贝壳）：小声点，大佟也是你朋友——
+（江宁）：呃——
+（贝壳）：好像我记得一起看过他们，那次我去复旦玩，大佟和张雷都来的，朱金辉陪他四中的女友，没来——
+然后对面发出一阵杀气——
+（江宁）：说，朱在复旦有几个女友——
+（贝壳）：啊，我又说错什么了？
+（江宁）：我一个姐们，是朱前女友——
+（贝壳）：（原来是上门讨债的，少说的好）哦，哦，可能我记错了——
+（江宁）：OOXX..**（省略一堆话，具体可以自行想象），不过你是可能记错了，当时王巍的女朋友是四中的——
+（贝壳）：。。。（乌鸦飞过）。。。——
+天啊，贝壳不想活了——</description>
     </item>
     
   </channel>

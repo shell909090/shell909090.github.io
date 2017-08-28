@@ -8,7 +8,9 @@
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
     <lastBuildDate>Mon, 19 Mar 2012 07:09:38 +0800</lastBuildDate>
-    <atom:link href="http://shell909090.org/tags/kvm/index.xml" rel="self" type="application/rss+xml" />
+    
+	<atom:link href="http://shell909090.org/tags/kvm/index.xml" rel="self" type="application/rss+xml" />
+    
     
     <item>
       <title>kvm虚拟化的性能对比</title>
@@ -16,24 +18,15 @@
       <pubDate>Mon, 19 Mar 2012 07:09:38 +0800</pubDate>
       
       <guid>http://shell909090.org/blog/archives/2118/</guid>
-      <description>&lt;p&gt;废话不多说，4G的机器，debian testing，amd64内核32位环境。用kvm切出一个768m的机器，debian testing，64位内核64位环境。对比起来有点不公平，不过基本说明问题。&lt;/p&gt;
-
-&lt;p&gt;用lmbench对比两者的性能，报告我就不贴了。基本结论如下：&lt;/p&gt;
-
-&lt;p&gt;1.纯计算: kvm内比真机还快，或者至少性能相当。估计是32位环境的关系。&lt;/p&gt;
-
-&lt;p&gt;2.syscall, read, write, select: 都是kvm快。&lt;/p&gt;
-
-&lt;p&gt;3.Protection fault,AF_UNIX sock stream latency,fork+exit,fork+execve: 真机比kvm快至少4倍，最多可达6倍。&lt;/p&gt;
-
-&lt;p&gt;4.文件读写api: 真机比kvm快3倍以上。&lt;/p&gt;
-
-&lt;p&gt;5.socket性能: pipe是kvm快，unix file是真机快。&lt;/p&gt;
-
-&lt;p&gt;6.iozone: 两者吞吐性能几乎一致，有时kvm比真机还快。可能和真机的ext3上面堆满碎片结构有关。&lt;/p&gt;
-
-&lt;p&gt;基本结论，kvm在计算和io上都没什么太大问题，主要问题在于各种涉及ring0指令的内核调用方面（好像这也是虚拟化的通病）。在虚拟化系统中，尽量避免大量的内核调用，尽量减少碎片调用，增大IO块。&lt;/p&gt;
-</description>
+      <description>废话不多说，4G的机器，debian testing，amd64内核32位环境。用kvm切出一个768m的机器，debian testing，64位内核64位环境。对比起来有点不公平，不过基本说明问题。
+用lmbench对比两者的性能，报告我就不贴了。基本结论如下：
+1.纯计算: kvm内比真机还快，或者至少性能相当。估计是32位环境的关系。
+2.syscall, read, write, select: 都是kvm快。
+3.Protection fault,AF_UNIX sock stream latency,fork+exit,fork+execve: 真机比kvm快至少4倍，最多可达6倍。
+4.文件读写api: 真机比kvm快3倍以上。
+5.socket性能: pipe是kvm快，unix file是真机快。
+6.iozone: 两者吞吐性能几乎一致，有时kvm比真机还快。可能和真机的ext3上面堆满碎片结构有关。
+基本结论，kvm在计算和io上都没什么太大问题，主要问题在于各种涉及ring0指令的内核调用方面（好像这也是虚拟化的通病）。在虚拟化系统中，尽量避免大量的内核调用，尽量减少碎片调用，增大IO块。</description>
     </item>
     
   </channel>

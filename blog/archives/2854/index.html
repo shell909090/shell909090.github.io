@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <title>使用Debian作为Router</title>
+
+  
+  
+  <link rel="stylesheet" href="http://shell909090.org/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  
+  <link href="http://shell909090.org/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="Shell Xu">
+
+  
+  <meta name="generator" content="Hugo 0.26-DEV" />
+
+  
+  
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-48816091-1', 'auto');
+ga('send', 'pageview');
+</script>
+
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="http://shell909090.org/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+  
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
+         使用Debian作为Router 
+    </h1>
+    <p class="meta">Aug 28, 2017
+         - 2 minute read 
+         - <a href="http://shell909090.org/blog/archives/2854/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          
+
+<p>设备是一台D525的多头主机，2G内存，4G电子盘，有4个网口，两个USB口，一个Serial口（很特殊吧），还有一个VGA口。原本预装是RouterOS的。最近给RouterOS整烦了，所以把路由器洗了换成Debian了。由于不想干掉原本的电子盘，所以新买了一块msata的电子盘。JD上大概80，自己买就行。</p>
+
+<h1 id="目标">目标</h1>
+
+<p>我希望整个路由能够为家里的网络系统提供良好的基础。因此，我确立了一系列目标：</p>
+
+<ol>
+<li>全家能够上网，并充分利用带宽。</li>
+<li>能够映射外网地址到内网，提供一定的服务（例如通过https管理内部，或者做bt）。</li>
+<li>能够分离两个区域，一个可信区域，一个只能上外网（guest网络环境）。</li>
+<li>能够为家里的所有用户，包括guest，提供有限目标翻墙，例如只翻google。该机制不会使访问国内网络受影响，例如变慢。可以限制部分IP不翻，例如bt。</li>
+</ol>
+
+<p>下面是一些可选目标。</p>
+
+<ol>
+<li>能够直接通过机器名解析出DHCP地址。这样就无需为每个需要被访问的机器总是分配固定IP。</li>
+<li>对guest网络提供配额限制。</li>
+<li>对总体能做一定的QoS。</li>
+<li>基础设施层面的防投毒/欺骗/攻击。</li>
+<li>支持IPv6，家里每个设备至少一个IPv6地址，且外网可访问。</li>
+</ol>
+
+<h1 id="架构">架构</h1>
+
+<p>首先是分离设计。用两个网口分别提供两个网段，作为可信区域和guest网络用。然后提供一个VPN，允许guest区域进入可信区域。对于可管理交换机而言，其实也可以用vlan技术。一个网口打到交换机上，然后在交换机上设定哪些是guest口。我这里没有可管理交换机，而桌面交换机有多。所以直接出两个口就好。核心路由是四口的，一个外网，两个内网，还有富裕。</p>
+
+<p>以下是主要目标的工程清单：</p>
+
+<ol>
+<li>多头主机，上防火墙，建立Serial和ssh双管理机制。</li>
+<li>内网dnsmasq，外网NAT。最后测速。</li>
+<li>DDNS，外网port mapping。</li>
+<li>安装openvpn做vpn-in。</li>
+<li>做vpn out，调整路由表。</li>
+<li>多网段，内部互通限制。</li>
+</ol>
+
+<h1 id="安装">安装</h1>
+
+<p>Debian的安装没什么好多说的，我直接用VGA安装的。stretch，目前stable版，没什么特殊的。等进入系统了，直接改grub配置，改成serial能够控制。这样将来路由器出问题的时候只要用Console线接上，就能登录系统排查问题了。具体方法搜一下就行，我是用<a href="https://help.ubuntu.com/community/SerialConsoleHowto">这个页面</a>，按照里面改了以下三个参数。</p>
+
+<pre><code>GRUB_CMDLINE_LINUX=&quot;console=tty0 console=ttyS0,115200n8 quiet&quot;
+GRUB_TERMINAL=serial
+GRUB_SERIAL_COMMAND=&quot;serial --speed=115200 --unit=0 --word=8 --parity=no --stop=1&quot;
+</code></pre>
+
+<p>然后再用putty访问就行，指令是<code>putty -serial -sercfg 115200,8,n,1,N</code>。注意速率要和设定一致。</p>
+
+<p>安装过程中我注意到有一点坑。在上海电信这种环境，Router要上网需要PPPoE拨号。我找到了Debian官方的<a href="https://wiki.debian.org/PPPoE">说明页面</a>，里面提到了三个包，ppp，pppoe，pppoeconf。但是默认光盘里没有。说是有的，甚至还有篇文档叫做<a href="https://www.debian.org/releases/wheezy/amd64/apds05.html.zh-cn">通过 PPP over Ethernet (PPPPoE) 来安装 Debian GNU/Linux</a>。但是我按照Guide，修改了光盘的boot line，自动搜索DSL拨号配置的时候，直接失败了。幸好我早做了准备，把这几个包提前下载下来了，然后手工安装。但是比较坑的是，实现pppoe还需要一个额外的包，libpcap0.8。这个包wiki里没说，所以我就没下。但是想下的时候，原有Router又洗掉了。最后我是用手机下载传上去的，同样情况的朋友请自行注意。</p>
+
+<h1 id="初始化">初始化</h1>
+
+<p>进入系统后没啥复杂的，先设定PPPoE拨号，照着官方的<a href="https://wiki.debian.org/PPPoE">说明页面</a>就行。拨号成功后，首先先更新软件并重启。因为原本的系统和最新补丁会有一点时间的差异，而安装时我们没有网，所以没有安装更新补丁。</p>
+
+<p>补丁升级完成并重启后，先下载iptables-persistent这个包。这个包会把你的防火墙配置固化下来并自动加载。没有这个，防火墙功能运作是缺失的。如果在无持久化的情况下安装了服务，你又需要重启路由器，就要先断开外网才能安全重启了。否则防火墙规则是空的，服务外网可访问。而且进系统后又得重新配置防火墙。所以比较简单的方法就是先装持久化包。至于防火墙，我的初始化配置是这样的。</p>
+
+<pre><code>-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+-A INPUT -p icmp -m icmp --icmp-type 8 -j ACCEPT
+-A INPUT -i lo -j ACCEPT
+-A INPUT -i ppp0 -j DROP
+-A INPUT -p tcp -m tcp --dport 22 -j ACCEPT
+</code></pre>
+
+<p>第一条允许已经建立好的连接访问，第二条允许ping，第三条不限制本地访问，第四条禁止外网访问，第五条打开OpenSSH端口，最后别忘了INPUT默认DROP。因此第二个包就是安装OpenSSH。安装完了这个包，再配置本地网口。接下去就可以把路由器复位，通过远程来控制，而不是serial了。</p>
+
+<p>具体OpenSSH的配置不多说。反正记得使用密钥，推荐ed25519。记得关闭密码访问。</p>
+
+<h1 id="基本功能">基本功能</h1>
+
+<p>我的配置里，有两个有效内网网口。我分别对这两个设定了静态地址，然后打开forward内核选项，<code>net.ipv4.ip_forward = 1</code>。在iptables的forward规则里，禁止guest网口访问内网网口。最后设定出口NAT。<code>-A POSTROUTING -o ppp0 -j MASQUERADE</code>。再从本机测试一下上网，齐活。</p>
+
+<p>这两个网口都是静态设定，虽然能上网，但是没有DHCP。因此我安装了dnsmasq。按照<a href="http://debugo.com/dnsmasq/">说明</a>，我为两个网口分别设定了一段IP地址。然后向防火墙添加规则，<code>-A INPUT -p udp -m udp --dport 53 -j ACCEPT</code>，<code>-A INPUT -p udp -m udp --sport 67:68 --dport 67:68 -j ACCEPT</code>。本机改为DHCP跑了一下，没问题。再按照同一个说明，把几台固定地址的机器加到绑定列表里面。测试下来通过没问题。最后从本机dig了一下这几台机器的名字，确定DNS可以解析出他们的名字。</p>
+
+<p>最后是dns回源设定，我设定为/etc/resolv.conf无效。因为这个文件太难管理了。我将cn域名强制定到114解析，其他地址用默认使用8.8.8.8。但是其实这里是有点技巧的，请参考&rdquo;dns分流&rdquo;。</p>
+
+<h1 id="miniupnpd">miniupnpd</h1>
+
+<p>很多内部服务是需要使用upnp或者nat-pmp映射的。我采用了熟人——miniupnpd。基本范式搜一下就有，唯一需要调整的就是allow。这里特别提醒注意两个问题。一，打开防火墙，<code>-A INPUT -p udp -m udp --dport 5351 -j ACCEPT</code>。二，里面很多地方，写着IP要iface。例如listening_ip，后面其实是要写端口号的。</p>
+
+<p>这个很容易，utorrent测试一下就能看到防火墙规则，直接通过。</p>
+
+<h1 id="动态dns">动态DNS</h1>
+
+<p>然后是配置动态dns。我使用的是3322的服务，因此按照网上的教材，写了一行curl来更新IP地址。这个脚本应该放在/etc/ppp/ip-up.d/下面。但是由于外网拨号后要做的事情很多，所以我干脆写了个脚本，直接run-parts /etc/ppp/$IFNAME/。例如外网的所有启动脚本，就在/etc/ppp/ppp0/。脚本如下：</p>
+
+<pre><code>#!/bin/bash
+
+if [ -d &quot;/etc/ppp/$IFNAME/&quot; ]; then
+    run-parts --report &quot;/etc/ppp/$IFNAME/&quot;
+fi
+</code></pre>
+
+<p>这等于建立了一个机制。当外网发生IP变更的时候，自动启动一堆脚本。在这个机制里面，可以自动更新ddns，IPv6 tunnel（见下文），更新端口映射，拨出防火墙。同时再用crontab定时跑一次，以保万一。测试启动后家里的动态地址指向就改掉了。齐活。</p>
+
+<h1 id="port-mapping">port mapping</h1>
+
+<p>port mapping是整个系统里比较难的一个问题。我们要满足以下目标：</p>
+
+<ol>
+<li>从外网访问某外网IP端口被映射到内网。</li>
+<li>从内网访问该端口也被映射。</li>
+<li>内网可记录外网地址。内网协议不一定是http。</li>
+</ol>
+
+<p>这几条看着简单，实际非常难。因为port mapping传统两大方案，iptables和xinetd。一个基于报文，一个基于链路转发。iptables性能比较高，但是一般的iptables -i dev的方案呢，会导致内网访问不被转发。xinetd的方案呢？开销大不说，内网也没有外网真实地址。</p>
+
+<p>所谓hairpin，就是通过iptables规则来实现上述目标。这里有几个要点。</p>
+
+<ol>
+<li>通过iptables -d IP &ndash;dport port来分析连接，不使用interface。这样就规避了内网不能转发的问题。</li>
+<li>在PREROUTING链上先打mark，然后做DNAT。之所以要打mark，就是因为在DNAT后，通过简单的头部规则无法识别出这些mapping流量。他们看起来就是对一些内网的访问。</li>
+<li>FORWARD里面见到mark就通过。</li>
+<li>POSTROUTING里见到内网地址的mark就SNAT。否则内网的报文会发送到目标机器，然后由目标直接返回源。在源来看，就是访问地址和反馈地址不一。</li>
+</ol>
+
+<p>这里会产生几个缺陷。</p>
+
+<ol>
+<li>当地址发生变更的时候，iptables规则需要相应修改。这个可以写个脚本来自动更新，由外网地址变更规则来管理。</li>
+<li>在iptables自启动的时候会有点问题。因为iptables-persistent默认恢复的是保存规则，即会把当时的IP地址作为规则的一部分恢复回去。因此在完成后还需要跑一下脚本来修改IP。</li>
+<li>内网只能记录外网地址，内网对内网的访问会被NAT掉源地址。</li>
+<li>在mark和DNAT的部分，其实是两套规则。如果不一致就会有各种奇怪后果。</li>
+<li>规则复杂，维护困难。</li>
+</ol>
+
+<h1 id="vpn-in">VPN-in</h1>
+
+<p>vpn in的目地有两个。一个是从外网访问家里的受限资源。另一个是从家里的“只可上网”区域（guest区域）访问受限资源。</p>
+
+<p>vpn-in是最没什么好说的。安装OpenVPN，在/etc/openvpn下扔配置，修改/etc/default/openvpn，AUTOSTART改为all，开放防火墙。最后启动openvpn就行。OpenVPN虽然翻墙被墙，但是国内用用还是挺管用的。注意有些地方UDP被QoS限制了，可以考虑也启动个TCP的。</p>
+
+<p>另一个要在这里注意的细节就是hairpin。虽然openvpn跑在服务器上不需要hairpin，但是问题和hairpin很类似。当内部地址访问外部udp端口时，openvpn会回复一个报文。这个报文默认使用发出端口的对应IP——对内网来说也就是内网网关地址。这会发生内网连接openvpn时，去和回的IP地址不一样的问题。这时请在配置里添加<code>multihome</code>。</p>
+
+<h1 id="vpn-out">VPN-out</h1>
+
+<p>VPN-out采用的是云梯的IPSEC/L2TP，我这有个<a href="http://igotvpn.com/?r=9bd54fbf80d2f74b">邀请链接</a>，你和我都能打10元的折。linux下IPSEC/L2TP主要参考<a href="https://github.com/hwdsl2/setup-ipsec-vpn/blob/master/docs/clients-zh.md">这篇文档</a>。</p>
+
+<p>首先安装strongswan，xl2tpd。顺便提一下，采用strongswan主要是因为这个据说支持IKEv2。虽然我最后没用，但是考虑到将来协议的可升级和延续性，先入这个坑，将来配置不需要重新学习。</p>
+
+<p>修改/etc/ipsec.conf，注意auto=不要写add，要start。因为我们的ipsec希望启动即生效，而不是敲指令生效。left可以写%defaultroute，很方便。right就要写ip了，因此服务器IP变更后需要修改这个文件。</p>
+
+<p>随后是/etc/xl2tpd/xl2tpd.conf。这里要有对方地址，因此服务器IP变更后同样需要修改这个文件。注意/etc/ppp/options.l2tpd.client里，name和password不能写到/etc/xl2tpd/l2tp-secrets里。那个好像是拨入时用的。同时注意几个细节。</p>
+
+<ul>
+<li>用ifname指定拨出vpn名字，以防变更。</li>
+<li>xl2tpd.conf里面别忘记加上redial = yes。这样断线后会自动重拨。</li>
+<li>最近在尝试auto=route，因为有时候ipsec还是会断开。route似乎会自动重播，start是只有启动播出，add是全手动。</li>
+<li>usepeerdns开启后会默认用8.8.8.8。用不用随你高兴，反正不会影响其他机器。dnsmasq的服务器是限定死的。</li>
+<li>这个拨号也可以用上面的&rdquo;run-parts&rdquo;系统，因此我在/etc/ppp/vpn/routing里面，配置了很多路由规则。例如google，facebook的整个地址段全部指过去。</li>
+<li>最后，别忘了开iptables -o vpn的SNAT。</li>
+</ul>
+
+<p>配置成功的话，使用<code>echo &quot;c myvpn&quot; &gt; /var/run/xl2tpd/l2tp-control</code>就能看到工作了。</p>
+
+<p>这里还有一个细节。你可以试试关闭ipsec来用l2tp，居然是能跑的！这太危险了。为了防止万一，我设定了<code>iptables -A OUTPUT -p udp -m policy --dir out --pol none -m udp --dport 1701 -j DROP</code>。在这个设定后，如果没有ipsec，l2tp将是无法拨号的。</p>
+
+<p>整个系统有几个不完美。一个是ipsec太罗嗦了，syslog里面充满了ipsec的各种信息，我死活关不掉。这占用了msata宝贵的写入IO。第二个是l2tp的启动。因为各种干扰，xl2tpd经常断开。用/etc/ppp/ip-down.d/来保持启动经常失败。所以偶尔要手工重启。</p>
+
+<h1 id="多网段互通隔离">多网段互通隔离</h1>
+
+<p>vpn out配置完成后，整个多头主机的所有interface基本就OK了，下面可以开始配置多网段互通隔离了。</p>
+
+<p>我默认将FORWARD设定为DROP，然后允许RELATED和ESTABLISHED通过。下面允许哪个口过就设定哪个规则。对上述设计，具体就是：</p>
+
+<ol>
+<li>允许可信区域进的所有包。</li>
+<li>允许vpn-in进的所有包。</li>
+<li>允许guest到外网和vpn-out的包。</li>
+</ol>
+
+<h1 id="dns分流">dns分流</h1>
+
+<p>vpn out配置完成后，一般会习惯将主DNS切换到8.8.8.8。否则国内的DNS会把google给你污染掉，导致翻墙没有任何用处。然而如果你将主DNS指向8.8.8.8，那么很多网站将返回国际站，例如taobao。因为你的来源IP显示为VPN的出口。即使没有国际站，他也会返回一个国际访问最快的点——很可能你那里访问反而慢。这违背了我们“该机制不会使访问国内网络受影响，例如变慢”的目标。具体解法有很多，我们下面列几个。</p>
+
+<ul>
+<li><a href="https://github.com/felixonmars/dnsmasq-china-list">dnsmasq-china-list</a>。维护了一个超级大的域名规则表，让境内外分别查询。这个最大的缺陷就是经常变动。</li>
+<li><a href="https://github.com/shadowsocks/ChinaDNS">ChinaDNS</a>。他会先查一遍国外。如果国外给出一个国内地址，那么就无视国外的结果，再查一遍国内的。这个的一个缺陷就是，像taobao这种有国际站的网站，就不一定能返回正确结果。</li>
+<li><a href="https://github.com/ayanamist/gdns-go">gdns-go</a>。他会使用edns查询服务器，来获得一个中国的真实结果。这里特别写给一些很聪明的朋友：我知道原生edns-client-subnet配合vpn out是个听起来很合理的事，性能高的多。但是是不行的。google提出了dns的原生edns-client-subnet扩展，但是他们的google dns并不支持这个协议。他们只是会使用这个协议来递归而已。因此要使用edns来查询域名，必须使用google的dns-over-https才行。</li>
+</ul>
+
+<p>我最后用了一个类似于gdns-go的方案。再把dnsmasq的配置指过来。老婆访问国内网站就基本不受影响了。</p>
+
+<h1 id="ipv6-tunnel">IPv6 tunnel</h1>
+
+<p>再下面是ipv6 tunnel。我用的是HE的服务。也是按照<a href="https://wiki.debian.org/DebianIPv6">官方文档</a>写了个配置搞定。类型用的是v4tunnel，local的v4地址不用写。he那端需要更新配置，所以也要写个脚本，更新IP时自动更新配置。interface启动后可以mtr通www.kame.net的v6地址。通过。最后别忘了在ppp0的DROP规则下面加上<code>-A INPUT -i he0 -j DROP</code>。</p>
+
+<p>ipv6的另一个特殊之处在于，iptables规则有一套新的了，叫做ip6tables。我的初始化规则是这样的。</p>
+
+<pre><code>-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+-A INPUT -p ipv6-icmp -j ACCEPT
+-A INPUT -i lo -j ACCEPT
+-A INPUT -p tcp -m tcp --dport 22 -j ACCEPT
+</code></pre>
+
+<p>基本设定和IPv4差不多，但是forward不做任何限制。IPv6本来就是暴露整个内部网络的系统，再限制内网就没意义了。因此我的范式是每个内网设备自行做ipv6防火墙，路由器不做任何处理。上一句里面的22端口打开，其实是开放给全世界ipv6地址的。</p>
+
+<p>路由器本身有ipv6不解决问题，还得解决内网的ipv6。ipv6的地址自动分配有两种模式，一个叫DHCPv6，一个叫SLAAC。我用的是SLAAC模式。</p>
+
+<p>首先我们为两个内网网口分别配置静态ipv6，这个应该不难。然后安装radvd，按照<a href="https://scottlinux.com/2014/04/28/debian-linux-home-router-with-ipv4-and-ipv6/">这个</a>里面radvd的配置，直接配置出来。客户端一次测试就通过，直接就拿到了ipv6地址。这里特别提醒注意，RA需要开放icmpv6。如果上面没有那条ipv6-icmp，可就不只是不能ping而已，连RA都不能用了。</p>
+
+<p>最后再设定sysctl<code>net.ipv6.conf.all.forwarding = 1</code>，从客户端mtr一下google就全部通过了。</p>
+
+<h1 id="iptables总结">iptables总结</h1>
+
+<p>上面做了很多配置，我知道最后大家的iptables会比较乱，所以这里总结一下：</p>
+
+<ol>
+<li>PREROUTING。根据目标地址命中port mapping或者miniupnpd规则。里面打mark和DNAT。</li>
+<li>INPUT，默认DROP。
+2.1. RELATED和ESTABLISHED先行
+2.2. icmp，lo。
+2.3. 对外网可访问端口，例如udp的500,4500,openvpn。
+2.4. ah和esp协议可访问。
+2.5. 拒绝外网访问，ppp，ipv6，vpn-out。
+2.6. 最后是对内网开放的端口，例如udp的53,67,68,5351。</li>
+<li>FORWARD，默认DROP。
+3.1. RELATED和ESTABLISHED先行
+3.2. mark放行。
+3.3. 内网，vpn-in放行。
+3.4. guest到外网放行，例如ppp，vpn-out。注意ipv6不在这里放行，那是ip6tables，默认全放行。</li>
+<li>OUTPUT。阻止没有ipsec的l2tp。</li>
+<li>POSTROUTING。
+5.1. 出口ppp和vpn-out的做SNAT。
+5.2. 来源内网，带有mark的SNAT。</li>
+</ol>
+
+<p>总结一下可以看到，虽然比较细碎，但是还是挺有逻辑的。</p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
+    
+    <time>Aug 28, 2017</time>
+    <span class="categories">
+      Tags:
+        
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="http://shell909090.org/blog/archives/2853/" title="riot.im简介">riot.im简介</a>
+    
+
+    
+  </p>
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+       
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    <section class="even">
+      <h1>Recent Posts</h1>
+      <ul id="recent_posts">
+        
+          <li class="post">
+            <a href="/blog/archives/2854/">使用Debian作为Router</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2853/">riot.im简介</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2852/">Puerro Galera游记</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2851/">/proc/net/dev中bonding网卡的流量计算</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2850/">SI的七个基础单位</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2849/">模拟网络丢包延迟和TC的使用</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2848/">两台机器上TCP状态不一致的排查</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2847/">Disney Shanghai信息</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2846/">广东游记</a>
+          </li>
+        
+          <li class="post">
+            <a href="/blog/archives/2845/">phuket旅游和潜水指南</a>
+          </li>
+        
+      </ul>
+    </section>
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2017 Shell Xu - <a href="http://shell909090.org/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

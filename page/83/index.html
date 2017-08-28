@@ -38,10 +38,10 @@
   <meta name="description" content="">
   <meta name="keywords" content="">
 
-  <meta name="author" content="">
+  <meta name="author" content="Shell Xu">
 
   
-  <meta name="generator" content="Hugo 0.17-DEV" />
+  <meta name="generator" content="Hugo 0.26-DEV" />
 
   
   
@@ -49,7 +49,7 @@
 (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
 (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
 m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
 ga('create', 'UA-48816091-1', 'auto');
 ga('send', 'pageview');
@@ -99,6 +99,56 @@ ga('send', 'pageview');
 
 <header>
     <h1 class="entry-title">
+        <a href="http://shell909090.org/blog/archives/263/">C&#43;&#43;语言跨系统编程</a>
+    </h1>
+    <p class="meta">Nov 23, 2005
+         - 1 minute read 
+         - <a href="http://shell909090.org/blog/archives/263/#disqus_thread">Comments</a>
+
+        
+    </p>
+</header>
+
+
+        
+          <p>首先我们给这个话题增加一个基础，就是您的C++代码没有用到native的部分。具体哪些部分我会列出让你慢慢检查的，不过用到了还想跨平台，你做梦去吧……
+我们假定你代码是在windows的VC++下面写的，因为VC++的转换过去有点麻烦，反向的转换基本可以自动生成。
+首先请检查你的头文件依赖性，如果是引用了标准的头文件，那么不需要额外的设定。一般g++的设置中都会自动设定标准的头文件和库。如果引用了某个自己写的文件，那么请检查相对路径是否正确。尤其请着重检查大小写。因为windows不会管大小写的，但是却会将大小写带入*nix。
+另外VC++中有一个头文件预编译的加速选项，默认是开启的。将stdafx.cpp(which is empty)预编译次，就得到了stdafx.h的编译结果。在*nix里面我目前还不知道怎么支持，所以stdafx.cpp可以不用理会。
+然后请检查标准函数，部分VC++声明在STDLIB.H中的函数其实是VC自带的。用这种函数的结果就是编译100%的失败。遇到这种函数可以自己写一个代替，反正一般都不是特别麻烦。
+另外一般不需要关心数据类型和端点型，多数库文件中都会自动处理。不过两种情况需要手工干预。一个是程序中使用了windows特有类型例如DWORD或者linux特有类型le32。这样用typedef重新定义就好了。还有就是跨平台的时候连同芯片类别一起跨过去。这样就要手工确定所有库文件会自动处理数据类型，并且人工定义一组会使用的数据类型扩展宏来处理跨平台的问题。最明显的例子就是int在不同平台的大小问题，对此还有一个特殊的建议就是使用char short long来代替，这三者在所有系统上的长度是相同的。
+下面是使用sh脚本来编译代码。其实可以使用make文件来做的，不过俺不会。所以用sh来做好了，反正一般跨平台的程序都不会过于复杂，凑合下就过去了。
+g++的编译对象一般是cpp文件，如果是一般的可执行文件，那么编译的指令是g++ *.cpp -o oufile。我这次编译的对象是共享库，所以指令是g++ -shared*.cpp -o outfile。
+g++处理extren的比较特殊。如果extren在编译成目标文件时还没有指定链接到哪个符号，那么g++就自动将这个定义为从动态库中引入。不过多数情况下，这应该会出错的。所以要多个cpp文件一起编译，或者使用-c编译到.o文件后再ld起来。否则单个cpp的编译结果根本无法使用。
+如果需要使用少量native的方法，也可以按下面说的方法跨平台。
+在VC++中定义一个win.cpp，其中将native的方法封装成函数。在主程序中使用C++标准函数和这些函数。
+在linux中定义一个linux.cpp，然后用linux的native函数实现对应的函数。在编译的时候略过win.cpp。
+VC++中工程引入的时候不要加入linux.cpp。
+这样可以保证在两个系统下分别对应不同的函数，当然更好的方法是使用平台相关宏。
+附录1，windows下的专有编程技巧：
+使用了nativeAPI的绝对无法移植，它们有的甚至无法跨越2000/XP的差异。
+使用windowsAPI的，一般不可以移植。这类API多数声明在windows.h中。
+使用winsock的没有希望啦，要用socket2才可以。winsock的特征是WSAStartup。
+使用了__try{的无法移植，而try{可以。前者是SEH的捕获模块，后者是C++异常捕获模块，在windows下异常捕获是用SEH实现的，不过linux下面不是。linux根本没有SEH。
+使用了windows或者VC专用宏的无法移植。
+使用C++库和std库的可以移植，包括cout。
+使用STL可以移植，不过注意平台差异性。
+附录2，linux项目在VC++中引入的方法。
+新建一个工程，然后copy所有源代码到工程下面。再然后添加文件到工程，然后F7编译。over</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <h1 class="entry-title">
         <a href="http://shell909090.org/blog/archives/262/">Debian GNU/Linux下安装Oracle 9i</a>
     </h1>
     <p class="meta">Nov 21, 2005
@@ -111,7 +161,9 @@ ga('send', 'pageview');
 
 
         
-          <p>最近因为工作需要，在Debian GNU/Linux安装了Oracle 9i。Debian代号sarge，版本号release 3.1，testing发行。Oracle代号9ir2,版本号9.2.0.4。安装文件名称为ship_9204_linux_disk1.cpio.gz ship_9204_linux_disk2.cpio.gz ship_9204_linux_disk3.cpio.gz。需要一个补丁，文件名为p3006854_9204_LINUX.zip。Oracle 9i安装的是Enterprise Datebase。 先执行以下脚本： #! /bin/bash #变更内核参数 cd /proc/sys/kernel #1G内存状况，按照需要调整 echo 4294967295 &gt; shmmax touch /etc/rac_on #增加一个link，debian需要 apt-get install libstdc++-glibc ; 或者使用aptitude cd /usr/lib ln -s libstdc++-libc6.2-2.so.3 libstdc++-libc6.1-1.so.2 #增加用户 cd /home mkdir oracle groupadd dba useradd -g dba -d /home/oracle -s /bin/bash oracle #注意-s参数，如果不指定下面的初试化脚本不一定跑的起来 passwd -d oracle chown -cR oracle:dba oracle cd /usr mkdir oracle chown -cR oracle:dba oracle cd /var mkdir oracle chown -cR oracle:dba oracle #增加初试化脚本 cd /home/oracle echo &quot;export DISPLAY=''&quot;&gt;.bash_profile echo &quot;export BASH_ENV=$HOME/.bashrc&quot;&gt;&gt;.bash_profile echo &quot;export LD_ASSUME_KERNEL=2.4.1&quot;&gt;&gt;.bash_profile echo &quot;ORACLE_HOME=/usr/oracle; export ORACLE_HOME&quot;&gt;&gt;.bash_profile echo &quot;ORACLE_BASE=/var/oracle; export ORACLE_BASE&quot;&gt;&gt;.bash_profile echo &quot;ORACLE_SID=oracle; export ORACLE_SID&quot;&gt;&gt;.bash_profile echo &quot;ORACLE_TERM=xterm; export ORACLE_TERM&quot;&gt;&gt;.bash_profile echo &quot;TNS_ADMIN=/home/oracle/config/9.0.1; export TNS_ADMIN&quot;&gt;&gt;.bash_profile echo &quot;NLS_LANG=american_america.ZHS16GBK; export NLS_LANG&quot;&gt;&gt;.bash_profile echo &quot;ORA_NLS33=$ORACLE_HOME/ocommon/nls/admin/data; export ORA_NLS33&quot;&gt;&gt;.bash_profile echo &quot;LD_LIBRARY_PATH=$ORACLE_HOME/lib;export LD_LIBRARY_PATH&quot;&gt;&gt;.bash_profile echo &quot;PATH=$PATH:/bin:/usr/bin:/usr/sbin:/etc:/opt/bin:/usr/ccs/bin:/usr/openwin&quot;&gt;&gt;.bash_profile echo &quot;PATH=$PATH:/opt/local/bin:/opt/NSCPnav/bin:$ORACLE_HOME/bin&quot;&gt;&gt;.bash_profile echo &quot;PATH=$PATH:/usr/local/samba/bin:/usr/ucb&quot;&gt;&gt;.bash_profile echo &quot;export PATH&quot;&gt;&gt;.bash_profile echo &quot;CLASSPATH=$ORACLE_HOME/JRE:$ORACLE_HOME/jlib:$ORACLE_HOME/rdbms/jlib&quot;&gt;&gt;.bash_profile echo &quot;CLASSPATH=$CLASSPATH:$ORACLE_HOME/network/jlib&quot;&gt;&gt;.bash_profile echo &quot;TMPDIR=/tmp;export TMPDIR&quot;&gt;&gt;.bash_profile echo &quot;umask 022&quot;&gt;&gt;.bash_profile 然后，复制oracle安装程序到用户目录，执行以下脚本： #!</p>
+          <p>最近因为工作需要，在Debian GNU/Linux安装了Oracle 9i。Debian代号sarge，版本号release 3.1，testing发行。Oracle代号9ir2,版本号9.2.0.4。安装文件名称为ship_9204_linux_disk1.cpio.gz ship_9204_linux_disk2.cpio.gz ship_9204_linux_disk3.cpio.gz。需要一个补丁，文件名为p3006854_9204_LINUX.zip。Oracle 9i安装的是Enterprise Datebase。
+先执行以下脚本：
+#! /bin/bash #变更内核参数 cd /proc/sys/kernel #1G内存状况，按照需要调整 echo 4294967295 &gt; shmmax touch /etc/rac_on #增加一个link，debian需要 apt-get install libstdc++-glibc ; 或者使用aptitude cd /usr/lib ln -s libstdc++-libc6.2-2.so.3 libstdc++-libc6.1-1.so.2 #增加用户 cd /home mkdir oracle groupadd dba useradd -g dba -d /home/oracle -s /bin/bash oracle #注意-s参数，如果不指定下面的初试化脚本不一定跑的起来 passwd -d oracle chown -cR oracle:dba oracle cd /usr mkdir oracle chown -cR oracle:dba oracle cd /var mkdir oracle chown -cR oracle:dba oracle #增加初试化脚本 cd /home/oracle echo &quot;export DISPLAY=''&quot;&gt;.</p>
 
           
               <footer>
@@ -142,7 +194,21 @@ ga('send', 'pageview');
 
 
         
-          <p>前几天和一个fashion派的同学聊天，她说买个相机啥的多花点钱，然后就不升级了。偶想这不傻瓜嘛。不过后来想想偶聪明到哪里去呢？升级也就升级个SD卡，要换别的重新买。PDA等于半个废物。 其实现在的机器都做的太分散了，所以价格超贵。按照偶的电脑中心论的观点，只要技术成熟，所有东西都要集成到核心电脑上做。 注意，以下说明的种种情况都只是猜想，在目前技术条件下设备可以做到何种程度。至于为啥没做，和贝壳无关…… 例如将PDA加一个底板包包起来（当然看起来更像吧PDA插到某个设备上面，类似偶的PDA底座一类的东西），就可以做成PDA数码相机。闪光灯电源另外供应，从缩放到啥的都可以集成在这里了。相信没有啥变态会在照相的时候处理公务吧。另外PDA内部一定要集成一个可以更换的SD卡，这样有充分的空间可以做各种扩展，不会像偶这么悲惨，插了SD不能干别的，不插SD啥都不能干。 还有PDA一定要集成一个扩展背包，可以充电/内部带电源。放在电源上就给PDA和自身充电，拿起来就用自身给PDA充电，类似扩展电池啦，不要的时候可以拔下来。上面一定要有USB接口，至少可以驱动U盘（所以这个扩展包才要有电池阿），这样偶要倒歌就非常方便了。最好还可以驱动小键盘，偶可以写写程序。如果可以，最好整合D-15接口，这样方便商务用。毕竟做投影之类的还是比较常见的。 PDA上一定不能内部整合手机，否则PDA电玩没了你要接电话就死翘翘了。不过可以考虑做一个背包插接块，将手机固定在PDA上，红外口对红外口。这样PDA就能顺手上网。可以的话还可以给手机做上充电。如果有其他解决方案，最好手机只有接电话的功能，连短信都没有。所有的手机设置，管理，看短信，无线上网，统统放给PDA。这样手机只有三个键，没有液晶板，绝对超便宜。 PDA上一定要整合声音功能，至少要可以扩展出录放和无线设备。这样等于有个MP3，不怕费电还可以当录音笔用。偶尔懒的看也可以让PDA给读出来。在平时这个功能不见得好用，颠簸的车上读个东西还真比自己去看要强。至于GPS定位天线就大家自己搞定吧，这个东西加上去不是重量或者电力的问题，而是价格的问题。毕竟GPS服务的价格放在那里呢。 OK，我们看看有多少个模块组，重量价格和电力情况如何。 PDA，内置一个可更换SD卡，带内置/扩展录音播放，支持无线收音。价格带SD卡大约3000吧，这个价格绝对够了。用电大约是四五小时，重量大约300g。 底版照相包，扩充成照相机用。价格大约1200，要自带闪光灯电池。重量500g多点吧，不带电池。 扩展背包，扩展设备的主电力，价格大约1000，重量600g多，毕竟人家有电池嘛。 整合用手机。这个另外算吧，但是应该价格在200上下，重量300g上下，电力另外算。 扩展键盘，扩展在背包上，价格大约200，重量大约600g左右。 整体全部拿下来的价格是5600，重量2.3kg。打折加别的东西进去，价格应该在5300上下，重量2.5kg。功能包括一个能上网的正常电脑（除了小了点），一部数码相机（带卡噢），一部手机（短信收发超方便），MP3和录音笔（现在卖的MP3都整合录音了）。总体使用时间大约是三四个小时。而目前要买这么几个东西，笔记本超贵就不说了，数码相机就要2500，MP3要300，手机要500。这已经3300了，还不说到底多沉。 整体的一个核心思想就是，既然各种设备上都有类似的东西（液晶屏幕，核心处理器，电池），那为什么不将所有资源放到一起呢？毕竟没有多少情况要用两份资源的。</p>
+          <p>前几天和一个fashion派的同学聊天，她说买个相机啥的多花点钱，然后就不升级了。偶想这不傻瓜嘛。不过后来想想偶聪明到哪里去呢？升级也就升级个SD卡，要换别的重新买。PDA等于半个废物。
+其实现在的机器都做的太分散了，所以价格超贵。按照偶的电脑中心论的观点，只要技术成熟，所有东西都要集成到核心电脑上做。
+注意，以下说明的种种情况都只是猜想，在目前技术条件下设备可以做到何种程度。至于为啥没做，和贝壳无关……
+例如将PDA加一个底板包包起来（当然看起来更像吧PDA插到某个设备上面，类似偶的PDA底座一类的东西），就可以做成PDA数码相机。闪光灯电源另外供应，从缩放到啥的都可以集成在这里了。相信没有啥变态会在照相的时候处理公务吧。另外PDA内部一定要集成一个可以更换的SD卡，这样有充分的空间可以做各种扩展，不会像偶这么悲惨，插了SD不能干别的，不插SD啥都不能干。
+还有PDA一定要集成一个扩展背包，可以充电/内部带电源。放在电源上就给PDA和自身充电，拿起来就用自身给PDA充电，类似扩展电池啦，不要的时候可以拔下来。上面一定要有USB接口，至少可以驱动U盘（所以这个扩展包才要有电池阿），这样偶要倒歌就非常方便了。最好还可以驱动小键盘，偶可以写写程序。如果可以，最好整合D-15接口，这样方便商务用。毕竟做投影之类的还是比较常见的。
+PDA上一定不能内部整合手机，否则PDA电玩没了你要接电话就死翘翘了。不过可以考虑做一个背包插接块，将手机固定在PDA上，红外口对红外口。这样PDA就能顺手上网。可以的话还可以给手机做上充电。如果有其他解决方案，最好手机只有接电话的功能，连短信都没有。所有的手机设置，管理，看短信，无线上网，统统放给PDA。这样手机只有三个键，没有液晶板，绝对超便宜。
+PDA上一定要整合声音功能，至少要可以扩展出录放和无线设备。这样等于有个MP3，不怕费电还可以当录音笔用。偶尔懒的看也可以让PDA给读出来。在平时这个功能不见得好用，颠簸的车上读个东西还真比自己去看要强。至于GPS定位天线就大家自己搞定吧，这个东西加上去不是重量或者电力的问题，而是价格的问题。毕竟GPS服务的价格放在那里呢。
+OK，我们看看有多少个模块组，重量价格和电力情况如何。
+PDA，内置一个可更换SD卡，带内置/扩展录音播放，支持无线收音。价格带SD卡大约3000吧，这个价格绝对够了。用电大约是四五小时，重量大约300g。
+底版照相包，扩充成照相机用。价格大约1200，要自带闪光灯电池。重量500g多点吧，不带电池。
+扩展背包，扩展设备的主电力，价格大约1000，重量600g多，毕竟人家有电池嘛。
+整合用手机。这个另外算吧，但是应该价格在200上下，重量300g上下，电力另外算。
+扩展键盘，扩展在背包上，价格大约200，重量大约600g左右。
+整体全部拿下来的价格是5600，重量2.3kg。打折加别的东西进去，价格应该在5300上下，重量2.5kg。功能包括一个能上网的正常电脑（除了小了点），一部数码相机（带卡噢），一部手机（短信收发超方便），MP3和录音笔（现在卖的MP3都整合录音了）。总体使用时间大约是三四个小时。而目前要买这么几个东西，笔记本超贵就不说了，数码相机就要2500，MP3要300，手机要500。这已经3300了，还不说到底多沉。
+整体的一个核心思想就是，既然各种设备上都有类似的东西（液晶屏幕，核心处理器，电池），那为什么不将所有资源放到一起呢？毕竟没有多少情况要用两份资源的。</p>
 
           
 
@@ -169,7 +235,9 @@ ga('send', 'pageview');
 
 
         
-          <p>Dear Turing，我实在太激动啦。今天偶出门照月亮，照到手都冻僵快了。不过收获不错，DC在不同模式下照出来的东西都有可看处。圆圆的漂亮的大月亮终于藏进了偶的相机。唉，说话越来越像XX了，莫非她的东西看多了。 何人江畔初见月，江月何年处照人。问的多好阿，这么漂亮的月亮，是什么时候才有的呢？按照Ross的回答，technically, it&rsquo;s 7-billion years ago。不过虽然人不同，地点不同，时间不同，我们看的月亮是相同的。这个圆圆的漂亮的白色大球，李白看过，说举头望明月。张若虚看过，于是有了春江花月夜（偶打太极老听见……）。当然秦始皇汉高祖唐明皇之类煞风景的玩意也看过，这就不说了。今天我看到了，你……也看到了吗？ 月儿圆，人团圆……</p>
+          <p>Dear Turing，我实在太激动啦。今天偶出门照月亮，照到手都冻僵快了。不过收获不错，DC在不同模式下照出来的东西都有可看处。圆圆的漂亮的大月亮终于藏进了偶的相机。唉，说话越来越像XX了，莫非她的东西看多了。
+何人江畔初见月，江月何年处照人。问的多好阿，这么漂亮的月亮，是什么时候才有的呢？按照Ross的回答，technically, it&rsquo;s 7-billion years ago。不过虽然人不同，地点不同，时间不同，我们看的月亮是相同的。这个圆圆的漂亮的白色大球，李白看过，说举头望明月。张若虚看过，于是有了春江花月夜（偶打太极老听见……）。当然秦始皇汉高祖唐明皇之类煞风景的玩意也看过，这就不说了。今天我看到了，你……也看到了吗？
+月儿圆，人团圆……</p>
 
           
 
@@ -196,7 +264,10 @@ ga('send', 'pageview');
 
 
         
-          <p>今天坐在车上，看人来人往，感觉一如从前。 我每天上班的时候喜欢在7:53分坐787从南泉路向德平路走，时间比较稳定，车坐的久了，看到的人都有点认识的。在我上车的站，总有一个喜欢穿紫色衣服的MM，应该是哪个公司的白领，在陆家嘴附近工作。维纺路会上来一个头发比较爆炸的中年人，每次都腋下夹着报纸或者包上来。不知道是不是夹的习惯了，没有包就买张报纸夹着。东昌路地铁站会上来一个瘦瘦的酷酷的MM，很像高中时候的贾小凤。我下车的时候还在车上安稳的看报纸，估计是坐到底的。每次的报纸都是时代报，而且都是看第三版。源深路的时候会下去很多学生MM，其中一个特别高，估计和我差不多，怀疑是做模特的，只是年龄不对。民生路的时候又下去不少学生MM，都是海事大学的。其中有两个看着特别像高中女生的，不过我肯定是大学生，因为有次我看到他们拿出民法在看。高中生是不会这么做的。 回家的时候是反过来坐的，时间当然也没有上班的时候那么准。一般会看到上去的时候后面有很多学生。有初中的，也有高中的。其中有一对学生couple因为我搭过两次话比较熟悉，看到都会打个招呼。估计他们也不难认出我来，因为我的头发已经是上海市的注册商标了。有几个是初中的小MM和小DD，他们都是在民生路下的，那里有个初中。 不知道这些人，是否知道我。不知道他们眼里，我是怎么样？</p>
+          <p>今天坐在车上，看人来人往，感觉一如从前。
+我每天上班的时候喜欢在7:53分坐787从南泉路向德平路走，时间比较稳定，车坐的久了，看到的人都有点认识的。在我上车的站，总有一个喜欢穿紫色衣服的MM，应该是哪个公司的白领，在陆家嘴附近工作。维纺路会上来一个头发比较爆炸的中年人，每次都腋下夹着报纸或者包上来。不知道是不是夹的习惯了，没有包就买张报纸夹着。东昌路地铁站会上来一个瘦瘦的酷酷的MM，很像高中时候的贾小凤。我下车的时候还在车上安稳的看报纸，估计是坐到底的。每次的报纸都是时代报，而且都是看第三版。源深路的时候会下去很多学生MM，其中一个特别高，估计和我差不多，怀疑是做模特的，只是年龄不对。民生路的时候又下去不少学生MM，都是海事大学的。其中有两个看着特别像高中女生的，不过我肯定是大学生，因为有次我看到他们拿出民法在看。高中生是不会这么做的。
+回家的时候是反过来坐的，时间当然也没有上班的时候那么准。一般会看到上去的时候后面有很多学生。有初中的，也有高中的。其中有一对学生couple因为我搭过两次话比较熟悉，看到都会打个招呼。估计他们也不难认出我来，因为我的头发已经是上海市的注册商标了。有几个是初中的小MM和小DD，他们都是在民生路下的，那里有个初中。
+不知道这些人，是否知道我。不知道他们眼里，我是怎么样？</p>
 
           
 
@@ -223,7 +294,9 @@ ga('send', 'pageview');
 
 
         
-          <p>今天去看了开源代码区，www.SrouceForge.net。总体来说不错，只是慢了点。里面有很多有趣的软件，我还在试他们。刚刚发现一个好东西，truecrypt。 truecrypt是一个加密软件，姑且算吧。用hash和对称加密算法来做加解密，速度非常了得。不过最惊人的地方不是加密的部分，而是实现方法。它先生成一个加密文件，然后在上面加密码（或者密码文件）。然后将这个文件挂载到某个windows没有使用的驱动器上，就好像插入一个加密U盘一样。这个对文件系统完全透明，就我所知，是要写IFS驱动的。但是我在里面没有看到IFS驱动，也可能是封装在程序内部去释放他了，或者是因为扩展名是dll。因为有个主dll啥导出都没有。 总之这个软件我是大力推荐的，如果你打算要一个强加密的系统。使用方便，绿色无污染。使用的时候也没有加解密过程。那么就用它吧。它最合适的地方是放U盘，上面放个文件系统，然后分出点空间来做加密。运行软件后任何系统上（这年头没兄弟还是98了吧）都可以做透明操作，就仿佛你有一个非加密U盘和加密U盘。</p>
+          <p>今天去看了开源代码区，www.SrouceForge.net。总体来说不错，只是慢了点。里面有很多有趣的软件，我还在试他们。刚刚发现一个好东西，truecrypt。
+truecrypt是一个加密软件，姑且算吧。用hash和对称加密算法来做加解密，速度非常了得。不过最惊人的地方不是加密的部分，而是实现方法。它先生成一个加密文件，然后在上面加密码（或者密码文件）。然后将这个文件挂载到某个windows没有使用的驱动器上，就好像插入一个加密U盘一样。这个对文件系统完全透明，就我所知，是要写IFS驱动的。但是我在里面没有看到IFS驱动，也可能是封装在程序内部去释放他了，或者是因为扩展名是dll。因为有个主dll啥导出都没有。
+总之这个软件我是大力推荐的，如果你打算要一个强加密的系统。使用方便，绿色无污染。使用的时候也没有加解密过程。那么就用它吧。它最合适的地方是放U盘，上面放个文件系统，然后分出点空间来做加密。运行软件后任何系统上（这年头没兄弟还是98了吧）都可以做透明操作，就仿佛你有一个非加密U盘和加密U盘。</p>
 
           
 
@@ -250,7 +323,7 @@ ga('send', 'pageview');
 
 
         
-          <p>近两天要用JIN做数据加密系统，所以特别写了这篇。省得以后忘记，顺便造福大家。 下面是核心编码： //CTX.java public abstract class CTX {\ protected byte\[\] state = new byte\[20\]; protected long count; protected byte\[\] buffer = new byte\[0\]; /\* input buffer \*/ protected byte\[\] PADDING = { -128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,\ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,\ 0, 0,</p>
+          <p>近两天要用JIN做数据加密系统，所以特别写了这篇。省得以后忘记，顺便造福大家。   下面是核心编码：   //CTX.java   public abstract class CTX {\ protected byte\[\] state = new byte\[20\];   protected long count;   protected byte\[\] buffer = new byte\[0\]; /\* input buffer \*/   protected byte\[\] PADDING = { -128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,\ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,\ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,\ 0, 0, 0, 0, 0, 0 };   // 大端点序\ protected static void putChar(byte\[\] b, int off, char val) ;   // 大端点序\ protected static void putLong(byte\[\] b, int off, long val) ;   static {\ System.</p>
 
           
               <footer>
@@ -281,7 +354,12 @@ ga('send', 'pageview');
 
 
         
-          <p>如果这个代码出现在linux内核里面，你们怎么想？ subtypes[n].parse(state, bdev, START_SECT(p)*sector_size, NR_SECTS(p)*sector_size, slot); 很像是对象数组调用方法吧，很多人可能甚至会猜想这个东西是虚函数。问题是，大家记得吗？linux内核，是C的！ 事实上，这是声明。 static struct { unsigned char id; void (*parse)(struct parsed_partitions *, struct block_device*, u32, u32, int); }; 怎么想？这个是方法映射。技术上讲，和虚函数属于同种类的应用（dymanic binding）。当然，数据结构有差异。虚函数要先根据n确定对象位置，根据v_ptr确定虚函数表，根据虚函数表定位了函数入口。而这里是根据n定位了对象，然后直接找到了函数入口。 可是，还是被骗了…… PS.谨以此纪念首次在GNU/GPL下引用Linux内核源码用于程序开发，因为分区系统资料该死的不清楚！</p>
+          <p>如果这个代码出现在linux内核里面，你们怎么想？
+subtypes[n].parse(state, bdev, START_SECT(p)*sector_size, NR_SECTS(p)*sector_size, slot);  很像是对象数组调用方法吧，很多人可能甚至会猜想这个东西是虚函数。问题是，大家记得吗？linux内核，是C的！
+事实上，这是声明。
+static struct { unsigned char id; void (*parse)(struct parsed_partitions *, struct block_device*, u32, u32, int); };  怎么想？这个是方法映射。技术上讲，和虚函数属于同种类的应用（dymanic binding）。当然，数据结构有差异。虚函数要先根据n确定对象位置，根据v_ptr确定虚函数表，根据虚函数表定位了函数入口。而这里是根据n定位了对象，然后直接找到了函数入口。
+可是，还是被骗了……
+PS.谨以此纪念首次在GNU/GPL下引用Linux内核源码用于程序开发，因为分区系统资料该死的不清楚！</p>
 
           
 
@@ -308,7 +386,10 @@ ga('send', 'pageview');
 
 
         
-          <p>U盘在windows下有个很好玩的特性。除非不能分区，否则一旦经过分区，windows永远只认第一个分区。也就是说如果U盘映射到sda，那么windows只认sda1。很多隐藏数据或者特殊功能就是利用这个特点来实现的。 现在我们要自己用这个特性，那么就需要自己去操作U盘的数据。也许很多人会想到U盘驱动或者IFS上去。没措，通过那个你可以使用U盘所有特性。但是要操作分区根本不需要这么复杂。根据我的测试，U盘接入后会成为PDn。例如我这里就是PD2，PD0是启动盘，PD1是第二硬盘。利用CreateFile的文件读写机制就可以直接读写U盘的底层数据。 通过这个特性，U盘在我们眼里就变成了一个文件。然后就是如何编辑分区表的问题了。这个嘛，写个程序吧，让他可以通过这种形式来编辑特定分区表，filedisk &ldquo;.PhysiceDiskn&rdquo;，就如同linux下的fdisk命令形式，fdisk /dev/sda一样。 下面就是格式化磁盘，给我们自己的盘一个特殊的类型标示，然后通过我们自己程序的直接读写来定位和操作这个分区。为了保证安全性，我们最好还利用某种方式来进行加密。一般来说我推荐使用PD0（这个肯定存在）的SN和用户键入的密码形成密钥块。</p>
+          <p>U盘在windows下有个很好玩的特性。除非不能分区，否则一旦经过分区，windows永远只认第一个分区。也就是说如果U盘映射到sda，那么windows只认sda1。很多隐藏数据或者特殊功能就是利用这个特点来实现的。
+现在我们要自己用这个特性，那么就需要自己去操作U盘的数据。也许很多人会想到U盘驱动或者IFS上去。没措，通过那个你可以使用U盘所有特性。但是要操作分区根本不需要这么复杂。根据我的测试，U盘接入后会成为PDn。例如我这里就是PD2，PD0是启动盘，PD1是第二硬盘。利用CreateFile的文件读写机制就可以直接读写U盘的底层数据。
+通过这个特性，U盘在我们眼里就变成了一个文件。然后就是如何编辑分区表的问题了。这个嘛，写个程序吧，让他可以通过这种形式来编辑特定分区表，filedisk &ldquo;.PhysiceDiskn&rdquo;，就如同linux下的fdisk命令形式，fdisk /dev/sda一样。
+下面就是格式化磁盘，给我们自己的盘一个特殊的类型标示，然后通过我们自己程序的直接读写来定位和操作这个分区。为了保证安全性，我们最好还利用某种方式来进行加密。一般来说我推荐使用PD0（这个肯定存在）的SN和用户键入的密码形成密钥块。</p>
 
           
 
@@ -335,34 +416,12 @@ ga('send', 'pageview');
 
 
         
-          <p>其实第三天并不完整，因为贝壳感冒了…… 头天累过头了，然后晚上吹了点冷风。结果当晚就感冒了，今天起来说话嗡嗡的。还好没有发高烧，否则问题严重了。可怜我还要带一个包和一个笔记本去展厅。因为这个是昨天我带回来的，总不能不带过去阿。所以撑着到展览场地，通关进去，好玩……今天我最早。于是连上笔记本然后准备好参展的东西，坐下来休息休息。 柏菊同志是第二个来的，紧接着就是曾经理。知道情况后和杨总打个招呼，放我回家。我说我先顶个上午吧，否则交接不好做。要是客户上来一问三不知就不好了。何况我还要照点照片。于是顶到杨总到，基本东西都说完了，跑去拍MM照片。原来前天看到的Hot Girl是阿尔卡特请来跳舞的，难怪…… 跑到西门子的展厅里面，发现还需要登记资料和排队。我问警卫这个队伍大概多少时间，他回答是二十分钟。按照一贯的情况来分析，这句话的真实含义是，起码要半个钟头以上！我哪里有那么多美国时间阿。半个钟头后已经过了吃饭时间了，算了，照了两张排队照片出来了。到是周一可能比较轻松的进去，不过感冒呢，还是算了吧。 回家吃饭，下午去邮局领了老妈寄过来的芯片。测试了下，还是低速的，而且比原来的还差！大致和老板N年前买的相机里面的128M低速芯片性能一致。真不知道这些人到底是干吗的，没见过高速芯片吗？</p>
-
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/253/">工博会次日记</a>
-    </h1>
-    <p class="meta">Nov 6, 2005
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/253/#disqus_thread">Comments</a>
-
-        
-    </p>
-</header>
-
-
-        
-          <p>今天跑过去又早了，所以拿了相机去照其他几个馆。先跑到了五馆，赫然发现有交大的展台（后面还碰到了一个交大的老师）。妈呀，虽然毕业前对交大是恨之入骨，这么多年对于交大捞钱的恶德行也是知之甚深。但是毕业后突然看到交大还是蛮……怀念的。难怪N多人难忘母校，其实和他在学校里面受何种教育无关，主要是这个标志代表了他的一段少年时光。后面还有复旦等等的展台，不知道大佟看没看到这个blog。不过你学校都参加了你还不知道工博会是啥，这个也够…… 有大学必定有高科技演示和啥引进会联合会发布会一类的东西，这里也不例外。我看到一个潜水机器人的演示，觉得很像JR他们搞的那个。要是小方JR看到这个blog，记得查查你们的东西是不是给copy了。我肯定那个不是原版，因为没有一陀陀的硅胶在上面。 后面我跑去本馆看移动了，不知道为什么移动那里有辆车。照相的时候给MM发现了，摆了Pose让我照。奇怪，移动啥时候卖车了？Coffe MM照例还是满街跑。不过今天公司同仁不上班，全部倾巢而出，在展位上搞了N多东西。拉了一拨又一拨的人，弄的我都没时间休息。期间我还看到了一对外国人，不过讲的不是英文，应该也不是法文和德文。这几国文字不会但的听的多了，所以也能听出来点。 今天还有一个奇怪的就是有很多小朋友在展位里面转。大的十多岁，小的三四岁。不过后来池工带了他的老婆孩子过来，然后还有个客户带了他女儿过来。So我弄明白了怎么回事。还有个客户在和我们大谈和电信合作服务的可能，杨总看来明白不少，我反正还是一脑袋雾水。 杨总搞了个主意，用有奖答卷来吸引客户。结果我们买了两斤……棒棒糖。看着曾经理在那里举棒棒糖的样子，真的是蛮搞笑的。最后我照了N多搞笑的照片，包括吃帮帮糖的，janny同志倒水的等等。</p>
+          <p>其实第三天并不完整，因为贝壳感冒了……
+头天累过头了，然后晚上吹了点冷风。结果当晚就感冒了，今天起来说话嗡嗡的。还好没有发高烧，否则问题严重了。可怜我还要带一个包和一个笔记本去展厅。因为这个是昨天我带回来的，总不能不带过去阿。所以撑着到展览场地，通关进去，好玩……今天我最早。于是连上笔记本然后准备好参展的东西，坐下来休息休息。
+柏菊同志是第二个来的，紧接着就是曾经理。知道情况后和杨总打个招呼，放我回家。我说我先顶个上午吧，否则交接不好做。要是客户上来一问三不知就不好了。何况我还要照点照片。于是顶到杨总到，基本东西都说完了，跑去拍MM照片。原来前天看到的Hot
+Girl是阿尔卡特请来跳舞的，难怪……
+跑到西门子的展厅里面，发现还需要登记资料和排队。我问警卫这个队伍大概多少时间，他回答是二十分钟。按照一贯的情况来分析，这句话的真实含义是，起码要半个钟头以上！我哪里有那么多美国时间阿。半个钟头后已经过了吃饭时间了，算了，照了两张排队照片出来了。到是周一可能比较轻松的进去，不过感冒呢，还是算了吧。
+回家吃饭，下午去邮局领了老妈寄过来的芯片。测试了下，还是低速的，而且比原来的还差！大致和老板N年前买的相机里面的128M低速芯片性能一致。真不知道这些人到底是干吗的，没见过高速芯片吗？</p>
 
           
 
@@ -638,6 +697,10 @@ ga('send', 'pageview');
       <ul id="recent_posts">
         
           <li class="post">
+            <a href="/blog/archives/2854/">使用Debian作为Router</a>
+          </li>
+        
+          <li class="post">
             <a href="/blog/archives/2853/">riot.im简介</a>
           </li>
         
@@ -673,10 +736,6 @@ ga('send', 'pageview');
             <a href="/blog/archives/2845/">phuket旅游和潜水指南</a>
           </li>
         
-          <li class="post">
-            <a href="/blog/album/">相册</a>
-          </li>
-        
       </ul>
     </section>
   
@@ -687,7 +746,7 @@ ga('send', 'pageview');
 </div>
 
 <footer role="contentinfo">
-  <p>Copyright &copy; 2017  - <a href="http://shell909090.org/license/">License</a> -
+  <p>Copyright &copy; 2017 Shell Xu - <a href="http://shell909090.org/license/">License</a> -
   <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
 </p>
 
