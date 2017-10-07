@@ -20,7 +20,7 @@
 
   
   
-  <link rel="stylesheet" href="http://shell909090.org/css/hugo-octopress.css">
+  <link rel="stylesheet" href="http://blog.shell909090.org/css/hugo-octopress.css">
 
   
   
@@ -29,13 +29,13 @@
   <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
 
   
-  <link href="http://shell909090.org/favicon.png" rel="icon">
+  <link href="http://blog.shell909090.org/favicon.png" rel="icon">
 
   
   
   
 
-  <link href="http://shell909090.org/index.xml" rel="alternate" type="application/rss+xml" title="Shell&#39;s Home" />
+  <link href="http://blog.shell909090.org/index.xml" rel="alternate" type="application/rss+xml" title="Shell&#39;s Home" />
 
   <meta name="description" content="">
   <meta name="keywords" content="">
@@ -43,7 +43,7 @@
   <meta name="author" content="Shell Xu">
 
   
-  <meta name="generator" content="Hugo 0.26" />
+  <meta name="generator" content="Hugo 0.30-DEV" />
 
   
   
@@ -61,7 +61,7 @@ ga('send', 'pageview');
 
 <header role="banner"><hgroup>
   
-  <h1><a href="http://shell909090.org/">Shell&#39;s Home</a></h1>
+  <h1><a href="http://blog.shell909090.org/">Shell&#39;s Home</a></h1>
     <h2></h2>
 </hgroup></header>
 
@@ -94,55 +94,14 @@ ga('send', 'pageview');
         
 
 <header>
-    <p class="meta">Aug 2, 2011
-         - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/1869/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/1869/">除虫故事（二）</a>
-    </h1>
-</header>
-
-
-        
-          <p>第二个故事，是一次oracle数据库的紧急损坏抢修问题。
-当时客户紧急保修，系统无法继续工作，重启后无效。我们就找了DBA赶快飞去客户那里。客户有两台应用服务器和两台数据库，应用服务器组成热备的态势，数据库组成RAC。数据保存在一个SAN盘阵上，LogFile放本地，ArchivedLog使用备份脚本复制到备份服务器后删除。听起来是挺靠谱的方案，没想到就坏了。
-去了后，客户说暂时恢复了运作。然而我们还是要出具详细的报告，因此赶快去了机房。贝壳第一眼看的东西，就是/var/log。里面的报告是err9，也就是文件读写错误。oracle一切正常，应用发布服务器一切正常。
-这下有点抓瞎了，难不成要出具一份报告说SAN盘阵损坏？可是损坏也得有厂商来维修，说坏得有真凭实据阿。现在SAN一切正常，这个报告怎么写呢？
-说来算巧合，贝壳检查磁盘的时候，顺手打了一句df -h进去，看到磁盘空间已经用掉了80%以上，顺口问了句DBA，如果空间耗尽会如何。DBA说会挂起，和目前状况一致。贝壳顿觉狐疑，是不是空间耗尽呢？是的话，为什么会神秘的恢复呢？
-Oralce的运作非常精巧，也非常复杂。当一条SQL语句执行的时候，先写LOG，然后操作数据，最后再将结果写入LOG。当出现问题需要复原的时候，根据某个时间点的数据备份，和整个运作过程中的所有Log，就可以复原。但是LOG写出的时候量非常大，没有无限的空间给他写阿。所以LogFile的设计是文件循环，当写满一个文件，切换下一个文件。一个文件写满后，就会有一个服务，趁着磁盘空闲，将Log压缩备份为ArchivedLog，然后再将这个文件的状态变为Empty。
-我们的设计，是通过脚本备份ArchivedLog，除去最后一个文件外，复制到备份服务器上，然后删除。但是我们对ArchivedLog的量估计不足，一天清理一次，分配空间只有20G出头。系统开始的时候压力不高，因此绰绰有余。后来压力逐渐升高，这天的操作比较多，ArchivedLog量大了点，导致空间写满。当ArchivedLog空间满之后，备份进程就会报告错误，这就是/var/log下面err9的来历，因此LogFile无法备份出来。当所有的LogFile被循环写满后，SQL执行前试图写入LogFile失败，执行就会失败，然后挂起在那里。这导致了所有应用发布服务器的失效。
-备份脚本的设计是定时和开机结合的，在客户第一次重启设备的时候，已经执行了备份脚本。然而备份动作需要执行相当久，中间客户又重启了几次，导致备份工作进展缓慢。直到半个小时后，第一份ArchivedLog才备份出去。然后清理文件，开始LogFile的备份，大约执行了一个小时多。此时服务就突然恢复了，因为空间问题已经暂时解决。而后是不断的ArchivedLog备份和LogFile的备份的平衡，直到我们到的时候，LogFile已经全部空了，ArchivedLog还没有完成备份。因此我们才能抓到最后的尾巴。
-反过去检查备份脚本的执行记录，基本验证了这个想法，客户也接受了我们的报告，不过还是要责令修改系统——这是后话不提了。
-这个故事里面，至少有几个教训。
- 对于所有编程时无关紧要的假定值，在开发时可以胡给一个差不多就行，但是上线的时候必须重新分配合理的值。因此必须将这些假定值记录出来，否则从程序中找出假定值来本身就是一个非常困难的事情。
- 确实运作一下，搞清楚运作方方面面的问题，不要想当然，觉得没问题。就算运作了没问题，在时间的考验前都没人敢保证没事。
- 一套系统，尤其是大型复杂系统，必须有懂得运维的人员接手管理。检查磁盘IO，CPU压力，内存和磁盘用量，数据量，网络响应速度等等问题。
- 废物Log不要乱出，太多的Log和没有无异。如果早关注备份脚本的执行记录，就能早找到问题。可是由于量太大，我都是过滤掉了看的。
-  </p>
-
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
     <p class="meta">Aug 1, 2011
          - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/1867/#disqus_thread">Comments</a>
+         - <a href="http://blog.shell909090.org/blog/archives/1867/#disqus_thread">Comments</a>
 
         
     </p>
     <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/1867/">除虫故事（一）</a>
+        <a href="http://blog.shell909090.org/blog/archives/1867/">除虫故事（一）</a>
     </h1>
 </header>
 
@@ -171,12 +130,12 @@ Oralce的运作非常精巧，也非常复杂。当一条SQL语句执行的时�
 <header>
     <p class="meta">Jul 27, 2011
          - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/1865/#disqus_thread">Comments</a>
+         - <a href="http://blog.shell909090.org/blog/archives/1865/#disqus_thread">Comments</a>
 
         
     </p>
     <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/1865/">给初创小公司的几句话（三）</a>
+        <a href="http://blog.shell909090.org/blog/archives/1865/">给初创小公司的几句话（三）</a>
     </h1>
 </header>
 
@@ -203,12 +162,12 @@ Oralce的运作非常精巧，也非常复杂。当一条SQL语句执行的时�
 <header>
     <p class="meta">Jul 25, 2011
          - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/1863/#disqus_thread">Comments</a>
+         - <a href="http://blog.shell909090.org/blog/archives/1863/#disqus_thread">Comments</a>
 
         
     </p>
     <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/1863/">动车追尾事故的几句</a>
+        <a href="http://blog.shell909090.org/blog/archives/1863/">动车追尾事故的几句</a>
     </h1>
 </header>
 
@@ -239,12 +198,12 @@ Oralce的运作非常精巧，也非常复杂。当一条SQL语句执行的时�
 <header>
     <p class="meta">Jul 21, 2011
          - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/1861/#disqus_thread">Comments</a>
+         - <a href="http://blog.shell909090.org/blog/archives/1861/#disqus_thread">Comments</a>
 
         
     </p>
     <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/1861/">给初创小公司的几句话（二）</a>
+        <a href="http://blog.shell909090.org/blog/archives/1861/">给初创小公司的几句话（二）</a>
     </h1>
 </header>
 
@@ -272,12 +231,12 @@ X是一家外企的程序员，原本这家外企没有IT部，后来为了做�
 <header>
     <p class="meta">Jul 20, 2011
          - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/1859/#disqus_thread">Comments</a>
+         - <a href="http://blog.shell909090.org/blog/archives/1859/#disqus_thread">Comments</a>
 
         
     </p>
     <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/1859/">重分区和lvm</a>
+        <a href="http://blog.shell909090.org/blog/archives/1859/">重分区和lvm</a>
     </h1>
 </header>
 
@@ -294,7 +253,7 @@ shell-deb:\~\# pvs PV VG Fmt Attr PSize PFree /dev/sda7 main lvm2 a- 229.19g 73.
 
           
               <footer>
-                  <a href="http://shell909090.org/blog/archives/1859/" rel="full-article">Read On &rarr;</a>
+                  <a href="http://blog.shell909090.org/blog/archives/1859/" rel="full-article">Read On &rarr;</a>
               </footer>
           
 
@@ -310,12 +269,12 @@ shell-deb:\~\# pvs PV VG Fmt Attr PSize PFree /dev/sda7 main lvm2 a- 229.19g 73.
 <header>
     <p class="meta">Jul 19, 2011
          - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/1858/#disqus_thread">Comments</a>
+         - <a href="http://blog.shell909090.org/blog/archives/1858/#disqus_thread">Comments</a>
 
         
     </p>
     <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/1858/">btrfs上使用虚拟机效率很差</a>
+        <a href="http://blog.shell909090.org/blog/archives/1858/">btrfs上使用虚拟机效率很差</a>
     </h1>
 </header>
 
@@ -340,12 +299,12 @@ shell-deb:\~\# pvs PV VG Fmt Attr PSize PFree /dev/sda7 main lvm2 a- 229.19g 73.
 <header>
     <p class="meta">Jul 18, 2011
          - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/1857/#disqus_thread">Comments</a>
+         - <a href="http://blog.shell909090.org/blog/archives/1857/#disqus_thread">Comments</a>
 
         
     </p>
     <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/1857/">一个初学者的问题</a>
+        <a href="http://blog.shell909090.org/blog/archives/1857/">一个初学者的问题</a>
     </h1>
 </header>
 
@@ -378,12 +337,12 @@ shell-deb:\~\# pvs PV VG Fmt Attr PSize PFree /dev/sda7 main lvm2 a- 229.19g 73.
 <header>
     <p class="meta">Jul 14, 2011
          - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/1856/#disqus_thread">Comments</a>
+         - <a href="http://blog.shell909090.org/blog/archives/1856/#disqus_thread">Comments</a>
 
         
     </p>
     <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/1856/">给初创小公司的几句话（一）</a>
+        <a href="http://blog.shell909090.org/blog/archives/1856/">给初创小公司的几句话（一）</a>
     </h1>
 </header>
 
@@ -415,12 +374,12 @@ shell-deb:\~\# pvs PV VG Fmt Attr PSize PFree /dev/sda7 main lvm2 a- 229.19g 73.
 <header>
     <p class="meta">Jul 13, 2011
          - 1 minute read 
-         - <a href="http://shell909090.org/blog/archives/1854/#disqus_thread">Comments</a>
+         - <a href="http://blog.shell909090.org/blog/archives/1854/#disqus_thread">Comments</a>
 
         
     </p>
     <h1 class="entry-title">
-        <a href="http://shell909090.org/blog/archives/1854/">初创公司的九句傻话</a>
+        <a href="http://blog.shell909090.org/blog/archives/1854/">初创公司的九句傻话</a>
     </h1>
 </header>
 
@@ -445,6 +404,49 @@ shell-deb:\~\# pvs PV VG Fmt Attr PSize PFree /dev/sda7 main lvm2 a- 229.19g 73.
 是啊是啊，朱镕基当了总理，你为什么不行？释迦摩尼当了佛祖，你为什么不行？抛开各种因素分析，就想着和别人比，你真的有那个条件么？
 9.钱不是问题。
 恩，多数问题是没钱。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <p class="meta">Jul 11, 2011
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/1852/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/1852/">设计的一些原则</a>
+    </h1>
+</header>
+
+
+        
+          <p>IETF的RFC文档是整个互联网的基石，在RFC1958中，对于其中的一些原则做了总结和讨论。我觉得非常有意思，因此做一下摘抄和讨论。
+ 保证它可以工作。首先做出原型系统，并成功运行，再着手标准化，而不是相反。
+ 尽可能使它简单。如果一项特性并非绝对本质的特性，那么就不应该考虑，尤其是通过组合其他特性也能够获得同样效果的前提下。
+ 做出明确的选择。如果有几种方法可以完成同样的事情，选择其中一种。
+ 尽可能做到模块化。每个协议独立于其他的协议。改变其中一个，其他不受影响。
+ 期望具备异构性。
+ 避免使用固定不变的选择和参数。如果需要使用参数，最好的方法是让发送和接收方协商一个值。
+ 寻找一个好的设计，不必是最完美的。如果有一个好的设计，但是不能够处理一些特例。那么应当坚持这个设计，让怪异的特例自行解决问题。
+ 对于发送一定要严格，对于接收有一定的容忍度。
+ 要考虑伸缩性。尽量去中心化，必要时将负载尽量均匀的分布到所有可以利用的资源上。
+ 要考虑性能和代价。
+  第二条听起来好像CISC和RICS之争，虽然现在最流行的处理器是一款CISC，但是这并不妨碍RISC成为优美和进化方向的象征。
+第三条在两种不同的语言上，有不同体现。python认为Simple is better than complex，ruby认为Simple is boring。具体可以看这里（http://automation-excellence.com/blog/zens-python-and-ruby）。
+模块化是一个非常好的主意，但是同样，非常难实现。
+第七条在设计大型系统中非常重要，不要为了一点小小的瑕疵破坏整个系统。
+joel on software中，提到了第八条。joel认为目前网页格式凌乱的根源有部分来源于此。第八条鼓励人们在建立浏览器的时候，尽量兼容各种格式变化，而不是对每个不符合标准的进行报错。这导致了各种兼容变化。
+第九条所有架构师都应该看看。与其购买昂贵的机器和服务，不如在设计系统的时候，就假定系统中的部分会发生故障。使用设计将负载分布到所有可利用的资源上。此条的推论是，大部分设计良好的系统都具有级联失效的可能。因为一旦发生失效，压力会分布到其他资源上。如果这超出了他们的能力，就会导致他们一起失效。</p>
 
           
 
@@ -723,10 +725,6 @@ shell-deb:\~\# pvs PV VG Fmt Attr PSize PFree /dev/sda7 main lvm2 a- 229.19g 73.
         <ul id="recent_posts">
           
             <li class="post">
-              <a href="/blog/archives/2854/">使用Debian作为Router</a>
-            </li>
-          
-            <li class="post">
               <a href="/blog/archives/2853/">riot.im简介</a>
             </li>
           
@@ -762,6 +760,10 @@ shell-deb:\~\# pvs PV VG Fmt Attr PSize PFree /dev/sda7 main lvm2 a- 229.19g 73.
               <a href="/blog/archives/2845/">phuket旅游和潜水指南</a>
             </li>
           
+            <li class="post">
+              <a href="/blog/album/">相册</a>
+            </li>
+          
         </ul>
       </section>
     
@@ -773,7 +775,7 @@ shell-deb:\~\# pvs PV VG Fmt Attr PSize PFree /dev/sda7 main lvm2 a- 229.19g 73.
 </div>
 
 <footer role="contentinfo">
-  <p>Copyright &copy; 2017 Shell Xu - <a href="http://shell909090.org/license/">License</a> -
+  <p>Copyright &copy; 2017 Shell Xu - <a href="http://blog.shell909090.org/license/">License</a> -
   <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
 </p>
 
