@@ -121,15 +121,15 @@ ga('send', 'pageview');
 
 <p>这个测试环境和实际的另一个差异，在于读写平衡上。这个业务和大部分的日志系统是很类似的（其实我们系统的业务就是日志）。但是商业用日志系统的特点是在高散碎文件写的情况下还有高随机读。这点在测试中并没有涉及，测试是单纯的大量文件追加写，请读者自行注意。</p>
 
-<p>首先是400进程，间隔1秒写出，测试对象是<a href="http://shell909090.org/album/main.php?g2_itemId=1635">ext3</a>, <a href="http://shell909090.org/album/main.php?g2_itemId=1641">ext4</a>, <a href="http://shell909090.org/album/main.php?g2_itemId=1653">ntfs</a>, <a href="http://shell909090.org/album/main.php?g2_itemId=1650">jfs</a>, <a href="http://shell909090.org/album/main.php?g2_itemId=1665">xfs</a>, <a href="http://shell909090.org/album/main.php?g2_itemId=1632">btrfs</a>，基本涵盖常见的linux文件系统。ntfs不属于常见的linux文件系统，本轮只做对比测试。首先可以看到的是ext3糟糕到吐血的表现，磁盘写io只有500上下，400个进程最多有280多个在排队。这货不是坑爹呢么。ext4的结果就正常很多，io在100上下，开始的高开是因为前一个测试的静默时间不足。jfs的结果很搞笑，队列load倒是不高，可是Dirty缓存一路上涨，让人不禁怀疑到底有没有写出。xfs的表现中规中矩，半分钟一次写出，和贝壳机器上的dirty_expire_centisecs相吻合，Dirty也不高。btrfs和jfs的情况类似。</p>
+<p>首先是400进程，间隔1秒写出，测试对象是<a href="http://blog.shell909090.org/album/main.php?g2_itemId=1635">ext3</a>, <a href="http://blog.shell909090.org/album/main.php?g2_itemId=1641">ext4</a>, <a href="http://blog.shell909090.org/album/main.php?g2_itemId=1653">ntfs</a>, <a href="http://blog.shell909090.org/album/main.php?g2_itemId=1650">jfs</a>, <a href="http://blog.shell909090.org/album/main.php?g2_itemId=1665">xfs</a>, <a href="http://blog.shell909090.org/album/main.php?g2_itemId=1632">btrfs</a>，基本涵盖常见的linux文件系统。ntfs不属于常见的linux文件系统，本轮只做对比测试。首先可以看到的是ext3糟糕到吐血的表现，磁盘写io只有500上下，400个进程最多有280多个在排队。这货不是坑爹呢么。ext4的结果就正常很多，io在100上下，开始的高开是因为前一个测试的静默时间不足。jfs的结果很搞笑，队列load倒是不高，可是Dirty缓存一路上涨，让人不禁怀疑到底有没有写出。xfs的表现中规中矩，半分钟一次写出，和贝壳机器上的dirty_expire_centisecs相吻合，Dirty也不高。btrfs和jfs的情况类似。</p>
 
-<p>上一轮中，筛掉ntfs和ext3，其余进行1000进程，间隔1秒写出测试。测试对象是，<a href="http://shell909090.org/album/main.php?g2_itemId=1638">ext4</a>, [jfs](), <a href="http://shell909090.org/album/main.php?g2_itemId=1656">xfs</a>, <a href="http://shell909090.org/album/main.php?g2_itemId=1628">btrfs</a>。这次ext4也表现出了坑爹的一面，Dirty最高250M多，load也明显超过了2，写io大约在700上下，就此出局。btrfs这次的Dirty控制还不错，在25-40M徘徊，写出也不多。看似情况略好，实际上暴露出btrfs一个非常大的弱点，突发响应能力差，服务不稳定。一次集中写出，就能让排队数飞速上涨。jfs虽然曲线类似，但是队列可从没有超过1。综合考虑，后期平均load也明显超过了2，一样出局。xfs还是一样中规中矩的写出，非常低的io和Dirty。jfs依然是高速上涨的Dirty和超级低的io。</p>
+<p>上一轮中，筛掉ntfs和ext3，其余进行1000进程，间隔1秒写出测试。测试对象是，<a href="http://blog.shell909090.org/album/main.php?g2_itemId=1638">ext4</a>, [jfs](), <a href="http://blog.shell909090.org/album/main.php?g2_itemId=1656">xfs</a>, <a href="http://blog.shell909090.org/album/main.php?g2_itemId=1628">btrfs</a>。这次ext4也表现出了坑爹的一面，Dirty最高250M多，load也明显超过了2，写io大约在700上下，就此出局。btrfs这次的Dirty控制还不错，在25-40M徘徊，写出也不多。看似情况略好，实际上暴露出btrfs一个非常大的弱点，突发响应能力差，服务不稳定。一次集中写出，就能让排队数飞速上涨。jfs虽然曲线类似，但是队列可从没有超过1。综合考虑，后期平均load也明显超过了2，一样出局。xfs还是一样中规中矩的写出，非常低的io和Dirty。jfs依然是高速上涨的Dirty和超级低的io。</p>
 
 <p>测试到这里，只剩下了jfs和xfs。jfs的特点是大量使用Dirty，平均io很低。xfs的特点是Dirty使用比较低，io输出比较平均。不过我们的服务器内核对xfs的支持比jfs要好一点，所以使用xfs已成定局，下面就是测试两者的极限性能而已。</p>
 
-<p>第三轮的参数是2000个进程，0.75秒间隔。<a href="http://shell909090.org/album/main.php?g2_itemId=1647">jfs</a>和<a href="http://shell909090.org/album/main.php?g2_itemId=1659">xfs</a>表现非常相似，让贝壳差点怀疑自己是测试错了东西。核查之后，确实没有。所以就下狠手，测试了一把高压力的。</p>
+<p>第三轮的参数是2000个进程，0.75秒间隔。<a href="http://blog.shell909090.org/album/main.php?g2_itemId=1647">jfs</a>和<a href="http://blog.shell909090.org/album/main.php?g2_itemId=1659">xfs</a>表现非常相似，让贝壳差点怀疑自己是测试错了东西。核查之后，确实没有。所以就下狠手，测试了一把高压力的。</p>
 
-<p>第四轮的参数是3200个进程，0.5秒间隔。从绝对量上，大概是基础测试的16倍。在jfs测试开始后的三分钟内，load上升到了60，宣告出局，因此贝壳这里没有jfs的图像。但是<a href="http://shell909090.org/album/main.php?g2_itemId=1662">xfs</a>还是完美的顶住了压力。Dirty已经上涨到了80-120M，平均io也到了300。然而平均load只有1左右，最高load也只有1.4。</p>
+<p>第四轮的参数是3200个进程，0.5秒间隔。从绝对量上，大概是基础测试的16倍。在jfs测试开始后的三分钟内，load上升到了60，宣告出局，因此贝壳这里没有jfs的图像。但是<a href="http://blog.shell909090.org/album/main.php?g2_itemId=1662">xfs</a>还是完美的顶住了压力。Dirty已经上涨到了80-120M，平均io也到了300。然而平均load只有1左右，最高load也只有1.4。</p>
 
 <p>最终测试的参数是4000个进程，0.5秒间隔，基础测试的20倍。xfs的表现万分惊艳，平均io300-400，Dirty100-160M，平均load大约是1，最高也只有2。也就是说，到最后贝壳还是没有测试出xfs的最高压力。</p>
 
