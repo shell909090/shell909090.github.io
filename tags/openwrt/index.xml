@@ -2,22 +2,22 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Openwrt on Shell&#39;s Home</title>
-    <link>http://shell909090.org/tags/openwrt/</link>
+    <link>http://blog.shell909090.org/tags/openwrt/</link>
     <description>Recent content in Openwrt on Shell&#39;s Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
     <lastBuildDate>Tue, 31 Jan 2012 03:14:14 +0800</lastBuildDate>
     
-	<atom:link href="http://shell909090.org/tags/openwrt/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="http://blog.shell909090.org/tags/openwrt/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>PXE模式使用openwrt网络安装debian</title>
-      <link>http://shell909090.org/blog/archives/2076/</link>
+      <link>http://blog.shell909090.org/blog/archives/2076/</link>
       <pubDate>Tue, 31 Jan 2012 03:14:14 +0800</pubDate>
       
-      <guid>http://shell909090.org/blog/archives/2076/</guid>
+      <guid>http://blog.shell909090.org/blog/archives/2076/</guid>
       <description>废话不说，上干货。
 首先，禁用arptables。当然，如果你没开这个防火墙，那么没必要。其次，注意你的openwrt必须有udisk，否则空间相差太多，根本没有实现的可能。
 然后，如果你用的是新版的rom，应该在/etc/init.d/dnsmasq里面看到，dnsmasq()这个函数里面有。
@@ -38,10 +38,10 @@ tftpd-hpa。这是一个tftp服务器，默认不启动。如果你打算让pxe�
     
     <item>
       <title>openwrt特性——2.4g和5g频段的冲突</title>
-      <link>http://shell909090.org/blog/archives/1986/</link>
+      <link>http://blog.shell909090.org/blog/archives/1986/</link>
       <pubDate>Fri, 18 Nov 2011 17:02:30 +0800</pubDate>
       
-      <guid>http://shell909090.org/blog/archives/1986/</guid>
+      <guid>http://blog.shell909090.org/blog/archives/1986/</guid>
       <description>贝壳昨天想起，自己的平板是支持11n的，路由器也支持，为啥不做呢？于是把路由器的第二AP打开。结果——报错了。
 具体过程就不废话了，老妈和外婆在唠叨各种废话，没那个心情。
 DIR-825用户，把你的第二AP设定成和第一AP不同的频率。如果两者使用同一频率段，系统就会报错。估计是两个频率各自给了一根天线，混用没那么多天线。</description>
@@ -49,10 +49,10 @@ DIR-825用户，把你的第二AP设定成和第一AP不同的频率。如果两
     
     <item>
       <title>openwrt配置——自动重启openvpn</title>
-      <link>http://shell909090.org/blog/archives/1976/</link>
+      <link>http://blog.shell909090.org/blog/archives/1976/</link>
       <pubDate>Thu, 10 Nov 2011 15:55:20 +0800</pubDate>
       
-      <guid>http://shell909090.org/blog/archives/1976/</guid>
+      <guid>http://blog.shell909090.org/blog/archives/1976/</guid>
       <description>还记得如何配置openvpn么？手工配置有个问题，当我ppp0连接断掉，需要重启路由器的时候，网络会短暂的断开。然后，openvpn就失效了，导致各种混乱后果。为了解决这个问题，我测试了一下，做了以下设置。
 -----/etc/hotplug.d/iface/30-openvpn----- #!/bin/sh [ &amp;quot;$ACTION&amp;quot; = &amp;quot;ifup&amp;quot; -a &amp;quot;$INTERFACE&amp;quot; = &amp;quot;wan&amp;quot; ] &amp;amp;&amp;amp; [ -z &amp;quot;`/sbin/ifconfig tun0 2&amp;gt;&amp;amp;1 | grep inet`&amp;quot; ] &amp;amp;&amp;amp; { /etc/init.d/openvpn start } [ &amp;quot;$ACTION&amp;quot; = &amp;quot;ifdown&amp;quot; -a &amp;quot;$INTERFACE&amp;quot; = &amp;quot;wan&amp;quot; ] &amp;amp;&amp;amp; [ -n &amp;quot;`/sbin/ifconfig tun0 2&amp;gt;&amp;amp;1 | grep inet`&amp;quot; ] &amp;amp;&amp;amp; { /etc/init.d/openvpn stop } -----end files-----  好了，你重启外网连接的时候，就会自动连接openvpn。
 参考：
@@ -61,20 +61,20 @@ OpenWRT下的动态DNS(用3322.org的服务)</description>
     
     <item>
       <title>openwrt配置——arptables配置</title>
-      <link>http://shell909090.org/blog/archives/1973/</link>
+      <link>http://blog.shell909090.org/blog/archives/1973/</link>
       <pubDate>Mon, 07 Nov 2011 10:32:09 +0800</pubDate>
       
-      <guid>http://shell909090.org/blog/archives/1973/</guid>
+      <guid>http://blog.shell909090.org/blog/archives/1973/</guid>
       <description>让其他人的设备无法使用网络。
 opkg install arptables --------/etc/init.d/arptables-------- \#!/bin/sh /etc/rc.common start (){ arptables -F INPUT arptables -A INPUT --src-mac aaa -j ACCEPT arptables -P INPUT DROP } stop (){ arptables -F INPUT arptables -P INPUT ACCEPT } --------end files--------  注意，千万把自己的mac地址写对了，否则一个/etc/init.d/arptables restart下去，你自己的机器就断线连不上了。不过一般来说，重启后arp限制会失效，因此可以重启来去掉限制。实在不行也可以拔下U盘，在电脑上进行mount和修改，然后再插回去启动设备。根据测试结果，内网还是可以访问的，不过路由器无法访问了。有一个链叫做FORWARD，也许改这个可以解决。但是我没有找到相关资料，因此没有下手。</description>
     </item>
     
     <item>
       <title>Openwrt pptp passthought</title>
-      <link>http://shell909090.org/blog/archives/1971/</link>
+      <link>http://blog.shell909090.org/blog/archives/1971/</link>
       <pubDate>Fri, 04 Nov 2011 14:43:37 +0800</pubDate>
       
-      <guid>http://shell909090.org/blog/archives/1971/</guid>
+      <guid>http://blog.shell909090.org/blog/archives/1971/</guid>
       <description>你还在为使用openwrt路由器无法使用pptp客户端而烦恼么？请看这个页面。按照他的说法，输入以下句子就可以解决你的烦恼。
 If you use a pptp client behind an openwrt router, and pptp tunnel not work, look at thispage.
 opkg update opkg install kmod-ipt-nathelper-extra  这个方法不仅对路由器内使用一个pptp有效，而且对多个pptp也有效。
@@ -85,10 +85,10 @@ Remember to reboot router.</description>
     
     <item>
       <title>合用两个路由器的几种方案</title>
-      <link>http://shell909090.org/blog/archives/1917/</link>
+      <link>http://blog.shell909090.org/blog/archives/1917/</link>
       <pubDate>Mon, 26 Sep 2011 12:03:30 +0800</pubDate>
       
-      <guid>http://shell909090.org/blog/archives/1917/</guid>
+      <guid>http://blog.shell909090.org/blog/archives/1917/</guid>
       <description>为什么用两个路由器？最常见的理由是延长信号。在超级大的场地中，中间放一个路由器，用四根线连接到周围的几个路由器上面，信号覆盖整个场地。这是最常见的理由。也有可能是因为你的主路由器LAN接口不足了。当然，也可能是因为蛋疼，或者其他原因。不论如何，为了在多个路由器上达到同时上网的目的，你有以下几个选项。桥接模式，路由模式，双层NAT模式。
 我先解说一下一些基础的环境。我假定你有一个互联网线，有一个路由器的WAN口接到了互联网上面，这个路由器称为M。其他路由器分别称为S1,S2&amp;hellip;。直接连接到M的LAN口的电脑称为ML1,ML2&amp;hellip;，通过无线连接的就称为MW1,MW1&amp;hellip;。同样，连接到路由器S1的LAN和无线的分别叫做S1L1,S1W1，类推。
 1.桥接模式
@@ -108,10 +108,10 @@ S的数据包会被NAT两次再发到互联网上，要进行端口转发也必�
     
     <item>
       <title>openwrt配置——QoS配置</title>
-      <link>http://shell909090.org/blog/archives/1837/</link>
+      <link>http://blog.shell909090.org/blog/archives/1837/</link>
       <pubDate>Mon, 20 Jun 2011 10:10:39 +0800</pubDate>
       
-      <guid>http://shell909090.org/blog/archives/1837/</guid>
+      <guid>http://blog.shell909090.org/blog/archives/1837/</guid>
       <description>说到openwrt，就不能不提一下QoS。尤其是如果你需要用P2P软件（目前对迅雷的支持还不大好），基本就不能不开QoS。QoS的全称是Quality of Service，意即服务质量。是专门用于解决拥堵网络上的信号质量一视同仁的问题。例如，我们有一根宽带，两人共用。一个人视频聊天，一个人bt下载（我还不提迅雷个傻X呢）。玩bt的那个一开软件，视频聊天那个立刻没法用了。bt和视频聊天稍微好一点的是，视频聊天消耗的带宽是恒定的。你可以逐步限速，只要给视频聊天留了足够的带宽，两个就都能一起用了。但是，如果另一个人不是视频聊天，而是网络浏览怎么办？网络浏览，视频聊天，p2p下载一起来怎么办？实际上这是很多朋友家中常常碰到的情况。更不说有合租公寓里面你很难监控对方一定限速，软件无法限速甚至恶意抢占带宽（迅雷）。另一个更加技术的问题是，由于上传带宽不足，ACK包回应过慢，导致你的下载速度也不能达到峰值。玩p2p的常常会给上传限速到真实带宽差一点的位置，下载带宽立刻上去，就是这个道理。
 怎么办？用QoS，解决你多年老便秘。QoS的底层是tc，其目的就是决定先发送哪些包。openwrt默认的规则是hfsc，设计了四个优先级。Priority最优先，处理22,53,icmp，以及小于128字节的syn,ack包中，不属于bulk类别的。我们可以看到，DNS，syn/ack的优先响应，保证了你的上传不会影响下载。其次是Express，处理5190和小于500字节的UDP包。这个我也不明白是为什么，好像是视频什么的。然后是Normal，包括20,21,25,80,110,443,993,995这些常见端口。涵盖http/https，ftp，邮件系统。最后是Bulk，包括其他包，尤其是ed和bt。
 当你启用QoS后，你的p2p软件速度应当不会上升，反而会下降。下载速度不好说，有可能是上升，也有可能下降。因为原来p2p软件抢占了所有带宽，目前他们只能使用普通应用用剩下的带宽，速度当然慢了。然而，当你使用浏览器，收发邮件的时候，速度应当和不使用p2p的时候一样流畅。这才是使用QoS最大的意义。
@@ -121,10 +121,10 @@ S的数据包会被NAT两次再发到互联网上，要进行端口转发也必�
     
     <item>
       <title>openwrt配置——防火墙规则</title>
-      <link>http://shell909090.org/blog/archives/1836/</link>
+      <link>http://blog.shell909090.org/blog/archives/1836/</link>
       <pubDate>Fri, 17 Jun 2011 14:01:28 +0800</pubDate>
       
-      <guid>http://shell909090.org/blog/archives/1836/</guid>
+      <guid>http://blog.shell909090.org/blog/archives/1836/</guid>
       <description>如果说路由规则还能讲讲，iptables防火墙规则就彻底没法讲。简直是千变万化无所不能。下面就简单说一下，对于新增的tun0设备如何设定防火墙规则。
 ----------config/network---------- config &#39;interface&#39; &#39;tun&#39; option &#39;ifname&#39; &#39;tun+&#39; option &#39;proto&#39; &#39;none&#39; ** ----------config/firewall---------- config &#39;zone&#39; option &#39;name&#39; &#39;tun&#39; option &#39;input&#39; &#39;ACCEPT&#39; option &#39;output&#39; &#39;ACCEPT&#39; option &#39;forward&#39; &#39;REJECT&#39; config &#39;forwarding&#39; option &#39;src&#39; &#39;lan&#39; option &#39;dest&#39; &#39;tun&#39; option &#39;mtu\_fix&#39; &#39;0&#39; config &#39;forwarding&#39; option &#39;src&#39; &#39;tun&#39; option &#39;dest&#39; &#39;lan&#39; option &#39;mtu\_fix&#39; &#39;0&#39;  好了，新增了一个网口，叫做tun，处理所有tun+（就是任何tun设备）的吞吐。默认规则是可以收发，拒绝转发。转发规则是可以和lan互相转发。
 /etc/init.d/network restart /etc/init.d/firewall restart  然后你看看你的配置是否正确。
@@ -134,10 +134,10 @@ iptables -I INPUT -i tun+ -j ACCEPT iptables -I OUTPUT -o tun+ -j ACCEPT iptable
     
     <item>
       <title>openwrt配置——路由规则</title>
-      <link>http://shell909090.org/blog/archives/1835/</link>
+      <link>http://blog.shell909090.org/blog/archives/1835/</link>
       <pubDate>Thu, 16 Jun 2011 10:37:02 +0800</pubDate>
       
-      <guid>http://shell909090.org/blog/archives/1835/</guid>
+      <guid>http://blog.shell909090.org/blog/archives/1835/</guid>
       <description>路由其实是个很简单的事情，不知道为什么在实际运用中被很多人误解。首先，路由规则是个纯IP层的事情，和TCP没有关系。其次，路由和NAT没有关系。实际上，和这两个有关系的都是iptables。
 路由表的大概概念就是，你家门口有三条路，有一张路径表。到上海市，走左边，北京市，走右边，西安市，走中间。因此路由表的概念是发出规则。当你收到一个包，如果目的地址是本地，那么就交给监听程序处理。如果没有监听程序，那么就拒绝报文。（注意，下文讨论的时候都略去了iptables）如果目的地址不是本地，则看是否允许转发。不允许，丢弃，允许，加入发出队列。路由表就是发出队列的选择规则。这个规则之所以存在，主要是因为多头主机的存在。如果一台机器只有一个发出设备，路由表是没有任何用处的。
 发出规则计算很简单，首先取目标网络地址，还有包网络地址，然后分别和子网掩码求与（AND）。如果两者相等，那么就转发到这个规则所指定的接口上，如果不等，继续匹配。规则顺序也很简单，子网掩码距离越长，子网越小，规则越靠上。其中有两种特殊的子网掩码，一种是255.255.255.255，或者叫/32，用于指定主机。一种是0.0.0.0，或者叫/0。这个子网只有一个，叫做default。因为按照规则用这个掩码计算的结果，任何目标地址都可以匹配这一规则。
@@ -150,10 +150,10 @@ iptables -I INPUT -i tun+ -j ACCEPT iptables -I OUTPUT -o tun+ -j ACCEPT iptable
     
     <item>
       <title>openwrt配置——openvpn的基础配置</title>
-      <link>http://shell909090.org/blog/archives/1833/</link>
+      <link>http://blog.shell909090.org/blog/archives/1833/</link>
       <pubDate>Wed, 15 Jun 2011 14:58:28 +0800</pubDate>
       
-      <guid>http://shell909090.org/blog/archives/1833/</guid>
+      <guid>http://blog.shell909090.org/blog/archives/1833/</guid>
       <description>在openwrt下面配置openvpn是非常简单的事情，当然我假定你有linux下面配置openvpn的经验。
 首先，将配置文件，证书等等复制到/etc/openvpn下面。我的配置大概是这样。
 client dev tun proto udp remote ipaddr port resolv-retry infinite nobind persist-key persist-tun ca /etc/openvpn/ca.crt cert /etc/openvpn/openwrt.crt key /etc/openvpn/openwrt.key ns-cert-type server tls-auth /etc/openvpn/ta.key 1 cipher DES-EDE3-CBC comp-lzo verb 3 script-security 3 up /etc/openvpn/dftup down /etc/openvpn/dftdown  注意，其中的路径必须写完整，貌似测试下来不支持相对目录。其中的up和down是指在启动和关闭时会自动执行的两个脚本。根据贝壳的测试，redirect-gateway是无效的，不知道为什么。具体的路由配置方法，会在下一章中具体介绍。
@@ -165,10 +165,10 @@ config openvpn name option enable 1 option config /etc/openvpn/name.conf  name�
     
     <item>
       <title>openwrt配置——extroot使用U盘配置规则</title>
-      <link>http://shell909090.org/blog/archives/1832/</link>
+      <link>http://blog.shell909090.org/blog/archives/1832/</link>
       <pubDate>Tue, 14 Jun 2011 10:10:43 +0800</pubDate>
       
-      <guid>http://shell909090.org/blog/archives/1832/</guid>
+      <guid>http://blog.shell909090.org/blog/archives/1832/</guid>
       <description>贝壳入手了一个DIR-825路由器，机器不错，可惜存储太小。所以要用extroot做成U盘启动。
 首先，你需要安装kmod-usb2，kmod-usb-uhci，kmod-usb-ohci，kmod-usb-storage，kmod-usb-storage-extras这几个包，以保证系统可以正常访问你的USB key。而后安装block-mount block-hotplug block-extroot这几个包，来启用U盘启动。最后不要忘记安装kmod-fs-ext3，驱动文件系统。
 当你搞定这几步后，修改/etc/config/fstab这个文件，如下配置。

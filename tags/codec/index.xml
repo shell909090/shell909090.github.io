@@ -2,22 +2,22 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Codec on Shell&#39;s Home</title>
-    <link>http://shell909090.org/tags/codec/</link>
+    <link>http://blog.shell909090.org/tags/codec/</link>
     <description>Recent content in Codec on Shell&#39;s Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
     <lastBuildDate>Thu, 27 Dec 2007 22:04:59 +0800</lastBuildDate>
     
-	<atom:link href="http://shell909090.org/tags/codec/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="http://blog.shell909090.org/tags/codec/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>libxml使用中的编码问题</title>
-      <link>http://shell909090.org/blog/archives/423/</link>
+      <link>http://blog.shell909090.org/blog/archives/423/</link>
       <pubDate>Thu, 27 Dec 2007 22:04:59 +0800</pubDate>
       
-      <guid>http://shell909090.org/blog/archives/423/</guid>
+      <guid>http://blog.shell909090.org/blog/archives/423/</guid>
       <description>libxml是gnome的XML解析库，具有强大的解析能力，支持DOM和SAX解析模型，属于验证型解析器。其内部是使用utf-8编码工作的，因此gbk之类编码的XML无法解析。为了解决这个问题，我们可以使用一个很简单的小窍门。
 libxml是要和iconv一并使用的，头文件引用一般类似以下形式。
 #include &amp;lt;iconv.h&amp;gt; #pragma comment(lib, &amp;quot;iconv&amp;quot;) #include &amp;lt;libxml/tree.h&amp;gt; #include &amp;lt;libxml/parser.h&amp;gt; #pragma comment(lib, &amp;quot;libxml2&amp;quot;)  这样的话，我们向libxml注册一个处理句柄，对其他编码的xml先执行一次转换，再进行解析。
@@ -26,10 +26,10 @@ iconv_t iconv_utf8_gbk = NULL; iconv_t iconv_gbk_utf8 = NULL; int gbk_input (uns
     
     <item>
       <title>libxml2入门和中文支持</title>
-      <link>http://shell909090.org/blog/archives/411/</link>
+      <link>http://blog.shell909090.org/blog/archives/411/</link>
       <pubDate>Fri, 28 Sep 2007 22:43:40 +0800</pubDate>
       
-      <guid>http://shell909090.org/blog/archives/411/</guid>
+      <guid>http://blog.shell909090.org/blog/archives/411/</guid>
       <description>libxml2是gnome做的一个xml的库，支持SAX和DOM。
 在解析xml的时候，libxml2会将xml中不属于标签的部分作为text节点插入。如果是属性，则添加一个属性节点到父节点上，一个文字节点到属性节点下。那么整个xml就变成了一颗单纯的树。
 支持多语言的问题上，libxml2的内核只支持UTF-8。但是可以通过注册编码句柄来添加语言支持，一般是配合iconv[2]使用的，因为libxml2的编译依赖就是iconv。下面是代码。
@@ -38,10 +38,10 @@ iconv_t iconv_utf8_gbk; iconv_t iconv_gbk_utf8; int gbk_input (unsigned char *ou
     
     <item>
       <title>字符编码概论</title>
-      <link>http://shell909090.org/blog/archives/384/</link>
+      <link>http://blog.shell909090.org/blog/archives/384/</link>
       <pubDate>Fri, 11 May 2007 17:11:31 +0800</pubDate>
       
-      <guid>http://shell909090.org/blog/archives/384/</guid>
+      <guid>http://blog.shell909090.org/blog/archives/384/</guid>
       <description>首先，阐明几个基本概念。字符集，编码方案，编码范围，编码方法，编码位数，兼容性，编码兼容性。
 字符集是指一系列符号的集合。计算机中只能处理数字，因此符号必须给予编码，而后储存符号编码。打印时按照编码索引到符号，再索引到字体。因此一个字符集编码为数字的方案就是编码方案。其中西文编码规范就是ASCII(ISO-8859-1)。
 编码范围是指字符集的有效符号编码的范围。例如当前的ASCII编码范围是0-127，因此所有兼容ASCII的编码，其编码范围必定要回避0-127，否则就会出现编码冲突。而编码方法(不等同于编码方案)则是这个数字转换为计算机内数据的方法，一般分big endian(大端点)和little endian(小端点)两种。
@@ -71,10 +71,10 @@ Reference:
     
     <item>
       <title>linux中文说</title>
-      <link>http://shell909090.org/blog/archives/306/</link>
+      <link>http://blog.shell909090.org/blog/archives/306/</link>
       <pubDate>Sun, 02 Jul 2006 19:18:31 +0800</pubDate>
       
-      <guid>http://shell909090.org/blog/archives/306/</guid>
+      <guid>http://blog.shell909090.org/blog/archives/306/</guid>
       <description>linux号称可以支持全部语言，其实细节上还是有不少问题的。具体情况大致是这样的，linux的中文支持分三部分，locales，字体，设置。
 首先是locale的部分，这个最简单不过，用root运行dpkg-reconfigure locales，然后选择你需要的解码方式，最后再设定系统默认语言（这个是可以修改的），就OK了。
 然后是字体，字体的设定比较复杂，不过在debian中安装所有中文桌面的字体就可以了。不用自己去绞尽脑汁。
