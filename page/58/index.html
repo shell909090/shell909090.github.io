@@ -94,6 +94,37 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Sep 4, 2009
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/76/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/76/">搭建家用的OpenVPN服务器</a>
+    </h1>
+</header>
+
+
+        
+          <p>啥都不说了，贝壳最近搞了一个家用的OpenVPN服务器，任何机器，随时随地可以穿到家里来，很方便。用VPN干啥？这就多了。我可以用vpn操作 Windows上的vnc，使用Windows的共享文件服务，直接向Linux Server放文件(这样别人可以用http下载)，查看摄像头(被网络公布了)。将来如果有其他网络设备(例如冰箱和空调)，也可以一并管理。不过最直 观的——可以很方便的打游戏，我们根本就在一个网络里面。要点是，这些服务要分别开映射端口非常麻烦。而且有的服务从安全起见，根本不能开端口(例如臭名 昭著的Windows文件共享服务)。 具体原理上，贝壳有一台Windows，上面用Vmware搭建了一台Debian Linux，两者使用桥接模式。从概念上看，就是一台通向公网的路由器，里面放了一台Windows和一台Linux。现在，贝壳想通过某种方法，将外部 的一台机器接入内部的局域网中，就如同随身携带着一根通向家里路由器的网线一样。 下面直接上具体配置： &mdash;&mdash;&mdash;&ndash;filename: /etc/network/interface&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;- auto lo iface lo inet loopback iface eth0 inet static address 0.0.0.0 iface tap0 inet static address 0.0.0.0 auto br0 iface br0 inet static bridge_ports eth0 tap0 address 192.168.1.IP netmask 255.255.255.0 network 192.168.1.0 broadcast 192.168.1.255 gateway 192.168.1.1 dns-nameservers 192.168.1.1 dns-search home &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;- 使用上述配置的原因是，vpn只能联通你机器上的逻辑网卡和服务器上的逻辑网卡。单就vpn自身而言，是无法让你连到服务器上的内网网卡的。因此，我们需要通过网桥的配置，将eth0和tap0配置成网桥。这样，你的服务器就如同一台交换机一般，联通了两个网段。 而后，我们设定服务器配置。 &mdash;&mdash;&mdash;&ndash;filename: /etc/openvpn/server.conf&mdash;&mdash;&mdash;&mdash;&mdash;- local 192.168.1.51 port 1194 proto udp dev tap0 ca /etc/openvpn/keys/ca.crt cert /etc/openvpn/keys/server.crt key /etc/openvpn/keys/server.</p>
+
+          
+              <footer>
+                  <a href="http://blog.shell909090.org/blog/archives/76/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Aug 20, 2009
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/75/#disqus_thread">Comments</a>
@@ -415,37 +446,6 @@ web行业和erp行业的几乎全是ms系列和java系列的语言，而嵌入�
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">May 26, 2009
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/66/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/66/">用简体还是繁体</a>
-    </h1>
-</header>
-
-
-        
-          <p>作为一个使用了24年以上简体(不要怀疑，贝壳三岁开始学写字的)，并且暂时还要继续用下去的人来说，这几乎是一个不用问的问题。但是，最近，贝壳考虑是 否应当改用繁体，否则真有成为文盲的可能。何为文盲呢？中国规范常用字无法写出80%以上的，我觉得就应该算做文盲了。也许这些新时代的文盲可能具有非常 高的学历，甚至会是博士。但是5个字里就有一个字写不出，不是文盲是什么？
-不过最近的汉字简化修改方案，似乎有把贝壳往文盲上推的嫌疑。凡能读这篇文章的人应当都知道，所谓的汉字简正之争。简正之争，由一个汉字方案的学术争议， 有逐渐演变为一个中国，谁是中国的国家和民族之争的现象。但是，无论谁是最终标准，应当都具备一个国际语言的基础特性，即一致性。例如汉字就应该是汉字， 不能今年是汉，明年就变成了�，再下去又是不知道别的什么。中文固然因为语言使用区域非常广泛有非常多的别字别音，而且在某些地区还是主流，但在规范上应 当兼容扩充，而非来回修改。例如山东地区，打车叫打个的(de1，一声)。打的这个词按照贝壳所见到人的叙述，应当来自南方，香港和广州(当然，也可能因 为和贝壳讲的人本人就是香港人的关系)。原来是打的士(di1shi4)，的士的读音在广东话中非常类似taxi，后者在英文中是滑行的意思，比拟出租在 街上四处溜达，寻找乘客。中国在改革开放后才有了taxi，因此叫法上都学香港，才有了的士，打的，的说法。这个不在规范之内，应当考虑统一的问题。否则 若是一个香港老板跑到山东，当地人秉承圣人之乡的理念，非常热情好客的说：我给您拦个的(de1)吧。岂不笑掉人家的大牙？
-汉字规范之争其实涉及到非常多的政治和经济层面的问题，但是和小老百姓关系最大的是一致性。诸位可以想想，若是您学了30多年字，一朝之间2成的字突然被 人宣布不会是这么写了。您从一个正常人就猛的变成了文盲，换您您干么？为什么台湾反对简体字？因为一旦简体字推行，社会上多数人比文盲更加文盲——他们连 读都不会，要重上六年小学。您想想，换您您干么？现在和台湾还没较上劲，咱们自己先和自己较上了。文字要改，大改还是小改？如果是小改还好，如果大修，无 疑是直接宣判了贝壳的文盲。这种情况下，还不如直接学繁体字的好。
-说到学繁体字，到也不是贝壳信口开河。而是当下，会电脑的人学繁体字的成本真的不高。你仔细想想，你到现在总共用笔写过多少字呢？反正今年过年到现在，贝 壳拿笔就写过三个字，自己的名字。凡是吃饭刷卡签合同，必定要写这三个字，其他都不会写了。贝壳又长期挂在网络上看各种资料，外加高中时期还特别研究了前 秦散文，三国志(不是三国演义！)。因此简体繁体都能看。现在换用繁体，无法就是输入法切换一下，把输出简体的转换为输出繁体。对于开源输入法而言，简单 到只是码表转换。而后学会写自己的名字，学会1000常用字。基本贝壳就能冒充会繁体字拉。
-其实诸多字形的修改只是小事，问题是有很多讲法的统一和规范的推行落实才是当务之急。例如，以前贝壳小学时候还有专门的课程还分辨的地得。现在出了社会发现，有多少人管你的地得？很多人一些基础的文法都有问题，在这基础上还谈什么修改规范呢。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -717,6 +717,10 @@ web行业和erp行业的几乎全是ms系列和java系列的语言，而嵌入�
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2854/">使用Debian作为Router</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2853/">riot.im简介</a>
             </li>
           
@@ -750,10 +754,6 @@ web行业和erp行业的几乎全是ms系列和java系列的语言，而嵌入�
           
             <li class="post">
               <a href="/blog/archives/2845/">phuket旅游和潜水指南</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/album/">相册</a>
             </li>
           
         </ul>

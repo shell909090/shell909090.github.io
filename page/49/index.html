@@ -94,6 +94,36 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Nov 16, 2010
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/1613/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/1613/">为什么高性能框架都是http的</a>
+    </h1>
+</header>
+
+
+        
+          <p>很多高性能的web框架，例如沈崴的euraisa，fackbook的tornado（这两个都是python）框架，都是http的。这和我们的印象相反，python，或者其他高级语言不是都很慢么？为什么都用这个来做http服务器呢？
+这个我们得从服务器架构开始说起。最初的时候，没得说，所有的都在同一个机器上，甚至可能使用cgi模式。在访问压力上去后，为了增强性能，首先被拆出去的应该是数据库服务器。而后会考虑使用fastcgi或者scgi进行部署，前面使用apache或者nginx做前端。在这个时候，fastcgi是有道理的。因为apache在静态文件处理的性能上远高于python框架（而且快数倍），而nginx在大规模静止长连接的情况下性能更优异。而且，更进一步说，在性能压力加大的时候，应用服务器会被拆分，这时候apache/nginx做反向代理很容易做到负载均衡集群。
+然而，如果压力再上去呢？在这种情况下，通常考虑的两件事情是静态文件拆分单独的服务器和应用服务器的硬件负载均衡（没钱的话也得考虑LVS了）。道理很简单，即使服务器性能能无限提升，网络接口的性能也不会无限制的上升的。完成这两步后，我们再来看整个架构，会发现反向代理变成了一个鸡肋。静态文件处理？不在这些服务器上了。负载均衡，系统级有了。apache/nginx有什么用呢？难道就是把http协议转换为fastcgi协议？
+所以说，要达到高性能，框架应当是直接处理http的，并且支持大量的客户进行长连接。当压力小的时候，使用nginx的反向代理模式进行工作（而不是fastcgi协议）。当压力大的时候，拆开静态文件，直接上去服务全社会。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Nov 10, 2010
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/1611/#disqus_thread">Comments</a>
@@ -399,40 +429,6 @@ ga('send', 'pageview');
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Oct 18, 2010
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/1506/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/1506/">不靠谱</a>
-    </h1>
-</header>
-
-
-        
-          <p>在公司中，有这么几种不靠谱行为，粘上就容易身败名裂，具体程度和人品以及不靠谱程度有关。以下排名分先后。
-1.自以为是的客户需求。主要是说由程序员来搞的需求，以为搞的挺好，其实客户完全不鸟你。
-2.老板定的开发周期。不用说，就像色狼为美女挑的泳装，肯定太紧。
-3.废物员工。不怕神一样的对手，就怕猪一样的队友。不但没有贡献，只会拖后腿。
-4.迫于压力不写文档，延后文档或者仓促写。都是废品产生的先兆。
-5.过于激进的架构设计/技术选择。听起来挺好，问题是，您能玩的转么？
-6.指手划脚的客户。神一样的对手。
-7.钱不是问题。问题是没钱。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -704,6 +700,10 @@ ga('send', 'pageview');
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2854/">使用Debian作为Router</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2853/">riot.im简介</a>
             </li>
           
@@ -737,10 +737,6 @@ ga('send', 'pageview');
           
             <li class="post">
               <a href="/blog/archives/2845/">phuket旅游和潜水指南</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/album/">相册</a>
             </li>
           
         </ul>
