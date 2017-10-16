@@ -43,7 +43,7 @@
   <meta name="author" content="Shell Xu">
 
   
-  <meta name="generator" content="Hugo 0.30-DEV" />
+  <meta name="generator" content="Hugo 0.26" />
 
   
   
@@ -87,6 +87,38 @@ ga('send', 'pageview');
  <div id="content">
   <div class="blog-index">
     
+    
+    <article>
+
+        
+        
+
+<header>
+    <p class="meta">May 2, 2008
+         - 3 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/15/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/15/">C&#43;&#43;继承,虚,转换规则探究</a>
+    </h1>
+</header>
+
+
+        
+          <p>以下讨论的东西都是在VS2005下跑出来的，如果想知道别的编译器规则，请照跑一遍。以下是类定义，函数内容为打印出当前函数名称，所以就不再贴了。
+class Base { public: Base(); Base(const Base &amp;amp; o); virtual ~Base(); virtual Base &amp;amp; operator = (const Base &amp;amp; o); void function1(); virtual void function2(); void function3(); virtual void function4(); //virtual void function5(); virtual void function6(); }; class Derive : public Base { public: Derive(); Derive(const Derive &amp;amp; o); virtual ~Derive(); virtual Derive &amp;amp; operator = (const Derive &amp;amp; o); void function1(); virtual void function2(); virtual void function3(); void function4(); //compiler error //int function5(); protected: virtual void function6(); public: };  首先我们讨论继承下的构造/析构顺序。</p>
+
+          
+              <footer>
+                  <a href="http://blog.shell909090.org/blog/archives/15/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
     
     <article>
 
@@ -368,60 +400,6 @@ firefox虽然号称小巧，然而很多时候我们发现他的内存消耗也�
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Mar 5, 2008
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/433/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/433/">晒一晒我的firefox</a>
-    </h1>
-</header>
-
-
-        
-          <p>firefox是很有名的浏览器，以其短小和安全而著称。相信很多朋友喜欢使用firefox，然而你真的会用么？
-首先纠正一点，最标准的浏览器虽然不是IE，但是也不是firefox。而是以下三个，Safari(WebKit) / Opera(Presto) / Konqueror(KHTML)。Safari是Mac上的浏览器，Konqueror是Linux上的，Opera则多数用于手机上。Firefox 2.0.0.3 (Gecko 1.8.1.3)稍微差点，Internet Explorer 7.0 (Trident)和Internet Explorer 6.0 (Trident)是最不标准的。具体请看Acid2测试(http://www.osxcn.com/css/the-second-acid-test.html)。当然，也有消息称Firefox和IE已经都通过了测试(http://www.appbeta.com/50226711/ie8afirefoxasafariaoperaecaeacid2ce_133101.php)。
-其次，当你用着号称国人精华的XX浏览器的时候。首先请注意一下他是否使用了ie内核。IE有一个非常大的框架，其内核是Trident。所谓的浏览器内核，就是负责将html转换为DOM，然后渲染的组件集。当然，还有一些执行js等等的组件。微软的IE内核一般在mshtml.dll上，如果你有procexp，可以看看所谓的XX浏览器是否用了这个dll。如果用了，没的说，肯定是Trident内核。如果没有么……将mshtml改名转移，直到IE无法正常浏览。然后看看您的XX浏览器怎么样。
-Firefox的内核是Gecko，据说将来要使用Cairo。这两种组件……嘿嘿，贝壳都用过。但是firefox最强大的是他的插件组，效果终身难忘，让人不忍舍弃。下面贝壳介绍一下firefox的部分插件，脚本。
-/find/，这是个很小巧的插件，可以使得firefox能够以正则表达式在全文进行搜索。普通用户就表想了，这东西可是专业人士的杀手工具。可以做出&rdquo;搜索全文中的所有电话号码&rdquo;或者&rdquo;搜索全文中的所有email&rdquo;等等强大功能。当然，如果你需要的话。
-CustomizeGoogle，GFan一定要用。这个插件可以定制Google，例如可以在其他搜索引擎搜索，剔除赞助商广告，修改搜索的语言(贝壳的firefox就老阿达到英文上去，用这个插件就一切OK)。适用于Google的多个产品，包括gmail，google reader等等。
-fasterfox，强力推荐，加速插件。不过通常我都是用来调整性能参数的。自定义设置，不启用增强预读，缓存32M。这个配置对于0.5-1G的本本很有用。
-firebug，这东西也就网站开发人员用。不过绝对是杀手阿，可以看到网页的css，javascript，在线调试，察看ajax的网络通讯。通过这个东西，很容易调试多数的网页。
-fireshot，推荐看小说的的人用。可以将当前的网页整个导出成png(贝壳注：这不就是Cairo的基础功能么？导出到虚拟interface)。想想你看小说，将当前页面打印到png。不用截屏拼接，嘿嘿。当然，更好的方法是用firebug，直接可以提取内容。不过……看你水准了。
-flashgot，强力推荐，用这个东西可以将firefox的下载转到flashget上。当然，也支持迅雷，netant和bitcomet。这个东西弥补了firefox不支持专用下载软件的尴尬。当然，也有人喜欢都在firefox里面做。这个就如人饮水拉。
-gladder，用于爬GFW看Wikipedia的东西。如果听不懂，我不再解释。
-gmark，推荐多个电脑的人用，可以在各个地方用google bookmark，就好像用自己的bookmark一样，方便统一bookmark。如果你不喜欢在线bookmark(我觉得没有必要，用浏览器必定在线，除非google故障离线bookmark才有用)，那么可以用gmark的导出功能，导出到html。然后用firefox的导入，同步两个bookmark。其他插件要么是使用不习惯，要么就是不能和firefox自身的bookmark同步(都是单向的从firefox bookmark导出)。
-google reader notifier，推荐用google reader的挂线族。这个插件会提示你有多少东西你没有读，定时刷新。
-google笔记本，这个需要到google去下载，和gmark一样是让多个电脑同步的好东西。可以直接弹出一个google note让你记东西，并且在任何地方访问。同时也可以选中网页中的部分内容，点击加笔记，自动添加到笔记本中。
-greasemonkey，强力推荐，将用户脚本插入到页面中的组件，可以动态修改页面行为。下面会专门讲用这个组件挂脚本的技巧。
-IE tab，强力推荐，有的时候突然需要看IE，但是单独开一个IE非常麻烦。直接点右下的这个图标，当前页面就会自动切换成IE浏览。只是如果处于登陆中，恐怕会退出。
-keyconfig，可以自己配置firefox的快捷键。
-MinimizeToTray，最小化到托盘区的组件。配合上面一个，对付老板的利器阿。
-NoScript，强力推荐，拒绝恶意脚本，增加安全性。当然，弄不好就是拒绝正常脚本，增加麻烦。
-Session Manager，强力推荐，可以保存你当前在看的所有列表，下次恢复。也可以同时恢复登陆状态(例如你登陆了网站，下次上线就如同中间没有做任何动作一样，当然如果超时被踢就没办法了)，恢复关闭窗口。对付firefox的重起，减少内存消耗(手动重起)，看一堆页面看到一半有事……等等。非常有效。
-Tree Style Tab，另类的tab样式，把tab在左边做成树，可以折叠展开。如果你和我一样，经常喜欢大量的打开页面。此时，上面的tab往往缩的很小，看都看不到，但是还是长的要左右乱翻。这个时候这个插件非常有效。而且可以看到浏览的派生关系。如果平时觉得浪费空间，可以改回去。等需要的时候改过来。
-Update Scanner，扫描页面变化，如果有变化提示。对于看小说/泡论坛……等等。不用你们一天老去刷帖子了，这个插件可以提示你页面是否更新。当然不是没有更好的，不过那些东西都要写变化脚本，天哪～～
-上述的插件大都能在addons.mozilla.org或者addons.mozine.cn找到，如果不行就去google搜索。注意使用插件会消耗一定内存，尽管上面的大多插件都不怎么消耗内存，可都放上也比较让人受不了。一般贝壳都是将不用的转到禁用的。
-下面讲解greasemonkey的用户脚本技巧，多数脚本可以到userscript.org找到。
-GoogleTagCloudMaker，最好用的greasemonkey脚本。可以将google搜索的广告移除，变成关键字云。点击关键字云往往能追踪搜索，直到找到需要的东西。
-Show Btchina，让你可以浏览bt.btchina.net。这是个bittorrent种子搜集站，但是firefox无法浏览。使用这个脚本使得firefox可以正常浏览。
-Download Youtube Video III，在youtube的播放文件下面显示一个download，链接到播放的flv文件。可以很轻松的进行下载。以前贝壳都是用youplayer，老开着占内存，不老开就要重起firefox。虽然有session manager，不过也很讨厌。使用脚本就可以针对页面工作，减少内存消耗。
-以上的脚本在安装greasemonkey后可以直接点击安装。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -693,6 +671,10 @@ Download Youtube Video III，在youtube的播放文件下面显示一个download
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2855/">法国游记</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2854/">使用Debian作为Router</a>
             </li>
           
@@ -726,10 +708,6 @@ Download Youtube Video III，在youtube的播放文件下面显示一个download
           
             <li class="post">
               <a href="/blog/archives/2846/">广东游记</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2845/">phuket旅游和潜水指南</a>
             </li>
           
         </ul>

@@ -43,7 +43,7 @@
   <meta name="author" content="Shell Xu">
 
   
-  <meta name="generator" content="Hugo 0.30-DEV" />
+  <meta name="generator" content="Hugo 0.26" />
 
   
   
@@ -87,6 +87,58 @@ ga('send', 'pageview');
  <div id="content">
   <div class="blog-index">
     
+    
+    <article>
+
+        
+        
+
+<header>
+    <p class="meta">Nov 24, 2005
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/264/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/264/">Linux内存计数详解</a>
+    </h1>
+</header>
+
+
+        
+          <p>又中计了……
+近几天用oracle，发现oracle狂用内存，经常内存小到10M的规模。汗一个，赶快让经理买了新的1G内存来装，上去后发现根本认不出来。加班一多小时才发现386内核根本不认高端内存(HIGHMEM)，所以内存极限一直是896M。以前是1G内存，所以看不出来，现在换了1.5G，看出来了。
+赶快上了一个2.6.12-1-686的内核，然后重启，认出来了。不过free还是只有32M左右，我们大惊小怪的打电话到oracle那里去咨询，得到的答复是要安装完整的补丁，并且要用oracle认证过的服务器。oracle认证了啥服务器？RedHatEnterpriseAS3/4,那个东西要收费的，而且绝对不便宜。最后无奈，做了一次不启动oracle的测试。出乎我们意料的，mysql吃了多数的内存。具体造成这种状况的原因是啥呢？
+偶查阅了linux内存管理资料，发现linux的内存管理计数上讲的东西和windows讲的有很大差异。下面具体列举下几种计数、查看方式和含义。
+total mem，可以用top free查看出来。
+free mem，可以用top free vmstat查看出来。
+used mem，可以用top free查看出来.
+buffer mem，可以用top free vmstat查看出来。
+shared mem，可以用free查看出来。
+swap mem，可以用top查看出来。
+swap used，可以用top vmstat查看出来。
+cached mem，可以用top free vmstat查看出来。
+active mem，可以用free vmstat -a查看出来，即cached used。
+inactive mem，可以用free vmstat -a查看出来，即cached free。
+其中total mem是除去系统外的可用内存，系统大约占1M多。然后分配给free mem和used mem。used mem又包括了内核表使用（例如GDT），程序使用，buffer，cached。所以
+cached mem=active mem+inactive mem
+total mem=free mem+used mem
+used mem=内核表使用+程序使用物理内存+buffer mem+cached mem
+略去内核表使用，这个式子可以变形成这样：
+程序使用总内存=swap used+程序使用物理内存
+=swap used+used mem-buffer mem-cached mem
+=total mem-free mem+swap used-buffer mem-cached mem</p>
+
+          
+              <footer>
+                  <a href="http://blog.shell909090.org/blog/archives/264/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
     
     <article>
 
@@ -393,38 +445,6 @@ PS.谨以此纪念首次在GNU/GPL下引用Linux内核源码用于程序开发�
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Nov 7, 2005
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/254/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/254/">工博会第三天</a>
-    </h1>
-</header>
-
-
-        
-          <p>其实第三天并不完整，因为贝壳感冒了……
-头天累过头了，然后晚上吹了点冷风。结果当晚就感冒了，今天起来说话嗡嗡的。还好没有发高烧，否则问题严重了。可怜我还要带一个包和一个笔记本去展厅。因为这个是昨天我带回来的，总不能不带过去阿。所以撑着到展览场地，通关进去，好玩……今天我最早。于是连上笔记本然后准备好参展的东西，坐下来休息休息。
-柏菊同志是第二个来的，紧接着就是曾经理。知道情况后和杨总打个招呼，放我回家。我说我先顶个上午吧，否则交接不好做。要是客户上来一问三不知就不好了。何况我还要照点照片。于是顶到杨总到，基本东西都说完了，跑去拍MM照片。原来前天看到的Hot
-Girl是阿尔卡特请来跳舞的，难怪……
-跑到西门子的展厅里面，发现还需要登记资料和排队。我问警卫这个队伍大概多少时间，他回答是二十分钟。按照一贯的情况来分析，这句话的真实含义是，起码要半个钟头以上！我哪里有那么多美国时间阿。半个钟头后已经过了吃饭时间了，算了，照了两张排队照片出来了。到是周一可能比较轻松的进去，不过感冒呢，还是算了吧。
-回家吃饭，下午去邮局领了老妈寄过来的芯片。测试了下，还是低速的，而且比原来的还差！大致和老板N年前买的相机里面的128M低速芯片性能一致。真不知道这些人到底是干吗的，没见过高速芯片吗？</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -696,6 +716,10 @@ Girl是阿尔卡特请来跳舞的，难怪……
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2855/">法国游记</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2854/">使用Debian作为Router</a>
             </li>
           
@@ -729,10 +753,6 @@ Girl是阿尔卡特请来跳舞的，难怪……
           
             <li class="post">
               <a href="/blog/archives/2846/">广东游记</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2845/">phuket旅游和潜水指南</a>
             </li>
           
         </ul>

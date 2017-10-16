@@ -43,7 +43,7 @@
   <meta name="author" content="Shell Xu">
 
   
-  <meta name="generator" content="Hugo 0.30-DEV" />
+  <meta name="generator" content="Hugo 0.26" />
 
   
   
@@ -87,6 +87,52 @@ ga('send', 'pageview');
  <div id="content">
   <div class="blog-index">
     
+    
+    <article>
+
+        
+        
+
+<header>
+    <p class="meta">Jul 9, 2012
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/2200/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/2200/">debian wheezy下以uwsgi安装graphite</a>
+    </h1>
+</header>
+
+
+        
+          <p>abstract graphite是一个python写的性能监控系统。这个系统是由多个分离的部分组成的。
+ graphite-web: 由django写的web界面系统。 carbon: 数据收集的守护进程。 whisper: 一种python写的数据库，类似rrd，便于大量的性能日志数据收集和处理。上两个组件会调用这个库。 collectd: 数据收集守护进程，向carbon中喂数据的数据源。  另外，有一点黑色幽默的就是，graphite的意思是石墨，是炭(carbon)的一种同素异形体。因此在graphite项目中，多次出现carbon这个名字。当然，另两个同素异形体是钻石(diamond)和足球烯(footballene)，你就暂时别指望看到他们的身影了。
+另一个用python写的，以元素命名的著名软件是mercurial。化学元素中的汞，俗称水银，符号hg。因此mercurial的命令行简写才是hg。
+以上几个的结构大概是这样的：
+collectd(source) -network-&gt; carbon -&gt; writing-&gt; whisper
+database -&gt; reading-&gt; graphite-web
+下文描述了在debian wheezy下，以nginx+uwsgi模式安装graphite的过程。之所以用这个模式，是因为我的大部分系统都是python写的，同样安装在uwsgi下面。一事不烦二主。
+carbon carbon有对应的debian包，可以很简单的安装。
+sudo aptitude install graphite-carbon  默认的数据端口是2003，默认的数据路径是/var/lib/graphite/，这个在下文需要用到。
+graphite virtual graphite有部分需要安装到系统中，因此最好用virtualenv进行安装。
+cd /var/web/ sudo aptitude install python-virtualenv virtualenv --system-site-packages graphite  我假定你的安装路径是/var/web/graphite，这个在下面要反复用到。
+install 在安装路径下，执行以下内容
+source bin/activite pip install graphite-web --install-option=&quot;--prefix=/var/web/graphite&quot; --install-option=&quot;--install-lib=/var/web/graphite/webapp&quot;  注意，/var/web/graphite需要根据上面的设定自行修改，webapp是你的django基础路径。
+configure 在/var/web/graphite/webapp/graphite下面，执行以下内容
+cp local_settings.py.example local_settings.py  然后编辑local_settings.py
+GRAPHITE_ROOT = '/var/web/graphite' WHISPER_DIR = '/var/lib/graphite/whisper' DATABASES = .</p>
+
+          
+              <footer>
+                  <a href="http://blog.shell909090.org/blog/archives/2200/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
     
     <article>
 
@@ -439,51 +485,6 @@ usb.generic.allowHID = &quot;TRUE&quot;  参考  Multiseat Documentation in x.or
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">May 24, 2012
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/2180/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/2180/">天朝重大灾害事件的行为思考</a>
-    </h1>
-</header>
-
-
-        
-          <p>当事人 在天朝遇到重大灾害事件，当事人的指导思想是自主逃生，切切不可指望救助。这点不仅是在天朝，而且在全世界各个国家都同样成立。总体来说，天朝救助动员体系的效率在全球那是首屈一指的高。然而比较操蛋的事情是，往往在救助的时候会来几个记者或者领导。这时候不但不能快速把你救出来，而且在慢慢救助的过程中，你还会受到“你现在疼不疼阿”，“坚持住，我们的人民解放军马上就把你救出来拉”之类的废话骚扰。更操蛋的是，你还得表现出受灾的痛苦和得救的感激——不过鉴于天朝有效的动员体系，你就权当缴“表情税”了吧。
-当然，在救助的时候，一个更可怕的事情是，你受灾的事实可能会对领导的政绩产生不良影响。因此，当有一点证据表明可以不救的时候，哪怕不足72小时，你都可能被直接埋掉。所以，更不要指望救助。
-具体来说，有以下几个具体建议：
-受到外来冲击的时候先护住头和胸，尤其是后脑勺。缺胳膊少腿的叫残疾人，缺脑袋少心脏的叫僵尸。
-尽量逃离灾害现场。你永远不知道那里会再发生什么问题。
-再贵的东西都没有命值钱。
-被困等待救援的时候，最容易死亡的因素是缺水。如果你有瓶水，千万别浪费了。如果有个瓶子，千万别浪费自己的尿。如果你什么都没有，那就想法弄一个。
-NGO 作为NGO，在灾害救助的时候，首要任务是组织，管理，信息传递。尤其是最后一个，千万注意时效。网上经常出现无效的求助，尤其是围脖出来后，情况尤其严重。有人曾经验证过，一条求助推，被转发上千次。但是之后的感谢推，只有不到百次。结果就是，事情已经做完，或者过时，但是信息还在传递。这种无效的信息垃圾，会严重的干扰救灾体系的运作。
-作为一个比较好的对应方案，建议可以由几个人，携带便携电脑，在灾害现场收集信息，来源，时间，然后通过邮件发送给联系人。使用邮件的好处是，可以离线收集信息和编写，通过3G网络发送，信息量大，冗余数据消耗小，对带宽要求小。即使没有3G网络，邮件也可以通过tf卡携带工作（就是把邮件输出成EMAIL编码，托人带到有网络的地方发送）。不过，为了保证邮件发送人的可靠，建议考虑邮件签名技术。
-受灾后，最重要的信息是，有哪些人受灾，他们需要什么物资，他们需要联络什么人（寻人报平安）。正确的第一现场信息，有助于征集社会资源，解决实际问题。为时效性考虑，每种信息都应当有一个注销和过期特性。
-旁观者 作为旁观者，千万不要试图录像，或者表现出试图录像。如果你手机有偷拍能力，偷偷的拍是可以的，被发现了就删除，或者干脆把手机扔给对方，不要拿自己的命开玩笑。你对面一群人的领导，可能在这次灾害中锒铛入狱，也可能风平浪静。如果你的录像有害他入狱甚至挂掉的可能，他不会介意让你直接挂掉的。
-如果你平时要救助别人，注意留下你不是肇事人的证据。但是在大型灾害面前，你没有被起诉的可能（总不能说地震是你搞的吧），因此不要吝啬于给与帮助。注意，在帮助别人的时候注意保护自己，不要轻易的到危险地带去帮助别人。如果你也变成当事人，别人还得帮助你。如果你挂掉了，家里人会伤心。
-在灾害发生的第一时间，你的捐献不要考虑审计，红十字，之类的问题。就算知道有问题，你的捐献能够让多一个人活下来，就比坚持真相更有意义。然而做为后续捐助，我的建议是，自己做，或者不捐。中国的救助体系已经变成了一门生意，而且很不透明。当你不知道你的捐助做了什么用途的时候，你可以选择不捐助。当然，如果你和几个朋友（注意，这里一定需要互相认识，因为针对非特定对象的募集是违法的），有人愿意去开车送一些东西什么的，那会更好一些。
-如果你到了现场，注意收集信息。在灾害信息全靠官方，官方信息全看领导的天朝，有个其他的信息流通渠道是非常重要的。
-具体来说，有以下几个具体建议：
-不要围观，尤其是在进出通道上围观。
-看到有人受伤，不要着急忙荒抬着跑，先看看有没有伤，意识是否清醒。如果有骨折，固定后再移动，否则会产生二次伤害。
-如果是外伤，尽力止血。如果外伤见骨，或者有脊髓液流出，不要着急包扎，谨防感染。可以在靠近心脏端进行扎紧，减少血流。
-如果呼吸心跳停止，做CPR。CPR具体参考CPR手册，或遵医嘱。实在不会的，简单来说，捏住鼻子往嘴里吹气，然后胸压15次，两秒一次。特别注意，必须保持气管通畅，没有喉管闭合或者呕吐物堵塞，否则人工呼吸一下就送命了。另外即使出现心跳呼吸，也尽量坚持直到救护车来。当然，最后一点在灾区急救中就有点奢求了。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -755,6 +756,10 @@ NGO 作为NGO，在灾害救助的时候，首要任务是组织，管理，信�
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2855/">法国游记</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2854/">使用Debian作为Router</a>
             </li>
           
@@ -788,10 +793,6 @@ NGO 作为NGO，在灾害救助的时候，首要任务是组织，管理，信�
           
             <li class="post">
               <a href="/blog/archives/2846/">广东游记</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2845/">phuket旅游和潜水指南</a>
             </li>
           
         </ul>

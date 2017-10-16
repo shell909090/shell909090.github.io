@@ -43,7 +43,7 @@
   <meta name="author" content="Shell Xu">
 
   
-  <meta name="generator" content="Hugo 0.30-DEV" />
+  <meta name="generator" content="Hugo 0.26" />
 
   
   
@@ -87,6 +87,39 @@ ga('send', 'pageview');
  <div id="content">
   <div class="blog-index">
     
+    
+    <article>
+
+        
+        
+
+<header>
+    <p class="meta">Aug 26, 2005
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/204/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/204/">IBM开发者大会</a>
+    </h1>
+</header>
+
+
+        
+          <p>因为某个时间表上无法预料的意外，公司让我出席了IBM开发者大会。具体来说是这样的，Boss和Professor钱was surposed 2 attended the meeting。但是Professor钱临时出席了另外一个由Collage driver的meeting。所以公司内部就剩下了一个技术人员，不幸那就是小弟me。
+总体来说，这个会议很无聊。头天早上是入场和checkin。每个人领了一个小本本，
+which IBM call them 胸卡。it&rsquo;s sounds string, isn&rsquo;t it？里面有整天的安排，先是致辞，然后是两个大人物上去分别解释管理和技术的总理念。总的来说，这次等于是Rational系列产品的宣讲会。里面充斥了Rational系列产品解决问题的案例，无聊。中午的午餐在恒隆，咖哩羊肉，很好吃。可惜速度慢了点，可能是人太多了，造成瞬时响应延迟。然后下午是重头。讲解RSA的三个层面。我开始还当是RSA加密算法，后来发现不是。而是一个Rational家族的产品，构架平台吧，好像。听的我困的要死，不过主要思想明白了。大致来说就是两点，一个是逐步精化，追求可变的循环开发过程。一个是由顶至底，层层西分的构架模型。而IBM提供的就是自动化工具。
+简单来说，首先由需求分析出业务模型，然后由模型建立UML的计算无关模型。再下去就是平台无关模型，加入了业务中的细节和计算。然后是平台相关模型，由转换师协同IBMRSA转换成一个平台（例如java或者net）相关模型。最后编译器转化成代码（这个也是当做模型的）。最后利用工具做黑盒和白盒测试，得到性能参数和业务吻合评价，再次调整业务模型，重复流程。这样在两个协调人员的帮助下，由eclipse贯穿，经由系统分析师，建模人员，转换师，测试工程师（还有一个我忘记了）叠代循环，得到最终的代码。
+最后节课是电子商务的，我看是中级课程，没去。直接跑去楼下的上机区去玩linux，IBM用的是Redhat或者SuSE，看别人修系统密码结果被VMware虚拟出来的sda1弄的乱没办法。好玩。不过收获蛮多的。然后直接跑去了太平洋八百伴那里的分店，去买电脑，公司采购。CIV2.4D533CPU，KM512MDDR533RAM，ASUSP4S865-XMainBoard，GeForce4FX5200 128M128bits，ST7200.80G2M，嘿嘿，不错吧。4000，带送货。
+然后今天起太早了，本来有来就不错了。我先去了一个UML2.0的讲解会议，总体来说就是元素建模嘛。然后是.net framework下面RSA的支持，不过不知道怎么讲着讲着变成黑盒白盒测试了。最后是软件工程和软件关系工程，不过怎么听都在宣传他们的某个产品RPM，完全和理论实践无关阿……无奈。
+中午吃午饭，还是老地方，咖哩羊肉，这次速度快了。然后换手杨总进去听管理，我下午跑到公司，安装系统去。结果我和小马统统down在了installnation of winXPSP2VLK上海政府版上面。后来发现联想OEM的是好的，我Ft。连通了交换机，上网加了N多东西，最后基本全部完成了部署，就是死在了VmWare的安装上面。真见鬼，明天用自己用的版本上去试试。</p>
+
+          
+
+        
+
+    </article>
     
     <article>
 
@@ -380,36 +413,6 @@ If a picture paints a thousand words, Then why can&rsquo;t I paint you?</p>
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Jul 14, 2005
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/194/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/194/">windows系统二、三</a>
-    </h1>
-</header>
-
-
-        
-          <p>二，从程序到内核 程序是被CreateProcess载入的，中间过程就略去不说了。不过程序为何可以在不同系统上运行呢？
-首先每个程序会调用一系列的库函数，具体视使用语言和编译工具，编程框架而定。程序或者框架会调用系统的API，这个部分是SDK编程的内容。具体调用哪个API，在什么DLL里面，传入啥参数，在所有windows系统中都是一样的。不过每个windows系统对于具体实现就完全不同了。调用的API会在程序文件中载明。然后系统会将每个DLL载入进程空间，于是就实现了具体和系统的链接。每个DLL最终都会调用int 2eh（或者SYSENTER）陷入系统来完成各种使用。这部分就是内核的事情了。由刚刚的程序载入（每个系统都相同的动作），到内核实现（每个内核都不同的事情）。中间具体的过程就是系统附带的DLL的所完成的。
-三，MM，不是美媚
-MM是MemoryMangermant的简称，而非美媚。windows的内存管理在程序来看是透明的，因为对于程序来说，地址空间是连续的。主要原因是系统通过段寄存器索引了某个表，通过此表来映射你的“连续”内存地址到真实内存地址上来。当然，也有可能映射到了硬盘上的某个区域。Windows的每个内存块都对应某个硬盘上的区域。不过如果在内存中，则区域保留等待写入。如果不在内存中，需要的时候读出来而已。在你“透明”访问内存的时候，段寄存器会访问这张表（实际一般不访问，表的项目会在首次访问的时候载入某个缓冲用的快速寄存器），而后映射到真实的内存地址。如果“真实”的内存地址不存在，则会发生异常。windows的异常捕获会直接将硬盘内数据调入，然后继续程序执行。所以在访问内存过程中，程序看来是“透明”的。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -681,6 +684,10 @@ MM是MemoryMangermant的简称，而非美媚。windows的内存管理在程序�
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2855/">法国游记</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2854/">使用Debian作为Router</a>
             </li>
           
@@ -714,10 +721,6 @@ MM是MemoryMangermant的简称，而非美媚。windows的内存管理在程序�
           
             <li class="post">
               <a href="/blog/archives/2846/">广东游记</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2845/">phuket旅游和潜水指南</a>
             </li>
           
         </ul>
