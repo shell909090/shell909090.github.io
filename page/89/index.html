@@ -94,6 +94,43 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Sep 4, 2005
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/205/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/205/">列一下我要学的东西</a>
+    </h1>
+</header>
+
+
+        
+          <p>到了单位也不能固步自封，要学的东西太多，让我列个表然后慢慢学吧。
+1.java编程技术，单位里面的吃饭家伙。
+2.UML建模和模式，也是吃饭家伙。
+3.linux使用维护，服务器组建要用的。
+4.linux bash脚本编程，深入linux的台阶。
+5.COM接口编程，算是一个漏洞吧。
+6.项目管理，以后的大方向。
+7.linux软件编程，兴趣吧。
+8.linux内核分析，含金最高的东西，对了，还有minix。
+9..net编程构架，多个路子。
+上帝，我领悟学海无涯的意思了……</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Aug 26, 2005
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/204/#disqus_thread">Comments</a>
@@ -377,42 +414,6 @@ If a picture paints a thousand words, Then why can&rsquo;t I paint you?</p>
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Jul 15, 2005
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/195/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/195/">windows系统四、五</a>
-    </h1>
-</header>
-
-
-        
-          <p>四，内核对象和句柄
-调用API的过程中，有必要区分调用的目的和对象。说的通俗点，就是为什么调用和对谁调用。例如打开哪个文件，或者终止什么进程。调用的目的是根据不同的API和状态或者属性参数而变化的，而调用的对象则是根据句柄而选择的。
-句柄大致分为内核句柄和对象句柄两种。一般来说，申请打开句柄时需要你传入安全令牌的就是内核句柄，内核句柄具有可继承性（inherit）。而像窗口等等东西就是对象句柄。SDK编程中，程序根据句柄的不同而操作不同对象，实现程序的种种目的。可以说，句柄和API组成了程序对下层的接口。
-而在系统实现中，句柄则是某个内核对象，这个对象在系统中有个编号。句柄实际返回的多数是这个编号。大家可以申请两个句柄出来玩玩看，一般都是09XX之类的数字。从大小上看还属于NULL地址段（具体请看jefferey的windows核心编程），所以多数就是内核对象表项编号。这种一般以非内核句柄居多，因为这种句柄的特性可以从一个进程直接传递到另外一个进程。而有的则是某个在进程地址空间（这里插句，windows中进程和线程的区别可以理解成为，进程拥有独立空间和句柄，线程拥有独立CPU调度）内的某个数据块。这个块指向了某个确定的内核对象，这种句柄数字上一般大于4M。一般以内核句柄居多，进程间不可以传递只能继承。（其实也可以传递的，不过要用API主动复制，而不是Copy句柄过去了事）
-五，通讯方法
-通讯方法，通俗的讲，任何程序必定涉及和其他程序的通讯。windows中的通讯肯定是要通过API实现的。具体方法最简单的是消息通讯。需要对方的线程ID（进程ID没用的），或者进程创立的windows句柄。如果使用sendmseeage发送消息，接收方又是本线程创立的窗口，则将窗口处理函数作为子例调用（因为sendmessage是阻塞调用，本线程阻塞了来调用本线程的派生，当然，也只能，直接调用）。否则将消息挂到对方的接收区域去，然后要么阻塞，要么直接返回。（注意到为何sendmessage给本线程要直接调用了吧。阻塞的线程是无法通过messageloop的。）
-如果不高兴使用消息，那么可以使用文件映射。这个方法本来是自虚拟内存中引入的，后来渐渐用来做文件的系统缓冲处理，也用来处理系统通讯。将一个文件同时映射到两个进程空间，则任何空间的变化会引发另外一个空间的变化。注意所谓文件的变化和虚拟内存一样，是未必写入磁盘的。使用这个方法需要注意同步问题。
-另外，这个方法有个变形。可执行文件是PE格式时，文件载入内存时会自动做文件内存映射。此时设定属性，让某个section自动的作为同步映射，这样所有的自这个文件派生的进程在此section上是内存共享的。具体还是可以看jefferey的windows核心编程。
-再差就是使用管道了，管道是用来套接标准输入输出的。去找找CUI界面重定向的问题就知道管道的用途了。除了定向到网络上，管道还可以定向到text框中。例如VC编译的时候……
-再傻点？你两个程序各申请一个winsock通讯好咯，OLE，COM，都随便你用的阿。不过拿电脑间互相通讯的东西做进程通讯，你一定是头壳坏去了。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -684,6 +685,10 @@ If a picture paints a thousand words, Then why can&rsquo;t I paint you?</p>
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2856/">golang安装和编译环境搭建</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2855/">法国游记</a>
             </li>
           
@@ -717,10 +722,6 @@ If a picture paints a thousand words, Then why can&rsquo;t I paint you?</p>
           
             <li class="post">
               <a href="/blog/archives/2847/">Disney Shanghai信息</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2846/">广东游记</a>
             </li>
           
         </ul>

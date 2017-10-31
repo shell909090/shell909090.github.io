@@ -94,6 +94,43 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Apr 8, 2013
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/2362/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/2362/">什么叫做网桥</a>
+    </h1>
+</header>
+
+
+        
+          <p>下面简述的只是linux下的brctl创建出来的玩意，和网桥的学术定义什么的没有关系。
+想像你有一块网卡，接上网线，OK，能上网了。
+现在，你有一台物理的机器，和一台虚拟机，都需要上网。但是网卡和网线只有一块，怎么办？
+如果你能够物理的触摸到虚拟机，你也许会这么干。
+找一个交换机来，把物理设备的网卡用网线连接到上面，把虚拟机的网卡连接到上面，再把外网网线接上去，OK，齐活了。
+brctl创立出来的网桥就是这么工作的。
+你原本的物理网卡，例如eth0，我们直接为他分配IP，进行通讯。结构大概是这个样子的。
+system -- eth0 -- network  接入网桥这个假的交换机后，eth0依然负责向外通讯，但是没有自己的IP了。网桥和宿主所在的机器的连接叫做br0（或者br1，以此类推）。
+system -- br0 -- eth0 -- network  然后，我们可以为这个交换机接入很多的设备。
+system -- br0 -- eth0 -- network | vethXX | virtual -- eth0 /  其中，eth0和vethXX是一对设备。一个在宿主里，一个在虚拟机里。互相连通。
+所以，当虚拟机发生通讯时，eth0上可以看到数据流，但是br0上看不到。而如果虚拟机和宿主通讯时，eth0看不到数据流，br0上可以。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Apr 2, 2013
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/2359/#disqus_thread">Comments</a>
@@ -475,34 +512,6 @@ lxc-create -n vm0 -t debian lxc-start -n vm0  启动正常了。
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Jan 9, 2013
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/2317/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/2317/">2.4G网络冲突问题</a>
-    </h1>
-</header>
-
-
-        
-          <p>由于2.4G是各个国家共同保留的一个非牌照频率，如果商家打算做什么无线通信的玩意，又不打算申请频率，那就只有用2.4G。因此，其实很多设备在无意中都在使用这个频率，他们之间会互相干扰的。
- 蓝牙 无绳电话 部分微波炉 无线网卡 无线门铃 深圳某地铁公司的信号闭塞系统。。。  某种设备的信号，对其他设备来说就是噪音。高速传输设备，尤其是wifi，在高噪音的环境下速度很慢。 因此，建议在复杂环境下的wifi用户尽速迁往5G频率。你家要是无线环境很干净（例如我这里，屋子电磁屏蔽好），那就不是很着急。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -774,6 +783,10 @@ lxc-create -n vm0 -t debian lxc-start -n vm0  启动正常了。
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2856/">golang安装和编译环境搭建</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2855/">法国游记</a>
             </li>
           
@@ -807,10 +820,6 @@ lxc-create -n vm0 -t debian lxc-start -n vm0  启动正常了。
           
             <li class="post">
               <a href="/blog/archives/2847/">Disney Shanghai信息</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2846/">广东游记</a>
             </li>
           
         </ul>

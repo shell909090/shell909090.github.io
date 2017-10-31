@@ -94,6 +94,54 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Jun 8, 2013
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/2427/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/2427/">nagios配置</a>
+    </h1>
+</header>
+
+
+        
+          <p>nagios的结构 nagios的结构其实很简单，一个监视系统，一个web展现系统，一个remote服务器，没了。
+监视系统是根本，在debian中，需要安装的包是nagios3。在安装这个包之后，会启动一个监视进程，负责检查所有的服务是否OK。不OK就触发事件。
+检查的时候，nagios会去调一些“插件”。这些插件其实都在/etc/nagios-plugins/config下面注册过的。每个插件配置都是name!v1!v2&hellip;的格式。在注册里面，可以看到这个command_name，对应一个command_line。你很容易看到这就将一个定义转换为了一个命令行。
+直接执行这个命令行，你可以看到一个标准输出。nagios就是解析这个标准输出，得到值是否在一个合法的范围内的。所以从原理上说，你可以自己写插件，对任何事情做nagios的监控。
+对于某些远程可以获得的信息，目标设备上可以什么都不动，例如ping连通性，或者是端口连通性等。而对于其他信息，例如磁盘空间剩余值，靠远程可能没法获得，就需要在目标设备上装nrpe，Nagios Remote Plugin Executor Server。在debian中，就是nagios-nrpe-server这个包。如果获得本地信息，不需要这个包。
+最后，cgi会将本地的信息暴露给web查询，这就构成了完整的nagios体系。在debian中，这是nagios3-cgi这个包。
+nagios页面在nginx上的配置 这个过程比较繁琐，因为apache会自动配置，而nginx没有宿主进程，也没有cgi。因此实际上需要运行两个宿主进程。
+首先，你需要安装php-fpm宿主进程，这个是nginx搭配php执行的最佳宿主。在nagios中有用到php，所以你需要php执行能力。
+其次，安装fcgiwrap这个包。这是cgi执行宿主，以fastcgi协议暴露。这里需要注意。如果你的nginx和nagios的宿主不在同一个设备上（例如像贝壳这样执行了虚拟化的），那么实际上只要在nagios的宿主上执行fcgiwrap即可。php-fpm和nginx可以执行在其他不同设备上，没有关系。只是前者必须有nagios的cgi代码，后两者必须有nagios的网页和php代码。而这三者又都在nagios3-cgi包里面。因此几台机器都需要安装nagios3-cgi包。
+最后，配置nginx。
+location /nagios3 { index index.html index.htm index.php; } location /nagios3/stylesheets { root /etc; }  第一个映射是nagios的基础目录，在根目录中，我其实配置了nagios3 -&gt; /usr/share/nagios3/htdocs/（debian中的链接位置）。第二个映射是样式表配置，我用系统缺省的。
+location ~ ^/nagios3/.*.php$ { include fastcgi_params; fastcgi_pass unix:/var/run/php5-fpm.sock; }  这个是nagios的php解析代码。我的php-fpm执行在同一台机器上，因此直接如此配置即可。
+location /cgi-bin/nagios3 { root /usr/lib; include fastcgi_params; fastcgi_param REMOTE_USER $remote_user; fastcgi_pass dev:port; }  最后是cgi暴露的配置。由于我的nagios宿主并不在web服务器上，因此fastcgi是个远程地址。而且注意REMOTE_USER，传递这个才能让远程认到你的用户basic auth。由于nagios的cgi通过这个工作，因此没有这个会直接导致对方始终认为你是无权限用户。
+nagios的简单配置 我们首先认清一点，nagios并不负责管理机器的维护。他的设计目标是“可用性”。因此目标是否可达，服务是否可用，是nagios的关心重点。至于磁盘，负载，只是顺便监控而已。所以你可以看到，nagios并没有直接的插件来监控CPU或者内存。他只有snmp插件可以查询到这些数据。
+所以，我们开心一点。最低限度，我们将所有需要监控的设备和服务端口加入列表。当这些设备不可达时，nagios会发出告警（有邮件）。而如果运气好，我们是可以监控到这台机器是否有apt包需要升级，磁盘空间是否够的。作为建议，其实你只需要监控load和磁盘空间利用率就够了。其余的东西一般不大需要。当内存或者CPU发生问题的时候，你的query其实也拿不到返回。相对的，目标端口很快失去响应进而引发告警才是我们的预期。
+OK，在这个基础之上，让我们看看有什么可以配置的。
+服务器添加 首先，你可以定义一些机器。localhost_nagios2.cfg里面有例子，大致是这个样子。
+define host{ use generic-host ; Name of host template to use host_name host alias host address IP }  我建议你专门弄个文件来管理这些自己的设备，例如我这里叫hosts.</p>
+
+          
+              <footer>
+                  <a href="http://blog.shell909090.org/blog/archives/2427/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Jun 6, 2013
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/2425/#disqus_thread">Comments</a>
@@ -456,43 +504,6 @@ ayanamist告诉我，他们那里流量计费大约是10元30M，上海这里我
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Apr 8, 2013
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/2362/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/2362/">什么叫做网桥</a>
-    </h1>
-</header>
-
-
-        
-          <p>下面简述的只是linux下的brctl创建出来的玩意，和网桥的学术定义什么的没有关系。
-想像你有一块网卡，接上网线，OK，能上网了。
-现在，你有一台物理的机器，和一台虚拟机，都需要上网。但是网卡和网线只有一块，怎么办？
-如果你能够物理的触摸到虚拟机，你也许会这么干。
-找一个交换机来，把物理设备的网卡用网线连接到上面，把虚拟机的网卡连接到上面，再把外网网线接上去，OK，齐活了。
-brctl创立出来的网桥就是这么工作的。
-你原本的物理网卡，例如eth0，我们直接为他分配IP，进行通讯。结构大概是这个样子的。
-system -- eth0 -- network  接入网桥这个假的交换机后，eth0依然负责向外通讯，但是没有自己的IP了。网桥和宿主所在的机器的连接叫做br0（或者br1，以此类推）。
-system -- br0 -- eth0 -- network  然后，我们可以为这个交换机接入很多的设备。
-system -- br0 -- eth0 -- network | vethXX | virtual -- eth0 /  其中，eth0和vethXX是一对设备。一个在宿主里，一个在虚拟机里。互相连通。
-所以，当虚拟机发生通讯时，eth0上可以看到数据流，但是br0上看不到。而如果虚拟机和宿主通讯时，eth0看不到数据流，br0上可以。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -764,6 +775,10 @@ system -- br0 -- eth0 -- network | vethXX | virtual -- eth0 /  其中，eth0和
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2856/">golang安装和编译环境搭建</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2855/">法国游记</a>
             </li>
           
@@ -797,10 +812,6 @@ system -- br0 -- eth0 -- network | vethXX | virtual -- eth0 /  其中，eth0和
           
             <li class="post">
               <a href="/blog/archives/2847/">Disney Shanghai信息</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2846/">广东游记</a>
             </li>
           
         </ul>

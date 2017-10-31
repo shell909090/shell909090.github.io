@@ -94,6 +94,38 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Apr 2, 2010
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/108/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/108/">以nginx作为subversion前端的一些细节</a>
+    </h1>
+</header>
+
+
+        
+          <p>本文系电脑资料，同步到blog上。小黄姐姐不必看了，可以帮我留个言。 nginx性能不错，可惜不支持WebDAV，因此没法拿来作为subversion的http服务。于是考虑开一个nginx作为前端，后端就跑一个apache来作为容器。配置这么写的(节选)： =========/etc/nginx/sites-enabled/default========= server { listen 443; server_name OOXX ssl on; ssl_certificate keys/server.crt; ssl_certificate_key keys/server.key; ssl_session_timeout 5m; ssl_protocols SSLv2 SSLv3 TLSv1; ssl_ciphers ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP; ssl_prefer_server_ciphers on; access_log /var/log/nginx/localhost.access.log; include /etc/nginx/mapping-ssl; error_page 500 502 503 504 /50x.html;
+location = /50x.html { root /var/www/nginx-default; } } 打开了一个https的服务，这是当然的，svn传输的数据使用http很危险。 ===========/etc/nginx/mapping-ssl============= location \^~ /svn { proxy_set_header Destination \$http_destination; proxy_pass http://apache_svr; proxy_set_header Host \$host; proxy_set_header X-Real-IP \$remote_addr; proxy_set_header X-Forwarded-Host \$host; proxy_set_header X-Forwarded-Proto https; proxy_set_header X-Forwarded-Server \$host; proxy_set_header X-Forwarded-For</p>
+
+          
+              <footer>
+                  <a href="http://blog.shell909090.org/blog/archives/108/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Mar 25, 2010
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/107/#disqus_thread">Comments</a>
@@ -394,42 +426,6 @@ setup文件就不细说了，大家按照自己的习惯设定就好。下面我
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Mar 1, 2010
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/98/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/98/">桌面点名</a>
-    </h1>
-</header>
-
-
-        
-          <p>被桌面点名了，我随便做，大家随便看。
-点名地址(http://shellex.info/desktop_relay/)。
- 今日桌面 全黑  2.OS为？ 哪个系统？一个Debian Testing，一个WindowsXP，一个Adnriod。
-3.这张桌布是什么？你从哪 里取得的？ 纯黑色&hellip;
-4.更换桌布的频率高吗？ 从来都是纯黑
-5.桌面有几个ICON？ 一个都没有
-6.一堆档案和捷径放得乱七八糟的桌面，你看得下去吗？ 我说了，一个都没有
-7.有没有什么坚持点？ 坚持纯黑一个都没有不动摇
-8.有为了填这份接力, 还特地整理一下吗？ 啥都没有了，整理啥？
-9.请再传给8个[我想看看他/她的桌面?]的人。 @ilovezjl 小黄姐姐，@onlycup 小杯子， @OpheliaRing 某话痨， @pipitu 某SE， 就四个吧。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -701,6 +697,10 @@ setup文件就不细说了，大家按照自己的习惯设定就好。下面我
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2856/">golang安装和编译环境搭建</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2855/">法国游记</a>
             </li>
           
@@ -734,10 +734,6 @@ setup文件就不细说了，大家按照自己的习惯设定就好。下面我
           
             <li class="post">
               <a href="/blog/archives/2847/">Disney Shanghai信息</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2846/">广东游记</a>
             </li>
           
         </ul>

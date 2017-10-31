@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  
+
+  
+  <title>golang安装和编译环境搭建</title>
+
+  
+  
+  <link rel="stylesheet" href="http://blog.shell909090.org/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
+
+  
+  <link href="http://blog.shell909090.org/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="Shell Xu">
+
+  
+  <meta name="generator" content="Hugo 0.26" />
+
+  
+  
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-48816091-1', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="http://blog.shell909090.org/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <p class="meta">Nov 1, 2017
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/2856/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+         golang安装和编译环境搭建 
+    </h1>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          
+          
+
+<p>我本来以为是个挺简单的问题，结果实践一下发现还是挺多人不明白的。所以我写一下。</p>
+
+<h1 id="安装">安装</h1>
+
+<p>挺简单的。你在<a href="https://golang.org/dl/">golang.org</a>下载一个合适的安装包，回来之后找个地方解开——例如~/usr/share/go这个目录。</p>
+
+<p>而后你需要调整两个变量，GOROOT和PATH。PATH是必须调整的，GOROOT原则上可以不管。当你使用了正确的go程序后，GOROOT会自动设定。但是我习惯先设定GOROOT，然后计算出PATH。像下面这样(注意环境变量里要用绝对路径，不要用~)。</p>
+
+<pre><code>export GOROOT=/home/user/usr/share/go
+export PATH=$GOROOT/bin:$PATH
+</code></pre>
+
+<p>一般我会将这个设定设在bashrc里，变成我私有的设定。这样不会对系统产生干扰。在经过这个设定后，你需要让所有bash载入这个设定。最快的是重启，不喜欢动静太大的可以<code>source ~/.bashrc</code>。载入完成后，你可以试试<code>go version</code>，看看是否生效，版本是否正确。</p>
+
+<h1 id="配置环境">配置环境</h1>
+
+<p>golang的编译环境配置只需要配置一个变量，GOPATH。例如我将GOPATH设定到~/usr/，在bashrc中加入<code>export GOPATH=/home/user/usr</code>，那么源码路径就是~/usr/src。将来下载的所有包，都会根据这个位置自动计算路径。例如http2的包，名字叫做golang.org/x/net/http2，下载时的路径就会是~/usr/src/golang.org/x/net/http2。你可以用<code>go get golang.org/x/net/http2</code>来自动下载这个包。</p>
+
+<p>如果你自己开了一个项目，那么你需要搞一个url，例如github。然后把你的项目放到对应路径——例如~/usr/src/github.com/username/project。然后在这个路径下做所有操作。最后你可以使用<code>go build package</code>编译它，非常容易。</p>
+
+<h1 id="install">install</h1>
+
+<p>golang除了源码之外，还有很多的编译结果。例如go项目自己的源码在~/usr/share/go/src/下面，可执行文件在~/usr/share/go/bin/下面。而你和你下载的各种项目的编译结果就在~/usr/bin/下面——是不是觉得和linux的文件管理方式非常像？</p>
+
+<p>所以上面的bashrc配置还需要做一点调整，以便让你除了能用go做编译外，还能直接使用go编译出来的项目。</p>
+
+<pre><code>export GOROOT=/home/user/usr/share/go/
+export GOPATH=/home/user/usr/
+export PATH=$GOROOT/bin:$GOPATH/bin:$PATH
+</code></pre>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
+    
+    <time>Nov 1, 2017</time>
+    
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="http://blog.shell909090.org/blog/archives/2855/" title="法国游记">法国游记</a>
+    
+
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+      
+       
+      
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    
+      <section class="even">
+        <h1>Recent Posts</h1>
+        <ul id="recent_posts">
+          
+            <li class="post">
+              <a href="/blog/archives/2856/">golang安装和编译环境搭建</a>
+            </li>
+          
+            <li class="post">
+              <a href="/blog/archives/2855/">法国游记</a>
+            </li>
+          
+            <li class="post">
+              <a href="/blog/archives/2854/">使用Debian作为Router</a>
+            </li>
+          
+            <li class="post">
+              <a href="/blog/archives/2853/">riot.im简介</a>
+            </li>
+          
+            <li class="post">
+              <a href="/blog/archives/2852/">Puerro Galera游记</a>
+            </li>
+          
+            <li class="post">
+              <a href="/blog/archives/2851/">/proc/net/dev中bonding网卡的流量计算</a>
+            </li>
+          
+            <li class="post">
+              <a href="/blog/archives/2850/">SI的七个基础单位</a>
+            </li>
+          
+            <li class="post">
+              <a href="/blog/archives/2849/">模拟网络丢包延迟和TC的使用</a>
+            </li>
+          
+            <li class="post">
+              <a href="/blog/archives/2848/">两台机器上TCP状态不一致的排查</a>
+            </li>
+          
+            <li class="post">
+              <a href="/blog/archives/2847/">Disney Shanghai信息</a>
+            </li>
+          
+        </ul>
+      </section>
+    
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2017 Shell Xu - <a href="http://blog.shell909090.org/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+

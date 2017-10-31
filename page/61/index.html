@@ -94,6 +94,44 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Jan 20, 2009
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/50/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/50/">24点计算原理和程序</a>
+    </h1>
+</header>
+
+
+        
+          <p>最近开心上狂算24点，于是贝壳搞了一个24点计算程序，并且说明原理。
+我们将24点问题一般化，变成一个搜索问题。假定从一个初始表开始，里面有一些原子。我们定义一个操作，结合。每次操作任意从中选择出两个(或者以上)原子，使用算符连接，成为一个新的原子。那么，一般来说，24点就是计算所有可能的路径，从初始表开始，持续进行结合，直到只剩下一个原子，并且对这个原子求值得24。
+有人可能在算符优先级上想不开，其实不用考虑这个问题，每次求值的时候，按照求值顺序优先就可以。你想到的另外一种优先级可能，会在穷举的时候被列举出来算掉，不用担心遗漏。
+同时，算子必须是两目以上算子，因为单目算子可以持续作用于同一个对象，因此原子表中的原子个数并不严格单调减少，造成无法肯定路径收敛于有限步骤上。并且，如果允许单目算子，那么我只需要求导和阶乘就可以对任何数字求24点。
+((a')!+(b')!+(c')!+(d')!)!=24  因此，单目算符是没有意义的。
+另外，注意算符分可交换和非可交换的。例如：a+b=b+a，但是a-b!=b-a。如果不注意这点，倒是不会漏算，但是会造成搜索空间增大，并且有重复结果。
+以下是24点计算程序，python版本的。有兴趣的朋友可以用scheme重写，相信会更简洁有效。回头会用django封装一下，做成网页给大家玩玩。
+#!/usr/bin/python import sys symbol_list = [ (&quot;%s+%s&quot;, True), (&quot;%s-%s&quot;, False), (&quot;%s*%s&quot;, True), (&quot;%s/%s&quot;, False), (&quot;%s**%s&quot;, False), ] def diff_seq(length): for i in range(0, length): for j in range(i + 1, length): yield (i, j) def get_less_state(input_state): for i, j in diff_seq(len(input_state)): temp = input_state[:] del temp[j] del temp[i] for s in symbol_list: rslt = s[0] % (input_state[i], input_state[j]) rslt = &quot;(%s)&quot; % rslt temp.</p>
+
+          
+              <footer>
+                  <a href="http://blog.shell909090.org/blog/archives/50/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Jan 12, 2009
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/49/#disqus_thread">Comments</a>
@@ -403,34 +441,6 @@ google的核心哲学观点之一就是“不作恶”。简单来说，就是�
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Oct 29, 2008
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/43/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/43/">封杀华硕宣告</a>
-    </h1>
-</header>
-
-
-        
-          <p>兹因华硕陷害门事件（可于google上搜索 华硕 陷害门 黄静，不要使用百度），决定于今日起封杀华硕系列所有产品。不购买，不使用，不推荐，并向认识的人宣告此问题。特此声明。
-P.S:虽然华硕不把我们当回事情，但是我们还是要把华硕当回事情，你想当下一个黄静么？</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -702,6 +712,10 @@ P.S:虽然华硕不把我们当回事情，但是我们还是要把华硕当回�
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2856/">golang安装和编译环境搭建</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2855/">法国游记</a>
             </li>
           
@@ -735,10 +749,6 @@ P.S:虽然华硕不把我们当回事情，但是我们还是要把华硕当回�
           
             <li class="post">
               <a href="/blog/archives/2847/">Disney Shanghai信息</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2846/">广东游记</a>
             </li>
           
         </ul>

@@ -7,10 +7,27 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Tue, 10 Oct 2017 00:04:27 +0800</lastBuildDate>
+    <lastBuildDate>Wed, 01 Nov 2017 17:11:39 +0800</lastBuildDate>
     
 	<atom:link href="http://blog.shell909090.org/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>golang安装和编译环境搭建</title>
+      <link>http://blog.shell909090.org/blog/archives/2856/</link>
+      <pubDate>Wed, 01 Nov 2017 17:11:39 +0800</pubDate>
+      
+      <guid>http://blog.shell909090.org/blog/archives/2856/</guid>
+      <description> 我本来以为是个挺简单的问题，结果实践一下发现还是挺多人不明白的。所以我写一下。
+安装 挺简单的。你在golang.org下载一个合适的安装包，回来之后找个地方解开——例如~/usr/share/go这个目录。
+而后你需要调整两个变量，GOROOT和PATH。PATH是必须调整的，GOROOT原则上可以不管。当你使用了正确的go程序后，GOROOT会自动设定。但是我习惯先设定GOROOT，然后计算出PATH。像下面这样(注意环境变量里要用绝对路径，不要用~)。
+export GOROOT=/home/user/usr/share/go export PATH=$GOROOT/bin:$PATH  一般我会将这个设定设在bashrc里，变成我私有的设定。这样不会对系统产生干扰。在经过这个设定后，你需要让所有bash载入这个设定。最快的是重启，不喜欢动静太大的可以source ~/.bashrc。载入完成后，你可以试试go version，看看是否生效，版本是否正确。
+配置环境 golang的编译环境配置只需要配置一个变量，GOPATH。例如我将GOPATH设定到~/usr/，在bashrc中加入export GOPATH=/home/user/usr，那么源码路径就是~/usr/src。将来下载的所有包，都会根据这个位置自动计算路径。例如http2的包，名字叫做golang.org/x/net/http2，下载时的路径就会是~/usr/src/golang.org/x/net/http2。你可以用go get golang.org/x/net/http2来自动下载这个包。
+如果你自己开了一个项目，那么你需要搞一个url，例如github。然后把你的项目放到对应路径——例如~/usr/src/github.com/username/project。然后在这个路径下做所有操作。最后你可以使用go build package编译它，非常容易。
+install golang除了源码之外，还有很多的编译结果。例如go项目自己的源码在~/usr/share/go/src/下面，可执行文件在~/usr/share/go/bin/下面。而你和你下载的各种项目的编译结果就在~/usr/bin/下面——是不是觉得和linux的文件管理方式非常像？
+所以上面的bashrc配置还需要做一点调整，以便让你除了能用go做编译外，还能直接使用go编译出来的项目。
+export GOROOT=/home/user/usr/share/go/ export GOPATH=/home/user/usr/ export PATH=$GOROOT/bin:$GOPATH/bin:$PATH  </description>
+    </item>
     
     <item>
       <title>法国游记</title>
