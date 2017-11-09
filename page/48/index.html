@@ -94,6 +94,46 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Dec 25, 2010
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/1661/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/1661/">elisp的简单介绍</a>
+    </h1>
+</header>
+
+
+        
+          <p>emacs是利用elisp写成的，而elisp是lisp的一个方言。lisp语言是出名的优美和晦涩，当然，更出名的是括号。。。
+emacs利用elisp作为上层抽象。首先，emacs提供了基本的编辑器框架，包括文件操作函数API，buffer，frame，windows的API。而后，emacs附带了很多函数实现，并且和按键一一绑定。例如Ctrl+N（简写为C-N）就被绑定到“换到下一行”这个API上。于是，我们按下Ctrl+N的时候，就会触发“换到下一行”这个函数的执行。dired等插件也是基于类似的原理写成。
+我们可以用类似的方法，来编写自己的函数，扩充emacs的功能。下面我们看一个例子：
+(defun popup-term () (interactive) (apply 'start-process &quot;terminal&quot; nil popup-terminal-command))  首先先说明一下，elisp的基于规则是利用括号匹配的s表达式，通过特定规则计算表达式。每个表达式由多个原子构成，一个原子可以是符号，对象（数字或者字符串），序对，表（包括空表），树，以及他们的嵌套。求值的时候，第一个原子做动词，先求值第一个原子，直到得到一个对象，再根据第一个原子的特性决定正则序和应用序。应用序的先对每个后续原子求值，再调用第一个原子对应的对象。正则序直接交给第一个原子对应对象处理。上文那个表达式，最外层的是(defun)列表，defun是函数定义函数，popup-term是符号。这部分混合起来，就是定义(interactive) (apply &lsquo;start-process &ldquo;terminal&rdquo; nil popup-terminal-command)为一个函数，并在上层框架空间内把内容赋值给popup-term这个符号。说的更直白一点，就是定义函数。
+当我们执行popup-term这个函数的时候（M-x加上函数名就可以手工调用），首先执行interactive过程。这个函数可以在这里（http://www.gnu.org/software/emacs/manual/html_node/elisp/index.html）查到，基本上，可以认为执行了这个函数，才能够和前台交互。而后是apply函数，这个函数将后面的几个值作用于紧跟着的那个符号所对应的函数。用python语言来描述，大概是这个样子。
+def apply(func, \*param): return globals()\[func\](\*param)  这个函数真正的部分，是从start-process到括号结束。其意义是启动一个子进程，名为terminal，没有对应的buffer（熟悉emacs的应该知道这是什么），命令为popup-terminal-command。这个命令在windows下和linux下有不同定义，所以我将这个定义放在了emacs-win.el和emacs-linux.el里面。在linux下，他是这么定义的。
+(setq popup-terminal-command '(&quot;x-terminal-emulator&quot;))  setq是设定一个全局变量。整句合起来的意思是，在执行popup-term的时候，启动一个子进程，执行x-terminal-emulator。最后，将popup-term绑定到keymap上。
+(global-set-key \[(control c) (s)\] 'popup-term)  现在，在任何一个buffer中按下C-c s，就可以弹出当前目录对应的term了。
+我们在emacs中所做的所有配置，插件安装，其实本质上是写代码控制其他代码的载入，变更环境变量。只要有合适的文档，或者有时间阅读源码，我们就可以对其他程序进行扩充。下面介绍一个对dired进行扩充的例子，我们向dired中加入copy-from和rename-from，还有dired-open功能。dired的copy和rename必须在源目录中，选择文件，按C，输入目标路径。有的时候我们在某个目录工作到一半，突然需要从另外一个目录复制一个文件过来。这时候打开对方目录进行复制动作太繁琐，因此我编写了两个函数，分别绑定到r和c上。dired-open则是另外一个文件，有时我们需要通过其他程序打开某个文件，例如播放电影。在dired中直接用&amp;可以实现这个目标，但是需要自行输入播放命令，而且会新开一个buffer。以下是代码。
+(defun dired-open-file (&amp;optional arg) (interactive) (apply 'start-process &quot;dired-open&quot; nil (append (split-string (read-shell-command &quot;command: &quot; (dired-guess-cmd (dired-get-filename)))) (list (dired-get-filename))))) (defun dired-copy-from (&amp;optional arg) (interactive) (let ((source-path (read-file-name &quot;filepath: &quot;))) (copy-file source-path (file-name-nondirectory source-path)))) (defun dired-rename-from (&amp;optional arg) (interactive) (let ((source-path (read-file-name &quot;filepath: &quot;))) (rename-file source-path (file-name-nondirectory source-path)))) (add-hook 'dired-mode-hook (lambda () (define-key dired-mode-map &quot;b&quot; 'dired-open-file) (define-key dired-mode-map &quot;c&quot; 'dired-copy-from) (define-key dired-mode-map &quot;r&quot; 'dired-rename-from) (define-key dired-mode-map \[(control c) (g)\] 'dired-etags-tables)))  如上文一样，我们定义了dired-open-file函数，这个函数的核心部分是start-process，但是在命令上，我们的命令是这个。</p>
+
+          
+              <footer>
+                  <a href="http://blog.shell909090.org/blog/archives/1661/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Dec 21, 2010
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/1659/#disqus_thread">Comments</a>
@@ -415,38 +455,6 @@ zcat boot.img.gz &gt; /dev/sdX  sdX是你的U盘设备。再然后，下一个bu
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Dec 1, 2010
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/1626/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/1626/">重载造成的隐蔽错误</a>
-    </h1>
-</header>
-
-
-        
-          <p>大家看看下面的代码在什么情况下才会出错？情况很特殊，想自己思考的不要先看第二段。
-if ton in self.ftol: self.ftol.remove(ton)  ftol是一个list，报出的错误是ValueError。经过上文的打印，赫然发现——self.ftol中真的没有ton！
-好吧，我们揭秘谜底。
-ton是TimeoutObject类型，这种类型的对象通常放在一个list中进行堆排序，来确定最早的一个timeout对象。为了实现堆排序，我使用了heapq。而为了heapq是没有key或者是cmp参数的，因此我重载了TimeoutObject.__cmp__对象。然而根据python源码，list对象在进行in计算，以及基于in的remove计算的时候，__cmp__先于内置算法，内置算法先于id相同。因此，in函数在进行对象是否在列表中的计算的时候，实际上使用的是一个比较函数&hellip;这肯定无疑的会导致乱糟糟的结果。
-为了解决这个问题，我又重载了__eq__函数，定义为self is o。问题立刻解决了。
-之所以python内置的算法，会定义__cmp__先于内置算法，内置算法先于id相同，是因为有很多对象需要人工定义比较算法。如果id相同优先，那么这种自定义的能力将无法实现。然而为了in算符中为何会调用__cmp__，只能说是一个不解之谜。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -718,6 +726,10 @@ ton是TimeoutObject类型，这种类型的对象通常放在一个list中进行
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2857/">Boracay潜水攻略</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2856/">golang安装和编译环境搭建</a>
             </li>
           
@@ -751,10 +763,6 @@ ton是TimeoutObject类型，这种类型的对象通常放在一个list中进行
           
             <li class="post">
               <a href="/blog/archives/2848/">两台机器上TCP状态不一致的排查</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2847/">Disney Shanghai信息</a>
             </li>
           
         </ul>

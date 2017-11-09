@@ -94,6 +94,40 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Nov 29, 2005
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/266/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/266/">debian上配置基于apache2的resin</a>
+    </h1>
+</header>
+
+
+        
+          <p>别的不说了，先用debian自带的apt安装apache2,记得安装dev部分，还有libapr0,libapr-dev,libapr0-dev。千万别忘记安装后面的部分，否则你在下面编译的时候就要出现问题。
+拿到resin，放在目标目录下面，然后tar -jxvf。完成后用ln -s做一个链接上去，使用resin的名字，这样可以方便的替换版本。然后在主目录下面运行./configure，make一下。一般来说，会出不少错误，最后生成一个libresin.so放到libexec下面，并且更新了resin的主执行程序。这个so很具有迷惑性，开始贝壳就被他骗了。这个so貌似是resin在本地平台下的加速程序，而不是嵌入到apache系列服务器中的整合插件。其中最大的差异是没有caucho_module导出符号，在apache加载的时候肯定会失败。
+跑到src/c/plugins/apache2下面运行make。可能会报错，可能没有。贝壳这里报了错，不过贝壳运行configure的时候没有加任何参数，也许加了参数就正常了。如果不正常，出错的代码可能分别是httpd.h找不到或者apr_time.h找不到。运行vi Makefile，看到有INCLUDE的目录吗？那里面要包含/usr/include/apache2和/usr/include/apr-0两个目录，没有就肯定出错。好了，修改然后重新make。得到的文件是mod_caucho.so。将它cp到$RESIN_HOME/libexec下面，这个动态库导出了caucho_module符号。
+在/etc/apache2/httpd.conf里面编辑一下，添加这个内容。
+LoadModule caucho_module /usr/resin/libexec/mod_caucho.so &lt;IfModule mod_caucho.c&gt; CauchoConfigFile ......../resin.conf &lt;Location /caucho-status&gt; SetHandler caucho-status &lt;/Location&gt; &lt;/IfModule&gt;  在/usr/resin/conf/resin.conf里面，添加这些内容。
+&lt;doc-dir&gt;/var/www/htdocs&lt;/doc-dir&gt; &lt;war-dir id='/var/www/htdocs'/&gt;  在/etc/apache2/sites-available/default中可能要修改如下配置。
+DocumentRoot /var/www/htdocs/ &lt;Directory /var/www/htdocs/&gt;  然后注销
+RedirectMatch ^/$ /apache2-default/  OK，这样就基本完成了整个系统的整合配置。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Nov 25, 2005
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/265/#disqus_thread">Comments</a>
@@ -464,38 +498,6 @@ truecrypt是一个加密软件，姑且算吧。用hash和对称加密算法来�
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Nov 8, 2005
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/256/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/256/">被骗了</a>
-    </h1>
-</header>
-
-
-        
-          <p>如果这个代码出现在linux内核里面，你们怎么想？
-subtypes[n].parse(state, bdev, START_SECT(p)*sector_size, NR_SECTS(p)*sector_size, slot);  很像是对象数组调用方法吧，很多人可能甚至会猜想这个东西是虚函数。问题是，大家记得吗？linux内核，是C的！
-事实上，这是声明。
-static struct { unsigned char id; void (*parse)(struct parsed_partitions *, struct block_device*, u32, u32, int); };  怎么想？这个是方法映射。技术上讲，和虚函数属于同种类的应用（dymanic binding）。当然，数据结构有差异。虚函数要先根据n确定对象位置，根据v_ptr确定虚函数表，根据虚函数表定位了函数入口。而这里是根据n定位了对象，然后直接找到了函数入口。
-可是，还是被骗了……
-PS.谨以此纪念首次在GNU/GPL下引用Linux内核源码用于程序开发，因为分区系统资料该死的不清楚！</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -767,6 +769,10 @@ PS.谨以此纪念首次在GNU/GPL下引用Linux内核源码用于程序开发�
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2857/">Boracay潜水攻略</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2856/">golang安装和编译环境搭建</a>
             </li>
           
@@ -800,10 +806,6 @@ PS.谨以此纪念首次在GNU/GPL下引用Linux内核源码用于程序开发�
           
             <li class="post">
               <a href="/blog/archives/2848/">两台机器上TCP状态不一致的排查</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2847/">Disney Shanghai信息</a>
             </li>
           
         </ul>

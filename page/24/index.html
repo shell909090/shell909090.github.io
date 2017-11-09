@@ -94,6 +94,47 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Apr 17, 2012
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/2144/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/2144/">vps上应当装什么</a>
+    </h1>
+</header>
+
+
+        
+          <p>假定你有一台debian vps，上面需要装一些东西来——你懂。你应该装一些什么呢？
+基础部分 ssh 没啥好多说，没有ssh，你甚至无法管理机器。不过注意，安全的ssh方式应当只允许使用key登录，禁止一切密码登录。而且对于没必要登录的某些用户，需要在/etc/passwd中将shell改为/bin/false。至于端口改不改，这个不重要，看你心情。
+vim debian默认装的是vim-tiny，很不好用。建议改为vim，改配置的时候让自己舒服点。
+安全部分 iptables-persistent 这是debian内用于iptables规则持久化的工具，你可以编辑/etc/iptables/rules.v4来修改防火墙规则。注意，目前debian stable(squeeze)中的版本还没有4/6区分，你可以弄一个testing(wheezy)中的来装。
+一般来说，你的规则中至少要包含以下内容：
+-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT -A INPUT -i lo -j ACCEPT -A INPUT -i tun+ -j ACCEPT -A INPUT -i ppp+ -j ACCEPT -A INPUT -p tcp -m multiport --dport 22,xxx,xxx,xxx -j ACCEPT -A INPUT -p udp -m multiport --dport xxx,xxx,xxx -j ACCEPT  而且强烈建议，先保存一个没问题的iptables，然后直接修改iptables，再保存。这样的好处是，当你脑残改错了导致你自己都无法管理的时候，只要重启就可以恢复vps工作，而不用更麻烦的动作。
+denyhosts 这是ssh的连接防御进程，用python编写。如果有人试图尝试你的ssh密码，这个程序就会踢掉他的ip。
+如果你已经用了我说的，通过key的连接方式，你可以一次就直接踢掉对方ip。
+管理部分 ifstat ifstat是用于网络流量管理的工具，可以告诉你网络目标的流量是多少。
+dnsutils dnsutils里面包含了不少用于管理dns的工具，包括我们常用的nslookup，还有相对少用的dig。
+mtr-tiny mtr是一个traceroute工具，比后者好用很多。这个工具可以快速跟踪路由。</p>
+
+          
+              <footer>
+                  <a href="http://blog.shell909090.org/blog/archives/2144/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Apr 13, 2012
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/2140/#disqus_thread">Comments</a>
@@ -429,41 +470,6 @@ aofmode: 62, 63
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Mar 22, 2012
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/2122/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/2122/">从对称性说男女平等</a>
-    </h1>
-</header>
-
-
-        
-          <p>一切号称男女平等的朋友们，作为一个死硬理性派，我认为真正男女平等应当满足对称性。简单来说，你们话中的“男”和“女”对换后，说法仍旧成立，那么这个论调就是满足对称性的，也是真正男女平等的。
-我们举个例子。我和猫咪去云南旅游的时候，我们听过摩梭人“走婚”的习俗。具体不介绍了，大家自己查。简单来说是这样的，男孩子和女孩子互相看中后，男孩每天去女孩的房间里过夜，白天回自己家。孩子不用爸爸养，由女方的兄弟养。所以舅舅是一个孩子最值得尊敬的男性长辈，而不是父亲。一个朋友说，这不是很爽？男的和女孩子发生关系，还不用负责，小孩不用自己养。我说，你要记得，摩梭人是母系社会，男和女的关系都要对调的。我们把它们习俗中的男和女对掉过来听听？
-女孩子晚上都要去男孩家里，过夜后回自己家中，不能带自己的小孩，还要帮自己的哥哥带小孩。
-听起来——对女孩子好像很悲惨的样子——我们再把这个“女”还原回原始的“男”，你还觉得那里的男人真幸福么？
-我们在讨论一切事情的时候，口头说“男女平等”。其实潜移默化中，还是受到中国传统男女思想的影响。从数学上说，利用对称性消除这种影响是最好不过的了。例如这个论调，是否男女平等呢？（女孩子把人生中最好的岁月给了你）。我们对掉过来看看？（男孩子把人生中最好的岁月给了你）OK，相信大家都笑了。
-先不要笑，尤其是觉得得意的男同胞。男女平等在消除了女性的特权同时（包括撒娇，房子应当男方买），也消除了男性的特权。你看看是否能接受以下情况？（为了妻子的事业丈夫应当作出牺牲）我想很多男同胞已经在拍桌子跳起来了。那这个呢？（孩子要跟母亲的姓）OK，现在笑不出来了吧？
-上面讨论了一堆怪论，很多人也许会说贝壳是断章取义，或者别的什么的。实际上，有问题的不是贝壳，而是“男女平等”这个词。真正的平等，为什么不能满足对称性呢？
-实际上，多数人在说男女平等的时候，包含的意思并不是，男女双方对称。而是，男女各自为了不同的事情让步，互相达成交易。女孩子要生育，男孩子就要负担家庭。实际上，双方的关系并不是对等关系，而是交易双方关系。两者既要达成合作共赢，又要争取自己的利益。对这点，一个很明显的事实是，男女的婚姻条件改变依赖于适婚男女比例。在战争年代，一堆寡妇找一个男人，男人娶媳妇容易，三妻四妾也不难。但是近代，尤其是计划生育造成男女比例失衡后，女方明显就压在了男方上面。
-因此？一个明显的悖论是，如果要改变社会的男女关系，让优势向某个方向发展，应当做的实际上是尽量设法减少该性别的人口。想让男方占优势？让男人去打仗就对了。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -735,6 +741,10 @@ aofmode: 62, 63
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2857/">Boracay潜水攻略</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2856/">golang安装和编译环境搭建</a>
             </li>
           
@@ -768,10 +778,6 @@ aofmode: 62, 63
           
             <li class="post">
               <a href="/blog/archives/2848/">两台机器上TCP状态不一致的排查</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2847/">Disney Shanghai信息</a>
             </li>
           
         </ul>

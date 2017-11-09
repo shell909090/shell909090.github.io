@@ -94,6 +94,41 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Mar 2, 2010
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/99/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/99/">android历史记录备份和应用三例</a>
+    </h1>
+</header>
+
+
+        
+          <p>有不少不折腾会死星人已经用上andriod了吧？有没有刷机过？有没有怕手机掉过？android的联系人是同步到gmail的，不用怕。但是信息就不同不了。所以，下面介绍几个信息导出的方法。
+1.aqq
+用adb shell去/data/data/com.android.aqq/databases/下面，把aqq.db复制出来，sqlite3格式，随便看吧。
+2.AnFetion
+用adb shell去/data/data/&hellip;..AnFetion2/databases/下面，把fetion.DB复制出来。
+3.信息
+这个是最麻烦的。去信息-&gt;Menu-&gt;设置-&gt;导出短信里面导出。但是别高兴的太早，贝壳发现一个bug。如果你的短信里面有西文引号，会导致xml格式错误，从而无法导入。解决方法是手工删除引号。
+应用，使用xsltproc，将xml转换为html来浏览。贝壳用的xslt比较简单，抄在下面。
+&lt;?xml version='1.0' encoding=&quot;GBK&quot;?&gt; &lt;xsl:stylesheet version=&quot;1.0&quot; xmlns:xsl=&quot;&lt;http://www.w3.org/1999/XSL/Transform&gt;&quot;&gt; &lt;xsl:template match=&quot;/&quot;&gt; &lt;html&gt; &lt;body&gt; &lt;xsl:for-each select=&quot;//smss/address&quot;&gt; Phone Number:&lt;xsl:value-of select=&quot;@data&quot;/&gt; &lt;br/&gt; &lt;table border=&quot;0&quot; class=&quot;rev_tab&quot; width=&quot;100%&quot;&gt; &lt;xsl:for-each select=&quot;sms&quot;&gt; &lt;tr&gt; &lt;td class=&quot;rev_tab_rev&quot;&gt; &lt;xsl:value-of select=&quot;date/@data&quot;/&gt; &lt;/td&gt; &lt;td class=&quot;rev_tab_rev&quot;&gt; &lt;xsl:choose&gt; &lt;xsl:when test=&quot;read/@data = 1&quot;&gt;read&lt;/xsl:when&gt; &lt;xsl:when test=&quot;read/@data = 0&quot;&gt;unread&lt;/xsl:when&gt; &lt;/xsl:choose&gt; &lt;/td&gt; &lt;td class=&quot;rev_tab_rev&quot;&gt; &lt;xsl:value-of select=&quot;body/@data&quot;/&gt; &lt;/td&gt; &lt;/tr&gt; &lt;/xsl:for-each&gt; &lt;/table&gt; &lt;BR/&gt; &lt;/xsl:for-each&gt; &lt;/body&gt; &lt;/html&gt; &lt;/xsl:template&gt; &lt;/xsl:stylesheet&gt;  为了美观，你还可以修改一下xslt。xsltproc在linux下直接有包，Windows可以来信问贝壳索要移植(其实去官网上就能下到)。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Mar 1, 2010
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/98/#disqus_thread">Comments</a>
@@ -457,42 +492,6 @@ Feb 14 17:58:36 CST 2010
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Jan 29, 2010
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/89/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/89/">一个远程下载verycd的小技巧</a>
-    </h1>
-</header>
-
-
-        
-          <p>贝壳家里开了emule，天天下载，问题是又不能每次都是晚上添加资源。
-怎么办呢？不知道大家知道不知道，emule是可以网络管理的，端口是4711。不过不是https，密码容易泄露。而且贝壳已经有一个nginx服务器了，也懒的再做端口映射，换端口。于是，在nginx中做如下设定。(当然，贝壳是放在https段中的)
-location ^~ /emule/ { rewrite ^/emule/(.*)$ /$1 break; proxy_pass &lt;http://hostip:4711&gt;; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; }  然后，用https://dynname/emule/就可以访问你家里的emule了，记得密码设强点。
-接下来，verycd里面曾经有复制所有连接的选项，现在没了。面对几个链接，也就手工复制一下，面对上百个连接，贝壳就无语了。贝壳试验过几个插件，都无法正确识别ed2k的链接获取。那怎么办呢？这时就要请出我们伟大的Linux。
-需要准备的工具是lynx，请预先装好，然后如下操作。(范例是个动画^_^)
-wget -c &lt;http://www.verycd.com/topics/2779234/&gt; lynx -dump -listonly index.html | grep &quot;ed2k://&quot; | sed &quot;s/.*ed2k/ed2k/g&quot; | grep -v BIG5 &gt; out.txt wc -l out.txt  lynx的-dump选项是将某个网页全部渲染成文本进行展示，这是html2text的好方法，效果还不错哦，不过中文支持好像不是很好。而-listonly则是展示出页面上的所有链接，这就拿到了我们需要的原始数据。
-然后，我们取其中的ed2k行，忽略其他链接，再通过sed转换，去除头部的编号和空格，这样就可以得到所有的ed2k链接。
-我在下面是用-v BIG5的参数，忽略了其中繁体中文的资源，然后输出到一个文件中。数数行数，52行，大致和文件个数相当(其中好像有两个v2)。那就是可用资源了，复制到emule的控制页面中——出错？
-这是因为emule的控制页面使用GET方式传递参数，因此有长度限制。你需要将链接10个一批往里面复制——有个几次就OK了。当然，如果还是多，贝壳回头会写一篇文章，介绍如何使用curl自动干这事情——这还不算太难。
-这就是为啥贝壳喜欢Linux的原因了。相比Windows下的两个解决方案，找插件太费劲，自己写程序更费劲。Linux使用现有工具的组合可以轻松完成这一任务。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -764,6 +763,10 @@ wget -c &lt;http://www.verycd.com/topics/2779234/&gt; lynx -dump -listonly index
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2857/">Boracay潜水攻略</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2856/">golang安装和编译环境搭建</a>
             </li>
           
@@ -797,10 +800,6 @@ wget -c &lt;http://www.verycd.com/topics/2779234/&gt; lynx -dump -listonly index
           
             <li class="post">
               <a href="/blog/archives/2848/">两台机器上TCP状态不一致的排查</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2847/">Disney Shanghai信息</a>
             </li>
           
         </ul>

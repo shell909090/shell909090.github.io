@@ -94,6 +94,38 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Dec 1, 2010
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/1626/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/1626/">重载造成的隐蔽错误</a>
+    </h1>
+</header>
+
+
+        
+          <p>大家看看下面的代码在什么情况下才会出错？情况很特殊，想自己思考的不要先看第二段。
+if ton in self.ftol: self.ftol.remove(ton)  ftol是一个list，报出的错误是ValueError。经过上文的打印，赫然发现——self.ftol中真的没有ton！
+好吧，我们揭秘谜底。
+ton是TimeoutObject类型，这种类型的对象通常放在一个list中进行堆排序，来确定最早的一个timeout对象。为了实现堆排序，我使用了heapq。而为了heapq是没有key或者是cmp参数的，因此我重载了TimeoutObject.__cmp__对象。然而根据python源码，list对象在进行in计算，以及基于in的remove计算的时候，__cmp__先于内置算法，内置算法先于id相同。因此，in函数在进行对象是否在列表中的计算的时候，实际上使用的是一个比较函数&hellip;这肯定无疑的会导致乱糟糟的结果。
+为了解决这个问题，我又重载了__eq__函数，定义为self is o。问题立刻解决了。
+之所以python内置的算法，会定义__cmp__先于内置算法，内置算法先于id相同，是因为有很多对象需要人工定义比较算法。如果id相同优先，那么这种自定义的能力将无法实现。然而为了in算符中为何会调用__cmp__，只能说是一个不解之谜。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Nov 24, 2010
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/1623/#disqus_thread">Comments</a>
@@ -377,50 +409,6 @@ location ^~ /hg/ { limit_except GET { auth_basic &quot;Restricted&quot;; auth_ba
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Nov 1, 2010
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/1599/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/1599/">ubuntu release party</a>
-    </h1>
-</header>
-
-
-        
-          <p>会开完了，流水帐就不记了，总结几点问题，以后注意。
-1.抽奖程序可以当场写，逻辑一定要事先验证。这次抽奖程序的逻辑出现了重大误差，所有值抽完后才去更新命中集合，导致样本空间和总空间相差不大的时候重复中奖。
-2.人无任事事不应人。志愿者不知道应该做什么，求助者不知道应该找谁。那天Thomas说他忙不过来，但是其他人又聚堆聊天就是个明证。
-看上去找个专门的人进行前台咨询是个很有道理的做法，最好找个MM，问明白求助者的意图后推给合适的志愿者。
-3.位置错误。大会上的人基本分成两群，一群是lug里面的，或者在圈子里面的熟人。另一帮则是专门跑过来的新手，还有当地的学生。前者在左侧大门聊天，阻挡后者的视线。大会的基本目地就是增进交流，聚众聊天无可厚非。但是聚集在显示屏前位置很不合适，这主要是因为圈子里的人基本在第一排入座，互相一找就聚在了显示屏前。
-这种问题纯是现场场地问题，下次应该找个不干扰的开阔地给圈子里的人扯淡用。
-4.秩序混乱。在一等奖领奖的时候，出现了一个人上去拿了东西，发现给错人的状况。
-主席还不知道cheng说了一点很要精确的观点，我们没有事先登记。类似大会应当设立前台登记并发放名片卡和编号，这样做有几个好处。首先是组织方获得了潜在的用户名单，其次是大家互相交流的时候比较直接，至少知道对方怎么称呼，最后是抽奖的时候不会出现自行核对号码的难题。这次是按照座位号，没有出现太大混乱只能说受众素质还不算太低，或者我们的奖品他们不感兴趣。否则以中国人的聪明，只要座号相似，大家上去浑水摸鱼主办方也是有口难言。
-5.缺乏引导。这个问题最严重，主要是30人的三等奖领取混乱，礼品发放混乱和哄抢。
-礼品发放混乱和哄抢和三等奖的领取混乱是类似问题，都是组织者没有合适引导。Thomas认为这是个素质问题，我觉得这应该是组织方问题。任何open party，对应低素质人群是基本预案。中国人的一大毛病是只会听别人口号行事，没人喊口号就不知道该怎么动了。三等奖的时候大家还不错，总算都是从左边上台。虽然情况稍稍有些凌乱，还在可接受的范围内。要是有几个右边上台的，情况就更乱了。而且没人说的话，台上的人也不知道要不要留一下，让下面拍个照什么的，还是直接下去。奖品发放也有类似问题，没人告诉拿奖品的人，奖品数量，怎么排队，怎么退场。就看到半个场子的人一拥而上，Thomas瞬间被淹没了，然后在那里狂喊大家守秩序，有点素质。问题是这时候，谁知道秩序是什么东西呢？通常应当事先告诉拿奖品的，有多少奖品，从右边排队，领取后不要停留，左边快速退场，并且派人规劝。虽然即使这么做了，也不一定保证顺利，但是场面功夫还是要做的。
-总结一下几点可改进的要点：
-1.事先一定找人发卡片，让用户填写后挂在自己身上。组织方可以自行留录副本。
-2.找个专门的，不影响活动的区域给志愿者。
-3.找个前台MM，所有问题都找她，她再介绍专家。
-4.事先验证抽奖程序的逻辑，这个是我的问题，自行解决。。。
-5.除了主持人外，要有适当的人作为台下的协调和引导者。
-不过总体来说，这次release party的效果还不错，社区组织发生混乱本来就在意料之中。多来几次组织者有经验就好了。
-另外，事后我们集体跑去Thomas(不是台上的鬼鬼小朋友，而是Debian的DD，他的名字是法文，s不发音)家里扯淡吃东西，打德州扑克打到三点。贝壳第一次玩，赢光了其他所有人的钱，哈哈哈哈哈哈哈哈。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -692,6 +680,10 @@ location ^~ /hg/ { limit_except GET { auth_basic &quot;Restricted&quot;; auth_ba
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2857/">Boracay潜水攻略</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2856/">golang安装和编译环境搭建</a>
             </li>
           
@@ -725,10 +717,6 @@ location ^~ /hg/ { limit_except GET { auth_basic &quot;Restricted&quot;; auth_ba
           
             <li class="post">
               <a href="/blog/archives/2848/">两台机器上TCP状态不一致的排查</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2847/">Disney Shanghai信息</a>
             </li>
           
         </ul>

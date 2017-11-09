@@ -94,6 +94,48 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Jul 2, 2006
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/306/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/306/">linux中文说</a>
+    </h1>
+</header>
+
+
+        
+          <p>linux号称可以支持全部语言，其实细节上还是有不少问题的。具体情况大致是这样的，linux的中文支持分三部分，locales，字体，设置。
+首先是locale的部分，这个最简单不过，用root运行dpkg-reconfigure locales，然后选择你需要的解码方式，最后再设定系统默认语言（这个是可以修改的），就OK了。
+然后是字体，字体的设定比较复杂，不过在debian中安装所有中文桌面的字体就可以了。不用自己去绞尽脑汁。
+最后是设定，这个比较复杂。因为可定制性非常好的系统，无法避免要用大量的脚本来定制。如果可定制性差，相信你也不会用了。和中文相关的设置大致有一下几个，针对debian系统。
+/etc/default/gdm:LANG=zh_CN.GBK #gdm登录时候的locales
+/etc/default/locale:LANG=zh_CN.GBK #这个是系统默认登录的locals，如果你使用命令行登录就是使用这个的
+/etc/environment:LANGUAGE=&ldquo;zh_CN:zh:en_US:en&rdquo;
+/etc/environment:LANG=zh_CN #这个是登录进入X后的设置，你运行的所有程序基本都是使用这个
+dpkg-reconfigure locales的默认语言设定修改的是/etc/default/locale，所以对X登录进去后的程序不一定起作用。一般情况下这zh_CN的设定就通吃了，不过有的时候有点小BUG，例如term下面vi后退出，就变成看不懂的乱马了。这个时候要重设屏幕才可以恢复。而且在输入的时候没有——的，很多东西也看不到。所以我改成了zh_CN.GBK，然后出现了两个问题。
+一个是gvim不运行了，这个看了看别人，这么解决。
+----------------------\~/.gvimrc----------------------- set encoding=gb2312 set langmenu=zh_CN.GB2312 set imcmdline source $VIMRUNTIME/delmenu.vim source $VIMRUNTIME/menu.vim ---------------------------------------------------------  保证这个文件里面有这些内容就可以了。
+然后是gtk1.X的程序都不正常了，主要是xmms和audacity。这个看了人家忽悠半天，最后这么解决的。
+-----------------/usr/bin/env_zh_CN--------------- #!/bin/bash LANG=zh_CN exec $@ ----------------------------------------------------------  然后chmod a+x /usr/bin/env_zh_CN
+再修改所有运行语句成env_zh_CN xmms
+我修改了两处。
+世界基本就清静了。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Jul 1, 2006
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/305/#disqus_thread">Comments</a>
@@ -393,33 +435,6 @@ OK，这个是固定产出。你可以不上班不上学，但是不能不吃饭
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Apr 1, 2006
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/296/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/296/">整死人</a>
-    </h1>
-</header>
-
-
-        
-          <p>我在编译mplayer1.0的时候需要xf86vmode.h文件，这应该是安装某个dev包。根据packages的结果，是xlibs-static-dev。不过系统还提示找不到，事实上，他在libxxf86vm-dev。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -691,6 +706,10 @@ OK，这个是固定产出。你可以不上班不上学，但是不能不吃饭
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2857/">Boracay潜水攻略</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2856/">golang安装和编译环境搭建</a>
             </li>
           
@@ -724,10 +743,6 @@ OK，这个是固定产出。你可以不上班不上学，但是不能不吃饭
           
             <li class="post">
               <a href="/blog/archives/2848/">两台机器上TCP状态不一致的排查</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2847/">Disney Shanghai信息</a>
             </li>
           
         </ul>

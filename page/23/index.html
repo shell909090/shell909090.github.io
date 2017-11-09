@@ -94,6 +94,43 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">May 7, 2012
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/2164/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/2164/">升调降调的规则</a>
+    </h1>
+</header>
+
+
+        
+          <p>为什么C加一个升调变成G？
+这个要从大调式讲起。
+大调式是以大三度为基础构建的调式，主音到中音为大三度，中音到属音为小三度，两者构成大三和弦。主音到属音为纯五度，属音到主音为纯四度，大调式的三个基础音之间，都是和谐音程关系。以C大调而言，就是do mi so。
+好吧，C大调之所以叫做C大调，是因为以中音C为do。那么G大调呢？以中音G为do？对的，问题是，C大调的所有音，是否能够不做任何变化的构成G大调的音？
+这是不可能的，C大调的音不做变化唯一能够构成的只有a小调。G大调一定需要对C大调的音做升降的。
+为什么？因为C大调的音程关系是全全半全全全半，这个在小学就教了。通过这个，你可以数出上面说的三个纯音关系。当我们位移到G=do的时候，你会发现，不做变化的话，音程就变成了全全半全全半全，这就糟了。所以，需要对C调的fa(即F)升半个音，来回复大调调式。
+常识上我们知道，12平均率是对称关系，所以上述过程可以运用数学归纳法作用于整个中音音阶。即，每个大调可以通过升该调中的fa半个音，变成另一个大调。后者刚刚好比前者高一个纯五度。
+降调关系亦然，可以类比。
+小调关系亦然，不过小调使用全半全全半全全作为结构，主音到中音为小三度，中音到属音为大三度，两者构成小三和弦。主音到属音为纯五度，属音到主音为纯四度，小调式的三个基础音之间，也都是和谐音程关系。
+稍微数一下就知道，小调式上的所有音，可以构成比自己高小三度的大调，两者称为关系大调和关系小调。
+虽然音是一样的，然而主音中音属音的位置完全不同，因此调式色彩完全不同。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">May 4, 2012
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/2162/#disqus_thread">Comments</a>
@@ -449,47 +486,6 @@ c)的调用。</p>
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Apr 17, 2012
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/2144/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/2144/">vps上应当装什么</a>
-    </h1>
-</header>
-
-
-        
-          <p>假定你有一台debian vps，上面需要装一些东西来——你懂。你应该装一些什么呢？
-基础部分 ssh 没啥好多说，没有ssh，你甚至无法管理机器。不过注意，安全的ssh方式应当只允许使用key登录，禁止一切密码登录。而且对于没必要登录的某些用户，需要在/etc/passwd中将shell改为/bin/false。至于端口改不改，这个不重要，看你心情。
-vim debian默认装的是vim-tiny，很不好用。建议改为vim，改配置的时候让自己舒服点。
-安全部分 iptables-persistent 这是debian内用于iptables规则持久化的工具，你可以编辑/etc/iptables/rules.v4来修改防火墙规则。注意，目前debian stable(squeeze)中的版本还没有4/6区分，你可以弄一个testing(wheezy)中的来装。
-一般来说，你的规则中至少要包含以下内容：
--A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT -A INPUT -i lo -j ACCEPT -A INPUT -i tun+ -j ACCEPT -A INPUT -i ppp+ -j ACCEPT -A INPUT -p tcp -m multiport --dport 22,xxx,xxx,xxx -j ACCEPT -A INPUT -p udp -m multiport --dport xxx,xxx,xxx -j ACCEPT  而且强烈建议，先保存一个没问题的iptables，然后直接修改iptables，再保存。这样的好处是，当你脑残改错了导致你自己都无法管理的时候，只要重启就可以恢复vps工作，而不用更麻烦的动作。
-denyhosts 这是ssh的连接防御进程，用python编写。如果有人试图尝试你的ssh密码，这个程序就会踢掉他的ip。
-如果你已经用了我说的，通过key的连接方式，你可以一次就直接踢掉对方ip。
-管理部分 ifstat ifstat是用于网络流量管理的工具，可以告诉你网络目标的流量是多少。
-dnsutils dnsutils里面包含了不少用于管理dns的工具，包括我们常用的nslookup，还有相对少用的dig。
-mtr-tiny mtr是一个traceroute工具，比后者好用很多。这个工具可以快速跟踪路由。</p>
-
-          
-              <footer>
-                  <a href="http://blog.shell909090.org/blog/archives/2144/" rel="full-article">Read On &rarr;</a>
-              </footer>
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -761,6 +757,10 @@ mtr-tiny mtr是一个traceroute工具，比后者好用很多。这个工具可�
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2857/">Boracay潜水攻略</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2856/">golang安装和编译环境搭建</a>
             </li>
           
@@ -794,10 +794,6 @@ mtr-tiny mtr是一个traceroute工具，比后者好用很多。这个工具可�
           
             <li class="post">
               <a href="/blog/archives/2848/">两台机器上TCP状态不一致的排查</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2847/">Disney Shanghai信息</a>
             </li>
           
         </ul>
