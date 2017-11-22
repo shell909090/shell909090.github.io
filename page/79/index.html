@@ -94,6 +94,57 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Jul 11, 2006
+         - 2 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/307/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/307/">debian live</a>
+    </h1>
+</header>
+
+
+        
+          <p>准备做debian
+live了，期间有什么东西都会写在这里。大致来说就是打算实践一个项目。
+copyright
+Shell.E.Xu撰写，按GPL发布。
+abstract
+用debian3.1testing为基础建立live cd。128M以内，无X系统，无交换区和/tmp，使用内存盘。
+target
+用于挂载ext3 ntfs vfat文件系统，实施文件系统管理和修复，访问文件系统内容并修改。
+注：准备特别针对3721，yahoo助手之类类似rootkit的东西实施扫描清理。
+environment
+debian 3.1 starg testing（貌似是废话）
+grub stage2_eltorito支持光盘启动
+linux-kernel-2.6.15-8 直接使用deb包中内容
+initrd 在kernel包中包含
+step by step
+1.建立基础文件系统并且复制所需文件
+建立~/syscd/boot/grub/，复制menu.lst stage2_eltorito文件过去。
+复制vmlinuz system.map config到~/syscd/boot中，注意ISO9660格式中文件名不能过长（多少记不清了）。
+复制/lib到~/syscd/lib，并且调节内容。（我个人在其中添加了我需要的nVIDIA显卡驱动）
+2.grub和iso
+cd \~ mkdir initrd #关于initrd的原理生成和使用后面讲 mkdir root #这个是用于内存的镜像内容 mkdir cramfs #这个是只读镜像内容 vi \~/testsyscd ------------------我是邪恶的分割线-------------------- #!/bin/bash qemu -no-kqemu -cdrom \~/syscd.iso -boot d &gt;/dev/null ------------------我是邪恶的分割线-------------------- chmod 755 \~/testsyscd vi \~/mksyscd ------------------我是邪恶的分割线-------------------- #!/bin/bash COMPRESS_MODE=-9 cd \~ # block of create initrd.</p>
+
+          
+              <footer>
+                  <a href="http://blog.shell909090.org/blog/archives/307/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Jul 2, 2006
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/306/#disqus_thread">Comments</a>
@@ -390,51 +441,6 @@ dpkg-reconfigure locales的默认语言设定修改的是/etc/default/locale，�
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Apr 2, 2006
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/297/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/297/">时间消费分析</a>
-    </h1>
-</header>
-
-
-        
-          <p>前面篇文章A同学说看不懂，OK，这次来个看的懂的。再看不懂去看统计学里面IO表去。
-上班的时候总觉得时间不够用，上学的时候不明显阿。我的时间哪里去，做个投入产出分析好咯。
-首先做消费分析，周期是周(Week)。所以用周是因为休息基本按周算的，平均的话差异最小。
-一周的投入是175H，固定的。
-一周的基本产出是这样的：
-睡觉8*7=56-60H，固定的。当然，特殊情况可以熬夜。不过天天熬夜的就成苦海神龙咯。
-吃饭0.5*3*7=10.5H，固定的。有的人边吃饭便做事情，奉劝饭要好好吃，胃是自己的。
-上厕所，刷牙洗脸。这个没啥固定时间的，如果你不拉稀不便秘，再加上其他必须做的杂碎事情，每天大概就是花半个小时吧。0.5*7=3.5H
-OK，这个是固定产出。你可以不上班不上学，但是不能不吃饭睡觉。吃饭可以蹭可以报公帐，但是事情花的时间不能省。去了这些时间，我们还剩下175H-60H-10.5H-3.5H=101H。
-顺便讲解下，有的同学听说做软件的有3W的薪水，觉得很高。其实没啥好奇怪的。如果封闭开发，吃饭睡觉都不许走出去，不许上网不许玩的情况下。周工作时间就是100H，最高工作时间，除非压缩吃饭睡觉。同等也要拿人家两个半月的薪水，何况这种工作肯定要加薪的，能不高吗？如果倒算过来，薪水只有12000。差不多咯。
-然后我们就要分配100H去上班上课学习娱乐。这里我们先算下理论的标准工作时间。国家一年有10天带薪假期，一个企业一般也给七天带薪假的。都是白给的。这样就是8(H/D)*17(D/Y)/52(W/Y)=2.6(H/W)，就是每周2.6小时带薪假期。那么理论上每周工作时间就是37.4H。
-基本上来说这是必须上的班，除非工作性质特殊，否则不上足是要出问题的。我们所需要的就是将剩下的101H-37.4H=63.6H发挥最大效率。这是我们的纯投入，前面的投入只是为了产出能正常工作生活的人。OK，作为一个无奈的事实，我们必须将这个投入中的部分用来做无聊的事情。大致来说有这几样：
-坐车走路，我是每天1.5*5=7.5H。自主时间的11.8%就这么浪费了。剩下56.1H。
-锻炼身体，我是每周6H，自主时间的9.4%就没了。像坐办公室的，不练身体的话，上班等于伤命，不可不练阿。剩下50.1H。
-额外加班，说不准多少时间，具体也算不出来，不过每周总会多出6-7个小时。因为毕竟上班要提前到，宁早勿晚。下班要以后走，宁晚勿早。这种时间很无奈的。，占9.4％，剩下44.1H。(Stella同学，如果刚刚你没有感觉神经一紧怎么这么熟悉，那么我可以肯定你做音乐处理没前途咯)
-磨磨蹭蹭东张西望不知道在干吗，偶尔有点时间上网逛逛写个博客。这种时间一般人都会有吧，每天愣个20分钟，一周就是2.4H，占3.8%，剩下40.3小时。
-换句话说，每周我们的剩余时间就是40H上下，大致和上班一样。在这个时间里面我们要处理各种个人杂事约会见面看同学吃饭请客逛街还偶尔要拿去加班。如果你人不怎么和别人打交道，那么每周处理下个人杂事5-10个小时就够了，剩下30-35H拿去加班，最高可以加班出周工作70-75H的记录。这就是所谓每周正常加班不能超过36H的由来，再多就妨碍个人正常生活了。不过话说回来，国家规定加班是每周多少呢？我查了查，正常状态下是不超过9H！如果说的苛刻的话，我每天光上下班多出来的时间就快让公司违法了(注：这个时间不能算入加班，所以大家不用高兴)。
-但是作为计算机程序员来说，我的时间具有特殊性。为什么呢？我需要不断学习。
-举个例子来说，如果说翻译学了外语，他基本不用怎么学习新的知识，因为语言变化速度相对比较慢。但是软件业几年就淘汰一代，如果没有相对的学习速度，吃饭减产是注定的。我们下面就无法进行消费分析了，必须用投入产出分析。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -706,6 +712,10 @@ OK，这个是固定产出。你可以不上班不上学，但是不能不吃饭
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2858/">京都游记</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2857/">Boracay潜水攻略</a>
             </li>
           
@@ -739,10 +749,6 @@ OK，这个是固定产出。你可以不上班不上学，但是不能不吃饭
           
             <li class="post">
               <a href="/blog/archives/2849/">模拟网络丢包延迟和TC的使用</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2848/">两台机器上TCP状态不一致的排查</a>
             </li>
           
         </ul>

@@ -94,6 +94,47 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Feb 24, 2017
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/2848/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/2848/">两台机器上TCP状态不一致的排查</a>
+    </h1>
+</header>
+
+
+        
+          <p>简介 TCP状态不一致是一种常见故障。双方的机器上列出连接，其中一方连接存在，另一方则没有任何连接。如果连接存在的一方有数据正在发送，则存在两种可能性。一种是对方收到数据报文后发现这个报文没有socket对应，于是返回一个RST，导致连接存在的一方连接直接消失。这种情况下问题很难察觉。另一种是对方（或者中间方）收到报文后直接丢弃。发送方经过一定次数（tcp_retries2，一般来说就是15分钟左右）的重试后，认为连接已死，连接会自动消失。如果tcp连接打开了keep-alive，经过7200s（具体值看socket设定），即等于有数据发送。后同。
+一般来说，有三种常见理由：
+ RST报文丢失。在RST报文丢失时，发送方连接直接消失，接收方由于没有任何消息，因此连接始终存在。 FIN报文丢失。FIN报文丢失和RST报文丢失情况类似，但是发送方会进入FIN_1状态，经过一定次数重发（tcp_orphan_retries）无回应后连接消失。 内核错误。  排障时，应当首先考虑RST报文和FIN报文丢失的情况。
+排障 首先应排除三种常见场景：
+场景一：接收缓冲区满。
+当接收缓冲区满时，FIN报文会直接丢失。这常见于接收方处理上下文堵死导致不再处理新数据的情况。特征是发送方可以观察到一定量的FIN_1状态链接（常见于接收方不处理fin报文的情形下），接收方缓冲区满，可作为特异性标识。
+确证方法：在接受方使用ss观察接收缓冲区。如果接收缓冲区极大而且基本不下降，配合发送方可见FIN_1状态，可以断定此场景。
+场景二：RST报文丢失。
+当中间有IDS之类（F5/SDN/firewall）的网络设备时，RST报文可能丢失。特征是发送方socket直接消失，接收方socket无任何异常。检查可见netstat -s中reset的发出和接收状况不一致，但是无法作为确证标准。
+确证方法：双方抓RST包，无法对齐。
+场景三：FIN报文丢失。
+情况和场景二类似，网络中有IDS类设备。但是丢失的报文是FIN。这导致发送方可见FIN_1状态，接收方缓冲区没有异常。
+确证方法：双方抓FIN包，无法对齐。
+内核错误导致的TCP状态不一致很少见，建议升级到最新内核后重测。如无法复现可以合理推测这种可能性，但是无法确证。确证需要systemtap。
+PS：FIN_1状态同时也受到tcp_max_orphans的限制。如果tcp_max_orphans被设定为0以清理TIME_WAIT状态的情况下，可能导致FIN_1状态很难察觉。可考虑恢复tcp_max_orphans或者干脆直接抓包诊断。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Feb 20, 2017
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/2847/#disqus_thread">Comments</a>
@@ -456,56 +497,6 @@ RHSCL的全称是Red Hat Software Collections。旨在于在长期支持版本�
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Jul 20, 2016
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/2838/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/2838/">gpg pubkey ID碰撞</a>
-    </h1>
-</header>
-
-
-        
-          <p>昨天和朋友碰了个头，然后做了交叉签署。
-朋友签署完了，还没上传签署的时候。我手贱（幸好手贱）去server上update了一下我的key。结果发现多出一支key回来。
-纳尼？
-上pgp.mit.edu去搜我的邮箱，一堆key。我废弃过不少key，这就算了。有一支2014年签署的key引起了我的注意，因为ID和我的KeyID完全一致，UserID也一样。显然这是撞出来的，不过我不记得自己有做过这样的事情。
-下面是我的真实key的fp：
- 2276 57F3 6E16 9B90 4186 2EBF 29A9 7386 0914 A01A
- 这是有问题的那支key的fp：
- 875D 447A E720 9037 84A0 7888 909F 2614 0914 A01A
- 可以看到，两者最后部分完全一致，这导致两者有同样的KeyID。
-我点进去看了一下，后面一支key完全不是我的，签的情况也乱七八糟。但是UserID显然一致。然后汗毛一竖赶紧通知朋友。朋友看了一眼，果然签错成那支假的了。
-我擦，我给你写我的fp是签名留念用的吗？
-一般来说，签名很难吊销。他要是签错了，那就麻烦大了。幸好他没上传。整个删除后重新签署，这个问题总算是顺利解决。
-我继续追踪，发现有趣的事来了。
-这个key被很多人签署，其中有个人和我的签署人KeyID和UserID又和我互相签署的某人一致。这相当于攻击者不但碰撞伪造了我和他的外观一样的Key，而且连我们的互相签署关系都伪造出来了。。。
-我OO了个XX的，这是想干嘛？
-然后，某位朋友给了我这个站点：Stop it with those short PGP key IDs!
-里面提到了这种伪造碰撞的现象。
-同时，里面也提到了解决方法。
-首先，向你的gpg.conf里面加入keyid-format 0xlong，这样可以使你的ID变为64位的长ID。碰撞难度更高，当然，也更难一眼看明白谁是谁。
-其次，在写程序的时候，不要使用ShortID来指明身份了，因为这种方法显然受到了攻击。继续使用ShortID可能为你程序未来的安全性埋下隐患。
-最后，验证fp的时候一定要用纸质传递，签署的时候一定要验证完整fp。
-验证fp的时候一定要用纸质传递，签署的时候一定要验证完整fp。
-验证fp的时候一定要用纸质传递，签署的时候一定要验证完整fp。
-因为很重要所以说三遍。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -777,6 +768,10 @@ RHSCL的全称是Red Hat Software Collections。旨在于在长期支持版本�
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2858/">京都游记</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2857/">Boracay潜水攻略</a>
             </li>
           
@@ -810,10 +805,6 @@ RHSCL的全称是Red Hat Software Collections。旨在于在长期支持版本�
           
             <li class="post">
               <a href="/blog/archives/2849/">模拟网络丢包延迟和TC的使用</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2848/">两台机器上TCP状态不一致的排查</a>
             </li>
           
         </ul>

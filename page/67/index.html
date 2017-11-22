@@ -94,6 +94,47 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Jan 31, 2008
+         - 2 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/426/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/426/">Process Explorer的潜在内存泄漏</a>
+    </h1>
+</header>
+
+
+        
+          <p>贝壳最近碰到一个郁闷到死的问题。机器经常出现硬盘狂转，系统响应延迟。系统弹出一个错误，然后死机。贝壳开始猜测是硬盘驱动问题，升级驱动N次，无效。然后再猜测是ext2fs的问题(贝壳用这个驱动挂载linux下面的盘的)，看来看去，不是。最后，贝壳确定了，这是内存泄漏了～～～
+问题是，这时候可没人跳出来推荐喝什么口服液的。贝壳系统中永远挂着一个procexp，看内存状态的。这东西是sysinternals的产品，后来被微软收购了。功能强大，很多系统调试，杀马都需要用到。于是贝壳就用这个工具看哪个程序的内存泄漏，可是看来看去看不到。准确说，是没等贝壳看到，系统就先死透了。最后贝壳多次尝试，发现了一个死机的规律。当mysql开启的时候，procexp就会随时发生异常死机。这是一个重要的提示，要么mysql内存泄漏了，要么procexp内存泄漏了。究竟是哪个呢？贝壳用了同属于sysinternals开发的pstools系列工具，仔细检查了异常发生时候的内存状态，确定，Process Explorer存在内存泄漏的风险！
+看来sysinternals被微软收购后，旗下的工具也出现了微软的一贯特色。以下是一次内存泄漏后，终止mysql服务后抓下来的内存状态输出。如果不终止mysql，不等我抓系统就挂了。
+Process memory detail for HOME-B2326348D0:
+Name Pid VM WS Priv Priv Pk Faults NonP Page
+Idle 0 0 28 0 0 0 0 0
+System 4 800 52 0 0 10120 0 0
+smss 772 3748 48 172 1648 223 0 5
+csrss 828 68132 1464 2304 3768 13748 6 144
+winlogon 856 61528 580 8536 8684 5143 39 96
+services 900 37724 804 2256 2404 2740 7 65</p>
+
+          
+              <footer>
+                  <a href="http://blog.shell909090.org/blog/archives/426/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Jan 26, 2008
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/425/#disqus_thread">Comments</a>
@@ -394,39 +435,6 @@ msn的blog已经用了好几年了，期间也没有出过什么大问题。只�
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Nov 4, 2007
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/417/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/417/">Linux和windows共享邮件</a>
-    </h1>
-</header>
-
-
-        
-          <p>总算能发正常的文章了，前面发出来的老是不会断行。庆祝一下。
-很多人像贝壳一样使用双系统，Linux加windows。贝壳的Linux用的是Debian，最近其中的xfce4出现一些问题。使用的时候老是死机，这日子没法过了。所以贝壳就稍微下了点功夫，先弄个好用的windows凑合一下。
-windows下最难办的恐怕就是邮件了，到不是说不能收。只是windows下一个邮件状况，Linux下一个。未免讨厌了点。就算有导入导出可以转换，你想转换多少次呢？
-下面贝壳就说一种方法来对付这种状况。
-首先你的系统盘应当是ntfs，否则这方法不能用。然后在windows下安装ext2ifs来读取linux的home目录，假定是d:\username.mozilla-thunderbird。windows下安装类似版本的thunderbird，然后看看你的C:\Document and Setting\username\Application Data\Thunderbird下面，是否有一个profile.ini？有就对了。删除这个目录(我没说错)，然后去下一个叫做junction的软件，微软出的。这个软件可以将ntfs的某个目录映射到一个目标上去，对这个目录的访问就等同于对这个目标的访问，就好像linux下面的符号链接一样。下面知道我要做什么了么？
-junction &quot;C:\Document and Setting\username\Application Data\Thunderbird&quot; d:\username\.mozilla-thunderbird  然后启动thunderbird，他首先会检查你系统中插件的版本可用性。然后你的Linux下邮件就可以用了。
-简单吧？</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -698,6 +706,10 @@ junction &quot;C:\Document and Setting\username\Application Data\Thunderbird&quo
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2858/">京都游记</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2857/">Boracay潜水攻略</a>
             </li>
           
@@ -731,10 +743,6 @@ junction &quot;C:\Document and Setting\username\Application Data\Thunderbird&quo
           
             <li class="post">
               <a href="/blog/archives/2849/">模拟网络丢包延迟和TC的使用</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2848/">两台机器上TCP状态不一致的排查</a>
             </li>
           
         </ul>

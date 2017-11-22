@@ -94,6 +94,39 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Feb 1, 2010
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/90/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/90/">手机又丢了</a>
+    </h1>
+</header>
+
+
+        
+          <p>昨天出去玩，拉小黄出来溜冰，结果被还了一个电脑。我还要买一个键盘给别人，手上一堆东西，再打车去见人。时间紧，手上大包小包一大堆，下车的时候两手满满的。下车了再一拍兜——杯具啊～～～～手机丢了。
+估计是放兜里面没放的太进去，于是联系去找。大众的调度��嗦嗦的，问你上车时间下车时间车号前后排什么的，问了一堆。我当时心就一凉。司机每天要开车的，总算还比乘客靠谱点。下一个乘客上来，那可就彻底讲不清了。要验证我的身份，大可以等东西找到再说。估计这堆罗嗦问题就是要等到说下个乘客可以上车，然后再推说可能是乘客问题，让你无话可说的。所以大家车上丢了东西，就别指望调度了。
+消息回来，果然找不到，手机满电的，也关机了。于是只有紧急停机，外加修改了所有在上面涉及过的密码，包括我的QQ，MSN/Hotmail，Gtalk/Gmail，还有张老师的blog。这里普及一个常识，手机使用的时候，一定要将手机设定为和SIM卡绑定。然后在手机丢了以后，立刻停机。这样做的主要目的是防止手机诈骗，例如打给你朋友，说你车祸了在急救，这里是医院，赶紧汇钱到XX账户啥的。我的朋友一般还比较懂行，肯定会挂了拨我号码以验证是否是我本人——问题是，那还是打到他手机上啊。人家和你够铁够仗义才付钱，万一被骗了，你好意思不赔他损失么？所以，丢了一定要停机。而SIM卡绑定，对于专业人士来说不难解，而对于业余人士则不好解。如果是外行捡到，卖给玩手机的就要被宰一刀，所以最好的思路是打上面几个人的电话问问要不要把手机买回去什么的。如果手机没绑定，大多都是拿到就用了，这个选项根本不可能。至于记录IMEI号什么的——你还没那个面子让移动封掉这个手机。另外上面如果用过QQMSN什么的，也赶紧改密码。不要心存侥幸，一天也许没事，两三天万一他解锁出来了，你哭都来不及。
+至于数据么，大部分都有备份，但是所有人的联系方式肯定都泄密了。大家如果看到其他人，用别人的手机，宣称我如何如何的——别信他。半年内的联系人可能需要重新添加，回头我会一一联系。
+至于其他么，半年内和我发过短信的，你们的短信都曝光了。和我照过相的，你们的照片都曝光了(这可不限半年，实际上我刚买的时候照的都还在)。其他数据应该没什么风险了，以上。
+以下不算钱:
+啊～～～～我的手机啊，又要买新的了，怨念。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Jan 29, 2010
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/89/#disqus_thread">Comments</a>
@@ -383,43 +416,6 @@ $ export SID=orcl $ sqlplus / as sysdba &gt; create pfile from spfile &gt; exit 
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Oct 21, 2009
-         - 2 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/80/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/80/">用python实现webserver(一)――Prefork</a>
-    </h1>
-</header>
-
-
-        
-          <p>要实现webserver，首先需要一个tcp server。作为python的设计原则，最好是使用SocketServer或者封装更好的BaseHTTPServer来复用。不过既然我们的目的是为了学习，那么就不能用这两个内置对象。我们先实现一个最古典的每进程模式实现。而我们标题上的Prefork，则是apache服务器对这个模式的称呼。
-每进程模式，顾名思义，就是每个新连接开启一个进程进行处理。首先创建一个socket，bind到一个套接字上。当有请求时，accept。(好多英文，不是我有意cheglish，全是api的名称)accept会返回一个通讯用的socket，这时fork出一个新的进程，处理这个socket。
-主进程在每次进入accept后阻塞，子进程在每次进入recv后阻塞。这样会带来几方面的好处。首先是模型分离，即使一个子进程崩溃，也不会影响到其他子进程。其次是身份分离，当你需要让http server以高于常规运行(常规都是以apache, www-data, nobody运行的)用户的权限进行工作时，每进程模式是唯一安全的模式。其他模式都会造成同一进程内的其他session也暂时获得这个权限的问题。但是同样，这样有几方面的问题，主要就是性能问题。
-由于每个连接都需要fork出一个新进程去处理。因此针对大量小连接的时候，fork和exit消耗了大量CPU。问题更严重的是，由于用户进程总数是有限的(PEM或者ulimit都会限制这个数量)，因此压力大到一定程度时(通常是1024或者2048)，就会出现无法创建连接的情况。而对小型服务器而言，在压力还没大道这个程度以前，服务器就会由于性能达到限制而造成段错误。以下是实际试验指令和结果：
-测试指令：
-ab -n 10000 -c 100 &lt;http://localhost:8000/py-web-server&gt;  服务器报错：
-20090924 05:51:18: Traceback (most recent call last): 20090924 05:51:18: File &ldquo;main.py&rdquo;, line 19, in  20090924 05:51:18: 20090924 05:51:18: sock.run (); 20090924 05:51:18: File &ldquo;/home/shell/py-web-server/server.py&rdquo;, line 30, in run 20090924 05:51:18: 20090924 05:51:18: while loop_func (): pass 20090924 05:51:18: File &ldquo;/home/shell/py-web-server/server.py&rdquo;, line 56, in do_loop 20090924 05:51:18: 20090924 05:51:18: if os.fork () == 0:</p>
-
-          
-              <footer>
-                  <a href="http://blog.shell909090.org/blog/archives/80/" rel="full-article">Read On &rarr;</a>
-              </footer>
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -691,6 +687,10 @@ ab -n 10000 -c 100 &lt;http://localhost:8000/py-web-server&gt;  服务器报错�
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2858/">京都游记</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2857/">Boracay潜水攻略</a>
             </li>
           
@@ -724,10 +724,6 @@ ab -n 10000 -c 100 &lt;http://localhost:8000/py-web-server&gt;  服务器报错�
           
             <li class="post">
               <a href="/blog/archives/2849/">模拟网络丢包延迟和TC的使用</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2848/">两台机器上TCP状态不一致的排查</a>
             </li>
           
         </ul>
