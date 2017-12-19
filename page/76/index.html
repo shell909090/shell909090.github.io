@@ -94,6 +94,39 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Dec 20, 2006
+         - 6 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/338/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/338/">windows service的C&#43;&#43;封装实现</a>
+    </h1>
+</header>
+
+
+        
+          <p>windows系统服务入口的封装类，service是基类，service_manager是管理类。支持UNICODE，可以多服务封装在一个程序里面，过程当然都是自动的。拥有自动防错系统，在服务异常退出的时候会去关闭服务，而不是开着服务直接没了进程。写一个类，继承service，然后在哪里出一个实例，就可以了。service中有很多虚函数，可以重载了监听对应事件(我应该写的比较明白吧)。get_service_name，返回UNICODE的字符串指针，定义服务名称。注意是纯虚函数，必须实现。get_dependence，也是返回UNICODE的字符指针。指明这个服务依赖什么服务。get_service_type返回服务类型，其实也就是是否可以交互。get_contral_accepts，支持的信号(例如是否可以暂停)，默认可以暂停。on_start开始时候调用的函数，下同。
+使用方法
+#include #include &quot;service.h&quot; class test_service : public service{ public: virtual LPTSTRget_service_name (); virtual DWORD on_start (DWORD argc, LPTSTR * argv); virtual DWORD on_stop (); virtual DWORD on_shutdown (); }; LPTSTR test_service::get_service_name () { return _T (&quot;test_service&quot;); } DWORD test_service::on_start (DWORD argc, LPTSTR * argv) { return service::on_start (argc, argv); } DWORD test_service::on_stop () { return service::on_stop (); } DWORD test_service::on_shutdown () { return service::on_shutdown (); } int _tmain (int argc, _TCHAR * argv[]) { test_service ts; if (argc == 1) service_manager::start (); else if (!</p>
+
+          
+              <footer>
+                  <a href="http://blog.shell909090.org/blog/archives/338/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Dec 19, 2006
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/337/#disqus_thread">Comments</a>
@@ -399,37 +432,6 @@ wireshark测定。
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Oct 21, 2006
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/328/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/328/">通过LPIC1</a>
-    </h1>
-</header>
-
-
-        
-          <p>总算正式通过LPIC1了，搞了半年这个东西，真的差点让我崩溃。通过可以有两种方法，背考古题，或者拥有深厚的功底。
-里面最让我觉得不爽的就是很多莫名其妙的参数还需要记忆。例如tracroute -n的n，是阻止R-DNS的意思。这个如果是RHCE，一个man就知道了——可是这里，就需要人自行记忆。除非相当长时间的使用，让你对这些参数了如指掌，否则——考古题。
-不过里面对于功底的考察蛮细致的，有的题目会问你一些正常不会细究的东西。我为了通过考试，自行研究了整个Linux引导的详细过程。从开机到initrd，然后从服务到启动X，到自动执行脚本。非常详细的了解了整个Linux的基础，并且可以自行定制一个Live系统。这里面需要非常详细的研究，一般的大路货考试好像还没有这个必要——
-不过我要说的是——这些东西——纯粹是自己吓自己。事实上，LPI-101我考了550分，LPI-102我考了640。不是啥高分，不过远远超过通过分数。原因是对于考试评价过高——还特意拖了很久——等很多事情稳定了，而且功底扎实了才去。没想到这么简单，扫兴。
-总体来说——考试通过的感觉还不错，不过没有什么好惊讶的。意料中的事情——除了多出来的1300块钞票——我的钱阿——</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -701,6 +703,10 @@ wireshark测定。
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2858/">京都游记</a>
             </li>
           
@@ -734,10 +740,6 @@ wireshark测定。
           
             <li class="post">
               <a href="/blog/archives/2850/">SI的七个基础单位</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2849/">模拟网络丢包延迟和TC的使用</a>
             </li>
           
         </ul>

@@ -94,6 +94,37 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Nov 11, 2009
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/81/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/81/">MSN强制升级</a>
+    </h1>
+</header>
+
+
+        
+          <p>从前天开始，单位里的MSN8.5就无法登陆，老是提示我要升级。今天家里的MSN也无法使用了，被逼无奈，先用pidgin顶一阵再说。不过现在贝壳正在考虑MSN的用户搬迁工作，目标是迁移到Gtalk上，不行QQ。
+有几个朋友问贝壳，升级不就好了，何必兴师动众呢？首先，MSN8.5的安装程序只有20M，而MSN9的安装程序高达132M。其中多出来的100多M东西可不是白装的，他们大概会吃掉你30-40M的内存。而且9里面有很多插件(其实8.5也有，不过就一个，总算还好屏蔽)，安装上去后，工作的时候做调试麻烦异常，工作机器上装这个纯粹给自己找麻烦呢。而且微软素行不良，有劣迹在前。盗版黑屏问题大家还记得吧？升级提示上说是安全修补补丁，结果装上去屏幕就黑了。不说黑屏现在如何了，就说这种欺骗用户安装的手段，有谁还相信这次的强制升级是为了安全问题么？微软系统安全是出了名的差，一个安全公司用测试用蠕虫在win7上跑，只有20%不到能被微软自己拦截。其中固然有安全公司危言耸听，但是测试过程是全公开的，做假不来。这还是微软主推的最新操作系统，安全性据说很好。如果真是为了安全问题，先把Windows里面那堆雷死人的安全问题解决了才是王道。
+反倒是QQ的强制升级政策我觉得尚算可以。 QQ协议分为2005/2006/2007/2008多个版本，通常而言可以使用当前版本和前一版本。就是说，现在用的协议是2008的话，那么2007协议还可用，而2006协议就不再支持了。通常而言，这种时候继续使用2006协议的人微乎其微，基本可以忽略不计。这个政策主要是给不愿意升级的人一个缓冲的空间。对于腾讯而言，实施这个政策其实比微软更有压力。因为微软的协议是公开的，而腾讯则是采取封闭协议，甚至打击第三方客户端的企业策略。我们姑且不论这个策略的得失，但是维持两个协议版本，就给破解协议的人留下了破解的时间和空间。因此对于腾讯而言，这个策略是和公司战略相违背的。
+更深一层的问题是，强制升级问题说明了我们所依赖的服务的脆弱性。MSN在中国占据的客户群体并不算大，远远不比QQ。然而就是这样一个客户群现状，微软就敢于强制升级。今天是强制升级，明天收费呢？所以说任何事情依赖一个公司是不行的。我还是会使用MSN，但是会逐步将用户迁移到Gtalk和QQ上，并以开心网和Facebook做补充。力争做到这三个IM中任意两个能覆盖大部分朋友群体，开心和Facebook保留所有联系可能。这样可以适当制衡某些软件公司(不仅是微软，还有腾讯)，也可以减小出问题时的损失。
+其实要做到这点并没有任何困难。当你认识一个人的时候，只要和他保持两种以上的IM，并且在开心和Facebook(当然，这个没法强求了，毕竟中国的GFW&hellip;)上交换一下好友就好了。对抗强权，从小事做起就好。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Oct 21, 2009
          - 2 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/80/#disqus_thread">Comments</a>
@@ -415,38 +446,6 @@ EDIT 2016-09-08: 按照我听到的更新消息，PZ当时实际上是出版了�
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Jul 7, 2009
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/71/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/71/">ssh翻墙服务</a>
-    </h1>
-</header>
-
-
-        
-          <p>不多说了，上脚本。
------------/etc/init.d/sshtunnel------------ #!/bin/bash PATH=/bin:/sbin:/usr/bin:/usr/sbin CONF=&quot;/etc/default/sshtunnel&quot; source $CONF if ! [ -x /usr/bin/ssh ]; then exit 0 fi start () { echo -n &quot;Starting tunnel..&quot; ssh -CNq -D &quot;$PROXYPORT&quot; &quot;$USERNAME@$SSHHOST&quot; -p $SSHPORT -o ServerAliveInterval=30 &amp; echo &quot;done.&quot; } stop () { echo -n &quot;Stopping tunnel..&quot; PID=$(netstat -nlp -4 | grep &quot;:$PROXYPORT&quot;) PID=$(echo $PID | sed &quot;s/.*LISTENs*(.*)/1/&quot; | cut -f1 -d/) kill -9 $PID echo &quot;done.&quot; } case &quot;$1&quot; in start|restart) start ;; stop) stop ;; restart) stop start ;; *) echo &quot;Usage: $0 {start|stop|restart|clear}&quot; exit 1 ;; esac exit 0 -----------------end of file------------------ ---------/etc/default/sshtunnel---------- PROXYPORT=7777 USERNAME=abc SSHHOST=abc SSHPORT=22 -----------------end of file------------------  首先准备一个远程服务器，获得域名端口，用户名密码。而后将上述脚本放置于指定位置，修改/etc/default/sshtunnel的值，即完成配置。但是上述脚本并没有解决自动登录问题，因此，请生成一个没有密码的密钥，将公钥导入远程服务器。</p>
-
-          
-              <footer>
-                  <a href="http://blog.shell909090.org/blog/archives/71/" rel="full-article">Read On &rarr;</a>
-              </footer>
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -718,6 +717,10 @@ EDIT 2016-09-08: 按照我听到的更新消息，PZ当时实际上是出版了�
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2858/">京都游记</a>
             </li>
           
@@ -751,10 +754,6 @@ EDIT 2016-09-08: 按照我听到的更新消息，PZ当时实际上是出版了�
           
             <li class="post">
               <a href="/blog/archives/2850/">SI的七个基础单位</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2849/">模拟网络丢包延迟和TC的使用</a>
             </li>
           
         </ul>

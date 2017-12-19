@@ -94,6 +94,42 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Feb 19, 2014
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/2561/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/2561/">利用cgroups隔离多个进程资源消耗的尝试</a>
+    </h1>
+</header>
+
+
+        
+          <p>setup Add to /etc/fstab.
+cgroup /sys/fs/cgroup cgroup defaults 0 2  Then sudo mount -a.
+Change directory to /sys/fs/cgroup/. Use mkdir to create a new group, and initalize it like those.
+echo 0-3 &gt;&gt; cpuset.cpus echo 0 &gt; cpuset.mems  Without those two step, next operator will failure.
+echo 0 &gt; memory.swappiness echo 52428800 &gt; memory.limit_in_bytes  Set memory limit 50M, and forbidden swap.
+python test code import os, sys, time, random, string def main(): l = [] random.</p>
+
+          
+              <footer>
+                  <a href="http://blog.shell909090.org/blog/archives/2561/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Feb 14, 2014
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/2559/#disqus_thread">Comments</a>
@@ -487,46 +523,6 @@ err := http.ListenAndServe(&quot;:8080&quot;, http.FileServer(http.Dir(&quot;/ho
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Jan 2, 2014
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/2533/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/2533/">lxc简单介绍</a>
-    </h1>
-</header>
-
-
-        
-          <p>基本安装 安装lxc包。
-注意修改/bin/sh，链接到/bin/bash。lxc在某些版本上有一个bug，声明为/bin/sh却使用bash语法，导致不如此链接会出现错误。
- lxc on debian wiki  镜像和设定 使用lxc-create -n name -t template生成镜像。
-在/usr/share/lxc/templates可以看到可用的模板。
-在/var/cache/lxc/debian会缓存生成过程的临时文件。
-生成的镜像需要在镜像内安装lxc，否则无法使用lxc-execute。
-资源限制 在config文件内，写入cgroup限定规则。注意，使用内存限定的话，需要在内核参数中加入cgroup_enable=memory。
-在debian下，可以修改/etc/default/grub文件，使用update-grub重新生成规则。
-GRUB_CMDLINE_LINUX_DEFAULT=&quot;cgroup_enable=memory quiet&quot;  在config文件中可以如下限定。
-lxc.cgroup.memory.limit_in_bytes = 512M # 限定内存 lxc.cgroup.cpuset.cpus = 0 # 限定可以使用的核 lxc.cgroup.blkio.throttle.read_bps_device = 8:0 100 # 读取速率限定 lxc.cgroup.blkio.throttle.write_bps_device = 8:0 100 # 写入速率限定 lxc.cgroup.blkio.throttle.read_iops_device = 8:0 100 # 读取频率限定 lxc.cgroup.blkio.throttle.write_iops_device = 8:0 100 # 写入频率限定   cgroups blkio-controller cpusets memory  执行 lxc-start -n name /bin/echo hello  还可以用以下指令，在已经启动的container里执行进程。</p>
-
-          
-              <footer>
-                  <a href="http://blog.shell909090.org/blog/archives/2533/" rel="full-article">Read On &rarr;</a>
-              </footer>
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -798,6 +794,10 @@ lxc.cgroup.memory.limit_in_bytes = 512M # 限定内存 lxc.cgroup.cpuset.cpus = 
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2858/">京都游记</a>
             </li>
           
@@ -831,10 +831,6 @@ lxc.cgroup.memory.limit_in_bytes = 512M # 限定内存 lxc.cgroup.cpuset.cpus = 
           
             <li class="post">
               <a href="/blog/archives/2850/">SI的七个基础单位</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2849/">模拟网络丢包延迟和TC的使用</a>
             </li>
           
         </ul>

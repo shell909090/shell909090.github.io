@@ -94,6 +94,55 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Jul 13, 2006
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/308/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/308/">论linux引导过程</a>
+    </h1>
+</header>
+
+
+        
+          <p>keywords
+引导过程, initrd, init, rc
+copyright
+Shell.E.Xu撰写，按GPL发布。
+abstract
+简要介绍了引导流程的流转。
+main
+1.grub&amp;lilo
+引导的第一步，是启动引导管理器。这个种类非常复杂，从最早的MBR+专用引导扇区到现在的NTLDR,LILO,GRUB，大小和功能都有非常大的变化。但是主要来讲目的都是一样的。当今引导程序一般都分两个部分，引导扇区和主引导模块。NTLDR来说，C:NTLDR文件即是主引导模块。GRUB的主引导模块在/boot/grub/stage2，至于引导扇区，不用太过关心的。
+主引导模块在加载后都会读取引导配置文件，当代流行引导管理器其实都有命令交互功能，可是你总不能指望每次启动都先敲堆命令吧。GRUB来说，配置文件是/boot/grub/menu.lst。注意，GRUB是在启动的时候读取配置的，但是LILO是根据配置来安装的。所以LILO在改变配置的时候需要重新安装。
+2.vmlinuz&amp;initrd
+引导管理器会自动的将vmlinuz安置在内存中，然后寻找initrd传给vmlinuz。在没有initrd的情况下也可以引导，不过当下的趋势是将引导过程用脚本管理，放置在initrd中。这样引导参数解析，模块加载，设备管理都纳入了脚本的范围内。用linux哪能不会脚本，因此linux引导就有非常强的可以定制特性。
+initrd分两种，cpio-initrd和ramfs。这里主要介绍
+cpio-initrd。cpio-initrd的建立方法很简单，我上篇文章中有介绍。大致来说，就是把一些内容打包备份而已。vmlinuz会启动根下面的init脚本，我下篇文章会专门解析debian中配置的initrd.img的init脚本。现在大致说下。
+init首先建立两个目录，建立/dev系统，并且建立null和console文件，否则udev的运做会出错。然后解析引导参数，解析到每个变量。而后依次运作init-top,init-premount,init-bottom（这些目录内的文件）。在init-bottom运行前会运行包含指定的脚本，这个脚本由BOOT参数指定，并且内部包含mount函数。这样可以通过指定BOOT参数定制mountroot的过程。最后是迁移大部分的系统过去（主要是/sys和/proc），最后通过run-init直接chroot和init。
+3.init&amp;rc
+init运行的开始，会寻找inittab。其中指定了系统的很多特性，最主要的是runlevel。首先是寻找/etc/init.d/rc并且运行，并且把运行级别作为第一参数传递。然后rc会寻找/etc/init.d/rcS和/etc/default/rcS，如果有的话则包含或者运行。然后rc会以参数S运行自身，过程和正常启动一样。这个作为基础启动参数，无论你以何种级别运行都会运行rcS.d里面的脚本。
+4.service
+service启动的时候，是用rc?.d的脚本启动的。多数会用start-stop-daemon作为另外一个身份启动成守护进程。
+5.bash&amp;gdm
+6.conf files
+reference:
+[1].</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Jul 11, 2006
          - 2 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/307/#disqus_thread">Comments</a>
@@ -411,36 +460,6 @@ dpkg-reconfigure locales的默认语言设定修改的是/etc/default/locale，�
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Apr 22, 2006
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/298/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/298/">虹桥机场最长的一天</a>
-    </h1>
-</header>
-
-
-        
-          <p>昨天应该是个高兴的日子，我跑回北京来办理港澳通行证，按后转去香港旅游。不过看来是什么东西觉得我太高兴了，于是我碰到了乘飞机12年来最古怪的一次情况。
-我准备乘11点半的飞机起飞的，这个飞机昨天差的时候座位蛮多，而且后面的航班我也查过，座位也非常多。不过因为10点半的飞机机械故障，一支延误到我离开机场的时候。很多人立即买了后面飞机的机票，或者等待候补。于是我的机会就只有当天最晚的9点航班，并且因为飞机晚点导致此班航班的抵达时间到了12天半。换句话说，我头次乘到了午夜航班。
-最麻烦的事情还不是在航班上，因为我一直不能确定候补的状况，所以我就只能一直在机场里面等待，而且每个小时要去问一次，然后重新寻找座位。还要自己帖钱吃饭。
-民航的免票，你的名字是女人。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -712,6 +731,10 @@ dpkg-reconfigure locales的默认语言设定修改的是/etc/default/locale，�
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2858/">京都游记</a>
             </li>
           
@@ -745,10 +768,6 @@ dpkg-reconfigure locales的默认语言设定修改的是/etc/default/locale，�
           
             <li class="post">
               <a href="/blog/archives/2850/">SI的七个基础单位</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2849/">模拟网络丢包延迟和TC的使用</a>
             </li>
           
         </ul>

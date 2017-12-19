@@ -94,6 +94,45 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Mar 2, 2017
+         - 4 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/2849/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/2849/">模拟网络丢包延迟和TC的使用</a>
+    </h1>
+</header>
+
+
+        
+          <p>iptables方案 这个方案纯基于iptables，不需要内核模块，对容器更加友好一些。
+iptables -A OUTPUT -d xx.xx.xx.xx -m statistic --mode random --probability 0.1 -j DROP  但是这个方案有个副作用。ping的时候，能看到错误“不允许的操作”。
+tc方案 tc方案相对比较复杂。我们先不说这些复杂的事情，先说结果。
+tc qd add dev wlan0 root netem delay 100ms tc qd change dev wlan0 root netem loss 50%  一个是延迟一个是丢包，一个是设定一个是修改。netem还允许你做乱序和重复。方法就不细写了。删除是这么干。
+tc qd del dev wlan0 root netem  你再用tc qd show看看是不是规则已经没了？
+tc简述 tc是linux下面用来控制网络发包（注意是发包）的一套系统。基本的设计目标是确定优先级，限流，也有测试性的丢包之类的策略。可以配合iptables和route协同工作。
+基本原理 包从进入tc开始，分为多个qd(qdisc)。每个qd可以包含多个子qd，qd彼此连接形成一颗树。每个qd上可以附加filter，选择进入哪个child。如果都没命中，那就看本身规则。
+我们先从最简单的例子开始。将root qd改为prio。
+sudo tc qdisc add dev eth0 root handle 1: prio  使用tc qd show查看变化。完成后使用sudo tc qdisc del dev eth root删除变化，还原为默认的pfifo_fast。</p>
+
+          
+              <footer>
+                  <a href="http://blog.shell909090.org/blog/archives/2849/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Feb 24, 2017
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/2848/#disqus_thread">Comments</a>
@@ -461,42 +500,6 @@ ipython nbconvert --to slides --reveal-prefix &quot;http://cdn.jsdelivr.net/reve
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Aug 24, 2016
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/2839/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/2839/">CentOS 6下安装Python2.7</a>
-    </h1>
-</header>
-
-
-        
-          <p>我以为只有我不知道，不过看来大家都不知道。
-很多时候，我们还得维护CentOS 6的设备。这件事很大程度上不是我们能决定的。但是CentOS 6的默认Python是2.6，很多最新的代码无法执行。例如Django，必须使用Python2.7&frasl;3.4&frasl;3.5。ansible好像也要求新版本Python。
-作为CentOS管理员，第一个想法当然是编译。但是在CentOS 6下，不应该自行编译Python。因为Python的编译有很多坑，例如默认没有内置readline，没有内置sqlite。你不信编译了试试看？我直接从源码编译是不行的。
-有的同学提出想法说，可以下在srpm包然后和Python2.7的source code做compatible。但是我要说一个比这个简单的多的官方方法——RHSCL。
-RHSCL的全称是Red Hat Software Collections。旨在于在长期支持版本中提供最新版本的动态语言和数据库支持。这里是RHSCL支持的基础工具和版本。这里是说明性文档。具体方法如下：
-# 1. Install a package with repository for your system: # On CentOS, install package centos-release-scl available in CentOS repository: $ sudo yum install centos-release-scl # On RHEL, enable RHSCL repository for you system: $ sudo yum-config-manager --enable rhel-server-rhscl-7-rpms # 2. Install the collection: $ sudo yum install python27 # 3. Start using software collections: $ scl enable python27 bash  一定要注意最后一条指令。RHSCL并没有将Python安装到系统路径下，因此需要用特别的指令来配置环境，启用python2.</p>
-
-          
-              <footer>
-                  <a href="http://blog.shell909090.org/blog/archives/2839/" rel="full-article">Read On &rarr;</a>
-              </footer>
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -768,6 +771,10 @@ RHSCL的全称是Red Hat Software Collections。旨在于在长期支持版本�
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2858/">京都游记</a>
             </li>
           
@@ -801,10 +808,6 @@ RHSCL的全称是Red Hat Software Collections。旨在于在长期支持版本�
           
             <li class="post">
               <a href="/blog/archives/2850/">SI的七个基础单位</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2849/">模拟网络丢包延迟和TC的使用</a>
             </li>
           
         </ul>

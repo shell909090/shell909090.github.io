@@ -94,6 +94,38 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Jul 7, 2009
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/71/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/71/">ssh翻墙服务</a>
+    </h1>
+</header>
+
+
+        
+          <p>不多说了，上脚本。
+-----------/etc/init.d/sshtunnel------------ #!/bin/bash PATH=/bin:/sbin:/usr/bin:/usr/sbin CONF=&quot;/etc/default/sshtunnel&quot; source $CONF if ! [ -x /usr/bin/ssh ]; then exit 0 fi start () { echo -n &quot;Starting tunnel..&quot; ssh -CNq -D &quot;$PROXYPORT&quot; &quot;$USERNAME@$SSHHOST&quot; -p $SSHPORT -o ServerAliveInterval=30 &amp; echo &quot;done.&quot; } stop () { echo -n &quot;Stopping tunnel..&quot; PID=$(netstat -nlp -4 | grep &quot;:$PROXYPORT&quot;) PID=$(echo $PID | sed &quot;s/.*LISTENs*(.*)/1/&quot; | cut -f1 -d/) kill -9 $PID echo &quot;done.&quot; } case &quot;$1&quot; in start|restart) start ;; stop) stop ;; restart) stop start ;; *) echo &quot;Usage: $0 {start|stop|restart|clear}&quot; exit 1 ;; esac exit 0 -----------------end of file------------------ ---------/etc/default/sshtunnel---------- PROXYPORT=7777 USERNAME=abc SSHHOST=abc SSHPORT=22 -----------------end of file------------------  首先准备一个远程服务器，获得域名端口，用户名密码。而后将上述脚本放置于指定位置，修改/etc/default/sshtunnel的值，即完成配置。但是上述脚本并没有解决自动登录问题，因此，请生成一个没有密码的密钥，将公钥导入远程服务器。</p>
+
+          
+              <footer>
+                  <a href="http://blog.shell909090.org/blog/archives/71/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Jun 30, 2009
          - 2 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/70/#disqus_thread">Comments</a>
@@ -455,36 +487,6 @@ apt-get install git-core python-gtk2-dev cvs libtool automake python-enchant lib
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Apr 5, 2009
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/61/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/61/">移动时代的一个应用预测</a>
-    </h1>
-</header>
-
-
-        
-          <p>贝壳今天在晚libfetion for pidgin的时候，突然灵光一闪，想出一个移动时代的应用。
-应该说，这是一种融合了IM，语音，高速网络，移动设备后的应用。本身看起来像IM一样，可以方便的和别人聊天。但是，由于移动的垄断，目前除了飞信，谁 也无法保证客户的长期在线。虽然MSN等等可以借助GPRS上网，但是GPRS毕竟是要断线的。如果借助移动和设备的结合，就可以让每个客户端长期在线。 当然，这个思路就是移动飞信正在弄的思路，本身并不新鲜。
-和别人聊天，多数是用文字吧？那如果能够附加语音，视频呢？我们可以想象这么一个场景。某人A给B打电话，B在开会，不能接。如果在现在，只有发送短信。 价格贵不说，打字也很麻烦。如果借助这种业务，A可以给B发送一个语音邮件。选中B，选择语音邮件，说两句话，关闭，点击发送。B在收到信件后，可以当场 看，也可以等有空了看。甚至，更进一步的，如果计算技术达到一定水平了。B可以选择识别A的语音邮件，将内容转换为文字(当然，这个由A做更合适。他具有 自己的语音库，传输量也小了很多。)。或者选择A的文字邮件，将内容阅读出来。这样实际上可以保证任何人的随时随地在线，而且语音和邮件互通。
-当然，这个技术的实现太过依赖于移动运营商的开发和开放，也依赖于语音技术(语音识别和TTS)。如果是美国，估计在3-4年内会出现这类产品，4-5年内会普及。如果是中国——上帝保佑你吧，中国移动。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -756,6 +758,10 @@ apt-get install git-core python-gtk2-dev cvs libtool automake python-enchant lib
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2858/">京都游记</a>
             </li>
           
@@ -789,10 +795,6 @@ apt-get install git-core python-gtk2-dev cvs libtool automake python-enchant lib
           
             <li class="post">
               <a href="/blog/archives/2850/">SI的七个基础单位</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2849/">模拟网络丢包延迟和TC的使用</a>
             </li>
           
         </ul>

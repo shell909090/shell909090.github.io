@@ -94,6 +94,46 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Dec 17, 2017
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/2859/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/2859/">在云存储上叠加加密文件系统</a>
+    </h1>
+</header>
+
+
+        
+          <p>目标很简单。云存储上很多文件都挺私人的，直接放着很吓人。虽说云存储采用各种方法来保证你的安全，但是世界上没有绝对的安全。万一密码泄漏，或者更糟糕，云存储泄漏。此时你的各种文件就在网络上裸奔了。
+最简单的解决方法是什么？在底层存储上套一层加密呗。不过由于是云存储，所以基于块设备的加密方案不能用，例如LUKS。否则你同步到云上的就是一个超级巨大的块文件，然后每次修改，云存储客户端都要找到差别上传。这太蛋疼了。正解是每个文件分别加密上传。但即便如此，对于超大文件进行加密后依然会影响上传效率，请提前考虑一下这个问题。
+同时又要注意，云存储用的加密文件系统和普通的加密文件系统还有点差别。很多加密文件系统的daemon会认为自己是唯一一个会访问加密内容的进程，而云存储可能随时接收来自远程的修改。所以这会造成一些问题。
+备选方案 我对比了四种方案，EncFS，CryFS，GoCryptFS，eCryptFS。对比的方法是用这四种分别建立一个加密目录，然后用不同的方法做写入测试，看他的各种参数。顺便说一句，如果你要看的话，其实看这份表格就好。我只是在自己的机器上复现了一下，顺便了解一下各家特点。
+测试语句：
+time dd if=/dev/zero of=test bs=1048576 count=1024 time dd if=/dev/zero of=test bs=1024 count=1048576 time tar xf linux-4.13.12.tar.xz  其中，在裸盘上直接解压内核源码耗时7.568s，空间使用870M。
+数据对比 +---------+-------+-----+-------+-----+-------+-----+--------------+ | |time1 |size1|time2 |size2|time3 |size3|comment | +---------+-------+-----+-------+-----+-------+-----+--------------+ |EncFS |13.210s|1.1G |39.039s|1.1G |26.496s|894M | | +---------+-------+-----+-------+-----+-------+-----+--------------+ |CryFS |9.327s |1.1G |21.230s|1.1G |42.918s|2.5G |删除耗时2.804s| +---------+-------+-----+-------+-----+-------+-----+--------------+ |GoCryptFS|3.515s |1.1G |28.180s|1.1G |19.874s|918M | | +---------+-------+-----+-------+-----+-------+-----+--------------+ |eCryptFS |3.132s |1.1G |10.218s|1.1G |9.448s |1.4G | | +---------+-------+-----+-------+-----+-------+-----+--------------+  解读 首先说怎么解读。time1是连续写入性能，time2是离散写入性能，time3是小文件写入性能，size3是大量小文件膨胀系统。size1和size2没啥用。
+下面先看性能。从性能上看，最优秀的是eCryptFS。这是理所当然，因为这是唯一一个内核态而且和内核整合的系统。GoCryptFS次之。EncFS要慢上好多。至于CryFS，一开始写小文件就原型毕露了。何况这是唯一一个删除大文件时间超过1s的，达到2.8s。你看我其他系统测试里都没写。
+然后是膨胀率。EncFS膨胀2.75%，CryFS膨胀近三倍，GoCryptFS膨胀5.52%，eCryptFS膨胀65%。相比起来，EncFS膨胀率最小，GoCryptFS次之，CryFS最糟糕。
+安全性 下面是同一个人出的三份审计报告：</p>
+
+          
+              <footer>
+                  <a href="http://blog.shell909090.org/blog/archives/2859/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Nov 22, 2017
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/2858/#disqus_thread">Comments</a>
@@ -488,45 +528,6 @@ bonding的数据获取 我们再看dev_get_stats，这个函数里面实际上�
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Mar 2, 2017
-         - 4 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/2849/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/2849/">模拟网络丢包延迟和TC的使用</a>
-    </h1>
-</header>
-
-
-        
-          <p>iptables方案 这个方案纯基于iptables，不需要内核模块，对容器更加友好一些。
-iptables -A OUTPUT -d xx.xx.xx.xx -m statistic --mode random --probability 0.1 -j DROP  但是这个方案有个副作用。ping的时候，能看到错误“不允许的操作”。
-tc方案 tc方案相对比较复杂。我们先不说这些复杂的事情，先说结果。
-tc qd add dev wlan0 root netem delay 100ms tc qd change dev wlan0 root netem loss 50%  一个是延迟一个是丢包，一个是设定一个是修改。netem还允许你做乱序和重复。方法就不细写了。删除是这么干。
-tc qd del dev wlan0 root netem  你再用tc qd show看看是不是规则已经没了？
-tc简述 tc是linux下面用来控制网络发包（注意是发包）的一套系统。基本的设计目标是确定优先级，限流，也有测试性的丢包之类的策略。可以配合iptables和route协同工作。
-基本原理 包从进入tc开始，分为多个qd(qdisc)。每个qd可以包含多个子qd，qd彼此连接形成一颗树。每个qd上可以附加filter，选择进入哪个child。如果都没命中，那就看本身规则。
-我们先从最简单的例子开始。将root qd改为prio。
-sudo tc qdisc add dev eth0 root handle 1: prio  使用tc qd show查看变化。完成后使用sudo tc qdisc del dev eth root删除变化，还原为默认的pfifo_fast。</p>
-
-          
-              <footer>
-                  <a href="http://blog.shell909090.org/blog/archives/2849/" rel="full-article">Read On &rarr;</a>
-              </footer>
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -795,6 +796,10 @@ sudo tc qdisc add dev eth0 root handle 1: prio  使用tc qd show查看变化。�
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2858/">京都游记</a>
             </li>
           
@@ -828,10 +833,6 @@ sudo tc qdisc add dev eth0 root handle 1: prio  使用tc qd show查看变化。�
           
             <li class="post">
               <a href="/blog/archives/2850/">SI的七个基础单位</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2849/">模拟网络丢包延迟和TC的使用</a>
             </li>
           
         </ul>

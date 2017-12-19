@@ -94,6 +94,50 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Feb 4, 2015
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/2724/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/2724/">openvpn的几种基本模式</a>
+    </h1>
+</header>
+
+
+        
+          <p>vpn的原始模式 vpn的最简模型，相当于在两台机器上插一块虚拟网卡，然后中间连一根虚拟网线连通。因此vpn才得名vpn(virtual private network)。
+其复杂之处在于，这块虚拟网卡如何配置网络，和别的网卡是什么关系。再加上多个节点间如何通讯。种种都够新手喝一壶。
+虽然openvpn在科学上网上是废了，但是在不出国的网络上用来保护通讯，还是非常好用的。
+tap模式 tap模式的特点是二层打通。典型场景是从外部打一条隧道到本地网络。进来的机器就像本地的机器一样参与通讯，你分毫看不出这些机器是在远程。
+优点：
+ 配置简单。 不需要在所有机器上配置或者动网关。  缺点：
+ tap在部分设备上不支持(例如移动设备)。 wlan加入网桥后不一定可以工作。 广播包会散发到虚拟网络中，可能极大消耗流量。  特别解说一下wlan。部分AP对一个客户只接受一个MAC地址，因此无法做网桥。这应该是wifi网络的常规问题了。解决方法是换AP，或者做mac-nat。
+操作方法：
+你需要先在当前网络中，为vpn预留一些地址。这些地址应该足够拨入用户使用，不应和dhcp撞车，不应有其他人使用。
+而后，建立一个br，将当前工作的eth迁移过去。(具体细节就不说了，每个系统小有差别)再建立一个tap vpn，在启动脚本中指定加入这个br。
+example 假定内网地址为172.19.0.0/24，其中保留172.19.0.16-172.19.0.31供vpn使用。
+服务器配置:
+port [port num] proto udp ; 参考我上一篇[vpn不要走tcp协议](http://blog.shell909090.org/blog/archives/2722) dev tap ca ca.crt cert server.crt key server.key server-bridge 172.19.0.16 255.255.255.0 172.19.0.17 172.19.0.31 ; 或者可以采用这句 ; server 172.19.0.16 255.255.255.240 ; 注意掩码实际上等于/28，做掩码运算后，这段地址和上面的保留地址重合 script-security 2 up vpn-start ; 建议使用绝对路径，避免版本坑 down vpn-stop  vpn-start:
+brctl add br0 $dev  vpn-stop:</p>
+
+          
+              <footer>
+                  <a href="http://blog.shell909090.org/blog/archives/2724/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Feb 2, 2015
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/2722/#disqus_thread">Comments</a>
@@ -454,35 +498,6 @@ getcontext/setcontext测试 使用s_context程序来测试setcontext的性能。
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Oct 31, 2014
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/2693/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/2693/">context切换测试——线程创建有关部分请求review</a>
-    </h1>
-</header>
-
-
-        
-          <p>线程模式开销 使用t_thread程序，循环1M次，重复6次，原始数据如下：
-9.57,8.22,21098,0,0,0,104% 9.77,8.40,29704,0,0,0,104% 9.36,8.17,10390,0,0,0,106% 9.56,8.50,14514,0,0,0,107% 9.35,8.34,7244,0,0,0,108% 9.57,8.43,26351,0,0,0,106%  统计结果如下：
- time mean = 9.53 time var = 0.02 kernel mean = 8.34 kernel var = 0.013  解读数据可以看到，thread模式的开销为9530ns(已经降到纳秒级了)，CPU将为8340ns，精确级别在20ns级别。粗略换算一下每次create的开销大约是30k个时钟周期。简单对比可以看出，thread模式比fork模式大约快了5倍。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -754,6 +769,10 @@ getcontext/setcontext测试 使用s_context程序来测试setcontext的性能。
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2858/">京都游记</a>
             </li>
           
@@ -787,10 +806,6 @@ getcontext/setcontext测试 使用s_context程序来测试setcontext的性能。
           
             <li class="post">
               <a href="/blog/archives/2850/">SI的七个基础单位</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2849/">模拟网络丢包延迟和TC的使用</a>
             </li>
           
         </ul>

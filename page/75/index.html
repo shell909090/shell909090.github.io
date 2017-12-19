@@ -94,6 +94,40 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Jan 15, 2007
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/348/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/348/">查找重复文件</a>
+    </h1>
+</header>
+
+
+        
+          <p>算是介绍一个奇淫巧技吧。查找重复的文件，这个应该有很多软件都可以做的。不过在Linux里面，利用系统工具，一句语句查找应该就比较少见了。
+$find . -name &quot;*&quot; -type f -size +0 -exec md5sum {} ; | sort | uniq -d -w 32  原理是这样的，先用find查找当前所有文件。我们加上限定类型必须是文件，目录不要。限定大小不为0，空文件不要。然后对所有满足条件的执行md5sum，获得md5和文件的列表。然后排序，再针对md5的部分做唯一限定。就得到了所有md5相同的文件的列表。
+问题是，这时候我们得到的还只是一堆重复的文件的md5。我们可以把以上步骤拆开来获得完整的输出。
+$find . -name &quot;*&quot; -type f -size +0 -exec md5sum {} ; | sort &gt; file_md5 $cat file_md5 | uniq -d -w 32 $grep &quot;...&quot; file_md5  相信大家都看出是怎么回事情了，就不赘言了。
+Windows下以前我总是执行不出，原因在于要这么写。
+find . -type f -size +0 -exec md5sum {} ; | sort &gt; report.txt  差一个转义，因为不需要。
+总结一下，我们可以用一个脚本来处理这些问题。
+--------------------------fine_rep------------------------------ find $1 -type f -size +0 -exec md5sum {} ; | sort &gt; &quot;file_md5&quot; cat &quot;file_md5&quot; | uniq -d -w 32 | cut -d&quot; &quot; -f1 | while read x do grep &quot;$x&quot; file_md5 echo &quot;&quot; done echo &quot;done&quot; rm &quot;file_md5&quot; ------------------------------------------------------------  </p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Jan 13, 2007
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/347/#disqus_thread">Comments</a>
@@ -398,39 +432,6 @@ Process (tistream &amp; is)和Process (line_buffer &amp; lb)是两大入口，�
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Dec 20, 2006
-         - 6 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/338/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/338/">windows service的C&#43;&#43;封装实现</a>
-    </h1>
-</header>
-
-
-        
-          <p>windows系统服务入口的封装类，service是基类，service_manager是管理类。支持UNICODE，可以多服务封装在一个程序里面，过程当然都是自动的。拥有自动防错系统，在服务异常退出的时候会去关闭服务，而不是开着服务直接没了进程。写一个类，继承service，然后在哪里出一个实例，就可以了。service中有很多虚函数，可以重载了监听对应事件(我应该写的比较明白吧)。get_service_name，返回UNICODE的字符串指针，定义服务名称。注意是纯虚函数，必须实现。get_dependence，也是返回UNICODE的字符指针。指明这个服务依赖什么服务。get_service_type返回服务类型，其实也就是是否可以交互。get_contral_accepts，支持的信号(例如是否可以暂停)，默认可以暂停。on_start开始时候调用的函数，下同。
-使用方法
-#include #include &quot;service.h&quot; class test_service : public service{ public: virtual LPTSTRget_service_name (); virtual DWORD on_start (DWORD argc, LPTSTR * argv); virtual DWORD on_stop (); virtual DWORD on_shutdown (); }; LPTSTR test_service::get_service_name () { return _T (&quot;test_service&quot;); } DWORD test_service::on_start (DWORD argc, LPTSTR * argv) { return service::on_start (argc, argv); } DWORD test_service::on_stop () { return service::on_stop (); } DWORD test_service::on_shutdown () { return service::on_shutdown (); } int _tmain (int argc, _TCHAR * argv[]) { test_service ts; if (argc == 1) service_manager::start (); else if (!</p>
-
-          
-              <footer>
-                  <a href="http://blog.shell909090.org/blog/archives/338/" rel="full-article">Read On &rarr;</a>
-              </footer>
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -702,6 +703,10 @@ Process (tistream &amp; is)和Process (line_buffer &amp; lb)是两大入口，�
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2858/">京都游记</a>
             </li>
           
@@ -735,10 +740,6 @@ Process (tistream &amp; is)和Process (line_buffer &amp; lb)是两大入口，�
           
             <li class="post">
               <a href="/blog/archives/2850/">SI的七个基础单位</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2849/">模拟网络丢包延迟和TC的使用</a>
             </li>
           
         </ul>

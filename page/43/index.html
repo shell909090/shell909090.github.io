@@ -94,6 +94,39 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Apr 14, 2011
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/1775/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/1775/">python解0-1背包问题</a>
+    </h1>
+</header>
+
+
+        
+          <p>女朋友的单位需要解一个背包问题，说白了就是算票。通过有限的票，凑出最接近一个数字的组合来。
+这个是经典问题，不过票数比较多，我本来用随机划分，然后一次优化一步的随机算法，凑出一个接近的数字。这样算法比较快，不过不是很准。
+女朋友领导发话了，时间长点可以接受，但是最好准点。
+照做吧，幸好这个算法算100张票子也就是10秒不到，这还是mini-itx。
+下面上算法，具体算法猛击这里（http://www.oiers.cn/pack/Index.html ）和这里（http://zh.wikipedia.org/wiki/%E8%83%8C%E5%8C%85%E9%97%AE%E9%A2%98 ）。输入是数字列表和目标，输出是组合和误差。f[i]是目前为止，最大代价为i所能获得的最高收益，以及组合方式。numlist是二维数组，分别是代价和收益。
+def resolv_dym(numlist, target): f = [[0, []] for i in range(0, target + 1)] for c, w in numlist: for v in range(target, c - 1, -1): if f[v - c][0] + w &gt; f[v][0]: f[v][0] = f[v - c][0] + w f[v][1] = f[v - c][1] + [(c, w), ] return f[target][1], float(abs(target - f[target][0]))  当然，在这个特例里面，代价和收益相等，所以下面是真实代码。
+def resolv_dym(numlist, target): f = [[0, []] for i in range(0, target + 1)] for i in numlist: for v in range(target, i - 1, -1): if f[v - i][0] + i &gt; f[v][0]: f[v][0] = f[v - i][0] + i f[v][1] = f[v - i][1] + [i, ] return f[target][1], float(abs(target - f[target][0]))  完毕。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Apr 13, 2011
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/1773/#disqus_thread">Comments</a>
@@ -442,37 +475,6 @@ C
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Mar 29, 2011
-         - 2 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/1757/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/1757/">python源码解析读书笔记（二）——函数特性</a>
-    </h1>
-</header>
-
-
-        
-          <p>1.函数的性质    &gt;&gt;&gt; def outer(o1, o2):   ... def inner(i1 = 10, i2 = \[\]):   ... return i1+o1+o2   ... return inner   ...   &gt;&gt;&gt; a1 = outer(50, 30)   &gt;&gt;&gt; a2 = outer(50, 30)   &gt;&gt;&gt; a1.func\_closure   (&lt;cell at 0xb75454f4: int object at 0x8455ddc&gt;, &lt;cell at 0xb7545524: int object at 0x8455cec&gt;)   &gt;&gt;&gt; a2.func\_closure   (&lt;cell at 0xb754541c: int object at 0x8455ddc&gt;, &lt;cell at 0xb75453a4: int object at 0x8455cec&gt;)   两次生成的函数对象拥有不同的闭包空间。    &gt;&gt;&gt; a1.</p>
-
-          
-              <footer>
-                  <a href="http://blog.shell909090.org/blog/archives/1757/" rel="full-article">Read On &rarr;</a>
-              </footer>
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -744,6 +746,10 @@ C
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2858/">京都游记</a>
             </li>
           
@@ -777,10 +783,6 @@ C
           
             <li class="post">
               <a href="/blog/archives/2850/">SI的七个基础单位</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2849/">模拟网络丢包延迟和TC的使用</a>
             </li>
           
         </ul>
