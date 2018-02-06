@@ -94,6 +94,62 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Feb 9, 2015
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/2727/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/2727/">p2p vpn的部署方法</a>
+    </h1>
+</header>
+
+
+        
+          <p>p2p vpn的基本概念 p2p vpn这个概念的提出，是因为openvpn在数据传输上的一个特性——虚拟链路都是从拨入端到服务器的。例如vpn网关在北美，上海电信的两个人要通讯，数据就要从北美绕一圈。这个特性在多节点打通上无疑很扯，于是催生了很多p2p vpn。他们的基本理念是——尽力从端到端，不成再绕。而且为了解决端到端，顺便得解决NAT问题——也就是带有STUN打洞。
+tun模式的三层转发表 先说明一点，大部分p2p vpn都是tun模式。这也很正常，tunnel用的么。但是大家在配置openvpn的时候，不知是否注意过iroute这个指令。为什么会有iroute指令的存在？
+tun模式是三层模式，相信大家都有数。也就是说，报文传递的时候只带有三层地址，openvpn也凭借三层地址来找到要转发给谁。这里和普通的网络就显示出区别了——普通网络使用ARP协议来自管理转发规则，而openvpn则是凭借内部写好的转发表。
+例如vpn gateway的虚地址是192.168.100.1，节点1是100.5，节点2是100.10。那么节点2发送报文给节点1时，报文大约长这个样子。
+192.168.100.10 -&gt; 192.168.100.5
+在普通网络中，第一步会查路由表，确定是eth0(虚拟网络是tun0)。然后在上面广播ARP请求，获得MAC地址。最后填写MAC地址，发送报文。但是在tun虚拟网络中，仔细看你的路由表，是不是整个虚网络都被交给了一个叫做100.4之类的奇怪gateway转发？甚至如果你没有打开client-to-client，整个虚网络只有一台可见，这台还是交给这个gateway转发的。
+这是因为你到这个奇怪的IP之间还是走ARP过程，但是这个奇怪的IP收到你的报文后，就可以是纯三层过程了。你可以把这个IP视为本地openvpn的化身。openvpn会把你的报文发送到openvpn gateway，然后openvpn gateway再转发给正确的机器。也就是说，openvpn gateway必须知道某个目标IP需要转给哪个节点，物理地址多少，对吧？
+作为纯虚网络，知道节点的IP很容易——毕竟是openvpn gateway管理的地址分配过程。但是作为tunnel和多地址打通，这里就有点困难了。例如节点1还有个网段是192.168.80.0/24，节点2还有个网段是192.168.60.0/24，那么如下一个报文从节点2中出去，你让openvpn gateway怎么办？
+192.168.60.15 -&gt; 192.168.80.15
+你也许会说，我当然有配节点1的网关转给openvpn的拨入端。问题是，这个动作，openvpn的拨入端尚且不知，何况openvpn gateway？于是我们派生了route/iroute这两个指令。
+route/iroute表示这个地址段归属于这个节点所有，区别在于route同时修改路由表，而iroute不修改路由表。配合push，可以由服务器端下发指令修改客户端路由表。
+p2p vpn也有类似的问题。甚至，由于没有统一配置端，因此连每个节点的虚IP都不能很容易的得到。在配置中必须注意这点。
+n2n n2n的模式比较简单，也比较有局限性。基本分为两个端，supernode和edge。supernode类似于hub，把所有edge拉到一起。edge都是对等的。
+supernode:
+supernode -l port  edge:
+edge -a [address] -c [name] -k [password] -l [supernode:port] -u [userid] -g [groupid]  解释一下。开一个supernode，不用做任何设定。反正supernode也不会持有edge别的信息。edge要设定supernode的ip和端口，然后提交name和password。name和password相同的，就进入同一个虚拟网络。然后自己的虚拟ip是address。最后的userid和groupid必须是数字。主要是因为开tun需要root权限，因此可以在获得完权限后退化成普通用户，以防权限太高。
+这里好玩的就是，理论上address可以天南海北，完全不用管路由怎么走。甚至172.16.0.1可以和10.0.0.1通讯(我没实际确认)。因为大家都是看彼此的IP是否经过注册，而不是计算路由表。
+但是这里就有个缺点，我看到man文档中只提到address，没提到可以提交一个网段。所以无论我怎么设定，使用三层方案做隧道的时候，n2n是转不过去的。因为他不知道这个网段归哪个节点管。
+所以，n2n的p2p模式很便利，但是没法打tunnel(至少我不知道怎么玩)。
+tinc tinc和n2n一样，也是一种p2p vpn。不过好处在于，tinc允许你在一个节点上配置多个网络，因此可以打tunnel。
+在配置之前，我先约定两个词。“配置名”和“节点名”。一个配置是接入同一个网络的多个节点，还有他们如何拓扑。节点名就是一个节点的名字。所以，和配置有关的有以下两个。
+/etc/tinc/nets.boot: 这里写上想自动启用的配置的名字
+/etc/tinc/[configname]: 配置的根路径，以下路径全是相对路径。
+配置 下面就是某个配置中的一堆文件。注意这些配置都是配置自己节点的属性信息。
+tinc.conf:
+Name = [nodename] Device = /dev/net/tun ConnectTo = xxx  tinc-up:</p>
+
+          
+              <footer>
+                  <a href="http://blog.shell909090.org/blog/archives/2727/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Feb 4, 2015
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/2724/#disqus_thread">Comments</a>
@@ -466,38 +522,6 @@ QQ  read SMS read/modify contacts 照相 录音 location read/write call log rea
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Nov 6, 2014
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/2696/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/2696/">context切换测试——C语言协程有关部分请求review</a>
-    </h1>
-</header>
-
-
-        
-          <p>setjmp/longjmp测试 使用s_jmp程序来测试setjmp的性能。1G次循环。下面是结论：
-5.77,0.00,29,0,0,0,99% 5.70,0.00,30,0,0,0,99% 5.71,0.00,22,0,0,0,99% 5.71,0.00,23,0,0,0,99% 5.70,0.00,30,0,0,0,100% 5.70,0.00,23,0,0,0,99%  统计结果如下：
- time mean = 5.715 time var = 0.000625  单次调度开销只有5.7ns，在所有测试中性能最优。(glibc-2.19/sysdeps/x86_64/setjmp.S)
-getcontext/setcontext测试 使用s_context程序来测试setcontext的性能。100M次循环。下面是结论：
-12.96,5.88,79,0,0,0,99% 13.13,5.94,105,0,0,0,99% 12.95,6.18,57,0,0,0,99% 13.13,5.90,64,0,0,0,99% 12.95,5.88,82,0,0,0,99% 12.96,5.80,51,0,0,0,99%  统计结果如下：
- time mean = 13.01 time var = 0.0068  单次调度开销高达130ns，仅比系统的sched在高线程下略快。这事很奇怪，因为根据我看到的源码(glibc-2.19/sysdeps/unix/sysv/linux/x86_64/setcontext.S)，getcontext/setcontext在glibc中是用汇编实现的。其中陷入内核只是为了设定signal mask。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -769,6 +793,10 @@ getcontext/setcontext测试 使用s_context程序来测试setcontext的性能。
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2860/">similan船宿</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
             </li>
           
@@ -804,10 +832,6 @@ getcontext/setcontext测试 使用s_context程序来测试setcontext的性能。
               <a href="/blog/archives/2851/">/proc/net/dev中bonding网卡的流量计算</a>
             </li>
           
-            <li class="post">
-              <a href="/blog/archives/2850/">SI的七个基础单位</a>
-            </li>
-          
         </ul>
       </section>
     
@@ -819,7 +843,7 @@ getcontext/setcontext测试 使用s_context程序来测试setcontext的性能。
 </div>
 
 <footer role="contentinfo">
-  <p>Copyright &copy; 2017 Shell Xu - <a href="http://blog.shell909090.org/license/">License</a> -
+  <p>Copyright &copy; 2018 Shell Xu - <a href="http://blog.shell909090.org/license/">License</a> -
   <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
 </p>
 

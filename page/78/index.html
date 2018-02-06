@@ -96,6 +96,42 @@ ga('send', 'pageview');
 <header>
     <p class="meta">Sep 11, 2006
          - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/319/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/319/">X system 配置文件执行流程分析</a>
+    </h1>
+</header>
+
+
+        
+          <p>1.startx启动流程
+/usr/bin/startx +-&gt;/etc/X11/xinit/xinitrc |-&gt;/etc/X11/Xsession |-&gt;~/.xinitrc |-&gt;/etc/X11/xinit/xserverrc |-&gt;/usr/bin/X11/X -&gt;~/.xserverrc
+startx脚本会分析用户主目录下是否存在特殊配置文件，如果不存在则使用系统默认脚本。默认脚本分两个部份，xinitrc启动客户端部份，xserverrc启动服务器端部份。
+xserverrc内容仅为启动X。xinitrc会执行/etc/X11/Xsession，而后进入session分析。
+2.Xsession
+/etc/X11/Xsession -&gt; /etc/X11/Xsession.d/*
+/etc/X11/Xsession和/etc/init.d/rc很类似，是用来循环依次启动其他脚本的控制脚本。他负责启动/etc/X11/Xsession.d/下的所有文件。其中50xfree86-common_determine-startup文件会依次检测以下3个文件，并且设置到STARTUP变量中。x-session-manager;x-window-manager;x-terminal-emulator;最后99xfree86-common_start文件会执行exec $STARTUP;完成整个系统的启动过程。
+3.gdm
+gdm服务被/etc/init.d/gdm启动，而后读取/etc/gdm/gdm.conf配置自身。后面是基于理论分析，没有加以验证。
+|-gdm---gdm-+-Xorg | `-x-session-manag-+-scim | `-ssh-agent  上面是pstree的结果，第1个gdm是/etc/init.d/gdm，第2个gdm是/usr/bin/gdm。gdm先启动一个X作为服务端，否则自身也无法以图形方式显示登录界面。而后gdm成为此X界面的唯一用户，显示登录系统。在用户登录后，gdm启动/etc/gdm/Xsession。这个脚本的内容和/etc/X11/Xsession非常类似，我怀疑为什么他们不用链接的方式(可能是因为包的关系？)。这时整个启动活动就结束了。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <p class="meta">Sep 11, 2006
+         - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/318/#disqus_thread">Comments</a>
 
         
@@ -504,36 +540,6 @@ SETI@China , Einstein@China , LHC@China , Predictor@China , Rosetta@China , CPDN
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Jul 14, 2006
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/309/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/309/">删除无赖</a>
-    </h1>
-</header>
-
-
-        
-          <p>大家知道，从3721首开记录后，很多软件都有卸不掉的情况。多数是插一个dll到explorer里面，让你无法UnloadLib，也不能kill。然后保护一堆文件不能删除，再放注册表项目。3721还加了一个驱动，这样就是神仙也删不掉。
-骂人不多骂了，方法两个。http://www.sysinternals.com/Utilities/PendMoves.html有一个项目，可以延迟删除。换句话说就是在启动的时候，讨厌的流氓加载前让内核做删除动作。很方便，重起下就没了。至于怎么找这些流氓的位置。http://www.sysinternals.com/Utilities/Autoruns.html同样公司，这个项目可以将开机所有自动加载的模块全部找出来。IE的插入组件也可以找出来。
-不过这个办法虽然好，可是还是会有破绽。万一连这两个软件运行都屏蔽呢？这个时候可以用linux live+ntfs r/w modules，这样删除任何东西的时候，神仙也挡不住。
-BTW,做live的时候，千万记得放一个ntfsfix在盘里面。贝壳的/dev/hda1有个logfile没有clean，结果死活不能写挂载……</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -805,6 +811,10 @@ BTW,做live的时候，千万记得放一个ntfsfix在盘里面。贝壳的/dev/
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2860/">similan船宿</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
             </li>
           
@@ -840,10 +850,6 @@ BTW,做live的时候，千万记得放一个ntfsfix在盘里面。贝壳的/dev/
               <a href="/blog/archives/2851/">/proc/net/dev中bonding网卡的流量计算</a>
             </li>
           
-            <li class="post">
-              <a href="/blog/archives/2850/">SI的七个基础单位</a>
-            </li>
-          
         </ul>
       </section>
     
@@ -855,7 +861,7 @@ BTW,做live的时候，千万记得放一个ntfsfix在盘里面。贝壳的/dev/
 </div>
 
 <footer role="contentinfo">
-  <p>Copyright &copy; 2017 Shell Xu - <a href="http://blog.shell909090.org/license/">License</a> -
+  <p>Copyright &copy; 2018 Shell Xu - <a href="http://blog.shell909090.org/license/">License</a> -
   <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
 </p>
 

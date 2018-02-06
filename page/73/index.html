@@ -94,6 +94,37 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Apr 2, 2007
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/369/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/369/">RTTI的几个应用</a>
+    </h1>
+</header>
+
+
+        
+          <p>贝壳最近研究了下RTTI，发现几个有意思的事情。
+dynamic_cast的应用。
+dynamic_cast可以将一个指针的类型试图转换为指定的类型，是否能转换要看当前指针的动态类型是否是指定类型的子类，而不管指针的声明类型。当失败时返回NULL，因此可以用来识别一个指针的动态类型是否是某个类的子类。
+typeid的应用。
+typeid可以获得某个类的类型信息，最主要的就是name。指明了当前是哪个类，这在串行化中是必要的信息。当判断一个指针的动态类型是否就是某个类的时候可以这样typeid(*p)==typeid(class)。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Mar 19, 2007
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/368/#disqus_thread">Comments</a>
@@ -362,38 +393,6 @@ ga('send', 'pageview');
 你不想学的话就当不存在了。
 嗯，都是幻觉，吓不倒我的。</p>
 
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Feb 7, 2007
-         - 2 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/359/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/359/">内存泄露检测简说</a>
-    </h1>
-</header>
-
-
-        
-          <p>我们首先从一段代码说起。
-#define _CRTDBG_MAP_ALLOC #include #include class test { public: test () { lpBuffer = new char[0x1000]; }; \~test () { delete lpBuffer; }; void *operator new (size_t s) { return malloc (s); }; void operator delete (void *pvMem) { if (pvMem != NULL) free (pvMem); }; void *operator new[] (size_t s) { return malloc (s); }; void operator delete[] (void *pvMem) { if (pvMem != NULL) free (pvMem); }; char *lpBuffer; }; test &amp; tt () { static test t; return t; } //test t; void process () { test tf; // _CrtDumpMemoryLeaks (); } int _tmain (int argc, _TCHAR * argv[]) { // test tf; test* tp=new test(); _CrtSetReportMode (_CRT_WARN, _CRTDBG_MODE_FILE); _CrtSetReportFile (_CRT_WARN, _CRTDBG_FILE_STDERR); _CrtSetDbgFlag (_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF); process (); // printf(&quot;hello, world.</p>
-
-          
-              <footer>
-                  <a href="http://blog.shell909090.org/blog/archives/359/" rel="full-article">Read On &rarr;</a>
-              </footer>
           
 
         
@@ -671,6 +670,10 @@ ga('send', 'pageview');
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2860/">similan船宿</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
             </li>
           
@@ -706,10 +709,6 @@ ga('send', 'pageview');
               <a href="/blog/archives/2851/">/proc/net/dev中bonding网卡的流量计算</a>
             </li>
           
-            <li class="post">
-              <a href="/blog/archives/2850/">SI的七个基础单位</a>
-            </li>
-          
         </ul>
       </section>
     
@@ -721,7 +720,7 @@ ga('send', 'pageview');
 </div>
 
 <footer role="contentinfo">
-  <p>Copyright &copy; 2017 Shell Xu - <a href="http://blog.shell909090.org/license/">License</a> -
+  <p>Copyright &copy; 2018 Shell Xu - <a href="http://blog.shell909090.org/license/">License</a> -
   <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
 </p>
 

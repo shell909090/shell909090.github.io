@@ -94,6 +94,47 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Sep 17, 2015
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/2787/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/2787/">使用tmate和mdp做培训</a>
+    </h1>
+</header>
+
+
+        
+          <p>tmate 其实很简单。有个大家都玩过tmux对吧。有个x炸天的工具，叫做tmate，是tmux的分支。地址在 这里 。
+这个工具能做什么呢？开一个tmux的窗口，连接一台服务器，得到一个ssh指令。然后，其他人可以用这条ssh指令直接查看你的tmux，只读或共享操作都可以(我建议只读)。
+这个工具进入了debian的testing和sid，但是没有进stable。所以要装一堆依赖编译一下。总之，最后是一个静态的binary文件，复制去bin目录下结束，没什么好废话的。
+自建服务器 tmate官方提供了一组公开服务器，供大家使用。当然，这些对我等大局域网居民来说是没用的。所以follow the guide(官方主页上有)，在自己的vps上搭建一个服务器。当然，22端口要改成其他端口。
+然后填一个设定文件(也在官方主页上)，你就能使用tmate连接自己的服务器了。fingerprint的扫描方法大概是，在tmate-slave目录下执行：
+ssh-keygen -lf keys/ssh\_host\_dsa\_key ssh-keygen -lf keys/ssh\_host\_rsa\_key ssh-keygen -lf keys/ssh\_host\_ecdsa\_key  会得到三个fingerprint，写到客户端的配置里去。
+唯一需要注意的是，除了tmate的配置文件里面需要设定三个fingerprint，你还得用ssh连接一下自己的这些服务器，并同意将fp添加到~/.ssh/known_host。不然也会有错误。
+然后tmate，就能看到ssh指令了。
+客户的连接 在tmate的窗口里，敲 tmate show-message ，你能够看到只读和读写ssh指令。这条指令里会有一个非常复杂的username，这个username是用作客户的身份验证的。虽然信息量并不是很大，但是作为临时的会话共享安全手段足够了。
+注意如果你使用只读指令分享了屏幕，那么在操作过程中不应该再敲这条指令。否则别人就能看到读写ssh指令。
+后面的事情就非常简单了，客户自己用ssh工具来连就行了。tmate对客户端没有任何要求。
+mdp tmate解决了pair work和屏幕分享的问题。但是要用于培训的话，我们还缺一个slide手段。
+mdp 是一个命令行的slide工具(当然你也可以用tpp)。基本是基于markdown的。你可以按照官方文档来做一个slide，然后就可以很happy的和小伙伴们分享屏幕操作了。
+还缺什么 其实最好还要有一个语音共享机制的，例如YY语音。
+性能如何 还没测。我在同组的三个人之间试了一回，非常好用。大量的用户还没测。等测下来再写一篇。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Aug 6, 2015
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/2783/#disqus_thread">Comments</a>
@@ -455,41 +496,6 @@ disassemble &gt;&gt;&gt; t = (1, 2, [30, 40]) &gt;&gt;&gt; def f(): t[2] += [50,
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Jun 17, 2015
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/2759/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/2759/">list.append的性能分析</a>
-    </h1>
-</header>
-
-
-        
-          <p>在python2.7.5的源码中，list的append操作最终调用的是Python-2.7.5/Objects/listobject.c:266这里的app1（请帮我复核一下，Python的源码有很多隐藏的手脚不容易看见）。
-在app1里，使用了list_resize来进行resize，而list_resize间接用到了PyMem_RESIZE。按照我的阅读，这个应该是层层转到realloc上的。
-下面就是查glibc源码的事了。我看到的应该是glibc-2.19/malloc/malloc.c:2951这里的__libc_realloc函数。这个函数很长，我大致读了一下。这里分了两个分支。一个是2992行的chunk_is_mmapped。如果我没理解错的话，我们的内存块不可能没有mapped。那么另一个就是2996行的HAVE_MREMAP，这个是编译时宏，我也不知道我的系统上是不是打开的。如果没打开的话，肯定是走alloc，copy，free的流程。
-所以我就用strace跟踪了一下，结果确实调用了mremap。
-这个函数在linux内核中。我使用的源码是linux-3.2，结果在linux-3.2/mm/mremap.c:535这里。
-大致看了一下函数实现。首先试图处理缩小，如果不行的话试图在扩展到最大(vma_to_resize)，如果这样还是不行，先试试看能不能追加映射(vma_expandable/vma_adjust)。如果都不行，他还是用的创建并移动的方法。(We weren’t able to just expand or shrink the area, we need to create a new one and move it..)。
-所以，总体来说，list.append的复杂度还是O(n)级。但是由于remap的内核实现，因此比直接搬数据应该会快一些。具体表现可能要以测试为准了。
-但是这里就有一个疑惑。难道python现在删除了复杂的内存层，将mm管理直接用系统的来支持么？我记忆中python源码解析里讲过python有一个巨复杂无比的内存控制系统。难道全用系统管理了么？对此我查了一下 2.6 / 2.7 的python mm文档。里面倒是明确提到不要同时使用系统api和python api来管理内存。但是并没有明确说明如何处理的实现。但是我在系统里并没有找到第二个实现（debug不算），唯一的实现在Python-2.7.5/Include/pymem.h:76，是直接转到realloc上去的。
-貌似在新证据出现前，我得认为python使用的glibc api来处理的mm问题。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -761,6 +767,10 @@ disassemble &gt;&gt;&gt; t = (1, 2, [30, 40]) &gt;&gt;&gt; def f(): t[2] += [50,
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2860/">similan船宿</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
             </li>
           
@@ -796,10 +806,6 @@ disassemble &gt;&gt;&gt; t = (1, 2, [30, 40]) &gt;&gt;&gt; def f(): t[2] += [50,
               <a href="/blog/archives/2851/">/proc/net/dev中bonding网卡的流量计算</a>
             </li>
           
-            <li class="post">
-              <a href="/blog/archives/2850/">SI的七个基础单位</a>
-            </li>
-          
         </ul>
       </section>
     
@@ -811,7 +817,7 @@ disassemble &gt;&gt;&gt; t = (1, 2, [30, 40]) &gt;&gt;&gt; def f(): t[2] += [50,
 </div>
 
 <footer role="contentinfo">
-  <p>Copyright &copy; 2017 Shell Xu - <a href="http://blog.shell909090.org/license/">License</a> -
+  <p>Copyright &copy; 2018 Shell Xu - <a href="http://blog.shell909090.org/license/">License</a> -
   <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
 </p>
 

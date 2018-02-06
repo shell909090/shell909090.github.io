@@ -94,6 +94,44 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Jul 3, 2013
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/2438/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/2438/">使用getmail备份imap邮件数据(例如gmail备份)</a>
+    </h1>
+</header>
+
+
+        
+          <p>使用getmail备份imap(例如gmail)服务器上数据的方法。
+原因 随着7.1的到来，诸位geek最重要的事情就是备份google reader的数据了。很多人都在讨论gmail还要不要用。
+废话，当然要。这么好的服务，为什么不用？
+只是随着google reader的事，在用gmail的时候也得留个心眼。平时数据勤备份，不要所有的内容都绑定到这个邮箱上，否则有得你哭的。
+安装和配置 getmail是一个用于将远程数据取到本地的系统，和fetchmail是一类东西。废话不多说，先装getmail。
+sudo aptitude install getmail4  之所以用getmail不用fetchmail，是因为fetchmail我搞不定。而且getmail比较容易备份到指定地点。要是输出能gzip掉就更好了。
+建立~/.getmail目录，下面放一个文件，例如gmail
+[retriever] type = SimpleIMAPSSLRetriever server = imap.gmail.com username = [username] password = [password] mailboxes = (&quot;[Gmail]/所有邮件&quot;,) [destination] type = Mboxrd path = ~/shell/gmail.mbox [options] read_all = false delivered_to = false received = false verbose = 2 message_log = ~/.getmail/gmail.log  username填你自己的用户名，普通用户不需要@gmail.com，企业用户需要@你的域名。password填密码，两次认证的需要分配一个Application-specific passwords。mailboxes里面不要照网络上的填写[Gmail]/All Mail，那是英文环境用的。
+~/shell/gmail.mbox是目标文件，你需要先touch出来。~/.getmail/gmail.log是log，建议和配置文件同名。
+执行 把下面的gmail替换为你的配置文件名，注意不需要写.getmail/的前缀。
+getmail -r gmail  系统就会开始备份你的数据。像贝壳的gmail这种数据，量比较大，时间也会比较长。
+问题 getmail是python写的，备份数据比较大的时候，内存消耗会很惊人。而且当处理巨量数目的文件时。在启动时会将目录全部下载到本地，然后计算一阵。这个耗时，网络消耗和CPU都比较大。要有点耐性。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Jul 1, 2013
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/2435/#disqus_thread">Comments</a>
@@ -466,39 +504,6 @@ route add -net 192.168.66.0/24 gw 192.168.1.4
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Apr 28, 2013
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/2397/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/2397/">git log的一个吐血问题</a>
-    </h1>
-</header>
-
-
-        
-          <p>刚刚在公司里查了半个多小时，记一下笔记。
-不知道你们有没有这种吐血经历。在git上有两个分支，莫名其妙合并到一起了。这可能是某个人的误操作。你检查log的时候，只看到他不停的把主分支merge到支线上去，却从没有把支线合并到主线上去。但是最终两个线却合并了，主线指向了支线。这是为什么？
-要理解这个问题，我们要搞明白，merge在git里是怎么工作的。当两个分支，来自同一个祖先，但是提交了不同修改，又要合并的时候，就需要进行merge。能够自动merge的，多一个merge commit，被合并分支的HEAD不变，合并入的分支的HEAD加一，指向merge commit。不能够自动merge的，手工处理冲突，其余和自动相同。
-注意这点，“被合并分支的HEAD不变，合并入的分支的HEAD加一”。由于两者在不同的点上，因此修改和提交会形成不同的分支。合并后的两个分支不会发生交汇。
-如果在一次正向的merge后，立刻进行了一次反向merge呢？事情就麻烦了。两个branch的HEAD指向了同一个commit。因此你可以认为支线分支合并到了主线，却没有merge记录。这是当然，因为这只是指针移动，属于fast forward。没有commit，没有log。
-不幸的是，这种操作还经常发生。当我们把支线向主线合并的时候，合并难度可能非常大。此时我们可以将主线向支线合并，然后反向合并。这样的合并难度就小很多了。然而这会使得合并记录不可查。
-所以，当碰到类似问题的时候，考虑两次合并的可能性。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -770,6 +775,10 @@ route add -net 192.168.66.0/24 gw 192.168.1.4
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2860/">similan船宿</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
             </li>
           
@@ -805,10 +814,6 @@ route add -net 192.168.66.0/24 gw 192.168.1.4
               <a href="/blog/archives/2851/">/proc/net/dev中bonding网卡的流量计算</a>
             </li>
           
-            <li class="post">
-              <a href="/blog/archives/2850/">SI的七个基础单位</a>
-            </li>
-          
         </ul>
       </section>
     
@@ -820,7 +825,7 @@ route add -net 192.168.66.0/24 gw 192.168.1.4
 </div>
 
 <footer role="contentinfo">
-  <p>Copyright &copy; 2017 Shell Xu - <a href="http://blog.shell909090.org/license/">License</a> -
+  <p>Copyright &copy; 2018 Shell Xu - <a href="http://blog.shell909090.org/license/">License</a> -
   <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
 </p>
 

@@ -94,6 +94,37 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Dec 7, 2009
+         - 3 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/82/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/82/">用python实现webserver(二)――Thread</a>
+    </h1>
+</header>
+
+
+        
+          <p>我们上面说过，Prefork模式有着先天的缺陷。针对http这种大量短请求的应用(当然，http1.1以来，有不少客户端使用了长连接)，Prefork的最高并发很让人不满。并且，无论是否高并发，Prefork的性能都非常不好。现在我们介绍一下Thread模式。 和Prefork非常类似，每Thread模式通过新建的线程来控制对象的传输。和Prefork模式不同的是，一个用户能够建立多少个线程并没有限制。在系统上似乎有限制，65535个，但是同样，文件句柄最高也就能打开65535个，因此通常而言一个服务器最高也就能顶50000并发，无法再高了(nginx就能够支撑5W并发，再高要使用一些特殊手法来均衡负载)。而且线程的建立和销毁的开销非常小——没有独立的空间，不用复制句柄，只要复制一份栈和上下文对象就可以。但是，由于所有线程运行在同一个进程空间中，因此每线程模式有几个非常麻烦的瓶颈。 首先是对象锁定和同步，在每进程模式中，由于进程空间独立，因此一个对象被两个进程使用的时候，他们使用了两个完全不同的对象。而线程模式下，他们访问的是同一个对象。如果两个线程需要进行排他性访问，就必须使用锁，或者其他线程同步工具来进行线程同步。其次，由于使用同一个进程空间，因此一旦有一个连接处理的时候发生错误，整个程序就会崩溃。对于这一问题，可以通过watchdog方式来进行部分规避。原理是通过一个父进程启动子进程，子进程使用每线程处理请求。如果子进程崩溃，父进程的wait就会返回结果。此时父进程重启子进程。使用了watchdog后，服务不会中断，但是程序崩溃时正在处理的连接会全部丢失。最后，是python特有的问题——GIL。由于GIL的存在，因此无论多少线程，实际上只有一个线程可以处理请求，这无形中降低了效率。下面我们看一下Thread模式的测试结果： 测试指令： ab -n 1000 -c 100 http://localhost:8000/py-web-server 返回结果： Document Path: /py-web-server Document Length: 1682 bytes Concurrency Level: 100 Time taken for tests: 3.834 seconds Complete requests: 1000 Failed requests: 0 Write errors: 0 Total transferred: 1723000 bytes HTML transferred: 1682000 bytes Requests per second: 260.85 [#/sec] (mean) Time per request: 383.362 [ms] (mean) Time per request: 3.834 [ms] (mean, across all concurrent requests) Transfer rate: 438.91 [Kbytes/sec] received Connection Times (ms) min mean[+/-sd] median max Connect: 0 75 468.</p>
+
+          
+              <footer>
+                  <a href="http://blog.shell909090.org/blog/archives/82/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Nov 11, 2009
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/81/#disqus_thread">Comments</a>
@@ -416,36 +447,6 @@ EDIT 2016-09-08: 按照我听到的更新消息，PZ当时实际上是出版了�
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Jul 14, 2009
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/72/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/72/">游婺源</a>
-    </h1>
-</header>
-
-
-        
-          <p>写这么多年blog，每次都当回事情，实在写的太累了。还是简单一点，不要费劲了，想到哪里，写到哪里吧。
-简单来说，有朋友家在婺源，我过去玩了一次。地方不错，好山好水，绿茶不错。记得冬天去，夏天昆虫多，草也多。一个朋友给叮肿了一圈，另一个活像被鞭打过。而且太阳太大，一个成了活包公，贝壳回来褪了层皮。
-另外，如果当地人告诉你，不远，不可怕，很好玩，不要随便相信。他们倒是不会害你，只是他们的标准和你的不大一样。超过60度的斜坡，连爬一个多小时，只是一个稍微有点累的常规路途而已。因此，如果你没有一定的体力和运动上的自信，不要随便和当地人去走小道。小道这东西有两个坏处，一个是走到一半不能回头，另外一个就是随时可能找不着或者被修路修掉滑坡断掉。
-好吧，有意的话联系我。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -717,6 +718,10 @@ EDIT 2016-09-08: 按照我听到的更新消息，PZ当时实际上是出版了�
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2860/">similan船宿</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
             </li>
           
@@ -752,10 +757,6 @@ EDIT 2016-09-08: 按照我听到的更新消息，PZ当时实际上是出版了�
               <a href="/blog/archives/2851/">/proc/net/dev中bonding网卡的流量计算</a>
             </li>
           
-            <li class="post">
-              <a href="/blog/archives/2850/">SI的七个基础单位</a>
-            </li>
-          
         </ul>
       </section>
     
@@ -767,7 +768,7 @@ EDIT 2016-09-08: 按照我听到的更新消息，PZ当时实际上是出版了�
 </div>
 
 <footer role="contentinfo">
-  <p>Copyright &copy; 2017 Shell Xu - <a href="http://blog.shell909090.org/license/">License</a> -
+  <p>Copyright &copy; 2018 Shell Xu - <a href="http://blog.shell909090.org/license/">License</a> -
   <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
 </p>
 
