@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+  
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  
+
+  
+  <title>密码学基本原理</title>
+
+  
+  
+  <link rel="stylesheet" href="http://blog.shell909090.org/css/hugo-octopress.css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
+
+  
+  <link href="http://blog.shell909090.org/favicon.png" rel="icon">
+
+  
+  
+  
+
+  
+
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <meta name="author" content="Shell Xu">
+
+  
+  <meta name="generator" content="Hugo 0.30-DEV" />
+
+  
+  
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-48816091-1', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+
+</head>
+<body>
+
+
+<header role="banner"><hgroup>
+  
+  <h1><a href="http://blog.shell909090.org/">Shell&#39;s Home</a></h1>
+    <h2></h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+
+<ul class="main-navigation">
+  
+  
+</ul>
+
+
+<ul class="subscription">
+  
+
+</ul>
+
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+    <p class="meta">Mar 8, 2018
+         - 2 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/2861/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+         密码学基本原理 
+    </h1>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          
+          
+
+<h1 id="digest">Digest</h1>
+
+<p>摘要为一个函数H。对任意数据d，有<code>h=H(s)</code>。同时至少满足下面特性1。其余特性为额外要求。</p>
+
+<ol>
+<li>对相同的数据<code>d1=d2</code>，计算得到<code>h1=H(d1)</code>和<code>h2=H(d2)</code>，必然有<code>h1=h2</code>。但不要求<code>h1=h2</code>的情况下，必然有<code>d1=d2</code>。</li>
+<li>根据h计算任意一个可能的d极其困难。（安全性）</li>
+<li>d服从随机分布的情况下，h的分布足够随机。（均匀性）</li>
+</ol>
+
+<h2 id="hash系列函数">hash系列函数</h2>
+
+<p>hash系列中最著名的即<a href="https://en.wikipedia.org/wiki/MD5">MD5</a>，其后继者为<a href="https://en.wikipedia.org/wiki/SHA-1">SHA1</a>，<a href="https://en.wikipedia.org/wiki/SHA-2">SHA2</a>，<a href="https://en.wikipedia.org/wiki/SHA-3">SHA3</a>等。但实际上这几个都是密码学hash函数。非密码hash常用于快速计算均匀散列值（例如hashtable），代表有<a href="https://en.wikipedia.org/wiki/Cyclic_redundancy_check">CRC</a> （实际上CRC主要的目地是校验，而不是散列）, <a href="https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function">FNV</a>，<a href="https://en.wikipedia.org/wiki/MurmurHash">Murmur</a>。这几个非密码hash函数的对比可以看<a href="https://softwareengineering.stackexchange.com/questions/49550/which-hashing-algorithm-is-best-for-uniqueness-and-speed#145633">这里</a>。</p>
+
+<p>hash函数需要注意长度。一般来说，长度越长越安全（越难被找到一个碰撞值）。但是过于长的值会在保存和使用上产生困难。</p>
+
+<h2 id="rainbow-table">Rainbow table</h2>
+
+<p><a href="https://en.wikipedia.org/wiki/Rainbow_table">Rainbow table</a>是一种通过预先计算来碰撞的手段。</p>
+
+<p>从粗略的角度来说，你可以认为这就是一个巨大的反向hash表，保存了所有计算过的hash和对应的碰撞数据。但是通过计算可知，这样的反向表会占用巨大的存储空间。彩虹表采用巧妙的算法缩减了空间消耗。</p>
+
+<p>其基础思想是，对某个碰撞数据，计算其hash，随后通过某个算法R，将这个目标hash再映射到另一个碰撞数据上去。通过这种方式，一个碰撞数据可以持续的计算出一串不同的hash。假设这个长度为n，我们最后保留最终一个hash和最初一个碰撞数据。</p>
+
+<p>在检索某个hash的原始碰撞数据时，我们可以利用R将其映射为碰撞数据(但不是我们需要的那个碰撞数据)，进而计算hash串并检测是否在反向表里。如果表里存在这个hash的碰撞数据，那么在生成n步的hash串的过程中，必然能在反向表里发现命中。而当发现命中后，就可以通过原始碰撞数据算出整个碰撞链，从而找到该hash的对应碰撞数据。</p>
+
+<p>从算法分析的角度来说，这是一个空间换时间和时间换空间同时存在的巧妙算法。利用反向表计算原始碰撞是用空间换时间，用hash串来压缩空间消耗是用时间换空间。</p>
+
+<p>另一个细节是hash链的碰撞。当hash链在某个节点相同，后续链条必然完全相同。这大大降低了hash串的效率。因此彩虹表采取了一个变形。算法R在n步中每一步都各不相同(实际一般是将n当作参数)，这样使得hash碰撞只发生在一个点上。由于算法在每个步骤上各自不一，因而得名彩虹表。</p>
+
+<h2 id="kdf">KDF</h2>
+
+<p>密钥生成算法( <a href="https://en.wikipedia.org/wiki/Key_derivation_function">KDF</a> )是一类算法的统称，用于将一个密码/密钥变换成另一个(或多个)密码/密钥。在这个过程中，会提供很多额外特性。例如符合特定格式，防御暴力穷举攻击，保存后难于破解原始密码，等。</p>
+
+<p>KDF的最知名场景，就是密码保存问题。用户的密码不应直接保存，这样在万一数据库泄漏时就会泄漏原始密码。而单纯hash会导致用户密码遭受彩虹表攻击。一般解决这个问题的方法是对密码加盐。但是盐是加在前面还是后面呢？以我个人的分析来看，似乎是没有区别的。即s+salt和salt+s都能保证安全。当然，更好的方法是用scrypt或bcrypt。他本身就有专门的函数保证密码安全保存，这可比加盐好使多了。</p>
+
+<h2 id="最佳实践">最佳实践</h2>
+
+<p>现在已经2018年了，我相信大部分读者都应该知道MD5和SHA1不安全的事了吧。这两者虽然还能完成摘要的用途，但是并没有安全保证了。如果你需要一个安全的hash算法，我推荐sha2。sha3目前并没有进入主流系统，而且执行速度还是略慢。</p>
+
+<p>另外，如果有的选择的话，在sha2算法族里我推荐SHA-512/256或SHA-512/224。这两个算法有助于避免<a href="https://en.wikipedia.org/wiki/Length_extension_attack">长度扩展攻击</a>。</p>
+
+<h1 id="encryption-and-decryption">Encryption and Decryption</h1>
+
+<p>对称加密解密为一对函数，加密为E，解密为D。对任意数据d和密钥p，满足下面要求1和2。</p>
+
+<ol>
+<li>加密为<code>e=E(d, p)</code>，解密为<code>d=D(e, p)</code>。</li>
+<li>攻击者得知E，D，e的情况下，无法反推d和p。</li>
+<li>在条件2的基础上，攻击者能得知d和对应e的情况下，无法反推p。（已知明文攻击）</li>
+<li>在条件2的基础上，攻击者能构造d并得知对应e的情况下，无法反推p。（选择明文攻击）</li>
+</ol>
+
+<p>对称加密有几种可能的变形情况，例如E和D为同样的函数，一次加密第二次解密。或者由生成算法构造出密钥p和解密密钥p&rsquo;。在其中密钥p可以推算变换为解密密钥p&rsquo;。但这其实仍然符合上面的描述。因为解密时可以使用<code>d=D(e, p')</code>，而<code>p'=G(p)</code>，因此<code>d=D(e, G(p))</code>，即可认为<code>d=D'(e, p)</code>。对于密钥p无法推算出解密密钥p&rsquo;的情况，请参考下面的“非对称加密”。</p>
+
+<h2 id="des-aes加密解密算法">DES/AES加密解密算法</h2>
+
+<p>加密算法中最有名的是<a href="https://en.wikipedia.org/wiki/Data_Encryption_Standard">DES</a>和<a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">AES</a>。关于这两个，我们不赘述。</p>
+
+<h2 id="密码模式">密码模式</h2>
+
+<p>加解密算法一般都是以块模式运作的。即每个加密算法都有一个特定的长度，他只能处理这个长度的数据。块密码模式算法将基于某个特定的块算法，将其应用于流上。</p>
+
+<p>最简单的用法是重复进行加密。取明文的前N字节加密，得到N字节密文。重复直到得到最后一块数据，数据的长度必然大于0小于N。对尾部的数据补足0。最后将所有密文联合起来，得到最终密文。这种模式叫做ECB模式。</p>
+
+<p>ECB模式的好处是简单，但是ECB并不能防御内容替换攻击。攻击者可以通过某种方式获得一个数据的加密形式（选择明文）B&rsquo;，然后将某个加密后的块B&rsquo;替换原始块B。以此，虽然攻击者并不知道原始内容，但是可以替换其中的部分内容。</p>
+
+<p>人们对ECB做了一点改进，使用上一个块的加密结果，对下一个块做干扰（具体使用XOR）。如此一来，对任意一个块的变更会导致后续块全部都无法解密。第一个块没有上一个块，也就没有加密结果。所以CBC需要一个初始向量IV来初始化干扰。而先加密上一个块的结果，再和当前数据XOR的算法，被称为CFB。CFB和CBC仅仅顺序上有区别，但是CFB可以用于流式加密，而CBC不行。因为CBC必须得到一个完整块，才能计算加密。而CFB预先算出mask，用XOR获得结果。</p>
+
+<p>CFB再略变化一点，就可以构成OFB。OFB取的是XOR前的结果，因此加密序列并不受明文的影响，只受IV和key的影响。你可以想像，OFB是一个由IV和key已经决定好的，无限长的mask，逐步XOR到明文上。</p>
+
+<p>但是CFB和OFB都有一些缺陷，例如明文和密文的异或对应性。在确定模式为CFB或OFB的前提下，对某些特定位置遍历所有可能空间，就能在不了解解密结果的前提下遍历所有明文可能性。这个问题被用于ss的主动探测上。</p>
+
+<p>密码模式具体可以看<a href="https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation">这里</a>。</p>
+
+<h2 id="salsa20">Salsa20</h2>
+
+<p><a href="https://en.wikipedia.org/wiki/Salsa20">Salsa20</a>原来叫Chacha20，是一种经过特别设计的密码系统，在未经优化的CPU上拥有非常快的执行速度。</p>
+
+<h2 id="最佳实践-1">最佳实践</h2>
+
+<p>可能和大家想像的相反，一般没事不推荐直接使用加密函数本身，而是推荐使用AEAD算法。<a href="https://www.cnblogs.com/windydays/p/2015_modern_crypto_practice.html">这里</a>有一份2015年密码学最佳实践，按照推荐，是使用AES-GCM或Chacha20-Poly1305最好。这两种都是AEAD，具体下面有介绍。</p>
+
+<p>如果一定要用加密算法，而非AEAD的话。推荐使用<a href="https://nacl.cr.yp.to/stream.html">NaCl</a>。它的加密算法默认选择是XSalsa20/20(Salsa20的一个变形)。</p>
+
+<h1 id="message-authentication-code">Message authentication code</h1>
+
+<p>消息验真，不同于摘要，要求的是拦截者无法伪造。其前提条件是发送者和验证者有一个共同的秘密p。本质上看，这个就是签署(sign)。但是一般我们讲sign都是指非对称的sign，MAC是对称式的。对称签署为两个函数，签署为S，校验为V。对任意数据d和密钥p。</p>
+
+<ol>
+<li>对于签署获得的<code>v=S(d, p)</code>，可以用<code>V(d, v, p)</code>来检验d和v是否成对。</li>
+<li>攻击者在得知S，V，v，d的情况下，无法反推p。</li>
+</ol>
+
+<p>签署算法经常和摘要算法合用，即对数据d先使用摘要H得到摘要，再计算签署。即<code>v=S(H(d), p)</code>。验证时使用<code>V(H(d), v, p)</code>来验证。</p>
+
+<p>主流消息验证算法往往会使用hash或加密算法来完成。</p>
+
+<h2 id="hmac签署算法">HMAC签署算法</h2>
+
+<p><a href="https://en.wikipedia.org/wiki/HMAC">HMAC</a>算法是对称签署中最著名的一个系列，HMAC不是一个算法，而是一类算法。这个算法基于一个hash函数（而且显然，要求是安全的hash函数），根据hash选择不同，HMAC也会有所不同。HMAC的基本想法是，将p拼接在数据d前面，做hash。根据安全的hash函数的性质，攻击者无法从v反推原始数据，即使他们拥有部分的明文（被签署数据d）。而在不知道p的前提下，也无法构造出签名v。细节来说，HMAC要求对密钥p进行变形，得到两个密钥，并重复“拼接-hash”过程两次。具体细节可以看前面的wiki。</p>
+
+<h2 id="cmac系列">CMAC系列</h2>
+
+<p>MAC系列的介绍可以看<a href="https://en.wikipedia.org/wiki/Message_authentication_code">这里</a>。这里我们特别介绍一下CBC-MAC这种算法。这种算法是使用加密算法来完成验证的典型代表，拥有很多衍生，例如OMAC/CMAC/XMAC等。</p>
+
+<p>上面我们简要介绍过CBC，这个模式循环使用前面块的数据来扰乱下一个块，然后再完成加密。而CBC-MAC通过密钥构造一个k1，配合IV=0来计算输出，取最后一个块输出。再用密钥构造一个k2，加密最后一个块，形成MAC数据。基于基本知识我们知道，对任意一个数据输入改变，最后的输出会发生变化，并且在没有密钥时无法构造MAC数据。</p>
+
+<h2 id="最佳实践-2">最佳实践</h2>
+
+<p>首先，最普及的算法是HMAC，有条件的话尽量选择这种。</p>
+
+<p>既然MD5和SHA1不安全了，那么尽量不要选择HMAC-MD5和HMAC-SHA1。尽管我只看到了SHA1碰撞的实例报告，还没见过HMAC-SHA1的。但是还是尽量不要冒险，使用HMAC-SHA2。</p>
+
+<p>另一个就是，不要试图自己实现MAC算法，这类算法实现的难度比你想想的要高很多。如果你需要的话，推荐使用<a href="https://nacl.cr.yp.to/auth.html">NaCl</a>，</p>
+
+<h1 id="aead">AEAD</h1>
+
+<p>AEAD是近代的一个密码模式，主力解决这么一个问题。我们上面介绍了加密和MAC，但是在日常使用中，我们既需要加密，也需要MAC。例如Alice可能写了一封情书给Bob(听起来像Romeo和Juliet，但是在密码学里，他们需要改个名字)。那么，她同时需要保证情书不会被第三方看到(加密)，又要保证Bob不会以为她写了一堆乱码(签署验真)。虽然听起来很愚蠢，正常人看到一堆乱码的时候，当然知道是被人替换了。但是我们就当作Bob是一个智商不足的傻瓜。恋爱中的人都是傻瓜。</p>
+
+<p>解决这个需求，我们有三种模式。</p>
+
+<ul>
+<li>Encrypt-then-MAC (EtM)，首先加密，然后用另一个密钥对密文进行签署。</li>
+<li>Encrypt-and-MAC (E&amp;M)，首先加密，同时用同一个密钥对明文进行签署。</li>
+<li>MAC-then-Encrypt (MtE)，首先签署，然后用同一个密钥对总和数据进行加密。</li>
+</ul>
+
+<p>然后，据说这些模式都是有缺陷的。缺陷是啥我看不懂。有兴趣的朋友，这里有本<a href="https://cseweb.ucsd.edu/~mihir/papers/oem.pdf">九阳神功</a>送给你，你看懂告诉我一下为什么。。。</p>
+
+<p>Whatever，总之，为了解决上面的问题，产生了一个新的概念，<a href="https://en.wikipedia.org/wiki/Authenticated_encryption">AEAD</a>。在一个算法中进行加密和验证。</p>
+
+<h2 id="gcm">GCM</h2>
+
+<p><a href="https://en.wikipedia.org/wiki/Galois/Counter_Mode">GCM</a>是一种CTR算法。CTR是一种密码模式，这种模式利用数据的块计数作为扰动变量，来使得同样的输入不产生同样输出。这样做的最大好处在于，每个块的计算彻底变成了互相不关联的过程，因而可以在分布式系统上进行计算。其他模式，即便是OFB，其输出流也是串行的。当输入速度高于mask流时，就会出现算法无法利用CPU的问题。</p>
+
+<p><a href="http://blog.csdn.net/t0mato_/article/details/53160772">http://blog.csdn.net/t0mato_/article/details/53160772</a></p>
+
+<h2 id="最佳实践-3">最佳实践</h2>
+
+<p>AEAD的选择不算太多，<a href="https://www.cnblogs.com/windydays/p/2015_modern_crypto_practice.html">这份推介</a>上推荐的是使用AES-GCM或Chacha20-Poly1305。<a href="https://nacl.cr.yp.to/secretbox.html">NaCl</a>的默认选择是XSalsa20-Poly1305。预订要有AES256GCM，但是目前未实现。</p>
+
+<h1 id="public-key-cryptography">Public-key cryptography</h1>
+
+<p><a href="https://en.wikipedia.org/wiki/Public-key_cryptography">公钥密码体系</a>是一个非常复杂的系统，这个系统基本涵盖以下几个领域：</p>
+
+<ul>
+<li>key exchange</li>
+<li>public key encryption</li>
+<li>public key signature</li>
+</ul>
+
+<h2 id="key-exchange">Key exchange</h2>
+
+<p>密钥协商，也叫<a href="https://en.wikipedia.org/wiki/Key_exchange">密钥交换</a> ，简称Kx，为一个过程。假设Alice和Bob可以通讯。此时算法需要确定一个协商序列同时满足：</p>
+
+<ol>
+<li>Alice和Bob能够得到一个共享的秘密s。</li>
+<li>可以监听通讯内容的监听者Eve无法通过监听内容推算出s。</li>
+<li><a href="https://en.wikipedia.org/wiki/Forward_secrecy">前向安全</a>。所谓前向安全，指未来的密钥泄漏不会泄漏之前的通讯内容。(可选要求)</li>
+</ol>
+
+<p>注意，虽然被动式的Eve并不一定能够躲避序列，但是主动攻击者Mallory是一定可以截听内容的。无论协商算法如何复杂，Mallory可以分别和Alice和Bob进行协商过程，使得Alice相信自己是Bob，Bob相信自己是Alice。（<a href="https://en.wikipedia.org/wiki/Man-in-the-middle_attack">MITM attack</a>）这个攻击无法通过密钥协商机制进行躲避，需要在密钥协商之上进行身份交叉认证才行。</p>
+
+<h2 id="public-key-encryption">Public-key encryption</h2>
+
+<p>公钥加解密为三个函数，生成为G，加密为E，解密为D。对任意数据d，满足下面要求1-3。</p>
+
+<ol>
+<li>G可以生成私钥和公钥。即<code>s,p=G()</code>，其中s为私钥，p为公钥。公钥可以公开。</li>
+<li>加密为<code>e=E(d, p)</code>，解密为<code>d=D(e, s)</code>。</li>
+<li>攻击者在得知G，E，D，p，e的情况下，无法反推s和d。</li>
+</ol>
+
+<p>注意，关于p和s只是说，p无法推出s。并没有说，通过s可以推出p。只要通过函数G能够生成成对的s和p即可。ECC和DH体系中可以用s推导出p，但是RSA中单有s是不行的，实际是通过另两个数(质数pq)生成，两者无法互相推导。</p>
+
+<h2 id="public-key-signature">Public-key signature</h2>
+
+<p>公钥签署为三个函数，生成G，签署为S，校验为V。对任意数据d和密钥p。</p>
+
+<ol>
+<li>G可以生成私钥和公钥。即<code>s,p=G()</code>，其中s为私钥，p为公钥。公钥可以公开。</li>
+<li>对于签署获得的<code>v=S(d, s)</code>，可以用<code>V(d, v, p)</code>来检验d和v是否成对。</li>
+<li>攻击者在得知S，V，v，d，p的情况下，无法反推s。</li>
+</ol>
+
+<h2 id="单向陷门函数与dh密钥交换问题">单向陷门函数与DH密钥交换问题</h2>
+
+<p>上面说了公钥密码系统的目标，下面我们说说公钥系统的一般规律。公钥系统的一般原则是，用户持有私钥s，公开公钥p。然后利用单向陷门函数完成特定密码学目标。</p>
+
+<p>假定我们有一个集合G。*是集合G上的一个运算，满足交换率和结合率。O是集合G上的一个特定元素(或更普遍的，一类元素)。同时*具有一个特点，求y=x*O非常简单，求x使得对已知y有y=x*O非常困难。</p>
+
+<p>Kx的普遍算法，就是A和B各自随机生成一个元素ka和kb，计算<code>pa=ka*O</code>和<code>pb=kb*O</code>，再计算<code>k=kb*pa=ka*pb</code>。由于<code>kb*pa=kb*(ka*O)=(kb*ka)*O=(ka*kb)*O</code>和<code>ka*pb=ka*(kb*O)=(ka*kb)*O</code>，因此k相等。同时由于*求逆非常困难，因此攻击者无法推出ka或kb，从而无法推出k。</p>
+
+<h2 id="integrated-encryption-scheme">Integrated Encryption Scheme</h2>
+
+<p><a href="https://en.wikipedia.org/wiki/Integrated_Encryption_Scheme">IES</a>是一种基于Kx的加密算法，这种算法是非确定性的。</p>
+
+<p>基于某种单项陷门函数，假设我们有某人A的公钥pa，如何利用pa加密数据，使得只有A能解开？</p>
+
+<p>首先，生成随机密钥kb和公钥pb。而后计算<code>k=kb*pa</code>，再用k生成密钥k&rsquo;，用k&rsquo;加密数据，并将pb和秘密数据c一同发送。接收者使用pb和ka计算<code>k=ka*pb</code>，进而可以得知密钥k&rsquo;，从而可以解出明文。在IES体系中，用k获得k&rsquo;的算法一般是某种KDF。</p>
+
+<p>IES是一种非确定性加密，他很大程度上依赖于生成的随机密钥的安全。一旦有了随机密钥kb，就可以根据pa算出k，进而算出k&rsquo;。如果随机密钥生成过程很容易被攻破，那么算法上再保障安全性也是没用的。</p>
+
+<h2 id="mqv">MQV</h2>
+
+<p><a href="https://en.wikipedia.org/wiki/MQV">MQV</a>是一种基于DH的带认证Kx算法。他首先假定Alice和Bob互相可信的持有对方的公钥，而后讨论如何在非可信信道上生成一个临时的公共秘密。注意这是一种非确定性算法(几乎所有的Kx都应该是非确定性算法，否则有被攻击导致前向安全性问题的可能性)。而且该算法不需要公钥系统带有签署能力(DH_RSA实际上是利用签署互信的非认证性Kx算法)，验证能力在算法内部。</p>
+
+<h1 id="diffie-hellman-key-exchange">Diffie-Hellman key exchange</h1>
+
+<p><a href="https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange">Diffie-Hellman</a>算法是密钥交换算法中最典型的一个。其依赖的是求离散对数问题(DLP)的复杂性。抽象的说，就是设定集合G为正整数集合，*运算为<code>s*g = g^s mod p</code>，其中p为预先约定变量。具体算法如下：</p>
+
+<p>通信双方 Alice 和 Bob 需要约定好算法参数：一个素数 p 作为模数，一个素数 g 作为基数（生成元），可对外公开。</p>
+
+<ul>
+<li>对 Alice 来说，先想好一个自然数 a 作为私钥，然后计算 <code>pa = g^a mod p</code> 作为公钥。</li>
+<li>对 Bob 来说，先想好一个自然数 b 作为私钥，然后计算 <code>pb = g^b mod p</code> 作为公钥。</li>
+</ul>
+
+<p>之后互换公钥，然后</p>
+
+<ul>
+<li>Alice 计算出 <code>k = pb^a mod p</code>。</li>
+<li>Bob 计算出 <code>k = pa^b mod p</code>。</li>
+</ul>
+
+<p>我们取wiki上的例子：</p>
+
+<ol>
+<li>Alice和Bob约定p=23，g=5。</li>
+<li>Alice选取a=4，计算pa=5^4mod23=4。Alice将4发送给Bob。</li>
+<li>Bob选取b=3，计算pb=5^3mod23=10。Bob将10发送给Alice。</li>
+<li>Alice计算k=10^4mod23=18。</li>
+<li>Bob计算k=4^3mod23=18。</li>
+</ol>
+
+<p>算法可以确保以下几点：</p>
+
+<ul>
+<li>Alice 与 Bob 计算出的 k 必定是一致的。</li>
+<li>双方都无法根据已知的数来推算对方私钥。</li>
+<li>第三方可以看到 p、g、pa、pb、但无法推算出 a 与 b ，因此也无法推算 k。</li>
+</ul>
+
+<h1 id="rsa系列算法">RSA系列算法</h1>
+
+<p><a href="https://en.wikipedia.org/wiki/RSA_(cryptosystem)">RSA</a>是非对称密码算法中最著名的一项。这个算法包含了以下功能。</p>
+
+<ol>
+<li>生成算法G。</li>
+<li>加密算法E。</li>
+<li>解密算法D。</li>
+<li>签署算法S。</li>
+<li>验证算法V。</li>
+<li>密钥交换算法。</li>
+</ol>
+
+<p>特别需要注意一点，RSA的加密算法并没有使用IES体制。RSA算法族里自带了加解密和签署。从某种意义上说，RSA其实和上面说的一般性单向陷门函数算法为基础的算法有所区别。</p>
+
+<h2 id="生成算法">生成算法</h2>
+
+<ol>
+<li>首先有素数p和q，称为prime1和prime2。</li>
+<li>计算n=p*q，称为modulus。</li>
+<li>求n的<a href="https://en.wikipedia.org/wiki/Euler%27s_totient_function">Euler totient function</a>φ(n)=(p-1)*(q-1)。</li>
+<li>选择一个和φ(n)互素的数e，称为public exponent。</li>
+<li>计算e对欧拉函数φ(n)的模反元素d，使得ed = 1 mod φ(n)。d称为private exponent。基于欧拉公式我们可知e^φ(n) = 1 mod φ(n)，即e*e^(φ(n)-1) = 1 mod φ(n)。因此可以取d = e^(φ(n)-1) mod φ(n)。</li>
+<li>公开modulus和public exponent，为公钥。保留modulus和private exponent，作为私钥。其余需要保密（因为可以推出整套公私钥）。</li>
+</ol>
+
+<p>PS: 3中说是Euler function，实际上<a href="https://en.wikipedia.org/wiki/Carmichael_function">Carmichael function</a>就行。欧拉函数总是其整数倍，因此也能工作，就是数字比较大。Carmichael函数λ(n)=lcm(p-1, q-1)=(p-1)*(q-1)/gcd(p-1, q-1)=φ(n)/gcd(p-1, q-1)。</p>
+
+<p>例如取wiki上的例子。</p>
+
+<ol>
+<li>p=61，q=53。</li>
+<li>n=61*53=3233。</li>
+<li>φ(n)=60*52=3120。（原文里，取的是Carmichael函数，λ(n)=3120/gcd(61,53)=780）</li>
+<li>e=17。（在实践中，这个值一般都是65537）</li>
+<li>d = 17^(3120-1) mod 3120 = 2753。（原文取d=413）</li>
+</ol>
+
+<p>在这里，n和d为私钥，n和e为公钥。通过n和e无法构造e。这里可能会引起一个迷思。既然e和d两者对称，一个加密一个就能解密，一个签署一个就能验证，所以公开一个隐藏另一个就行，具体是哪个是都可以的。但是实践中，e经常取65537，是一个相对比较小的数。如果公开比较长的数d，那么通过猜测计算e(即使不是65537)将不会是一个太难的事。因此实践中总是固定并公开e，保留比较复杂的数d。</p>
+
+<p>同时我们可以看到，一般来说，通过n和d也无法构造e。即通过私钥无法推导出公钥（e能够被猜出来是另一回事）。要构造e和d，正常方法就是使用p和q计算Eular function。</p>
+
+<h2 id="加密解密算法">加密解密算法</h2>
+
+<p>对于数据m，密文c的计算方法为：</p>
+
+<pre><code>c = (m^e) mod n
+</code></pre>
+
+<p>解密算法则为：</p>
+
+<pre><code>m = (c^d) mod n
+</code></pre>
+
+<p>由mod n可以看出，密文最大长度和n同数量级。因此modulus又被称为RSA算法的块长度。注意上面求d的时候用的是Euler function，现在用的是Modulus，两者不一致。</p>
+
+<p>实例还是用wiki，m=65。</p>
+
+<pre><code>c = 65^17 mod 3233 = 2790
+m = 2790^413 mod 3233 = 2790^2753 mod 3233 = 65
+</code></pre>
+
+<p>可以看到，d有多个合法值，而且使用Carmichael函数还是Euler函数并无关系。</p>
+
+<h2 id="签署验证算法">签署验证算法</h2>
+
+<p>和加解密算法类似，对消息m，先使用私钥d进行运算的结果v，可以用公钥运算得到原始数据d。</p>
+
+<p>例如m=65，我们来验证签署。</p>
+
+<pre><code>v = 65^413 mod 3233 = 588
+m = 588^17 mod 3233 = 65
+</code></pre>
+
+<p>注意，这个签署算法实际可以解出原始数据，这和普通的验证算法很不一样。一般而言，签署算法根本没必要，或者无法解出原始数据。</p>
+
+<h2 id="密钥协商算法">密钥协商算法</h2>
+
+<p>根据<a href="https://security.stackexchange.com/questions/8343/what-key-exchange-mechanism-should-be-used-in-tls">这里</a>，RSA为基础的交换算法有三种：</p>
+
+<ul>
+<li>RSA: 客户端随机选择一个秘密s，用服务器的公钥加密，服务器用私钥解密。</li>
+<li>DH_RSA: 服务器给出一个静态DH公钥，同时这个公钥使用服务器cert对应的私钥签署以防篡改。</li>
+<li>DHE_RSA: 类似于DH_RSA，但是服务器动态生成一个DH公钥。E是ephemeral的意思。</li>
+</ul>
+
+<p>由于服务器DH公钥被签署了，因此MITM的攻击者无法给用户一个自己控制了私钥的DH公钥。因而无法冒充服务器端。</p>
+
+<p>当然，我们可以根据密码学常识推断出，DH_RSA和DHE_RSA是前向安全的，而RSA本身是前向非安全的。</p>
+
+<h2 id="最佳实践-4">最佳实践</h2>
+
+<p>RSA目前来看还是最经久耐用的非对称密码系统。他支持的能力极为全面。包含了加解密，签署，Kx等领域。相比起来，ECC的加解密就不是很强。有ECIES，但是很多地方没有实现。</p>
+
+<p>正确使用RSA有一定的困难，因为数论领域(准确说是number field sieve)的飞速发展，所以RSA长度也是飞速增加。目前1024位的RSA已经不安全了，建议值是2048，计算一下就知道，这需要256字节。虽然选用4096更有保证，但是在密集计算的时候选用4096，会导致消耗大量CPU。因此只建议在长期使用的密钥上使用4096位（例如gpg私钥）。</p>
+
+<p>TODO: RSA-OAEP</p>
+
+<p>还有就是RSA受量子计算机的威胁。量子计算机算法中最具备代表性的shor算法就是用来解决大质数分解问题的。</p>
+
+<h1 id="ecc系列算法">ECC系列算法</h1>
+
+<p>ECC是非对称密码体系中的一个大类（其实总共就两个大类，一个RSA一个ECC）。基本原理比较复杂，这里就不展开了。基本涉及的算法有。</p>
+
+<ul>
+<li>ECDH: 密钥交换算法。</li>
+<li>ECIES: 加密算法。IES加密算法的ECC版本。</li>
+<li>ECDSA: 签署算法。</li>
+<li>EdDSA: 签署算法。</li>
+<li>ECMQV: 密钥交换算法。</li>
+</ul>
+
+<h2 id="ecdh">ECDH</h2>
+
+<p>ECDH是基于ECC和DH的Kx算法。</p>
+
+<p>首先确定曲线E(q)和基点G(注意这是一个数，但是使用大写)，这两个的选取过程是通过一定的设计得出的，不同的设计得出的被称为不同的曲线。而后，每个人确定自己的私钥k，并且计算p=k*G。我们还是用Alice和Bob来分析，对Alice来说，<code>pa=ka*G</code>，对Bob来说，<code>pb=kb*G</code>。最后双方运算<code>p=ka*pb=kb*pa=ka*kb*G</code>。因此双方得到同样的p。</p>
+
+<p>和DHE类似的，ECDH存在一个动态生成k的算法变形ECDHE。</p>
+
+<h2 id="ecdsa">ECDSA</h2>
+
+<p><a href="https://en.wikipedia.org/wiki/Elliptic_Curve_Digital_Signature_Algorithm">ECDSA</a>是基于ECC的签署算法，是一种非确定性算法。具体算法请看wiki，或者进一步找一本ECC密码学的书看。我就不罗嗦了，因为我也没看懂。</p>
+
+<h2 id="eddsa">EdDSA</h2>
+
+<p><a href="https://en.wikipedia.org/wiki/EdDSA">EdDSA</a>也是一个基于ECC的签署算法，和ECDSA最大的区别是，EdDSA是一种确定性算法，不需要借助随机数。</p>
+
+<h2 id="安全实践">安全实践</h2>
+
+<p>ECC系列的密码长度非常短，同时，算法量要比RSA低非常多。一般来说ECC的密钥是攻击量的一倍。例如攻击量是2^80(这是一个常见的值)，那么密钥长度最低需要160。NIST的推荐值是用224，合28bytes。具体可以查看<a href="https://www.keylength.com/en/compare/">这里</a>。</p>
+
+<h1 id="最佳实践-5">最佳实践</h1>
+
+<p>密码学里一个很反直觉的东西就是，千万不要因为标准库慢就自己实现。标准库中很多算法都是常数时间算法。具体可以看看<a href="https://en.wikipedia.org/wiki/Timing_attack">时间攻击</a>和<a href="https://en.wikipedia.org/wiki/Side-channel_attack">侧信道攻击</a>这两种脑洞大开的东西去。包括安全界赫赫有名的<a href="https://en.wikipedia.org/wiki/Meltdown_(security_vulnerability)">Meltdown</a>，也是一种侧信道攻击。请在理解原理的基础上，务必使用强大可靠的开源库(注意开源是一个必要条件)。</p>
+
+<h2 id="random">random</h2>
+
+<p>随机数关系到整个系统的安全，请不要随意处理。尤其是不要拿time作为seed设定一下random然后就施施然用了。很多时候random被调用的时刻是固定的，可以被回朔到1-2秒的范围内。time的精度在10^-3到10^-6这个量级上。综合起来可以知道，对随机数进行穷举攻击的开销最高只有2E6而已。这个量级甚至不能作为有效的阻碍。</p>
+
+<p>要获得随机数，比较合理的方法是使用/dev/random和/dev/urandom，以及getrandom调用。/dev/random和urandom的区别在于，random会返回随机数，而urandom返回伪随机数(准确的说，在新版内核上，生成函数是chacha20)。因此random会因为耗尽而阻塞，urandom不会。不知为何，<a href="https://www.cnblogs.com/windydays/p/2015_modern_crypto_practice.html">这份指南</a>推荐大家避开random。</p>
+
+<p>无论如何，如果你觉得随机性不够，还可以加入<a href="https://www.random.org">random.org</a>的数据来增强随机性。</p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
+    
+    <time>Mar 8, 2018</time>
+    
+    </span>
+  </p>
+
+  
+  
+
+  
+
+  <p class="meta">
+    
+        <a class="basic-alignment left" href="http://blog.shell909090.org/blog/archives/2859/" title="在云存储上叠加加密文件系统">在云存储上叠加加密文件系统</a>
+    
+
+    
+  </p>
+  
+    
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+
+    <p>
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+      
+       
+      
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+
+  
+  
+  
+    
+      <section class="even">
+        <h1>Recent Posts</h1>
+        <ul id="recent_posts">
+          
+            <li class="post">
+              <a href="/blog/archives/2861/">密码学基本原理</a>
+            </li>
+          
+            <li class="post">
+              <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
+            </li>
+          
+            <li class="post">
+              <a href="/blog/archives/2858/">京都游记</a>
+            </li>
+          
+            <li class="post">
+              <a href="/blog/archives/2857/">Boracay潜水攻略</a>
+            </li>
+          
+            <li class="post">
+              <a href="/blog/archives/2856/">golang安装和编译环境搭建</a>
+            </li>
+          
+            <li class="post">
+              <a href="/blog/archives/2855/">法国游记</a>
+            </li>
+          
+            <li class="post">
+              <a href="/blog/archives/2854/">使用Debian作为Router</a>
+            </li>
+          
+            <li class="post">
+              <a href="/blog/archives/2853/">riot.im简介</a>
+            </li>
+          
+            <li class="post">
+              <a href="/blog/archives/2852/">Puerro Galera游记</a>
+            </li>
+          
+            <li class="post">
+              <a href="/blog/archives/2851/">/proc/net/dev中bonding网卡的流量计算</a>
+            </li>
+          
+        </ul>
+      </section>
+    
+  
+
+</aside>
+
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <p>Copyright &copy; 2018 Shell Xu - <a href="http://blog.shell909090.org/license/">License</a> -
+  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+</p>
+
+</footer>
+
+
+</body>
+</html>
+
