@@ -43,7 +43,7 @@
   <meta name="author" content="Shell Xu">
 
   
-  <meta name="generator" content="Hugo 0.30-DEV" />
+  <meta name="generator" content="Hugo 0.26" />
 
   
   
@@ -87,6 +87,40 @@ ga('send', 'pageview');
  <div id="content">
   <div class="blog-index">
     
+    
+    <article>
+
+        
+        
+
+<header>
+    <p class="meta">Jan 18, 2012
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/2070/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/2070/">python的字符串相加效率</a>
+    </h1>
+</header>
+
+
+        
+          <p>今天文章被人纠了错，就跑去人家主页上逛。结果看到有篇文章说字符串相加速度的，看看结论很奇怪。就做了一下实验。原文可以看这里。我们只讨论python部分的行为。首先是论证我观点的测试，无关部分就跳过了，大家应当可以自行补上。
+def f(): s = '' for i in range(3): s += '123' print id(s) return s f() f()  输出：
+138190216 138276992 138276992 138190216 138276992 138276992  至少在几十的规模，这个结论还是成立的。说明对象确实被缓存了，这导致了字符串相加的多次测试中，后续次数都没有实际的执行字符串分配动作。召dis来问之。
+14 0 LOAD_CONST 1 (u'') 3 STORE_FAST 0 (s) 15 6 SETUP_LOOP 46 (to 55) 9 LOAD_GLOBAL 0 (range) 12 LOAD_CONST 2 (3) 15 CALL_FUNCTION 1 18 GET_ITER &gt;&gt; 19 FOR_ITER 32 (to 54) 22 STORE_FAST 1 (i) 16 25 LOAD_FAST 0 (s) 28 LOAD_CONST 3 (u'123') 31 INPLACE_ADD 32 STORE_FAST 0 (s) 17 35 LOAD_GLOBAL 1 (print) 38 LOAD_GLOBAL 2 (id) 41 LOAD_FAST 0 (s) 44 CALL_FUNCTION 1 47 CALL_FUNCTION 1 50 POP_TOP 51 JUMP_ABSOLUTE 19 &gt;&gt; 54 POP_BLOCK 18 &gt;&gt; 55 LOAD_FAST 0 (s) 58 RETURN_VALUE  我们看到s是local变量，这个符合我们的预期。但是后续确实发生了add，而string的+算法，我们可以参考Objects/stringobject.</p>
+
+          
+              <footer>
+                  <a href="http://blog.shell909090.org/blog/archives/2070/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
     
     <article>
 
@@ -519,44 +553,6 @@ static long string_hash(PyStringObject *a) { register Py_ssize_t len; register u
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Jan 2, 2012
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/2050/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/2050/">理想的平板</a>
-    </h1>
-</header>
-
-
-        
-          <p>7寸以下宽屏，原因，可以一手拿住。
- 300g以内，原因，可以一手拿住。
- 厚度1cm以内，原因，拿得舒服。
- 10小时续航，原因，一天可以只充电一次。
- 3g支持，原因，不支持3g的不叫理想的平板。
- IPS/PLS屏幕，原因，普屏的视角的却有的时候很不爽。
- usb可充电，原因，外部电源续航方便，充电方便。
- 支持TF卡，原因，方便。
- USB OTG，原因，可以拖U盘和键盘。
- GPS支持，原因，地图是很重要的。
-  好吧，我们合并要求起来看看。300g以内10小时续航，目前芯片和屏幕的功耗连电池重量都不够。所以这个无形就要求更加节能和强劲的芯片，还有更加节能的屏幕。同时，这个屏幕还不能比IPS视角差。
-继续等吧。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -832,6 +828,10 @@ static long string_hash(PyStringObject *a) { register Py_ssize_t len; register u
             </li>
           
             <li class="post">
+              <a href="/blog/archives/2860/">similan船宿</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
             </li>
           
@@ -861,10 +861,6 @@ static long string_hash(PyStringObject *a) { register Py_ssize_t len; register u
           
             <li class="post">
               <a href="/blog/archives/2852/">Puerro Galera游记</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2851/">/proc/net/dev中bonding网卡的流量计算</a>
             </li>
           
         </ul>

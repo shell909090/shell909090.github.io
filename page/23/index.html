@@ -43,7 +43,7 @@
   <meta name="author" content="Shell Xu">
 
   
-  <meta name="generator" content="Hugo 0.30-DEV" />
+  <meta name="generator" content="Hugo 0.26" />
 
   
   
@@ -87,6 +87,46 @@ ga('send', 'pageview');
  <div id="content">
   <div class="blog-index">
     
+    
+    <article>
+
+        
+        
+
+<header>
+    <p class="meta">May 14, 2012
+         - 2 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/2172/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/2172/">语言的效率差异1</a>
+    </h1>
+</header>
+
+
+        
+          <p>问题 为了测试语言的效率，做一个正则解析。
+预先说好，正则解析的问题是老板正在做的一个实际问题，我把其他和效率无关的部分去了。因此我接受“用法不正确”这样的反驳理由，但是不接受“这不是典型用例”的理由。我欢迎你指正我的用法错误，或者对语言不了解导致的效率低下，但是别来和我吵吵这种例子太特殊。另外，在调整代码和评估速度的时候，顺便注意一下代码行数。我知道用汇编逐行写和优化会很优秀，但是这对实际工作基本没有帮助。
+问题是这样的：
+ 有一个文本文件，每行两个数，要求解析出来这两个数。
+ 我用python生成了数据，代码是这样的
+with open(sys.argv[1], 'w') as fo: for i in xrange(500000): fo.write('%d %dn' % (i, random.randint(0, 10000)))  正则分析速率，是个典型的CPU密集操作。对于非编译型语言而言(这里的编译是指正则表达式的解析预编译，实际上除了lisp还真没有编译型的，即使是go也是现场拿到正则进行解析的)，这主要是看正则库的实现效率。很多时候，语言的效率问题并不取决于语言本身，还取决于语言的库的实现。大部分情况下我们都不可能砍掉系统的库重新来一个，那还不如换一门语言。
+python 我首先贴出python语言的解答。
+reline = re.compile('(d+) (d+)') def main(): with open(sys.argv[1], 'r') as fi: for line in fi: reline.match(line).groups()  这是性能
+real 0m0.466s user 0m0.436s sys 0m0.012s  common lisp 我找了N个正则包，实际能用的只有ppcre。有些包号称很快，实际测试下来还不如ppcre。
+(require :cl-ppcre) (defun grepfile (filename) (let* ((cl-ppcre:*use-bmh-matchers* t) (cl-ppcre:*regex-char-code-limit* 256) (scanner (cl-ppcre:create-scanner &quot;d+ d+&quot;))) (with-open-file (in filename) (loop for line = (read-line in nil) while line do (cl-ppcre:split scanner line)))))  代码在slime里面测试(time (grepfile &ldquo;data.</p>
+
+          
+              <footer>
+                  <a href="http://blog.shell909090.org/blog/archives/2172/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
     
     <article>
 
@@ -414,41 +454,6 @@ google drive是什么 从表现上看，还是基于文件的管理。我不能�
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Apr 24, 2012
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/2152/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/2152/">和谐音程的条件</a>
-    </h1>
-</header>
-
-
-        
-          <p>和谐音程的发生条件，是冠音的震动频率和根音呈倍数关系。以此为基础，我们做一个简单计算：
-首先是八度：
-&gt;&gt;&gt; 12\*math.log(2, 2) 12.0  即，12个半音(高八度)是和谐音程。
-&gt;&gt;&gt; 12\*math.log(3.0/2, 2) 7.019550008653875 &gt;&gt;&gt; 12\*math.log(4.0/3, 2) 4.980449991346124 &gt;&gt;&gt; 12\*math.log(5.0/4, 2) 3.863137138648348 &gt;&gt;&gt; 12\*math.log(6.0/5, 2) 3.1564128700055254 &gt;&gt;&gt; 12\*math.log(7.0/6, 2) 2.6687090560373763  即，7个半音(纯五度)，5个半音(纯四度)，约4个半音(大三度)，约3个半音(小三度)，为和谐音程。由数值可以看出，纯四纯五的和谐程度又超过大三小三，因为和绝对和谐震动比例的误差更小。
-再下面也是可以发生和谐音程的，只是误差更大而已。
-为什么是“十二平均率”的原因也很清楚了。
-&gt;&gt;&gt; 1/(math.log(3.0/2, 2)-math.log(4.0/3, 2)) 5.884949192361715  从数值上看，六平均率也是可以的。但是六平均率只能保证第二和三个和谐音程关系在音阶上，要保证第四个，就必须是11平均以上。
-&gt;&gt;&gt; 1/(math.log(4.0/3, 2)-math.log(5.0/4, 2)) 10.740053666281327  综合两者，12平均率可以基本保证第二三四三个和谐音程都在音阶上。
-同时，也基本满足人类对声音的分辨能力。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -724,6 +729,10 @@ google drive是什么 从表现上看，还是基于文件的管理。我不能�
             </li>
           
             <li class="post">
+              <a href="/blog/archives/2860/">similan船宿</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
             </li>
           
@@ -753,10 +762,6 @@ google drive是什么 从表现上看，还是基于文件的管理。我不能�
           
             <li class="post">
               <a href="/blog/archives/2852/">Puerro Galera游记</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2851/">/proc/net/dev中bonding网卡的流量计算</a>
             </li>
           
         </ul>

@@ -43,7 +43,7 @@
   <meta name="author" content="Shell Xu">
 
   
-  <meta name="generator" content="Hugo 0.30-DEV" />
+  <meta name="generator" content="Hugo 0.26" />
 
   
   
@@ -87,6 +87,42 @@ ga('send', 'pageview');
  <div id="content">
   <div class="blog-index">
     
+    
+    <article>
+
+        
+        
+
+<header>
+    <p class="meta">Jun 24, 2015
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/2761/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/2761/">一个有趣的python问题</a>
+    </h1>
+</header>
+
+
+        
+          <p>quiz 今天在twitter上看到一个有趣的问题。
+t = (1, 2, [30, 40]) t[2] += [50, 60]  结果是什么？
+ t = (1, 2, [30, 40, 50, 60]) TypeError 都不是 1,2都发生  出乎意料的，结果是4。
+为什么，我们来分析一下。
+disassemble &gt;&gt;&gt; t = (1, 2, [30, 40]) &gt;&gt;&gt; def f(): t[2] += [50, 60] &gt;&gt;&gt; import dis &gt;&gt;&gt; dis.dis(f)  以下是结果。
+ LOAD_GLOBAL 0 (t) LOAD_CONST 1 (2) DUP_TOPX 2 BINARY_SUBSCR LOAD_CONST 2 (50) LOAD_CONST 3 (60) BUILD_LIST 2 INPLACE_ADD ROT_THREE STORE_SUBSCR LOAD_CONST 0 (None) RETURN_VALUE  我们来解读一下。dis的指令集可以看这里 。</p>
+
+          
+              <footer>
+                  <a href="http://blog.shell909090.org/blog/archives/2761/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
     
     <article>
 
@@ -436,50 +472,6 @@ EFI引导 终于到了今天的重头戏，EFI引导。EFI+GPT模式下，引导
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Feb 26, 2015
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/2730/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/2730/">FIN-WAIT-1的问题一例</a>
-    </h1>
-</header>
-
-
-        
-          <p>这是一个早应该知道的事情。但是还是被整了半天。
-引子 tcp关闭时有多少个状态？
-当当，别数了，应该是6个，不算CLOSED。分别是FIN-WAIT-1/FIN-WAIT-2,CLOSING, TIME_WAIT, CLOSE_WAIT,LAST_ACK。如果不能瞬间想起一个方块来，说明tcp状态不算熟。
-问题 今天的故事来自今天BI同事提出的一个问题。在线上，他发现这么一个现象。在一组系统中，客户端全都FIN-WAIT-1了，但是服务器还是ESTAB。
-我的第一反应很简单，这明显差了一个FIN包的距离。而且鉴于两者在同一网络中，而且重复出现。建议他首先排查中间的防火墙设备和防火墙设置。
-会找上我的问题，当然没这么简单。中间没有任何防火墙或软件防火墙设定。
-分析 下一步呢？有点没方向了。抓包分析。发现FIN端向ESTAB端不停的发起ACK，但是看起来和FIN没什么太大关系。
-偶然，同事注意到所有出现现象的链接都有写缓冲区数据。这是一个不常见的现象。写缓冲区一般会有点数据，但是应该很快就被消费，而不会长期堆积，更不会长期维持同样的数字。这是写缓冲区满。结合刚刚的ACK，其实本质是对端停止消费数据。
-这是一个TCP的边角。当读缓冲区满的时候，tcp协议栈会声明window=0。当读缓冲区恢复的时候，读方会用ack with window来重新宣告可用缓冲区。但是在tcp里，ack是不重传的。所以这个ack会丢失。因此写方有责任定期请求确认读方window，来确定整个过程不会卡死。这就是刚刚看到的不停ACK的现象。
-而这里就有个非常重要的可能性——FIN包的处理方式。为此我阅读了源码。源码告诉我们，FIN包被接收到的时候，并不是即时处理的。实际上，在ESTAB状态收到的FIN，正常path下会进入tcp_data_queue。这个函数会将包堆积到队列中，并根据当前seq来处理包。主要包括三种seq，当前包，过去包，未来包。只有在以下两种情况下，fin包才会被处理：
- 当前收到一个fin包。 当前收到一个包，完成处理后out of order队列中有数据，因而进入tcp_ofo_queue。而队列中有fin包。  而不幸的是，当前包处理流程第一步就是判断tcp_receive_window。如果没空间了，会进入out_of_window过程。后者会快速的触发一个ack返回，然后就把包给丢了。
-我猜对了开头，可是没有猜到结局。
-结论 通过python的快速复现，验证了这个结论。建立一对连接，其中一个不接收任何数据，而其中一个发送足够长的数据。当读缓冲区满后，再去close，出现一端FIN-WAIT-1，一端ESTAB的现象。
-因此，结论如下：
-当写缓冲区满之后，收到的fin包会被丢弃，而发送端并不会重发。而只要写缓冲还有剩余空间，哪怕一个字节，都可以正常处理。  内核参数 根据文档，可能有几个内核参数与此有关。
- net.ipv4.tcp_max_orphans net.ipv4.tcp_orphan_retries  测试表明，net.ipv4.tcp_max_orphans可以抑制这个现象。当减低这个数值后，再进入FIN-WAIT-1状态的连接会自动消失。ss -natp不能看到连接。有趣的是，如果进程尚未关闭的话，可以在/proc/[pid]/fd下面看到fd仍然存在，而且还可以读出数据。
-抓包表明，连接实际是被一个RST干掉的。阅读源码，在tcp_close的最后部分，可以看到tcp_too_many_orphans被调用了。如果超过限制，就会发出reset，并且关闭连接。
-而tcp_orphan_retirs，根据我的理解和测试，和这事没有关系。这主要是指这么一种现象：当对端机器poweroff(而不是shutdown)的情况下，你所发出的报文会丢失。因此理所当然的，写者的写缓冲区会很快充满。此时会发起连接探测，以确定对方是不是掉线了。套在close的这个case上，就是一边是FIN-WAIT-1，另一边死不响应。需要通过多次探测来宣告对方死亡。因此，如果对方机器死机导致不响应你的FIN，才是用tcp_orphan_retirs的场合。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -755,6 +747,10 @@ EFI引导 终于到了今天的重头戏，EFI引导。EFI+GPT模式下，引导
             </li>
           
             <li class="post">
+              <a href="/blog/archives/2860/">similan船宿</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
             </li>
           
@@ -784,10 +780,6 @@ EFI引导 终于到了今天的重头戏，EFI引导。EFI+GPT模式下，引导
           
             <li class="post">
               <a href="/blog/archives/2852/">Puerro Galera游记</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2851/">/proc/net/dev中bonding网卡的流量计算</a>
             </li>
           
         </ul>

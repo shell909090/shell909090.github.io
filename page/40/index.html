@@ -43,7 +43,7 @@
   <meta name="author" content="Shell Xu">
 
   
-  <meta name="generator" content="Hugo 0.30-DEV" />
+  <meta name="generator" content="Hugo 0.26" />
 
   
   
@@ -87,6 +87,39 @@ ga('send', 'pageview');
  <div id="content">
   <div class="blog-index">
     
+    
+    <article>
+
+        
+        
+
+<header>
+    <p class="meta">Jun 15, 2011
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/1833/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/1833/">openwrt配置——openvpn的基础配置</a>
+    </h1>
+</header>
+
+
+        
+          <p>在openwrt下面配置openvpn是非常简单的事情，当然我假定你有linux下面配置openvpn的经验。
+首先，将配置文件，证书等等复制到/etc/openvpn下面。我的配置大概是这样。
+client dev tun proto udp remote ipaddr port resolv-retry infinite nobind persist-key persist-tun ca /etc/openvpn/ca.crt cert /etc/openvpn/openwrt.crt key /etc/openvpn/openwrt.key ns-cert-type server tls-auth /etc/openvpn/ta.key 1 cipher DES-EDE3-CBC comp-lzo verb 3 script-security 3 up /etc/openvpn/dftup down /etc/openvpn/dftdown  注意，其中的路径必须写完整，貌似测试下来不支持相对目录。其中的up和down是指在启动和关闭时会自动执行的两个脚本。根据贝壳的测试，redirect-gateway是无效的，不知道为什么。具体的路由配置方法，会在下一章中具体介绍。
+然后，你需要将这个配置启用，方法是修改/etc/config/openvpn，在其中加入以下内容。
+config openvpn name option enable 1 option config /etc/openvpn/name.conf  name是你的配置名，下面的路径和配置文件路径吻合。
+然后，你可以这样启动vpn。
+/etc/init.d/openvpn restart  </p>
+
+          
+
+        
+
+    </article>
     
     <article>
 
@@ -382,36 +415,6 @@ C++就比较搞笑了，纯C++是一个非常糟糕的东西。我们列举其�
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">May 30, 2011
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/1816/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/1816/">结婚公告</a>
-    </h1>
-</header>
-
-
-        
-          <p>我结婚了。
-我和她在facebook上认识，所以，首先感谢国家，感谢党。是你们封了facebook，把我培养成一个坚定的翻墙主义者。没办法，不翻墙，无老婆。
-谢谢所有我认识的不认识的朋友，谢谢你们的支持。在我发推结婚的数小时内，总共有150+条rt祝福。我很开心，她也很开心，所以在签字结婚的时候，她只考虑了十多秒。另外友情提示，如果你们带女友去登记，最好一气呵成直接带去，然后在签字前再给她一次考虑的机会，不要提前预告。如果不给女孩子一个考虑的机会，好像在强迫人家。但是如果给了太多考虑的机会，她会持续失眠一周以上，反应迟钝，出现恐婚心理，甚至危及你的人身安全。从维护女性健康的角度，最好在求婚成功后就直接去登记，你好我好大家好。
-最后，我会开一个小系列，讲述一下我每天的生活。名字大概就叫——阿宅程序员的故事。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -687,6 +690,10 @@ C++就比较搞笑了，纯C++是一个非常糟糕的东西。我们列举其�
             </li>
           
             <li class="post">
+              <a href="/blog/archives/2860/">similan船宿</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
             </li>
           
@@ -716,10 +723,6 @@ C++就比较搞笑了，纯C++是一个非常糟糕的东西。我们列举其�
           
             <li class="post">
               <a href="/blog/archives/2852/">Puerro Galera游记</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2851/">/proc/net/dev中bonding网卡的流量计算</a>
             </li>
           
         </ul>

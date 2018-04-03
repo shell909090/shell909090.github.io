@@ -43,7 +43,7 @@
   <meta name="author" content="Shell Xu">
 
   
-  <meta name="generator" content="Hugo 0.30-DEV" />
+  <meta name="generator" content="Hugo 0.26" />
 
   
   
@@ -87,6 +87,36 @@ ga('send', 'pageview');
  <div id="content">
   <div class="blog-index">
     
+    
+    <article>
+
+        
+        
+
+<header>
+    <p class="meta">Jan 17, 2007
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/350/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/350/">全局初始化</a>
+    </h1>
+</header>
+
+
+        
+          <p>大家写代码的时候，假如写了一个组件，自身需要开一个线程的。那么多数是在初始化代码中直接写开线程的。如果要求这个类不在初始化代码中添加函数，怎么做？
+MSDN中有个例子，不是解决这个问题的，但是可以用。
+class DialogWindow{ public: static short GetTextHeight(){ return 1; }; private: static short nTextHeight; }; short DialogWindow :: nTextHeight = GetTextHeight(); int main(){}  在这里，把GetTextHeight里面添加上你需要的代码就可以了。
+但是注意，这些代码的运行时间要早于main(准确的说，是在wmainCRTStartup里面运行的_c_init函数)。所以很多自然而然就有的初始化没做，你自己在main里面调用的初始化(例如WSAStartup啦，GDI+初始化啦)更是没做。所以必须严格测试。</p>
+
+          
+
+        
+
+    </article>
     
     <article>
 
@@ -426,41 +456,6 @@ $ apt-get moo (__) (oo) /------/ / | || * /---/ ~~ ~~ ....&quot;Have you mooed t
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Dec 22, 2006
-         - 3 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/340/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/340/">EPS转BMP和代码优化</a>
-    </h1>
-</header>
-
-
-        
-          <p>EPS转BMP(我用的是PNG，不过还是一回事情)。EPS内部有两种图片，一个是TIF，位置和大小在头32个字节中描述。具体可以看EPS文档，在lp[5]保存位置，lp[6]保存大小。还有就是%%BeginBinary:
-后面跟一个大小，然后跟beginimagex0D。在前文中应当有大小，自己找找看去，最后是一堆数据。存放方法是一位一位的像素连续存放，先存放一行C，然后是一行M，然后是Y，然后是K。当这4者全部存放完后，向后跳空一端区域，到本行开始的4字节对齐处，开始下一行的存放。
-例如3个像素宽的图片(好简单——)存放方法就是，在0字节的最高三位(7,6,5位)，存放了这三个像素的C值。次三位(4,3,2位)，存放了M值。然后Y值存放在0字节的两位(1,0位)和1字节的一位(7位)。最后K值存放在1字节的次三位(6,5,4位)。然后跳空对齐，在4字节的位置开始描述下一行。
-了解这个过程了，就应该发现，要转换到BMP需要大量的位操作。前置过程不说了，假定数据在内存里面(我当然不会用读取这种方法，用的是文件内存映射啦)，然后目标是GDI+的BitmapData对象。
-BYTE getBit (PBYTE lpInData, int bit) { bit*=n; BYTE rslt; rslt = lpInData[bit / 8]; rslt &gt;&gt;= (7 - bit % 8); return rslt &amp; 0x1; } for (y = 0; y &lt; tgtData.Height; y++) { line_start = lpOut + l * n * Stride; for (x = 0; x &lt; tgtData.Width; x++) { c = 1 - getBit (line_start, x); m = 1 - getBit (line_start, x + tgtData.</p>
-
-          
-              <footer>
-                  <a href="http://blog.shell909090.org/blog/archives/340/" rel="full-article">Read On &rarr;</a>
-              </footer>
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -736,6 +731,10 @@ BYTE getBit (PBYTE lpInData, int bit) { bit*=n; BYTE rslt; rslt = lpInData[bit /
             </li>
           
             <li class="post">
+              <a href="/blog/archives/2860/">similan船宿</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
             </li>
           
@@ -765,10 +764,6 @@ BYTE getBit (PBYTE lpInData, int bit) { bit*=n; BYTE rslt; rslt = lpInData[bit /
           
             <li class="post">
               <a href="/blog/archives/2852/">Puerro Galera游记</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2851/">/proc/net/dev中bonding网卡的流量计算</a>
             </li>
           
         </ul>
