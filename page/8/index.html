@@ -94,6 +94,43 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Nov 18, 2014
+         - 2 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/2700/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/2700/">上下文切换测试总结报告</a>
+    </h1>
+</header>
+
+
+        
+          <p>效率测试 测试环境  Intel&reg; Pentium&reg; CPU G2030 @ 3.00GHz 8G内存 debian jessie Linux 3.16-2-amd64 2014年10月27日  附注一下，该CPU有2核心，无HT，1ns3个时钟周期。
+测试方法 测试代码如下：
+time -f &quot;%e,%S,%c,%r,%s,%K,%P&quot; ./perf_fork  数据的意义分别为: 总时间，内核CPU时间，context switch次数，读/写次数，内存耗用，CPU使用百分比。
+数据处理方法如下：
+import numpy as np p = lambda s: [float(line.strip().split(',')[0]) for line in s.splitlines()] q = lambda s: [float(line.strip().split(',')[1]) for line in s.splitlines()] np.array(p(s)).mean() np.array(p(s)).var() np.array(q(s)).mean() np.array(q(s)).var()  基础开销测试 函数调用开销 使用s_call来测试性能，循环1G次。
+2.35,0.00,17,0,0,0,99% 2.34,0.00,13,0,0,0,99% 2.34,0.00,10,0,0,0,100% 2.35,0.00,10,0,0,0,99% 2.34,0.00,14,0,0,0,99% 2.34,0.00,6,0,0,0,99%  统计结果如下：
+ time mean = 2.</p>
+
+          
+              <footer>
+                  <a href="http://blog.shell909090.org/blog/archives/2700/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Nov 7, 2014
          - 2 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/2698/#disqus_thread">Comments</a>
@@ -409,70 +446,6 @@ ICP查询后结果是这样的：
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Aug 14, 2014
-         - 2 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/2671/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/2671/">服务器操作系统的选择</a>
-    </h1>
-</header>
-
-
-        
-          <p>今天被LTN问了一下怎么看一个知乎问题：
-服务器操作系统应该选择 Debian/Ubuntu 还是CentOS？
-其实我觉得他的大部分说法都没有错。如果你需要装一个服务器，确实首选是RH系的。
-但是。。。
-选用RH系的主要理由 其实你把回复从头看到尾，主要论点就一点：
-哪个发行版，可以在长达7-10年的时间里，始终保持硬件稳定性的同时，又持续的升级补丁？
-结论当然是RH！这是RH的主要卖点。
-我们真的需要长达7年的硬件稳定性支持？ 咳咳，今年上半年，蔽厂的运维碰到了这么一件尴尬事。
-他们进货，去机房装系统，配置网络结构，加入运维管理系统，添加监控，交付。除去采购外，整个一套流程大概是一周。
-我们在机房里面原本大约有10个机柜，那么一般扩充的时候，一次扩充一个机柜。
-结果今年上半年的某一段时间，一周一个机柜的事情持续了两个月。运维同学辛辛苦苦装好一个机柜，周末打算轻松一下。被老大通知，又来客户了，机柜又不够用了，下周继续。
-是的，我们现在20个机柜不止。机房有多少机柜我不知道，不过照这个趋势来看，我们快把机房包下来了。现在我们的带宽已经没有限制了，每个月月底按照合同秋后算账。
-我们有一些有三年历史的服务器，台数不多。现在来看，性能已经远远不够。CPU不够快，也没有SSD，硬盘读写次数也太多。这些机器的下场，多数会被换下来折旧卖掉，或者作为测试服务器，搬去测试机房。而现在机房里面大半机器，都是两年以下历史的。而且至少一半服务器历史不超过半年（。。。）。从现状上看，把老服务器留在机房，其性价比并不合算。因为机房有机架密度问题，限制着我们的单机房极限，这相当于变相的租金。
-如果考虑到这点，我们的线上服务器生命周期大概也就三年。最多。很多时候甚至还不到。
-比我们更极端的是页游。他们的一组服务器生命周期一般是半年。半年内，要赚钱的也赚完了，不赚钱的也死完了。所以他们甚至不会新采购硬件服务器，而是直接使用虚拟机。
-当然，虚拟机内的系统，支持时间是一年还是十年，对他们一点意义都没有。
-为什么我们不喜欢三年以上的系统？ RH系的提供10年级别的维护性，我换个说法，也就是最近的软件在RH的官方库里面找不到。当然，装最新的RH是有的，但是在安装了三年的一个系统上？肯定没戏。
-怎么办？编译呗。
-这大概就是国内谈到RH必编译的由来。
-可是，我引用文内的一段话。
-如果我今天告诉大家，我要做一个 http 的服务器，我不用 apache 不用 nginx， 为了性能我要用 xxx 为基础重写一套出来。我相信绝大多数人会问同样的问题， “你觉得你写的能比 ng 好么？” 再回头看看那时候你们自己吧。  同样，自己编译的软件，补丁维护速度，能和新系统比么？而且我们还得扔一个人下去搞补丁维护。
-所以，正解是什么？
-装一套新的，把数据导过去用呗。
-我们的”数据“，都是装载在磁盘上的。而换”系统“并不需要更新这些数据，只要把系统盘擦掉重部署一遍，然后配置好deploy系统就OK。在开发之初，”环境“，”程序“和”数据“分离，就是一项基本原则。而且即使是”数据“，丢掉一台机器上的所有”数据“也不会构成问题。这应当是运维基础中的基础。只有少数几台服务器，既不能直接更换也不能停机。这些机器我们做特别的管理。
-为什么蔽厂使用Ubuntu？ 很简单。因为最初的开发希望在Linux上进行。直接在Linux上开发和测试，对于startup的快速开发是非常重要的。而开发用什么版本，服务器跟什么版本，这是最省事和好办的。如果你硬要和我争，说开发在Mac上，跑在Linux上一点事都没有。或者说开发一个发行，服务器一个发行也OK。
-我至少得说这对于golang和python都不是事实。除非不用cgo，也不用python的C扩展。
-先不提Mac下和Linux下的差异。我们今年在升14.04的时候就发现，12.04和14.04的编译互不通行。所以现在12.04的编译可以程序员自己编译了本地测，14.04的就必须在测试环境里干。一帮程序员远程tcpdump出结果，拷回本地wireshark一把。。。
-看看就蛋疼。
-当然，这也有个问题。就是上面”我们不喜欢三年以上的系统“。所以呢。明年我们的系统大概会轮换重装，14.04。。。
-也很蛋疼。
-Debian系的补丁不靠谱么？ 那要看和谁比。这里有HeartBleed事件的统计。虽然不普遍，但是我觉得这种大漏洞比较有代表性。
-CVE-2014-0160 - OpenSSL安全漏洞的非技術事件
-我引用他的重点整理：
-RedHat 修復的速度比 OpenSSL 官方還快。 RedHat 派系的修復時間，除了 RedHat 外都算慢，如 Fedora 及 CentOS、Scentific， 他們都比 RedHat 慢 16 小時以上。 Debian 派系的修復時間，如 Debian 及 Ubuntu，都比 RedHat 慢上至少 12 小時以上。 Scentific 是列表中修復最慢的。 若以資安黃金 6 小時來說，Fedora、CentOS、OpenSUSE、Gentoo 及 Scentific 都不及格。  如果和RH比，Debian的修复速度是不及格，但是和CentOS比。。。怎么说呢？6个小时对10个小时，有种五十步笑百步的味道？</p>
-
-          
-              <footer>
-                  <a href="http://blog.shell909090.org/blog/archives/2671/" rel="full-article">Read On &rarr;</a>
-              </footer>
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -680,6 +653,8 @@ RedHat 修復的速度比 OpenSSL 官方還快。 RedHat 派系的修復時間�
     
         <a href="/page/93/" class="label-pagination">93</a>
     
+        <a href="/page/94/" class="label-pagination">94</a>
+    
 
     
     
@@ -688,7 +663,7 @@ RedHat 修復的速度比 OpenSSL 官方還快。 RedHat 派系的修復時間�
 
     
     
-        <a href="/page/93/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
+        <a href="/page/94/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
     
 
 </div>
@@ -744,6 +719,10 @@ RedHat 修復的速度比 OpenSSL 官方還快。 RedHat 派系的修復時間�
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2862/">openssl基本密码学操作</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2861/">密码学基本原理</a>
             </li>
           
@@ -777,10 +756,6 @@ RedHat 修復的速度比 OpenSSL 官方還快。 RedHat 派系的修復時間�
           
             <li class="post">
               <a href="/blog/archives/2853/">riot.im简介</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2852/">Puerro Galera游记</a>
             </li>
           
         </ul>

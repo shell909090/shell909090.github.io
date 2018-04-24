@@ -94,6 +94,38 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Dec 26, 2006
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/341/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/341/">getline的效率问题</a>
+    </h1>
+</header>
+
+
+        
+          <p>用过C++的肯定都知道getline(cin, str)这个用法吧，用于将某行读入到一个字符串对象中。但是根据我的测试，这个方法有严重的效率问题。
+正则表达式行匹配器，匹配一个23M文件。用getline的总运行时间是21秒，用直接文件读取方法只有7秒。getline方法在屏蔽对读入数据的正则匹配后还运行了9秒上下。这里有人可能弄不懂，即使读取不用时间，getline花费的时间加正则运算时间不应该是总时间吗？结论是不是的，因为多个接口上下调用需要时间，str对象得到指针需要时间。所以其中还有一些时间差。不过getline方法效率差是显而易见的。
+原因在于istream的类型和行的长度。我们是从文件中读取的，一次获得一个字符的取得的。ifstream应该没有弱智到一次只ReadFile一个字节，估计是用了1-4K的缓冲簇。对于大型文件，这个缓冲簇应该越大效率越高。但是stream不会知道输入流的长度，所以——
+而且即使知道了，50W个byte就是50W次call调用，花多少时间自己考虑吧。
+还有一个是string类型的问题。getline istream一般都是用string作为接收对象的，因为string几乎可以无限制的接收。在STL的实现中，string是vector一样的连续块分配。当长度超出的时候，就必须重新分配，然后复制数据，删除原先块。因此STL中建议给string对象reserve一个块来提高效率。不过getline开始的时候会earse string对象，可能在这里面保留区域就被OOXX了——
+所以在大规模数据处理中，还是手来吧。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Dec 22, 2006
          - 3 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/340/#disqus_thread">Comments</a>
@@ -395,34 +427,6 @@ cmatch what; regex reg(&quot;^abc$); if(regex_search(str.c_str(), what, reg)){ .
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Nov 6, 2006
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/331/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/331/">剪发公告</a>
-    </h1>
-</header>
-
-
-        
-          <p>最近碰到朋友——老问我，你最近如何。我说还行，就是头发剪了。然后就被要求照片。好，现在特此公告。照片如下。
-别说我没说过。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -630,6 +634,8 @@ cmatch what; regex reg(&quot;^abc$); if(regex_search(str.c_str(), what, reg)){ .
     
         <a href="/page/93/" class="label-pagination">93</a>
     
+        <a href="/page/94/" class="label-pagination">94</a>
+    
 
     
     
@@ -638,7 +644,7 @@ cmatch what; regex reg(&quot;^abc$); if(regex_search(str.c_str(), what, reg)){ .
 
     
     
-        <a href="/page/93/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
+        <a href="/page/94/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
     
 
 </div>
@@ -694,6 +700,10 @@ cmatch what; regex reg(&quot;^abc$); if(regex_search(str.c_str(), what, reg)){ .
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2862/">openssl基本密码学操作</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2861/">密码学基本原理</a>
             </li>
           
@@ -727,10 +737,6 @@ cmatch what; regex reg(&quot;^abc$); if(regex_search(str.c_str(), what, reg)){ .
           
             <li class="post">
               <a href="/blog/archives/2853/">riot.im简介</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2852/">Puerro Galera游记</a>
             </li>
           
         </ul>

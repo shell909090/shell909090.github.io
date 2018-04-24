@@ -7,10 +7,29 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Thu, 08 Mar 2018 17:38:12 +0800</lastBuildDate>
+    <lastBuildDate>Wed, 21 Mar 2018 11:19:20 +0800</lastBuildDate>
     
 	<atom:link href="http://blog.shell909090.org/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>openssl基本密码学操作</title>
+      <link>http://blog.shell909090.org/blog/archives/2862/</link>
+      <pubDate>Wed, 21 Mar 2018 11:19:20 +0800</pubDate>
+      
+      <guid>http://blog.shell909090.org/blog/archives/2862/</guid>
+      <description>openssl的基本检查 使用以下命令检测版本，-a可以提供完整数据。
+openssl version openssl version -a  speed test speed测试是openssl为你跑一下不同算法在你机器上的实际执行速度，这项测试在openssl中是一项非常有指导意义的测试。一方面，他给出了你选择算法的依据，通过实际数据告诉你每个算法能跑多快。另一方面，他可以用来评估不同硬件对算法的加速能力。如果仅仅是给出了选择算法的能力，我们一般都可以得到一个一般性结论，例如chacha20比AES快。但实际上很多CPU带有AESNI指令集，这种情况下AES的执行速度反而会更高。所以运行性能是和执行平台紧密相关的。关于这部分，可以参考Intel对OpenSSL的性能优化。
+具体的测试方法是
+openssl speed  后面可以跟算法，只测试特定的算法集。
+我这里跑了一遍全集，挑几个重点算法说一下性能吧。
+hash算法
+ sha256，标杆性hash算法，64字节小数据140M/s，8k大数据353M/s。sha512，170/470。hash算法的内部状态越长，在连续计算时的速度越快。 sha1，251/768。 md5，243/575。(你没看错，md5比sha1还慢) rmd160比sha256还慢，whirlpool比sha256慢。最快的是ghash，小数据4222/9732。但是见鬼的是，我查不着这是TMD什么算法(openssl list -digest-algorithms的输出里没有)。 最合适的算法，应该就是sha-512/256了吧。很安全，速度比sha256快，长度也不算太长，还能防御LEA(Length extension attack)。  对称算法
+ aes-128-cbc，标杆算法，120/125(M/s)。aes-192，93/103。aes-256，86/88。aes的内部状态越长，在连续计算时的速度越慢。这点和hash正好相反。 camellia128，138/167。camellia192，110/128。camellia256，109/124。这是一种大批量数据计算非常优越的算法，AES在计算大批量时性能上升并不快。 des比aes慢的多，只有66M/s。3DES更慢，只有25M/s。 没有chacha20。 不考虑chacha20的情况下，最好的算法应该是camellia128。当然，工业标杆是aes-128-cbc。  非对称算法
+ rsa 1024/2048/3072/4096的sign效率分别是8698/1351/453/206(个/s)，verify效率分别是131847/46297/22970/13415。rsa也是随着内部状态上升效率下降的，而且下降非常快。而且verify效率远高于sign。 dsa 1024/2048的sign效率分别是9836/3280，verify的效率分别是10584/3616。 ecdsa 192/224/256/384的sign效率分别是12696/12672/21016/4383，verify效率分别是3200/5630/9994/1019。能很明显看出来，sign效率比verify高。256位的时候由于某种效应性能达峰，后续直接断崖下跌。 ecdh 192/224/256/384的效率为3642/8339/15094/1183。同样能看出这种效应。 rsa和ecc不具有互换性。rsa参数选择建议2048，ecc参数选择建议256。  对称加解密 openssl支持多种对称加密算法，可以直接对文件加解密。在使用钱，我们首先列出系统上支持的算法。
+openssl enc -ciphers  输出很复杂，不列举。我们直接讲我的机器上分析后的结果。
+ 第一段是密码算法。在我这里，支持以下算法：aes, bf, blowfish, camellia, cast, chacha20, des, des3, desx, id(ea), rc2, rc4, seed。 最后一段有可能是模式。在我这里，支持以下模式：ECB，CBC，CFB，OFB，CNT。其中CFB和OFB是可流式的，其余都是块式的。关于加密模式，可以看这篇。 在enc的manpages里明确说了，enc不支持CCM或是GCM这类的authenticated encryption。推荐是使用CMS。  例如我们使用比较流行的chacha20来加密一个文件src，里面可以随便写一句话。</description>
+    </item>
     
     <item>
       <title>密码学基本原理</title>

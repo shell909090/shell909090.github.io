@@ -94,6 +94,47 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Jan 4, 2012
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/2052/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/2052/">哈希冲突漏洞的原理和对策</a>
+    </h1>
+</header>
+
+
+        
+          <p>cpug上面最近在讨论一个严重级漏洞，漏洞的相关资料如下： ERT-VN:VU#903934 CVE-2011-4815 CVE-2011-3414 CVE-2011-4838 CVE-2011-4885
+上面主要讨论的是这么一个概念，当用户post一个数据，而且这个数据又是一个form的时候，应用需要先将form解析为dict，然后才能方便的使用。例如a=1&amp;b=2，可以解析为{'a':'1', 'b':'2'}。之所以1和2是字符串，是因为只有用户自己才清楚这个数据的类型。
+通常情况下，这个form的key都是随机的，生成的hash碰撞概率很低，因此dict的默认实现——hash table没什么问题。但是当攻击者恶意构造数据的时候，情况就完全不同。我们首先讨论一下hash table的实现——开链法和二次探测法。
+所谓开链，就是指对所有同余hash，将他们挂到一个hash表项上，形成一个链表。而所谓二次探测，就是在第一次hash冲突后，再进行一次hash，作为第二地址。
+开链法对碰撞冲突是有先天缺陷的，因为同余碰撞的构造远比hash碰撞的构造简单。假定hash
+table有11个表项，那么平均11次尝试就可以得到一个元素，和原始元素hash同余。如果选用这样的恶意key序列，在执行构造的时候，hash
+table就退化为了链表。链表的插入复杂度是O(n\^2)级的。而作为攻击者，为了获得n个hash同余对象，所需消耗的复杂度做如下估量。首先考虑hash table length和n同阶，因此以n作为hash table长度。这样每n次尝试就可以获得一个恶意元素，获得n个元素的复杂度为O(n\^2)级。
+也就是说，即使是sha256这样强的hash算法，只要保证哈希函数特性，对同样的值得到同样的哈希，就无法保证开链法的安全。
+而二次探测法对这个是有先天抵抗的，二次探测法的第一次碰撞并不难构造，但是第二次哈希后依然保持同余的构造难度就由n增加到了n\^2，多次碰撞的构造难度以此类推。虽然我没有完整的计算过这个值，但是猜测难度量级应当是O(n*n\^n)级别的。这个级别基本就不用玩了——前提是哈希算法必须是安全的。
+由于为了节约计算过程，因此python和php的hash算法都没有采用md5之类的高散列算法，而是一个很简单的算法。我摘抄一下Python2.7.2中的这段代码。python_string_hash.c
+static long string_hash(PyStringObject *a) { register Py_ssize_t len; register unsigned char *p; register long x; if (a-&gt;ob_shash != -1) return a-&gt;ob_shash; len = Py_SIZE(a); p = (unsigned char *) a-&gt;ob_sval; x = *p &lt;&lt; 7; while (--len &gt;= 0) x = (1000003*x) ^ *p++; x ^= Py_SIZE(a); if (x == -1) x = -2; a-&gt;ob_shash = x; return x; }  按照&lt;python.</p>
+
+          
+              <footer>
+                  <a href="http://blog.shell909090.org/blog/archives/2052/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Jan 2, 2012
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/2050/#disqus_thread">Comments</a>
@@ -444,46 +485,6 @@ U盾应该在需要的时候才插上去，用完立刻拔出。虽然说不像�
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Dec 21, 2011
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/2029/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/2029/">Py 有什么缺点?!</a>
-    </h1>
-</header>
-
-
-        
-          <p>在 2011年12月21日 下午2:24，Zoom.Quiet 写道： &gt;
-在昨天内部分享交流中,俺回顾了 PyCon2011China 中透露出的 Py
-最新使用/发展和体验; &gt; 最后有同学问: &gt; Python 有什么缺点!? &gt;
- 直接HOLD 住了俺的思路&hellip; &gt; - 是也乎!? &gt; -
- 世界上没有完美的语言 &gt; - Python 相比各种开发语言也有缺点,当然的!
- 可是,是什么呢?! &gt; &gt; - 没有 {} ? &gt; - 不支持多CPU ? &gt;
-大家在学习使用过程中,对 Python 有什么失望的地方?! &gt; - 兼听则明
- 现在不满意的,就是我们努力的方向.. &gt; &gt; PS: &gt; -   俺现场憋出的回答是: &gt; - 由于 Py
-历史上积累的好用模块太多，会导致开发人员更加懒惰，不思进取，不论什么都可以直接搜出可用的现成模块来!
-  &ndash; &gt; 人生苦短, Pythonic!</p>
-
-          
-              <footer>
-                  <a href="http://blog.shell909090.org/blog/archives/2029/" rel="full-article">Read On &rarr;</a>
-              </footer>
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -691,6 +692,8 @@ U盾应该在需要的时候才插上去，用完立刻拔出。虽然说不像�
     
         <a href="/page/93/" class="label-pagination">93</a>
     
+        <a href="/page/94/" class="label-pagination">94</a>
+    
 
     
     
@@ -699,7 +702,7 @@ U盾应该在需要的时候才插上去，用完立刻拔出。虽然说不像�
 
     
     
-        <a href="/page/93/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
+        <a href="/page/94/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
     
 
 </div>
@@ -755,6 +758,10 @@ U盾应该在需要的时候才插上去，用完立刻拔出。虽然说不像�
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2862/">openssl基本密码学操作</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2861/">密码学基本原理</a>
             </li>
           
@@ -788,10 +795,6 @@ U盾应该在需要的时候才插上去，用完立刻拔出。虽然说不像�
           
             <li class="post">
               <a href="/blog/archives/2853/">riot.im简介</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2852/">Puerro Galera游记</a>
             </li>
           
         </ul>

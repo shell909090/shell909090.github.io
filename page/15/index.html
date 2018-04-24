@@ -94,6 +94,40 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Jul 16, 2013
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/2445/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/2445/">从齐治科技辞职了</a>
+    </h1>
+</header>
+
+
+        
+          <p>最近贝壳又一次的辞职了。
+离职的原因还是很单纯的，主要是管理上跟不上老板思路。既然如此，那就不要勉强为之了。
+我很感激现在的公司给我的帮助。毕竟在现在的公司，我的技术得到了长足的进步。同时，也给了我很多把想法变成现实的机会。
+目前我的意向是七牛云存储。在此感谢他们给我的机会，希望能在他们那里玩到一些有趣的东西。
+谢谢几位朋友给我的机会，我不愿意参与你们的项目并不是不看好你们。一方面，要同时做好下属和朋友是非常困难的。作为老板，不能因为私人的交情而偏颇公司的业务。按孔明的说法，就是“宜付有司论其刑赏”。而作为朋友，必然嘻嘻哈哈吐槽打屁。对着一个“不可因私废公”的人要放松下来，神经要不是一般的粗才行。
+另一方面，目前贝壳还没有孩子，而创业是一个全力投入的事情。万一创业到一半变成超级奶爸，事情就比较被动，害人害己。所以我目前更偏好至少第一轮天使投资过之后的公司。有创业的氛围，紧张但是不紧迫。我更喜欢正常的生活。每天都有时间做点自己的事情，有点自己的小娱乐，研究点自己的小技术。可以想像的是，在孩子到一定年岁前，我都很难承担从头创业的巨大风险了。
+最后，我也不认为自己有在创业团队中能够hold住大部分东西的能力（这并非出自我的妄自菲薄，而是基于实际评估的结果）。我希望在新的公司，至少做一些特定方面的事情，积累一定经验。
+要下海弄潮，先要搞清楚自己的斤两。其中最重要的两条，就是自己是否能承受风险，和自己是否能撑起一片天。既然两者目前都还欠缺。所以，请原谅我难以回报你们的厚爱。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Jul 5, 2013
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/2442/#disqus_thread">Comments</a>
@@ -439,49 +473,6 @@ define host{ use generic-host ; Name of host template to use host_name host alia
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">May 24, 2013
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/2404/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/2404/">lxc路由模式</a>
-    </h1>
-</header>
-
-
-        
-          <p> 为什么使用路由模式 lxc默认使用的是桥模式，这也是我在家里和公司里部署的模式。在这种模式下，lxc虚拟机可以直接和真实网络中的机器互相访问，就如同一台真的机器一样。路由模式则没有这个便利性。
-但是桥模式有个缺陷，必须能够做出桥来。我们有做不出桥来的时候么？有，如果你用笔记本，大部分AP会拒绝第二个MAC地址的包。导致网桥可以组建，却永远无法正常使用。
-第一种路由模式，双重NAT简版 双重NAT可以用于几乎所有场景，并且不会带来后遗症。然而，双重NAT的问题在于，物理网络不能直接访问虚拟机。对于很多设备来说，这就失去了价值。另外说一点，之所以叫做双重NAT，是因为多数时候物理网络接到外网还需要一次NAT。
-lxc的双重NAT可以视为两步，建立NAT连接的虚拟网络，将lxc连接到虚拟网络。
-第一步比较复杂，我们先从br0的建立开始说起。首先，你需要为虚拟网络分配一个不同的保留内网网段。如果使用同样的内网网段，在ARP查询的时候会从一个端口发出超过一个的MAC回应，这就退回了桥模式。
-然后我们需要建立一个br0网桥作为配置的起点，对这个网桥赋予IP，配置路由和防火墙，并启动dnsmasq以便于dhcp和dns。这个模式之所以叫做简版，是因为我们先不讨论dnsmasq。
-假如你的lxc内网网段是192.168.66.0/24，那么你大致可以如下配置：
-brctl addbr br0 ifconfig br0 192.168.66.1 route add -net 192.168.66.0/24 dev br0 iptables -A INPUT -s 192.168.66.0/24 -j ACCEPT iptables -t nat -A POSTROUTING -s 192.168.66.0/24 -j MASQUERADE  实际上，对于任何一种网口设备，将其配置为NAT的过程都是一样的。
-第二步非常容易，在lxc的config文件内，指定网桥为br0就OK了。当然，作为略去dnsmasq的代价，你需要手工配置每台机器的IP地址和DNS服务器。
-第二种路由模式，双重NAT 双重NAT的完整版需要在内网网口上启动dns，作为dns缓存代理和dhcp服务器。其余和第一种模式没有区别，只是你不需要手工指定IP和DNS服务器了。
-当然，其实任何一种网口的NAT配置都是一样的。
-第三种路由模式，双边交互路由 第三种路由模式的效果最好，虚拟机和真实机可以互相访问。但是这种模式需要能够修改物理网络网关的路由表。这种模式使用主机作为路由器，中转真实网络和虚拟网络。
-我略去如何创造br以及如何将lxc连接到上面，这些前面有叙述。下面我简述一下双边路由最关键的几点。
- 最重要的重点，就是在真实网络的网关上，将你的真实物理机在外网的IP，配置为虚拟网络的下一跳网关。例如，对于上面的例子，我们应当在网关上如此配置。
-route add -net 192.168.66.0/24 gw 192.168.1.4
-  如果不进行如此配置，物理网络所发出的包在到达网关后就不知道应当如何转发了。
- 在物理机上允许双边网络的所有包透过。你的包当然不能被防火墙挡掉。 虚拟网络的dhcp是不会传递到外网的，因此如果打算使用dhcp，还是需要开dnsmasq。  </p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -689,6 +680,8 @@ route add -net 192.168.66.0/24 gw 192.168.1.4
     
         <a href="/page/93/" class="label-pagination">93</a>
     
+        <a href="/page/94/" class="label-pagination">94</a>
+    
 
     
     
@@ -697,7 +690,7 @@ route add -net 192.168.66.0/24 gw 192.168.1.4
 
     
     
-        <a href="/page/93/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
+        <a href="/page/94/" aria-label="Last"><i class="fa fa-angle-double-right fa-lg"></i></a>
     
 
 </div>
@@ -753,6 +746,10 @@ route add -net 192.168.66.0/24 gw 192.168.1.4
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2862/">openssl基本密码学操作</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2861/">密码学基本原理</a>
             </li>
           
@@ -786,10 +783,6 @@ route add -net 192.168.66.0/24 gw 192.168.1.4
           
             <li class="post">
               <a href="/blog/archives/2853/">riot.im简介</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2852/">Puerro Galera游记</a>
             </li>
           
         </ul>
