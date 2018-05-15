@@ -94,6 +94,43 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Sep 27, 2006
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/322/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/322/">玉女穿梭</a>
+    </h1>
+</header>
+
+
+        
+          <p>今天弄了一个好玩的东西，esound4win。
+现在在我的linux和windows上面有一堆穿来穿去的协议，大家看看实现方法，然后头晕不头晕。
+首先是VNC，在windows上面安装RealVNC，启动服务。然后用linux的xvncviewer访问，就可以无缝在linux上面访问windows。
+然后是Xming，这个是Cygwin的一个部分。可以在windows上启动X服务，这样我们可以运行一个远程跨平台的图形界面。在我的Debian上面是这样的。
+用一个tty登录进去，然后
+$export DISPLAY=192.168.0.X:0 $/etc/X11/Xsession &amp;  这样就完成了完整的一个界面，界面控制是在windows下，但是程序是在linux下跑。和VNC不一样的是，windows的前端在操作的时候，其他的前端可以同步操作。
+再然后是esound，这也是Cygwin的一个部分。可以在windows上开启一个esound daemon。方法是运行。
+esound -tcp -public  在linux下面，esound可以跨站传输，方法是设定。
+$export ESPEAKER=192.168.0.X:16001  当然，监听端口可以自行设定。
+这样，就完成了从linux上将声音输出到windows听的功能。
+最后，我讲讲我的实现。我先开了一个VNC穿到windows上操作，然后启动Xming。按F8退出到本地，用Ctrl+Atl+F2切换到tty登录，并且连接上Xming的前台X。然后Atl+F7返回GUI，F8返回VNC全屏模式。在Xming里面，开了个term。export了参数后启动xmms，并且切换到esound输出。再在windows下面运行esound4win，插上耳机。最后我点了下VNC中的Xming中的xmms的播放，声音出来了——世界多么奇妙？</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Sep 26, 2006
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/321/#disqus_thread">Comments</a>
@@ -487,58 +524,6 @@ a、 Minix
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Jul 30, 2006
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/312/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/312/">新版MSN试用报告</a>
-    </h1>
-</header>
-
-
-        
-          <p>最近MSN又更新了，出乎我的意料，这次是stella同学率先跟进的。结果伊在刚刚用的时候发现好友全部消失了，正在惊惶的时候，偶撞上去打招呼，结果被伊捉来拷问。最后恢复是恢复了，不过还欠下新版MSN的论文一篇。
-虽然不知道伊何时对MSN的机制感兴趣了，不过偶还是写了一个blog来分析新MSN的战略意义和运行机制。
-免责声明，以下内容尚没有经过严密测试。如有偏差，作者不负任何责任。
-copyright
-itten by Shell.E.Xu, public under GPL.
-abstract
-新版MSN的功能和工作原理。
-keywords
-N，安全，兼容，分布式
-context
-我们先分析what&rsquo;s new上面提到的两个新功能，语音通讯和共享文件夹。
-1.语音通讯
-这东西很老啦，我测试的情况下是直接连接，连对方的IP都暴了出来，而且还不稳定。不知道为啥微软拿来宣传。
-2.共享文件夹
-共享文件夹的功能不是MSN的独创，但是MSN的共享文件夹思路很特殊，是针对每个人共享的。这不同于设置共享文件夹权限的做法，针对每个人的共享在正常来看差不多就是文件传输。通常IM的文件共享都是共享一个文件集，然后设置不同人的访问权限。这个时候IM宿主的功能就好像一个文件服务器。但是MSN的做法使得管理者不是单个IM宿主，而是两个。而且IM宿主不必在线，也可以修改文件。对此我跟踪了下整个实现过程，发现是这样的。
-MSN使用了%ROOT%Local SettingsApplication
-DataMicrosoftMessenger%EMAIL%目录来保存和共享有关的东西，对每个人的共享内容都会保存在SharedFolder下面的Email下。每个人只保存自己共享出去的，对方的内容在联机的时候同步。这里要提到一个概念，硬连接和软连接。假定文件内容相同，连接能减小空间损耗。NTFS虽然在理论上支持了硬连接，但是却没有在platform
-API里面导出相关函数。何况FAT根本不支持硬连接。所以MSN使用硬连接的可能为0。至于软连接，同样，FAT根本不支持。所以使用软连接的可能也不大。因此，假定你一个文件要共享给所有人，使用MSN的话你要重复拖曳，并且多次保存。（短期试用，还不知道是否真的必须这样）这样共享文件根本不经济。更何况每次上线都要进行同步，取得别人的更新，这样对网络也非常浪费。同时还存在下载染毒文件的风险（当然不会有运行的风险）。不知道微软存了啥心思。
-3.Windows Live Safely Scanner
-微软在共享文件夹里面配套提倡的，就是Windows Live Safely
-Scanner。其他厂商为了增大合作空间，一般在查毒功能上都是利用外包方式，只要你提供一个杀毒软件主程序的路径，就可以利用%PATH%
-%FILE%的方式查毒。微软就在MSN内推荐使用本公司的产品。由此看出微软准备借助IM的优势，向安全领域进军。
-4.联系人列表加密
-这个是本人最不齿的功能，如果要加密了联系人列表，那么gaim一类的东西就全成了废物。微软如果真的有这个心思，完全是本着把开放协议搞成封闭协议的精神在做事了。如此无异于步QQ的后尘。
-5.其他特征
-新版MSN登录时间一般比较长，估计是在做功能通讯。有得有失，大家就别计较了吧。不过如果你登录过，速度就比较快了。MSN新版的稳定性还是不行，stella小姐被吓个半死，我这里是分组丢失。不过伊重新登录就恢复了，偶拿gaim登录也正常了。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -812,6 +797,10 @@ Scanner。其他厂商为了增大合作空间，一般在查毒功能上都是�
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2863/">openssl证书相关</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2862/">openssl基本密码学操作</a>
             </li>
           
@@ -845,10 +834,6 @@ Scanner。其他厂商为了增大合作空间，一般在查毒功能上都是�
           
             <li class="post">
               <a href="/blog/archives/2854/">使用Debian作为Router</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2853/">riot.im简介</a>
             </li>
           
         </ul>

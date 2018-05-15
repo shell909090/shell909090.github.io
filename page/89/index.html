@@ -96,6 +96,45 @@ ga('send', 'pageview');
 <header>
     <p class="meta">Sep 28, 2005
          - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/212/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/212/">椭圆曲线算法</a>
+    </h1>
+</header>
+
+
+        
+          <p>frist of all, today is google&rsquo;s 7th brithday. Happy brithday.
+这篇是接上篇windows版本论的，主要讲述windows的SN算法和椭圆曲线算法。
+windows的SN长度是25位，大家都知道了。但是大家可能不知道，windows的SN是base24的
+UUCode算法的结果，所以里面应该只有以下字符BCDFGHJKMPQRTVWXY2346789。如果有别的就不用试了，肯定假的。在UUDecode后应该有114bit的数据，其中只有31bit的有效数据，我们称为data。
+具体椭圆曲线密码体系就不说了，大致来说，和RSA一样，是属于非对称密钥体系。RSA是利用大质数分解构造的陷门函数，椭圆曲线利用的是二次方程的整数解。应用方法说明如下：
+先利用data和private key经过SHA-1算法hash出一个hsah，取28位。
+利用data和private key经过椭圆曲线算法得到sign，55位。
+将(data, hash, sign)三元组UUCode出SN。
+SN上面算法如下：
+用SN做UUDecode得到(data, hash, sign)三元组。
+利用sign和hash可以求出private key。（贝壳这里有点看不懂） 利用data和private key经过SHA-1算法hash出一个hsah，取28位。
+效验private key。
+我们的破解程序很明显在根据public key求private key，正好是要算死的那种。幸好微软为了考虑用户输入SN的麻烦，所以sign才55位。否则我们这辈子休想算出一个号来。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
+    <p class="meta">Sep 28, 2005
+         - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/211/#disqus_thread">Comments</a>
 
         
@@ -405,35 +444,6 @@ which IBM call them 胸卡。it&rsquo;s sounds string, isn&rsquo;t it？里面�
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Aug 12, 2005
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/202/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/202/">链式网络协议封装</a>
-    </h1>
-</header>
-
-
-        
-          <p>今天设计了一个通讯接口，准备运行在TCP/IP上。实现反扫描，反通讯分析，反IDS，反嗅探。其中反扫描需要使用Sniffer来做侦听诱导或者是反穿诱导（我更倾向后者），反通讯分析需要封装整个协议到ICMP层或者一些比较不容易被察觉很跟踪的协议层上去，还要兼顾反IDS的行为分析。最后反嗅探需要数据加密。这些能力还要能动态叠加和消除，这样只有设计一个动态的通讯接口了。
-我先设计了一个虚基类，保证用于每个子类继承后可以自动产生链。通过链式规则，我们从上层将数据层层递推。任何层都可以发出数据，并且终止链的递推。基类有六个虚方法，链接，监听，发送，接收，判断数据进入，关闭。构造函数可以接收一个基类指针作为参数，并且传递给基类构造函数。基类构造函数将会自动产生链，并且加以管理。每次我们调用某个方法时，虚方法会自动按照链的结构依次被调用。同时基类的管理作用也作用于缓冲区，使得所有子类构成链后共享同一个缓冲。当我们设定缓冲并且发送时，最上层的发送函数就被调用，然后处理缓冲内容（如果这个子类是反嗅探用的话）。然后调用下个链上的节点，下个节点继续处理。每个节点都可以决定是否要终止调用链。
-我正在编写并且测试整个系统，如果运行良好的话，我准备将虚基类的代码和部分的实现代码公开。可能数据加密方法不会公开（我可能会使用一些比较巧妙而非严谨的方法来保证安全）。使用者可以利用整个接口来收发数据（即使不是网络通讯），并且自行扩展能力。当然，作为普通的网络通讯接口，这个东西也是比较好用的。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -707,6 +717,10 @@ which IBM call them 胸卡。it&rsquo;s sounds string, isn&rsquo;t it？里面�
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2863/">openssl证书相关</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2862/">openssl基本密码学操作</a>
             </li>
           
@@ -740,10 +754,6 @@ which IBM call them 胸卡。it&rsquo;s sounds string, isn&rsquo;t it？里面�
           
             <li class="post">
               <a href="/blog/archives/2854/">使用Debian作为Router</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2853/">riot.im简介</a>
             </li>
           
         </ul>

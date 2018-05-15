@@ -94,6 +94,64 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Aug 19, 2014
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/2676/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/2676/">如何分辨网站真假</a>
+    </h1>
+</header>
+
+
+        
+          <p>老婆想去新疆玩，结果她居然从百度上搜了一下新疆国旅就联系开了。我一直不知道，直到她和我说，对方要求缴500元到一个支付宝帐号里。我立刻要求她不要付钱，然后开始查证真假。
+第一家网站 她开始给我的是这家：http://www.17xjly.net/。
+老规矩，先whois，再dig，再whois。
+whois域名的结果是没有任何信息？！
+dig后的IP是113.10.247.20。再whois一遍，发现服务器在香港。此外也没有任何信息。
+ICP是新疆的，查全国ICP登记无信息。
+开始想不通，这家伙在新疆背景这么深厚？突然醒悟过来。这家伙是个.net域名，注册地不在中国，服务器不在中国，凭什么要人家ICP备案啊。就因为号称是新疆的网站？
+CAO，这种网站给的支付宝，鬼知道打进去会发生什么。。。
+第二家网站 百度上排名很高的是这家http://www.yuyutrip.net/和这家http://www.yoyotrip.net/。两家的页面很像，但是又明显有区别，不知道是竞争对手还是什么。
+老规矩。
+whois域名的结果是这个：
+Registrant State/Province:Shanghai Registrant Name:shxg shxg  注册地上海？
+dig了更好玩。这两个域名的IP指向是同一个。121.52.217.137。再whois发现是这个：
+netname: TopnewNET descr: Beijing Topnew Info&amp;Tech co., LTD.  没听说过。
+ICP倒是有：
+北京博通天下网络技术有限公司 U旅商旅网 2013-06-09  咳咳，漏底了吧。虽然号称国旅，但是是一家北京公司在上海注册的域名。
+好玩的是，这家网站上面给出的地址，是真的（具体后面会说）。但是电话却不对。
+真的国旅 google出手，马上就有。结果是这个http://www.cits.com.cn。
+老规矩。
+whois域名可以看到这个：
+Registrant: 中国国际旅行社总社有限公司  注册者看着就很NB。
+dig一下，发现IP是这个，219.143.192.35。这个IP可牛逼了。whois一下：
+inetnum: 219.143.192.0 - 219.143.192.255 netname: CITS  我擦，专属C类IP段！
+ICP查询后结果是这样的：
+中国国际旅行社总社有限公司 国旅在线 www.cits.com.cn 2014-07-23 www.cits.net 2012-11-29  这个网站上有400电话，打过去说新疆只有团体游。不过人家给了正确的地址和电话，和第二家网站的地址一致，电话却不一样。
+事情到这里，我的基本判断是。和第二家网站做生意还是有点谱的，ICP是真的，地址国旅也认。最低限度，他至少是一家合法的旅行社——虽然不保证是国旅下属。第一家么，谁爱信谁信。
+上海国旅 后面有点更好玩的事情。国旅在线上有上海，而google查询结果上也有不少上海国旅。那么谁是真的呢？
+上海国旅1 例如这家http://www.scits.com/。</p>
+
+          
+              <footer>
+                  <a href="http://blog.shell909090.org/blog/archives/2676/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Aug 14, 2014
          - 2 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/2671/#disqus_thread">Comments</a>
@@ -501,45 +559,6 @@ ulimit的限制效果  ulimit -m 8192 当内存突破8M时，什么事情都没�
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Jun 3, 2014
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/2640/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/2640/">为什么running不高但是load很高</a>
-    </h1>
-</header>
-
-
-        
-          <p>很多初学者会混淆几个概念。CPU繁忙程度，load。两者的区别在于，一个秘书是真的忙着抄抄写写，另一个么，反正领导只检查桌子上堆的文件数。只要桌子上准备一堆文件，在文件里换来换去就好了，没必要真的很忙。当然，大多数时候桌子上堆着很多文件的理由还是因为秘书手不够了，不过少数时候也有例外。例如fork boom，CPU很空但是load奇高。
-我们就遇到了一个例外的例外。
-症状是这样的。系统经常出现偶发性的load过高。例如有那么几分钟，load会高到100-200，然后就快速下降。但是检查后发现，即使在load极高的时候，cpu占用率也并不高，大概在10-20左右。磁盘吞吐也一般。那么load为什么会这么高呢？
-我的第一怀疑当然是超多数量的小线程，在那里搞切换调度。所以我第一反应就是看了/proc/loadavg的当前活跃线程数——结果居然只有1-5。为了确认，我特意的持续观察了数次，在我观测期间load的1分钟计数还升高了——这说明当前实际队列比1分钟平均还要高，而活跃线程却是3。
-怎么可能？交通系统报警说北三环大赛车，平均堵塞长度500辆。去一辆警车到现场回报说只看到塞了两辆，再去一辆说算上我们自己三辆。去了十多次都如此。任何脑子清楚的人都会毫无疑问的喊出——黑箱政治，政府不作为，我们要占领国会——不好意思，我们好像没有这个东西。
-OK，言归正转。为了解释这个疑惑，我特意的去看了一下内核源码——我擦，loadavg的平均值计算中，是把uninterruptible算在一起的。而活跃上下文中，只算了nr_running！
-——你丫敢再精神分裂点么？
-为了确认，我还特意man proc，结果发现里面确实有说，平均值是R和D两者去算的。但是在活跃上下文那里，只说了the number of currently runnable kernel scheduling entities——看看清楚，这里可从没有说有D。脑子清楚的仔细想想就知道，D是不可调度的。
-——问题是咱脑子不清不楚的就没想这差异，而且咱连man proc都没查。。。
-另外顺便说一句，内核也告诉了我们一点东西——load计算的时候是连内核线程一起算的。
-清楚这点差异后，问题的原因也很清楚了——肯定是哪里有很高的D。用ps -e Hl | grep -e R -e D扫了一下，再用wc -l做了一下统计。214个线程在D(或者R，或者只是不小心被grep到，但是实际上大部分都是D)。系统当前的loadavg正好长这样：
-214.12 156.63 82.25 7/4629 10027  7个执行中线程&reg;，207个uninterruptible。
-——所有的谜都解开了。</p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -813,6 +832,10 @@ OK，言归正转。为了解释这个疑惑，我特意的去看了一下内核
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2863/">openssl证书相关</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2862/">openssl基本密码学操作</a>
             </li>
           
@@ -846,10 +869,6 @@ OK，言归正转。为了解释这个疑惑，我特意的去看了一下内核
           
             <li class="post">
               <a href="/blog/archives/2854/">使用Debian作为Router</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2853/">riot.im简介</a>
             </li>
           
         </ul>

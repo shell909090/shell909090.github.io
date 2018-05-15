@@ -94,6 +94,41 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Aug 27, 2008
+         - 4 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/31/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/31/">python的性能问题</a>
+    </h1>
+</header>
+
+
+        
+          <p>贝壳最近在一个朋友的网站上看到了关于SICP零钱兑换问题的python求解，使用了记忆机制，然后他给出了代码。然而他的代码计时上有点小问题，也没有用包装器(奇怪的是，有写)，而且python的栈深度有限。因此贝壳做了几个修改的版本，需要测试下性能，下面就是关于性能的几个问题和过程。
+本文详细论述了python语言下和C++语言下使用各种方法测试代码性能的方法，以及粗略的关于两种语言不同算法性能对比。
+原始的python代码是这样的：
+def change_coins(money): first_denomination = { 1: 1, 2: 5, 3: 10, 4: 25, 5: 50, } def cc(amount, kinds_of_coins): if amount == 0: return 1 elif amount &lt; 0 or kinds_of_coins == 0: return 0 else: kind = cc(amount, kinds_of_coins - 1) kind += cc( amount-first_denomination[kinds_of_coins], kinds_of_coins) return kind print(&quot;change_coins return %s&quot; % cc(money, 5)) change_coins(300)  利用记忆原理包装后是这样的：
+def memoiza(fun): cache = {} def proc(*arg): if arg in cache: return cache[arg] else: x = fun(*arg) cache[arg] = x return x return proc def decorator_change_coins(money): first_denomination = { 1: 1, 2: 5, 3: 10, 4: 25, 5: 50, } @memoiza def cc(amount, kinds_of_coins): if amount == 0: return 1 elif amount &lt; 0 or kinds_of_coins == 0: return 0 else: kind = cc(amount, kinds_of_coins - 1) kind += cc( amount - first_denomination[kinds_of_coins], kinds_of_coins) return kind print(&quot;decorator_change_coins return %s&quot; % cc(money, 5)) decorator_change_coins(300)  不记忆，利用栈模拟递归展开是这样的：</p>
+
+          
+              <footer>
+                  <a href="http://blog.shell909090.org/blog/archives/31/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Aug 15, 2008
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/30/#disqus_thread">Comments</a>
@@ -362,36 +397,6 @@ OK，下面可就是贝壳无能为力的了。毕竟数据库那里应该都是
           <p>刚刚在用电脑，突然听到空调咔咔狂响(没错，不是硬盘)，然后从里面飞出……一块冰？
 我知道沈阳很凉快，不用这么提醒我吧。
 是我太无知，还是世界太疯狂？</p>
-
-          
-
-        
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Jul 4, 2008
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/22/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/22/">沈阳记一兼我还活着</a>
-    </h1>
-</header>
-
-
-        
-          <p>同志们，我还活着。最近项目不断，贝壳来了走走了又来，先是烟台，回上海修养两天再回烟台，然后回上海救火两天，连公司都没回去报销又来烟台，刚刚搞的差不多又来沈阳。下面据说还有上海和烟台，貌似奥运前是没完了。
-而且烟台的网络状况急转直下。本来速度快的跟鬼一样，现在报社上网要用代理，每次打开个页面就要点一次密码确认，点记住密码也没用。这种情况下速度根本没意义，宾馆则是慢的跟鬼一样。然后……贝壳就光荣的断网了。
-祸不单行，贝壳在7月1日接到了移动的通知，说话费只有14元多，记得充值。贝壳想，哦，也能用上一些时间了。谁知道第二天就断网，这才想起来移动的话费是第二日过的。然后紧急找人充值，却被告知因为欠费无法充值。然后贝壳要和客户联系，要用飞信帮人测东西，要收的通知，移动上网看blog……全部没了。最要命的是，我马上要出差沈阳。
-贝壳到了沈阳，打车到位，一点不差，真的是运气。否则喊救命都不知道喊谁了。第二天，找个地方充值，总算把手机开开，谁想到刚开就用到了。我说要去故宫旁边的如家七斗星酒店，结果混蛋司机给我拉到了故宫旁边的如家酒店。下来才发现不是，回头找司机没影了。幸好这个时候，手机已经可以用了。于是我打开Moto A1200r，接入中国移动GPRS网络，使用Google Map手机版，很容易的找到了当前位置。(贝壳注，以上不是广告，当然和周XX的大XX里面那个MXXX和移XXX的XX更不一样……)。走走两分钟就到了，作为手机地图来说，这算是立了头功了。</p>
 
           
 
@@ -672,6 +677,10 @@ OK，下面可就是贝壳无能为力的了。毕竟数据库那里应该都是
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2863/">openssl证书相关</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2862/">openssl基本密码学操作</a>
             </li>
           
@@ -705,10 +714,6 @@ OK，下面可就是贝壳无能为力的了。毕竟数据库那里应该都是
           
             <li class="post">
               <a href="/blog/archives/2854/">使用Debian作为Router</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2853/">riot.im简介</a>
             </li>
           
         </ul>

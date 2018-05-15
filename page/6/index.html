@@ -94,6 +94,46 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Jun 30, 2015
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/2766/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/2766/">hosts配错导致ldap安装问题一例</a>
+    </h1>
+</header>
+
+
+        
+          <p>不废话了，要装ldap。
+ubuntu下，最简单的方法是修改/etc/hosts，添加自己的域名，例如ldap.shell909090.org。然后安装包的时候，就会使用dc=shell909090,dc=org作为basedn。里面自动添加一个admin。
+结果在某机器上，丫硬是一直管自己叫nodomain。
+当然，内容可以后改。但是很麻烦。先要删除原始的，添加新的。还有一堆杂七杂八的问题。关键是，为啥TMD这么简单一个问题我居然搞不定。
+方法1 绕过。
+怎么绕？
+经过检查发现，basedn这些东西，其实都是从debconf里读的，而不是直接来自系统。所以我可以重设debconf来修改配置。
+echo slapd slapd/domain string shell909090.org | debconf-set-selections echo slapd shared/organization string shell909090.org | debconf-set-selections  然后再安装，就全部正确了。
+方法2 为什么？
+检查同样发现了本质的原因。如果debconf里没有配，则去读取hostname -d。在一台机器上，这个配置没事，另一台就不行。
+经过我反复测试，发现原因是这样的。
+hostname -d读取域名的时候，是寻找/etc/hostname对应的域名作为行尾的那行，而不是127.0.0.1所在的那行。。。
+而出问题的那台机器，/etc/hosts配置和没问题的那台严格一致。包括机器编号！
+谁TM抄卷子把名字也抄了？</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Jun 29, 2015
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/2764/#disqus_thread">Comments</a>
@@ -438,45 +478,6 @@ PS：音量的问题就别吐槽了。我们设法改善了几次，最后发现
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Apr 21, 2015
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/2737/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/2737/">ppa的使用</a>
-    </h1>
-</header>
-
-
-        
-          <p> 最近用ppa做了backport，这里记录一下用法。
-编译简述 ppa的大概工作原理，和mentors非常类似。
- 包一个deb包，然后build这个包，生成dsc，deb，build和changes。 上传这些文件，然后ppa丢弃所有deb（是的，ppa不接受编译好的包，因为可能在编译过程中被做手脚），从源码编译所有文件。 ppa生成了一堆deb文件，并丢到一个特别的目录下。 ppa为这堆deb文件做签署。 最终用户将这个目录添加到apt源中，就可以安装这些包了。  这里有几个细节：
- 服务器怎么知道是你上传的包？
-答案是在打包时进行签署，所以dput是不验证身份的。也因此，你需要将自己的gpg key上传到服务器。 既然不需要deb，如何构建一个没有deb的编译？
-答案是debuild -S。当然，这也可能有变化。如果是建立一个已经存在的包，是-sd，否则是sa。后面还可以用-k\来指定 最终用户如何构建信任？
-答案是由ppa编译，由ppa签署。用户并不导入维护者的任何key。但是如果用户不信任维护者，那么维护者可以在包内夹杂任何恶意代码。因此ppa只解决安全传递和构建，而不解决维护者信任问题。  申请ppa 不废话，自己去launchpad申请。这个是要ubuntu one帐号的，然后openid认证。不过不算太麻烦。
-添加key 首先需要生成gpgkey，这里不解释如何生成key pair。
-然后需要将key pair上传到ubuntu key server。我不知道其他key server最终会不会同步，但是即使会，同步时间也是长的那啥。
-gpg --keyserver keyserver.ubuntu.com -send &lt;keyid&gt;  这样就行了。
-设定dput 在这个页面有解释。在ubuntu 9.10以上版本，可以直接dput ppa:userid/ppa &lt;source.changes&gt;来上传。如果是更老版本（或者像我一样用debian），可以设定~/.dput.cf来工作（刚刚的页面下面有样例，照着改就行）。
-添加ppa 使用add-apt-repository ppa:userid/ppa就行了。本质上，他做了两件事。
- 在/etc/apt/sources.list.d/下面生成一个文件，将你的repository添加到系统中。 将ppa的sign key导入到系统中，并添加信任。  </p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -750,6 +751,10 @@ gpg --keyserver keyserver.ubuntu.com -send &lt;keyid&gt;  这样就行了。
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2863/">openssl证书相关</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2862/">openssl基本密码学操作</a>
             </li>
           
@@ -783,10 +788,6 @@ gpg --keyserver keyserver.ubuntu.com -send &lt;keyid&gt;  这样就行了。
           
             <li class="post">
               <a href="/blog/archives/2854/">使用Debian作为Router</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2853/">riot.im简介</a>
             </li>
           
         </ul>
