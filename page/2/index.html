@@ -94,6 +94,47 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Aug 28, 2017
+         - 2 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/2854/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/2854/">使用Debian作为Router</a>
+    </h1>
+</header>
+
+
+        
+          <p>设备是一台D525的多头主机，2G内存，4G电子盘，有4个网口，两个USB口，一个Serial口（很特殊吧），还有一个VGA口。原本预装是RouterOS的。最近给RouterOS整烦了，所以把路由器洗了换成Debian了。由于不想干掉原本的电子盘，所以新买了一块msata的电子盘。JD上大概80，自己买就行。
+目标 我希望整个路由能够为家里的网络系统提供良好的基础。因此，我确立了一系列目标：
+ 全家能够上网，并充分利用带宽。 能够映射外网地址到内网，提供一定的服务（例如通过https管理内部，或者做bt）。 能够分离两个区域，一个可信区域，一个只能上外网（guest网络环境）。 能够为家里的所有用户，包括guest，提供有限目标翻墙，例如只翻google。该机制不会使访问国内网络受影响，例如变慢。可以限制部分IP不翻，例如bt。  下面是一些可选目标。
+ 能够直接通过机器名解析出DHCP地址。这样就无需为每个需要被访问的机器总是分配固定IP。 对guest网络提供配额限制。 对总体能做一定的QoS。 基础设施层面的防投毒/欺骗/攻击。 支持IPv6，家里每个设备至少一个IPv6地址，且外网可访问。  架构 首先是分离设计。用两个网口分别提供两个网段，作为可信区域和guest网络用。然后提供一个VPN，允许guest区域进入可信区域。对于可管理交换机而言，其实也可以用vlan技术。一个网口打到交换机上，然后在交换机上设定哪些是guest口。我这里没有可管理交换机，而桌面交换机有多。所以直接出两个口就好。核心路由是四口的，一个外网，两个内网，还有富裕。
+以下是主要目标的工程清单：
+ 多头主机，上防火墙，建立Serial和ssh双管理机制。 内网dnsmasq，外网NAT。最后测速。 DDNS，外网port mapping。 安装openvpn做vpn-in。 做vpn out，调整路由表。 多网段，内部互通限制。  安装 Debian的安装没什么好多说的，我直接用VGA安装的。stretch，目前stable版，没什么特殊的。等进入系统了，直接改grub配置，改成serial能够控制。这样将来路由器出问题的时候只要用Console线接上，就能登录系统排查问题了。具体方法搜一下就行，我是用这个页面，按照里面改了以下三个参数。
+GRUB_CMDLINE_LINUX=&quot;console=tty0 console=ttyS0,115200n8 quiet&quot; GRUB_TERMINAL=serial GRUB_SERIAL_COMMAND=&quot;serial --speed=115200 --unit=0 --word=8 --parity=no --stop=1&quot;  然后再用putty访问就行，指令是putty -serial -sercfg 115200,8,n,1,N。注意速率要和设定一致。
+安装过程中我注意到有一点坑。在上海电信这种环境，Router要上网需要PPPoE拨号。我找到了Debian官方的说明页面，里面提到了三个包，ppp，pppoe，pppoeconf。但是默认光盘里没有。说是有的，甚至还有篇文档叫做通过 PPP over Ethernet (PPPPoE) 来安装 Debian GNU/Linux。但是我按照Guide，修改了光盘的boot line，自动搜索DSL拨号配置的时候，直接失败了。幸好我早做了准备，把这几个包提前下载下来了，然后手工安装。但是比较坑的是，实现pppoe还需要一个额外的包，libpcap0.8。这个包wiki里没说，所以我就没下。但是想下的时候，原有Router又洗掉了。最后我是用手机下载传上去的，同样情况的朋友请自行注意。
+初始化 进入系统后没啥复杂的，先设定PPPoE拨号，照着官方的说明页面就行。拨号成功后，首先先更新软件并重启。因为原本的系统和最新补丁会有一点时间的差异，而安装时我们没有网，所以没有安装更新补丁。
+补丁升级完成并重启后，先下载iptables-persistent这个包。这个包会把你的防火墙配置固化下来并自动加载。没有这个，防火墙功能运作是缺失的。如果在无持久化的情况下安装了服务，你又需要重启路由器，就要先断开外网才能安全重启了。否则防火墙规则是空的，服务外网可访问。而且进系统后又得重新配置防火墙。所以比较简单的方法就是先装持久化包。至于防火墙，我的初始化配置是这样的。
+-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT -A INPUT -p icmp -m icmp --icmp-type 8 -j ACCEPT -A INPUT -i lo -j ACCEPT -A INPUT -i ppp0 -j DROP -A INPUT -p tcp -m tcp --dport 22 -j ACCEPT  第一条允许已经建立好的连接访问，第二条允许ping，第三条不限制本地访问，第四条禁止外网访问，第五条打开OpenSSH端口，最后别忘了INPUT默认DROP。因此第二个包就是安装OpenSSH。安装完了这个包，再配置本地网口。接下去就可以把路由器复位，通过远程来控制，而不是serial了。</p>
+
+          
+              <footer>
+                  <a href="http://blog.shell909090.org/blog/archives/2854/" rel="full-article">Read On &rarr;</a>
+              </footer>
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Jul 24, 2017
          - 1 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/2853/#disqus_thread">Comments</a>
@@ -469,33 +510,6 @@ King Cruiser Wreck 7° 48.148&rsquo; N, 98° 38.599&rsquo; E Max: 25.6, Avg: 16.
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Oct 30, 2016
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/album/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/album/">相册</a>
-    </h1>
-</header>
-
-
-        
-          <p> 2017-similan 2017长滩 2017法国 2017PG 2017柬埔寨 2017Disney 2017广东 2016俄罗斯 2016新加坡 2016大马 2016三亚 2016泰国 2016世纪公园 2016云南 2016黄山 2015印度 2015山西 2015山东 2014北海道 2014新疆 2014潮汕 2014良渚张家港 2014世纪公园 2014长白山 2013甘肃 2013西藏 2013台湾 2012四川 2012西安 2012maldive 2012puhket 婚纱照 2010厦门 2009 2008 2007南京 2007 2006香港 2006牛栏山 2006 2005无锡 2005  </p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -769,6 +783,10 @@ King Cruiser Wreck 7° 48.148&rsquo; N, 98° 38.599&rsquo; E Max: 25.6, Avg: 16.
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2864/">递归有关的几个小问题</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2863/">openssl证书相关</a>
             </li>
           
@@ -802,10 +820,6 @@ King Cruiser Wreck 7° 48.148&rsquo; N, 98° 38.599&rsquo; E Max: 25.6, Avg: 16.
           
             <li class="post">
               <a href="/blog/archives/2855/">法国游记</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2854/">使用Debian作为Router</a>
             </li>
           
         </ul>

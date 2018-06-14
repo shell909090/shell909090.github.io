@@ -94,6 +94,41 @@ ga('send', 'pageview');
         
 
 <header>
+    <p class="meta">Feb 17, 2012
+         - 1 minute read 
+         - <a href="http://blog.shell909090.org/blog/archives/2096/#disqus_thread">Comments</a>
+
+        
+    </p>
+    <h1 class="entry-title">
+        <a href="http://blog.shell909090.org/blog/archives/2096/">最新一期的freenas测试报告</a>
+    </h1>
+</header>
+
+
+        
+          <p>去年我写过一篇freenas和解决方案，今年我又测试了一下，发现这玩意更加完善了，更企业化了，也更不适合玩玩了。今天写一下大概的步骤，供需要的参考一下。
+freenas提供以下几种服务，afp，活动目录(AD)，CIFS(windows共享)，动态DNS(绑定域名到动态IP)，FTP，LDAP，NFS，Rsync，SNMP，Ssh，tftp，iSCSI。基本涵盖了非IT企业常见需要的所有服务（除了邮件服务）。目前镜像的大版本已经升级到8，所以我下到的是8.0.3，大概100M多点。
+新版和旧版最大的区别在于，新版本去掉了bt下载，upnp，iTunes和http这四个家庭常用服务（实话说，http还是企业常用的）。加入了远程同步，snapshot，10G网卡等功能。内存要求也更加高，从7的256M-512M，变成了4-6G。对比起来更加企业化和专业化，但是更不适合随便玩玩。
+首先，你需要准备合适的硬件。一台老式的机器，或者atom平台的mini-itx板子都是很不错的。即使是新的atom板子，便宜点的400也能弄到手，加上一条2G的内存，除掉硬盘大概也就1000。故障毕竟比较少，而且省电。存储需要一块硬盘和一个U盘，注意，两者不是或的关系。因为FreeNAS安装到某个物理设备后，会强制使用设备的全部空间，因此这个设备无法再用来存储数据。整个FreeNAS才500M，4GU盘绰绰有余，读取速度也不慢。除了升级和改配置外，没有什么太大写入，很节约。
+然后，你需要去官网下载最新的iso镜像，用这个iso启动系统（注意，此时最好不要接上数据硬盘，只挂U盘）。当然，要省事的可以在windows下用vmware来装，不过对非IT专业人士来说，有点困难。启动后，在出现的选择中选择1，安装到硬盘上。在出现的安装目标选项中选择U盘（如果只挂U盘，这里就一个选项），然后等。最多两分钟，安装就完成了，选3重启系统。
+去掉光盘（甚至可以去掉光驱），使用U盘和数据硬盘启动系统，并且将系统设定为从U盘启动（这点很重要，因为硬盘一般比较优先，但是硬盘上没有系统）。进去后什么都不干，会自动识别你的网卡，并且dhcp到一个ip。你可以在系统启动完成后使用选项1来重新配置ip，或者在dhcp上干脆给这个mac指定一个ip。对于使用路由器的小型公司来说，这点并不困难。
+用浏览器访问这个ip，你可以看到freenas的控制界面。作为中国用户，先去setting里面改为中文，保存。然后关闭浏览器页面，重新打开（这点很重要），后面的设定都是中文了。然后，在存储，卷下面，新建一个卷。你现在可以把数据硬盘挂起来用了。
+然后，再去服务里面把你需要的服务全部启动起来，并且配置合适的用户。这些就按照自己的高兴配了，界面都是中文的，应该不用我教吧。
+如果无法启动服务，重启再试。你也可以参考这篇（http://www.c-dd.org/post/214/）。写的很详细，不过他安装的版本稍旧，是7。</p>
+
+          
+
+        
+
+    </article>
+    
+    <article>
+
+        
+        
+
+<header>
     <p class="meta">Feb 16, 2012
          - 2 minute read 
          - <a href="http://blog.shell909090.org/blog/archives/2094/#disqus_thread">Comments</a>
@@ -445,48 +480,6 @@ OK，很多人在我说，中国人不大在意版权，这句话的时候，要
 
     </article>
     
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Jan 31, 2012
-         - 1 minute read 
-         - <a href="http://blog.shell909090.org/blog/archives/2076/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="http://blog.shell909090.org/blog/archives/2076/">PXE模式使用openwrt网络安装debian</a>
-    </h1>
-</header>
-
-
-        
-          <p>废话不说，上干货。
-首先，禁用arptables。当然，如果你没开这个防火墙，那么没必要。其次，注意你的openwrt必须有udisk，否则空间相差太多，根本没有实现的可能。
-然后，如果你用的是新版的rom，应该在/etc/init.d/dnsmasq里面看到，dnsmasq()这个函数里面有。
-append_parm &quot;$cfg&quot; &quot;tftp_root&quot; &quot;--tftp-root&quot; append_parm &quot;$cfg&quot; &quot;dhcp_boot&quot; &quot;--dhcp-boot&quot;  如果没有，加一下，有的话说明原生支持。下面可以直接修改。
-dnsmasq是一个dhcp/dns双重服务器，而pxe引导的第一步就是支持bootp协议。这个选项在/etc/config/dhcp里面。config
-dnsmasq一节上，增加。
-option 'dhcp_boot' 'pxelinux.0'  重启dnsmasq，完成bootp准备。
-然后，安装tftpd-hpa，opkg update，opkg install
-tftpd-hpa。这是一个tftp服务器，默认不启动。如果你打算让pxe引导模式持久化，那么就改为默认启动，同时永久关闭arp防火墙。在/var/tftpd-hpa里面，可以看到tftpd的根路径。从参考3的的连接里面，你可以找到合适的一个下载路径，下载netboot.tar.gz到这个文件。解压后，可以看到pxelinux.0，这个和上面的pxelinux.0相对应。这是pxelinux的组件，隶属于syslinux项目，可以用来完成启动。
-这样，就完成了安装的所有准备工作。你可以找一个设备实验一下，应当可以完成网络安装的步骤。
-另外，如果需要启动选择amd64或者是i386，或者更进一步定制。那么需要下载其他镜像，自己生成pxelinux.cfg这个目录中的内容。
- PXEhttp://wiki.debian.org/PXE
- NetbootPXEhttp://wiki.debian.org/DebianInstaller/NetbootPXE
- netinsthttp://www.debian.org/distrib/netinst
- 配置pxe，安装debian和ubuntuhttp://my.unix-center.net/~whtbie/wordpress/?p=290
-  </p>
-
-          
-
-        
-
-    </article>
-    
     
     
 
@@ -760,6 +753,10 @@ tftpd-hpa。这是一个tftp服务器，默认不启动。如果你打算让pxe�
         <ul id="recent_posts">
           
             <li class="post">
+              <a href="/blog/archives/2864/">递归有关的几个小问题</a>
+            </li>
+          
+            <li class="post">
               <a href="/blog/archives/2863/">openssl证书相关</a>
             </li>
           
@@ -793,10 +790,6 @@ tftpd-hpa。这是一个tftp服务器，默认不启动。如果你打算让pxe�
           
             <li class="post">
               <a href="/blog/archives/2855/">法国游记</a>
-            </li>
-          
-            <li class="post">
-              <a href="/blog/archives/2854/">使用Debian作为Router</a>
             </li>
           
         </ul>

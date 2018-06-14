@@ -7,10 +7,27 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Sat, 12 May 2018 11:19:23 +0800</lastBuildDate>
+    <lastBuildDate>Thu, 14 Jun 2018 15:08:52 +0800</lastBuildDate>
     
 	<atom:link href="http://blog.shell909090.org/blog/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>递归有关的几个小问题</title>
+      <link>http://blog.shell909090.org/blog/archives/2864/</link>
+      <pubDate>Thu, 14 Jun 2018 15:08:52 +0800</pubDate>
+      
+      <guid>http://blog.shell909090.org/blog/archives/2864/</guid>
+      <description>引子 在加密系列里突然出这么一个问题，确实有点怪。我犹豫了一下，还是先写了再说。
+这个问题的提起，是公司老大kay提出一个问题。在反转链表的时候，如果有环怎么办。然后我们就现场写各种解环算法。这个问题本身不难，我们先看一下原始问题和解，还有带环反转。
+Scheme反转链表 想了想，还是先写Scheme版本。这个版本实现简单概念清晰，个人觉得非常典型。而且对后面理解Python版本很有帮助。如果看不懂的话，可以直接去看Python版本。Python版本看不懂了再回本章来，去看Scheme入门教材。
+Scheme的正解版本只有一个，就是带复制TCO版本。
+(define (reverse-tco ll rslt) (if (eq? ll &#39;()) rslt (reverse-tco (cdr ll) (cons (car ll) rslt))))  这个版本体现了Scheme的几个特点。
+ 递归比迭代好使。 强制要求TCO。 cons操作起来非常方便。  Python递归反转链表 def reverse_tco(ll, rslt): if not ll: return rslt return reverse_tco(ll[1], [ll[0], rslt])  这是链表最简单的问题，也是递归论最基本的问题。注意这里采用list来模拟了lisp中的cons，不用tuple主要是后面还有环，需要修改数据。如果你不明白，可以先看Scheme版本的代码。
+递归转迭代 写到这个水平，其实有一半的被面人就挂了(好水)。但是这个水平其实也就是入门水平。最低限度，也要知道上面这个递归是可转写为迭代的。更进一步的，要知道这个递归是个尾递归。下面我们把这个代码转写为迭代形态。
+def reverse_iterate(ll): rslt = None while ll: rslt, ll = [ll[0], rslt], ll[1] return rslt  或者非生成节点版本。
+def reverse_iterate(ll): rslt = None while ll: rslt, ll[1], ll = ll, rslt, ll[1] return rslt  这里的区别，其实是SICP第24页所说的“递归计算过程”和“递归过程”的区别。具体请直接参考原书，我就不打字摘抄了。</description>
+    </item>
     
     <item>
       <title>openssl证书相关</title>
