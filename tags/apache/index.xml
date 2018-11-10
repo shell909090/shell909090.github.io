@@ -2,32 +2,32 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Apache on Shell&#39;s Home</title>
-    <link>http://blog.shell909090.org/tags/apache/</link>
+    <link>//vlt1.shell909090.org/tags/apache/</link>
     <description>Recent content in Apache on Shell&#39;s Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
     <lastBuildDate>Fri, 02 Apr 2010 03:40:00 +0800</lastBuildDate>
     
-	<atom:link href="http://blog.shell909090.org/tags/apache/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="//vlt1.shell909090.org/tags/apache/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>以nginx作为subversion前端的一些细节</title>
-      <link>http://blog.shell909090.org/blog/archives/108/</link>
+      <link>//vlt1.shell909090.org/blog/archives/108/</link>
       <pubDate>Fri, 02 Apr 2010 03:40:00 +0800</pubDate>
       
-      <guid>http://blog.shell909090.org/blog/archives/108/</guid>
+      <guid>//vlt1.shell909090.org/blog/archives/108/</guid>
       <description>本文系电脑资料，同步到blog上。小黄姐姐不必看了，可以帮我留个言。 nginx性能不错，可惜不支持WebDAV，因此没法拿来作为subversion的http服务。于是考虑开一个nginx作为前端，后端就跑一个apache来作为容器。配置这么写的(节选)： =========/etc/nginx/sites-enabled/default========= server { listen 443; server_name OOXX ssl on; ssl_certificate keys/server.crt; ssl_certificate_key keys/server.key; ssl_session_timeout 5m; ssl_protocols SSLv2 SSLv3 TLSv1; ssl_ciphers ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP; ssl_prefer_server_ciphers on; access_log /var/log/nginx/localhost.access.log; include /etc/nginx/mapping-ssl; error_page 500 502 503 504 /50x.html;
 location = /50x.html { root /var/www/nginx-default; } } 打开了一个https的服务，这是当然的，svn传输的数据使用http很危险。 ===========/etc/nginx/mapping-ssl============= location \^~ /svn { proxy_set_header Destination \$http_destination; proxy_pass http://apache_svr; proxy_set_header Host \$host; proxy_set_header X-Real-IP \$remote_addr; proxy_set_header X-Forwarded-Host \$host; proxy_set_header X-Forwarded-Proto https; proxy_set_header X-Forwarded-Server \$host; proxy_set_header X-Forwarded-For</description>
     </item>
     
     <item>
       <title>apache2服务器证书生成过程</title>
-      <link>http://blog.shell909090.org/blog/archives/272/</link>
+      <link>//vlt1.shell909090.org/blog/archives/272/</link>
       <pubDate>Tue, 06 Dec 2005 19:42:04 +0800</pubDate>
       
-      <guid>http://blog.shell909090.org/blog/archives/272/</guid>
+      <guid>//vlt1.shell909090.org/blog/archives/272/</guid>
       <description>首先为 CA 创建一个 RSA 私用密钥
 openssl genrsa -des3 -out ca.key 1024  利用 CA 的 RSA 密钥创建一个自签署的 CA 证书（X.509结构）
 openssl req -new -x509 -days 3650 -key ca.key -out ca.crt  首先为你的 Apache 创建一个 RSA 私用密钥
@@ -38,10 +38,10 @@ openssl x509 -md5 -days 3560 -req -signkey server.key -CAcreateserial -CAserial 
     
     <item>
       <title>debian上配置基于apache2的resin</title>
-      <link>http://blog.shell909090.org/blog/archives/266/</link>
+      <link>//vlt1.shell909090.org/blog/archives/266/</link>
       <pubDate>Tue, 29 Nov 2005 00:26:52 +0800</pubDate>
       
-      <guid>http://blog.shell909090.org/blog/archives/266/</guid>
+      <guid>//vlt1.shell909090.org/blog/archives/266/</guid>
       <description>别的不说了，先用debian自带的apt安装apache2,记得安装dev部分，还有libapr0,libapr-dev,libapr0-dev。千万别忘记安装后面的部分，否则你在下面编译的时候就要出现问题。
 拿到resin，放在目标目录下面，然后tar -jxvf。完成后用ln -s做一个链接上去，使用resin的名字，这样可以方便的替换版本。然后在主目录下面运行./configure，make一下。一般来说，会出不少错误，最后生成一个libresin.so放到libexec下面，并且更新了resin的主执行程序。这个so很具有迷惑性，开始贝壳就被他骗了。这个so貌似是resin在本地平台下的加速程序，而不是嵌入到apache系列服务器中的整合插件。其中最大的差异是没有caucho_module导出符号，在apache加载的时候肯定会失败。
 跑到src/c/plugins/apache2下面运行make。可能会报错，可能没有。贝壳这里报了错，不过贝壳运行configure的时候没有加任何参数，也许加了参数就正常了。如果不正常，出错的代码可能分别是httpd.h找不到或者apr_time.h找不到。运行vi Makefile，看到有INCLUDE的目录吗？那里面要包含/usr/include/apache2和/usr/include/apr-0两个目录，没有就肯定出错。好了，修改然后重新make。得到的文件是mod_caucho.so。将它cp到$RESIN_HOME/libexec下面，这个动态库导出了caucho_module符号。

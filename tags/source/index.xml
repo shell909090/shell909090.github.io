@@ -2,22 +2,22 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Source on Shell&#39;s Home</title>
-    <link>http://blog.shell909090.org/tags/source/</link>
+    <link>//vlt1.shell909090.org/tags/source/</link>
     <description>Recent content in Source on Shell&#39;s Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
     <lastBuildDate>Mon, 19 Dec 2011 16:08:11 +0800</lastBuildDate>
     
-	<atom:link href="http://blog.shell909090.org/tags/source/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="//vlt1.shell909090.org/tags/source/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>linux tty部分源码阅读</title>
-      <link>http://blog.shell909090.org/blog/archives/2020/</link>
+      <link>//vlt1.shell909090.org/blog/archives/2020/</link>
       <pubDate>Mon, 19 Dec 2011 16:08:11 +0800</pubDate>
       
-      <guid>http://blog.shell909090.org/blog/archives/2020/</guid>
+      <guid>//vlt1.shell909090.org/blog/archives/2020/</guid>
       <description>1.事情从file开始 file的定义在include/linux/fs.h中，其中有两个field，一个叫file_operations
 *f_op，一个叫void *private_data。file_operations定义了所有file能够进行的操作，在tty这个层面而言，drivers/tty/tty_io.c能看到有个叫做file_operations tty_fops的东西，下面有个叫console_fops的东西。两者区别不大，就是write函数进行了一下包装而已。从这里可以看出，系统将某个file的读写操作，转包给了tty_io.c这个文件。这个转包的手法非常类似虚函数。如果将tty_io.c里面的函数看作一个类的所有成员，那么tty_fops就是虚函数表，而f_op就是虚函数指针_v_ptr。
 2.tty_io的二转包 tty_io做了什么？他直接转包给了ldisc来处理这个事情。从tty_struct的结构我们能够看到，有这么一个field，tty_ldisc *ldisc。而tty_ldisc.h文件里面，我们能看到这个结构又有这么一个成员，tty_ldisc_ops *ops。同样手法，第二次使用。目标是tty/下面很多n_开始的文件，例如n_gsm，估计是处理手机的。我们的目标看起来像是n_tty.c中的tty_ldisc_ops tty_ldisc_N_TTY对象。

@@ -2,22 +2,22 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Btrfs on Shell&#39;s Home</title>
-    <link>http://blog.shell909090.org/tags/btrfs/</link>
+    <link>//vlt1.shell909090.org/tags/btrfs/</link>
     <description>Recent content in Btrfs on Shell&#39;s Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
     <lastBuildDate>Mon, 15 Aug 2011 10:07:03 +0800</lastBuildDate>
     
-	<atom:link href="http://blog.shell909090.org/tags/btrfs/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="//vlt1.shell909090.org/tags/btrfs/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>linux下的文件系统选型</title>
-      <link>http://blog.shell909090.org/blog/archives/1883/</link>
+      <link>//vlt1.shell909090.org/blog/archives/1883/</link>
       <pubDate>Mon, 15 Aug 2011 10:07:03 +0800</pubDate>
       
-      <guid>http://blog.shell909090.org/blog/archives/1883/</guid>
+      <guid>//vlt1.shell909090.org/blog/archives/1883/</guid>
       <description>贝壳原来一直认为文件系统可以随便选，结果最近吃了两次苦头。一个是btrfs对虚拟机支持不良，另一个是特定情况下xfs性能比ext3高20倍。痛定思痛，打算列一下文件系统选型的方法和依据，欢迎拍砖。 
  下面我列一下纳入参考的文件系统，当然，ntfs就不要出来搞基了，玩嵌入式/光盘live之类的朋友也不要来凑热闹了阿。btrfs(简介), ext3, ext4(简介), jfs(简介), reiserfs, xfs，基本涵盖常用文件系统。最下面加入ntfs和zfs对比，实际上不参与选型。以下进制换算为1024，大小依次为KB,MB,GB,TB,PB,EB,ZB。
 
@@ -26,10 +26,10 @@
     
     <item>
       <title>btrfs上使用虚拟机效率很差</title>
-      <link>http://blog.shell909090.org/blog/archives/1858/</link>
+      <link>//vlt1.shell909090.org/blog/archives/1858/</link>
       <pubDate>Tue, 19 Jul 2011 14:38:06 +0800</pubDate>
       
-      <guid>http://blog.shell909090.org/blog/archives/1858/</guid>
+      <guid>//vlt1.shell909090.org/blog/archives/1858/</guid>
       <description>试图在linux中使用虚拟机的同学请注意，刚刚测试下来的结果，vmware和kvm在btrfs上的IO效率极端的差。
 首先是vmware，win2003，512M的实例，开机大约需要40分钟。这种效率已经远远超出了我的预期，于是我改用libvirt管理的kvm。结果依然出乎意料，debian实例的安装需要超过5分钟。由于怀疑是raw格式而非qcow2格式造成的速度差异，因此新建了一个实例，一时偷懒就放在了/下面，这个分区是ext3而非btrfs。结果安装大约在3分钟内结束，这似乎证明了我的猜想。于是我开始使用btrfs下的raw格式进行安装，结果速度依然异常缓慢。由此我怀疑到是btrfs文件系统的问题。
 在ext3上创建一个qcow2格式的实例后，证实了我的猜想。问题在于btrfs的某种机制上。在网络上寻找类似问题，并没有发现。因此在blog上提出警告和问题。
