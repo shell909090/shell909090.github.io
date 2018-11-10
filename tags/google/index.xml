@@ -2,32 +2,32 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Google on Shell&#39;s Home</title>
-    <link>//vlt1.shell909090.org/tags/google/</link>
+    <link>//blog.shell909090.org/tags/google/</link>
     <description>Recent content in Google on Shell&#39;s Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
     <lastBuildDate>Tue, 28 Jan 2014 13:08:45 +0800</lastBuildDate>
     
-	<atom:link href="//vlt1.shell909090.org/tags/google/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="//blog.shell909090.org/tags/google/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>google authenticator的特性</title>
-      <link>//vlt1.shell909090.org/blog/archives/2549/</link>
+      <link>//blog.shell909090.org/blog/archives/2549/</link>
       <pubDate>Tue, 28 Jan 2014 13:08:45 +0800</pubDate>
       
-      <guid>//vlt1.shell909090.org/blog/archives/2549/</guid>
+      <guid>//blog.shell909090.org/blog/archives/2549/</guid>
       <description> 算法  双方预先共享一对密码。 时间对30秒求整，用密码unbase64后HMAC签署。 如果当前时间前后一定时间内（几个误差）的值和用户提供值一致，就验证通过。  攻击者获得了数个时间和序列对，但是根据HMAC特性，他无法反向出密码。
 因此  gauth不需要联网。但是双方时间必须同步。 gauth的优势在于，即使有人可以获得一次密码(例如keylogger)，只要不在1分30秒内登录，获得的输入就无法使用。 对于可以取得gauth共享密码的人，gauth不能提供安全性加强。例如sudo，验证的是自己的身份。而用户密码只要登录即可读，因此没有提供加强的安全性。 对于ssh，在登录后也可以获得密码。因此只要给别人获得了一次登录权限，后续gauth不能保护你。反之，如果能保证对方一次登录都不会成功，则可以作为辅助。因此用于ssh上必须加上一个token只能使用一次，以确保对方获得了token也是作废的。 如果有人可以从手机中读取应用的信息，就可以一直冒充用户。因此越狱和root肯定会降低系统安全性。这就是为什么很多TOTP使用硬件来做这个事情。系统单纯，而且没有读取API。 缓慢的重试，每次命中概率都是1/1000000。持续试1000000次，也不能肯定猜中。实际上只有63.2%的概率猜中。如果30秒内连续重试1000000次，肯定破解了。合每秒重试3万多次，不算多。所以必须防止暴力破解。 如果没有紧急密码，安全性大约是20bit。但是数个紧急密码为破解提供了帮助。因此紧急密码一般是7位数字，综合复杂度一般评估为20bit上下。 以复杂度而言，不足以作为身份验证工具，只能作为身份验证辅助。所以gauth叫做two-factor-authentication。  </description>
     </item>
     
     <item>
       <title>openvpn auth with google authentication</title>
-      <link>//vlt1.shell909090.org/blog/archives/2545/</link>
+      <link>//blog.shell909090.org/blog/archives/2545/</link>
       <pubDate>Fri, 24 Jan 2014 12:33:39 +0800</pubDate>
       
-      <guid>//vlt1.shell909090.org/blog/archives/2545/</guid>
+      <guid>//blog.shell909090.org/blog/archives/2545/</guid>
       <description>client config # base config client dev tun proto udp remote 192.168.1.122 1194 nobind user nobody group nogroup persist-key persist-tun mute-replay-warnings comp-lzo # authentication config ca ca.crt cert shell.crt key shell.key ns-cert-type server tls-auth ta.key 1 auth-user-pass  Group should be nogroup, not nobody in debian.
 auth-user-pass is needed for google auth.
 pam config account [success=2 new_authtok_reqd=done default=ignore] pam_unix.so account [success=1 new_authtok_reqd=done default=ignore] pam_winbind.so account requisite pam_deny.so account required pam_permit.</description>
@@ -35,10 +35,10 @@ pam config account [success=2 new_authtok_reqd=done default=ignore] pam_unix.so 
     
     <item>
       <title>在PAM中使用google authentication</title>
-      <link>//vlt1.shell909090.org/blog/archives/2539/</link>
+      <link>//blog.shell909090.org/blog/archives/2539/</link>
       <pubDate>Wed, 22 Jan 2014 13:31:45 +0800</pubDate>
       
-      <guid>//vlt1.shell909090.org/blog/archives/2539/</guid>
+      <guid>//blog.shell909090.org/blog/archives/2539/</guid>
       <description>PAM是linux系统身份验证的核心，在用户登录/ssh身份校验中均有很大用途。但是很少有人想到，其实这个东西还可以用google authentication来进行身份校验。
 安装 sudo apt-get install libpam-google-authenticator  设定 使用前，需要对用户做一个用户级配置，生成配置文件。这个文件就是这个用户的身份验证凭证。配置请使用用户执行google-authenticator。
 上来先会问你是否使用基于时间的验证，肯定选是。但是注意，基于时间的验证要求服务器时间必须精确。更准确的说，是服务器时间和手机时间校准在30秒以内。由于手机一般都采用GSM校时，因此只需要在意服务器时间。建议是使用ntpdate来校准时间。特别注意，linux的时钟是会漂移的，必须按天级校准。
@@ -57,10 +57,10 @@ ChallengeResponseAuthentication yes PasswordAuthentication no UsePAM yes  如果
     
     <item>
       <title>关于昨天&#34;google drive你这是在找死&#34;的补充</title>
-      <link>//vlt1.shell909090.org/blog/archives/2156/</link>
+      <link>//blog.shell909090.org/blog/archives/2156/</link>
       <pubDate>Sat, 28 Apr 2012 07:04:54 +0800</pubDate>
       
-      <guid>//vlt1.shell909090.org/blog/archives/2156/</guid>
+      <guid>//blog.shell909090.org/blog/archives/2156/</guid>
       <description>随手就写害死人阿。
 昨天写了一篇google drive你这是在找死，结果被人指出了错。我忘记注明了，没有文件夹上传的是android版本，linux版没有客户端，windows版可以看到客户端下载，但是我目前没有确认下来有人能用。
 即使如此，我还是觉得google drive不好用。
@@ -83,10 +83,10 @@ google drive是什么 从表现上看，还是基于文件的管理。我不能�
     
     <item>
       <title>google drive你这是在找死</title>
-      <link>//vlt1.shell909090.org/blog/archives/2154/</link>
+      <link>//blog.shell909090.org/blog/archives/2154/</link>
       <pubDate>Fri, 27 Apr 2012 03:36:47 +0800</pubDate>
       
-      <guid>//vlt1.shell909090.org/blog/archives/2154/</guid>
+      <guid>//blog.shell909090.org/blog/archives/2154/</guid>
       <description>昨天收到了google drive的邮件，今天就做了个简单的测试。我不确定是否是我的错觉，但是google drive不支持文件夹上传。
 ？！
 是的，我找了半天，没找到。即使有这个功能，它也被藏的很深，至少一个熟练用户花了10分钟找不到。据我看到的资料，这是因为谷歌试图抛弃文件概念。
@@ -98,10 +98,10 @@ google drive是什么 从表现上看，还是基于文件的管理。我不能�
     
     <item>
       <title>关于减少使用gmail的建议</title>
-      <link>//vlt1.shell909090.org/blog/archives/88/</link>
+      <link>//blog.shell909090.org/blog/archives/88/</link>
       <pubDate>Tue, 19 Jan 2010 21:18:00 +0800</pubDate>
       
-      <guid>//vlt1.shell909090.org/blog/archives/88/</guid>
+      <guid>//blog.shell909090.org/blog/archives/88/</guid>
       <description>这次，google又不走了。
 事情处于很奇怪的状态，google本是不可能留下的。既然它留下了，我们说，事有反常必为妖。这次妖在哪里呢？
 我建议大家减少使用gmail，最好别用。原因如下：
@@ -112,10 +112,10 @@ google drive是什么 从表现上看，还是基于文件的管理。我不能�
     
     <item>
       <title>关于google退出中国的FAQ</title>
-      <link>//vlt1.shell909090.org/blog/archives/86/</link>
+      <link>//blog.shell909090.org/blog/archives/86/</link>
       <pubDate>Thu, 14 Jan 2010 12:52:00 +0800</pubDate>
       
-      <guid>//vlt1.shell909090.org/blog/archives/86/</guid>
+      <guid>//blog.shell909090.org/blog/archives/86/</guid>
       <description>F:google真的准备退出中国了么？
 Q:历史告诉我们，两个人谈价的时候，如果出现有人生气要走，那可能是讲价的手段。如果出现扇耳光，那么多数是谈崩了。除非被扇的人授意这么做，否则双方都没有回头路可走。目前google等于明确的在指责中国进行网络监控，并试图进行网络攻击。耳光都扇出去了，下面就不是谈价的问题了。
 F:中国政府会怎样处理google的谈判呢？
@@ -133,10 +133,10 @@ Q:google的离开，标志着中国的互联网整体倒退了6年。在IT界，
     
     <item>
       <title>竞价排名和不作恶</title>
-      <link>//vlt1.shell909090.org/blog/archives/47/</link>
+      <link>//blog.shell909090.org/blog/archives/47/</link>
       <pubDate>Sun, 23 Nov 2008 22:58:00 +0800</pubDate>
       
-      <guid>//vlt1.shell909090.org/blog/archives/47/</guid>
+      <guid>//blog.shell909090.org/blog/archives/47/</guid>
       <description>前两个月贝壳才刚说到百度的竞价排名，果然，这回又出问题了，而且还出的很好笑。
 央视曝光了百度竞价排名中的一些问题，主要是有很多医疗信息，百度并没有核实来源。此后，百度总裁李彦宏声称，法律没有要求百度对付费信息负责。从法律角度说，这是对的，我们今天说的主题也不是他，而是这个(http://www.cnbeta.com/articles/69964.htm)。
 本来曝光百度，怎么转眼变成google了？
@@ -153,10 +153,10 @@ google的核心哲学观点之一就是“不作恶”。简单来说，就是�
     
     <item>
       <title>百度、官员辞职和特供局</title>
-      <link>//vlt1.shell909090.org/blog/archives/37/</link>
+      <link>//blog.shell909090.org/blog/archives/37/</link>
       <pubDate>Tue, 23 Sep 2008 10:33:00 +0800</pubDate>
       
-      <guid>//vlt1.shell909090.org/blog/archives/37/</guid>
+      <guid>//blog.shell909090.org/blog/archives/37/</guid>
       <description>这几个东西有什么联系？其实没什么大联系，只是同样是没用的东西而已。
 先说百度吧，大家可能不知道，google的一个原则就是“不作恶”。简单来说，不因为人为的理由而改变搜索结果。包括调整排名，屏蔽关键词等。google卖的关键词和百度不大一样，百度的是改变搜索结果，google则是在旁边显示广告栏，其显示特征明显不同于正常搜索结果。从商业角度来说，卖排名当然不如卖广告收入多，但是google的收入却比百度高很多。我以前也完全无法理解google费力坚持不做恶的理由，更无法理解为什么google的收入会远远超过百度，然而这次却明白了。大家应当听说某奶粉品牌300万搞定某搜索引擎的事情吧？当然，某搜索引擎否认了，我们也没有什么证据来说明这次的却是被搞定了。但是，百度卖排名是事实，卖关键词屏蔽也不是什么很难理解的事情吧？也许这次没有被搞定，然而在卖屏蔽却没有什么异议。然而如果这么说的话，那么百度，无疑就成为了遮盖大众知情权的帮凶了。当然，同样的问题google并非没有。google在进入中国后，和政府达成了协议。部分涉及国家的敏感词汇被封锁，大家可以看google最下方的提示。“据当地法律法规和政策，部分搜索结果未予显示。” 如果出现这个，就代表你的关键词有问题，部分内容被屏蔽了。作为进入中国的代价，我们理解这种事情。然而即使是这种程度的改变，依然被很多google的 fans质疑，认为google背叛了“不作恶”的原则。大家可以想想，一个搜索引擎受到国家约束而被迫改变结果尚且要引来怀疑。这时候，一个可以用钱买卖，结果改来该去的引擎，有用么？
 因此我强烈的建议大家，使用google的搜索引擎。或者说，当你需要知道什么事情，怀疑什么事情，而这个事情又和强权的利益相关的时候，请使用google搜索引擎，因为百度可能被“买通”了。你不知道你搜索出来的“最有名”的培训公司是否真的好(这是我一个朋友的真实例子，他所在的培训公司就是打的百度排名，但公司有严重问题)，你不知道你“搜索不到”有问题的词是否真的只是因为你个人的问题(例如这次的三鹿)。当你搜索到的东西其实只是一堆利益的集合的时候，我觉得这个搜索引擎也就没用了。
@@ -170,10 +170,10 @@ google的核心哲学观点之一就是“不作恶”。简单来说，就是�
     
     <item>
       <title>Google Calender</title>
-      <link>//vlt1.shell909090.org/blog/archives/418/</link>
+      <link>//blog.shell909090.org/blog/archives/418/</link>
       <pubDate>Mon, 26 Nov 2007 17:49:12 +0800</pubDate>
       
-      <guid>//vlt1.shell909090.org/blog/archives/418/</guid>
+      <guid>//blog.shell909090.org/blog/archives/418/</guid>
       <description>Google有很多产品，Google Calender就是其中之一，这个东西主要的目的就是管理日历。
 其实从常规角度考虑，这是最不适合bs的产品。日历的要点就是随身，谁会高兴为了看个日历找宽带上网阿。可不能不感慨Google的水平，凭着各种技术的支持，这么一个产品居然还真让我觉得好用。
 Google Calender的两个核心思想就是同步和共享，同步用的是iCalender标准，共享也很类似。Google Calender的管理中，允许在多种客户端内同步Google Calender的日程。这样Google Calender就从一个不适合的产品一下变成了多个日程工具的平台标准。贝壳现在是利用他同步多个机器上的多个软件，主要的产品包括Sunbird/Lighting，raincalender，部分的手机日历，相信很多人也会做这个应用。贝壳用的就是其中的Sunbird，这个软件是Mozilla的产品之一。(贝壳现在是Mozilla的忠实用户，FireFox，Thunderbird，Sunbird三件套常备，都做了跨系统共享)不加载Provider for Google Calendar的情况下，可以读取iCalender格式的远程日历。加载插件后会多出一个Google日历的选项，用Google中的个人xml链接，保存入个人的用户名和密码(个人的gmail，带域名)，然后就可以双向同步gcal了。
@@ -183,10 +183,10 @@ Google Calender的两个核心思想就是同步和共享，同步用的是iCale
     
     <item>
       <title>Google earth</title>
-      <link>//vlt1.shell909090.org/blog/archives/305/</link>
+      <link>//blog.shell909090.org/blog/archives/305/</link>
       <pubDate>Sat, 01 Jul 2006 05:35:56 +0800</pubDate>
       
-      <guid>//vlt1.shell909090.org/blog/archives/305/</guid>
+      <guid>//blog.shell909090.org/blog/archives/305/</guid>
       <description>google earth很多人已经用过了，不过google earth有linux的bata版了。下载解压，解压界面非常漂亮，很容易上手。运行来看，是QT的界面。不愧是google阿。</description>
     </item>
     

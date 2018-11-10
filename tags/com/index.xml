@@ -2,22 +2,22 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Com on Shell&#39;s Home</title>
-    <link>//vlt1.shell909090.org/tags/com/</link>
+    <link>//blog.shell909090.org/tags/com/</link>
     <description>Recent content in Com on Shell&#39;s Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
     <lastBuildDate>Sun, 03 Jul 2005 00:50:06 +0800</lastBuildDate>
     
-	<atom:link href="//vlt1.shell909090.org/tags/com/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="//blog.shell909090.org/tags/com/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>COM运作机理初探</title>
-      <link>//vlt1.shell909090.org/blog/archives/184/</link>
+      <link>//blog.shell909090.org/blog/archives/184/</link>
       <pubDate>Sun, 03 Jul 2005 00:50:06 +0800</pubDate>
       
-      <guid>//vlt1.shell909090.org/blog/archives/184/</guid>
+      <guid>//blog.shell909090.org/blog/archives/184/</guid>
       <description> 今天偶看本COM的书，七搞八搞还是没有太搞明白COM的机理。先把看的差不多的写出来好了，省得下次忘记了。也不一定对，整理整理思路继续学……   COM在运行的时候有一个GetClassObject的导出函数，由这个函数负责生成对象实例并且返回合适的接口。所谓接口，就是派生于一些特定的基类的纯虚类。GetClassObject先构造某个类的实例（根据UUID），然后再获得这个类中的某个IUnknown派生接口，再向这个接口查询其他接口实例（又是根据UUID），这个查询函数名字就是QueryInterface。   根据MSDN的资料显示，QueryInterface具备三个理由。一个是每个接口都要 **** Identity，二是在对象实例中的接口集必须静态，三是每个接口都要能够查询到别的在同个对象实例中的接口。三还跟了很多例子，必须成功等等的。   同样从IUnknown中继承的还有Release和AddRef。每次引用一个接口都会有计数变化，这形成了接口的创立和析构。感觉上这个很类似于iNode和MFT中的引用计数，以及dll载入中的使用计数。   简单来说COM的机理上大致就是。通过GetClassObject寻找并且产生合适的对象实例。通过GetClassObject给出的接口QueryInterface返回其他接口。由于每个对象实例中QueryInterface都是自行编写的，所以可以轻易返回其他所有对象接口。于是通过一对UUID可以定位到某个特定的Interface，用C++术语说就是纯虚基类。  </description>
     </item>
     

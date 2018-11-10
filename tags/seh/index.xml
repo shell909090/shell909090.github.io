@@ -2,22 +2,22 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Seh on Shell&#39;s Home</title>
-    <link>//vlt1.shell909090.org/tags/seh/</link>
+    <link>//blog.shell909090.org/tags/seh/</link>
     <description>Recent content in Seh on Shell&#39;s Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
     <lastBuildDate>Sat, 28 May 2005 00:33:43 +0800</lastBuildDate>
     
-	<atom:link href="//vlt1.shell909090.org/tags/seh/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="//blog.shell909090.org/tags/seh/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>从游戏修改到程序优化</title>
-      <link>//vlt1.shell909090.org/blog/archives/165/</link>
+      <link>//blog.shell909090.org/blog/archives/165/</link>
       <pubDate>Sat, 28 May 2005 00:33:43 +0800</pubDate>
       
-      <guid>//vlt1.shell909090.org/blog/archives/165/</guid>
+      <guid>//blog.shell909090.org/blog/archives/165/</guid>
       <description>前几天在家没事情干，就写了一个通用游戏修改器。代码很简单，利用argv参数获取传入文件位置，然后反复调用EditFile。重复映射文件，并且定位目标位置，修改指定数量的数据，然后保存。然后，我为了某些特殊目的，决定赋予程序动态运行和可扩展的功能。并且加入搜索支持。其实后者并不困难，我们只要反复调用函数对比和赋值，并且逐步推进指针就好。但是前者的实现具有一定困难，为此我不得不增加了部分程序开销，来保存一个函数指针，并且可以动态的调用。这样我们就可以实现诸如轩辕剑中的物品修改。其过程大致如下所述。 轩辕剑中的物品是一个数组，但是数组头的RVA是不固定的，仅仅知道大致位置。我们必须先定位某个物品的代码（特征代码），然后修改后面紧跟的一个WORD，实现修改物品数量。程序会自动的建立一个指针，并且逐步推进。我们的实现函数仅仅需要判断当前指针指向的WORD对象是否等于一个特定值，等于的时候进行修改就好。主体框架如下： #define NOSEARCH 0x00000000 #define SEARCHALL 0xFFFFFFFF #define RADDR(x) (LPVOID)((DWORD)RVABase+(x)) typedef DWORD (*tpEditData)(LPVOID Data); struct _RVATable{ DWORD RVA; DWORD SearchEnd; int size; tpEditData pfnEditData; LPVOID OldData; LPVOID DataBuff; }; _RVATable RvaTab[]={ {0xBA4C, NOSEARCH, 01, NULL, NULL, &amp;ldquo;x09&amp;rdquo;}, {0xBA4E, NOSEARCH, 01, NULL, NULL, &amp;ldquo;x5B&amp;rdquo;}, {0x76AB, NOSEARCH, 01, NULL, NULL, &amp;ldquo;x09&amp;rdquo;}, {0x0000, NOSEARCH, 0, NULL, NULL, NULL} }; void EditFile(LPTSTR lpPath); int CompareMemory(LPVOID mem1, LPVOID mem2, int size); void main(int argc, TCHAR* argv[]){ for(int i=1;i&amp;lt;argc;i++) EditFile(argv[i]); return ; } void EditFile(LPTSTR lpPath){ int i; HANDLE hMap, hFile; LPVOID RVABase=NULL, DataByRva, DataEndRva, DataNow; DWORD FileSize; __try{ hFile=CreateFile(lpPath, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL); if( hFile==INVALID_HANDLE_VALUE ) return ; FileSize=GetFileSize(hFile, NULL); hMap=CreateFileMapping(hFile, NULL, PAGE_READWRITE | SEC_COMMIT, 0, 0, NULL); if( !</description>
     </item>
     

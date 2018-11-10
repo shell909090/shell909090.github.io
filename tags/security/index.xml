@@ -2,22 +2,22 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Security on Shell&#39;s Home</title>
-    <link>//vlt1.shell909090.org/tags/security/</link>
+    <link>//blog.shell909090.org/tags/security/</link>
     <description>Recent content in Security on Shell&#39;s Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
     <lastBuildDate>Tue, 08 Apr 2014 18:03:33 +0800</lastBuildDate>
     
-	<atom:link href="//vlt1.shell909090.org/tags/security/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="//blog.shell909090.org/tags/security/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>CVE-2014-0160(openssl)严重漏洞及其对应</title>
-      <link>//vlt1.shell909090.org/blog/archives/2618/</link>
+      <link>//blog.shell909090.org/blog/archives/2618/</link>
       <pubDate>Tue, 08 Apr 2014 18:03:33 +0800</pubDate>
       
-      <guid>//vlt1.shell909090.org/blog/archives/2618/</guid>
+      <guid>//blog.shell909090.org/blog/archives/2618/</guid>
       <description> 描述 openssl 1.0.1系列中，1.0.1f以前的版本在实现上存在漏洞，未正确处理Heartbeat扩展，导致攻击者可以窃取服务器端敏感数据。
 对应  请立刻升级openssl到1.0.1g版以上，并重启整个系统，以保证不会遗漏某些已经启动的进程。 如果有自行编译的程序使用了openssl。当这些程序静态链接或链接了自定义的openssl时，需要重新编译。 在有问题的设备上使用过的key，需要升级私钥。 openssh不受影响，openvpn受影响。  作为证明，请执行以下语句自行检查。
 ldd /usr/sbin/sshd | grep ssl ldd /usr/sbin/openvpn | grep ssl ldd /usr/sbin/nginx | grep ssl for i in $(ps aux | awk &#39;{print $2}&#39;); do echo $i; ldd /proc/$i/exe | grep ssl; done  其他 根据昨晚看到的信息，这个漏洞会泄漏服务器端的通讯数据。因此请将所有session清空，在受影响期间使用过的用户名和密码请务必在3-5天后再修改一次(具体看服务商什么时候补掉漏洞)。
@@ -26,10 +26,10 @@ ldd /usr/sbin/sshd | grep ssl ldd /usr/sbin/openvpn | grep ssl ldd /usr/sbin/ngi
     
     <item>
       <title>安全的几点快速说明</title>
-      <link>//vlt1.shell909090.org/blog/archives/2611/</link>
+      <link>//blog.shell909090.org/blog/archives/2611/</link>
       <pubDate>Tue, 25 Mar 2014 17:14:14 +0800</pubDate>
       
-      <guid>//vlt1.shell909090.org/blog/archives/2611/</guid>
+      <guid>//blog.shell909090.org/blog/archives/2611/</guid>
       <description>这篇文章谨献给某些特殊环境下奋斗的人士。其他人参考使用。
 物理设备 物理设备上存储着相当多的个人资讯，所以所有的机密资讯要保密这是常识。
 物理设备上可能拥有的机密资料：
@@ -54,10 +54,10 @@ ldd /usr/sbin/sshd | grep ssl ldd /usr/sbin/openvpn | grep ssl ldd /usr/sbin/ngi
     
     <item>
       <title>携程网信用卡泄密问题</title>
-      <link>//vlt1.shell909090.org/blog/archives/2606/</link>
+      <link>//blog.shell909090.org/blog/archives/2606/</link>
       <pubDate>Sun, 23 Mar 2014 22:15:38 +0800</pubDate>
       
-      <guid>//vlt1.shell909090.org/blog/archives/2606/</guid>
+      <guid>//blog.shell909090.org/blog/archives/2606/</guid>
       <description>事情经过 2014年3月22日晚上6点多，乌云平台报告了携程平台支付日志泄漏问题，然后信息快速传播。晚上八点左右我就得到消息。
 从描述中大致来看，应当是支付过程的各种信息都被打到了日志里面，然后日志泄漏了。
 第二天，携程发表声明。简单归纳就是几点:
@@ -84,20 +84,20 @@ PS，你可以用下面几种方法冻结信用卡:
     
     <item>
       <title>google authenticator的特性</title>
-      <link>//vlt1.shell909090.org/blog/archives/2549/</link>
+      <link>//blog.shell909090.org/blog/archives/2549/</link>
       <pubDate>Tue, 28 Jan 2014 13:08:45 +0800</pubDate>
       
-      <guid>//vlt1.shell909090.org/blog/archives/2549/</guid>
+      <guid>//blog.shell909090.org/blog/archives/2549/</guid>
       <description> 算法  双方预先共享一对密码。 时间对30秒求整，用密码unbase64后HMAC签署。 如果当前时间前后一定时间内（几个误差）的值和用户提供值一致，就验证通过。  攻击者获得了数个时间和序列对，但是根据HMAC特性，他无法反向出密码。
 因此  gauth不需要联网。但是双方时间必须同步。 gauth的优势在于，即使有人可以获得一次密码(例如keylogger)，只要不在1分30秒内登录，获得的输入就无法使用。 对于可以取得gauth共享密码的人，gauth不能提供安全性加强。例如sudo，验证的是自己的身份。而用户密码只要登录即可读，因此没有提供加强的安全性。 对于ssh，在登录后也可以获得密码。因此只要给别人获得了一次登录权限，后续gauth不能保护你。反之，如果能保证对方一次登录都不会成功，则可以作为辅助。因此用于ssh上必须加上一个token只能使用一次，以确保对方获得了token也是作废的。 如果有人可以从手机中读取应用的信息，就可以一直冒充用户。因此越狱和root肯定会降低系统安全性。这就是为什么很多TOTP使用硬件来做这个事情。系统单纯，而且没有读取API。 缓慢的重试，每次命中概率都是1/1000000。持续试1000000次，也不能肯定猜中。实际上只有63.2%的概率猜中。如果30秒内连续重试1000000次，肯定破解了。合每秒重试3万多次，不算多。所以必须防止暴力破解。 如果没有紧急密码，安全性大约是20bit。但是数个紧急密码为破解提供了帮助。因此紧急密码一般是7位数字，综合复杂度一般评估为20bit上下。 以复杂度而言，不足以作为身份验证工具，只能作为身份验证辅助。所以gauth叫做two-factor-authentication。  </description>
     </item>
     
     <item>
       <title>openvpn auth with google authentication</title>
-      <link>//vlt1.shell909090.org/blog/archives/2545/</link>
+      <link>//blog.shell909090.org/blog/archives/2545/</link>
       <pubDate>Fri, 24 Jan 2014 12:33:39 +0800</pubDate>
       
-      <guid>//vlt1.shell909090.org/blog/archives/2545/</guid>
+      <guid>//blog.shell909090.org/blog/archives/2545/</guid>
       <description>client config # base config client dev tun proto udp remote 192.168.1.122 1194 nobind user nobody group nogroup persist-key persist-tun mute-replay-warnings comp-lzo # authentication config ca ca.crt cert shell.crt key shell.key ns-cert-type server tls-auth ta.key 1 auth-user-pass  Group should be nogroup, not nobody in debian.
 auth-user-pass is needed for google auth.
 pam config account [success=2 new_authtok_reqd=done default=ignore] pam_unix.so account [success=1 new_authtok_reqd=done default=ignore] pam_winbind.so account requisite pam_deny.so account required pam_permit.</description>
@@ -105,10 +105,10 @@ pam config account [success=2 new_authtok_reqd=done default=ignore] pam_unix.so 
     
     <item>
       <title>在PAM中使用google authentication</title>
-      <link>//vlt1.shell909090.org/blog/archives/2539/</link>
+      <link>//blog.shell909090.org/blog/archives/2539/</link>
       <pubDate>Wed, 22 Jan 2014 13:31:45 +0800</pubDate>
       
-      <guid>//vlt1.shell909090.org/blog/archives/2539/</guid>
+      <guid>//blog.shell909090.org/blog/archives/2539/</guid>
       <description>PAM是linux系统身份验证的核心，在用户登录/ssh身份校验中均有很大用途。但是很少有人想到，其实这个东西还可以用google authentication来进行身份校验。
 安装 sudo apt-get install libpam-google-authenticator  设定 使用前，需要对用户做一个用户级配置，生成配置文件。这个文件就是这个用户的身份验证凭证。配置请使用用户执行google-authenticator。
 上来先会问你是否使用基于时间的验证，肯定选是。但是注意，基于时间的验证要求服务器时间必须精确。更准确的说，是服务器时间和手机时间校准在30秒以内。由于手机一般都采用GSM校时，因此只需要在意服务器时间。建议是使用ntpdate来校准时间。特别注意，linux的时钟是会漂移的，必须按天级校准。
@@ -127,10 +127,10 @@ ChallengeResponseAuthentication yes PasswordAuthentication no UsePAM yes  如果
     
     <item>
       <title>lxc的文件共享映射和严重安全隐患</title>
-      <link>//vlt1.shell909090.org/blog/archives/2334/</link>
+      <link>//blog.shell909090.org/blog/archives/2334/</link>
       <pubDate>Sat, 09 Feb 2013 01:18:31 +0800</pubDate>
       
-      <guid>//vlt1.shell909090.org/blog/archives/2334/</guid>
+      <guid>//blog.shell909090.org/blog/archives/2334/</guid>
       <description>在lxc中，可以利用mount bind指定guest可以访问某些host的路径。例如：
 lxc.mount.entry = /home/shell /var/lib/lxc/{vmname}/rootfs/home/shell none defaults,bind 0 0  注意，/home/shell是你希望共享的主机路径，/var/lib&amp;hellip;/shell是映射到的目标路径。
 这个工作的基础原理，是在虚拟机启动的时候，自动执行mount，添加一条bind映射，将host的路径挂到guest可以访问的路径里去。
@@ -142,10 +142,10 @@ user@guest:~$ mkdir -p ttt/123 user@guest:~$ cd ttt/123 user@host:~$ mv /var/lib
     
     <item>
       <title>支付宝体系的问题</title>
-      <link>//vlt1.shell909090.org/blog/archives/2302/</link>
+      <link>//blog.shell909090.org/blog/archives/2302/</link>
       <pubDate>Mon, 31 Dec 2012 01:54:19 +0800</pubDate>
       
-      <guid>//vlt1.shell909090.org/blog/archives/2302/</guid>
+      <guid>//blog.shell909090.org/blog/archives/2302/</guid>
       <description> 今天和几位朋友讨论了一下支付宝的问题，又查了一下case，发现支付宝的问题不仅是那么简单而已。先不吐槽支付宝的问题了，赶快出验证和方案。
 在被人恶意补卡的情况下是否安全 关于恶意补卡，这里有个例子。简单来说，就是知道你的身份证和手机号，去异地营业厅用假身份证补手机卡。然后用手机卡获得支付宝系统，再套现。
 贝壳分析了自己的系统，如果恶意补卡的话，对于200以上的消费转账，会要求输入宝令。宝令是绑定在手机而非卡上的，所以攻击者会无法消费。而要取消宝令就必须输入宝令，通过手机卡无法取消。因此攻击者即使补贝壳的卡，也无法进行200以上的消费。
@@ -163,10 +163,10 @@ user@guest:~$ mkdir -p ttt/123 user@guest:~$ cd ttt/123 user@host:~$ mv /var/lib
     
     <item>
       <title>移动的一点漏洞</title>
-      <link>//vlt1.shell909090.org/blog/archives/2296/</link>
+      <link>//blog.shell909090.org/blog/archives/2296/</link>
       <pubDate>Sun, 30 Dec 2012 22:34:45 +0800</pubDate>
       
-      <guid>//vlt1.shell909090.org/blog/archives/2296/</guid>
+      <guid>//blog.shell909090.org/blog/archives/2296/</guid>
       <description>今天支付宝的那个问题，支付宝的人和我说。
 猜到就是手机保存账户名可以找回密码的问题。。对于快捷用户明年会要求手机+证件找回密码，减低200以上的资损风险。所以现在我客户端使用后都删除用户名纪录，为了安全。那个token的想法挺好的！
 我就考虑，是否可以通过手机获得身份证呢？
@@ -178,10 +178,10 @@ user@guest:~$ mkdir -p ttt/123 user@guest:~$ cd ttt/123 user@host:~$ mv /var/lib
     
     <item>
       <title>支付宝的一项设计问题</title>
-      <link>//vlt1.shell909090.org/blog/archives/2292/</link>
+      <link>//blog.shell909090.org/blog/archives/2292/</link>
       <pubDate>Sun, 30 Dec 2012 19:40:46 +0800</pubDate>
       
-      <guid>//vlt1.shell909090.org/blog/archives/2292/</guid>
+      <guid>//blog.shell909090.org/blog/archives/2292/</guid>
       <description> 话说最近，贝壳成批更新了一些密码。在更新到网络支付系统的时候，心血来潮做了个分析。感觉网银系统很不安全。尤其是支付宝的手机客户端。我们下面以一个实际例子说明一下支付宝系统（其实远不止支付宝）的问题。
 情况说明 贝壳的支付宝系统做了手机和淘宝帐号绑定，开启了手机动态口令，无线支付，和手机宝令三项功能。由于可以从淘宝或者支付宝登录，因此设定了70bit以上的高强度密码，1年更换一次。支付密码强度略弱，是30bit级别的，一年更换一次。支付宝账户安全等级高。使用支付宝的系统包括两台电脑和一台手机，一台是linux，一台是受限windows，只安装特定软件，不浏览和安装风险网页。总体来说，这个安全结构在支付宝用户中都是有数的。 风险在于支付宝手机客户端上，贝壳在评估的时候发现，支付宝手机客户端可以记录密码。这是一个非常具有风险的事情。因此贝壳模拟评估了一下，假如你丢失了手机，会发生什么事情。
 低于200的支付 首先，由于支付宝客户端保存了密码，因此你可以很容易的登录支付宝。上面有绑定快捷支付的话（这是贝壳的常态，相信也有很多人有绑定，或者账户内有余额），在200以下就可以直接支付给对方，不需要任何额外验证。贝壳绑定的浦发银行发出了提款警告，但是很可惜，由于手机在恶意者手上，这一行为没有任何用处。 当然，常识告诉我们，如果你丢了个手机只损失200，这个问题可以忽略不计。
@@ -197,10 +197,10 @@ user@guest:~$ mkdir -p ttt/123 user@guest:~$ cd ttt/123 user@host:~$ mv /var/lib
     
     <item>
       <title>小公司在IT上容易犯的几个错误</title>
-      <link>//vlt1.shell909090.org/blog/archives/115/</link>
+      <link>//blog.shell909090.org/blog/archives/115/</link>
       <pubDate>Wed, 19 May 2010 13:25:00 +0800</pubDate>
       
-      <guid>//vlt1.shell909090.org/blog/archives/115/</guid>
+      <guid>//blog.shell909090.org/blog/archives/115/</guid>
       <description>很多同学现在自己开公司，或者有开公司的计划。公司都是由小做大的，万事开头难。小公司由于成本和规模的限制，IT上很多问题是不得已的。例如没有自己的网管，没有保密规定等等。然而注意以下几个低级错误，从IT从业人员角度来说，这些是绝不应当发生的低级错误。数数看您那里有几个？
 第一，无线不设密码，或使用WEP加密，或公开SSID。
 这是任何称职网管的第一禁忌。WEP，公开SSID，相当于弱无线网络。通过嗅探方法，别人很容易获得网络上传递的重要数据。不要以为谁会来关心你的数据，除非你有把握把公司里所有资料晒到网上也没问题，否则还是小心为妙，出问题再补救就太晚了。具体看前面有篇《无线网络安全问题》。
@@ -231,10 +231,10 @@ user@guest:~$ mkdir -p ttt/123 user@guest:~$ cd ttt/123 user@host:~$ mv /var/lib
     
     <item>
       <title>关于无线的安全问题</title>
-      <link>//vlt1.shell909090.org/blog/archives/97/</link>
+      <link>//blog.shell909090.org/blog/archives/97/</link>
       <pubDate>Fri, 26 Feb 2010 11:10:00 +0800</pubDate>
       
-      <guid>//vlt1.shell909090.org/blog/archives/97/</guid>
+      <guid>//blog.shell909090.org/blog/archives/97/</guid>
       <description>一个无线路由只有150上下，安装方便使用简单，可以让你在床上躺着的时候还能和朋友聊天。大多有笔记本的家庭都会考虑买一个无线路由，组建自己的无线网络。不过先别高兴，如果你选择买来就用，我想你碰到艳照门只是个时间问题。下面简单说一下无线网络从决策到安全完成安装的全步骤。
 首先是决策，无线路由不是随便用的。有几种情况我建议你重新考虑这个问题。有孕妇者不用，这东西的辐射虽说不大，也不是忽略不计的。万一我乌鸦嘴，你孩子出点啥问题，你触不触的慌啊。电脑全堆在一起可以拉线者不用，这种情况下再买无线纯属烧包。房间太大者不用。最后一个要用也可以，建议你买多个。无线网卡在收信差的时候速度很慢，用起来很不爽，而且辐射大，所以一定要保证你的家里能被无线信号完整覆盖。一台标准路由器能覆盖的范围大约是10-30米内的所有区域，加穿一道普通墙(非钢筋水泥承重墙)。普通人家买一个无线路由器可以覆盖全家，但是我不保证有钱人家&amp;hellip;.
 其次是采购，推荐大家选择好一点的无线路由器，但是不用太贵。差的无线路由器往往不控制辐射功率，你高兴家里天天开一个大功率辐射源么？
@@ -248,10 +248,10 @@ user@guest:~$ mkdir -p ttt/123 user@guest:~$ cd ttt/123 user@host:~$ mv /var/lib
     
     <item>
       <title>网络银行安全性的理论分析</title>
-      <link>//vlt1.shell909090.org/blog/archives/419/</link>
+      <link>//blog.shell909090.org/blog/archives/419/</link>
       <pubDate>Wed, 28 Nov 2007 23:55:11 +0800</pubDate>
       
-      <guid>//vlt1.shell909090.org/blog/archives/419/</guid>
+      <guid>//blog.shell909090.org/blog/archives/419/</guid>
       <description>最近好像用网银的人比较多阿，贝壳就做件好事，简单介绍下密码学体系。让大家了解下网银安全性的方方面面。
 我们说，银行系统的安全性和易用性往往是一个磁石的南北极，不大可能出现在一个地方的。从易用性角度来说，输入用户名和取款密码直接操作的网银是最方便的。可惜，你的钱被偷的概率也是最高的。因为你和银行间的通讯过程需要流经无数节点，任何一个地方都可以轻易拿到你的登录密码。那么重复这个过程就可以登录并且操作你的钱。所以，任何一家银行都不会提供直接的登录手段。
 一般来说，银行在设计网银的时候，往往会提防以下的攻击手段。社会工程学，嗅探，重复发送，钓鱼，中间人钓鱼，猜解，内部盗窃。我们先来大致了解下这些攻击手段的方法和实施条件，然后再说银行的对应手段。

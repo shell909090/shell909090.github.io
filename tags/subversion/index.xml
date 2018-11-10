@@ -2,22 +2,22 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Subversion on Shell&#39;s Home</title>
-    <link>//vlt1.shell909090.org/tags/subversion/</link>
+    <link>//blog.shell909090.org/tags/subversion/</link>
     <description>Recent content in Subversion on Shell&#39;s Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
     <lastBuildDate>Fri, 02 Apr 2010 03:40:00 +0800</lastBuildDate>
     
-	<atom:link href="//vlt1.shell909090.org/tags/subversion/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="//blog.shell909090.org/tags/subversion/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>以nginx作为subversion前端的一些细节</title>
-      <link>//vlt1.shell909090.org/blog/archives/108/</link>
+      <link>//blog.shell909090.org/blog/archives/108/</link>
       <pubDate>Fri, 02 Apr 2010 03:40:00 +0800</pubDate>
       
-      <guid>//vlt1.shell909090.org/blog/archives/108/</guid>
+      <guid>//blog.shell909090.org/blog/archives/108/</guid>
       <description>本文系电脑资料，同步到blog上。小黄姐姐不必看了，可以帮我留个言。 nginx性能不错，可惜不支持WebDAV，因此没法拿来作为subversion的http服务。于是考虑开一个nginx作为前端，后端就跑一个apache来作为容器。配置这么写的(节选)： =========/etc/nginx/sites-enabled/default========= server { listen 443; server_name OOXX ssl on; ssl_certificate keys/server.crt; ssl_certificate_key keys/server.key; ssl_session_timeout 5m; ssl_protocols SSLv2 SSLv3 TLSv1; ssl_ciphers ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP; ssl_prefer_server_ciphers on; access_log /var/log/nginx/localhost.access.log; include /etc/nginx/mapping-ssl; error_page 500 502 503 504 /50x.html;
 location = /50x.html { root /var/www/nginx-default; } } 打开了一个https的服务，这是当然的，svn传输的数据使用http很危险。 ===========/etc/nginx/mapping-ssl============= location \^~ /svn { proxy_set_header Destination \$http_destination; proxy_pass http://apache_svr; proxy_set_header Host \$host; proxy_set_header X-Real-IP \$remote_addr; proxy_set_header X-Forwarded-Host \$host; proxy_set_header X-Forwarded-Proto https; proxy_set_header X-Forwarded-Server \$host; proxy_set_header X-Forwarded-For</description>
     </item>
