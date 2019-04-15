@@ -1,18 +1,16 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
 <head>
-  <link href="http://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
 
   
-  <meta name="HandheldFriendly" content="True">
-  <meta name="MobileOptimized" content="320">
   <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
 
   
-  
-  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+    
+    
+      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
+    
   
 
   
@@ -20,46 +18,50 @@
 
   
   
-  <link rel="stylesheet" href="//blog.shell909090.org/css/hugo-octopress.css">
+  <link rel="stylesheet" href="/css/hugo-octopress.css">
 
   
   
 
   
-  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/css/fork-awesome.min.css">
+  
 
   
   <link href="//blog.shell909090.org/favicon.png" rel="icon">
 
   
-  
-  
-
   <link href="//blog.shell909090.org/index.xml" rel="alternate" type="application/rss+xml" title="Shell&#39;s Home" />
 
-  <meta name="description" content="">
+  <meta name="description" content="" />
   <meta name="keywords" content="">
-
   <meta name="author" content="Shell Xu">
 
   
-  <meta name="generator" content="Hugo 0.30-DEV" />
+  <meta name="generator" content="Hugo 0.55.0" />
 
   
   
-<script>
-window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-ga('create', 'UA-48816091-1', 'auto');
-ga('send', 'pageview');
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-48816091-1', 'auto');
+	
+	ga('send', 'pageview');
+}
 </script>
-<script async src='//www.google-analytics.com/analytics.js'></script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
 
 
+  
+  
 </head>
 <body>
 
 
-<header role="banner"><hgroup>
+<header role="banner">
+<hgroup>
   
   <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
     <h2></h2>
@@ -67,44 +69,79 @@ ga('send', 'pageview');
 
 
 <nav role="navigation">
+<fieldset class="mobile-nav">
+  
+  <select onchange="location = this.value;">
+    <option value="">Navigate…</option>
+      
+  </select>
+</fieldset>
+
 
 <ul class="main-navigation">
   
   
 </ul>
 
-
 <ul class="subscription">
   
-
 </ul>
 
 
 </nav>
 
 
-<div id="main">
- <div id="content">
-  <div class="blog-index">
-    
-    
-    <article>
 
+
+  
+
+<div id="main">
+  <div id="content">
+    <div class="blog-index">
+      
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Nov 19, 2012
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2272/#disqus_thread">Comments</a>
+  <p class="meta">Nov 22, 2012
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2272/">python入门指引</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2278/">python环境部署</a>
+  </h1>
 </header>
 
+        
+          <p>abstract 本文的目的，在于教授使用virtualenv创立python环境，对环境的管理和使用，以及代码和部署的用法范例。在阅读完本文后，你应当可以。
+ 创立，部署，管理virtualenv环境 使用virtualenv环境进行编码  virtualenv环境建立 virtualenv是python的虚环境管理包，他的主要目的是为了隔离环境。其中包含以下两个范畴。
+ 在虚环境中安装包，不需要对系统进行修改，不会对系统造成污染。 在系统中安装的包，不会对虚环境造成污染。这主要是出于版本安全考虑。  因此，virtualenv默认会阻止你使用系统中安装的包。要解决这个问题，需要在建立虚拟环境时指定参数&ndash;system-site-packages。 virtualenv的环境可以通过执行virtualenv path加以建立。当建立完成后不可移动，需要一些特殊调整，使用参数&ndash;relocatable对此没有帮助。
+virtualenv环境的激活和反激活 virtualenv环境是通过替换系统环境变量工作的。在激活后会替换系统的提示符，提示你进入环境。一般我们使用source \$VIRTUALENVPATH/bin/activate来激活。激活后直接执行deactivate反激活。 virtualenv替换系统环境变量的方式是在path前加入virtualenv的bin路径，使自己的python优于系统python执行。同时替换pythonhome，变更lib查找路径。因此，对于某些可以指定pythonhome的应用（例如网络部署），直接指定pythonpath为virtualenv路径即可。 注意，由于virtualenv的工作方式，因此当你执行su/sudo bash后，virtualenv环境都有可能消失，但是提示符仍旧生效。建议通过sudo执行脚本，脚本内进行source比较安全。或者直接sudo目标程序也可以，不要新建上下文。 如果需要保持持续的环境激活，可以将source \$VIRTUALENVPATH/bin/activate加入~/.bashrc。 当virtualenv激活后，后续的pip安装和python使用都会使用virtualenv内的版本。因此下文未经特殊说明，都是指在激活环境后进行操作。
+virtualenv环境的管理 主要包括两种手段，安装和删除。一般使用pip install package name进行安装。pip uninstall package name进行删除。
+virtualenv环境的保存和恢复 virtualenv环境可以保存和恢复。所谓保存和恢复，是指在安装过包的环境中保存包列表（和具体版本），在未安装（或版本错误）的环境中启用。 一般通过pip freeze &gt; filename进行保存。在目标机器上执行pip install -r filename进行恢复。</p>
+          
+        
+      </article>
+      
+      <article>
+        
+        
+
+<header>
+  <p class="meta">Nov 19, 2012
+     - 1 minute read 
+    
+
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2272/">python入门指引</a>
+  </h1>
+</header>
 
         
           <p>前言 其实我也不知道python怎么入门，由我来写这个真的不是很合适。我学python是直接找了dive into python来看。然后照着写了几个例子。大概两天后，就能磕磕绊绊的上路了。就好像拿筷子，都不记得怎么学会的拿筷子，怎么来教人呢？
@@ -123,34 +160,29 @@ ui python的ui框架也很多，很复杂。同样，如果是入门，我建议
 注意，容器和框架是两码事情。容器是python web运行的环境，框架是解析环境的玩意。两者间一般都使用wsgi接口进行连接。这是python的标准做法，fastcgi/scgi也会被转换为wsgi进行连接。但是也不是没有其他选择。一般我们有以下模式：
  cgi：python-doc中自带了cgi模块。 mod_python：embed in apache。  下面是wsgi接口的容器。wsgi的优点在于我们可以在这些容器上运行任意一款支持wsgi的框架。
  flup：支持提供fastcgi, scgi, AJP接口，web server可以用这三种协议进行连接。 Google App Engine：PaaS服务。 Gunicorn：直接提供http服务。 mod_wsgi：使用内部协议和apache集成。 twisted：直接提供http服务。 tornado：直接提供http服务。 uWSGI：使用内部协议和nginx集成。 werkzeug：直接提供http服务。  建议的部署模式是，用apache的，去mode_wsgi。用nginx的，去uwsgi。用GAE的，直接可用。其他，通通转发。</p>
-
           
-              <footer>
-                  <a href="//blog.shell909090.org/blog/archives/2272/" rel="full-article">Read On &rarr;</a>
-              </footer>
+            <footer>
+              <a href="//blog.shell909090.org/blog/archives/2272/" rel="full-article">Read On &rarr;</a>
+            </footer>
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Nov 3, 2012
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2269/#disqus_thread">Comments</a>
+  <p class="meta">Nov 3, 2012
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2269/">老大啊，你这是什么鬼名字</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2269/">老大啊，你这是什么鬼名字</a>
+  </h1>
 </header>
-
 
         
           <p>sbcl 不知道大家用没用过common lisp，这是一种语言，最早是为了计算理论而生的。这种语言以规模大，难掌握，实现多，标准不统一而著称。
@@ -163,30 +195,25 @@ LZ不哭，站起来lua。
 go google的奇葩语言。每次我要查某个用法的时候，都很郁闷。为什么呢？因为几乎所有的网页都命中&rdquo;go&rdquo;。
 以StartProcess为例，我这里搜素go StartProcess的第一个命中在MSDN，微软有个API就叫StartProcess。再后面就是财经新闻。在很后面才能看到go的API。
 etc IT界还有什么奇怪的名字？</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Oct 30, 2012
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2266/#disqus_thread">Comments</a>
+  <p class="meta">Oct 30, 2012
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2266/">异常之殇</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2266/">异常之殇</a>
+  </h1>
 </header>
-
 
         
           <p>异常之殇 辗转开解 辗转开解(stack unwinding)说的其实是这么一个现象。当执行流从深层向浅层转移时，深层调用所产生的栈上对象(stack object)需要销毁，资源需要释放。对于面对对象语言而言，往往就会执行到析构函数。
@@ -207,30 +234,25 @@ C++中有一类特殊的优化，叫做对象返回优化。当编译器察觉�
 分离构造/析构的邪恶之处 ZMQ的作者曾经吐槽过这种在构造/析构之外再定义初始化/清除代码的努力。他的观点是，如果万一在构造函数中加入了代码，会引起半构造现象。为了解决这个问题，会使得整个类带上状态。我在上面已经假定这件事情不会发生了，否则代码会更加复杂，问题也更加严重。
 二次异常 是的，你不应当在异常处理代码中抛出异常。当然，这里的异常指的是你的异常处理代码不应当发生异常。经过逻辑判定，当前的异常应当由更上层处理的情况不在此列。
 如果在异常处理中抛出异常，很可能导致的结果就是异常处理没有完成。而未完成的异常处理会发生什么问题，那只有天晓得。这个在任何带有异常系统的语言中都是成立的。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Oct 29, 2012
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2265/#disqus_thread">Comments</a>
+  <p class="meta">Oct 29, 2012
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2265/">面对对象的吐槽——类型之殇</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2265/">面对对象的吐槽——类型之殇</a>
+  </h1>
 </header>
-
 
         
           <p>继承之殇 讲继承问题，我们首先得定义什么是继承(inherit)，他是用来干吗的。
@@ -257,30 +279,25 @@ C++中有一类特殊的优化，叫做对象返回优化。当编译器察觉�
 继承冲突的几种解法  所有冲突的函数，父类必须都无实现。 不得多重继承。这是很扯淡的，不过也是大多数时候的做法。我的编程指南之一就是——在C++中，任何时候都不要使用多重继承。 使用其中一者。python是个典型的使用其中一者的例子，具体使用的按照继承编写顺序展开成MRO次序决定。然而这直接违背了继承类是(ISA)父类的定义。因此不要以为在python中，继承后总是没问题的。有的时候可能会出现继承后不能正常工作的情况。 强制用户解决。要求用户必须人工定义函数，解决继承冲突的问题。从逻辑上说，如果用户定义的函数可以同时兼容于两个父类，就可以彻底化解多重继承冲突问题。然而杯具的是，很多时候在逻辑上，继承冲突是无解的。  区分接口和继承 父类没有实现冲突的函数，那么派生类中就不必纠结于调用谁的问题了。但是这引发了另一个问题——这就无法复用了。作为这一解法的极限，java不允许多重继承——除非继承的父类都是没有实现的类。这其实不是继承，而是实现(implement)接口(interface)。
 接口编程是一个很有道理的东西，COM里面大量着重于接口。但是接口也有自己扯淡的地方——接口是一个编写期的东西，他最大的用途就是编译期类型检查。接口并不能复用(reuse)代码。如果你有一个接口，叫做平行四边形。里面有个方法，用于计算平行四边形面积。然后你实现了长方形和正方形——那么杯具来了，你需要在两个里面通通实现一遍这个方法，即使他们基本没区别。
 当然，接口本身的好坏各有评价。你看，接口的唯一作用，就是声明类提供了某些函数。当我们对方法传入一个新的类的时候，我们必须将新的类也实现一下接口——哪怕这个类其实已经实现了这些方法。只要不实现接口，方法就不认可。这是强制编译器类型检查(静态类型语言)的基础。因此一般来说，静态类型语言，使用接口。动态类型语言，duck typing。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Oct 28, 2012
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2263/#disqus_thread">Comments</a>
+  <p class="meta">Oct 28, 2012
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2263/">高考和大学的选择</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2263/">高考和大学的选择</a>
+  </h1>
 </header>
-
 
         
           <p>背景 最近很多家长在为了高考的事情争。非京籍家长要求北京市教委给予外地孩子公平待遇，京籍家长认为北京本地教育资源有限，应维持现有状态。
@@ -317,30 +334,25 @@ OK，以上是背景。
 所以其实个我对高考的立场就是个无知之幕——谁知道将来会生儿子女儿，是偏文科还是理科。我连将来会不会在中国，想不想生都不知道呢。
 所以我在偏科问题上的立场是随大流的，一般来说，强到特招的概率总比平均分数高的概率来的低吧。至于地区之争，我得说，原则上我支持向贫困地区倾斜。但是行动上支持北京和上海保持本地人低分数线。
 听起来很悖论，但是这是诚实的想法。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Oct 25, 2012
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2259/#disqus_thread">Comments</a>
+  <p class="meta">Oct 25, 2012
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2259/">cython编译细节</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2259/">cython编译细节</a>
+  </h1>
 </header>
-
 
         
           <p>两点简述：
@@ -348,30 +360,25 @@ OK，以上是背景。
 cython &ndash;embed $^ gcc $(shell python-config &ndash;includes) $(shell python-config &ndash;libs) -O2 -o $@ $^
  pyx的文件名会被转换为变量，所以所有在变量中不应当出现的符号也别出现，例如-。
   </p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Oct 23, 2012
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2257/#disqus_thread">Comments</a>
+  <p class="meta">Oct 23, 2012
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2257/">pycon2012</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2257/">pycon2012</a>
+  </h1>
 </header>
-
 
         
           <p>今天第一天在大型会议上演讲，其实挺紧张的。不过还不错，虽然临场反应并不热烈，但是至少不冷场。下面是我今天看到内容的回忆，有些印象不神，记得不清楚了。
@@ -404,34 +411,29 @@ Python如何帮助「逆转三国」获得成功 广告中的广告。今天唯�
 对我来说其实也挺有用的，尤其是关于对象可调用方法的那个idea。写程序到了一定程度，实现已经不是问题。只要有明确的实现方法，你给足够的时间干，肯定是干的出的。问题是思路，也就是idea。一个好的思路往往是经过很久的总结，在实践中不停摔倒，才能真正用上去。
 另外，最后的吐槽，其实是自行实现语法，或者至少是语法糖。我和赖总说，scheme其实很容易嵌入，而且很容易实现这样的要求——lisp类语言的宏天下闻名。赖总在研究的是基于python自己的Parser的方案，我回头有空也看一下。
 Python in Gentoo Linux Patrick Lauer的主题，主要是讲了Gentoo下面如何使用python，每个版本的python在gentoo下面的支持情况如何。按照数据来看，python3的支持接近完成了。而pypy大概只有2/3的支持比例。</p>
-
           
-              <footer>
-                  <a href="//blog.shell909090.org/blog/archives/2257/" rel="full-article">Read On &rarr;</a>
-              </footer>
+            <footer>
+              <a href="//blog.shell909090.org/blog/archives/2257/" rel="full-article">Read On &rarr;</a>
+            </footer>
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Oct 18, 2012
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2256/#disqus_thread">Comments</a>
+  <p class="meta">Oct 18, 2012
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2256/">没想法</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2256/">没想法</a>
+  </h1>
 </header>
-
 
         
           <p>前两天面了一个同学，是我在交大的学弟。平时印象挺不错，用过的技术也挺多的，和老板商量一下，就面试看看吧。
@@ -455,30 +457,25 @@ Python in Gentoo Linux Patrick Lauer的主题，主要是讲了Gentoo下面如�
 有的时候，散弹枪是一个非常糟糕的做法。例如我们上面那个——网络带宽不够大——的例子，你很容易在网络上看到这个解答，但是往往这不是正确的答案。我是说，很多人确实是因为网络带宽不够，所以出现了网页缓慢。但是网页缓慢的原因，还有一个是因为延迟和丢包率太高。而增加带宽可解决不了延迟和丢包率。甚至相反。我们可以想像这么一个可怜的例子。当技术瞎猜到——是你的带宽不足——时，老板就会对行政说，去给我换一个给力的带宽。于是行政要升级带宽——又要控制成本，十有八九，他们会找上一家小ISP。ISP的性价比非常可观，行政和老板都很满意。唯一的问题，是他们的延迟和丢包率比上一家更加糟糕。
 你看，散弹枪不但没打中目标，还使得情况更加糟糕了。
 类似的问题还出现在大型电商系统的架构上。如果架构师和SA的答案永远是——硬件不给力，你需要好好考虑一下，真的是硬件不给力，还是这只是一个拖延的借口。如果架构不合适，当规模达到一定量级后，无论你再堆多少的硬件，可支撑用户数都不会有太高的提升。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Oct 17, 2012
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2254/#disqus_thread">Comments</a>
+  <p class="meta">Oct 17, 2012
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2254/">回到毛泽东时代</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2254/">回到毛泽东时代</a>
+  </h1>
 </header>
-
 
         
           <p>是否愿意回到毛时代 今天在酒席上，不少长辈讨论说毛泽东时代如何如何好。我想了半天，很好奇，于是问了一句——你愿意回到毛时代么？
@@ -516,74 +513,14 @@ Python in Gentoo Linux Patrick Lauer的主题，主要是讲了Gentoo下面如�
 你是不是富人 也许很多人不认为自己是富人，我可以提供一个简单的判别标准，按照中国平均国民收入，你是在之上还是在之下？
 能够看到我文章的大部分人，在中国平均国民收入中都肯定属于之上的位置。别的不说，收入不及平均收入的，你能够拉到网线再弄一个vpn来看我的blog？因此，在毛时代，你们可能被打为地主和富农，财产被没收。
 谁是穷人 真正一无所有的穷人，如果不善待他们，很可能他们才是真正支持回到毛泽东时代的人。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Oct 11, 2012
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2251/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2251/">国庆堵车</a>
-    </h1>
-</header>
+      </article>
+      
+      
+      
 
 
-        
-          <p>国庆堵车的原因 国庆堵车，乃至一切国庆拥堵的原因，是16亿人的时钟被调整到了同一节律上，除此之外别无其他。在国际上，大型节假日也会堵车，费用涨价，这不是什么值得大惊小怪的东西。要说中国和其他国家的区别，主要是三点。
- 大量的劳动力离开农村，来到远方的大城市谋生。他们希望有足够长的假期回家和亲人共渡。 中国的三大运输行业，主力的铁路还处于计划经济时代，公路则有巨量的过路费。飞机对于大多数人来说不是一个合理的选择。 中国的道路设计和运行，是按照收费状况来进行的。本次假日，价格降低了。  细分市场 对于解决国庆拥堵，市场经济下的标准做法有两种。
- 一种是保持免费，由质量的下降来控制人数。 第二种是增加价格，让部分人不愿意出行，换取通行畅通。  通常来说，我们更愿意取后者，因为堵塞在路上并不会产生经济效益。而增加出行价格不但会产生直接的经济收益，而且会让部分去不了的人做其他更有意义的事情，而不是呆坐在车上发呆。这种机制叫做市场价格机制。更进一步，我们可以根据出行时对拥堵的接受能力，分割出不同的市场。让愿意接受堵车的人便宜出行，不愿意接受堵车的人付费。这种方法叫做细分市场，即，对于市场的供需状况发生明显变化的区域或者时段，或者人群，采取完全不同的价格策略和服务策略。这样会优化资源配置，让不同的区域/时段/人群获得他们希望获得的结果。
-然而，无论哪种方案，都不可能采取反向措施。在高峰时期降低出行价格，让拥堵的道路更加拥堵。本质上说，国庆道路拥堵是由于定价策略根本错误所导致的。他们细分了市场，可是针对高需求市场提供低价策略。你能抱怨发生短缺么？而很多人居然还抱怨到，”不敢占国家便宜了“，”高速收费有理“。对于后者，如果加上高峰时期的限制，我觉得还没说错。对于前者就是彻底的无语了。
-同样的市场策略不解还发生在非常多的日常问题上。我曾经提出过分流解决市内经济拥堵的方案，包括非高峰期和高峰期的地铁和出租车价格差异化。很多人都表示不理解。我觉得在经济层面理解这个效应没有任何困难，只要你想想就能明白。简单来说，就是对市内拥挤时期和非拥挤时期差别定价。例如平时公交0.8，高峰期公交1.2。平时地铁3元，高峰期地铁5元。
-从市场角度说，这很明显的会压缩高峰时期出行人数，缓解高峰时期的交通工具拥挤现象。而且这个方案并不难实施——地铁和公交基本都是刷卡收费，对收费装置改造，让不同时间收费不同价格并不困难。出租车更是本身就支持这个功能。作为一个合理的驳斥，你可以说这个方案有明显的缺点。这个方案会使得更多的人偏好在高峰期自驾出行，从而加剧道路拥堵。
-然而抱怨”太复杂了“，”没道理“，都是属于无常识的。如果说复杂，出租车系统是如何支持夜间收费的？如果说没道理，你为何不投诉出租车夜间费用机制呢？还有个朋友坚持认为，无论票价如何变化，出行人数应当不会有太大变化。用术语来说，即，交通需求的弹性相当小。然而我很简单的问了一个问题，如果是这样，当交通免费的时候，乘车人数应当如何变化？她想当然的说——当然是不怎么变化。旁边另一个朋友同时也说，广州发生过这个事情，地铁瘫痪了。场面顿时冷了下来。
-和我讨论的人中，有八成以上的人直觉的反对这个方案，却给不出合理的理由。大多都只能说，太复杂了，搞不起来，没道理。我知道你们的想法——八成的人都需要在高峰期出行，这个无疑是在加剧他们出行的成本。然而，城市的出行费用并不是单方决定的，这是一个供需问题。虽然我没有量化数据，然而根据我对目前状况的分析，我觉得正确的票价不但不会上升，反而应当下降。在高峰时段，我们的出行人数略高了。然而在非高峰时段，我们的出行人数可是远远不足。对此应当采取低票价，鼓励可以调节时间的人在非高峰时段出行。只要非高峰时段采取了低票价，高峰时段人数过多的问题也会适当缓解。
-当然，这个方案也有固有问题，即自驾车的问题。从鼓励公众交通考虑，我们应当降低公共交通费用，甚至免费。然而从良好服务考虑，我们又应当调控公共交通费用。这是固有矛盾，没有什么万能的解决方案。比较好的方法是增加自驾出行成本——例如扩大高峰期非上海牌照限行范围（不过这又会拉高上海牌照价格），或者对市内拥堵路段ETC收费。然而，只有几个人，很合理的提出了自驾出行的问题，我认为这是一种理性的，经过思考的讨论。虽然大部分的80后的应当学过经济学，可是能够使用经济学，进行理性思考的人为何寥寥无几呢？
-黑洞无毛 同样还有改善高峰期出租车数量的方案，高峰期时段牌照，也是基于细分市场定价。基本思路是发放针对高峰时期的特殊牌照，拟定不同的价格，使得高峰时期牌照的回报比比普通牌照略高一些。按照市场原则，很多司机可能放弃做普通出租车司机，而只开高峰牌照。这样会带来三个好处。
- 高峰时期出租车增加，打车容易。 平时出租车减少，减少浪费。 只开高峰车的师傅，完全可以在空下来的时候做别的事情，例如开网店，或者导游。  同样是个有各种好处的事情，收到的驳斥意见非常多。有人给我说了一通历史原因，然后分析当政者心理，总结为什么不可能。我觉得虽然这和市场没关系，然而这个分析本身还是有道理的。有人直接扯上了毛泽东时代如何如何，我直接闭嘴了。您要么看我的一篇《回到毛泽东时代》，看看您是不是真的愿意回到毛泽东时代。
-其中说历史原因的人非常有意思。他说出租收管理费贵，主要是两个方面原因。一方面，是上海政府大量收取出租管理费作为政府开销。另一方面，则是早年出租运营公司在牌照上都是赔钱的，不让他们赚钱他们不干。
-纷纷扰扰的原因，让我想起天体物理学的一个很重要观点——黑洞无毛。
-黑洞无毛，意思是黑洞的外界性质，只有重量和角动量。两个重量和角动量完全一致的黑洞在对外上应当不存在区别。因为你既不能通过光观测他的表面特性，也无法做其他信息传出。这相当于一个从现实空间割裂的独立空间。唯一能证实其存在的特性，只有万有引力造成的空间扭曲。
-而从经济分析角度来说，一个项目的经济学特性其实也只有一项——风险下的投资回报比曲线。当然，也许不止这一项。我不是经济学专家，所以并不清楚是否还有其他需要考虑的特性。然而，任何能够转化为上述特性考虑，并不引入外部性的特性，就不要出现在我的桌面上了。
-不同投入资产，在不同风险级别上，会产生不同收益。虽然没有人精确测量和描绘过这条曲线（说曲线并不准确，绘制出来的话应当是一个面），然而我们都在无意识的使用这个观点。我们经常说“项目风险”，说的其实是投资回报比在XX以上的概率有多大。如果你不介意将投资回报比降低到近乎于无穷小，任何项目都是近乎于0风险的。我们说“低风险投资回报率“，指的是这个曲线在低风险情况下，在普通投资区间的平均回报比。我们说”公司价值“，”项目价值“，其实并不是指项目有多少资产。相反，我们是在评估，这个投资回报比的项目，某一个份额的转让市场价格是多少。
-现在，我们可以说回到出租车牌照的问题。出租车牌照问题，我们可以认为是一个项目。而这个项目，无论是历史原因也好，还是什么其他的也好。其实都只是对他的未来回报曲线产生影响。我们可以抛开到底这个问题是什么的问题，转而专注另一个问题——当你最终存在了一条投资回报比曲线——可以是任何曲线——细分市场是否能够对这个市场产生影响，得到更优化的资源配置？
-这个当作思考题，大家不妨考虑一下。
-公平 国庆交通的另一个话题，则是有人说，中国解决了这么多人的交通问题，这是一个创举。英国的铁路是私营的，然而资本家完全没有改善铁路的打算，铁路依然破旧。网络购票问题本质是铁路运能不足，要加快铁路建设，等等。
-我先不说英国的铁路到底好不好的问题，仅仅说另外一个问题——到底是谁？决定要不要修建基础设施。
-私营老板出钱 我们知道，基础设施是要花钱的。如果是私营，这笔钱必然是老板出，然后转嫁到客户头上。他自然会考虑，是否可以愿意承担这个费用。如果他们觉得客户愿意承担，那么他们会修修看——同时将修建费用合并到票里面，卖给客户。如果客户不愿意，他们当然不会冒着亏本的危险自作主张。——当然，着有个前提，就是私营老板并没有垄断铁路业。
-国家出钱 而如果是国家出，一样是转嫁到客户头上。如果不行，客户数量不足，就会转嫁到每个纳税人——即，你，或者我——头上。
-问题来了。不是每个人，包括我，都需要大量使用铁路交通的。与其修建那么多基础设施，来增加高峰期运力。不如降低火车票价来的有吸引力。如果国家修建，然后由纳税人均摊，其实这是不公平的。
-实际上，我可以肯定这个花销是无法由客户均摊的。如果可以的话，铁路系统为什么不自己组织修一条线呢？这固然是因为铁路修建的拆迁工作需要当地政府的大力配合，另一方面，也是因为铁路系统并不确定是否能在旅客收入——主要是非高峰收入上——拉平成本。其中也有可能因为国家目前从铁路系统获得大量税收，在不减少这个税收的情况下做不到。精确的说，修建一条铁路的开销无法由铁路带来的客运增量来平衡，因此才是铁路修建需要由国家拨款的原因。
-公平论 既然是全民税收，公平就是一个核心问题了。我们首先排除铁路部门贪污腐败的问题，没有看到的事情，我们暂时不讨论。就公平上，是否应当采取这一行动，做一条讨论。
-我记得我说过公平论。当你模糊你的身份时，你提出的结论才是公平的。如果我是不需要回家的本地人，为了春运修建大量铁路显然有悖于我的利益。然而如果我是需要回家的打工仔，春节不能回家又是一件很苦逼的事情。权衡两者，我觉得全民收费修建铁路还是一个可以接受的结论。
-其他方案 其实在上文中，我们不断探讨各种技术问题，然而都没有涉及一个实质问题——16亿人的节奏在时空上高度同步。这本身是最大的问题。不解决这个问题，讨论细分市场也好，政策公平也好，都只能在技术上，让尽量多的人各得其所。只有让聚集问题彻底解决，才能彻底解决16亿人民的出行和游玩问题。
-那这个核心的方案也就呼之欲出了——年假制和生产中心西迁。
-目前我国有10天带薪假期，称为国定假日（顺便说一句，这个和其他国家比小气的可怜）。这些日子固定放假。一旦和前后连成长假，大客运高峰就随即发生。而国外很多是采用年假制的。每个人每年都有一定时间的假期，可以自行安排。很多企业还规定，当员工的工龄增加时，年假也随之增加。据说意大利人最长有一个月的年假（羡慕阿）。
-年假制度可以减缓高峰的存在。从理论上说，采取年假后全年的交通量应当都是平均的。然而现实告诉我们——没那么美的事。由于传统节日的存在（例如感恩节，春节），很多人选择在节日附近回家。这还是造成了拥堵，不过显然比现在更轻。因为很多没有钱在假日回家的人，可以选择避开假日回家。
-年假的一个问题，就是给与某些老板合法剥削员工的机会。因为如果是固定假日，工厂是否加班很明显。而年假则很难说，某人是否休了年假，除了他自己还有谁知道？但是与此同时，固定假日制度难道就不存在“剥削”员工的老板？员工留下来加班，却只支付正常工资，这种老板有没有？不希望休年假，希望多工作的员工，有没有？
-我们不能只关注于年假造成的问题，而束手束脚不解决问题。作为一个可行的方案，部分的实行年假是一个很好的思路。鼓励部分企业实行年假制度，对年假不休的实行三倍工资。部分可行至少好过总体上一无所获。
-而生产中心西迁，则是中国政府目前正在努力做的一件事。不过限于地理因素，目前效果好像不大明显。如果有时间，我希望对这一问题做一下全面了解和思考，看看到底是为什么。</p>
-
-          
-
-        
-
-    </article>
-    
-    
-    
 
 
 
@@ -805,10 +742,8 @@ Python in Gentoo Linux Patrick Lauer的主题，主要是讲了Gentoo下面如�
 </div>
 
   
-
-  </div>
-
-  
+    </div>
+    
 
 <aside class="sidebar thirds">
   <section class="first odd">
@@ -829,7 +764,10 @@ Python in Gentoo Linux Patrick Lauer的主题，主要是讲了Gentoo下面如�
       
       
       
-       
+      
+         
+      
+      
       
       
       
@@ -854,64 +792,87 @@ Python in Gentoo Linux Patrick Lauer的主题，主要是讲了Gentoo下面如�
         <h1>Recent Posts</h1>
         <ul id="recent_posts">
           
-            <li class="post">
-              <a href="/blog/archives/2866/">关于抵制洋节</a>
-            </li>
           
-            <li class="post">
-              <a href="/blog/archives/2865/">恒春潜水记录</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2867/">996</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2866/">关于抵制洋节</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2863/">openssl证书相关</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2865/">恒春潜水记录</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2861/">密码学基本原理</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2863/">openssl证书相关</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2860/">similan船宿</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2861/">密码学基本原理</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2858/">京都游记</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2860/">similan船宿</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2857/">Boracay潜水攻略</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
+              </li>
+            
+          
+            
+              <li class="post">
+                <a href="/blog/archives/2858/">京都游记</a>
+              </li>
+            
           
         </ul>
       </section>
     
   
-
 </aside>
     
- </div>
+  </div>
 </div>
+    <footer role="contentinfo">
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
+        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+      </p>
+    </footer>
 
-<footer role="contentinfo">
-  <p>Copyright &copy; 2018 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-</p>
+    
+    
+    
 
-</footer>
-
-
-</body>
+    
+  </body>
 </html>
    
+

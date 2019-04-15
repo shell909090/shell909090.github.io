@@ -1,18 +1,16 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
 <head>
-  <link href="http://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
 
   
-  <meta name="HandheldFriendly" content="True">
-  <meta name="MobileOptimized" content="320">
   <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
 
   
-  
-  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+    
+    
+      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
+    
   
 
   
@@ -20,46 +18,50 @@
 
   
   
-  <link rel="stylesheet" href="//blog.shell909090.org/css/hugo-octopress.css">
+  <link rel="stylesheet" href="/css/hugo-octopress.css">
 
   
   
 
   
-  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/css/fork-awesome.min.css">
+  
 
   
   <link href="//blog.shell909090.org/favicon.png" rel="icon">
 
   
-  
-  
-
   <link href="//blog.shell909090.org/index.xml" rel="alternate" type="application/rss+xml" title="Shell&#39;s Home" />
 
-  <meta name="description" content="">
+  <meta name="description" content="" />
   <meta name="keywords" content="">
-
   <meta name="author" content="Shell Xu">
 
   
-  <meta name="generator" content="Hugo 0.30-DEV" />
+  <meta name="generator" content="Hugo 0.55.0" />
 
   
   
-<script>
-window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-ga('create', 'UA-48816091-1', 'auto');
-ga('send', 'pageview');
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-48816091-1', 'auto');
+	
+	ga('send', 'pageview');
+}
 </script>
-<script async src='//www.google-analytics.com/analytics.js'></script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
 
 
+  
+  
 </head>
 <body>
 
 
-<header role="banner"><hgroup>
+<header role="banner">
+<hgroup>
   
   <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
     <h2></h2>
@@ -67,44 +69,83 @@ ga('send', 'pageview');
 
 
 <nav role="navigation">
+<fieldset class="mobile-nav">
+  
+  <select onchange="location = this.value;">
+    <option value="">Navigate…</option>
+      
+  </select>
+</fieldset>
+
 
 <ul class="main-navigation">
   
   
 </ul>
 
-
 <ul class="subscription">
   
-
 </ul>
 
 
 </nav>
 
 
-<div id="main">
- <div id="content">
-  <div class="blog-index">
-    
-    
-    <article>
 
+
+  
+
+<div id="main">
+  <div id="content">
+    <div class="blog-index">
+      
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Jan 19, 2010
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/88/#disqus_thread">Comments</a>
+  <p class="meta">Jan 29, 2010
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/88/">关于减少使用gmail的建议</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/89/">一个远程下载verycd的小技巧</a>
+  </h1>
 </header>
 
+        
+          <p>贝壳家里开了emule，天天下载，问题是又不能每次都是晚上添加资源。
+怎么办呢？不知道大家知道不知道，emule是可以网络管理的，端口是4711。不过不是https，密码容易泄露。而且贝壳已经有一个nginx服务器了，也懒的再做端口映射，换端口。于是，在nginx中做如下设定。(当然，贝壳是放在https段中的)
+location ^~ /emule/ { rewrite ^/emule/(.*)$ /$1 break; proxy_pass &lt;http://hostip:4711&gt;; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; }  然后，用https://dynname/emule/就可以访问你家里的emule了，记得密码设强点。
+接下来，verycd里面曾经有复制所有连接的选项，现在没了。面对几个链接，也就手工复制一下，面对上百个连接，贝壳就无语了。贝壳试验过几个插件，都无法正确识别ed2k的链接获取。那怎么办呢？这时就要请出我们伟大的Linux。
+需要准备的工具是lynx，请预先装好，然后如下操作。(范例是个动画^_^)
+wget -c &lt;http://www.verycd.com/topics/2779234/&gt; lynx -dump -listonly index.html | grep &quot;ed2k://&quot; | sed &quot;s/.*ed2k/ed2k/g&quot; | grep -v BIG5 &gt; out.txt wc -l out.txt  lynx的-dump选项是将某个网页全部渲染成文本进行展示，这是html2text的好方法，效果还不错哦，不过中文支持好像不是很好。而-listonly则是展示出页面上的所有链接，这就拿到了我们需要的原始数据。
+然后，我们取其中的ed2k行，忽略其他链接，再通过sed转换，去除头部的编号和空格，这样就可以得到所有的ed2k链接。
+我在下面是用-v BIG5的参数，忽略了其中繁体中文的资源，然后输出到一个文件中。数数行数，52行，大致和文件个数相当(其中好像有两个v2)。那就是可用资源了，复制到emule的控制页面中——出错？
+这是因为emule的控制页面使用GET方式传递参数，因此有长度限制。你需要将链接10个一批往里面复制——有个几次就OK了。当然，如果还是多，贝壳回头会写一篇文章，介绍如何使用curl自动干这事情——这还不算太难。
+这就是为啥贝壳喜欢Linux的原因了。相比Windows下的两个解决方案，找插件太费劲，自己写程序更费劲。Linux使用现有工具的组合可以轻松完成这一任务。</p>
+          
+        
+      </article>
+      
+      <article>
+        
+        
+
+<header>
+  <p class="meta">Jan 19, 2010
+     - 1 minute read 
+    
+
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/88/">关于减少使用gmail的建议</a>
+  </h1>
+</header>
 
         
           <p>这次，google又不走了。
@@ -113,58 +154,48 @@ ga('send', 'pageview');
 如果google的却是受到了某些关于知识产权的攻击，但是却愿意在中国留下，并且在发生这次的事件后，还能留下。这说明google(非中国的谷歌公司)已经和北京达成了某种秘密的和解协议。无论这个协议的细节是什么，我们有理由猜测，google的产品不能完全的信任了，包括gmail，google reader，bloger等。
 另一方面，如果google并没有受到这些攻击，那就是出于各种原因的新闻炒作。既然google背弃不作恶的宣言在前，那杯葛在后也是自然而然咯？
 所以说，如果google打算继续在中国留下，那么包括gmail在内的各种google产品，都必须视为非安全产品看待。建议尽量减少使用，并准备替代方案。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Jan 18, 2010
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/87/#disqus_thread">Comments</a>
+  <p class="meta">Jan 18, 2010
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/87/">关于海地地震</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/87/">关于海地地震</a>
+  </h1>
 </header>
-
 
         
           <p>深切同情这种虚伪的话就不说了，我们又没被震过，装B只会遭雷劈。
 我得说，海地人民，海地政府还是比较公平的。学校倒了，总统府也倒了，这两天净看到倒塌的总统府了。在神奇的土地上，只听说学校倒塌压死人，还没听说政府机关房子倒塌压死人的情况——那到真是造福全社会了。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Jan 14, 2010
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/86/#disqus_thread">Comments</a>
+  <p class="meta">Jan 14, 2010
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/86/">关于google退出中国的FAQ</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/86/">关于google退出中国的FAQ</a>
+  </h1>
 </header>
-
 
         
           <p>F:google真的准备退出中国了么？
@@ -180,30 +211,25 @@ Q:短期来看，没错，长期来看，市场会重新平衡。由于百度在
 F:google走了，我们将会怎样？
 Q:google的离开，标志着中国的互联网整体倒退了6年。在IT界，3年是一个时代，6年的倒退，让我们退回了两个时代去，变成了上个世纪网络刚刚兴起的时候，那种上网艰难的状况。这不是用备份邮箱，备份新闻标签等方法可以解决的。
 更严重的是，这会严重打击整个业界，工程师，对于中国的网络发展的评价。在这个问题解决前，我们可能落后其他国家10年以上。当然，之所以我这么担忧，其实还是因为这直接影响到了我的饭碗。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Jan 11, 2010
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/85/#disqus_thread">Comments</a>
+  <p class="meta">Jan 11, 2010
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/85/">手工删除oracle数据库实例的全部文件</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/85/">手工删除oracle数据库实例的全部文件</a>
+  </h1>
 </header>
-
 
         
           <p>今天公司搬家，没啥好写的，简单记录一下前两天删除重建oracle数据库的过程吧。
@@ -214,60 +240,50 @@ $ export SID=orcl $ sqlplus / as sysdba &gt; create pfile from spfile &gt; exit 
 首先，数据库有三个control files，还有一个到多个data files，以及多个redo log。在默认设置中，这些文件一般放在一起，你可以通过查看pfile确认这些文件的路径。找到之后，直接删除，没啥好多说的。在完成数据基础文件的删除后，我们还需要删除flash_recovery文件，这个也可以通过pfile确认，位置一般在data文件上两级(就是通常$ORACLE_BASE的位置)下面，flash什么的一个目录，很好找。
 最后，我们删除admin目录，具体是在$ORACLE_BASE下面的admin下面，以SID命名的，可以通过pfile确认。至此，oracle数据库的删除完成。不过呢——呵呵——让大家失望的是，其实DBCA也可以完成一样的工作&hellip;
 不过，dbca的工作必须通过vnc，绝对不要通过ssh + xming，因为那个会让最后一步执行前的确认无法被确认，导致不能执行。实在是很让人郁闷的一个bug，切记切记。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Dec 23, 2009
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/84/#disqus_thread">Comments</a>
+  <p class="meta">Dec 23, 2009
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/84/">replay</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/84/">replay</a>
+  </h1>
 </header>
-
 
         
           <p>发现最近的生活，越来越重复了。怎么说呢？每天早上起来，照例刷牙洗脸，吃饭出门。走在南泉路上，会看到一辆119。拐到兰村路上，会看到一个黑衣MM，对面走过来。人很漂亮，一般是在打手机，否则就是拿手机听歌。前走一点，有个保安在和卖煎饼的聊天，一个抽烟一个翻煎饼，每天的差异差不多就是有客户和没客户而已。再往前，在东方路前会碰到一个辫子MM走出来，辫子很长，从后面看很漂亮。不过记住，如果你不想对世界失去信心，一定要走在她后面。走在前面千万不要回头，无论是有人喊你还是后面有车要70码你。我头次很好奇的回了个头，结果一天都无法正常工作。走到东方路，有八成概率是一堆人在等红灯。恭喜，这代表你会在20秒内碰到绿灯――平均值通常是5秒。
 上地铁后就更规律了，如果一堆人在等车，那车上肯定也是一堆人，你如果被挤上去就算是走运了。相反，如果只有小猫两三只，那么车上多半也没有人，慢慢走上去就好。到了世纪大道换车，就可以开电脑放音乐，头一首歌照例是《钢之炼金术士2009》的片头。到了张江，有车停左边和车停右边两个选项。不过没有关系，凡是在进站前停车的，就是左边，否则是右边。因为车要靠右开，停靠右边站台的车在开出时，换到左边(相对他是右边)，而我们的车在进站时要靠左，也需要换边。不停车怕又碰到昨天一号线的事故，因此惯例是要停车的。
 地铁下来后，有两个红绿灯，第一个灯是20秒横走40秒直行，因此多数会直行过去。第二个灯是50秒横走20秒直行，因此多数会横向过街。联合以上数据计算概率，两次直行的概率是19%，先直行后过街的概率是47.6%，先横后直行的概率是33.3%。没有觉得什么不对？看来又多一个走傻掉的。计算以上概率的方法是分支法，联合概率乘法？我没事先过个街，第二个路口走回来？那不真傻了？
 最后，到办公室。一般这时候是王菲在唱《只有我自己》。如果刚唱到&rdquo;走过千山万水&rdquo;，那说明地铁走的还是挺快的。如果已经到了&rdquo;失去你，就失去，面对孤独的勇气&rdquo;，那――要么是地铁走的慢了，要么是你走的慢了。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Dec 8, 2009
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/83/#disqus_thread">Comments</a>
+  <p class="meta">Dec 8, 2009
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/83/">论BTchina的倒掉</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/83/">论BTchina的倒掉</a>
+  </h1>
 </header>
-
 
         
           <p>BTchina倒了，死的很惨。被广电总局直接勒令关闭，连整改的机会都没有。无疑，大家都知道，VeryCD会紧随其后。无论是非如何，请允许我先向这两家陪伴我多年的网站道声感谢，一路走好。
@@ -278,61 +294,51 @@ $ export SID=orcl $ sqlplus / as sysdba &gt; create pfile from spfile &gt; exit 
 那我就得怀疑了，广电总局想干啥呢？说打击盗版，不像，说打击非法音像，也不像。这事情我怎么看怎么觉得像上海政府查处黑车，黑车不黑车不重要，重要的是规范正当市场——说白了就是交钱。百度百科也涉嫌抄袭Wikipedia啊，怎么没看广电局找他们麻烦呢？人家3000万春晚赞助可不是白交的。
 那这事靠不靠谱呢？我只能说，越来越不靠谱了。从本心来说，我希望打击盗版，但是从现实而言，无论是美国政府，欧洲诸国政府，还是中国政府，对打击盗版都没啥办法。前两者有海盗党——当然，他们也被人盗版了他们的logo，真是讽刺。后者则有1亿多网民，每天发明各种奇怪的办法。现在的网民水准是越来越高了，或者说软件是越来越傻瓜了。原来下载必须在中心节点上投入大量资金，而且政府一来就玩完了。后来则是中心节点上只要搭个论坛，剩下的自然有P2P软件搞定。现在，根本就没中心节点。DHT的普及，使得去中心化的优势体现的淋漓尽致。Emule里面可以用kad搜索，直接搜索你需要的资源——正常情况下不比VeryCD差。而torrent里面则有个种子市场，可以直接搜索你要的种子。
 好家伙，连服务器都不要了，这次广电局再要下手，只有从网络传输上下手了——中国为了解决轮子问题，为GFW投资了不少钱。不知道广电局是否能收到足够的钱，把这个系统扩大个几倍，把P2P的混淆协议也全概括进去。作为一个老程序员，我劝诫所有的下载者一点。下次再弄的时候，用emule的kad搜索来找你需要的资源，你会发现其实verycd也不是必须的——虽然对他们来说，这是个比广电局查处更不利的消息。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Dec 7, 2009
-         - 3 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/82/#disqus_thread">Comments</a>
+  <p class="meta">Dec 7, 2009
+     - 3 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/82/">用python实现webserver(二)――Thread</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/82/">用python实现webserver(二)――Thread</a>
+  </h1>
 </header>
-
 
         
           <p>我们上面说过，Prefork模式有着先天的缺陷。针对http这种大量短请求的应用(当然，http1.1以来，有不少客户端使用了长连接)，Prefork的最高并发很让人不满。并且，无论是否高并发，Prefork的性能都非常不好。现在我们介绍一下Thread模式。 和Prefork非常类似，每Thread模式通过新建的线程来控制对象的传输。和Prefork模式不同的是，一个用户能够建立多少个线程并没有限制。在系统上似乎有限制，65535个，但是同样，文件句柄最高也就能打开65535个，因此通常而言一个服务器最高也就能顶50000并发，无法再高了(nginx就能够支撑5W并发，再高要使用一些特殊手法来均衡负载)。而且线程的建立和销毁的开销非常小——没有独立的空间，不用复制句柄，只要复制一份栈和上下文对象就可以。但是，由于所有线程运行在同一个进程空间中，因此每线程模式有几个非常麻烦的瓶颈。 首先是对象锁定和同步，在每进程模式中，由于进程空间独立，因此一个对象被两个进程使用的时候，他们使用了两个完全不同的对象。而线程模式下，他们访问的是同一个对象。如果两个线程需要进行排他性访问，就必须使用锁，或者其他线程同步工具来进行线程同步。其次，由于使用同一个进程空间，因此一旦有一个连接处理的时候发生错误，整个程序就会崩溃。对于这一问题，可以通过watchdog方式来进行部分规避。原理是通过一个父进程启动子进程，子进程使用每线程处理请求。如果子进程崩溃，父进程的wait就会返回结果。此时父进程重启子进程。使用了watchdog后，服务不会中断，但是程序崩溃时正在处理的连接会全部丢失。最后，是python特有的问题——GIL。由于GIL的存在，因此无论多少线程，实际上只有一个线程可以处理请求，这无形中降低了效率。下面我们看一下Thread模式的测试结果： 测试指令： ab -n 1000 -c 100 http://localhost:8000/py-web-server 返回结果： Document Path: /py-web-server Document Length: 1682 bytes Concurrency Level: 100 Time taken for tests: 3.834 seconds Complete requests: 1000 Failed requests: 0 Write errors: 0 Total transferred: 1723000 bytes HTML transferred: 1682000 bytes Requests per second: 260.85 [#/sec] (mean) Time per request: 383.362 [ms] (mean) Time per request: 3.834 [ms] (mean, across all concurrent requests) Transfer rate: 438.91 [Kbytes/sec] received Connection Times (ms) min mean[+/-sd] median max Connect: 0 75 468.</p>
-
           
-              <footer>
-                  <a href="//blog.shell909090.org/blog/archives/82/" rel="full-article">Read On &rarr;</a>
-              </footer>
+            <footer>
+              <a href="//blog.shell909090.org/blog/archives/82/" rel="full-article">Read On &rarr;</a>
+            </footer>
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Nov 11, 2009
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/81/#disqus_thread">Comments</a>
+  <p class="meta">Nov 11, 2009
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/81/">MSN强制升级</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/81/">MSN强制升级</a>
+  </h1>
 </header>
-
 
         
           <p>从前天开始，单位里的MSN8.5就无法登陆，老是提示我要升级。今天家里的MSN也无法使用了，被逼无奈，先用pidgin顶一阵再说。不过现在贝壳正在考虑MSN的用户搬迁工作，目标是迁移到Gtalk上，不行QQ。
@@ -340,30 +346,25 @@ $ export SID=orcl $ sqlplus / as sysdba &gt; create pfile from spfile &gt; exit 
 反倒是QQ的强制升级政策我觉得尚算可以。 QQ协议分为2005/2006/2007/2008多个版本，通常而言可以使用当前版本和前一版本。就是说，现在用的协议是2008的话，那么2007协议还可用，而2006协议就不再支持了。通常而言，这种时候继续使用2006协议的人微乎其微，基本可以忽略不计。这个政策主要是给不愿意升级的人一个缓冲的空间。对于腾讯而言，实施这个政策其实比微软更有压力。因为微软的协议是公开的，而腾讯则是采取封闭协议，甚至打击第三方客户端的企业策略。我们姑且不论这个策略的得失，但是维持两个协议版本，就给破解协议的人留下了破解的时间和空间。因此对于腾讯而言，这个策略是和公司战略相违背的。
 更深一层的问题是，强制升级问题说明了我们所依赖的服务的脆弱性。MSN在中国占据的客户群体并不算大，远远不比QQ。然而就是这样一个客户群现状，微软就敢于强制升级。今天是强制升级，明天收费呢？所以说任何事情依赖一个公司是不行的。我还是会使用MSN，但是会逐步将用户迁移到Gtalk和QQ上，并以开心网和Facebook做补充。力争做到这三个IM中任意两个能覆盖大部分朋友群体，开心和Facebook保留所有联系可能。这样可以适当制衡某些软件公司(不仅是微软，还有腾讯)，也可以减小出问题时的损失。
 其实要做到这点并没有任何困难。当你认识一个人的时候，只要和他保持两种以上的IM，并且在开心和Facebook(当然，这个没法强求了，毕竟中国的GFW&hellip;)上交换一下好友就好了。对抗强权，从小事做起就好。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Oct 21, 2009
-         - 2 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/80/#disqus_thread">Comments</a>
+  <p class="meta">Oct 21, 2009
+     - 2 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/80/">用python实现webserver(一)――Prefork</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/80/">用python实现webserver(一)――Prefork</a>
+  </h1>
 </header>
-
 
         
           <p>要实现webserver，首先需要一个tcp server。作为python的设计原则，最好是使用SocketServer或者封装更好的BaseHTTPServer来复用。不过既然我们的目的是为了学习，那么就不能用这两个内置对象。我们先实现一个最古典的每进程模式实现。而我们标题上的Prefork，则是apache服务器对这个模式的称呼。
@@ -373,48 +374,18 @@ $ export SID=orcl $ sqlplus / as sysdba &gt; create pfile from spfile &gt; exit 
 测试指令：
 ab -n 10000 -c 100 &lt;http://localhost:8000/py-web-server&gt;  服务器报错：
 20090924 05:51:18: Traceback (most recent call last): 20090924 05:51:18: File &ldquo;main.py&rdquo;, line 19, in  20090924 05:51:18: 20090924 05:51:18: sock.run (); 20090924 05:51:18: File &ldquo;/home/shell/py-web-server/server.py&rdquo;, line 30, in run 20090924 05:51:18: 20090924 05:51:18: while loop_func (): pass 20090924 05:51:18: File &ldquo;/home/shell/py-web-server/server.py&rdquo;, line 56, in do_loop 20090924 05:51:18: 20090924 05:51:18: if os.fork () == 0:</p>
-
           
-              <footer>
-                  <a href="//blog.shell909090.org/blog/archives/80/" rel="full-article">Read On &rarr;</a>
-              </footer>
+            <footer>
+              <a href="//blog.shell909090.org/blog/archives/80/" rel="full-article">Read On &rarr;</a>
+            </footer>
           
-
         
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Oct 9, 2009
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/79/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/79/">用python实现webserver(零)――导言</a>
-    </h1>
-</header>
+      </article>
+      
+      
+      
 
 
-        
-          <p>本系列文章的所有代码，都发布在http://code.google.com/p/py-web-server/。项目的目的，是通过写作一个可用的http web server，学习服务器程序编写中的一些方法，以及http协议的细节。
-如同我在项目介绍中说的，项目遵循以下几个设计原则。
- []() []() []() []() []()  有兴趣的，可以也通过本文的介绍，不看代码写一个类似的东西。而后对比代码，找出设计上的异同和优劣。如果您也设计了一个，请告诉我，我很高兴能够得到大家的指正。</p>
-
-          
-
-        
-
-    </article>
-    
-    
-    
 
 
 
@@ -636,10 +607,8 @@ ab -n 10000 -c 100 &lt;http://localhost:8000/py-web-server&gt;  服务器报错�
 </div>
 
   
-
-  </div>
-
-  
+    </div>
+    
 
 <aside class="sidebar thirds">
   <section class="first odd">
@@ -660,7 +629,10 @@ ab -n 10000 -c 100 &lt;http://localhost:8000/py-web-server&gt;  服务器报错�
       
       
       
-       
+      
+         
+      
+      
       
       
       
@@ -685,64 +657,87 @@ ab -n 10000 -c 100 &lt;http://localhost:8000/py-web-server&gt;  服务器报错�
         <h1>Recent Posts</h1>
         <ul id="recent_posts">
           
-            <li class="post">
-              <a href="/blog/archives/2866/">关于抵制洋节</a>
-            </li>
           
-            <li class="post">
-              <a href="/blog/archives/2865/">恒春潜水记录</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2867/">996</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2866/">关于抵制洋节</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2863/">openssl证书相关</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2865/">恒春潜水记录</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2861/">密码学基本原理</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2863/">openssl证书相关</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2860/">similan船宿</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2861/">密码学基本原理</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2858/">京都游记</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2860/">similan船宿</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2857/">Boracay潜水攻略</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
+              </li>
+            
+          
+            
+              <li class="post">
+                <a href="/blog/archives/2858/">京都游记</a>
+              </li>
+            
           
         </ul>
       </section>
     
   
-
 </aside>
     
- </div>
+  </div>
 </div>
+    <footer role="contentinfo">
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
+        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+      </p>
+    </footer>
 
-<footer role="contentinfo">
-  <p>Copyright &copy; 2018 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-</p>
+    
+    
+    
 
-</footer>
-
-
-</body>
+    
+  </body>
 </html>
    
+

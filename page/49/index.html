@@ -1,18 +1,16 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
 <head>
-  <link href="http://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
 
   
-  <meta name="HandheldFriendly" content="True">
-  <meta name="MobileOptimized" content="320">
   <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
 
   
-  
-  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+    
+    
+      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
+    
   
 
   
@@ -20,46 +18,50 @@
 
   
   
-  <link rel="stylesheet" href="//blog.shell909090.org/css/hugo-octopress.css">
+  <link rel="stylesheet" href="/css/hugo-octopress.css">
 
   
   
 
   
-  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/css/fork-awesome.min.css">
+  
 
   
   <link href="//blog.shell909090.org/favicon.png" rel="icon">
 
   
-  
-  
-
   <link href="//blog.shell909090.org/index.xml" rel="alternate" type="application/rss+xml" title="Shell&#39;s Home" />
 
-  <meta name="description" content="">
+  <meta name="description" content="" />
   <meta name="keywords" content="">
-
   <meta name="author" content="Shell Xu">
 
   
-  <meta name="generator" content="Hugo 0.30-DEV" />
+  <meta name="generator" content="Hugo 0.55.0" />
 
   
   
-<script>
-window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-ga('create', 'UA-48816091-1', 'auto');
-ga('send', 'pageview');
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-48816091-1', 'auto');
+	
+	ga('send', 'pageview');
+}
 </script>
-<script async src='//www.google-analytics.com/analytics.js'></script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
 
 
+  
+  
 </head>
 <body>
 
 
-<header role="banner"><hgroup>
+<header role="banner">
+<hgroup>
   
   <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
     <h2></h2>
@@ -67,44 +69,87 @@ ga('send', 'pageview');
 
 
 <nav role="navigation">
+<fieldset class="mobile-nav">
+  
+  <select onchange="location = this.value;">
+    <option value="">Navigate…</option>
+      
+  </select>
+</fieldset>
+
 
 <ul class="main-navigation">
   
   
 </ul>
 
-
 <ul class="subscription">
   
-
 </ul>
 
 
 </nav>
 
 
-<div id="main">
- <div id="content">
-  <div class="blog-index">
-    
-    
-    <article>
 
+
+  
+
+<div id="main">
+  <div id="content">
+    <div class="blog-index">
+      
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Dec 21, 2010
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/1659/#disqus_thread">Comments</a>
+  <p class="meta">Dec 25, 2010
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/1659/">空间，VPS和独立主机的对比</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/1661/">elisp的简单介绍</a>
+  </h1>
 </header>
 
+        
+          <p>emacs是利用elisp写成的，而elisp是lisp的一个方言。lisp语言是出名的优美和晦涩，当然，更出名的是括号。。。
+emacs利用elisp作为上层抽象。首先，emacs提供了基本的编辑器框架，包括文件操作函数API，buffer，frame，windows的API。而后，emacs附带了很多函数实现，并且和按键一一绑定。例如Ctrl+N（简写为C-N）就被绑定到“换到下一行”这个API上。于是，我们按下Ctrl+N的时候，就会触发“换到下一行”这个函数的执行。dired等插件也是基于类似的原理写成。
+我们可以用类似的方法，来编写自己的函数，扩充emacs的功能。下面我们看一个例子：
+(defun popup-term () (interactive) (apply 'start-process &quot;terminal&quot; nil popup-terminal-command))  首先先说明一下，elisp的基于规则是利用括号匹配的s表达式，通过特定规则计算表达式。每个表达式由多个原子构成，一个原子可以是符号，对象（数字或者字符串），序对，表（包括空表），树，以及他们的嵌套。求值的时候，第一个原子做动词，先求值第一个原子，直到得到一个对象，再根据第一个原子的特性决定正则序和应用序。应用序的先对每个后续原子求值，再调用第一个原子对应的对象。正则序直接交给第一个原子对应对象处理。上文那个表达式，最外层的是(defun)列表，defun是函数定义函数，popup-term是符号。这部分混合起来，就是定义(interactive) (apply &lsquo;start-process &ldquo;terminal&rdquo; nil popup-terminal-command)为一个函数，并在上层框架空间内把内容赋值给popup-term这个符号。说的更直白一点，就是定义函数。
+当我们执行popup-term这个函数的时候（M-x加上函数名就可以手工调用），首先执行interactive过程。这个函数可以在这里（http://www.gnu.org/software/emacs/manual/html_node/elisp/index.html）查到，基本上，可以认为执行了这个函数，才能够和前台交互。而后是apply函数，这个函数将后面的几个值作用于紧跟着的那个符号所对应的函数。用python语言来描述，大概是这个样子。
+def apply(func, \*param): return globals()\[func\](\*param)  这个函数真正的部分，是从start-process到括号结束。其意义是启动一个子进程，名为terminal，没有对应的buffer（熟悉emacs的应该知道这是什么），命令为popup-terminal-command。这个命令在windows下和linux下有不同定义，所以我将这个定义放在了emacs-win.el和emacs-linux.el里面。在linux下，他是这么定义的。
+(setq popup-terminal-command '(&quot;x-terminal-emulator&quot;))  setq是设定一个全局变量。整句合起来的意思是，在执行popup-term的时候，启动一个子进程，执行x-terminal-emulator。最后，将popup-term绑定到keymap上。
+(global-set-key \[(control c) (s)\] 'popup-term)  现在，在任何一个buffer中按下C-c s，就可以弹出当前目录对应的term了。
+我们在emacs中所做的所有配置，插件安装，其实本质上是写代码控制其他代码的载入，变更环境变量。只要有合适的文档，或者有时间阅读源码，我们就可以对其他程序进行扩充。下面介绍一个对dired进行扩充的例子，我们向dired中加入copy-from和rename-from，还有dired-open功能。dired的copy和rename必须在源目录中，选择文件，按C，输入目标路径。有的时候我们在某个目录工作到一半，突然需要从另外一个目录复制一个文件过来。这时候打开对方目录进行复制动作太繁琐，因此我编写了两个函数，分别绑定到r和c上。dired-open则是另外一个文件，有时我们需要通过其他程序打开某个文件，例如播放电影。在dired中直接用&amp;可以实现这个目标，但是需要自行输入播放命令，而且会新开一个buffer。以下是代码。
+(defun dired-open-file (&amp;optional arg) (interactive) (apply 'start-process &quot;dired-open&quot; nil (append (split-string (read-shell-command &quot;command: &quot; (dired-guess-cmd (dired-get-filename)))) (list (dired-get-filename))))) (defun dired-copy-from (&amp;optional arg) (interactive) (let ((source-path (read-file-name &quot;filepath: &quot;))) (copy-file source-path (file-name-nondirectory source-path)))) (defun dired-rename-from (&amp;optional arg) (interactive) (let ((source-path (read-file-name &quot;filepath: &quot;))) (rename-file source-path (file-name-nondirectory source-path)))) (add-hook 'dired-mode-hook (lambda () (define-key dired-mode-map &quot;b&quot; 'dired-open-file) (define-key dired-mode-map &quot;c&quot; 'dired-copy-from) (define-key dired-mode-map &quot;r&quot; 'dired-rename-from) (define-key dired-mode-map \[(control c) (g)\] 'dired-etags-tables)))  如上文一样，我们定义了dired-open-file函数，这个函数的核心部分是start-process，但是在命令上，我们的命令是这个。</p>
+          
+            <footer>
+              <a href="//blog.shell909090.org/blog/archives/1661/" rel="full-article">Read On &rarr;</a>
+            </footer>
+          
+        
+      </article>
+      
+      <article>
+        
+        
+
+<header>
+  <p class="meta">Dec 21, 2010
+     - 1 minute read 
+    
+
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/1659/">空间，VPS和独立主机的对比</a>
+  </h1>
+</header>
 
         
           <p>空间和VPS的差异最主要在支持的压力和配置的自由度上。通常而言，空间支持的压力比VPS要小，配置也更加不灵活，当然，也可以叫更加简单。两者都可以通过加钱来升级到更加性能优异的程度，因此很难说什么情况下该用什么。简单的做法是，如果空间能满足你的要求，就不要折腾VPS。通常折腾VPS的都起码是专业公司了，通常都有自己的网管。一般公司的误区是，希望自己拥有对机器的完整权限，因此更倾向于托管机器。然而托管机器的成本并不像你所想像的那样低廉。
@@ -115,30 +160,25 @@ ga('send', 'pageview');
 我们现在来算一个实际问题，一个比较典型的小网站，平均同时在线人数大约是400人，峰谷比大约是1:5。页面滞留时间按照20s计算，每页面流量10K，每session内存消耗0.5M。为了支持峰值在线，大约需要1G内存，瞬时带宽消耗大概是1M/s，一个月的数据流量大约是600G。一台中等的1U小型服务器大概是2W，分摊到3年折旧，每个月就是600。1U的托管最低是6000（我怀疑现在哪里还能弄到这个价格），最高的有10W的。按照1.2W计算，一个月是1000。加上少量的中间费用，直接管理硬件的成本大约是1800-2000RMB/mo。dreamhost的不限空间不限带宽服务一个月费用是9美元，折合60RMB/mo不到。gplhost上的Xen服务器，60G硬盘1.2G内存360G带宽是70美元，折合450RMB/mo。其他厂家也有200-350RMB/mo不等的类似服务方案，不过有可能是基于OpenVZ的，有超卖的可能。
 为了支持这个小网站，如果使用小型服务器托管方案，那就是一台服务器搞定，1800-2000RMB/mo。如果是Xen服务器，大约是900RMB/mo。如果是空间，性能顶得住就是60RMB/mo，顶不住就当场崩溃。
 基本结论是，如果你的程序并不特别重要，那么用空间。如果应用的峰值内存消耗小于2G，那么用VPS。如果峰值内存消耗奇高，或者月流量超大，还是自己托管服务器稍微省点钱。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Dec 20, 2010
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/1656/#disqus_thread">Comments</a>
+  <p class="meta">Dec 20, 2010
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/1656/">从电影贴片广告说起</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/1656/">从电影贴片广告说起</a>
+  </h1>
 </header>
-
 
         
           <p>昨天去看了姜文的让子弹飞，挺不错的一部电影。片子简洁大气，很有张力。不过这不是重点，重点是，贝壳头一次碰到了传说中的贴片广告。
@@ -147,30 +187,25 @@ ga('send', 'pageview');
 但是细细去想，真的只是广电总局的原因么？很多时候我们都把责任推给政府，像鸵鸟一样忘记了自己也有责任，而且自己是受害者。对于贴片广告的问题，在完全市场中绝对不可能存在，这是完全不对称信息的特征。很简单的去想，如果每个看过电影的人都可以给出电影的细节信息，例如市百一店影院在让子弹飞前面播放10分钟贴片广告，并且每个准备看电影的人都能收到。那么贴片广告越多，越少有人观看。当然，对于热门时间段而言，即使是贴片，或者票价昂贵，位置不好，一样会满场，这是市场特征。然而我们却没有一个机制，让看电影的人，能看到看过电影人的评价。这分为几个原因。首先是很多看电影的人，对这些信息不关注。大多数临时决定去看电影的人，总不会先检查电影的所有特征吧，最多看看影评就差不多了。这个导致了看过电影的人对传播这一信息没有热情，反正说了也是白说。不过最关键的，是我们的反馈信息传播机制存在问题，主要是传输渠道会被人为的扭曲。
 例如，我们的报纸，新闻单位，对电影的评价传播起到相当重要的作用。但是这一渠道是可以公关的，片方可以通过金钱来驱使这些单位不报道自己的负面新闻。不是有个笑话么？每年春节和三一五都要花钱，不过前者是花钱要求上节目，后者是花钱要求不上节目。而我们的民间传播渠道，则多数是由少数的知名人士，包括名人，博主，作为中心的。这种模式的好处是可信，你知道这个人是谁，他的背景，他会为自己的话负责。然而，同报纸电视单位相同，这种个人也是可以公关的。我们可以证明，可信和人为扭曲是必然同时存在的。你越要求可信，信息越容易被扭曲。
 从个人的角度说，我们也许无法改变整个链条，不过我们可以改变末端规则。如同那个笑话说的，有个买便宜货的诀窍——永远买第二的产品。我们在听取一个事情的信息的时候，往往要刻意的保持一定比例的私有消息和不可信消息源。我们的朋友，不出名的人士，所传递的小道消息。用这些消息和官方的消息互相验证，来形成信任链——说过越多可信的，有价值的消息的，我们越信任。可以证明，这种信任网络是很难被单点劫持的。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Dec 16, 2010
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/1652/#disqus_thread">Comments</a>
+  <p class="meta">Dec 16, 2010
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/1652/">公司的网络服务选择</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/1652/">公司的网络服务选择</a>
+  </h1>
 </header>
-
 
         
           <p>最近碰到不少朋友需要做网站，或者做一些网络产品对外服务。下面统一解答一些基础概念问题，程序员或者本行的人士可以不用继续往下看了，都是常识。
@@ -198,30 +233,25 @@ VPS：多人合用 一台机器一个IP 提供所有服务 除了部分内核组
 但是，且慢高兴。除了第一次的部署，你还需要定期做例行维护。例如你运行了一个论坛，总不能让人上来全看到广告吧。你运行了wiki，上面全是骂你的话。你的产品目录需要经常更新，邮箱更是天天要看。通常你需要至少一个人，来盯着你的产品。如果不复杂，叫个行政兼职看看就好，如果比较复杂，还是请职业网管的好。如果你要将这个产品的名气打响，还需要进行产品的推广/营销工作。这部分就更加复杂了。
 6.让我总结一下
 你最好找一个专门的咨询人员，咨询一下有没有适合你的产品，能不能简单定制一下搞定。如果可以，你需要支持哪种语言的空间（如果你用空间的话），压力大概多大，能否支持。自己去购买合适的空间或者服务器，还有域名。然后让人（通常一事不烦二主，咨询人员也兼职部署）部署上去，并且找个人盯着。大概就是这样。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Dec 15, 2010
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/1650/#disqus_thread">Comments</a>
+  <p class="meta">Dec 15, 2010
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/1650/">Cybersitter诉大正及索尼案</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/1650/">Cybersitter诉大正及索尼案</a>
+  </h1>
 </header>
-
 
         
           <p>准确的说，应该叫Cybersitter诉大正案。
@@ -236,59 +266,49 @@ VPS：多人合用 一台机器一个IP 提供所有服务 除了部分内核组
 9.工信部可能会以政策来换取几家外国公司高层的谅解，也可能不需要谅解。对于中国公司，完全不用考虑这个问题，因为这些公司属于被工信部管理的对象。
 10.但是即使如此，工信部今后的命令在这几家公司也未必能得到完全的执行。因为在这个问题上，工信部出尔反尔在前，属于无智商的脑残。事后的政策也不可能给几家公司一个太大的漏。
 11.这件案子影响最大的将是在国际上，尤其是美国有比较大业务的公司。他们在中国犯下的版权错误，只要一方牵涉美国版权，可能在美国得到审判和惩罚。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Dec 14, 2010
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/1648/#disqus_thread">Comments</a>
+  <p class="meta">Dec 14, 2010
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/1648/">程序员的路线和培养</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/1648/">程序员的路线和培养</a>
+  </h1>
 </header>
-
 
         
           <p>也许我说过这话了，再说一遍也不嫌多。程序员不要什么都学，什么都吃。不但要吃好的，而且要能穿起来。先学什么，后学什么，学成是什么，大概要有个数。不在这个范围附近的东西尽量别碰，活也尽量别接——除非钱贼多。
 很多新手程序员和我以前一样，看到好的技术就去学，看到大牛就去拜。结果php程序员同时还会汇编，又玩过过图形识别——这种技术组合想干嘛？joel on software表达过类似的意思，程序员的时间很值钱，最主要是前面做过的东西会变成后面的财富。前面做了个项目赚1000，后面做有关项目的时候就可以以一半的成本做1000。这样下去，只要项目足够——或者有人请你——做到三年以后工资往往是前面的几倍。反过来，前面两千三千挑值钱的做，往往到了后面还是这个值不变。用另一句话描述，“我要找的是五年经验的程序员，不是一年经验乘以五的程序员”。
 差不多就是这么回事了。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Dec 10, 2010
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/1646/#disqus_thread">Comments</a>
+  <p class="meta">Dec 10, 2010
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/1646/">U盘安装debian的技巧</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/1646/">U盘安装debian的技巧</a>
+  </h1>
 </header>
-
 
         
           <p>翻译文，原文看这里。
@@ -296,30 +316,25 @@ VPS：多人合用 一台机器一个IP 提供所有服务 除了部分内核组
 zcat boot.img.gz &gt; /dev/sdX  sdX是你的U盘设备。再然后，下一个businesscard文件放到目标盘上，这时候/dev/sdX是一个fat格式的文件系统。重启后，businesscard就会自动运行，如同被刻了一张光盘一样。
 简要说一下businesscard，netinst，和完整光盘的区别。businesscard上没有任何安装包，所以你所需的所有安装包必须从网络上抓。这种安装方式下，没有网络就无法安装。netinst上有最小系统所需的安装包，大概100M上下。在无网络的情况下，可以安装出一个字符界面的可联网系统，用于进一步配置。而完整安装光盘把600M多的软件包全打了上去，即使没有网络，你也可以装出一个标准的图形界面可工作系统。2张DVD的那种安装光盘把i386的所有安装包都打了进去，你要装什么都不用上网了。
 装大量机器的时候，建议使用businesscard加上缓存代理。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Dec 9, 2010
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/1644/#disqus_thread">Comments</a>
+  <p class="meta">Dec 9, 2010
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/1644/">盗版的盗版</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/1644/">盗版的盗版</a>
+  </h1>
 </header>
-
 
         
           <p>最近追书，很不好意思的，在看盗版。
@@ -327,30 +342,25 @@ zcat boot.img.gz &gt; /dev/sdX  sdX是你的U盘设备。再然后，下一个bu
 联想到上次晚上12点整出书，12:10分出所有网站盗版一起出来的情况——
 ——这年头盗版商都是盗来盗去的。。。
 是不是该考虑花钱看书了啊。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Dec 3, 2010
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/1630/#disqus_thread">Comments</a>
+  <p class="meta">Dec 3, 2010
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/1630/">一个产品的预测</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/1630/">一个产品的预测</a>
+  </h1>
 </header>
-
 
         
           <p>简单点说，我预测客厅电脑会在3-5年成为一个潮流。下面给出一个客厅电脑的可能特性。
@@ -377,30 +387,25 @@ zcat boot.img.gz &gt; /dev/sdX  sdX是你的U盘设备。再然后，下一个bu
 上面的参数可以看的出，这种东西的主系统硬件不会小于1000。加上各种研发开销，运营成本，要把价格压到1500-2000才有竞争优势。否则主机也就2000-3000，买个客厅电脑，又没有显示器，又不能打游戏。
 3.晃动鼠标的技术不成熟
 设想很不错，技术不成熟。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Dec 2, 2010
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/1628/#disqus_thread">Comments</a>
+  <p class="meta">Dec 2, 2010
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/1628/">在中国，高薪养廉是个伪命题</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/1628/">在中国，高薪养廉是个伪命题</a>
+  </h1>
 </header>
-
 
         
           <p>高薪养廉的基础逻辑是什么？公务员薪水不够高，就无法维持公务员的廉洁，所以需要给高薪。
@@ -408,47 +413,14 @@ zcat boot.img.gz &gt; /dev/sdX  sdX是你的U盘设备。再然后，下一个bu
 高薪养廉的基础，是公务员无法通过权力获得灰色收入。在这种情况下，如果只维持低薪，干的比狗累，活的比猪惨的工作势必会搞到没人想去。哪怕维持社会上的平均工资，公务员也是没有任何吸引力的。拿一样的钱，被一个老板盯着和被一群老板盯着是完全不同的两个概念。如此一来，要维持有足够的人来进行工作，势必需要将公务员的工资提高到正常工资以上。
 新加坡在这类基础上，提出了一个类似保险的概念。通过加重查处贪腐的力度，和执行高强度的惩罚机制来抑制腐败。而且规定公务员很大程度上的工资都会被转移到公积金和养老金中，一旦被查出来，这些钱都会被归零。我们可以想见，高强度的惩罚机制会严重的吓阻人才进入公务员领域。花了公家2000要判刑四年？鬼才愿意去干。在这种重刑下，为了能保持公务员人数，唯一的路子只有“高薪”了，这才是高薪养廉的原始逻辑。
 在中国，先把权力监督机制和执行高强度的惩罚做起来再说高薪养廉。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Dec 1, 2010
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/1626/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/1626/">重载造成的隐蔽错误</a>
-    </h1>
-</header>
+      </article>
+      
+      
+      
 
 
-        
-          <p>大家看看下面的代码在什么情况下才会出错？情况很特殊，想自己思考的不要先看第二段。
-if ton in self.ftol: self.ftol.remove(ton)  ftol是一个list，报出的错误是ValueError。经过上文的打印，赫然发现——self.ftol中真的没有ton！
-好吧，我们揭秘谜底。
-ton是TimeoutObject类型，这种类型的对象通常放在一个list中进行堆排序，来确定最早的一个timeout对象。为了实现堆排序，我使用了heapq。而为了heapq是没有key或者是cmp参数的，因此我重载了TimeoutObject.__cmp__对象。然而根据python源码，list对象在进行in计算，以及基于in的remove计算的时候，__cmp__先于内置算法，内置算法先于id相同。因此，in函数在进行对象是否在列表中的计算的时候，实际上使用的是一个比较函数&hellip;这肯定无疑的会导致乱糟糟的结果。
-为了解决这个问题，我又重载了__eq__函数，定义为self is o。问题立刻解决了。
-之所以python内置的算法，会定义__cmp__先于内置算法，内置算法先于id相同，是因为有很多对象需要人工定义比较算法。如果id相同优先，那么这种自定义的能力将无法实现。然而为了in算符中为何会调用__cmp__，只能说是一个不解之谜。</p>
-
-          
-
-        
-
-    </article>
-    
-    
-    
 
 
 
@@ -670,10 +642,8 @@ ton是TimeoutObject类型，这种类型的对象通常放在一个list中进行
 </div>
 
   
-
-  </div>
-
-  
+    </div>
+    
 
 <aside class="sidebar thirds">
   <section class="first odd">
@@ -694,7 +664,10 @@ ton是TimeoutObject类型，这种类型的对象通常放在一个list中进行
       
       
       
-       
+      
+         
+      
+      
       
       
       
@@ -719,64 +692,87 @@ ton是TimeoutObject类型，这种类型的对象通常放在一个list中进行
         <h1>Recent Posts</h1>
         <ul id="recent_posts">
           
-            <li class="post">
-              <a href="/blog/archives/2866/">关于抵制洋节</a>
-            </li>
           
-            <li class="post">
-              <a href="/blog/archives/2865/">恒春潜水记录</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2867/">996</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2866/">关于抵制洋节</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2863/">openssl证书相关</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2865/">恒春潜水记录</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2861/">密码学基本原理</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2863/">openssl证书相关</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2860/">similan船宿</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2861/">密码学基本原理</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2858/">京都游记</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2860/">similan船宿</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2857/">Boracay潜水攻略</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
+              </li>
+            
+          
+            
+              <li class="post">
+                <a href="/blog/archives/2858/">京都游记</a>
+              </li>
+            
           
         </ul>
       </section>
     
   
-
 </aside>
     
- </div>
+  </div>
 </div>
+    <footer role="contentinfo">
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
+        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+      </p>
+    </footer>
 
-<footer role="contentinfo">
-  <p>Copyright &copy; 2018 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-</p>
+    
+    
+    
 
-</footer>
-
-
-</body>
+    
+  </body>
 </html>
    
+

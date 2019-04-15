@@ -1,18 +1,16 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
 <head>
-  <link href="http://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
 
   
-  <meta name="HandheldFriendly" content="True">
-  <meta name="MobileOptimized" content="320">
   <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
 
   
-  
-  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+    
+    
+      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
+    
   
 
   
@@ -20,46 +18,50 @@
 
   
   
-  <link rel="stylesheet" href="//blog.shell909090.org/css/hugo-octopress.css">
+  <link rel="stylesheet" href="/css/hugo-octopress.css">
 
   
   
 
   
-  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/css/fork-awesome.min.css">
+  
 
   
   <link href="//blog.shell909090.org/favicon.png" rel="icon">
 
   
-  
-  
-
   <link href="//blog.shell909090.org/index.xml" rel="alternate" type="application/rss+xml" title="Shell&#39;s Home" />
 
-  <meta name="description" content="">
+  <meta name="description" content="" />
   <meta name="keywords" content="">
-
   <meta name="author" content="Shell Xu">
 
   
-  <meta name="generator" content="Hugo 0.30-DEV" />
+  <meta name="generator" content="Hugo 0.55.0" />
 
   
   
-<script>
-window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-ga('create', 'UA-48816091-1', 'auto');
-ga('send', 'pageview');
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-48816091-1', 'auto');
+	
+	ga('send', 'pageview');
+}
 </script>
-<script async src='//www.google-analytics.com/analytics.js'></script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
 
 
+  
+  
 </head>
 <body>
 
 
-<header role="banner"><hgroup>
+<header role="banner">
+<hgroup>
   
   <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
     <h2></h2>
@@ -67,44 +69,120 @@ ga('send', 'pageview');
 
 
 <nav role="navigation">
+<fieldset class="mobile-nav">
+  
+  <select onchange="location = this.value;">
+    <option value="">Navigate…</option>
+      
+  </select>
+</fieldset>
+
 
 <ul class="main-navigation">
   
   
 </ul>
 
-
 <ul class="subscription">
   
-
 </ul>
 
 
 </nav>
 
 
-<div id="main">
- <div id="content">
-  <div class="blog-index">
-    
-    
-    <article>
 
+
+  
+
+<div id="main">
+  <div id="content">
+    <div class="blog-index">
+      
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Sep 5, 2006
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/315/#disqus_thread">Comments</a>
+  <p class="meta">Sep 8, 2006
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/315/">上海有线通，不爽</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/316/">音乐文件转换技巧和脚本</a>
+  </h1>
 </header>
 
+        
+          <p>好久没动手写啥东西了，最近在准备LPIC1考试。Will everyone keep finger cross 4 me?嘿嘿——
+这个题目是个大家伙，反正每天写一点，也不忙在一时。大家有啥需要了解的，也可以问在下面。我会更新的。
+copyright:
+本文所提到各种软件版权归各个软件开发者所有。文章内容及所有附属脚本为独创，按照GPL发布。
+keyword:
+音乐 格式 转换 脚本 标签 bash shell script mp3 midi ape flac cue
+toc
+directory:
+1.文件格式解说
+1.1.mp3/ogg
+1.2.midi
+1.3.ape
+1.4.flac
+1.5.cue/toc
+1.6.wav
+1.7.iso
+2.文件转换
+2.1.wav/mp3
+2.2.wav/ape
+2.3.wav/flac
+2.4.midi2wav
+2.5.iso/wav
+3.转换细节问题
+3.1.按照cue切割
+content:
+1.1.mp3/ogg
+这两个是非常有名的音乐压缩文件，其中MP3是mepg II layer
+3。不要以为是mpeg
+III。一般来说，MP3都被认为是一种小巧但是音质比较差的格式。不过事实上，要指摘MP3的音质前，你先自己找找是否满足了一定条件。周围是否安静，没有噪音。音源是否高清晰（拿MP3还原出来的CD是没意义的）。声音设备是否足够好（至少也要是高质量的音响或者高档耳机，耳塞或者200－300的所谓音箱根本不用说）。如果没有上述条件，那么MP3的音质也算过的去的。MP3格式的压缩比值大约是10：1，和wav相比。另外，如果有CD的话，最好使用lame进行适当压缩。而不要为了方便随便使用一个压缩工具。压缩最好使用VBR格式。这种格式本质上没有什么变化，只是在信息流高的地方使用高的编码格式，以获得最高的质量/空间比值。ogg具体情况没有研究，不过使用上和MP3没有区别。
+1.2.midi
+midi是所有格式中唯一不记录音频数据的音乐格式。midi记录的实质上是发声事件，简单来说就是什么时候鼓响了一下，什么时候钢琴的哪个键被按下了。因此midi也是没有立体声效果的。除非你使用特殊的软件指定某个乐器演奏时候的位置，然后根据环境生成出相应的音乐文件。midi文件在当前主要是两个用途。一个是midi记录了乐手演奏时候的指法细节，也记录了曲子的曲谱。midi本质上就是谱子。另外一个是midi的超小体积使得在某些嵌入系统（例如手机）上面可以作为背景音乐。
+1.3.ape
+ape是一种无损压缩格式，你可以把ape看成是一种只能对wav作用的zip文件。压缩比一般是2:1。
+1.4.flac
+flac和ape基本差不多。
+1.5.cue/toc
+cue/toc不是音乐文件，他们是用于flac/ape等光盘的音轨定义。一个CD可以有多个音轨，iso会记录下音轨的切分方式。但是ape就不行了。于是eac等抓轨软件生成cue来切分音乐文件。往往看到ape的发行方式是一个ape和一个cue，直接打开ape往往是一首非常长的歌曲。其实切分信息在cue里面。虚拟光驱使用的bin文件也是一样，会有配套的cue文件。两者可以用cuetools和mkcue互相转换。
+1.6.wav
+wav文件又叫做PCM编码格式。这是一切音乐的基础。无论你是哪种格式，最后都会被还原成wav的某种格式或者变形，才能够从声卡中播放出去。当然，midi的情况特殊，不在此列。
+1.7.iso
+iso也不是音乐文件，但是和音乐的关系非常密切。大家都知道iso是光盘的镜像，其实说的还不确切。iso本身就是光盘内容严格1字节比1字节复制的结果。至于有的为什么有其他格式。那就涉及光驱设备工作和数据流／加解密的问题了。
+另外说一个iso的问题，大家知道linux下面挂载iso的指令是
+# mount -t iso9660 -o loop file /mnt  这其实是两个步骤，一个是</p>
+          
+            <footer>
+              <a href="//blog.shell909090.org/blog/archives/316/" rel="full-article">Read On &rarr;</a>
+            </footer>
+          
+        
+      </article>
+      
+      <article>
+        
+        
+
+<header>
+  <p class="meta">Sep 5, 2006
+     - 1 minute read 
+    
+
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/315/">上海有线通，不爽</a>
+  </h1>
+</header>
 
         
           <p>最近贝壳要换ISP了。大家知道，贝壳用了5年多的上海有线通。虽然速度不快，偶尔还有降到半速的现象，但是总体来说还是不错的。TTL跃点主要在12到16上下(经过12-16个路由器)，极限上传一般在55K/s上下。虽然说和标称有一定区别，不过考虑IP封包头问题，也还可以。只是最近有线通不怎么像话，封了P2P不说，还不告知。去询问，又不承认。幸好贝壳两个月后包年到期，到时就跑了结束。
@@ -118,30 +196,25 @@ ga('send', 'pageview');
 至此，基本可以下结论，有线通封锁了P2P类软件的使用。
 最可笑的是，我再次打电话过去。他们的服务人员开始还跟我念叨机器问题等等。然后我把测试方法一说，他们立刻改口，说从不保证任何P2P类软件的稳定。只保证Http协议的传输速度。什么时候宽带还有条款，说只能保证Http协议的速度了？如果说只衡量HTTP协议速度，那条款应该重新修订。如果说网络速度，一般都是指IP封包的传输速度。或者放松说，底层网络封包的传输速度。有线通此举就是明显的侵权。上述电话可以向有线通查询的，工号7061。
 任何愿意起诉有线通的同志，贝壳这里免费提供技术支持，提供有线通的网络数据统计(ntop统计结果)。大家高兴起诉的，贝壳提供声援和支持。并且贝壳郑重表示，有生之年，见到用有线通的就游说用别的宽带，即使他道歉并且解除封锁也不例外。自10月底有线通到期后，贝壳即抽空银行资金，签订解约协议，改用ADSL。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Aug 7, 2006
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/314/#disqus_thread">Comments</a>
+  <p class="meta">Aug 7, 2006
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/314/">Helix关键提示</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/314/">Helix关键提示</a>
+  </h1>
 </header>
-
 
         
           <p>今天被整死了，好久不用Helix，结果细节忘记光了。
@@ -149,30 +222,25 @@ ga('send', 'pageview');
 在HelixProducer中的设置是Push, user &amp; pass，然后用户和密码就填写管理员的（要么刚刚的管理界面里面自己新建一个去）。端口改安装时候设置的http端口，千万别搞错了。path可以不写，传输方式UDP。最后要记得流名字。
 然后我们的点播URL就是rtsp://ip:port/path/filename。port是你指定的rtsp端口，path是HelixProducer指定的，不写就没有，filename是流名字。
 希望大家顺利吧。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Aug 3, 2006
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/313/#disqus_thread">Comments</a>
+  <p class="meta">Aug 3, 2006
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/313/">testren</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/313/">testren</a>
+  </h1>
 </header>
-
 
         
           <p>shell909090.testren.com，相信很多我的朋友都在上面做了题。其中成绩最高的是李默雯小姐，一半答对——说实话，她应该去赌球的，我的题目可不比世界杯好猜——。最低的是Stella同学，相信伊直觉差的和我有拼。
@@ -228,34 +296,29 @@ d、 450G
 a、 Minix
 混蛋minix跑不起来——So。
 17、贝壳曾经在自己的机器上运行过多少种类的系统？</p>
-
           
-              <footer>
-                  <a href="//blog.shell909090.org/blog/archives/313/" rel="full-article">Read On &rarr;</a>
-              </footer>
+            <footer>
+              <a href="//blog.shell909090.org/blog/archives/313/" rel="full-article">Read On &rarr;</a>
+            </footer>
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Jul 30, 2006
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/312/#disqus_thread">Comments</a>
+  <p class="meta">Jul 30, 2006
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/312/">新版MSN试用报告</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/312/">新版MSN试用报告</a>
+  </h1>
 </header>
-
 
         
           <p>最近MSN又更新了，出乎我的意料，这次是stella同学率先跟进的。结果伊在刚刚用的时候发现好友全部消失了，正在惊惶的时候，偶撞上去打招呼，结果被伊捉来拷问。最后恢复是恢复了，不过还欠下新版MSN的论文一篇。
@@ -284,30 +347,25 @@ Scanner。其他厂商为了增大合作空间，一般在查毒功能上都是�
 这个是本人最不齿的功能，如果要加密了联系人列表，那么gaim一类的东西就全成了废物。微软如果真的有这个心思，完全是本着把开放协议搞成封闭协议的精神在做事了。如此无异于步QQ的后尘。
 5.其他特征
 新版MSN登录时间一般比较长，估计是在做功能通讯。有得有失，大家就别计较了吧。不过如果你登录过，速度就比较快了。MSN新版的稳定性还是不行，stella小姐被吓个半死，我这里是分组丢失。不过伊重新登录就恢复了，偶拿gaim登录也正常了。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Jul 27, 2006
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/311/#disqus_thread">Comments</a>
+  <p class="meta">Jul 27, 2006
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/311/">BOINC分布式计算</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/311/">BOINC分布式计算</a>
+  </h1>
 </header>
-
 
         
           <p>嘿嘿，贝壳我现在正式参加了BONIC的两个项目，SETI＠home和Einstein＠home。这两个项目是通过个人电脑的剩余CPU能力来计算大规模运算项目。SETI是寻找外星人的存在。通过个人电脑来计算美国航天局射电望远镜的信号，来分析外星文明的存在可能。Einstein是在2005世界物理年发起的计算引力波的项目。
@@ -319,87 +377,72 @@ BOINC的安装相当简单。下载程序，安装，在计算主页上注册，
 Berkeley Open Infrastructure for Network Computing
 如果决定参加的话，最好再加入中文站点上面列出的项目小组，为世界做贡献的同时为中国添光彩。
 SETI@China , Einstein@China , LHC@China , Predictor@China , Rosetta@China , CPDN@China</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Jul 16, 2006
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/310/#disqus_thread">Comments</a>
+  <p class="meta">Jul 16, 2006
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/310/">祝自己生日快乐</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/310/">祝自己生日快乐</a>
+  </h1>
 </header>
-
 
         
           <p>原来人生不过如此。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Jul 14, 2006
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/309/#disqus_thread">Comments</a>
+  <p class="meta">Jul 14, 2006
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/309/">删除无赖</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/309/">删除无赖</a>
+  </h1>
 </header>
-
 
         
           <p>大家知道，从3721首开记录后，很多软件都有卸不掉的情况。多数是插一个dll到explorer里面，让你无法UnloadLib，也不能kill。然后保护一堆文件不能删除，再放注册表项目。3721还加了一个驱动，这样就是神仙也删不掉。
 骂人不多骂了，方法两个。http://www.sysinternals.com/Utilities/PendMoves.html有一个项目，可以延迟删除。换句话说就是在启动的时候，讨厌的流氓加载前让内核做删除动作。很方便，重起下就没了。至于怎么找这些流氓的位置。http://www.sysinternals.com/Utilities/Autoruns.html同样公司，这个项目可以将开机所有自动加载的模块全部找出来。IE的插入组件也可以找出来。
 不过这个办法虽然好，可是还是会有破绽。万一连这两个软件运行都屏蔽呢？这个时候可以用linux live+ntfs r/w modules，这样删除任何东西的时候，神仙也挡不住。
 BTW,做live的时候，千万记得放一个ntfsfix在盘里面。贝壳的/dev/hda1有个logfile没有clean，结果死活不能写挂载……</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Jul 13, 2006
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/308/#disqus_thread">Comments</a>
+  <p class="meta">Jul 13, 2006
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/308/">论linux引导过程</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/308/">论linux引导过程</a>
+  </h1>
 </header>
-
 
         
           <p>keywords
@@ -425,30 +468,25 @@ service启动的时候，是用rc?.d的脚本启动的。多数会用start-stop-
 6.conf files
 reference:
 [1].</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Jul 11, 2006
-         - 2 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/307/#disqus_thread">Comments</a>
+  <p class="meta">Jul 11, 2006
+     - 2 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/307/">debian live</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/307/">debian live</a>
+  </h1>
 </header>
-
 
         
           <p>准备做debian
@@ -472,61 +510,18 @@ step by step
 复制/lib到~/syscd/lib，并且调节内容。（我个人在其中添加了我需要的nVIDIA显卡驱动）
 2.grub和iso
 cd \~ mkdir initrd #关于initrd的原理生成和使用后面讲 mkdir root #这个是用于内存的镜像内容 mkdir cramfs #这个是只读镜像内容 vi \~/testsyscd ------------------我是邪恶的分割线-------------------- #!/bin/bash qemu -no-kqemu -cdrom \~/syscd.iso -boot d &gt;/dev/null ------------------我是邪恶的分割线-------------------- chmod 755 \~/testsyscd vi \~/mksyscd ------------------我是邪恶的分割线-------------------- #!/bin/bash COMPRESS_MODE=-9 cd \~ # block of create initrd.</p>
-
           
-              <footer>
-                  <a href="//blog.shell909090.org/blog/archives/307/" rel="full-article">Read On &rarr;</a>
-              </footer>
+            <footer>
+              <a href="//blog.shell909090.org/blog/archives/307/" rel="full-article">Read On &rarr;</a>
+            </footer>
           
-
         
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Jul 2, 2006
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/306/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/306/">linux中文说</a>
-    </h1>
-</header>
+      </article>
+      
+      
+      
 
 
-        
-          <p>linux号称可以支持全部语言，其实细节上还是有不少问题的。具体情况大致是这样的，linux的中文支持分三部分，locales，字体，设置。
-首先是locale的部分，这个最简单不过，用root运行dpkg-reconfigure locales，然后选择你需要的解码方式，最后再设定系统默认语言（这个是可以修改的），就OK了。
-然后是字体，字体的设定比较复杂，不过在debian中安装所有中文桌面的字体就可以了。不用自己去绞尽脑汁。
-最后是设定，这个比较复杂。因为可定制性非常好的系统，无法避免要用大量的脚本来定制。如果可定制性差，相信你也不会用了。和中文相关的设置大致有一下几个，针对debian系统。
-/etc/default/gdm:LANG=zh_CN.GBK #gdm登录时候的locales
-/etc/default/locale:LANG=zh_CN.GBK #这个是系统默认登录的locals，如果你使用命令行登录就是使用这个的
-/etc/environment:LANGUAGE=&ldquo;zh_CN:zh:en_US:en&rdquo;
-/etc/environment:LANG=zh_CN #这个是登录进入X后的设置，你运行的所有程序基本都是使用这个
-dpkg-reconfigure locales的默认语言设定修改的是/etc/default/locale，所以对X登录进去后的程序不一定起作用。一般情况下这zh_CN的设定就通吃了，不过有的时候有点小BUG，例如term下面vi后退出，就变成看不懂的乱马了。这个时候要重设屏幕才可以恢复。而且在输入的时候没有——的，很多东西也看不到。所以我改成了zh_CN.GBK，然后出现了两个问题。
-一个是gvim不运行了，这个看了看别人，这么解决。
-----------------------\~/.gvimrc----------------------- set encoding=gb2312 set langmenu=zh_CN.GB2312 set imcmdline source $VIMRUNTIME/delmenu.vim source $VIMRUNTIME/menu.vim ---------------------------------------------------------  保证这个文件里面有这些内容就可以了。
-然后是gtk1.X的程序都不正常了，主要是xmms和audacity。这个看了人家忽悠半天，最后这么解决的。
------------------/usr/bin/env_zh_CN--------------- #!/bin/bash LANG=zh_CN exec $@ ----------------------------------------------------------  然后chmod a+x /usr/bin/env_zh_CN
-再修改所有运行语句成env_zh_CN xmms
-我修改了两处。
-世界基本就清静了。</p>
-
-          
-
-        
-
-    </article>
-    
-    
-    
 
 
 
@@ -748,10 +743,8 @@ dpkg-reconfigure locales的默认语言设定修改的是/etc/default/locale，�
 </div>
 
   
-
-  </div>
-
-  
+    </div>
+    
 
 <aside class="sidebar thirds">
   <section class="first odd">
@@ -772,7 +765,10 @@ dpkg-reconfigure locales的默认语言设定修改的是/etc/default/locale，�
       
       
       
-       
+      
+         
+      
+      
       
       
       
@@ -797,64 +793,87 @@ dpkg-reconfigure locales的默认语言设定修改的是/etc/default/locale，�
         <h1>Recent Posts</h1>
         <ul id="recent_posts">
           
-            <li class="post">
-              <a href="/blog/archives/2866/">关于抵制洋节</a>
-            </li>
           
-            <li class="post">
-              <a href="/blog/archives/2865/">恒春潜水记录</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2867/">996</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2866/">关于抵制洋节</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2863/">openssl证书相关</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2865/">恒春潜水记录</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2861/">密码学基本原理</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2863/">openssl证书相关</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2860/">similan船宿</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2861/">密码学基本原理</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2858/">京都游记</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2860/">similan船宿</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2857/">Boracay潜水攻略</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
+              </li>
+            
+          
+            
+              <li class="post">
+                <a href="/blog/archives/2858/">京都游记</a>
+              </li>
+            
           
         </ul>
       </section>
     
   
-
 </aside>
     
- </div>
+  </div>
 </div>
+    <footer role="contentinfo">
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
+        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+      </p>
+    </footer>
 
-<footer role="contentinfo">
-  <p>Copyright &copy; 2018 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-</p>
+    
+    
+    
 
-</footer>
-
-
-</body>
+    
+  </body>
 </html>
    
+

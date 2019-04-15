@@ -1,18 +1,16 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
 <head>
-  <link href="http://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
 
   
-  <meta name="HandheldFriendly" content="True">
-  <meta name="MobileOptimized" content="320">
   <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
 
   
-  
-  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+    
+    
+      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
+    
   
 
   
@@ -20,46 +18,50 @@
 
   
   
-  <link rel="stylesheet" href="//blog.shell909090.org/css/hugo-octopress.css">
+  <link rel="stylesheet" href="/css/hugo-octopress.css">
 
   
   
 
   
-  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/css/fork-awesome.min.css">
+  
 
   
   <link href="//blog.shell909090.org/favicon.png" rel="icon">
 
   
-  
-  
-
   <link href="//blog.shell909090.org/index.xml" rel="alternate" type="application/rss+xml" title="Shell&#39;s Home" />
 
-  <meta name="description" content="">
+  <meta name="description" content="" />
   <meta name="keywords" content="">
-
   <meta name="author" content="Shell Xu">
 
   
-  <meta name="generator" content="Hugo 0.30-DEV" />
+  <meta name="generator" content="Hugo 0.55.0" />
 
   
   
-<script>
-window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-ga('create', 'UA-48816091-1', 'auto');
-ga('send', 'pageview');
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-48816091-1', 'auto');
+	
+	ga('send', 'pageview');
+}
 </script>
-<script async src='//www.google-analytics.com/analytics.js'></script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
 
 
+  
+  
 </head>
 <body>
 
 
-<header role="banner"><hgroup>
+<header role="banner">
+<hgroup>
   
   <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
     <h2></h2>
@@ -67,72 +69,125 @@ ga('send', 'pageview');
 
 
 <nav role="navigation">
+<fieldset class="mobile-nav">
+  
+  <select onchange="location = this.value;">
+    <option value="">Navigate…</option>
+      
+  </select>
+</fieldset>
+
 
 <ul class="main-navigation">
   
   
 </ul>
 
-
 <ul class="subscription">
   
-
 </ul>
 
 
 </nav>
 
 
-<div id="main">
- <div id="content">
-  <div class="blog-index">
-    
-    
-    <article>
 
+
+  
+
+<div id="main">
+  <div id="content">
+    <div class="blog-index">
+      
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Jan 9, 2013
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2317/#disqus_thread">Comments</a>
+  <p class="meta">Jan 19, 2013
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2317/">2.4G网络冲突问题</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2325/">封抢票插件究竟封的谁</a>
+  </h1>
 </header>
 
+        
+          <p>12306抢票插件被工信部封杀的事情相信大家都听说了，具体我就不细说了。
+首先说明一下我的立场。我不需要春节回老家，用不着。所以我也不抢火车票。你们不用质疑我吃不着葡萄说葡萄酸，也不用骂我仗着技术欺负你们。我只是把我看到的和想到的说出来，仅此而已。
+我先简单说一下，抢票插件的工作机理。需要说明的是，由于我自己不用，封杀后也比较难找到渠道弄一份来。我是通过作者叙述反推和猜测工作机制的。如果有问题，请联系我，我尽量修改。
+此事合不合理 个人认为，12306抢票工具，主要简化了铁道部系统登录，刷票，购票的过程，使这个过程更加简洁。就我个人理解而言，抢票插件是针对铁道部的12306定制的一个http工具组。他的主要功能，就是在铁道部不合理的UI上，加了一层包装，方便用户使用，仅此而已。
+为什么这么说？我们反过来看，站在程序员的角度，如果要恶意抢票，有什么办法？
+ 使用phantomjs。phantomjs是一个headless browser，每个phantomjs实例大约是20M内存，可以模拟一个独立的浏览器。如果网络撑的住的话，一台8G内存的机器，最多可以开启400个会话，模拟400个浏览器同时登录。由于12306没有限制一个IP可以登录几个人，因此在phantomjs上面写抢票插件，可以做到400个浏览器同时刷票的效果。 使用python开发定制化爬虫。这个是我的专长领域，我用这种技术对多个网站做过爬虫，抓上面的内容。采用这种技术的情况下，每个实例大约消耗8M内存。因此上面的机器可以支撑1000个浏览器。 把程序改用go写，并且将程序并行化。我没这么做过，不过大致估算了一下，租个4G内存的云主机，大约可以支持2000个以上的会话，相当于2000人同时抢票的效果。按照盛大云的价格来算，租个10天用来抢票只要160块，即使是个人也可以轻易租上百台，相当于20W个人同时抢票。  以上估算有两个问题，一个是校验码，一个是支付。
+ 校验码通常使用OCR可以解决，铁道部的校验码本身重码率就很高，内容识别出来就等于知道答案。而OCR，对于有经验的程序员来说，只是成功率问题而已。 退一步说，OCR不解决也不是什么问题。OCR和支付让人工来做，其余事情系统自动处理。这样的系统也不是没有。  好吧，你们想象一下看看，以上一个系统，是怎么样一个存在？20W人同时抢票，你觉得自己胜算几何？
+当然，你会反驳说花个近2W租服务器写程序有什么了不起的。是没什么了不起的，不过如果你抢不到票，花10块帮你抢票你做不做？一天只要抢200张票就够服务器开销哦。只要抢个400张票就可以满足开发成本哦。你觉得20W人连续不断抢票，一天抢不到1000张么？你太天真了。
+这才是真正不合理的事情。 这些事情，抢票插件都没做。
+封的住么？ 我很怀疑这件事。别人不说，我专长就是写python爬虫。所以很明白，你要封掉爬虫，从技术上很难，得从业务上下手才行。至于行政手段，脑子进水了吧。
+为什么？拿前几天的一个小事来说吧。我想看小说，某个网站允许看，但是只有会员才能下。没办法，我拿chromium调试了一下，然后写了个python脚本爬下来50多M的小说。加起来总共也没花10分钟。然后我去网络上问了一下谁有兴趣，把程序传给他们，就不管了。
+看，爬虫就是这么简单的一件事情。
+而且还有github在。如果要联合几个朋友写个爬虫，每人一个页面，我估计也是几个小时内可以完工的。
+行政手段？那最多只能让普通用户找不到可用的插件，却不会让程序员写不出可用的代码，更不会让心存恶意的人止步。
+密码学常说，不能指望对方不了解你的机制来保护安全（术语称为黑盒机制）。必须让所有人都能够看到过程。在这种情况下，你的信息仍然是安全的，那才是真正的安全。
+当你的网站不安全，抓几个用漏洞的人来处分掉就假装网站安全了？你的改进呢？你的补丁呢？你是鸵鸟么？
+铁道部的网站，就是这么个黑盒。明明大部分程序员都可以很容易的爬来爬去，却禁止让一般民众接触到这个事实，假装这件事情不存在。
+事情的后果 也许有人说了，既然都写的出，你为什么不写一个？上面说了，我没必要抢火车票。再说，大部分抢火车票的程序员有好用的插件，为什么还要自己写一个？
+现在，我假定普通人再也不能通过简简单单的装个插件抢火车票了。你们没发现这意味着什么么？这意味着有知识和能力者，和普通人，被彻底的分开了。尽管以前，有技术的翻墙，没技术的被墙。我们仍然可以假装这个事情和我们没有关系，可以假装这个世界仍然很美好。但是今天，有技术有知识有资本的仍然可以凭借技术弄票，没技术的就只能干瞪眼。
+这是更大的不公，而且可以产生恶意的寻租。
+原本程序员写个刷票程序是没什么好处的。虽然刷票快，但是普通民众也可以装个刷票工具来刷票。你那20W刷票大军碰到全国的刷票机器，恐怕也得缩着。既然普通人不能使用插件了，只能用浏览器慢慢的刷。那么，允许我大胆的猜一下——职业刷票者的黄金时代到了。
+租个云主机，然后用专用的程序帮别人刷票。通过淘宝先交易，付定金，拿身份证，刷票卖。整个流程链太成熟了。现在唯一的麻烦——普通人自己有刷票工具——都不存在了，真完美。
+别以为做技术的多清高，真清高就不会有做木马的了。
+封掉插件便宜了谁 在讨论抢票插件前，先弄明白，谁在用抢票插件？是大多数不会技术的普通民众。谁在消费抢票插件？是各大浏览器厂商。这本就是不应存在的东西，你见过有刷秒杀的工具，你见过刷淘宝的工具么？
+浏览器厂商为什么拿抢票插件当卖点？因为那玩意做的烂，你还不能不用。
+封掉抢票插件便宜了谁？我不知道，反正不是每个买不到票的人。
+此事不合理和不合法 而且，此事开了一个很不好的先河。网络不是法外之地，要封人也要讲一个合理合法。先不说抢票插件的合理性，单从合法性而言就显然不对。工业和信息化部作为行业管理部门，主要是管规划、管政策、管标准，指导行业发展，但不干预企业生产经营活动。你什么时候见过一家公司做了个产品，工薪部上去指手画脚的？
+除非这个产品影响了整个行业生态。就像当初的QQ和360。
+抢票插件哪里影响到计算机行业生态了？他只是影响了12306这一家网站的稳定性吧。如果因为网站的稳定性就可以让工信部出手约谈的话，那搜狗爬虫乱爬我网站，我写了robots.txt他也不管，这事工信部管不管啊？电信给我访问里插广告，这事情工信部又管不管啊？</p>
+          
+        
+      </article>
+      
+      <article>
+        
+        
+
+<header>
+  <p class="meta">Jan 9, 2013
+     - 1 minute read 
+    
+
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2317/">2.4G网络冲突问题</a>
+  </h1>
+</header>
 
         
           <p>由于2.4G是各个国家共同保留的一个非牌照频率，如果商家打算做什么无线通信的玩意，又不打算申请频率，那就只有用2.4G。因此，其实很多设备在无意中都在使用这个频率，他们之间会互相干扰的。
  蓝牙 无绳电话 部分微波炉 无线网卡 无线门铃 深圳某地铁公司的信号闭塞系统。。。  某种设备的信号，对其他设备来说就是噪音。高速传输设备，尤其是wifi，在高噪音的环境下速度很慢。 因此，建议在复杂环境下的wifi用户尽速迁往5G频率。你家要是无线环境很干净（例如我这里，屋子电磁屏蔽好），那就不是很着急。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Jan 8, 2013
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2315/#disqus_thread">Comments</a>
+  <p class="meta">Jan 8, 2013
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2315/">2013南方周末事件后续1</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2315/">2013南方周末事件后续1</a>
+  </h1>
 </header>
-
 
         
           <p>事实变化 首先和大家道歉。在上一篇《传播学角度分析2013南方周末事件》中，我提到一个事实，就是审稿的人自己动手。现在事情还原出来，并非如此。从描述来看，动手的还是报社总编和副总编。具体可以看《南方周末》编辑部披露2013新年特刊制作过程指违反编辑流程。这总算解我一个心头疑惑，为什么宣传部会干出这么蠢的事情，公然违反编审原则。
@@ -154,30 +209,25 @@ ga('send', 'pageview');
 其次，万一出问题，也不应当强行修改。万不得已的情况下，删掉稿子，用备稿替换，重新编辑。当然这也是新闻事故，但是程度小很多，不至于搞到今天这样沸沸扬扬。然而对于特别重要版面，完全可能没有备用可选。
 目前的问题是，具体情况到底如何？只有员工的回忆和披露，没有调查，没有真相。我也觉得事情中有些蹊跷的地方，无法自圆其说。然而，编辑们的要求是调查真相，而不是一味的推卸，这是理性诉求。相反，是不是有某大佬事情，现在尚没有定论。然而某些人对此大动干戈，才是让人感到他在欲盖弥彰的原因所在。
 最后，对于引起群众热议的事情，不应当使用暴力手段。群众的特征是你不顺着他说，好事都能变成丑闻，何况原本就是丑闻。当然，以贝壳个人的分析，这未必是幕后的本意。很可能是事已至此，只能如此一搏以自救。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Jan 7, 2013
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2311/#disqus_thread">Comments</a>
+  <p class="meta">Jan 7, 2013
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2311/">传播学角度分析2013南方周末事件</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2311/">传播学角度分析2013南方周末事件</a>
+  </h1>
 </header>
-
 
         
           <p>也许blog又要被封了。不过管它呢。总是计较封与不封，自我审查内容，和墙内何异？
@@ -196,30 +246,25 @@ ga('send', 'pageview');
 是不是很眼熟？是的，当时我没有能力实现的系统，和今天的微薄非常类似。当然，我当时并没有提出140字限制。而且在新闻自由的美国也不用考虑中心节点消除的问题。所以微薄的形态和我想象中略有不同。然而微薄确实实现了一个无中心管理的自媒体群，而且随着用户的完善还会产生过程流。
 如果审查继续下去，会不会有人把分布式的版本实现出来？我不知道。这太踩中宣部的线了。但是从理论上，这一工具完备，而且很难封锁。
 然而从本质上，破除审查的，并不是工具，而是每个人在畏惧之前的一小步。我们都是凡人，要我们无所畏惧的抵抗，或者为别人奋斗是不可能的。然而在我们屈从别人的意志，自我审查，抹灭良心之前，可以向前走一小步。这是个人的一小步，然而会是社会前进的一大步。我们不需要英雄，我们更不能够把希望寄托在英雄身上。“让某个人带着时代的意志奋斗”这种话就和“你什么都别做就好”一样，是彻彻底底的谎言。我相信，谎言无法替代真相。哪怕我们最终不能获得成果，然而顺应自己的良心，向前走的这一小步是非常重要的。也许这一小步，能为别人，为你个人带来短暂的光明。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Jan 5, 2013
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2307/#disqus_thread">Comments</a>
+  <p class="meta">Jan 5, 2013
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2307/">关于民用航空上禁止使用电子设备的分析</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2307/">关于民用航空上禁止使用电子设备的分析</a>
+  </h1>
 </header>
-
 
         
           <p>适用对象 本文论述的电子设备，包括以下几类：
@@ -257,30 +302,25 @@ ga('send', 'pageview');
 同时，飞机也会频繁穿越积雨云之类的电磁异常区域。由于飞机上的控制系统异常重要，而飞机本身的电磁环境不稳定，因此使用无线控制飞机是不可行的。
 关于在医院使用手机的问题 医院使用手机，电脑是一个需要慎重考虑的问题，因为确实有很多医疗设备使用了2.4G频段。甚至由于人体器官尺寸等原因，有很多医疗设备并不能自己选择工作频率。例如在深圳的地铁干扰问题上，医院的B超亦是干扰源之一，见这里。可以想见，如果将卡皇带到医院去使用，也可能对B超设备产生干扰。
 但是，对上述新闻，我抱持怀疑态度。借助声波工作的B超为什么会发射如此强烈的电磁信号，而且信号频率居然高达2.4G。这本身就是件很奇怪的事。由于报道并没有列出关联信息，因此无从查起，姑且信之。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Dec 31, 2012
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2302/#disqus_thread">Comments</a>
+  <p class="meta">Dec 31, 2012
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2302/">支付宝体系的问题</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2302/">支付宝体系的问题</a>
+  </h1>
 </header>
-
 
         
           <p> 今天和几位朋友讨论了一下支付宝的问题，又查了一下case，发现支付宝的问题不仅是那么简单而已。先不吐槽支付宝的问题了，赶快出验证和方案。
@@ -296,30 +336,25 @@ ga('send', 'pageview');
 网银的一点隐忧 目前网银的密码都太弱了。浦发只有6位数字，招行也只有8位数字字母。难道就不能设定强一些的密码么？
 浦发可能是要和卡本身的密码兼容，将手机作为补强。可是手机也会掉啊。一旦手机掉了，整个安全性就由6位数字密码保护。这和掉银行卡一样严重。
 建议  移动和联通关闭身份证显示，尤其是最后四位！ 无论哪种级别，使用支付宝一定要打开宝令。目前只有宝令可以有效对抗补卡攻击。 在智能机上又绑定网银的，就不要乱装软件，更不要root/越狱。 中国移动的补卡修改流程。如果当前卡处于激活中，先持续警告旧卡24小时后再激活新卡。 移动至少应当允许客户自行选择“这个手机号码极端重要，不得实行异地补卡，不得显示个人信息，复机/补卡间隔需要在24小时以上”的增强选项。 理论上说，移动应当可以推进二代身份证验证能力。使得补卡业务实行时，必须凭借二代身份证验证身份后进行。杜绝假身份证。 支付宝的密码找回功能降速。从开始找回，发短信和邮件通知，到完成找回密码至少要一小时，最好要24小时才能找回密码。或者允许可以设定“我自愿将找回密码时限改为24小时”以增强安全性。  </p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Dec 30, 2012
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2296/#disqus_thread">Comments</a>
+  <p class="meta">Dec 30, 2012
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2296/">移动的一点漏洞</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2296/">移动的一点漏洞</a>
+  </h1>
 </header>
-
 
         
           <p>今天支付宝的那个问题，支付宝的人和我说。
@@ -329,30 +364,25 @@ ga('send', 'pageview');
 因此，实际需要得到的就是2位。而这两位又不是任意的，和个人出生地有关。具体到我的身份证上，有了前四位后，两位只有17种可能。我看了其他一些人的情况，运气差的情况下，这两位只有一两种可能，例如1405，山西省晋城市，只有00/01/02。全试一遍就可以了。
 更新：同事反应，联通的网站更二，直接就显示了完整身份证。。。
 更新2：同样漏洞，在招商银行的手机应用上也爆了出来。。。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Dec 30, 2012
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2292/#disqus_thread">Comments</a>
+  <p class="meta">Dec 30, 2012
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2292/">支付宝的一项设计问题</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2292/">支付宝的一项设计问题</a>
+  </h1>
 </header>
-
 
         
           <p> 话说最近，贝壳成批更新了一些密码。在更新到网络支付系统的时候，心血来潮做了个分析。感觉网银系统很不安全。尤其是支付宝的手机客户端。我们下面以一个实际例子说明一下支付宝系统（其实远不止支付宝）的问题。
@@ -366,62 +396,52 @@ ga('send', 'pageview');
  个人信息泄密，包括朋友通讯方式，备忘，生日，身份证号码，家庭地址等。其中有些就涉及安全。 支付宝密码和支付密码可以重设（即，泄露）。 宝令丢失。 网银验证码无意义。 支付宝警告无意义。 网银警告无意义。  实际上，这不是支付宝的问题，而是用户在选择和设计自己的安全系统时，无意中造成的问题。
 解决方案 暂时还没有太好的方案。
  首先期待支付宝将手机登录改为token，取消密码保存，隐藏用户名，用户可以删除token，以解决直观的威胁。 期待手机丢失时快速发现的应用/功能。如果能在5-10分钟内停机，可以有效的解决手机丢失造成的风险。（贝壳向中国移动确认了，当手机停机后，是不能收取短信的） 当确实发生手机丢失时，应当首先立刻停机（因为停机速度快），然后向银行挂失（凡是绑定了手机的银行都要），然后以最快速度修改所有密码。 涉及资金的系统要多考虑一下，设计安全结构的时候要注意，如果有多于一个的方法进入系统，安全性决定于最弱的那个系统。如果所有步骤的安全性都依赖于手机，那么要考虑，丢了手机的时候会发生什么。  </p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Dec 29, 2012
-         - 4 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2287/#disqus_thread">Comments</a>
+  <p class="meta">Dec 29, 2012
+     - 4 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2287/">速度对比</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2287/">速度对比</a>
+  </h1>
 </header>
-
 
         
           <p>引用
 +------------+----------+-------------+------------+-------------+-------------+ |bps |B/s |network |storage |port |bus | +------------+----------+-------------+------------+-------------+-------------+ |56/48K |5.6/4.8K |Modem 56k | | | | +------------+----------+-------------+------------+-------------+-------------+ |57.6/28.8K |7.2/3.6K |GPRS | | | | +------------+----------+-------------+------------+-------------+-------------+ |236.8/236.8K|29.6/29.6K|EDGE (2.75G) | | | | +------------+----------+-------------+------------+-------------+-------------+ |1M |125K |Bluetooth 1.1| | | | +------------+----------+-------------+------------+-------------+-------------+ |1536K |192K | | |USB low speed| | +------------+----------+-------------+------------+-------------+-------------+ |1,536/512K |192/64K |ADSL (G.Lite)| | | | +------------+----------+-------------+------------+-------------+-------------+ |3M |375k |Bluetooth 2.0| | | | +------------+----------+-------------+------------+-------------+-------------+ |10M |1.25M |10BASE-T | | | | +------------+----------+-------------+------------+-------------+-------------+ |12M |1.</p>
-
           
-              <footer>
-                  <a href="//blog.shell909090.org/blog/archives/2287/" rel="full-article">Read On &rarr;</a>
-              </footer>
+            <footer>
+              <a href="//blog.shell909090.org/blog/archives/2287/" rel="full-article">Read On &rarr;</a>
+            </footer>
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Nov 27, 2012
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2282/#disqus_thread">Comments</a>
+  <p class="meta">Nov 27, 2012
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2282/">异常和错误的几条军规</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2282/">异常和错误的几条军规</a>
+  </h1>
 </header>
-
 
         
           <p> 如果处理不了，就地崩溃，留尸不埋，供后人评价。
@@ -429,47 +449,14 @@ ga('send', 'pageview');
  逻辑上可以忽略，记log，忽略。 逻辑上期待异常，不记log，忽略。 逻辑上不可以忽略的忽略，100军棍。 逻辑上可以忽略，没有记log，50军棍。  错误在函数间传递的唯一理由，是可以期待别人那里有个错误处理函数，能够对的上这个错误。
  没人处理错误的乱传递，20军棍。  该你处理的，处理，不该你处理的，别乱处理。
  乱处理错误的，先轮后杀。   </p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Nov 22, 2012
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2278/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2278/">python环境部署</a>
-    </h1>
-</header>
+      </article>
+      
+      
+      
 
 
-        
-          <p>abstract 本文的目的，在于教授使用virtualenv创立python环境，对环境的管理和使用，以及代码和部署的用法范例。在阅读完本文后，你应当可以。
- 创立，部署，管理virtualenv环境 使用virtualenv环境进行编码  virtualenv环境建立 virtualenv是python的虚环境管理包，他的主要目的是为了隔离环境。其中包含以下两个范畴。
- 在虚环境中安装包，不需要对系统进行修改，不会对系统造成污染。 在系统中安装的包，不会对虚环境造成污染。这主要是出于版本安全考虑。  因此，virtualenv默认会阻止你使用系统中安装的包。要解决这个问题，需要在建立虚拟环境时指定参数&ndash;system-site-packages。 virtualenv的环境可以通过执行virtualenv path加以建立。当建立完成后不可移动，需要一些特殊调整，使用参数&ndash;relocatable对此没有帮助。
-virtualenv环境的激活和反激活 virtualenv环境是通过替换系统环境变量工作的。在激活后会替换系统的提示符，提示你进入环境。一般我们使用source \$VIRTUALENVPATH/bin/activate来激活。激活后直接执行deactivate反激活。 virtualenv替换系统环境变量的方式是在path前加入virtualenv的bin路径，使自己的python优于系统python执行。同时替换pythonhome，变更lib查找路径。因此，对于某些可以指定pythonhome的应用（例如网络部署），直接指定pythonpath为virtualenv路径即可。 注意，由于virtualenv的工作方式，因此当你执行su/sudo bash后，virtualenv环境都有可能消失，但是提示符仍旧生效。建议通过sudo执行脚本，脚本内进行source比较安全。或者直接sudo目标程序也可以，不要新建上下文。 如果需要保持持续的环境激活，可以将source \$VIRTUALENVPATH/bin/activate加入~/.bashrc。 当virtualenv激活后，后续的pip安装和python使用都会使用virtualenv内的版本。因此下文未经特殊说明，都是指在激活环境后进行操作。
-virtualenv环境的管理 主要包括两种手段，安装和删除。一般使用pip install package name进行安装。pip uninstall package name进行删除。
-virtualenv环境的保存和恢复 virtualenv环境可以保存和恢复。所谓保存和恢复，是指在安装过包的环境中保存包列表（和具体版本），在未安装（或版本错误）的环境中启用。 一般通过pip freeze &gt; filename进行保存。在目标机器上执行pip install -r filename进行恢复。</p>
-
-          
-
-        
-
-    </article>
-    
-    
-    
 
 
 
@@ -691,10 +678,8 @@ virtualenv环境的保存和恢复 virtualenv环境可以保存和恢复。所�
 </div>
 
   
-
-  </div>
-
-  
+    </div>
+    
 
 <aside class="sidebar thirds">
   <section class="first odd">
@@ -715,7 +700,10 @@ virtualenv环境的保存和恢复 virtualenv环境可以保存和恢复。所�
       
       
       
-       
+      
+         
+      
+      
       
       
       
@@ -740,64 +728,87 @@ virtualenv环境的保存和恢复 virtualenv环境可以保存和恢复。所�
         <h1>Recent Posts</h1>
         <ul id="recent_posts">
           
-            <li class="post">
-              <a href="/blog/archives/2866/">关于抵制洋节</a>
-            </li>
           
-            <li class="post">
-              <a href="/blog/archives/2865/">恒春潜水记录</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2867/">996</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2866/">关于抵制洋节</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2863/">openssl证书相关</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2865/">恒春潜水记录</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2861/">密码学基本原理</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2863/">openssl证书相关</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2860/">similan船宿</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2861/">密码学基本原理</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2858/">京都游记</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2860/">similan船宿</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2857/">Boracay潜水攻略</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
+              </li>
+            
+          
+            
+              <li class="post">
+                <a href="/blog/archives/2858/">京都游记</a>
+              </li>
+            
           
         </ul>
       </section>
     
   
-
 </aside>
     
- </div>
+  </div>
 </div>
+    <footer role="contentinfo">
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
+        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+      </p>
+    </footer>
 
-<footer role="contentinfo">
-  <p>Copyright &copy; 2018 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-</p>
+    
+    
+    
 
-</footer>
-
-
-</body>
+    
+  </body>
 </html>
    
+

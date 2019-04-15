@@ -1,18 +1,16 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
 <head>
-  <link href="http://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
 
   
-  <meta name="HandheldFriendly" content="True">
-  <meta name="MobileOptimized" content="320">
   <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
 
   
-  
-  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+    
+    
+      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
+    
   
 
   
@@ -20,46 +18,50 @@
 
   
   
-  <link rel="stylesheet" href="//blog.shell909090.org/css/hugo-octopress.css">
+  <link rel="stylesheet" href="/css/hugo-octopress.css">
 
   
   
 
   
-  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/css/fork-awesome.min.css">
+  
 
   
   <link href="//blog.shell909090.org/favicon.png" rel="icon">
 
   
-  
-  
-
   <link href="//blog.shell909090.org/index.xml" rel="alternate" type="application/rss+xml" title="Shell&#39;s Home" />
 
-  <meta name="description" content="">
+  <meta name="description" content="" />
   <meta name="keywords" content="">
-
   <meta name="author" content="Shell Xu">
 
   
-  <meta name="generator" content="Hugo 0.30-DEV" />
+  <meta name="generator" content="Hugo 0.55.0" />
 
   
   
-<script>
-window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-ga('create', 'UA-48816091-1', 'auto');
-ga('send', 'pageview');
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-48816091-1', 'auto');
+	
+	ga('send', 'pageview');
+}
 </script>
-<script async src='//www.google-analytics.com/analytics.js'></script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
 
 
+  
+  
 </head>
 <body>
 
 
-<header role="banner"><hgroup>
+<header role="banner">
+<hgroup>
   
   <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
     <h2></h2>
@@ -67,44 +69,101 @@ ga('send', 'pageview');
 
 
 <nav role="navigation">
+<fieldset class="mobile-nav">
+  
+  <select onchange="location = this.value;">
+    <option value="">Navigate…</option>
+      
+  </select>
+</fieldset>
+
 
 <ul class="main-navigation">
   
   
 </ul>
 
-
 <ul class="subscription">
   
-
 </ul>
 
 
 </nav>
 
 
-<div id="main">
- <div id="content">
-  <div class="blog-index">
-    
-    
-    <article>
 
+
+  
+
+<div id="main">
+  <div id="content">
+    <div class="blog-index">
+      
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Sep 21, 2011
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/1913/#disqus_thread">Comments</a>
+  <p class="meta">Sep 22, 2011
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/1913/">悲崔的六类线</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/1915/">密码管理规范</a>
+  </h1>
 </header>
 
+        
+          <p>下面是贝壳自己总结的密码管理规范，大家可以参考一下。
+概念解说
+ 网络密码和本地密码。网络密码通常很难暴力攻击，尝试速度受到网络限制，而且尝试一定次数后还可能被管理员发现。而本地密码则相对比较容易攻击，我假定本地密码攻击可以达到每秒测试2\^30个密码。
+ 密码长度推定使用如下计算方式。使用年数乘以攻击频率，得出攻击者在密钥使用期限内能尝试的最大次数。为了安全起见，尝试范围不应当超过总体密码空间的一定比例。以此推算出密码空间大小，进而推算出信息位数，然后还原为密码位数。
+ 数字密码，字母密码，数字字母混合密码，大小写数字混合密码。数字密码的信息量是3.3bit/位，字母为4.7bit/位，混合为5.17bit/位，全混合5.96bit/位。
+  密码原则
+ 一次一密。除了零级密码，不要为多个系统设定一样的密码。有些系统并不像我们想像的安全，一旦这个系统出问题，被还原原始密码，就会牵连到其他系统。
+ 定期更换。没有什么密码能用一辈子。
+ 写下来。因为一次一密，所以我们会有大量的散碎密码。不写下来是不保险的，写下来是不安全的。折衷一下，还是写下来，保存好吧。推荐用高级密码加密低级密码的方法，例如keepass。
+ 生成型密码。用一个特定字符串+网站名，做sha-1然后取最后8位。这样的密码满足一次一密，不容易破解，不需要写下来，唯一的问题是你要现算&hellip;
+  零级密码
+ 零级密码是有些不需要保护的情况下，又非设定密码不可。对于这种情况，你只能设定一个不算密码的密码。例如常用机器的用户密码。这些密码可以通过livecd/liveusb轻易修改，因此没有一点保密价值。
+ 零级密码不需要安全性和保密性，因此好记就行。例如111，222，选一个常用的，爱用多久用多久。
+  低级密码
+ 低级密码是用于保护一些你不希望别人看到，然而别人看到并没有直接损失的内容。例如家里机器的性能数据，普通相册的访问密码。这些内容被别人看到不会产生伤害，然而无成本的放出这些内容有潜在的风险，或是你自己主观意愿希望保护，内容安全性要求又不特别高。
+ 我假定低级密码在网络上会受到100次/年的攻击，本地密码会受到1小时/年的攻击，可用时间五年，穷举空间不超过总密码空间的1/1000。
+ 网络密码的攻击信息量为log2(100 * 5 * 1000) =
+  18.93bit。使用数字密码应在6位以上，字母，混合，全混合应在4位以上。
+ 本地密码的攻击信息量为log2(2\^30 * 3600 * 5 * 1000) =  54.10bit。使用数字密码在17位以上，字母在12位以上，混合在11位以上，全混合在9位以上。
+ 结论，低等级的密码长度小，使用数字也并不难记。推荐使用4位以上字母（反正混合使用长度也没有下降），不要使用常见组合还有单词。推荐方式是将自己喜欢的一句英文首字母简写前后颠倒使用。例如：I  will be back，对应密码bbwi。
+中级密码
+ 中级密码用于保护一些你不希望别人看到，别人看到会对你产生损失的内容。例如你的帐薄，日记等等。中级密码使用时，最主要的风险已经不来自于密码本身，而是使用密码的环境。包括电脑是否安全，中途网络是否安全，旁边人的肩窥攻击。
+ 我假定中级密码在网络上可能会受到10000次/年的攻击，本地密码会受到100小时/年的攻击，可用时间1年，穷举空间不超过总密码空间的1/100000。
+ 网络密码的攻击信息量为log2(10000 * 1 *100000) =</p>
+          
+            <footer>
+              <a href="//blog.shell909090.org/blog/archives/1915/" rel="full-article">Read On &rarr;</a>
+            </footer>
+          
+        
+      </article>
+      
+      <article>
+        
+        
+
+<header>
+  <p class="meta">Sep 21, 2011
+     - 1 minute read 
+    
+
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/1913/">悲崔的六类线</a>
+  </h1>
+</header>
 
         
           <p>大家知道，贝壳家里用的是千兆交换机对吧？最近贝壳在装修（好吧，回头看情况，也许有装修手册出来），所以——布线的时候打算用六类线。
@@ -115,60 +174,50 @@ OK，有了基础常识，我们可以讲一下京东的问题了。他们提供
 如果我买的是普通线就算了，5元多一米的秋叶原线，在京东这种商城，居然会在中心位置龙骨缺失。我很怀疑我埋下去的另一箱是否也有类似问题呢。
 更郁闷的是，我打给京东，他们的客服不道歉就算了，也没个活人出面解释一下这个是什么问题。就只有“你可以退货阿”，“你这样就可以退货拉”，的提示。退退退退你妹阿，尼玛另一根线回头出了问题我得重新埋线呐。更可气的是有个客服脑子堪比芙蓉姐姐，给我一个厂家电话，让我打给厂家。我说如果厂家不予解决呢？她说，你可以再打4006065500转3。我说那不就是你们的电话么？她说，你可以再打4006065500转3。我说是不是再打到你们这里？她说，你可以再打4006065500转3。。。尼玛你是鹦鹉阿，直接说再打我们电话不就完了么。再说了，你给我的方案就是打给厂家，厂家不解决，再打给你，你再咋办？哦，对了，这时候就不是你办了。真是好办法。
 可见在天朝这种地方，产品质量是完全不用关心的，有退货就是最大的慈悲了。至于产品造成了后果，赔偿什么的。售后经理笑脸迎人，可以阿，有检验结果我们就赔。问题是TMD国家质检中心不给力阿，不但价格贵，而且很多事情根本不检。你不信在07年拿瓶三聚氰胺奶过去，就算清清楚楚的告诉他们有什么问题，得到的答复还是——抱歉，我们没这个检验项目。再说检验通过，厂家立刻变脸，抱歉，这个我们有规定，只能赔偿多少。然后你只能进行漫长的“调解-仲裁-一审-二审”过程。厂家有的是时间精力，不怕玩不残你。就算你侥幸通过，终于能获得赔偿，听上去天价的赔偿还不够你的时间成本。更不谈有些事情，损失十多万，按国家规定赔偿只有不足千元——“因为国家就是这么规定的”。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Sep 16, 2011
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/1911/#disqus_thread">Comments</a>
+  <p class="meta">Sep 16, 2011
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/1911/">给初创小公司的几句话（四）</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/1911/">给初创小公司的几句话（四）</a>
+  </h1>
 </header>
-
 
         
           <p>第四个故事来自一个朋友的笑话。说某人从一家公司辞职了，朋友问说什么情况。某人说，和老板相处不来。老板看到有人上班看网页，就出了条规定，不许上班时间看网页，否则罚款。看到有人带朋友进办公室，就出条规定，不许上班时带朋友进办公室，否则罚款。上个月老婆出差，没人照顾家里的仓鼠，带去两天，出条规定，不得带宠物上班。某人情感受到了强烈的伤害，所以愤而辞职。
 其实说起来，这些事情都不是什么大事，鸡毛蒜皮到了我们可以当笑话说的地步。细究起来也确实是员工应当执行的，属于正常雇员的基本素养。不过如果您自己开家公司，照着上面的做，搞不好手下还真就一堆辞职的。
 从某种意义上说，这是一个心理问题。在IBM，或者Oracle这种大公司，出现这些条款没人觉得有什么不对，关键在于两点。一方面，大公司本身就给人一种正儿八经，板着个脸的印象。员工进公司的时候，就知道自己随时会碰到各种狗屁倒灶的规定，有一定的心理准备。小公司通常老总天天见，搞不好下班还一起吃饭喝酒，上班的时候板起脸来做规矩，情感上受得了受不了就不好说了。另一方面，大公司的规定相对完备，什么可以什么不可以都规定的非常详细。小公司难免挂一漏万，天天改规矩，确实不怎么好看。
 反过来说，这也是初创公司对大公司的优势。在大公司里，管理层显然不会留意到每个人的特性，并且针对性的管理。然而初创公司就那么几号人，大部分都是熟人。要针对管理不是一件不可能的事情。老婆出差，家里仓鼠可以带到公司，顺便睡在公司做程序得了，反正家里也没人。诸如此类的事情并不怎么难做。当然，当初创公司上了一定规模（推荐大概是10-30人）后，管理转换必然要产生阵痛。然而也远好过在三两个人的公司里面规定四五十条的规范。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Sep 15, 2011
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/1909/#disqus_thread">Comments</a>
+  <p class="meta">Sep 15, 2011
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/1909/">gnupg的基础概念</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/1909/">gnupg的基础概念</a>
+  </h1>
 </header>
-
 
         
           <p>上次gnupg签名写完后，雨苍跑过来问我gnupg里面的一些细节，讲，为什么不写清楚呢？我说不是写过一篇gnupg基础么？回去翻blog，居然没有！好吧，那就现场写一篇gnupg的基础概念。
@@ -197,30 +246,25 @@ Q: 真的不行么？我知道各国军队都有保密的研究成果。
 A: 如果你相信所谓的“秘密成果”，我也无话可说。仅公共领域流通的成果而言，离可接受的破解方法还差很远。目前已知最好的算法是普通数域筛选法，有希望成为可接受的破解方法的是基于量子计算机的Shor算法——不过量子计算机还没有制造出来。
 Q: 既然2048位密钥不可破解，为什么还要选择4096位？
 A: 一个不幸的事实是，虽然破解难度随着位数增加几何级数增长，然而破解速度随着时间流逝也在几何级数增长。如果你打算长期使用，还是使用4096位的比较保险。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Sep 13, 2011
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/1907/#disqus_thread">Comments</a>
+  <p class="meta">Sep 13, 2011
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/1907/">北京，北京</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/1907/">北京，北京</a>
+  </h1>
 </header>
-
 
         
           <p>怀念北京的话就不多说了，中国没有几个人不会故土难离。我直接上干货，说说北京的诸多问题。
@@ -247,30 +291,25 @@ A: 一个不幸的事实是，虽然破解难度随着位数增加几何级数�
 北京的兴起，很大成都上是得益于首都的地位。包括庞大的公务员，驻京办，维稳体系。大量的行政资源，带动了相当的三产公司在北京成立总部——尤其是金融业和科技业。任何一个首都，都会得到行政上的好处，和相应的付出。然而很少有一个首都，会有北京这样特殊的地位，以扭曲的地位带来扭曲的利益。
 这种利益，让北京成为全国人心中的迦南。但是这个迦南，是依靠没有进入的人的付出来支撑的。因此，全国无数人涌入北京，试图分一杯羹。因此，近些年的北漂一族已经非常庞大，北京的户口早就基本停止流动，下一步恐怕连人都要停止流动（有部分政策已经在实施这个思路了）。进入的人越多，留下的人越少，北京的人口压力越大，相应的，这个泡沫破灭的速度就越快。而没有人进入，就没办法让其他人为他工作，必须依靠行政强制。这个行政强制，又会加剧北京和其他地区的矛盾。
 什么时候？我怎么知道，我又不是神仙。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Sep 9, 2011
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/1905/#disqus_thread">Comments</a>
+  <p class="meta">Sep 9, 2011
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/1905/">悲崔的散热片改良</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/1905/">悲崔的散热片改良</a>
+  </h1>
 </header>
-
 
         
           <p>贝壳的新电脑出了点小问题，不过让贝壳郁闷了很长时间。
@@ -306,30 +345,25 @@ OK，光说不练假把式。我们对比一下几个散热方案的情况。
 [2].热导管http://zh.wikipedia.org/wiki/%E7%86%B1%E5%B0%8E%E7%AE%A1
 [3].如何计算产品所需风机的风量http://itbbs.pconline.com.cn/diy/10497307.html
 [4].风扇轴承http://detail.zol.com.cn/product_param/index651.html</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Sep 7, 2011
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/1903/#disqus_thread">Comments</a>
+  <p class="meta">Sep 7, 2011
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/1903/">gnupg密钥签署原理和过程</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/1903/">gnupg密钥签署原理和过程</a>
+  </h1>
 </header>
-
 
         
           <p>gnupg的密钥基础运用比较简单，有能力跑过来看我blog的应该都比较清楚了。不过最近接触了gnupg密钥的一些复杂运用，才发现——这玩意，居然能构造类似于PKI的复杂密码体系呢。
@@ -350,30 +384,25 @@ keysigning party[2]的聚会，互相交换和签署密钥。
 reference:
 [1].The GNU Privacy Handbookhttp://www.gnupg.org/gph/en/manual.html
 [2].GnuPG Keysigning Party HOWTOhttp://alfie.ist.org/projects/gpg-party/gpg-party.zh-tw.html</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Sep 6, 2011
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/1901/#disqus_thread">Comments</a>
+  <p class="meta">Sep 6, 2011
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/1901/">为什么恳谈行不通</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/1901/">为什么恳谈行不通</a>
+  </h1>
 </header>
-
 
         
           <p>几乎每个公司的老总都有“事到临头才发现自己是公司最后一个知道的人”的杯具经历，因此几乎没有例外的，每个公司基本都有所谓的“恳谈会”，或者叫做面谈。基本就是HR，或者行政，对职员进行一对一面谈，试图找出些什么东西来。不过就贝壳自己的经历来看，这种恳谈会的作用非常小。一个公司的所有员工，一年谈一次，能得到一个有用的信息，算是运气不错了。
@@ -384,30 +413,25 @@ reference:
 区别？如果你看到一个上班打游戏的家伙，让他滚蛋了。你是对的，然而你是老板。如果你看到一个上班打游戏的家伙，你回去查了查，规则中并没有说不能打游戏。所以你在某个会议上说，我们最好不要这样，然后让员工讨论一下，什么时候可以打游戏，什么时候不可以。什么游戏是可以玩的，什么是不可以的，打游戏有哪些惩罚。那么你就是一个普通管理者。
 听起来没有什么好处，而且罗嗦的要命？明明正确的事情，为什么不能直接做？可你知道，这只是把隐藏在台面下的东西端上来而已，管理者从来都不是神——甚至不是国王。你可以直接控制你的员工，也可以强行制定规则，大部分人也不会有反应。然而，当你的政策和现实差异越来越大的时候，你的员工离职率也会居高不下。过高的离职率会带来很多问题，当部门普通员工离职率小于10%每年的情况下，公司基本不会受到任何影响。当部门普通员工离职率超过20%每年的情况下，管理者的执行就会不太流畅，时断时续。当部门员工离职率超过50%每年，或者中级以上管理者每年离职超过10%的时候，公司大量资源会消耗在招聘，培训，交接等问题上，同时事务实行经常卡壳。当部门员工离职率超过100%（不要惊讶，这不是个铁道部的笑话），或者中层管理者离职超过50%每年的时候，公司基本失去功能。因此老外的罢工可不是闹着玩的。
 和员工商讨规则，并且连自己也需要遵守规则，这在保证员工利益的同时，也让他们感到参与感。参与感会增加他们归属于这个集体的情感，从而帮助你发现和管理问题——一切都是自发的。更妙的是，即使薪水略低，员工也很少离职。当然，作为双刃剑，你要知道，有的时候员工会联合起来进行薪水谈判。如果双方都是理智的进行谈判的话，我相信对于一个健康的软件公司，这只会让他更健康。当然，更重要的是，你需要自己遵守自己的规则，让规则成为权威。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Sep 1, 2011
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/1899/#disqus_thread">Comments</a>
+  <p class="meta">Sep 1, 2011
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/1899/">我有几台电脑</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/1899/">我有几台电脑</a>
+  </h1>
 </header>
-
 
         
           <p>废话贴，数一下。
@@ -417,30 +441,25 @@ reference:
 两台嵌入设备，wince和android各一，还打算明年入个平板。
 虚拟设备七到八个，常用的两个，一个xp一个debian。
 差不多就这些。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Aug 30, 2011
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/1897/#disqus_thread">Comments</a>
+  <p class="meta">Aug 30, 2011
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/1897/">汽车、苹果、人类的历史</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/1897/">汽车、苹果、人类的历史</a>
+  </h1>
 </header>
-
 
         
           <p>Jobs辞职了。
@@ -453,47 +472,14 @@ reference:
 计算机发展到后期，已经远远超出了最聪明的人所能理解的范畴。app store上有十万多个程序，即使每个花5分钟浏览一下也需要6天。如果要一一玩过，基本会花去一个人的一生。windows下的各种程序更是数都不要数。在这种情况下，如果我们还是持续的曝露各种底层细节给用户——你的数据要存放到哪个文件夹？你的文件类型是什么？无疑，用户不会跑开，但是肯定会很恼怒——为什么我需要知道文件路径？我写下一个名字，下次你帮我找出来，不就好了？
 类似的问题正是ipod, mac, ipad, 加上现在的android试图解决的。app的安装删除并不需要用户理解细节，android上调节参数比较多，最多也不过是指名安装到sd卡上还是内存中。数据保存也基本无须关心——其实这点上做的还并不足够。整个系统，就像一个封装在琥珀里面的，神奇的魔盒。你说出你的愿望，他就帮你实现，一切都是那么美好——除了这个魔盒可以买到，而且必须经常充电。
 将来？将来的系统可能会重现工业时代的老路，有经验的程序员会逐渐变成工人，而不是城市里孤独的游侠。华而不实的设计被淘汰，有效的设计成为生活中的常识。电脑将变得越来越贴近生活——前所未有的近。而我们的历史，也会进入新的一页。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Aug 26, 2011
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/1895/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/1895/">debian打包的一些细节补充</a>
-    </h1>
-</header>
+      </article>
+      
+      
+      
 
 
-        
-          <p>如果前面有人接手了，你最好和前任联系一下，看看是否可以获得他的帮助，或者跟着他的思路继续做下去。
-debian有一个比较变态的规定，你的打包内容，必须遵循FHS。有些程序写的数据放到了程序路径下面，你需要进行人工分离（这个花了我整整两天）。
-求RFS比ITP难多了&hellip;
-&hellip;.
-&hellip;&hellip;.
-求RFS。</p>
-
-          
-
-        
-
-    </article>
-    
-    
-    
 
 
 
@@ -715,10 +701,8 @@ debian有一个比较变态的规定，你的打包内容，必须遵循FHS。�
 </div>
 
   
-
-  </div>
-
-  
+    </div>
+    
 
 <aside class="sidebar thirds">
   <section class="first odd">
@@ -739,7 +723,10 @@ debian有一个比较变态的规定，你的打包内容，必须遵循FHS。�
       
       
       
-       
+      
+         
+      
+      
       
       
       
@@ -764,64 +751,87 @@ debian有一个比较变态的规定，你的打包内容，必须遵循FHS。�
         <h1>Recent Posts</h1>
         <ul id="recent_posts">
           
-            <li class="post">
-              <a href="/blog/archives/2866/">关于抵制洋节</a>
-            </li>
           
-            <li class="post">
-              <a href="/blog/archives/2865/">恒春潜水记录</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2867/">996</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2866/">关于抵制洋节</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2863/">openssl证书相关</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2865/">恒春潜水记录</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2861/">密码学基本原理</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2863/">openssl证书相关</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2860/">similan船宿</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2861/">密码学基本原理</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2858/">京都游记</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2860/">similan船宿</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2857/">Boracay潜水攻略</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
+              </li>
+            
+          
+            
+              <li class="post">
+                <a href="/blog/archives/2858/">京都游记</a>
+              </li>
+            
           
         </ul>
       </section>
     
   
-
 </aside>
     
- </div>
+  </div>
 </div>
+    <footer role="contentinfo">
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
+        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+      </p>
+    </footer>
 
-<footer role="contentinfo">
-  <p>Copyright &copy; 2018 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-</p>
+    
+    
+    
 
-</footer>
-
-
-</body>
+    
+  </body>
 </html>
    
+

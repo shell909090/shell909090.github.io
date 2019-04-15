@@ -1,18 +1,16 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
 <head>
-  <link href="http://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
 
   
-  <meta name="HandheldFriendly" content="True">
-  <meta name="MobileOptimized" content="320">
   <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
 
   
-  
-  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+    
+    
+      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
+    
   
 
   
@@ -20,46 +18,50 @@
 
   
   
-  <link rel="stylesheet" href="//blog.shell909090.org/css/hugo-octopress.css">
+  <link rel="stylesheet" href="/css/hugo-octopress.css">
 
   
   
 
   
-  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/css/fork-awesome.min.css">
+  
 
   
   <link href="//blog.shell909090.org/favicon.png" rel="icon">
 
   
-  
-  
-
   <link href="//blog.shell909090.org/index.xml" rel="alternate" type="application/rss+xml" title="Shell&#39;s Home" />
 
-  <meta name="description" content="">
+  <meta name="description" content="" />
   <meta name="keywords" content="">
-
   <meta name="author" content="Shell Xu">
 
   
-  <meta name="generator" content="Hugo 0.30-DEV" />
+  <meta name="generator" content="Hugo 0.55.0" />
 
   
   
-<script>
-window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-ga('create', 'UA-48816091-1', 'auto');
-ga('send', 'pageview');
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-48816091-1', 'auto');
+	
+	ga('send', 'pageview');
+}
 </script>
-<script async src='//www.google-analytics.com/analytics.js'></script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
 
 
+  
+  
 </head>
 <body>
 
 
-<header role="banner"><hgroup>
+<header role="banner">
+<hgroup>
   
   <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
     <h2></h2>
@@ -67,44 +69,81 @@ ga('send', 'pageview');
 
 
 <nav role="navigation">
+<fieldset class="mobile-nav">
+  
+  <select onchange="location = this.value;">
+    <option value="">Navigate…</option>
+      
+  </select>
+</fieldset>
+
 
 <ul class="main-navigation">
   
   
 </ul>
 
-
 <ul class="subscription">
   
-
 </ul>
 
 
 </nav>
 
 
-<div id="main">
- <div id="content">
-  <div class="blog-index">
-    
-    
-    <article>
 
+
+  
+
+<div id="main">
+  <div id="content">
+    <div class="blog-index">
+      
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Nov 25, 2005
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/265/#disqus_thread">Comments</a>
+  <p class="meta">Nov 29, 2005
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/265/">quiz tree</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/266/">debian上配置基于apache2的resin</a>
+  </h1>
 </header>
 
+        
+          <p>别的不说了，先用debian自带的apt安装apache2,记得安装dev部分，还有libapr0,libapr-dev,libapr0-dev。千万别忘记安装后面的部分，否则你在下面编译的时候就要出现问题。
+拿到resin，放在目标目录下面，然后tar -jxvf。完成后用ln -s做一个链接上去，使用resin的名字，这样可以方便的替换版本。然后在主目录下面运行./configure，make一下。一般来说，会出不少错误，最后生成一个libresin.so放到libexec下面，并且更新了resin的主执行程序。这个so很具有迷惑性，开始贝壳就被他骗了。这个so貌似是resin在本地平台下的加速程序，而不是嵌入到apache系列服务器中的整合插件。其中最大的差异是没有caucho_module导出符号，在apache加载的时候肯定会失败。
+跑到src/c/plugins/apache2下面运行make。可能会报错，可能没有。贝壳这里报了错，不过贝壳运行configure的时候没有加任何参数，也许加了参数就正常了。如果不正常，出错的代码可能分别是httpd.h找不到或者apr_time.h找不到。运行vi Makefile，看到有INCLUDE的目录吗？那里面要包含/usr/include/apache2和/usr/include/apr-0两个目录，没有就肯定出错。好了，修改然后重新make。得到的文件是mod_caucho.so。将它cp到$RESIN_HOME/libexec下面，这个动态库导出了caucho_module符号。
+在/etc/apache2/httpd.conf里面编辑一下，添加这个内容。
+LoadModule caucho_module /usr/resin/libexec/mod_caucho.so &lt;IfModule mod_caucho.c&gt; CauchoConfigFile ......../resin.conf &lt;Location /caucho-status&gt; SetHandler caucho-status &lt;/Location&gt; &lt;/IfModule&gt;  在/usr/resin/conf/resin.conf里面，添加这些内容。
+&lt;doc-dir&gt;/var/www/htdocs&lt;/doc-dir&gt; &lt;war-dir id='/var/www/htdocs'/&gt;  在/etc/apache2/sites-available/default中可能要修改如下配置。
+DocumentRoot /var/www/htdocs/ &lt;Directory /var/www/htdocs/&gt;  然后注销
+RedirectMatch ^/$ /apache2-default/  OK，这样就基本完成了整个系统的整合配置。</p>
+          
+        
+      </article>
+      
+      <article>
+        
+        
+
+<header>
+  <p class="meta">Nov 25, 2005
+     - 1 minute read 
+    
+
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/265/">quiz tree</a>
+  </h1>
+</header>
 
         
           <p>提问1：2005年，你的野心是什么！！『出题人：狐狸』
@@ -158,34 +197,29 @@ Dear and Be Lover， we gether here to celebrate this man and this woman lawfulh
 提问24：如果明天就世界毁灭，你会做些什么？！『出题人：可爱的33鬼娃娃』
 先写个程序模拟下好了
 提问25: 你会把心事藏多久? 出题者：KYO</p>
-
           
-              <footer>
-                  <a href="//blog.shell909090.org/blog/archives/265/" rel="full-article">Read On &rarr;</a>
-              </footer>
+            <footer>
+              <a href="//blog.shell909090.org/blog/archives/265/" rel="full-article">Read On &rarr;</a>
+            </footer>
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Nov 24, 2005
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/264/#disqus_thread">Comments</a>
+  <p class="meta">Nov 24, 2005
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/264/">Linux内存计数详解</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/264/">Linux内存计数详解</a>
+  </h1>
 </header>
-
 
         
           <p>又中计了……
@@ -210,34 +244,29 @@ used mem=内核表使用+程序使用物理内存+buffer mem+cached mem
 程序使用总内存=swap used+程序使用物理内存
 =swap used+used mem-buffer mem-cached mem
 =total mem-free mem+swap used-buffer mem-cached mem</p>
-
           
-              <footer>
-                  <a href="//blog.shell909090.org/blog/archives/264/" rel="full-article">Read On &rarr;</a>
-              </footer>
+            <footer>
+              <a href="//blog.shell909090.org/blog/archives/264/" rel="full-article">Read On &rarr;</a>
+            </footer>
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Nov 23, 2005
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/263/#disqus_thread">Comments</a>
+  <p class="meta">Nov 23, 2005
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/263/">C&#43;&#43;语言跨系统编程</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/263/">C&#43;&#43;语言跨系统编程</a>
+  </h1>
 </header>
-
 
         
           <p>首先我们给这个话题增加一个基础，就是您的C++代码没有用到native的部分。具体哪些部分我会列出让你慢慢检查的，不过用到了还想跨平台，你做梦去吧……
@@ -264,63 +293,53 @@ VC++中工程引入的时候不要加入linux.cpp。
 使用STL可以移植，不过注意平台差异性。
 附录2，linux项目在VC++中引入的方法。
 新建一个工程，然后copy所有源代码到工程下面。再然后添加文件到工程，然后F7编译。over</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Nov 21, 2005
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/262/#disqus_thread">Comments</a>
+  <p class="meta">Nov 21, 2005
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/262/">Debian GNU/Linux下安装Oracle 9i</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/262/">Debian GNU/Linux下安装Oracle 9i</a>
+  </h1>
 </header>
-
 
         
           <p>最近因为工作需要，在Debian GNU/Linux安装了Oracle 9i。Debian代号sarge，版本号release 3.1，testing发行。Oracle代号9ir2,版本号9.2.0.4。安装文件名称为ship_9204_linux_disk1.cpio.gz ship_9204_linux_disk2.cpio.gz ship_9204_linux_disk3.cpio.gz。需要一个补丁，文件名为p3006854_9204_LINUX.zip。Oracle 9i安装的是Enterprise Datebase。
 先执行以下脚本：
 #! /bin/bash #变更内核参数 cd /proc/sys/kernel #1G内存状况，按照需要调整 echo 4294967295 &gt; shmmax touch /etc/rac_on #增加一个link，debian需要 apt-get install libstdc++-glibc ; 或者使用aptitude cd /usr/lib ln -s libstdc++-libc6.2-2.so.3 libstdc++-libc6.1-1.so.2 #增加用户 cd /home mkdir oracle groupadd dba useradd -g dba -d /home/oracle -s /bin/bash oracle #注意-s参数，如果不指定下面的初试化脚本不一定跑的起来 passwd -d oracle chown -cR oracle:dba oracle cd /usr mkdir oracle chown -cR oracle:dba oracle cd /var mkdir oracle chown -cR oracle:dba oracle #增加初试化脚本 cd /home/oracle echo &quot;export DISPLAY=''&quot;&gt;.</p>
-
           
-              <footer>
-                  <a href="//blog.shell909090.org/blog/archives/262/" rel="full-article">Read On &rarr;</a>
-              </footer>
+            <footer>
+              <a href="//blog.shell909090.org/blog/archives/262/" rel="full-article">Read On &rarr;</a>
+            </footer>
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Nov 17, 2005
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/261/#disqus_thread">Comments</a>
+  <p class="meta">Nov 17, 2005
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/261/">模块化便携设备</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/261/">模块化便携设备</a>
+  </h1>
 </header>
-
 
         
           <p>前几天和一个fashion派的同学聊天，她说买个相机啥的多花点钱，然后就不升级了。偶想这不傻瓜嘛。不过后来想想偶聪明到哪里去呢？升级也就升级个SD卡，要换别的重新买。PDA等于半个废物。
@@ -338,166 +357,113 @@ PDA，内置一个可更换SD卡，带内置/扩展录音播放，支持无线�
 扩展键盘，扩展在背包上，价格大约200，重量大约600g左右。
 整体全部拿下来的价格是5600，重量2.3kg。打折加别的东西进去，价格应该在5300上下，重量2.5kg。功能包括一个能上网的正常电脑（除了小了点），一部数码相机（带卡噢），一部手机（短信收发超方便），MP3和录音笔（现在卖的MP3都整合录音了）。总体使用时间大约是三四个小时。而目前要买这么几个东西，笔记本超贵就不说了，数码相机就要2500，MP3要300，手机要500。这已经3300了，还不说到底多沉。
 整体的一个核心思想就是，既然各种设备上都有类似的东西（液晶屏幕，核心处理器，电池），那为什么不将所有资源放到一起呢？毕竟没有多少情况要用两份资源的。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Nov 17, 2005
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/260/#disqus_thread">Comments</a>
+  <p class="meta">Nov 17, 2005
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/260/">照月亮</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/260/">照月亮</a>
+  </h1>
 </header>
-
 
         
           <p>Dear Turing，我实在太激动啦。今天偶出门照月亮，照到手都冻僵快了。不过收获不错，DC在不同模式下照出来的东西都有可看处。圆圆的漂亮的大月亮终于藏进了偶的相机。唉，说话越来越像XX了，莫非她的东西看多了。
 何人江畔初见月，江月何年处照人。问的多好阿，这么漂亮的月亮，是什么时候才有的呢？按照Ross的回答，technically, it&rsquo;s 7-billion years ago。不过虽然人不同，地点不同，时间不同，我们看的月亮是相同的。这个圆圆的漂亮的白色大球，李白看过，说举头望明月。张若虚看过，于是有了春江花月夜（偶打太极老听见……）。当然秦始皇汉高祖唐明皇之类煞风景的玩意也看过，这就不说了。今天我看到了，你……也看到了吗？
 月儿圆，人团圆……</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Nov 16, 2005
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/259/#disqus_thread">Comments</a>
+  <p class="meta">Nov 16, 2005
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/259/">人和人</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/259/">人和人</a>
+  </h1>
 </header>
-
 
         
           <p>今天坐在车上，看人来人往，感觉一如从前。
 我每天上班的时候喜欢在7:53分坐787从南泉路向德平路走，时间比较稳定，车坐的久了，看到的人都有点认识的。在我上车的站，总有一个喜欢穿紫色衣服的MM，应该是哪个公司的白领，在陆家嘴附近工作。维纺路会上来一个头发比较爆炸的中年人，每次都腋下夹着报纸或者包上来。不知道是不是夹的习惯了，没有包就买张报纸夹着。东昌路地铁站会上来一个瘦瘦的酷酷的MM，很像高中时候的贾小凤。我下车的时候还在车上安稳的看报纸，估计是坐到底的。每次的报纸都是时代报，而且都是看第三版。源深路的时候会下去很多学生MM，其中一个特别高，估计和我差不多，怀疑是做模特的，只是年龄不对。民生路的时候又下去不少学生MM，都是海事大学的。其中有两个看着特别像高中女生的，不过我肯定是大学生，因为有次我看到他们拿出民法在看。高中生是不会这么做的。
 回家的时候是反过来坐的，时间当然也没有上班的时候那么准。一般会看到上去的时候后面有很多学生。有初中的，也有高中的。其中有一对学生couple因为我搭过两次话比较熟悉，看到都会打个招呼。估计他们也不难认出我来，因为我的头发已经是上海市的注册商标了。有几个是初中的小MM和小DD，他们都是在民生路下的，那里有个初中。
 不知道这些人，是否知道我。不知道他们眼里，我是怎么样？</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Nov 14, 2005
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/258/#disqus_thread">Comments</a>
+  <p class="meta">Nov 14, 2005
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/258/">SrouceForge</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/258/">SrouceForge</a>
+  </h1>
 </header>
-
 
         
           <p>今天去看了开源代码区，www.SrouceForge.net。总体来说不错，只是慢了点。里面有很多有趣的软件，我还在试他们。刚刚发现一个好东西，truecrypt。
 truecrypt是一个加密软件，姑且算吧。用hash和对称加密算法来做加解密，速度非常了得。不过最惊人的地方不是加密的部分，而是实现方法。它先生成一个加密文件，然后在上面加密码（或者密码文件）。然后将这个文件挂载到某个windows没有使用的驱动器上，就好像插入一个加密U盘一样。这个对文件系统完全透明，就我所知，是要写IFS驱动的。但是我在里面没有看到IFS驱动，也可能是封装在程序内部去释放他了，或者是因为扩展名是dll。因为有个主dll啥导出都没有。
 总之这个软件我是大力推荐的，如果你打算要一个强加密的系统。使用方便，绿色无污染。使用的时候也没有加解密过程。那么就用它吧。它最合适的地方是放U盘，上面放个文件系统，然后分出点空间来做加密。运行软件后任何系统上（这年头没兄弟还是98了吧）都可以做透明操作，就仿佛你有一个非加密U盘和加密U盘。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Nov 10, 2005
-         - 2 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/257/#disqus_thread">Comments</a>
+  <p class="meta">Nov 10, 2005
+     - 2 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/257/">JNI试用记</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/257/">JNI试用记</a>
+  </h1>
 </header>
-
 
         
           <p>近两天要用JIN做数据加密系统，所以特别写了这篇。省得以后忘记，顺便造福大家。   下面是核心编码：   //CTX.java   public abstract class CTX {\ protected byte\[\] state = new byte\[20\];   protected long count;   protected byte\[\] buffer = new byte\[0\]; /\* input buffer \*/   protected byte\[\] PADDING = { -128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,\ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,\ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,\ 0, 0, 0, 0, 0, 0 };   // 大端点序\ protected static void putChar(byte\[\] b, int off, char val) ;   // 大端点序\ protected static void putLong(byte\[\] b, int off, long val) ;   static {\ System.</p>
-
           
-              <footer>
-                  <a href="//blog.shell909090.org/blog/archives/257/" rel="full-article">Read On &rarr;</a>
-              </footer>
+            <footer>
+              <a href="//blog.shell909090.org/blog/archives/257/" rel="full-article">Read On &rarr;</a>
+            </footer>
           
-
         
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Nov 8, 2005
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/256/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/256/">被骗了</a>
-    </h1>
-</header>
+      </article>
+      
+      
+      
 
 
-        
-          <p>如果这个代码出现在linux内核里面，你们怎么想？
-subtypes[n].parse(state, bdev, START_SECT(p)*sector_size, NR_SECTS(p)*sector_size, slot);  很像是对象数组调用方法吧，很多人可能甚至会猜想这个东西是虚函数。问题是，大家记得吗？linux内核，是C的！
-事实上，这是声明。
-static struct { unsigned char id; void (*parse)(struct parsed_partitions *, struct block_device*, u32, u32, int); };  怎么想？这个是方法映射。技术上讲，和虚函数属于同种类的应用（dymanic binding）。当然，数据结构有差异。虚函数要先根据n确定对象位置，根据v_ptr确定虚函数表，根据虚函数表定位了函数入口。而这里是根据n定位了对象，然后直接找到了函数入口。
-可是，还是被骗了……
-PS.谨以此纪念首次在GNU/GPL下引用Linux内核源码用于程序开发，因为分区系统资料该死的不清楚！</p>
-
-          
-
-        
-
-    </article>
-    
-    
-    
 
 
 
@@ -719,10 +685,8 @@ PS.谨以此纪念首次在GNU/GPL下引用Linux内核源码用于程序开发�
 </div>
 
   
-
-  </div>
-
-  
+    </div>
+    
 
 <aside class="sidebar thirds">
   <section class="first odd">
@@ -743,7 +707,10 @@ PS.谨以此纪念首次在GNU/GPL下引用Linux内核源码用于程序开发�
       
       
       
-       
+      
+         
+      
+      
       
       
       
@@ -768,64 +735,87 @@ PS.谨以此纪念首次在GNU/GPL下引用Linux内核源码用于程序开发�
         <h1>Recent Posts</h1>
         <ul id="recent_posts">
           
-            <li class="post">
-              <a href="/blog/archives/2866/">关于抵制洋节</a>
-            </li>
           
-            <li class="post">
-              <a href="/blog/archives/2865/">恒春潜水记录</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2867/">996</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2866/">关于抵制洋节</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2863/">openssl证书相关</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2865/">恒春潜水记录</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2861/">密码学基本原理</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2863/">openssl证书相关</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2860/">similan船宿</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2861/">密码学基本原理</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2858/">京都游记</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2860/">similan船宿</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2857/">Boracay潜水攻略</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
+              </li>
+            
+          
+            
+              <li class="post">
+                <a href="/blog/archives/2858/">京都游记</a>
+              </li>
+            
           
         </ul>
       </section>
     
   
-
 </aside>
     
- </div>
+  </div>
 </div>
+    <footer role="contentinfo">
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
+        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+      </p>
+    </footer>
 
-<footer role="contentinfo">
-  <p>Copyright &copy; 2018 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-</p>
+    
+    
+    
 
-</footer>
-
-
-</body>
+    
+  </body>
 </html>
    
+

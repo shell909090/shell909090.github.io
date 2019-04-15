@@ -1,18 +1,16 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
 <head>
-  <link href="http://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
 
   
-  <meta name="HandheldFriendly" content="True">
-  <meta name="MobileOptimized" content="320">
   <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
 
   
-  
-  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+    
+    
+      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
+    
   
 
   
@@ -20,46 +18,50 @@
 
   
   
-  <link rel="stylesheet" href="//blog.shell909090.org/css/hugo-octopress.css">
+  <link rel="stylesheet" href="/css/hugo-octopress.css">
 
   
   
 
   
-  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/css/fork-awesome.min.css">
+  
 
   
   <link href="//blog.shell909090.org/favicon.png" rel="icon">
 
   
-  
-  
-
   <link href="//blog.shell909090.org/index.xml" rel="alternate" type="application/rss+xml" title="Shell&#39;s Home" />
 
-  <meta name="description" content="">
+  <meta name="description" content="" />
   <meta name="keywords" content="">
-
   <meta name="author" content="Shell Xu">
 
   
-  <meta name="generator" content="Hugo 0.30-DEV" />
+  <meta name="generator" content="Hugo 0.55.0" />
 
   
   
-<script>
-window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-ga('create', 'UA-48816091-1', 'auto');
-ga('send', 'pageview');
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-48816091-1', 'auto');
+	
+	ga('send', 'pageview');
+}
 </script>
-<script async src='//www.google-analytics.com/analytics.js'></script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
 
 
+  
+  
 </head>
 <body>
 
 
-<header role="banner"><hgroup>
+<header role="banner">
+<hgroup>
   
   <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
     <h2></h2>
@@ -67,44 +69,78 @@ ga('send', 'pageview');
 
 
 <nav role="navigation">
+<fieldset class="mobile-nav">
+  
+  <select onchange="location = this.value;">
+    <option value="">Navigate…</option>
+      
+  </select>
+</fieldset>
+
 
 <ul class="main-navigation">
   
   
 </ul>
 
-
 <ul class="subscription">
   
-
 </ul>
 
 
 </nav>
 
 
-<div id="main">
- <div id="content">
-  <div class="blog-index">
-    
-    
-    <article>
 
+
+  
+
+<div id="main">
+  <div id="content">
+    <div class="blog-index">
+      
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Oct 28, 2014
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2682/#disqus_thread">Comments</a>
+  <p class="meta">Oct 29, 2014
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2682/">context切换测试——进程有关部分请求review</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2684/">context切换测试——python有关部分请求review</a>
+  </h1>
 </header>
 
+        
+          <p>python yield模式性能测试 python下的测试就不用time了，我们改用python的timeit，循环100M次。具体可以看py_yield.py。数据结果如下：
+7.64262938499 9.2919304393e-06 5.41777145863 4.94284924931e-06  从结果来看，100M次循环的平均时间是5.4s，平均每次大约54ns。使用yield后变为76ns，增加了22ns。
+python greenlet模式性能测试 这次代码在py_greenlet.py，循环10M次。数据结果如下：
+5.35270996888 7.44085846125e-05 5.31448976199 5.82336765673e-05  单次循环时间消耗为535ns。比最初的54ns，增加了481ns。基本来说，时间增长了10倍率。
+这是预料中的，因为greenlet早就声明自己通过堆栈拷贝来实现上下文切换。这会消耗大量CPU时间。从原理上说，栈越深，消耗越大。但是测试结果表明两者几乎没有差异，栈深反而性能更加优异(TODO: why?)。</p>
+          
+        
+      </article>
+      
+      <article>
+        
+        
+
+<header>
+  <p class="meta">Oct 28, 2014
+     - 1 minute read 
+    
+
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2682/">context切换测试——进程有关部分请求review</a>
+  </h1>
+</header>
 
         
           <p>测试环境  Intel&reg; Pentium&reg; CPU G2030 @ 3.00GHz 8G内存 debian jessie Linux 3.16-2-amd64 2014年10月27日  附注一下，该CPU有2核心，无HT，1ns3个时钟周期。
@@ -114,34 +150,29 @@ time -f &quot;%e,%S,%c,%r,%s,%K,%P&quot; ./perf_fork  数据的意义分别为: 
 import numpy as np p = lambda s: [float(line.strip().split(',')[0]) for line in s.splitlines()] q = lambda s: [float(line.strip().split(',')[1]) for line in s.splitlines()] np.array(p(s)).mean() np.array(p(s)).var() np.array(q(s)).mean() np.array(q(s)).var()  进程fork开销 使用s_fork程序(注释语句关闭模式)，粒度1M次，重复6次，原始数据如下：
 49.04,26.83,29784,0,0,0,55% 51.53,26.38,32057,0,0,0,52% 49.88,26.02,30892,0,0,0,53% 51.39,27.13,37573,0,0,0,54% 52.89,28.12,37924,0,0,0,54% 51.19,27.02,35880,0,0,0,54%  统计结果如下：
  time mean = 50.98 time var = 1.</p>
-
           
-              <footer>
-                  <a href="//blog.shell909090.org/blog/archives/2682/" rel="full-article">Read On &rarr;</a>
-              </footer>
+            <footer>
+              <a href="//blog.shell909090.org/blog/archives/2682/" rel="full-article">Read On &rarr;</a>
+            </footer>
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Sep 25, 2014
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2680/#disqus_thread">Comments</a>
+  <p class="meta">Sep 25, 2014
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2680/">bash严重漏洞</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2680/">bash严重漏洞</a>
+  </h1>
 </header>
-
 
         
           <p>今天估计各大消息都在报这个漏洞，可能有些人看到有修复就放松了。目前来看，事情没那么简单。
@@ -155,59 +186,49 @@ $ env x='() { :;}; echo vulnerable' bash -c &quot;echo this is a test&quot; bash
 这个漏洞是第一个漏洞没有修复完全导致的，最麻烦的是，这个漏洞没有修复，细节却满天飞了。
 表现如下：
 $ env X='() { (a)=&gt;\' sh -c &quot;echo date&quot;; cat echo sh: X: line 1: syntax error near unexpected token `=' sh: X: line 1: `' sh: error importing function definition for `X' Wed Sep 24 23:25:58 PDT 2014  结论和建议 尽量不要暴露bash，能关就关，不行的自求多福吧。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Sep 4, 2014
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2678/#disqus_thread">Comments</a>
+  <p class="meta">Sep 4, 2014
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2678/">送书</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2678/">送书</a>
+  </h1>
 </header>
-
 
         
           <p> 最近清理家中藏书，打算送掉一部分纸质书。于是顺手列了一批自己需要，但是可以外借的书。
 送人的部分，如果你需要，两个月内联系我，自己想办法拿走（例如H4，或者直接上门）。逾期我就直接送去资源回收了。借阅的部分，记得好好保管图书，不管借阅多久，记得回头还我。
 送人  delphi 5.0 开发多媒体应用 ISBN 7-5084-0470-X C++语言程序设计 ISBN 7-302-03926-7 计算机绘图 ISBN 7-313-01482-1/TP.273 borland C++ windows程序设计 ISBN 7-115-05265-4/TP.117 最新C++语言精华 ISBN 7-5053-3975-3/TP.1731 C++语言程序设计 ISBN 7-302-04504-6 C++使用手册 ISBN 7-5053-2890-5/TP.959 microsoft visual C++ .net技术内幕 ISBN 7-302-08931-0 操作系统教程 ISBN 7-04-012664-8  借阅  模式识别 ISBN 7-121-02647-3 深入解析Windows操作系统 ISBN 978-7-121-03969-0 计算机网络 ISBN 7-302-08977-9 深入浅出MFC ISBN 7-900614-93-1 Python源码解析 ISBN 978-7-121-06874-4 数据结构与算法（Java语言版） ISBN 7-111-11902-9 网络渗透技术 ISBN 7-121-01035-6 密码编码学与网络安全 ISBN 7-5053-9395-2 人工智能及其应用 ISBN 7-302-02127-9 神经网络原理 ISBN 7-111-12759-5  </p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Aug 19, 2014
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2676/#disqus_thread">Comments</a>
+  <p class="meta">Aug 19, 2014
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2676/">如何分辨网站真假</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2676/">如何分辨网站真假</a>
+  </h1>
 </header>
-
 
         
           <p>老婆想去新疆玩，结果她居然从百度上搜了一下新疆国旅就联系开了。我一直不知道，直到她和我说，对方要求缴500元到一个支付宝帐号里。我立刻要求她不要付钱，然后开始查证真假。
@@ -238,34 +259,29 @@ ICP查询后结果是这样的：
 事情到这里，我的基本判断是。和第二家网站做生意还是有点谱的，ICP是真的，地址国旅也认。最低限度，他至少是一家合法的旅行社——虽然不保证是国旅下属。第一家么，谁爱信谁信。
 上海国旅 后面有点更好玩的事情。国旅在线上有上海，而google查询结果上也有不少上海国旅。那么谁是真的呢？
 上海国旅1 例如这家http://www.scits.com/。</p>
-
           
-              <footer>
-                  <a href="//blog.shell909090.org/blog/archives/2676/" rel="full-article">Read On &rarr;</a>
-              </footer>
+            <footer>
+              <a href="//blog.shell909090.org/blog/archives/2676/" rel="full-article">Read On &rarr;</a>
+            </footer>
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Aug 14, 2014
-         - 2 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2671/#disqus_thread">Comments</a>
+  <p class="meta">Aug 14, 2014
+     - 2 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2671/">服务器操作系统的选择</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2671/">服务器操作系统的选择</a>
+  </h1>
 </header>
-
 
         
           <p>今天被LTN问了一下怎么看一个知乎问题：
@@ -302,63 +318,53 @@ Debian系的补丁不靠谱么？ 那要看和谁比。这里有HeartBleed事件
 CVE-2014-0160 - OpenSSL安全漏洞的非技術事件
 我引用他的重点整理：
 RedHat 修復的速度比 OpenSSL 官方還快。 RedHat 派系的修復時間，除了 RedHat 外都算慢，如 Fedora 及 CentOS、Scentific， 他們都比 RedHat 慢 16 小時以上。 Debian 派系的修復時間，如 Debian 及 Ubuntu，都比 RedHat 慢上至少 12 小時以上。 Scentific 是列表中修復最慢的。 若以資安黃金 6 小時來說，Fedora、CentOS、OpenSUSE、Gentoo 及 Scentific 都不及格。  如果和RH比，Debian的修复速度是不及格，但是和CentOS比。。。怎么说呢？6个小时对10个小时，有种五十步笑百步的味道？</p>
-
           
-              <footer>
-                  <a href="//blog.shell909090.org/blog/archives/2671/" rel="full-article">Read On &rarr;</a>
-              </footer>
+            <footer>
+              <a href="//blog.shell909090.org/blog/archives/2671/" rel="full-article">Read On &rarr;</a>
+            </footer>
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Aug 13, 2014
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2669/#disqus_thread">Comments</a>
+  <p class="meta">Aug 13, 2014
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2669/">架构师</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2669/">架构师</a>
+  </h1>
 </header>
-
 
         
           <p>一个好的架构师至少要做到四点：
  识别甚至提前预测到程序不同阶段的性能瓶颈，并以合理的代价消除。 识别束缚程序员生产力发展的瓶颈，并合理的消除。 解决组里面的尖端问题。 成为组员的精神支柱和旗帜。  他不应该：
  总结需求。这是产品经理的事，除非他兼任。 评估工作时间，并保证工作进度。这是项目经理的事，除非他兼任。 召集，协调工作细节。这个随企业有不同划分，理论上是行政领导干的。有的企业是技术系的来做行政领导，有的是PM。 亲自写程序。除了初创，架构师亲自冲上去写大段大段的程序是找死的先兆。 预测技术的发展方向，并做出技术决策。您让CTO干什么去？ 政治斗争。架构师也来搞这个，要么被搞死，要么根本没心思做事。  但是架构师应该理解办公室政治，并且能够基本掌握情况。一点办公室政治都不懂的架构师肯定被搞死。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Jul 30, 2014
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2666/#disqus_thread">Comments</a>
+  <p class="meta">Jul 30, 2014
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2666/">14年7月，无甚大事</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2666/">14年7月，无甚大事</a>
+  </h1>
 </header>
-
 
         
           <p>这个月比较忙，啥都没说。堆月底做个总结吧。
@@ -374,30 +380,25 @@ RedHat 修復的速度比 OpenSSL 官方還快。 RedHat 派系的修復時間�
 汕头 今年去汕头玩了，具体就不写游记了，因为写不出来。如果我把游记详细的写出来的话，你们一定会以为是美食流水帐，并且质疑我报复社会。
 所以我就数一下我吃的美食吧。
  牛肉丸：当地特产。据说要人工用大锤子把牛肉打成酱来做。机器打出来的会发硬，不好吃。所以这算是在地(因为要离养殖地近)食品加工业，而且是劳动力密集行业。我问了问能不能带点回来送人，他们说只能抽真空。要买抽真空产品还不如直接在淘宝上买呢，还不算我们回程的携带重量。 鱼丸 鼠壳粿，厚粿：很当地特色，鼠壳粿甜的，厚粿似乎是放了某种海鲜。 广场豆花：他们的豆花是一整块一整块的，放很多红糖。很好吃。当地朋友说，每天就卖两桶，卖光就没了。我们吃的接近第二桶底。 水果冰：3-5元，现榨。比起上海来简直是白送一样的价钱。 牛肉火锅：当地牛肉很多，而且很好，所以很多人喜欢吃牛肉火锅。把牛肉放在网勺里面，在锅里面涮到半熟就捞起来吃。基本和北京涮羊肉一个思路，就是猛火滚汤快下快上。味道非常赞。当地对牛肉不同部位非常讲究，讲究到我根本认不出这些部位在哪里。反正去的话一定要吃啦。 炒冰：很有创意的想法。把现榨水果汁，放在一个制冷盘子上。随着下面大机器的高速制冷，整个水果汁就会变成一块块薄的冰片。拿一个小铲子铲啊铲的，确实很像炒菜。这样可以自己随意调和水果汁，做出不同口味的炒冰来。  总体来说，潮汕还是非常好玩的。对一个吃货而言，如果去不了台湾，就去潮汕。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Jul 2, 2014
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2655/#disqus_thread">Comments</a>
+  <p class="meta">Jul 2, 2014
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2655/">又是性能问题？扯淡</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2655/">又是性能问题？扯淡</a>
+  </h1>
 </header>
-
 
         
           <p>http://www.donews.com/net/201406/2812175.shtm
@@ -407,30 +408,25 @@ RedHat 修復的速度比 OpenSSL 官方還快。 RedHat 派系的修復時間�
 对了，补充一点。如果是正常公司，我觉得第一反应是限制调用速度。你丫调用过快要死死自己去。就算你拿着证据说我限制，我也可以说我们对每个商家的调用速度是有限制的没有错，你有什么问题么？——这是正常流氓。
 所谓连脸皮都不要的流氓，就是不管你限不限制调用速度，我都不让你用了。非但不让你用，而且还声明，这是你的责任。
 不要把TM政治问题扔到码农身上。谢绝扯淡，谢谢。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Jul 1, 2014
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2653/#disqus_thread">Comments</a>
+  <p class="meta">Jul 1, 2014
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2653/">狗肉节</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2653/">狗肉节</a>
+  </h1>
 </header>
-
 
         
           <p>吃没吃过狗肉 吃过，还不止一次，不过自己没点过。没特别觉得好吃，也没觉得难吃——我始终觉得我的味觉不算很灵敏。有次吃河豚也是完全没吃出来，一直以为是别的。别人告诉我了，我还奇怪这东西为什么被称作天下至鲜。
@@ -464,59 +460,14 @@ RedHat 修復的速度比 OpenSSL 官方還快。 RedHat 派系的修復時間�
 让爱狗人士去农村免疫-放生？后面又会被捕捉。实话说我一直很困扰，爱狗者拦下来的贩卖狗肉的卡车，上面的狗都怎么处理了？都被领养消化掉了？还是放生了？放生后有没有再被抓？
 归根到底，狗狗的问题不仅仅是狗自己而已。
 不负责的养狗人比狗贩子更可恶 不服来辩。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Jun 30, 2014
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2650/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2650/">docker的原理和类比</a>
-    </h1>
-</header>
+      </article>
+      
+      
+      
 
 
-        
-          <p> 从虚拟化的种类和层级说起  cpu虚拟化：可以模拟不同CPU，例如bochs 完全虚拟化：只能模拟同样CPU，但是可以执行不同系统，例如vmware 半虚拟化：guest必须打补丁，例如Xen 硬件虚拟化：可以当作获得硬件加速的完全虚拟化 系统虚拟化：host和guest共享一样的内核，例如Openvz 语言沙盒：只能在语言的范围内使用  虚拟化的级别越偏底层，速度越慢，用户越难察觉到虚拟化的存在。 虚拟化的级别越偏上层，速度越快，用户越容易感知。
- cpu虚拟化和完全虚拟化时，用户几乎可以不察觉到虚拟化的存在 半虚拟化时，guest内核必须存在补丁 系统虚拟化时，用户不能控制自己的内核 语言沙盒时，用户没有使用api的自由  docker的实现结构  docker  lxc namespace: 仅沙盒隔离，不限制资源。 cgroup: 仅限制资源，不沙盒隔离。 aufs image管理   当然，还有很多细节的东西，里面就不一一列举了。例如veth。
-docker不是虚拟机 docker不是虚拟机，因为lxc已经是虚拟机。如果两者功能一样，那么docker就没有存在的必要。
-你可以把docker当虚拟机用，但是当虚拟机用的话，他的完备程度远远不及现在的种种虚拟机。相比之下，就会觉得很不好用。这不是docker的错，只能说被不正确的使用了。
-docker是什么 docker就是环境。
-docker实际上只做了一件事情——镜像管理。负责将可执行的镜像导入导出，在不同设备上迁移。
-原本我们发布软件有两种方法，源码发布和二进制发布。二进制发布又有两种方案，静态链接和动态链接。最早的时候，我们发布软件都喜欢动态链接，因为小。但是随着网络和存储的升级，软件越来越喜欢静态链接，或者把动态库打包到发布里。因为系统情况越来越复杂，依赖关系一旦出错，系统就无法启动。
-将这个思路推到极限，就是虚拟机发布。早些年有人发过一些Oracle的linux安装镜像，算的上是先驱。因为Oracle早些年的安装程序很难用，对系统的依赖复杂。公司做测试用装一套Oracle还不够麻烦的。相比起来，下载一个虚拟机直接跑起来就可以用就方便了很多。即使性能差一些，测试而已也不是特别在意。
-docker再进了一步。不但提供一个镜像，可以在系统间方便的迁移。而且连镜像的升级都能做掉。更爽的是，升级只用传输差量数据。当然，有好处就有牺牲。
-docker的镜像是只读的 其实不是，docker的镜像当然可以写入。但是写的时候有几个问题。
- 如果对镜像进行写入，aufs会将原始文件复制一次，再进行写入。这样性能比较低。 更直接的问题是，一旦对镜像做了写入，就无法从docker这里获得更新支持——docker不能将你的写入和上游的更新合并。因此，整个系统就退化成了一个完全的虚拟机。  所以，我个人认为，docker的镜像本身应当是只读的——如同EC2里面一样。数据的写入应当通过远程文件系统或者数据库服务来解决。
-vagrant 提到镜像管理，我们可以提一下同样属于镜像管理的一个软件——vagrant。
- 可以将vbox的镜像打包导入导出 提供了一个cloud，允许镜像的分享/更新  为什么vagrant不如docker出名  快，系统级虚拟化使得docker的虚拟化开销降低到百分级别以下。 可以在虚拟机内使用的虚拟机，例如云主机内。 资源调度灵活，不需要将资源预先划定给不同的实例，在不同资源的机器上也不用调整参数。  成功案例 编译系统/打包系统/集成测试环境 典型的搭建一次，执行一次，销毁一次。不需要对image做更改（准确说的需要做更改，但是不需要保存）。
-公司内部应用 在IaaS的比拼中，以Openvz为代表的系统化虚拟化方案几乎完败于完全虚拟化/半虚拟化系列技术。就我和朋友的讨论，这里面最主要的因素在于。完全虚拟化技术可以比较好的隔离实例和实例间的资源使用，而系统虚拟化技术更偏向于将资源充分利用。这使得系统虚拟化更容易超售。
-然而，在公司内部应用中，这一缺陷就变成了优势。企业的诸多系统，只要在同一个优先级，其可用性应当是一致的。几个联动系统中，一个资源不足陷于濒死的情况下，保持其他几个系统资源充足并无意义。而且总资源是否足够应当是得到充分保证的事情，企业自己“超售”自己的资源，使得业务系统陷入运行缓慢的境地一点意义都没有。
-因此，系统虚拟化可以为企业级云计算提供可以灵活调度的资源，和非常低的额外开销。
-当然，云计算在企业化中原本就面临一些问题。原本提供软-硬件统一解决方案的集成商，需要如何重新组织解决方案。如何协调节约资源和高性能，高可用。云计算在企业级应用中还有很长的路要走。
-短板  太新。目前成功案例还是不足，而且围绕docker的工具链还不完备。 适用范围比较窄。需求需要集中在“环境迁移”领域，而且image本身不应被写入。 生不逢时。rvm和virtualenv已经在前面了。  </p>
-
-          
-
-        
-
-    </article>
-    
-    
-    
 
 
 
@@ -738,10 +689,8 @@ vagrant 提到镜像管理，我们可以提一下同样属于镜像管理的一
 </div>
 
   
-
-  </div>
-
-  
+    </div>
+    
 
 <aside class="sidebar thirds">
   <section class="first odd">
@@ -762,7 +711,10 @@ vagrant 提到镜像管理，我们可以提一下同样属于镜像管理的一
       
       
       
-       
+      
+         
+      
+      
       
       
       
@@ -787,64 +739,87 @@ vagrant 提到镜像管理，我们可以提一下同样属于镜像管理的一
         <h1>Recent Posts</h1>
         <ul id="recent_posts">
           
-            <li class="post">
-              <a href="/blog/archives/2866/">关于抵制洋节</a>
-            </li>
           
-            <li class="post">
-              <a href="/blog/archives/2865/">恒春潜水记录</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2867/">996</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2866/">关于抵制洋节</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2863/">openssl证书相关</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2865/">恒春潜水记录</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2861/">密码学基本原理</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2863/">openssl证书相关</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2860/">similan船宿</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2861/">密码学基本原理</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2858/">京都游记</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2860/">similan船宿</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2857/">Boracay潜水攻略</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
+              </li>
+            
+          
+            
+              <li class="post">
+                <a href="/blog/archives/2858/">京都游记</a>
+              </li>
+            
           
         </ul>
       </section>
     
   
-
 </aside>
     
- </div>
+  </div>
 </div>
+    <footer role="contentinfo">
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
+        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+      </p>
+    </footer>
 
-<footer role="contentinfo">
-  <p>Copyright &copy; 2018 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-</p>
+    
+    
+    
 
-</footer>
-
-
-</body>
+    
+  </body>
 </html>
    
+

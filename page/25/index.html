@@ -1,18 +1,16 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
 <head>
-  <link href="http://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
 
   
-  <meta name="HandheldFriendly" content="True">
-  <meta name="MobileOptimized" content="320">
   <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
 
   
-  
-  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+    
+    
+      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
+    
   
 
   
@@ -20,46 +18,50 @@
 
   
   
-  <link rel="stylesheet" href="//blog.shell909090.org/css/hugo-octopress.css">
+  <link rel="stylesheet" href="/css/hugo-octopress.css">
 
   
   
 
   
-  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/css/fork-awesome.min.css">
+  
 
   
   <link href="//blog.shell909090.org/favicon.png" rel="icon">
 
   
-  
-  
-
   <link href="//blog.shell909090.org/index.xml" rel="alternate" type="application/rss+xml" title="Shell&#39;s Home" />
 
-  <meta name="description" content="">
+  <meta name="description" content="" />
   <meta name="keywords" content="">
-
   <meta name="author" content="Shell Xu">
 
   
-  <meta name="generator" content="Hugo 0.30-DEV" />
+  <meta name="generator" content="Hugo 0.55.0" />
 
   
   
-<script>
-window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-ga('create', 'UA-48816091-1', 'auto');
-ga('send', 'pageview');
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-48816091-1', 'auto');
+	
+	ga('send', 'pageview');
+}
 </script>
-<script async src='//www.google-analytics.com/analytics.js'></script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
 
 
+  
+  
 </head>
 <body>
 
 
-<header role="banner"><hgroup>
+<header role="banner">
+<hgroup>
   
   <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
     <h2></h2>
@@ -67,44 +69,88 @@ ga('send', 'pageview');
 
 
 <nav role="navigation">
+<fieldset class="mobile-nav">
+  
+  <select onchange="location = this.value;">
+    <option value="">Navigate…</option>
+      
+  </select>
+</fieldset>
+
 
 <ul class="main-navigation">
   
   
 </ul>
 
-
 <ul class="subscription">
   
-
 </ul>
 
 
 </nav>
 
 
-<div id="main">
- <div id="content">
-  <div class="blog-index">
-    
-    
-    <article>
 
+
+  
+
+<div id="main">
+  <div id="content">
+    <div class="blog-index">
+      
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Apr 13, 2012
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2140/#disqus_thread">Comments</a>
+  <p class="meta">Apr 17, 2012
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2140/">mirrors.geekbone.org软件仓库镜像站将于4月中旬下线</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2144/">vps上应当装什么</a>
+  </h1>
 </header>
 
+        
+          <p>假定你有一台debian vps，上面需要装一些东西来——你懂。你应该装一些什么呢？
+基础部分 ssh 没啥好多说，没有ssh，你甚至无法管理机器。不过注意，安全的ssh方式应当只允许使用key登录，禁止一切密码登录。而且对于没必要登录的某些用户，需要在/etc/passwd中将shell改为/bin/false。至于端口改不改，这个不重要，看你心情。
+vim debian默认装的是vim-tiny，很不好用。建议改为vim，改配置的时候让自己舒服点。
+安全部分 iptables-persistent 这是debian内用于iptables规则持久化的工具，你可以编辑/etc/iptables/rules.v4来修改防火墙规则。注意，目前debian stable(squeeze)中的版本还没有4/6区分，你可以弄一个testing(wheezy)中的来装。
+一般来说，你的规则中至少要包含以下内容：
+-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT -A INPUT -i lo -j ACCEPT -A INPUT -i tun+ -j ACCEPT -A INPUT -i ppp+ -j ACCEPT -A INPUT -p tcp -m multiport --dport 22,xxx,xxx,xxx -j ACCEPT -A INPUT -p udp -m multiport --dport xxx,xxx,xxx -j ACCEPT  而且强烈建议，先保存一个没问题的iptables，然后直接修改iptables，再保存。这样的好处是，当你脑残改错了导致你自己都无法管理的时候，只要重启就可以恢复vps工作，而不用更麻烦的动作。
+denyhosts 这是ssh的连接防御进程，用python编写。如果有人试图尝试你的ssh密码，这个程序就会踢掉他的ip。
+如果你已经用了我说的，通过key的连接方式，你可以一次就直接踢掉对方ip。
+管理部分 ifstat ifstat是用于网络流量管理的工具，可以告诉你网络目标的流量是多少。
+dnsutils dnsutils里面包含了不少用于管理dns的工具，包括我们常用的nslookup，还有相对少用的dig。
+mtr-tiny mtr是一个traceroute工具，比后者好用很多。这个工具可以快速跟踪路由。</p>
+          
+            <footer>
+              <a href="//blog.shell909090.org/blog/archives/2144/" rel="full-article">Read On &rarr;</a>
+            </footer>
+          
+        
+      </article>
+      
+      <article>
+        
+        
+
+<header>
+  <p class="meta">Apr 13, 2012
+     - 1 minute read 
+    
+
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2140/">mirrors.geekbone.org软件仓库镜像站将于4月中旬下线</a>
+  </h1>
+</header>
 
         
           <p>原文在此我用了5年多的cn99和geekbone两大镜像终于全部下线。
@@ -121,30 +167,25 @@ ga('send', 'pageview');
 这个差距不仅体现在源少, 更体现在用户少. 用户少就是源少的原因.
 如果用户增长一个数量级, 目前这些源肯定会发生不足, 然后吵着让各个大学再开一两个镜像出来. 我倒是觉得这样不错, 至少sjtu有机会露个脸.
 其实sjtu也是有自己的源的](http://ftp.sjtu.edu.cn/debian/)%E7%9A%84), 只是没有对普通网络用户开放, 访问速度缓慢而已.</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Apr 12, 2012
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2138/#disqus_thread">Comments</a>
+  <p class="meta">Apr 12, 2012
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2138/">segment的核心数据结构空间和时间效率估量</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2138/">segment的核心数据结构空间和时间效率估量</a>
+  </h1>
 </header>
-
 
         
           <p>首先我们简述核心词典的目标。词典最主要的目标是，给定一句句子S，匹配出所有和句子开始拥有完整匹配的词语。所谓完整匹配，就是句子开始的一定长度的连续序列和词语相等。例如，中华，中华人民，中华人民共和国，都是句子：中华人民共和国今天成立了，的完整匹配。
@@ -160,30 +201,25 @@ ga('send', 'pageview');
 二级数据就无法这么偷懒了，因为二级结构中字符串长度不定。但是以数据展开大小只有2.4M来看，无论这一级别如何扩张，字符串本身大小不应当超过3M。开链法一个节点24字节，平均填充率0.5计算，14个表项一个词典（这个也可以自行控制了），336个字节一个词典，乘以19K个dict。大约6.23M。127K个频率数据1M，这是常规占用。
 以上总计，初级词典本身占用1M，二级结构本身占用10M，不超过20M应当就可以构建起一个高效的核心数据结构。由于实现类似，时间复杂度也类似，就不详细推论了。
 以上还有一点可改进之处，dict作为二级存储的绝对劣势在于，必须要对比全部词典才能确定完全匹配数量，于是时间复杂度正比于词典大小。严格的tied树只需要沿着顺序进行几次索引即可，复杂度取决于词语长度——基本来说和词典大小无关。按照这个推论，实现一个紧凑的，高效的二级小结构，可能比较有利于减小总体大小，增加工作速度。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Apr 11, 2012
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2136/#disqus_thread">Comments</a>
+  <p class="meta">Apr 11, 2012
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2136/">赞一下京东</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2136/">赞一下京东</a>
+  </h1>
 </header>
-
 
         
           <p>昨天觉得背不舒服，买了个按摩器，200。
@@ -192,59 +228,49 @@ ga('send', 'pageview');
 下午四点打电话，10分钟后就来电确认了，五点来了个人，把东西拿走了。
 我要求换货，目前页面写的是退货，不知道会不会把新品送来。
 不过效率很不错呢。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Apr 10, 2012
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2134/#disqus_thread">Comments</a>
+  <p class="meta">Apr 10, 2012
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2134/">如何用tabbar插件做emacs的tab定位切换</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2134/">如何用tabbar插件做emacs的tab定位切换</a>
+  </h1>
 </header>
-
 
         
           <p>说明一下，定位切换的意思，是像chromium那样，用Atl-1-9直接切换tab。而不是用上一个下一个慢慢换。另外，是切换buffer，不是切换frame。
 以下是实现部分：
 ;; 全部的buffer都分一组，否则这个修改是没任何意思的 (setq tabbar-buffer-groups-function (lambda () (list &quot;All Buffers&quot;))) ;; 去掉emacs自带的几个buffer (setq tabbar-buffer-list-function (lambda () (remove-if (lambda(buffer) (find (aref (buffer-name buffer) 0) &quot; *&quot;)) (buffer-list)))) ;; 切换到第N个buffer，1为第一个，负数表示从后数，注意0会出错，这里就不处理了 (defun switch-tabbar (num) (let* ((tabs (tabbar-tabs (tabbar-get-tabset &quot;All Buffers&quot;))) (tab (nth (if (&gt; num 0) (- num 1) (+ (length tabs) num)) tabs))) (if tab (switch-to-buffer (car tab))))) ;; 不说废话，绑热键 (global-set-key [(meta 1)] (lambda () (interactive) (switch-tabbar 1))) (global-set-key [(meta 2)] (lambda () (interactive) (switch-tabbar 2))) (global-set-key [(meta 3)] (lambda () (interactive) (switch-tabbar 3))) (global-set-key [(meta 4)] (lambda () (interactive) (switch-tabbar 4))) (global-set-key [(meta 5)] (lambda () (interactive) (switch-tabbar 5))) (global-set-key [(meta 6)] (lambda () (interactive) (switch-tabbar 6))) (global-set-key [(meta 7)] (lambda () (interactive) (switch-tabbar 7))) (global-set-key [(meta 8)] (lambda () (interactive) (switch-tabbar 8))) (global-set-key [(meta 9)] (lambda () (interactive) (switch-tabbar 9))) (global-set-key [(meta )] (lambda () (interactive) (switch-tabbar -1)))  </p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Apr 9, 2012
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2132/#disqus_thread">Comments</a>
+  <p class="meta">Apr 9, 2012
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2132/">empathy的无聊问题——记一次排错</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2132/">empathy的无聊问题——记一次排错</a>
+  </h1>
 </header>
-
 
         
           <p>废话不说，debian testing，装了empathy后没法用account，等于废物。
@@ -256,30 +282,25 @@ ga('send', 'pageview');
 shell-deb:\~\# cat /etc/apt/apt.conf.d/20norecommanded APT { Install-Recommends 0; };  这是对付很多无聊包把recommand当作suggest用的，结果这次中标。其实这次的recommand应当放入dep里面的。
 OK，完事。
 PS.虽说如此，记得把telepathy重启一下，否则jabber协议看的到但是无效。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Apr 1, 2012
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2130/#disqus_thread">Comments</a>
+  <p class="meta">Apr 1, 2012
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2130/">无线网络问题的诊断</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2130/">无线网络问题的诊断</a>
+  </h1>
 </header>
-
 
         
           <p>今天看到ZQ在坛子里面说无线网络卡，想想这对很多人是个问题。现在越来越多设备采用无线网络，本来看似够用的无线网络应该也会逐渐变的不怎么够用。这篇文章的大部分内容在blog中都有说，但是没有集结成文。今天集结一下，为大家提供便利。
@@ -298,30 +319,25 @@ CPU不足呢 CPU不足最典型的确诊就是关掉加密，你的无线网速�
 这个一点办法都没有，只能把11g的设备都淘汰光。只要有11g的设备在，11n就无法发挥极限速度，导致你的无线只能在18Mbps上晃。而换用11n的设备后，速度一般可以达到30-40Mbps以上，基本够用。
 路由器被打爆 由于速度加快，导致现在有更多的小包可能被传输。虽然传输速率要求不高，但是由于路由器对每个包都需要做同样处理，所以大量小包的资源消耗和同样数量的大包是同一个量级的。我们做一个简单的计算。如果一个包是1500字节，128KB/s的网络可以每秒传输90个包。而如果每个包是64字节，就可以传输2000个包。而当速度升级到2.5MB/s（20Mbps光纤），如果是1500字节，每秒1700个，而64字节的就是40000个。如果路由器的处理能力是每秒10000个包，升级到光纤一跑小包就挂了。很多人在ADSL的时代没问题，升级到光纤反而频繁出问题就是这个原因。
 现象比较多，如果是交换机挂掉，往往是一个机器链路OK但是就是有TX没有RX。怎么整也没用，但是过一会，这台机器突然就OK了，换下一台出同样问题。而如果是整个路由器挂掉，可能是路由器突然重启，或者ppp0断线重新拨号。还有的机器是死在那里没任何反应，必须拔掉电源线重新插才有效。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Mar 30, 2012
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2128/#disqus_thread">Comments</a>
+  <p class="meta">Mar 30, 2012
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2128/">redis的rdb和aof模式性能对比</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2128/">redis的rdb和aof模式性能对比</a>
+  </h1>
 </header>
-
 
         
           <p>由于是同一台机器，进行相对对比，我就不列配置了。系统是debian testing，kernel 3.2 686。redis 2.4.8。
@@ -341,30 +357,25 @@ aofmode: 77, 85, 38777849
 dbmode: 55, 60
 aofmode: 62, 63
 差异在10%以内，甚至比最小-平均差异还弱。基本可以视为一致。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Mar 27, 2012
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2126/#disqus_thread">Comments</a>
+  <p class="meta">Mar 27, 2012
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2126/">假如生命可以重来——致80后的家长</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2126/">假如生命可以重来——致80后的家长</a>
+  </h1>
 </header>
-
 
         
           <p>假如我们的生命可以重来——好吧，这个听起来像七老八十的老头说的话，不过，确实，人过到而立之年，会发现很多遗憾，很多很多的已经太晚。假如人生可以重来，我们也许就能弥补其中一些。
@@ -383,30 +394,25 @@ aofmode: 62, 63
 好吧，上面一堆，和80后的家长有什么关系？
 我们的人生有很多遗憾，有不少遗憾，是因为我们承载了家长的梦想，受到家长的管束。家长认为他们没有接受过正规的音乐教育，所以他尽力让我们接受正规的音乐教育。家长认为初中生旅行是不安全的，却没有想过他们十几岁就离开家乡去了大城市闯荡。他们没有接受过高等教育，所以认为我们需要高等教育，所以不能谈恋爱。但是这一切的一切，却并没有使得我们的人生完美。
 所以，当你决定你孩子的人生的时候，不妨想想。假如我的人生可以重来，我想要的是什么？</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Mar 26, 2012
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2124/#disqus_thread">Comments</a>
+  <p class="meta">Mar 26, 2012
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2124/">设计的艺术</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/2124/">设计的艺术</a>
+  </h1>
 </header>
-
 
         
           <p>1.标准，简洁但不简单
@@ -422,50 +428,14 @@ aofmode: 62, 63
 同样，多个重复组件便于批量生产，也便于在不修改整体的情况下，更换部分组件。
 当然，也有另一种思路。将系统设计成一个完整的系统，你不需要关心哪里出错。例如苹果。
 如果这种系统发生问题呢？你要么完整的返厂修理，要么扔了算了。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Mar 22, 2012
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/2122/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/2122/">从对称性说男女平等</a>
-    </h1>
-</header>
+      </article>
+      
+      
+      
 
 
-        
-          <p>一切号称男女平等的朋友们，作为一个死硬理性派，我认为真正男女平等应当满足对称性。简单来说，你们话中的“男”和“女”对换后，说法仍旧成立，那么这个论调就是满足对称性的，也是真正男女平等的。
-我们举个例子。我和猫咪去云南旅游的时候，我们听过摩梭人“走婚”的习俗。具体不介绍了，大家自己查。简单来说是这样的，男孩子和女孩子互相看中后，男孩每天去女孩的房间里过夜，白天回自己家。孩子不用爸爸养，由女方的兄弟养。所以舅舅是一个孩子最值得尊敬的男性长辈，而不是父亲。一个朋友说，这不是很爽？男的和女孩子发生关系，还不用负责，小孩不用自己养。我说，你要记得，摩梭人是母系社会，男和女的关系都要对调的。我们把它们习俗中的男和女对掉过来听听？
-女孩子晚上都要去男孩家里，过夜后回自己家中，不能带自己的小孩，还要帮自己的哥哥带小孩。
-听起来——对女孩子好像很悲惨的样子——我们再把这个“女”还原回原始的“男”，你还觉得那里的男人真幸福么？
-我们在讨论一切事情的时候，口头说“男女平等”。其实潜移默化中，还是受到中国传统男女思想的影响。从数学上说，利用对称性消除这种影响是最好不过的了。例如这个论调，是否男女平等呢？（女孩子把人生中最好的岁月给了你）。我们对掉过来看看？（男孩子把人生中最好的岁月给了你）OK，相信大家都笑了。
-先不要笑，尤其是觉得得意的男同胞。男女平等在消除了女性的特权同时（包括撒娇，房子应当男方买），也消除了男性的特权。你看看是否能接受以下情况？（为了妻子的事业丈夫应当作出牺牲）我想很多男同胞已经在拍桌子跳起来了。那这个呢？（孩子要跟母亲的姓）OK，现在笑不出来了吧？
-上面讨论了一堆怪论，很多人也许会说贝壳是断章取义，或者别的什么的。实际上，有问题的不是贝壳，而是“男女平等”这个词。真正的平等，为什么不能满足对称性呢？
-实际上，多数人在说男女平等的时候，包含的意思并不是，男女双方对称。而是，男女各自为了不同的事情让步，互相达成交易。女孩子要生育，男孩子就要负担家庭。实际上，双方的关系并不是对等关系，而是交易双方关系。两者既要达成合作共赢，又要争取自己的利益。对这点，一个很明显的事实是，男女的婚姻条件改变依赖于适婚男女比例。在战争年代，一堆寡妇找一个男人，男人娶媳妇容易，三妻四妾也不难。但是近代，尤其是计划生育造成男女比例失衡后，女方明显就压在了男方上面。
-因此？一个明显的悖论是，如果要改变社会的男女关系，让优势向某个方向发展，应当做的实际上是尽量设法减少该性别的人口。想让男方占优势？让男人去打仗就对了。</p>
-
-          
-
-        
-
-    </article>
-    
-    
-    
 
 
 
@@ -687,10 +657,8 @@ aofmode: 62, 63
 </div>
 
   
-
-  </div>
-
-  
+    </div>
+    
 
 <aside class="sidebar thirds">
   <section class="first odd">
@@ -711,7 +679,10 @@ aofmode: 62, 63
       
       
       
-       
+      
+         
+      
+      
       
       
       
@@ -736,64 +707,87 @@ aofmode: 62, 63
         <h1>Recent Posts</h1>
         <ul id="recent_posts">
           
-            <li class="post">
-              <a href="/blog/archives/2866/">关于抵制洋节</a>
-            </li>
           
-            <li class="post">
-              <a href="/blog/archives/2865/">恒春潜水记录</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2867/">996</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2866/">关于抵制洋节</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2863/">openssl证书相关</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2865/">恒春潜水记录</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2861/">密码学基本原理</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2863/">openssl证书相关</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2860/">similan船宿</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2861/">密码学基本原理</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2858/">京都游记</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2860/">similan船宿</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2857/">Boracay潜水攻略</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
+              </li>
+            
+          
+            
+              <li class="post">
+                <a href="/blog/archives/2858/">京都游记</a>
+              </li>
+            
           
         </ul>
       </section>
     
   
-
 </aside>
     
- </div>
+  </div>
 </div>
+    <footer role="contentinfo">
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
+        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+      </p>
+    </footer>
 
-<footer role="contentinfo">
-  <p>Copyright &copy; 2018 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-</p>
+    
+    
+    
 
-</footer>
-
-
-</body>
+    
+  </body>
 </html>
    
+

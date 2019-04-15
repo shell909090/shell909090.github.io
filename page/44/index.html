@@ -1,18 +1,16 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
 <head>
-  <link href="http://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
 
   
-  <meta name="HandheldFriendly" content="True">
-  <meta name="MobileOptimized" content="320">
   <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
 
   
-  
-  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+    
+    
+      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
+    
   
 
   
@@ -20,46 +18,50 @@
 
   
   
-  <link rel="stylesheet" href="//blog.shell909090.org/css/hugo-octopress.css">
+  <link rel="stylesheet" href="/css/hugo-octopress.css">
 
   
   
 
   
-  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/css/fork-awesome.min.css">
+  
 
   
   <link href="//blog.shell909090.org/favicon.png" rel="icon">
 
   
-  
-  
-
   <link href="//blog.shell909090.org/index.xml" rel="alternate" type="application/rss+xml" title="Shell&#39;s Home" />
 
-  <meta name="description" content="">
+  <meta name="description" content="" />
   <meta name="keywords" content="">
-
   <meta name="author" content="Shell Xu">
 
   
-  <meta name="generator" content="Hugo 0.30-DEV" />
+  <meta name="generator" content="Hugo 0.55.0" />
 
   
   
-<script>
-window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-ga('create', 'UA-48816091-1', 'auto');
-ga('send', 'pageview');
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-48816091-1', 'auto');
+	
+	ga('send', 'pageview');
+}
 </script>
-<script async src='//www.google-analytics.com/analytics.js'></script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
 
 
+  
+  
 </head>
 <body>
 
 
-<header role="banner"><hgroup>
+<header role="banner">
+<hgroup>
   
   <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
     <h2></h2>
@@ -67,44 +69,90 @@ ga('send', 'pageview');
 
 
 <nav role="navigation">
+<fieldset class="mobile-nav">
+  
+  <select onchange="location = this.value;">
+    <option value="">Navigate…</option>
+      
+  </select>
+</fieldset>
+
 
 <ul class="main-navigation">
   
   
 </ul>
 
-
 <ul class="subscription">
   
-
 </ul>
 
 
 </nav>
 
 
-<div id="main">
- <div id="content">
-  <div class="blog-index">
-    
-    
-    <article>
 
+
+  
+
+<div id="main">
+  <div id="content">
+    <div class="blog-index">
+      
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Apr 8, 2011
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/1770/#disqus_thread">Comments</a>
+  <p class="meta">Apr 11, 2011
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/1770/">为什么我觉得拿版权较真的人都在扯淡</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/1772/">说说x509证书链</a>
+  </h1>
 </header>
 
+        
+          <p>x509证书一般会用到三类文件，key，csr，crt。key是私用密钥，openssl格式，通常是rsa算法，爱咋用咋用的。csr是证书请求文件，用于申请证书。在申请的时候，必须使用自己的私钥来签署申请，还可以设定一个密钥。crt是证书文件（windows下面的csr，其实是crt），是签署人用自己的key给你签署的凭证。通常签名证书的时候都需要一个序列号，避免两个证书重复，当指明序列文件后，被签名证书会使用这个文件，并且文件会发生变化。另外一个额外说明的东西是dh参数，做openvpn的时候需要这个东西，大致是什么算法的初始参数，在下面有生成方法。
+key的生成方法：
+openssl genrsa -des3 -out in.key 2048  这样是生成rsa私钥，des3算法，openssl格式，2048位强度。ca.key是文件名。为了生成这样的密钥，需要一个至少四位的密码。可以通过以下方法去除。
+openssl rsa -in in.key -out out.key  输入密钥后，out.key就是没有密码的版本了。
+csr的生成方法：
+openssl req -new -key server.key -out server.csr  需要依次输入国家，地区，组织，email。最重要的是，有一个common name，可以写你的名字或者域名。如果为了https申请，这个必须和域名吻合，否则会引发浏览器警报。
+crt生成方法：
+openssl x509 -md5 -days 3560 -req -CA ca.crt -CAkey ca.key -CAcreateserial -CAserial ca.srl -in server.csr -out server.crt  输入key的密钥后，完成证书生成。-CA选项指明用于签名的ca证书，-CAkey选项指明用于签名的密钥。-CAserial指明序列号文件，而-CAcreateserial指明文件不存在时自动生成。
+openssl req -new -x509 -days 3650 -key ca.key -out ca.crt  这个是用于生成自签名证书的。
+dh参数生成方法：
+openssl dhparam -out dh1024.pem  1024是位数，一般1024已经够了。
+x509的证书链是这样的。crt上有证书持有人的信息，持有人的公钥，签署者的签名。当你安装了一个证书后，就信任了这份证书。证书上会说明用途，例如服务器认证，客户端认证，或者签署其他证书。当系统收到一份新的证书的时候，证书会说明，是由谁签署的。如果这个签署者确实可以签署其他证书，并且收到证书上的签名和签署者的公钥可以对上的时候，系统就自动信任新的证书。
+在系统开始的时候，会自动安装信任一些证书机构，这些被称为根证书机构（CA）。根证书机构会为其他公司颁发证书，用于各种用途。当然，被签署的证书也可能是一份“可签署证书”，这样就要检查对方的资质。这样逐层签署，就会形成一个叫做“证书链”的东西。从拓扑结构上来说，其实应该是森林结构。</p>
+          
+            <footer>
+              <a href="//blog.shell909090.org/blog/archives/1772/" rel="full-article">Read On &rarr;</a>
+            </footer>
+          
+        
+      </article>
+      
+      <article>
+        
+        
+
+<header>
+  <p class="meta">Apr 8, 2011
+     - 1 minute read 
+    
+
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/1770/">为什么我觉得拿版权较真的人都在扯淡</a>
+  </h1>
+</header>
 
         
           <p>重申一遍，我不反对版权，我只反对使用版权牟取暴利。
@@ -113,59 +161,49 @@ ga('send', 'pageview');
 宣传，策划，包装，完善到底要花多少钱呢？这个和中国移动到底从我们的手机账单中支出多少到基础设备建设，支出多少到服务一样，是个很难揣测的概念。然而我们可以知道另一个东西——他们的资产回报比——一般是多高。一切拿着策划，宣传，包装，需要花费巨额费用来说事，但是自己却有超高资产回报比的公司，哥都认为是在扯淡。
 更不提因为XXX技术和OOO技术针对的客户群接近，就无视两者根本没有血亲的事实，打官司指控OOO技术抄袭XXX技术，企图将松散的社区送上死路的动作。这其实不是为了给程序员更高的回报，而是出于资本的贪婪。版权/著作权应当保护作者的利益，而不是资本的利益。这就是我对版权/著作权的态度。
 夸张？松茸叔叔说过一个很有趣的内容，因为是豆瓣广播，链接不好找，我就不贴了。“从前有群人喜欢吃狗不理包子，他们搞了个狗不理包子同好会。后来有天来个人说，我是狗不理新老板，你们借用狗不理的名字，这是亲，呃，侵了我的权，你们得散了。于是他们只好改名为包子同好会。好笑吗？如果JavaEye没说谎，这就是Oracle对他们干的事情。”</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Apr 7, 2011
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/1768/#disqus_thread">Comments</a>
+  <p class="meta">Apr 7, 2011
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/1768/">决定了，以后增加一个标签叫评论</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/1768/">决定了，以后增加一个标签叫评论</a>
+  </h1>
 </header>
-
 
         
           <p>看了看日志，发现很多人还是在乎别人的评价是什么的，经常有搜索“XX怎么样”之类的关键字跳到我的blog上。最近在挑一些东西的时候，发现，确实，别人的评论很重要，尤其是负面评论。
 所以，决定了，以后就增加一类叫做评论，专门就是评论看到的各种东西的。当然，负面评论多正面评论少。不过大家别以为负面评论少是好事。10块买个手电筒，负面评论最多是“不够亮”。6000买个ipad2，你看看能出多少负面评价。
 ——可是你愿意弄个ipad2还是弄个手电筒？</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Apr 6, 2011
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/1766/#disqus_thread">Comments</a>
+  <p class="meta">Apr 6, 2011
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/1766/">baidu和google的选择</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/1766/">baidu和google的选择</a>
+  </h1>
 </header>
-
 
         
           <p>baidu是个很垃圾的公司，我坚信。
@@ -175,60 +213,50 @@ http://www.douban.com/note/128688737/
 所以，如同文章说的。你要找信息的时候还是找google吧，baidu上全是广告。你想投资，怕被骗？别去baidu，那里全是广告，至少是软文。也别去天涯mop，那里也全是软文。即使你一对一的去问人，也不知道那ID后面是不是枪手的马甲。上google，搜全世界的blog，独立主机，那里也许有你感兴趣的东西。
 当然，你要找广告的话就别找google了，不够多。
 另外，该骂的，骂出来。老子布衣一个，还能怕谁呢？</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Apr 2, 2011
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/1764/#disqus_thread">Comments</a>
+  <p class="meta">Apr 2, 2011
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/1764/">twip在LiteSpeed上碰到403问题的解法</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/1764/">twip在LiteSpeed上碰到403问题的解法</a>
+  </h1>
 </header>
-
 
         
           <p>这是一个老bug了，具体问题看这里(http://code.google.com/p/twip/issues/detail?id=80 )。
 当你使用o模式，到twitter上同意后跳回来，就会撞上403。
 不管他，当时你的url应当是http://xxx.com/path/getapi.php?api=http://xxx.com/path/o/username/token。xxx.com是你的域名，path是路径，username是用户名，token是一个随机的数字。
 用http://xxx.com/path/o/username/token，直接上去。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Apr 1, 2011
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/1762/#disqus_thread">Comments</a>
+  <p class="meta">Apr 1, 2011
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/1762/">作家们和百度的战争</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/1762/">作家们和百度的战争</a>
+  </h1>
 </header>
-
 
         
           <p>作家们和百度打起来了，真是让我情何以堪呐。
@@ -253,30 +281,25 @@ http://www.douban.com/note/128688737/
 到了后期，很多大公司也开始支持开源运动。因为这一运动对上游和下游都非常有利，它只损害以版权牟取暴利的人。作为上游厂商，雇用一个熟悉开源系统的硬件程序员，就可以直接开发这一系统的硬件驱动。而不用像微软模式一样，雇用通过微软认证，并且和微软签署不可泄漏协议的硬件专家——这些人的工资中有相当部分是交给微软的保护费。使用开源可以直接的降低成本。而作为下游，则更看中开源系统代码透明，不容易植入有害代码（这点上，微软一直盛传被植入了后门，但是始终无法有力辩驳就可以知道），而且很容易基于自己的需要定制修改。中游厂商则是通过服务收取有限费用，而不是暴利。
 实际上，版权从始至终，都是在保护创造作品的人的积极性。在软件业，开源运动找到了另一种方式来激励创作者的积极性，而不是一味的把东西保护起来。这让我们反思对影视产品的保护力度问题。软件业只享有20年的保护，而出版业，唱片业享有70年的保护。我们是否应当执行如此强力的版权保护政策呢？
 问题归于出版领域，这篇博文（猛击这里：http://weiwuhui.com/4190.html）印证了我的想法。出版业的大头都在出版社这里，这才是使用版权赚取金钱的大头。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Mar 31, 2011
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/1760/#disqus_thread">Comments</a>
+  <p class="meta">Mar 31, 2011
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/1760/">python源码解析读书笔记（四）——杂项</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/1760/">python源码解析读书笔记（四）——杂项</a>
+  </h1>
 </header>
-
 
         
           <p>1.GIL的影响
@@ -291,30 +314,25 @@ python的辅助垃圾收集算法是三色标记法和分代垃圾收集模型�
 4.字符编码处理方案
 无论从何种来源，只要是字符串，并可能交给一个和当前代码并不紧密耦合的代码处理，就应当被转换为unicode。或者换一个更简洁的说法，应当使用unicode作为接口数据类型。
 str对象是很难猜测编码的，当离开了数据源代码后，再分析编码是个不靠谱的方案。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Mar 30, 2011
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/1759/#disqus_thread">Comments</a>
+  <p class="meta">Mar 30, 2011
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/1759/">python源码解析读书笔记（三）——对象和函数</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/1759/">python源码解析读书笔记（三）——对象和函数</a>
+  </h1>
 </header>
-
 
         
           <p>1.mro
@@ -344,111 +362,73 @@ C
 &hellip; def f(self): print &lsquo;A&rsquo;
 &hellip;
 &gt;&gt;&gt; class B(object):</p>
-
           
-              <footer>
-                  <a href="//blog.shell909090.org/blog/archives/1759/" rel="full-article">Read On &rarr;</a>
-              </footer>
+            <footer>
+              <a href="//blog.shell909090.org/blog/archives/1759/" rel="full-article">Read On &rarr;</a>
+            </footer>
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Mar 29, 2011
-         - 2 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/1757/#disqus_thread">Comments</a>
+  <p class="meta">Mar 29, 2011
+     - 2 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/1757/">python源码解析读书笔记（二）——函数特性</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/1757/">python源码解析读书笔记（二）——函数特性</a>
+  </h1>
 </header>
-
 
         
           <p>1.函数的性质    &gt;&gt;&gt; def outer(o1, o2):   ... def inner(i1 = 10, i2 = \[\]):   ... return i1+o1+o2   ... return inner   ...   &gt;&gt;&gt; a1 = outer(50, 30)   &gt;&gt;&gt; a2 = outer(50, 30)   &gt;&gt;&gt; a1.func\_closure   (&lt;cell at 0xb75454f4: int object at 0x8455ddc&gt;, &lt;cell at 0xb7545524: int object at 0x8455cec&gt;)   &gt;&gt;&gt; a2.func\_closure   (&lt;cell at 0xb754541c: int object at 0x8455ddc&gt;, &lt;cell at 0xb75453a4: int object at 0x8455cec&gt;)   两次生成的函数对象拥有不同的闭包空间。    &gt;&gt;&gt; a1.</p>
-
           
-              <footer>
-                  <a href="//blog.shell909090.org/blog/archives/1757/" rel="full-article">Read On &rarr;</a>
-              </footer>
+            <footer>
+              <a href="//blog.shell909090.org/blog/archives/1757/" rel="full-article">Read On &rarr;</a>
+            </footer>
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Mar 27, 2011
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/1756/#disqus_thread">Comments</a>
+  <p class="meta">Mar 27, 2011
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/1756/">python源码解析读书笔记（一）——内置对象</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/1756/">python源码解析读书笔记（一）——内置对象</a>
+  </h1>
 </header>
-
 
         
           <p>1.类型的类型  
  obj int(10).ob_type -&gt; PyInt_Type
 
  PyInt\_Type.ob\_type -&gt; PyType\_Type   PyInt\_Type.tp\_base -&gt; PyBaseObject\_Type   PyBaseObject\_Type.ob\_type -&gt; PyType\_Type   PyType\_Type.ob\_type -&gt; PyType\_Type   更精确的参考源码解析262页图。   \   2.小整数对象   if (-NSMALLNEGINTS &lt;= ival && ival &lt; NSMALLPOSINTS) {   v = small\_ints\[ival + NSMALLNEGINTS\];   Py\_INCREF(v);   }   \   3.大整数对象，空对象池，对象缓存    &gt;&gt;&gt; a = 1000000   &gt;&gt;&gt; b = 2000000   &gt;&gt;&gt; id(a) == id(1000000)   False    &gt;&gt;&gt; id(100000) == id(100000)   True   最后一个是因为python解析器在解析对象的时候，对前后生成的对象进行了缓存。经过测试，对文件也有效。   \   4.</p>
-
           
-              <footer>
-                  <a href="//blog.shell909090.org/blog/archives/1756/" rel="full-article">Read On &rarr;</a>
-              </footer>
+            <footer>
+              <a href="//blog.shell909090.org/blog/archives/1756/" rel="full-article">Read On &rarr;</a>
+            </footer>
           
-
         
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Mar 25, 2011
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/1755/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/1755/">豆瓣九点的认领功能</a>
-    </h1>
-</header>
+      </article>
+      
+      
+      
 
 
-        
-          <p>以前写了blog，每天都跑去豆瓣同步一下。方法是新建一篇日记，然后贴链接。今天牛博恩提醒我，“你在九点上订阅自己的博客，然后再认领就没必要更新博客的同时还在豆瓣日记上发一篇一样标题带链接的好吧，刚刚发现这么舒服的方案。我已经发贴，豆瓣来吧。 doubanclaim7834a5d025d455b1</p>
-
-          
-
-        
-
-    </article>
-    
-    
-    
 
 
 
@@ -670,10 +650,8 @@ C
 </div>
 
   
-
-  </div>
-
-  
+    </div>
+    
 
 <aside class="sidebar thirds">
   <section class="first odd">
@@ -694,7 +672,10 @@ C
       
       
       
-       
+      
+         
+      
+      
       
       
       
@@ -719,64 +700,87 @@ C
         <h1>Recent Posts</h1>
         <ul id="recent_posts">
           
-            <li class="post">
-              <a href="/blog/archives/2866/">关于抵制洋节</a>
-            </li>
           
-            <li class="post">
-              <a href="/blog/archives/2865/">恒春潜水记录</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2867/">996</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2866/">关于抵制洋节</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2863/">openssl证书相关</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2865/">恒春潜水记录</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2861/">密码学基本原理</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2863/">openssl证书相关</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2860/">similan船宿</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2861/">密码学基本原理</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2858/">京都游记</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2860/">similan船宿</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2857/">Boracay潜水攻略</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
+              </li>
+            
+          
+            
+              <li class="post">
+                <a href="/blog/archives/2858/">京都游记</a>
+              </li>
+            
           
         </ul>
       </section>
     
   
-
 </aside>
     
- </div>
+  </div>
 </div>
+    <footer role="contentinfo">
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
+        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+      </p>
+    </footer>
 
-<footer role="contentinfo">
-  <p>Copyright &copy; 2018 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-</p>
+    
+    
+    
 
-</footer>
-
-
-</body>
+    
+  </body>
 </html>
    
+

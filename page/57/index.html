@@ -1,18 +1,16 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
 <head>
-  <link href="http://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
 
   
-  <meta name="HandheldFriendly" content="True">
-  <meta name="MobileOptimized" content="320">
   <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
 
   
-  
-  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+    
+    
+      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
+    
   
 
   
@@ -20,46 +18,50 @@
 
   
   
-  <link rel="stylesheet" href="//blog.shell909090.org/css/hugo-octopress.css">
+  <link rel="stylesheet" href="/css/hugo-octopress.css">
 
   
   
 
   
-  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/css/fork-awesome.min.css">
+  
 
   
   <link href="//blog.shell909090.org/favicon.png" rel="icon">
 
   
-  
-  
-
   <link href="//blog.shell909090.org/index.xml" rel="alternate" type="application/rss+xml" title="Shell&#39;s Home" />
 
-  <meta name="description" content="">
+  <meta name="description" content="" />
   <meta name="keywords" content="">
-
   <meta name="author" content="Shell Xu">
 
   
-  <meta name="generator" content="Hugo 0.30-DEV" />
+  <meta name="generator" content="Hugo 0.55.0" />
 
   
   
-<script>
-window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-ga('create', 'UA-48816091-1', 'auto');
-ga('send', 'pageview');
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-48816091-1', 'auto');
+	
+	ga('send', 'pageview');
+}
 </script>
-<script async src='//www.google-analytics.com/analytics.js'></script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
 
 
+  
+  
 </head>
 <body>
 
 
-<header role="banner"><hgroup>
+<header role="banner">
+<hgroup>
   
   <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
     <h2></h2>
@@ -67,44 +69,82 @@ ga('send', 'pageview');
 
 
 <nav role="navigation">
+<fieldset class="mobile-nav">
+  
+  <select onchange="location = this.value;">
+    <option value="">Navigate…</option>
+      
+  </select>
+</fieldset>
+
 
 <ul class="main-navigation">
   
   
 </ul>
 
-
 <ul class="subscription">
   
-
 </ul>
 
 
 </nav>
 
 
-<div id="main">
- <div id="content">
-  <div class="blog-index">
-    
-    
-    <article>
 
+
+  
+
+<div id="main">
+  <div id="content">
+    <div class="blog-index">
+      
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Mar 1, 2010
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/98/#disqus_thread">Comments</a>
+  <p class="meta">Mar 2, 2010
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/98/">桌面点名</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/99/">android历史记录备份和应用三例</a>
+  </h1>
 </header>
 
+        
+          <p>有不少不折腾会死星人已经用上andriod了吧？有没有刷机过？有没有怕手机掉过？android的联系人是同步到gmail的，不用怕。但是信息就不同不了。所以，下面介绍几个信息导出的方法。
+1.aqq
+用adb shell去/data/data/com.android.aqq/databases/下面，把aqq.db复制出来，sqlite3格式，随便看吧。
+2.AnFetion
+用adb shell去/data/data/&hellip;..AnFetion2/databases/下面，把fetion.DB复制出来。
+3.信息
+这个是最麻烦的。去信息-&gt;Menu-&gt;设置-&gt;导出短信里面导出。但是别高兴的太早，贝壳发现一个bug。如果你的短信里面有西文引号，会导致xml格式错误，从而无法导入。解决方法是手工删除引号。
+应用，使用xsltproc，将xml转换为html来浏览。贝壳用的xslt比较简单，抄在下面。
+&lt;?xml version='1.0' encoding=&quot;GBK&quot;?&gt; &lt;xsl:stylesheet version=&quot;1.0&quot; xmlns:xsl=&quot;&lt;http://www.w3.org/1999/XSL/Transform&gt;&quot;&gt; &lt;xsl:template match=&quot;/&quot;&gt; &lt;html&gt; &lt;body&gt; &lt;xsl:for-each select=&quot;//smss/address&quot;&gt; Phone Number:&lt;xsl:value-of select=&quot;@data&quot;/&gt; &lt;br/&gt; &lt;table border=&quot;0&quot; class=&quot;rev_tab&quot; width=&quot;100%&quot;&gt; &lt;xsl:for-each select=&quot;sms&quot;&gt; &lt;tr&gt; &lt;td class=&quot;rev_tab_rev&quot;&gt; &lt;xsl:value-of select=&quot;date/@data&quot;/&gt; &lt;/td&gt; &lt;td class=&quot;rev_tab_rev&quot;&gt; &lt;xsl:choose&gt; &lt;xsl:when test=&quot;read/@data = 1&quot;&gt;read&lt;/xsl:when&gt; &lt;xsl:when test=&quot;read/@data = 0&quot;&gt;unread&lt;/xsl:when&gt; &lt;/xsl:choose&gt; &lt;/td&gt; &lt;td class=&quot;rev_tab_rev&quot;&gt; &lt;xsl:value-of select=&quot;body/@data&quot;/&gt; &lt;/td&gt; &lt;/tr&gt; &lt;/xsl:for-each&gt; &lt;/table&gt; &lt;BR/&gt; &lt;/xsl:for-each&gt; &lt;/body&gt; &lt;/html&gt; &lt;/xsl:template&gt; &lt;/xsl:stylesheet&gt;  为了美观，你还可以修改一下xslt。xsltproc在linux下直接有包，Windows可以来信问贝壳索要移植(其实去官网上就能下到)。</p>
+          
+        
+      </article>
+      
+      <article>
+        
+        
+
+<header>
+  <p class="meta">Mar 1, 2010
+     - 1 minute read 
+    
+
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/98/">桌面点名</a>
+  </h1>
+</header>
 
         
           <p>被桌面点名了，我随便做，大家随便看。
@@ -117,30 +157,25 @@ ga('send', 'pageview');
 7.有没有什么坚持点？ 坚持纯黑一个都没有不动摇
 8.有为了填这份接力, 还特地整理一下吗？ 啥都没有了，整理啥？
 9.请再传给8个[我想看看他/她的桌面?]的人。 @ilovezjl 小黄姐姐，@onlycup 小杯子， @OpheliaRing 某话痨， @pipitu 某SE， 就四个吧。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Feb 26, 2010
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/97/#disqus_thread">Comments</a>
+  <p class="meta">Feb 26, 2010
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/97/">关于无线的安全问题</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/97/">关于无线的安全问题</a>
+  </h1>
 </header>
-
 
         
           <p>一个无线路由只有150上下，安装方便使用简单，可以让你在床上躺着的时候还能和朋友聊天。大多有笔记本的家庭都会考虑买一个无线路由，组建自己的无线网络。不过先别高兴，如果你选择买来就用，我想你碰到艳照门只是个时间问题。下面简单说一下无线网络从决策到安全完成安装的全步骤。
@@ -152,30 +187,25 @@ ga('send', 'pageview');
 以上两步保证了别人无法连接进你的网络，而下面我们还要保证网络内的安全。
 请先给你的路由器和Windows账户更换一个强密码——你可以自动登录和使用浏览器记录密码来避免输入，但是一定要强。否则当有人进入你的网络的时候，如果一次就拿到了管理员权限，其他安全措施就没有意义了。然后开启路由器防火墙，禁用所有的人连接，除非特定MAC地址。这样只有指定的几个机器可以上网，一般人进入网络后的兴趣就小了很多。最后，请开启你电脑的防火墙，以免进入网络的人利用漏洞进入主机系统。
 最后，如果有条件的话，可以用vmware部署一个honeypot，做一个漏洞百出的系统，引诱入侵者先进攻这里。一旦他发起进攻，那么你马上会发现他的踪迹——不过这个就不属于普通用户的范畴了。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Feb 23, 2010
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/96/#disqus_thread">Comments</a>
+  <p class="meta">Feb 23, 2010
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/96/">领导的艺术</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/96/">领导的艺术</a>
+  </h1>
 </header>
-
 
         
           <p>啥都不说，先上背景阅读。
@@ -183,30 +213,25 @@ ga('send', 'pageview');
 英国著名历史学家诺斯古德・帕金森通过长期调查研究，写出一本名叫《帕金森定律》的书。他在书中阐述了机构人员膨胀的原因 及后果：一个不称职的官员，可能有三条出路，第一是申请退职，把位子让给能干的人；第二是让一位能干的人来协助自己工作；第三是任用两个水平比自己更低的人当助手。这第一条路是万万走不得的，因为那样会丧失许多权利；第二条路也不能走，因为那个能干的人会成为自己的对手；看来只有第三条路最适宜。于是，两 个平庸的助手分担了他的工作，他自己则高高在上发号施令，他们不会对自己的权利构成威胁。两个助手既然无能，他们就上行下效，再为自己找两个更加无能的助手。如此类推，就形成了一个机构臃肿，人浮于事，相互扯皮，效率低下的领导体系。
 曾仕强似乎说过，一个能干的干部起什么作用？一个能干的干部只能证明他的所有下属都是白痴。
 所以，从上推导，我们只要找一堆傻瓜当干部，公司就能兴旺？</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Feb 22, 2010
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/95/#disqus_thread">Comments</a>
+  <p class="meta">Feb 22, 2010
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/95/">PC使用android上网</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/95/">PC使用android上网</a>
+  </h1>
 </header>
-
 
         
           <p>最简单的方法是使用android-wifi-tether，不过我这里使用不成功，原因不明。所以今天我们不去说他，我们说另外一个软件，azlink(http://code.google.com/p/azilink/)。
@@ -227,30 +252,25 @@ ga('send', 'pageview');
 4.在android上，关闭Service active的勾。并且，如果你喜欢，可以kill掉进程以回收内存。
 5.拔USB线。
 如果你曾经关闭了手机的wifi，电脑的wifi和有线，现在也可以恢复了。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Feb 21, 2010
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/94/#disqus_thread">Comments</a>
+  <p class="meta">Feb 21, 2010
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/94/">ext3下小文件的恢复</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/94/">ext3下小文件的恢复</a>
+  </h1>
 </header>
-
 
         
           <p>ext3下如果误删除了文件，恢复起来是异常麻烦的。如果是小文件，其实很多时候不用走常规文件恢复的路子，只要能找到内容就好了。基本思路是从磁盘中直接搜索内容，然后设法复制出来。
@@ -261,30 +281,25 @@ $ python &gt;&gt;&gt; (713068605/4096)*4096 713068544 &gt;&gt;&gt; exit ()  以�
 # dd if=/dev/xvda1 bs=1 count=4k skip=713068544 &gt; 1.tmp  将这个块的内容复制出来，注意磁盘上必须有足够空间，否则搞不好会将原始内容覆盖。
 更严谨的方法是将内容dump到其他磁盘设备的挂载点下，做异地磁盘恢复。
 以上方法可以恢复一个块的内容。手工恢复所有块后，将内容拼接，就是你要恢复的文件。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Feb 16, 2010
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/93/#disqus_thread">Comments</a>
+  <p class="meta">Feb 16, 2010
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/93/">李琼点名</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/93/">李琼点名</a>
+  </h1>
 </header>
-
 
         
           <p>1.
@@ -352,62 +367,52 @@ Feb 14 17:58:36 CST 2010
 ：李琼
 你们认识多久了：一年多吧
 你觉得ta对你来说重要吗：还成</p>
-
           
-              <footer>
-                  <a href="//blog.shell909090.org/blog/archives/93/" rel="full-article">Read On &rarr;</a>
-              </footer>
+            <footer>
+              <a href="//blog.shell909090.org/blog/archives/93/" rel="full-article">Read On &rarr;</a>
+            </footer>
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Feb 14, 2010
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/92/#disqus_thread">Comments</a>
+  <p class="meta">Feb 14, 2010
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/92/">春节快乐^情人节快乐 == 1</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/92/">春节快乐^情人节快乐 == 1</a>
+  </h1>
 </header>
-
 
         
           <p>RT
 希望大家过渡到{春节快乐&amp;&amp;情人节快乐 == 1}</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Feb 3, 2010
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/91/#disqus_thread">Comments</a>
+  <p class="meta">Feb 3, 2010
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/91/">CNNIC的证书</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/91/">CNNIC的证书</a>
+  </h1>
 </header>
-
 
         
           <p>最近，技术圈里面在争论CNNIC的证书被加入到信任根证书里面的问题。本文章试图和专业人士探讨这一变化的过程，以及向非专业人士说明会造成的影响。所有段落前会标明针对的群体。
@@ -417,30 +422,25 @@ Feb 14 17:58:36 CST 2010
 本段适合非专业人士阅读。然而，你需要信任什么证书呢？如果你要一家一家的信任证书，会发生什么？你见到是否信任就会习惯的去点，这对安全于事无补。因此，这里引申出一个证书链的问题。通常系统内内置了一些证书，这些证书叫做信任根证书。这些证书的权限是，可以让你信任其他证书。而被他们授权的证书，则分为可以继续授权和不可以继续授权两种。一旦被他们签署授权的证书，最起码你访问的时候不会有警告了。现在，CNNIC加入了这个根证书链。那CNNIC是个什么公司呢？他自称是中国科学院下属的中国互联网络信息中心，服务于科学和研究的机构，但很多人指出CNNIC的直接主管是工信部。当年，CNNIC推出中文域名服务，这项服务需要在几乎所有人的电脑内安装插件。他为了提高安装率，使用了不可删除的保护技术。这导致很多人的电脑安装后，无法卸载程序。至于安装呢？也不全是自愿安装(我不排除自愿者，绿霸还有自愿的呢)。他们曾经利用系统漏洞，向大量电脑上强行安装插件。而且CNNIC还借助官方身份，大量推行中文域名——其实他们根本就不是政府机构，而是非营利机构。并且，在前两年拼命忽悠CN域名，最近又突然停止域名解析(虽然是国家规定的)，道歉赔偿啥都没有。大家自己想，真的可以信任这种公司么？
 本段适合所有人阅读。现在CNNIC已经进入了信任根证书链，如果配合国家级的DNS劫持技术，理论上可以构造一个假的mail.google.com，或者www.hotmail.com。走代理，自己给自己签署一个证书。从而获得你的完整会话。这里(http://autoproxy.org/zh-CN/node/66)有比较大的说明和讨论。
 我对这个事情的观点是。作为Mozilla或者任何根证书的发行机构，在没有直接证据的情况下，不大可能拒绝一个国家级机构的要求。然而，无论任何原因，信任一个机构，就代表你要为他的行为负责。如果CNNIC做出任何危害用户安全的行为，Moziila，微软，Debian.org会被我作为同罪者考虑和抵制。同时，系统发行的根证书系统，是否要去信任，是我们每个人的问题。如果你觉得CNNIC根本不值得信任，那么你可以删除他的所有证书，以及签署了他的所有证书。目前而言，我删除了CNNIC和Entrust的所有证书。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Feb 1, 2010
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/90/#disqus_thread">Comments</a>
+  <p class="meta">Feb 1, 2010
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/90/">手机又丢了</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/90/">手机又丢了</a>
+  </h1>
 </header>
-
 
         
           <p>昨天出去玩，拉小黄出来溜冰，结果被还了一个电脑。我还要买一个键盘给别人，手上一堆东西，再打车去见人。时间紧，手上大包小包一大堆，下车的时候两手满满的。下车了再一拍兜——杯具啊～～～～手机丢了。
@@ -450,51 +450,14 @@ Feb 14 17:58:36 CST 2010
 至于其他么，半年内和我发过短信的，你们的短信都曝光了。和我照过相的，你们的照片都曝光了(这可不限半年，实际上我刚买的时候照的都还在)。其他数据应该没什么风险了，以上。
 以下不算钱:
 啊～～～～我的手机啊，又要买新的了，怨念。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Jan 29, 2010
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/89/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/89/">一个远程下载verycd的小技巧</a>
-    </h1>
-</header>
+      </article>
+      
+      
+      
 
 
-        
-          <p>贝壳家里开了emule，天天下载，问题是又不能每次都是晚上添加资源。
-怎么办呢？不知道大家知道不知道，emule是可以网络管理的，端口是4711。不过不是https，密码容易泄露。而且贝壳已经有一个nginx服务器了，也懒的再做端口映射，换端口。于是，在nginx中做如下设定。(当然，贝壳是放在https段中的)
-location ^~ /emule/ { rewrite ^/emule/(.*)$ /$1 break; proxy_pass &lt;http://hostip:4711&gt;; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; }  然后，用https://dynname/emule/就可以访问你家里的emule了，记得密码设强点。
-接下来，verycd里面曾经有复制所有连接的选项，现在没了。面对几个链接，也就手工复制一下，面对上百个连接，贝壳就无语了。贝壳试验过几个插件，都无法正确识别ed2k的链接获取。那怎么办呢？这时就要请出我们伟大的Linux。
-需要准备的工具是lynx，请预先装好，然后如下操作。(范例是个动画^_^)
-wget -c &lt;http://www.verycd.com/topics/2779234/&gt; lynx -dump -listonly index.html | grep &quot;ed2k://&quot; | sed &quot;s/.*ed2k/ed2k/g&quot; | grep -v BIG5 &gt; out.txt wc -l out.txt  lynx的-dump选项是将某个网页全部渲染成文本进行展示，这是html2text的好方法，效果还不错哦，不过中文支持好像不是很好。而-listonly则是展示出页面上的所有链接，这就拿到了我们需要的原始数据。
-然后，我们取其中的ed2k行，忽略其他链接，再通过sed转换，去除头部的编号和空格，这样就可以得到所有的ed2k链接。
-我在下面是用-v BIG5的参数，忽略了其中繁体中文的资源，然后输出到一个文件中。数数行数，52行，大致和文件个数相当(其中好像有两个v2)。那就是可用资源了，复制到emule的控制页面中——出错？
-这是因为emule的控制页面使用GET方式传递参数，因此有长度限制。你需要将链接10个一批往里面复制——有个几次就OK了。当然，如果还是多，贝壳回头会写一篇文章，介绍如何使用curl自动干这事情——这还不算太难。
-这就是为啥贝壳喜欢Linux的原因了。相比Windows下的两个解决方案，找插件太费劲，自己写程序更费劲。Linux使用现有工具的组合可以轻松完成这一任务。</p>
-
-          
-
-        
-
-    </article>
-    
-    
-    
 
 
 
@@ -716,10 +679,8 @@ wget -c &lt;http://www.verycd.com/topics/2779234/&gt; lynx -dump -listonly index
 </div>
 
   
-
-  </div>
-
-  
+    </div>
+    
 
 <aside class="sidebar thirds">
   <section class="first odd">
@@ -740,7 +701,10 @@ wget -c &lt;http://www.verycd.com/topics/2779234/&gt; lynx -dump -listonly index
       
       
       
-       
+      
+         
+      
+      
       
       
       
@@ -765,64 +729,87 @@ wget -c &lt;http://www.verycd.com/topics/2779234/&gt; lynx -dump -listonly index
         <h1>Recent Posts</h1>
         <ul id="recent_posts">
           
-            <li class="post">
-              <a href="/blog/archives/2866/">关于抵制洋节</a>
-            </li>
           
-            <li class="post">
-              <a href="/blog/archives/2865/">恒春潜水记录</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2867/">996</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2866/">关于抵制洋节</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2863/">openssl证书相关</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2865/">恒春潜水记录</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2861/">密码学基本原理</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2863/">openssl证书相关</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2860/">similan船宿</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2861/">密码学基本原理</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2858/">京都游记</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2860/">similan船宿</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2857/">Boracay潜水攻略</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
+              </li>
+            
+          
+            
+              <li class="post">
+                <a href="/blog/archives/2858/">京都游记</a>
+              </li>
+            
           
         </ul>
       </section>
     
   
-
 </aside>
     
- </div>
+  </div>
 </div>
+    <footer role="contentinfo">
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
+        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+      </p>
+    </footer>
 
-<footer role="contentinfo">
-  <p>Copyright &copy; 2018 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-</p>
+    
+    
+    
 
-</footer>
-
-
-</body>
+    
+  </body>
 </html>
    
+

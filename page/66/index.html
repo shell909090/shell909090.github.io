@@ -1,18 +1,16 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
 <head>
-  <link href="http://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
 
   
-  <meta name="HandheldFriendly" content="True">
-  <meta name="MobileOptimized" content="320">
   <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
 
   
-  
-  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+    
+    
+      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
+    
   
 
   
@@ -20,46 +18,50 @@
 
   
   
-  <link rel="stylesheet" href="//blog.shell909090.org/css/hugo-octopress.css">
+  <link rel="stylesheet" href="/css/hugo-octopress.css">
 
   
   
 
   
-  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/css/fork-awesome.min.css">
+  
 
   
   <link href="//blog.shell909090.org/favicon.png" rel="icon">
 
   
-  
-  
-
   <link href="//blog.shell909090.org/index.xml" rel="alternate" type="application/rss+xml" title="Shell&#39;s Home" />
 
-  <meta name="description" content="">
+  <meta name="description" content="" />
   <meta name="keywords" content="">
-
   <meta name="author" content="Shell Xu">
 
   
-  <meta name="generator" content="Hugo 0.30-DEV" />
+  <meta name="generator" content="Hugo 0.55.0" />
 
   
   
-<script>
-window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-ga('create', 'UA-48816091-1', 'auto');
-ga('send', 'pageview');
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-48816091-1', 'auto');
+	
+	ga('send', 'pageview');
+}
 </script>
-<script async src='//www.google-analytics.com/analytics.js'></script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
 
 
+  
+  
 </head>
 <body>
 
 
-<header role="banner"><hgroup>
+<header role="banner">
+<hgroup>
   
   <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
     <h2></h2>
@@ -67,44 +69,75 @@ ga('send', 'pageview');
 
 
 <nav role="navigation">
+<fieldset class="mobile-nav">
+  
+  <select onchange="location = this.value;">
+    <option value="">Navigate…</option>
+      
+  </select>
+</fieldset>
+
 
 <ul class="main-navigation">
   
   
 </ul>
 
-
 <ul class="subscription">
   
-
 </ul>
 
 
 </nav>
 
 
-<div id="main">
- <div id="content">
-  <div class="blog-index">
-    
-    
-    <article>
 
+
+  
+
+<div id="main">
+  <div id="content">
+    <div class="blog-index">
+      
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">May 6, 2008
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/16/#disqus_thread">Comments</a>
+  <p class="meta">May 11, 2008
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/16/">反射的几个类型</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/17/">python的几个改进</a>
+  </h1>
 </header>
 
+        
+          <p>首先需要增加的就是kill掉线程的方法，目前我们统统是调用系统函数。有没有搞错阿，需要针对系统写代码不说，还不安全。在线程关闭的过程中没有辗转开解和安全捕获。从最安全的角度上说，要关闭线程最方便的就是给其他线程抛异常。python并非不可以给其他线程抛异常，可非常麻烦不说，具体执行的时候发现，其实根本不是抛异常，而是在执行过程中检查异常。这样当程序在调用外部代码的时候死循环，想kill线程的时候根本不可行。所以安全的关闭线程的异常和直接kill掉线程的方法都要有。
+其次，这东西没有什么可以快速辅助处理集合的工具类，例如STL中的set_union等等。虽说每个都不难，可是统一的实现和各自的实现毕竟是有差别的。很多时候，我们只需要抽象的计算两个集合，一个和一个的交集，就OK了。</p>
+          
+        
+      </article>
+      
+      <article>
+        
+        
+
+<header>
+  <p class="meta">May 6, 2008
+     - 1 minute read 
+    
+
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/16/">反射的几个类型</a>
+  </h1>
+</header>
 
         
           <p>所谓反射，其实就是在运行时可以获得代码数据的技术，算是面对对象编程语言的专利。从这个意义上说，反射可以分为三个类型。
@@ -112,62 +145,52 @@ ga('send', 'pageview');
 第二类就是在C#和Java中盛行的反射技术，这种技术的核心在于可以通过名称寻找到对象。例如，我们可以寻找到一个叫做abc的对象，枚举其中的成员和方法，并且执行调用，这才是反射最大的意义。当我们遇到不同的数据输入时，我们可以调用不同的方法来处理这个数据，并且这个过程是动态配置的。而在C++中，我们无法通过编译器支持这个能力，必须手工的建立一个名称和一个对象的关联关系表，在合适的时候通过这个表，获得某个名称的函数入口指针。其实C#和Java中实现的方法和VM息息相关，他们的代码在目标文件中还保持着命名空间-类-对象的结构，Java还进一步的保留了源码(只是被翻译为了更快的P代码)，而C#只保留了IL代码。这样VM在执行的时候自然可以很轻松的找到对应的函数，并且获得函数签名。而C类语言的特征是汇编时代的&rdquo;符号链接&rdquo;方式，编译的时候保有符号，完成链接就没了。
 中间插一句，其实我们完全可以写一个只支持高阶语言的系统。这样的系统未必高效，可一定方便阿。
 最后一种则是python中的系统，当用户调用一个类中的函数的时候，使用一个专门的函数来决定调用哪个。因此当对付SOAP这种东西的时候，python可以直接上。而C#，Java，C++都要通过工具生成代理方法。再用代理方法去调用公共函数库，实现调用。因为python直接将调用定向到了一个统一的函数上，所以压根不需要这步。不过这步的代价是严重的性能问题，因为每次函数调用都要去检查调用目标。python是纯脚本语言，占了这点便宜，所以才能这么干。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">May 2, 2008
-         - 3 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/15/#disqus_thread">Comments</a>
+  <p class="meta">May 2, 2008
+     - 3 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/15/">C&#43;&#43;继承,虚,转换规则探究</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/15/">C&#43;&#43;继承,虚,转换规则探究</a>
+  </h1>
 </header>
-
 
         
           <p>以下讨论的东西都是在VS2005下跑出来的，如果想知道别的编译器规则，请照跑一遍。以下是类定义，函数内容为打印出当前函数名称，所以就不再贴了。
 class Base { public: Base(); Base(const Base &amp;amp; o); virtual ~Base(); virtual Base &amp;amp; operator = (const Base &amp;amp; o); void function1(); virtual void function2(); void function3(); virtual void function4(); //virtual void function5(); virtual void function6(); }; class Derive : public Base { public: Derive(); Derive(const Derive &amp;amp; o); virtual ~Derive(); virtual Derive &amp;amp; operator = (const Derive &amp;amp; o); void function1(); virtual void function2(); virtual void function3(); void function4(); //compiler error //int function5(); protected: virtual void function6(); public: };  首先我们讨论继承下的构造/析构顺序。</p>
-
           
-              <footer>
-                  <a href="//blog.shell909090.org/blog/archives/15/" rel="full-article">Read On &rarr;</a>
-              </footer>
+            <footer>
+              <a href="//blog.shell909090.org/blog/archives/15/" rel="full-article">Read On &rarr;</a>
+            </footer>
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Apr 25, 2008
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/14/#disqus_thread">Comments</a>
+  <p class="meta">Apr 25, 2008
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/14/">无条件的爱国和无聊的自尊</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/14/">无条件的爱国和无聊的自尊</a>
+  </h1>
 </header>
-
 
         
           <p>实话说，这个文章不好写，标题更不好起，尤其是在这种爱国情绪异常高涨的敏感时期。不过我还是得说说，关于某些中国人无聊的自尊和奇怪的爱国主义观点。
@@ -180,57 +203,47 @@ OK，有了上面的一堆爱国和公平，我们现在看看我们今天的重
 而后，法国政府支持藏独，关佳乐福什么事情？抛开所谓双赢的理论，抛开所谓是非，如果仅仅因为法国政府支持藏独，佳乐福就要倒霉。那么中国政府干点啥不地道的，是否每个人都要跟着倒霉呢？不要说我们是正义的，伟大的什么狗屁理论，我相信我们是伟大的，然而谁都不能排除政府里有败类(前两天刚审的不就一个，虽然那未必是因败类受审)，如果这些人做了什么事情，你是否情愿接受你的倒霉命运？
 最后，我们看这次的佳乐福事件，是否觉得有种阴谋的味道？包括将佳乐福设定为反法的典型，包括说佳乐福5.1降价打算让中国人自食其果(原谅我没有使用原文)。佛祖在上(似乎也有点崇洋，要不要改老君？)，有多少商家5.1节没有规划降价促销的？这个关于降价的说法一出来，就逼得佳乐福很难做。如果不降价促销，恢复人气，那么可能佳乐福在中国就要受到重创。更不用说竞争对手们一定会趁机降价，甚至打出爱国的招牌。可降价的话，会让大家觉得这个事情真有其事。最可笑的是我收到的一个版本里面，说法国政府斥资让佳乐福降价一成。拜托，以佳乐福现在的状态，降价一成基本只是和当前持平而已(要考虑到不降价的库存成本)，最多加上小亏，再加上考虑到将来的人气因素等等，应当是佳乐福主动去做才对。哪里有政府捧钱上门要求降价的说法，何况这笔钱怎么出？法国可不像中国，如果发现有这种钱出来，那基本就是某人或者某些人辞职的结局。我固然不喜欢成为“可能的”法国政府对付中国人民的棋子，但是也讨厌成为某些人对付竞争对手的棋子。
 我觉得，我们很多人都陷入了谵妄的爱国主义情绪中。凡是反对中国的，就是反对我的。凡是反对我的，就要被打倒。这种理论反过来用的可以说是疯子也可以说是天才，然而如果正着用只能说是傻瓜。个人不代表国家，国家也只能部分代表个人，其代表的程度和国家的民主程度呈正比。诚然我反对分裂西藏分裂台湾，不过理由说起来可能不怎么冠冕堂皇，因为我有利，其次才是国家有利，西藏人民有利。而且我欢迎别人评论，无论你说好也好，说势利也好，说卖国也好，总之你说你的吧。大国之所以能成为大国，就是要有这么种气度和耐性。如果自尊过剩，别人刚一评论便跳起来让人闭嘴，甚至出口谩骂以致动手(不论谩骂的理由是什么)，那最多也就是街头小混混的等级。这种情况下，更像是因为自卑，所以自傲。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Apr 15, 2008
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/13/#disqus_thread">Comments</a>
+  <p class="meta">Apr 15, 2008
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/13/">语言造就人</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/13/">语言造就人</a>
+  </h1>
 </header>
-
 
         
           <p>学汇编的是硬件，学C的是指针，学C++的是模版，学Matlab的是矩阵，学Lisp的是图灵机，学Java的是模型，学Awk的是字符串，学SQL的是数据集。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Apr 14, 2008
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/12/#disqus_thread">Comments</a>
+  <p class="meta">Apr 14, 2008
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/12/">关于上飞机的问题</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/12/">关于上飞机的问题</a>
+  </h1>
 </header>
-
 
         
           <p>在blog前，贝壳先问大家一个问题，一个人坐飞机要提前多少时间到机场？
@@ -239,170 +252,108 @@ OK，有了上面的一堆爱国和公平，我们现在看看我们今天的重
 贝壳今天要乘坐东航的MU5545次航班去烟台(没错，就是那架起飞后机舱内有汽油味返航的，大家可以GG)，飞机7:50在虹桥机场起飞，贝壳以前坐过一次。按照前次经验，从家出租过去是18分钟，所以贝壳这次6:20起床，6:30上出租，7:00到，7:50起飞。当然，是这么预计的拉。
 实际是，贝壳6:20起床，6:30上的出租，出租到离机场差1公里的时候是6:55，但是这1公里足足走了20分钟。最后贝壳实在等不及，直接下来坐摩托到了候机楼(还花了20大洋)。7:15分到候机楼一看，里外三层的人。贝壳赶紧找保安，&rdquo;我是急客&rdquo;。保安说OK，这里外三层全是急客。贝壳没办法，安生排队吧，排到一半，保安说不用排了，肯定关柜台了。贝壳冲到票务柜台，要求改签，结果只有晚上八点的飞机，然后发现两个同事也没办上。这次去6个，只走成一半，有一个7点到的还没排上呢。话说一半，发现对面柜台空了，全冲到东航柜台前面来改签了。据赶上的说，他们是8点上的飞机，安检过的特别慢，上去后空了一堆的位子(完全可以想像)。
 如果说过错的话，到说不出东航什么过错，毕竟他们是按照国家规定的时间表走的。可这次早上大规模的滞留，总不会是我们突然都不会坐飞机了吧。也不知道是哪里出了错，这种情况，真的能应对奥运么？</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Apr 8, 2008
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/11/#disqus_thread">Comments</a>
+  <p class="meta">Apr 8, 2008
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/11/">python的非经典错误</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/11/">python的非经典错误</a>
+  </h1>
 </header>
 
-
         
-          <p>def comp_tuple_file(tuple_file1, tuple_file2): for i in tuple_file1: if i in tuple_file2: tuple_file1.remove(i) tuple_file2.remove(i)
-if __name__ == &quot;__main__&quot;: t1 = [(1, &quot;1&quot;), (2, &quot;2&quot;), (3, &quot;3&quot;)] t2 = [(1, &quot;1&quot;), (3, &quot;3&quot;), (2, &quot;2&quot;), (4, &quot;2&quot;)] comp_tuple_file(t1, t2) print(t1) print(t2)  错在哪里？
+          <p>def comp_tuple_file(tuple_file1, tuple_file2): for i in tuple_file1: if i in tuple_file2: tuple_file1.remove(i) tuple_file2.remove(i) if __name__ == &quot;__main__&quot;: t1 = [(1, &quot;1&quot;), (2, &quot;2&quot;), (3, &quot;3&quot;)] t2 = [(1, &quot;1&quot;), (3, &quot;3&quot;), (2, &quot;2&quot;), (4, &quot;2&quot;)] comp_tuple_file(t1, t2) print(t1) print(t2)  错在哪里？
 头一次循环，i=(1,&ldquo;1&rdquo;)被正确移除了。但是接下来，i=(3,&ldquo;3&rdquo;)？
 这个叠代器的行为很有意思哦，貌似叠代器内存储的是集合的索引。
 def comp_tuple_file(tuple_file1, tuple_file2): collection = tuple_file1[:] for i in collection: if i in tuple_file2: tuple_file1.remove(i) tuple_file2.remove(i) if __name__ == &quot;__main__&quot;: t1 = [(1, &quot;1&quot;), (2, &quot;2&quot;), (3, &quot;3&quot;)] t2 = [(1, &quot;1&quot;), (3, &quot;3&quot;), (2, &quot;2&quot;), (4, &quot;2&quot;)] comp_tuple_file(t1, t2) print(t1) print(t2)  这才是正确的代码。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Apr 7, 2008
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/10/#disqus_thread">Comments</a>
+  <p class="meta">Apr 7, 2008
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/10/">链接上的问题</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/10/">链接上的问题</a>
+  </h1>
 </header>
-
 
         
           <p>贝壳最近在用库上吃了不少苦头，先是crypto++5.52。编译后怎么也链接不上。后来发现需要用/MT参数编译为多线程。后来又在STLport上又吃一次苦头，可见VC2003的默认单线程模式确实不得人心。
 下面说一下STL的编译手记。下载STLport，解压。运行vcvars32.bat设置环境变量,去build/lib下面，运行 configuare -c msvc71(如果你是2003，否则按configuare &ndash;help察看你的编译器类型)。然后运行nmake -f msvc.mak install。可以看到有两个目录被建立了，bin和lib。把bin的复制到windows/system32下面，把lib的复制到系统目录下面。 安装就OK了。
 上述和boost都差不多，然而和boost不一样的是，编写程序的时候，需要手工指定stlport的头文件路径。boost的可以以&lt;&gt;来引入，因此boost的头可以复制到系统里面去。然而stlport的必须以手工方式指定，否则就要覆盖默认的stl 了。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Apr 1, 2008
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/9/#disqus_thread">Comments</a>
+  <p class="meta">Apr 1, 2008
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/9/">显示自身的代码</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/9/">显示自身的代码</a>
+  </h1>
 </header>
 
-
         
-          <p>void main(){char* a=&ldquo;void main(){char* a=%c%s%c;printf (a,34,a,34);}&ldquo;;printf(a,34,a,34);}
-核心是使用printf(a,a)来代换显示，并且用34来规避转换。当然，完整的要带include，稍微有点区别。</p>
-
+          <p>void main(){char* a=&quot;void main(){char* a=%c%s%c;printf (a,34,a,34);}&quot;;printf(a,34,a,34);}  核心是使用printf(a,a)来代换显示，并且用34来规避转换。当然，完整的要带include，稍微有点区别。</p>
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Mar 27, 2008
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/8/#disqus_thread">Comments</a>
+  <p class="meta">Mar 27, 2008
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/8/">None</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/8/">None</a>
+  </h1>
 </header>
-
 
         
           <p>说要换blog，但是隔了几个月还是没动，因为贝壳了解到一个悲惨的事实。google提供的blog，是要穿墙的。
 这样说的话，我估计这篇blog是没有几个国内用户了。不过华语使用者众，多条路也不错。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Mar 10, 2008
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/435/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/435/">一些使用firefox的技巧</a>
-    </h1>
-</header>
+      </article>
+      
+      
+      
 
 
-        
-          <p>在linux下和windows下共享同样配置/插件。这个很简单，上面的blog中有篇文章说到thnunderbird在双系统下共享同样邮件的问题，firefox也一样解决。能用linux的人不会查不出配置目录位置吧。
-节约内存技巧。
-firefox虽然号称小巧，然而很多时候我们发现他的内存消耗也非常惊人。在贝壳的机器上，有的时候会高达150M，基本等于普通编辑器/播放器的10倍。事实上，不是firefox浪费内存，而是默认的内存配置是针对&rdquo;机器上只开firefox&rdquo;设计的。如果你机器内存小，或者需要同时开其他程序，最好自己配置一下firefox。
-首先就是fasterfox，关闭其中的&rdquo;增强预读&rdquo;，这东西很消耗内存。然后是内存缓存，调整到32M吧。一般一个网页上所有文件差不多1M-2M，32M够把20个网页的所有内容缓存起来，再多就不大正常了。根据贝壳自己的猜测，渲染动作应当是动态进行的，否则内存根本顶不住长文本的渲染。这样在浏览的时候，从后台抓取内容，动态渲染的速度就非常重要，因此强烈推荐不要小于8M。否则连5个页面的内容都不在内存中命中，还玩个P阿～
-还有渲染中的&rdquo;启用快速返回&rdquo;，将内存中的保留页面数调整小，贝壳用的是3。当然，这个只适用于firefox1.5。
-其次是session manager，将&rdquo;撤销关闭&rdquo;尽量减小。反正贝壳减小到了1个窗口3个页面。这些页面在关闭后还是继续消耗系统的内存，因此越小越好。当然，小到多少是要看你的具体需要了。
-最后，少用插件，少启用插件，除非你真的需要。长期不需要的就禁用，或者干脆卸载。
-内存回收技巧。
-很简单，觉得不够了，关了再开。反正有session manager，正在浏览的网页根本不会有影响。
-同时打开大批网页技巧。
-最好使用Tree Style Tab，这样方便。另外，如果需要打开一个页面的所有连接，可以这样做。先察看页面信息，选择&rdquo;链接&rdquo;-&gt;&ldquo;全部选择&rdquo;-&gt;&ldquo;复制&rdquo;，然后开一个文本文件，把内容粘贴进去。可以看到内容其实是一堆的页面链接。当然，如果页面内有js做的链接指向，可以试试用Convert javascript or onclick to normal links这个greasemonkey脚本转换成目标链接。然后，把这个文本文件改名成htm，打开。通常情况下应该是一堆无法点击的文字，不过你可以用Linkify ting来把文字转换成一堆链接。然后……一个个点过去吧。
-上面是使用greasemonkey解决的方法，当然，也有更简单的方法。你可以安装flashgot，然后新增一个下载管理器，名字叫做firefox。路径就指向firefox的执行文件路径，参数不用动。平时用你喜欢的管理器，需要打开全部链接的时候，更改为firefox，然后&rdquo;使用flashgot下载全部链接&rdquo;。当然，缺点是对付不了js脚本，除非你加载Convert javascript or onclick to normal。
-不过鉴于内存状态考虑，建议不要同时打开大量页面。维持在10-20个上下最好。</p>
-
-          
-
-        
-
-    </article>
-    
-    
-    
 
 
 
@@ -624,10 +575,8 @@ firefox虽然号称小巧，然而很多时候我们发现他的内存消耗也�
 </div>
 
   
-
-  </div>
-
-  
+    </div>
+    
 
 <aside class="sidebar thirds">
   <section class="first odd">
@@ -648,7 +597,10 @@ firefox虽然号称小巧，然而很多时候我们发现他的内存消耗也�
       
       
       
-       
+      
+         
+      
+      
       
       
       
@@ -673,64 +625,87 @@ firefox虽然号称小巧，然而很多时候我们发现他的内存消耗也�
         <h1>Recent Posts</h1>
         <ul id="recent_posts">
           
-            <li class="post">
-              <a href="/blog/archives/2866/">关于抵制洋节</a>
-            </li>
           
-            <li class="post">
-              <a href="/blog/archives/2865/">恒春潜水记录</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2867/">996</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2866/">关于抵制洋节</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2863/">openssl证书相关</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2865/">恒春潜水记录</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2861/">密码学基本原理</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2863/">openssl证书相关</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2860/">similan船宿</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2861/">密码学基本原理</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2858/">京都游记</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2860/">similan船宿</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2857/">Boracay潜水攻略</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
+              </li>
+            
+          
+            
+              <li class="post">
+                <a href="/blog/archives/2858/">京都游记</a>
+              </li>
+            
           
         </ul>
       </section>
     
   
-
 </aside>
     
- </div>
+  </div>
 </div>
+    <footer role="contentinfo">
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
+        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+      </p>
+    </footer>
 
-<footer role="contentinfo">
-  <p>Copyright &copy; 2018 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-</p>
+    
+    
+    
 
-</footer>
-
-
-</body>
+    
+  </body>
 </html>
    
+

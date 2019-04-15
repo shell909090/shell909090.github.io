@@ -1,18 +1,16 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
 <head>
-  <link href="http://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
 
   
-  <meta name="HandheldFriendly" content="True">
-  <meta name="MobileOptimized" content="320">
   <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
 
   
-  
-  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+    
+    
+      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
+    
   
 
   
@@ -20,46 +18,50 @@
 
   
   
-  <link rel="stylesheet" href="//blog.shell909090.org/css/hugo-octopress.css">
+  <link rel="stylesheet" href="/css/hugo-octopress.css">
 
   
   
 
   
-  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/css/fork-awesome.min.css">
+  
 
   
   <link href="//blog.shell909090.org/favicon.png" rel="icon">
 
   
-  
-  
-
   <link href="//blog.shell909090.org/index.xml" rel="alternate" type="application/rss+xml" title="Shell&#39;s Home" />
 
-  <meta name="description" content="">
+  <meta name="description" content="" />
   <meta name="keywords" content="">
-
   <meta name="author" content="Shell Xu">
 
   
-  <meta name="generator" content="Hugo 0.30-DEV" />
+  <meta name="generator" content="Hugo 0.55.0" />
 
   
   
-<script>
-window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-ga('create', 'UA-48816091-1', 'auto');
-ga('send', 'pageview');
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-48816091-1', 'auto');
+	
+	ga('send', 'pageview');
+}
 </script>
-<script async src='//www.google-analytics.com/analytics.js'></script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
 
 
+  
+  
 </head>
 <body>
 
 
-<header role="banner"><hgroup>
+<header role="banner">
+<hgroup>
   
   <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
     <h2></h2>
@@ -67,44 +69,96 @@ ga('send', 'pageview');
 
 
 <nav role="navigation">
+<fieldset class="mobile-nav">
+  
+  <select onchange="location = this.value;">
+    <option value="">Navigate…</option>
+      
+  </select>
+</fieldset>
+
 
 <ul class="main-navigation">
   
   
 </ul>
 
-
 <ul class="subscription">
   
-
 </ul>
 
 
 </nav>
 
 
-<div id="main">
- <div id="content">
-  <div class="blog-index">
-    
-    
-    <article>
 
+
+  
+
+<div id="main">
+  <div id="content">
+    <div class="blog-index">
+      
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Dec 14, 2006
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/335/#disqus_thread">Comments</a>
+  <p class="meta">Dec 15, 2006
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/335/">Boost</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/336/">P2P和DHT的结构</a>
+  </h1>
 </header>
 
+        
+          <p>最近P2P是越来越盛行，按照公司要求，我们要写一个P2P下载支持。老板发话，越小越好。想想有道理，只是要减轻服务器压力，又不是要和P2P下载商抢生意。不过老板又发话，必须保持核心服务器高可用性。偶当场啥掉，怎么办？
+说起P2P下载的原始面目，其实是很简单的技术。假定你一个人在下载一个文件，同时你又知道所有有这个文件或者在下这个文件(那就有一部分)的人的套接字。那么连接上去下载，并且提供你可以提供的部分就好了。其中只有两个问题(也和算法没啥关系)，应该先下谁的，应该先给谁。但是困难在于，你如何知道谁有某个文件呢？
+按照获得这个信息的方法不同，P2P分成三代。
+第一代是核心服务器型的，术语叫做中心化拓扑（Centralized Topology）[1]，例如Napster[4]。这种类型的P2P下载可以说是传统下载和P2P下载的结合体。他同时具备了P2P的特性，例如带宽占用分布，高容错，高可用。也具备了核心模式的特性，例如中心依赖，可模糊搜索。Napster可以说就是因为核心依赖性而输掉了官司。
+这代P2P的运作方式是，用户上线的时候把自身的资源提交到服务器。由服务器维护表来做查询，并且定时删除过期的客户。用户查找文件的时候需要向服务器提交请求，服务器返回拥有文件的客户端。由于文件信息提交到服务器端，因此服务器上可以说是拥有版权文件的索引。
+第二代是泛洪/限制性泛洪型的，术语叫做全分布式非结构化拓扑（Decentralized Unstructured Topology）[1]，代表就是Gnutella[3]。这种类型的P2P才是完全意义上的P2P，因为去掉了核心服务器，因此没有中心依赖性。拥有P2P良好的带宽占用分布，高容错，高可用性能。但是致命缺点是，当网络节点扩展时，维护网络的带宽消耗就会成几何扩展。在大规模应用中，这无疑是不可接受的。所以有限制性泛洪的结构，不过限制性泛洪只是增强网络的抗性，没有根本的改变现状。
+这类P2P的运作方式是，用户维护自身拥有文件的列表，和其他一些客户的列表。当一个用户需要知道谁有一个文件的时候，就向他所有知道的其他客户查询。如此反复层级查询，并且用SPT或者TTL来做优化，最后可以得到结果。不过可想而知，网络消耗是惊人的。
+这代P2P有个变形，术语叫做半分布式拓扑（Partially Decentralized Topology）[1]，代表是KaZaa。简单来说就是把核心服务器型的一个核心服务拆成多个分布在某些比较强大的节点上。核心服务间使用泛洪/限制性泛洪型的方式通讯，核心和非核心间还是核心服务器查询的老路子。这类P2P修正了核心服务器型的中心依赖问题，并且可模糊搜索。也修正了泛洪的带宽占用问题。但是资源消耗分布不均匀，结构比较复杂，而且长期运行的核心节点可能莫名其妙就成为了被告，因为核心节点也拥有版权文件的索引。
+第三代是DHT型，术语叫做全分布式结构化拓扑（Decentralized Structured Topology）[1]，代表就是Chord[6]，Pastry[5]，Kadamila[2]。这种的P2P也是去核心的，拥有P2P良好的带宽占用分布，高容错，高可用性能。同时资源消耗比较平均，网络消耗小，扩展性好，抗网络不稳定能力强。缺点就是失去了模糊搜索的能力，只能变通的模糊搜索。
+DHT是Distributed Hash Table的缩写，用于节点搜索的。在此之前，我们先来想想数据结构课程的一些东西(没学的就表看了，看下面的吧，这节看了铁晕)。如果我需要知道一个对象，找出关联的一个对象，那应该用哪种结构？map！那如果要增加map的效率怎么办？hash table！那么hash table的内存布型怎么处理？如果要经常删除添加，那应该用链表。OK，我们想像一下，假设一个节点就持有链表中的一项，上下项的指针改成上下节点的网络描述，那是啥？Bingo，DHT。当然，DHT不会傻到让一个节点就保存两个网络描述，那一旦断裂就全玩完。DHT中是先给予所有节点一个ID，然后定义一个距离算法，再按照ID来保存hash的。一个节点保存和他的ID相邻的一定距离的hash(当然还包括值)，并且保存一些ID近的节点的网络描述和一些节点远的网络描述。就好像在hash table里面，一个节点保存了上下临节点的同时，也保存了很远的节点的指针。这样在链表查询的时候速度可以更快。
+DHT的运作原理是，一个节点加入DHT网络，就会生成一个不重复的ID。然后会寻找一些节点来扩充自己的相邻节点列表，并且获取于自己相邻到一定程度的Hash的内容。当节点够多的时候，所有的Hash都会有一个以上的节点来维护，这样就有了足够的容错性，性能，稳定性。在寻取一个内容的时候，会寻找自己的临节点列表中最近的节点，然后向他查询进一步的消息。这个在几次循环后就可以足够近到获得目标信息了。当然，大家可以看出，要寻取一个对象，就必须有这个对象的hash，因此是不可模糊的。
+Kadamila是eMule所用的服务，很多BT中也使用了兼容协议。
+另外顺便在此提出一个P2P流的思想。传统的P2P下载是基于块的，简单来说就是文件。现在很多P2P技术可以基于流，就是可以在允许一定延时的情况下，将延时允许区域内的数据作为一个块来传送。这种技术对于P2P的要求更高，但是应用范围更加广阔。例如用于视频流播放，广播，股票数据传输等等。现在的流技术都是针对特定协议来展开的，例如视频流点播就用PPstream。我们可以将P2P流封装成一个独立服务，从发起端上连接一个接口，到客户端上监听一个接口，中间过程透明化。简单来说，发送端上运行一个服务，客户端上运行一个服务。发送端上的服务连接到一个特定端口来获得数据，然后通过P2P流来传输给客户端，客户端的P2P服务再监听到一个端口上，向所有(或者有限)连接上的接口提供数据。除去只能接受数据，并且存在一定延迟和丢包外。整个过程就被掩盖在了单纯的网络传输下面。这样很多协议可以在不修改协议(但是至少要可以对抗错包丢包等等网络状况)的情况下直接P2P流化。当然，P2P流在实时性，安全性上的要求会更加高。
+顺便说一下网状模型的一个修改吧，几年前的东西了，可惜一直弄不出算法来。当前的网状模型是一个节点传输给其他节点，然后层级传递。理论上应该将发起节点最近的和提供带宽最高的节点放在顶层，以减少网的层数。不过将底层的节点带宽废弃还是可惜了点。我们可以将一个流分成两个部分(如果先天就可以分离最好，例如视频和音频，不过他们不对等)，然后组成两颗树。这样网络中的底层节点就可以在另外一颗树中被定义为次层节点。如此会对带宽利用更加彻底，当然，程序也会更加复杂。
+参考和引用:
+1.P2P网络的拓扑结构:http://www.intsci.ac.cn/users/luojw/P2P/ch02.html
+ 2.Kademlia协议:http://www.itslife.net/blog/?p=132  :http://blog.csdn.net/colinchan/archive/2006/05/08/712760.aspx
+3.Gnutella协议:http://www9.limewire.com/developer/gnutella_protocol_0.4.pdf
+4.Napster官方网站:http://www.napster.com/
+5.Pastry 工程:http://research.microsoft.com/~antr/PAST/pastry.pdf
+6.Chord 工程:http://pdos.csail.mit.edu/chord/
+7.对等网络中主流分布式哈希算法比较分析:http://www.p2psky.com/tech/article1274.html
+8.细说 Kademlia:http://www.vshj.com/Article/2005/200512/Article_18386.shtml</p>
+          
+        
+      </article>
+      
+      <article>
+        
+        
+
+<header>
+  <p class="meta">Dec 14, 2006
+     - 1 minute read 
+    
+
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/335/">Boost</a>
+  </h1>
+</header>
 
         
           <p>谢天谢地，好久没有正常的用blog了。无论哪里都是能看不能改，痛苦死我。
@@ -116,58 +170,48 @@ ga('send', 'pageview');
 cmatch what; regex reg(&quot;^abc$); if(regex_search(str.c_str(), what, reg)){ .... }  what里面会保存从正则表达式里面匹配出来的东西。
 利用这个库可以很好的做字符串拆分，验证的操作，弥补了C++没有正则表达式的缺憾。
 我写了一个类，可以从流里面获得每行，然后做匹配，然后派发到相应函数里面去。有需要的可以联系我。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Dec 2, 2006
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/334/#disqus_thread">Comments</a>
+  <p class="meta">Dec 2, 2006
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/334/">我工作了</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/334/">我工作了</a>
+  </h1>
 </header>
-
 
         
           <p>最近我又被朋友们拷问关于工作的问题。恩，没错，我工作了，地点在曹杨路，当然是程序员，薪水不太满意。从9点到6点。
 没缺什么吧？</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Nov 16, 2006
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/333/#disqus_thread">Comments</a>
+  <p class="meta">Nov 16, 2006
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/333/">某件事情</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/333/">某件事情</a>
+  </h1>
 </header>
-
 
         
           <p>恩，今天应当事人要求，我需要讲某件事情，请大家评评理。应当事人要求，特地隐去名字，称为某君。但是在说事情以前，我必须坦诚另外一件事情，我谈恋爱了。
@@ -175,117 +219,97 @@ cmatch what; regex reg(&quot;^abc$); if(regex_search(str.c_str(), what, reg)){ .
 她和我的某位亲戚是同学，所以在接吻后没多久就主动找上我这位亲戚分享心得。言语中谈及什么我一直不知，据某君本人说也记不清楚了。不过就我辗转得知，其中应当有“是不是姿势错误”和“口水满脸都是”云云。我的这位亲戚觉得某君言语说的太过露骨，将来说给其他人知道，于我不利。于是找上我的长上和盘托出，长上听后颇为不齿，斥为“二百五，这种事情怎么好说的阿。”。于是又找上在下的高堂，托她转告。高堂特意约谈我，说“这事情不应该这么做。这么做让人觉得——按你XX的话说，有点二百五”。我听了颇为尴尬，于是又约谈某君，说其侵犯隐私云云。某君不服，认为此事不应怪她，虽然事情因她而起，可是她不应承担主要责任。好比导火线一样，虽然造成爆炸，本身没有什么过错。言称我那位亲戚到处乱说，才当是罪魁祸首。又说我的长上道听途说即说其是“二百五”，话语太重，下结论太随便。我本人未就此事向此二位长上辩解，未克尽男友的责任云云。
 我反驳她，说她随便说话已经不是首次。接吻当天就向她的母亲完全坦诚此事，导致她母亲下令禁止她再到我这里来。随后又主动找上我的亲戚，言及我的私隐。就此两件事情，何谓不承担主要责任。长上说小辈一句“二百五”，就是我自己这些年也被说了无数次，又有什么委屈呢？说到道听途说，除非说我那位亲戚随意编造。可此事只有我和某君知道，我没有说，某君没有说，我那位亲戚又不是千里眼，怎么连细节都知道呢？至于我未就此事向二位长上辩解，不说事情因何而起，单单我为人晚辈，是否合适辩解呢？
 大家应当知道整个事情来龙去脉了，可以评评理看，倒底事情如何？知道详情的也可以在下面补充，看看我哪里没有说到。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Nov 7, 2006
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/332/#disqus_thread">Comments</a>
+  <p class="meta">Nov 7, 2006
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/332/">租屋公告</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/332/">租屋公告</a>
+  </h1>
 </header>
-
 
         
           <p>最近碰到朋友——除了问头发，还经常被问到出租屋的事情。好吧好吧，我租出来了。
 具体请看这里。
 别说我没说过。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Nov 6, 2006
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/331/#disqus_thread">Comments</a>
+  <p class="meta">Nov 6, 2006
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/331/">剪发公告</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/331/">剪发公告</a>
+  </h1>
 </header>
-
 
         
           <p>最近碰到朋友——老问我，你最近如何。我说还行，就是头发剪了。然后就被要求照片。好，现在特此公告。照片如下。
 别说我没说过。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Nov 6, 2006
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/330/#disqus_thread">Comments</a>
+  <p class="meta">Nov 6, 2006
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/330/">一只小狗</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/330/">一只小狗</a>
+  </h1>
 </header>
-
 
         
           <p>今天老妈跑到我租的房子里面的时候，在门口看到一个小狗。(关于我租房子的事情后面再说，我很懒，就这样)脖子上有个牌子，看来是有主人的狗。看上去很乖巧很可怜的一个小狗，趴在我家门口附近。不知道哪里来的。老妈看看可爱，又看看有主人的，放心的喂了块肉。结果，麻烦大了。
 到中午我去吃饭，把早饭时候的锅子带回去。结果出门发现，它还在那里。看到我出来，一下子站起来。有没有搞错，别说我可不是老妈。就算是，也不能在空锅子里面变出肉来阿。赶紧给老妈打了个电话，老妈还说我大惊小怪。好好好，见怪不怪。我出去看到它注意力正被邻居引开了，干脆一溜烟跑下去。
 晚上去吃饭，发现还在——有没有搞错阿——就算黑猫叔叔也要休息的好吧。没办法，和老妈说了，你喂的肉，你搞定。老妈想想也没办法，吃了晚饭到我哪里准备抱下去。结果路上看到一个邻居的狗，也跟我们上来了。
 两个狗见面了非常有意思，互相闻来闻去。然后邻居的狗居然想骑那个可怜的狗了。它(或者应该叫她？)到处跑。我赶快跑到屋子里面，省得看狗打架。老妈赶快把狗抱到下面去，结果发现110来了。看来是刚刚他们打架的声音太大，吓到谁了。邻居的狗应该没事，不过这只可怜的小狗就麻烦了。虽然有狗牌，但是不能用来查找主人。(狠狠鄙视下中国的动物管理制度，收了钱不管理的么)派出所的人看看也很可怜，问我妈说要不要养。养的话省下1000来挂狗牌，不养的话回去他们也是处理了。(其实就是人道毁灭)我妈听了也很想，问题是这狗可带不回北京阿——即使带回去也没法养。原来的狗就是一个证明。所以很无奈的看着给接走了。</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Oct 25, 2006
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/329/#disqus_thread">Comments</a>
+  <p class="meta">Oct 25, 2006
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/329/">上海电信ADSL宽带测试报告</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/329/">上海电信ADSL宽带测试报告</a>
+  </h1>
 </header>
-
 
         
           <p>总算把该死的有线通换成ADSL了——现在我们看看电信的宽带质量。
@@ -312,34 +336,29 @@ wireshark测定。
 双机器自然负荷，仅仅开启MSN等IM软件。
 --- www.google.com hping statistic --- 96 packets transmitted, 95 packets received, 2% packet loss round-trip min/avg/max = 36.1/39.3/57.6 ms  平均/抖动=39.3&frasl;21.5
 --- www.sina.com.cn hping statistic --- 96 packets transmitted, 96 packets received, 0% packet loss round-trip min/avg/max = 10.</p>
-
           
-              <footer>
-                  <a href="//blog.shell909090.org/blog/archives/329/" rel="full-article">Read On &rarr;</a>
-              </footer>
+            <footer>
+              <a href="//blog.shell909090.org/blog/archives/329/" rel="full-article">Read On &rarr;</a>
+            </footer>
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Oct 21, 2006
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/328/#disqus_thread">Comments</a>
+  <p class="meta">Oct 21, 2006
+     - 1 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/328/">通过LPIC1</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/328/">通过LPIC1</a>
+  </h1>
 </header>
-
 
         
           <p>总算正式通过LPIC1了，搞了半年这个东西，真的差点让我崩溃。通过可以有两种方法，背考古题，或者拥有深厚的功底。
@@ -347,86 +366,40 @@ wireshark测定。
 不过里面对于功底的考察蛮细致的，有的题目会问你一些正常不会细究的东西。我为了通过考试，自行研究了整个Linux引导的详细过程。从开机到initrd，然后从服务到启动X，到自动执行脚本。非常详细的了解了整个Linux的基础，并且可以自行定制一个Live系统。这里面需要非常详细的研究，一般的大路货考试好像还没有这个必要——
 不过我要说的是——这些东西——纯粹是自己吓自己。事实上，LPI-101我考了550分，LPI-102我考了640。不是啥高分，不过远远超过通过分数。原因是对于考试评价过高——还特意拖了很久——等很多事情稳定了，而且功底扎实了才去。没想到这么简单，扫兴。
 总体来说——考试通过的感觉还不错，不过没有什么好惊讶的。意料中的事情——除了多出来的1300块钞票——我的钱阿——</p>
-
           
-
         
-
-    </article>
-    
-    <article>
-
+      </article>
+      
+      <article>
         
         
 
 <header>
-    <p class="meta">Oct 17, 2006
-         - 4 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/327/#disqus_thread">Comments</a>
+  <p class="meta">Oct 17, 2006
+     - 4 minute read 
+    
 
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/327/">LPI的表述问题</a>
-    </h1>
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/327/">LPI的表述问题</a>
+  </h1>
 </header>
-
 
         
           <p>+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+ | {width=&ldquo;181&rdquo; height=&ldquo;80&rdquo;} | | 在您准备接受LPI认证考试前,必须在 LPI | | 官方网站上进行注册登记,注册后系统会发送一个LPI | | | | ID到您的邮箱中，同时登陆会员区也可查看 LPI | | ID。 | | | | 如果您在注册中遇到困难,请致电: 010-62670579,或发邮件到 | | candy@lpi-china.org 或 bai@lpi-china.org, | | 我们有考试官员为您服务，所有注册都是免费的。 | +&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+ | {width=&ldquo;183&rdquo; height=&ldquo;80&rdquo;} | | 拿到您的LPI | | ID后，您可持本人身份证到LPI中国办公室、LPI授权培训中心及Prometric考试中心报名，同时一次性交纳考试费￥1300元，然后您会得到一个准考证，持准考证及身份证到指定的考场去参加考试。 | | | | | | 注：考生在报名时，请选择对应的考试级别和中、英文试题：LPIC-1 | | | | 和 LPIC-2。 | | | | &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;- | | &ndash; | | LPIC-1 | | 101 | | | | 102 | | | | LPIC-2 | | 201 | | | | 202 | | &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;- | | &ndash; | | | | 以任何顺序通过 101 和 102,可以获得 LPIC-1 证书,只有获得了 LPIC-1 | | 证书,又获得 201 和 202 考试的专业人士才能获得 LPIC-2 证书。 | +&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+ | {width=&ldquo;181&rdquo; height=&ldquo;80&rdquo;} | | 在附近的 Prometric | | 考试中心预定考试时间,接受考试,成绩会立即出来,证书要等 7 | | 个工作日,从加 | +&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+</p>
-
           
-              <footer>
-                  <a href="//blog.shell909090.org/blog/archives/327/" rel="full-article">Read On &rarr;</a>
-              </footer>
+            <footer>
+              <a href="//blog.shell909090.org/blog/archives/327/" rel="full-article">Read On &rarr;</a>
+            </footer>
           
-
         
-
-    </article>
-    
-    <article>
-
-        
-        
-
-<header>
-    <p class="meta">Oct 6, 2006
-         - 1 minute read 
-         - <a href="//blog.shell909090.org/blog/archives/326/#disqus_thread">Comments</a>
-
-        
-    </p>
-    <h1 class="entry-title">
-        <a href="//blog.shell909090.org/blog/archives/326/">Windows和Linux之争</a>
-    </h1>
-</header>
+      </article>
+      
+      
+      
 
 
-        
-          <p>在网络上大家经常能看到争论Linux和Windows哪个更实用的帖子。两者无非抱持两种论点，Linux胜在价格和灵活性，Windows胜在简便和可用。一般来说都是说，不论怎么说，Linux可以如何如何而Windows不行。或者是，Windows可以什么什么而Linux不行。
-总体来说，Windows擅长于桌面应用而Linux擅长于服务系统。Windows最大的资本在于品牌和延伸。Windows的品牌和可乐的不同在于，可乐的品牌仅仅是牌子，是虚拟价值。一旦可乐公司全部烧毁，那么能否靠可乐的牌子重新站起还是一个问题。但是Windows的牌子还附带了用户对于UI操作方式的粘滞。一旦M$烧了，别人也是很难抢这个蛋糕的。Linux长处在于免费，就单机成本来说，Linux远远要低于Windows。但是这是不完全的运营模式。一个不赚钱的项目？如何吸引别人？
-我不考虑Windows和Linux哪个更好，而是考虑另外两个问题。他们是否有存在的必要，以及他们谁更适合我。
-大家想必知道，POSIX标准下还有Linux，BSD，Solaris的分别。如果今天不是WL之争，是否会出现UL之争呢？我不知道，历史无法假设。不过我相信，多个公司多种模式的混合竞争，会造成好的效应。很多Windows项目，都潜在的为Linux项目提供了资金(至少M$养活了很多程序员)。而很多Linux项目，又为Windows项目提供了技术和支持。最重要的是，没有Linux的追赶，windows就会无限制的膨胀，垄断，守旧，出现问题。而没有挑战Windows的需要，Linux也不会不断进步。
-很多人往往把Windows和Linux等同到开源软件和商业软件。其实这是不严格的。软件往往分为商业软件，试用软件，共享软件和免费软件。商业软件是指代码封闭，作为公司的一个资产。可以转让，可以有条件开放。软件收取使用费用，并且出品公司对于功能提供保证。这样的一类软件。试用软件是商业软件的特殊版本，指限制或者取消了部分或全部功能，准许用户合法免费有限使用的一种特例。代码可以封闭也可以开放(但即使开放也往往是部分代码，甚至是理论代码)，通常是全部软件的一个部分，或者是修改版。往往可以通过缴费来变成商业软件。共享软件指软件作者保留软件的所有权，但是免费的发行软件，不收取费用或者仅仅收取手续费。源码可以封闭也可以开放。免费软件指作者按照源码形式发布软件，并且放弃源码所有权力。一般有有条件发布和无条件发布。GPL就是一种发布条件，虽然作者不继续拥有代码所有权力，但是这些代码不得进入商业领域。而无条件的免费软件，所有者放弃所有权力，任何人可以合法的运用其中的代码。
-由此来看的话，大致是商业软件和试用软件一个阵营，共享软件和免费软件一个阵营。然后，Windows上有大量的共享软件，例如Winamp，这已经是Windows得以生存的一个基础了。Linux上面也有很多的商业软件，例如MAYA。往往是属于免费阵营的共享软件稳固了Windows的存在基础，给Windows系统提供了大量的功能和定制。而属于商业阵营的MAYA等为开发4Linux的软件，而为Linux提供了大量的资金。
-至于哪个更适合我(注意，这里的我，可不是贝壳本人)，则要看系统的功能，成本，特性而定了。首先是成本问题，M$曾经提出所谓总体拥有成本。即，Windows通过一次购买就可以低成本的运行，而Linux一般都是要为机器配备高水准的管理员。所以管理员水平的上涨引发的费用应当被计入成本中。而且Windows系统对于操作者是基本不用培训的，而Linux需要培训操作者，因此也会产生成本。
-问题在于，Windows一次购买1000台机器的时候，大约40W是的纯软件成本。如果原来是需要配置3个网管，现在要配置5个高水准的。那么原来大约需要12W一年，现在需要25W一年。如果3年内需要购买升级产品，则会导致Windows的成本反而高。问题在于，Windows也是会购买升级的，所以软件的成本也会平摊在每年上。当运行的机器多了，就会导致网管的工资上升不算啥的状况。而且注意，其中还不包括因为要在Windows上工作而需要购买的其他软件，例如Office。如此计算下来，单纯从配置的平均拥有成本讲，Windows不占有优势。
-不过在雇员培训上，Windows就非常有优势了。现在会Office的雇员满天飞，不会才奇怪。因此可以说是无成本的。然后不会的人找起来反而困难，加上培训，每人成本就要高出100-200。而且非Windows环境和Windows环境交互上比较麻烦，所以这个成本还要更高。从这点来说，一般企业都不适合用Linux。什么企业适合呢？1000台以上机器，雇员学历偏高，在和他人交互上需要他人配合的企业。其实去了企业就可以明白说是政府了。
-特性上说，Linux奉行的是专业分工合作的模式。由一个软件完成一个非常专的部分，例如排序，或者下载。然后通过交互通道来协调各个软件，达到一个复杂软件的构成。例如一个邮件软件，可以在里面加入HTML，加入加密，加入VIM编辑。定制性非常强，对于和某些常见任务接近但是细节上有区别，又强调细节必须实现的特殊任务。往往可以非常简单快速的完成。例如同样一个从Internel上面抓专利信息形成数据库的工作，Windows下要专门写程序，而Linux下面可以通过连接lynx|sed&gt;来完成。
-然而这对于使用者水平要求非常高，如果不熟悉系统，根本无法做到。对于学校，专家来说，使用Linux是非常方便的。而对于正常用户来说，Linux可就是鸡肋了。
-windows的特性是大而全，思考是基于用户傻瓜的模式。固然没人愿意说自己是傻瓜，可是做傻瓜考量的软件总不做天才考量的软件好用。简单来说，windows不追求低成本，不追求好用，只追求用户最简单可以用。可见，随着电脑普及，windows这种思路是无法持续的，或者至少是要萎缩的。
-最后一个是功能，Linux的功能和windows总体评价来看差不多。不过Linux的软件更多是专业用的，例如免费的符号表达求解。而windows更多是娱乐的，例如游戏。因此要实现有限功能的人可以自由选择，例如办公环境。需要专业的人最好用Linux，需要娱乐的人最好用windows。
-综上来说，对于政府，学校，专家，需要专业软件的人，建议选择Linux。而对于中小企业，需要娱乐的个人，最好选择Windows。</p>
-
-          
-
-        
-
-    </article>
-    
-    
-    
 
 
 
@@ -648,10 +621,8 @@ windows的特性是大而全，思考是基于用户傻瓜的模式。固然没�
 </div>
 
   
-
-  </div>
-
-  
+    </div>
+    
 
 <aside class="sidebar thirds">
   <section class="first odd">
@@ -672,7 +643,10 @@ windows的特性是大而全，思考是基于用户傻瓜的模式。固然没�
       
       
       
-       
+      
+         
+      
+      
       
       
       
@@ -697,64 +671,87 @@ windows的特性是大而全，思考是基于用户傻瓜的模式。固然没�
         <h1>Recent Posts</h1>
         <ul id="recent_posts">
           
-            <li class="post">
-              <a href="/blog/archives/2866/">关于抵制洋节</a>
-            </li>
           
-            <li class="post">
-              <a href="/blog/archives/2865/">恒春潜水记录</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2867/">996</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2866/">关于抵制洋节</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2863/">openssl证书相关</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2865/">恒春潜水记录</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2861/">密码学基本原理</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2863/">openssl证书相关</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2860/">similan船宿</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2861/">密码学基本原理</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2858/">京都游记</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2860/">similan船宿</a>
+              </li>
+            
           
-            <li class="post">
-              <a href="/blog/archives/2857/">Boracay潜水攻略</a>
-            </li>
+            
+              <li class="post">
+                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
+              </li>
+            
+          
+            
+              <li class="post">
+                <a href="/blog/archives/2858/">京都游记</a>
+              </li>
+            
           
         </ul>
       </section>
     
   
-
 </aside>
     
- </div>
+  </div>
 </div>
+    <footer role="contentinfo">
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
+        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+      </p>
+    </footer>
 
-<footer role="contentinfo">
-  <p>Copyright &copy; 2018 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-  <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-</p>
+    
+    
+    
 
-</footer>
-
-
-</body>
+    
+  </body>
 </html>
    
+
