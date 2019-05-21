@@ -105,6 +105,39 @@ if (!doNotTrack) {
         
 
 <header>
+  <p class="meta">Mar 3, 2010
+     - 1 minute read 
+    
+
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/100/">emacs配置系统</a>
+  </h1>
+</header>
+
+        
+          <p>emacs是个超级复杂的程序，尤其在配置问题上。贝壳的emacs要跨越三个环境。环境一，WindowsXP+Emacs23。环境二，Debian Testing + Xfce4。环境三，CentOS + Ssh。而整个的操作方式，个性设定需要保持一致。因此，引出一个问题。配置如何设置，跨平台，同步。
+首先解决配置的同步问题，贝壳建立了一个svn仓库，用于存储该配置系统。然后在各个系统中co出这个仓库，当有需要调整时ci就可以保持同步了。Linux下可以使用ln连接文件，Windows下比较麻烦点，NTFS格式(大多都是NTFS格式了吧)可以去sysinternals下一个叫做junction的工具，以建立目录的工具链接，当然，.emacs文件只能手工拷贝了。
+然后是配置的切分问题，如果只有一个文件，即使使用了版本控制，意义也不大。同时，将配置切割成不同的部分，控制载入过程，也可以跨平台和加速。以下是贝壳的.emacs文件。
+;; .emacs profile, written by shell.xu ;; load other set (add-to-list 'load-path &quot;~/.emacs.d/&quot;) (add-to-list 'load-path &quot;~/.emacs.d/auto-complete/&quot;) (add-to-list 'load-path &quot;~/.emacs.d/plugins/&quot;) (load &quot;emacs-setup&quot;) (load &quot;emacs-redef&quot;) (load &quot;emacs-plugin&quot;) (cond ((not (boundp 'initial-window-system)) (load &quot;emacs-console&quot;)) ((memq initial-window-system '(x w32)) (cond ((memq system-type '(windows-nt cygwin)) (load &quot;emacs-win&quot;)) ((memq system-type '(gnu/linux)) (load &quot;emacs-linux&quot;))))) (load &quot;emacs-keymap&quot;)  从上可以看出，我们先设定了.emacs.d作为默认加载路径——大多数文件都是放在这里。plugins是各种第三方程序的安装路径，这样这些程序就无需在各个平台上各自安装一次。而auto-complete单独拆出来纯粹是因为文件太多了。而后，我们加载了setup，这个文件内定义了emacs的基本配置，redef文件内定义了各种自定义函数和变量，plugin内控制了需要加载的各个插件和配置。
+下面就有点复杂，简单来说，设定无Windows系统的时候加载emacs-console文件，有Windows的情况下，在windows下加载emacs-win，在linux下加载emacs-linux。这是实现跨平台设置的核心。
+最后是keymap，经过上面复杂的设定，按键设置是统一的。
+setup文件就不细说了，大家按照自己的习惯设定就好。下面我说几个redef中定义的函数。
+(defun switch-windows-buffer () (interactive) (let ((this-buffer (window-buffer))) (switch-to-buffer (window-buffer (next-window (selected-window)))) (switch-to-buffer-other-window this-buffer) (other-window 1)))  这个函数的目标是用热键交换两个窗口的位置。如果你经常用C-x 3分栏，并且在两者间跳来跳去的话，有的时候往往希望两者的位置换一下。通常都是C-x b切换当前的窗口，然后C-x o切到隔壁去再换。这个太繁琐了。</p>
+          
+            <footer>
+              <a href="//blog.shell909090.org/blog/archives/100/" rel="full-article">Read On &rarr;</a>
+            </footer>
+          
+        
+      </article>
+      
+      <article>
+        
+        
+
+<header>
   <p class="meta">Mar 2, 2010
      - 1 minute read 
     
@@ -426,34 +459,6 @@ Feb 14 17:58:36 CST 2010
         
       </article>
       
-      <article>
-        
-        
-
-<header>
-  <p class="meta">Feb 1, 2010
-     - 1 minute read 
-    
-
-    
-  </p>
-  <h1 class="entry-title">
-    <a href="//blog.shell909090.org/blog/archives/90/">手机又丢了</a>
-  </h1>
-</header>
-
-        
-          <p>昨天出去玩，拉小黄出来溜冰，结果被还了一个电脑。我还要买一个键盘给别人，手上一堆东西，再打车去见人。时间紧，手上大包小包一大堆，下车的时候两手满满的。下车了再一拍兜——杯具啊～～～～手机丢了。
-估计是放兜里面没放的太进去，于是联系去找。大众的调度��嗦嗦的，问你上车时间下车时间车号前后排什么的，问了一堆。我当时心就一凉。司机每天要开车的，总算还比乘客靠谱点。下一个乘客上来，那可就彻底讲不清了。要验证我的身份，大可以等东西找到再说。估计这堆罗嗦问题就是要等到说下个乘客可以上车，然后再推说可能是乘客问题，让你无话可说的。所以大家车上丢了东西，就别指望调度了。
-消息回来，果然找不到，手机满电的，也关机了。于是只有紧急停机，外加修改了所有在上面涉及过的密码，包括我的QQ，MSN/Hotmail，Gtalk/Gmail，还有张老师的blog。这里普及一个常识，手机使用的时候，一定要将手机设定为和SIM卡绑定。然后在手机丢了以后，立刻停机。这样做的主要目的是防止手机诈骗，例如打给你朋友，说你车祸了在急救，这里是医院，赶紧汇钱到XX账户啥的。我的朋友一般还比较懂行，肯定会挂了拨我号码以验证是否是我本人——问题是，那还是打到他手机上啊。人家和你够铁够仗义才付钱，万一被骗了，你好意思不赔他损失么？所以，丢了一定要停机。而SIM卡绑定，对于专业人士来说不难解，而对于业余人士则不好解。如果是外行捡到，卖给玩手机的就要被宰一刀，所以最好的思路是打上面几个人的电话问问要不要把手机买回去什么的。如果手机没绑定，大多都是拿到就用了，这个选项根本不可能。至于记录IMEI号什么的——你还没那个面子让移动封掉这个手机。另外上面如果用过QQMSN什么的，也赶紧改密码。不要心存侥幸，一天也许没事，两三天万一他解锁出来了，你哭都来不及。
-至于数据么，大部分都有备份，但是所有人的联系方式肯定都泄密了。大家如果看到其他人，用别人的手机，宣称我如何如何的——别信他。半年内的联系人可能需要重新添加，回头我会一一联系。
-至于其他么，半年内和我发过短信的，你们的短信都曝光了。和我照过相的，你们的照片都曝光了(这可不限半年，实际上我刚买的时候照的都还在)。其他数据应该没什么风险了，以上。
-以下不算钱:
-啊～～～～我的手机啊，又要买新的了，怨念。</p>
-          
-        
-      </article>
-      
       
       
 
@@ -732,6 +737,12 @@ Feb 14 17:58:36 CST 2010
           
             
               <li class="post">
+                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
+              </li>
+            
+          
+            
+              <li class="post">
                 <a href="/blog/archives/2867/">996</a>
               </li>
             
@@ -781,12 +792,6 @@ Feb 14 17:58:36 CST 2010
             
               <li class="post">
                 <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2858/">京都游记</a>
               </li>
             
           

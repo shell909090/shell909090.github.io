@@ -105,6 +105,32 @@ if (!doNotTrack) {
         
 
 <header>
+  <p class="meta">Mar 11, 2007
+     - 1 minute read 
+    
+
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/367/">烟台出差6</a>
+  </h1>
+</header>
+
+        
+          <p>没有想到，烟台出差的这个系列已经到6了，就是说我至少在烟台住了6天。我的习惯是一天写一个东西，一般不会串。
+今天总算不上班了，贝壳习惯了起床，一下到了8点就自动起床了，没有偷懒。中午和同事还有烟台的同事们出去玩去，有本地人带路就是不一样。贝壳今天算是看到漂亮的大海了，相比起来前两天看的那个只算一般而已。具体情况请去看blog吧，不过这个经历想必是比较少见的。因为人烟稀少的大海，再加上好天气和大浪，不住在海边没有这么巧吧。
+大的海浪一层层的打上来，基本就看不出海岸线在哪里。据烟台报业的同事说，夏天的时候这里人满为患，非常漂亮。现在却是人烟罕至，几乎没人。前段时间的暴风潮将整个海岸都破坏了，有的棚子的顶棚都飞了。砂子也被吹到了路边，还需要用机械推回去。海风呼呼的吹，非常冷，大约5度上下吧。整个手仿佛泡在冰水中一样，整个都不灵活了，身体也不是很舒服。所以大家知道为什么夏天才人满为患了吧，因为冬天来不时享受的，是来找罪受的。不过这样的环境看上去非常大气，让人感觉非常高兴非常舒服。听着海涛轰轰的响着，海风在身旁吹着，让人感觉这才是大海。
+吹完了海风我们一时还没有去的地方了，更离谱的是，本地的同事也找不到地方了。最后找了半天找到地方，去了她学校那里。参观了下鲁东大学，不错的学校，很漂亮。校园比上外大多了，和复旦差不多。至于交大闵行校区这种变态地方——不比也罢。然后跑到学校附近去唱歌，贝壳悲哀的发现自己的嗓子音域本来就不怎么样，感冒好了更小了，几乎难点的歌就不能唱。不过贝壳还是唱出了今天的三个满分，大家别高兴，最后一首歌时韩文的，根本没人会。贝壳最后就说了句，总算结束了，评分居然是100。可见这个所谓评分根本是看人品的，唔，这么说贝壳人品很好咯？
+最后我们就近跑到鲁东大学的食堂里面吃包子，嘿嘿，总体上说还是不错的。至少比交大的包子好吃。不过菜就——算了，不说了。</p>
+          
+        
+      </article>
+      
+      <article>
+        
+        
+
+<header>
   <p class="meta">Mar 10, 2007
      - 1 minute read 
     
@@ -332,38 +358,6 @@ CPUID指令可以看做一个汇编中的函数，预先设定一个EAX的编号
 我先给出我所用的函数：
 void getCpuID (PDWORD pData, DWORD ID) { __asm { push ebx push ecx push edx push esi mov eax, ID cpuid mov esi, pData mov [esi], eax mov [esi+4], ebx mov [esi+8], ecx mov [esi+12], edx pop esi pop ecx pop ebx pop edx } }  其中pData是一个足够大的数组，ID是入口编号。根据Intel和AMD的约定，0,1,80000001-80000003是共同的。0在EBX,EDX,ECX中返回了厂商标识，例如目前机器上就是AuthenticAMD。(注意，不是顺序存放的，按照我刚刚写的顺序)80000001-80000003在返回中顺序存放了CPU的标识，例如目前机器上是AMD Sempron&trade; Processor 2500+。1在EAX中返回了CPU的系列编号，EDX中返回了特性编号。以上都是标准的返回，可以看出在识别平台的时候很方便。
 Intel的CPU在2中存放了配置参数，3中存放了序列编号。而AMD在这两者上都是0。由此大家就知道为什么无法用来作为加密技术了，难道这个程序只能在Intel芯片上跑吗？</p>
-          
-        
-      </article>
-      
-      <article>
-        
-        
-
-<header>
-  <p class="meta">Feb 2, 2007
-     - 1 minute read 
-    
-
-    
-  </p>
-  <h1 class="entry-title">
-    <a href="//blog.shell909090.org/blog/archives/357/">继承类静态对象虚拟化</a>
-  </h1>
-</header>
-
-        
-          <p>其实这个标题不准确，准确的说，应该是继承类拥有自己的基类静态对象。
-我们知道，类中的静态对象本质上是全局变量，不过名字在类命名空间里面。如果类B有静态对象S，D继承了B(先按照public继承讨论，其他其实也一样)。那么在D里面访问S的时候，其实是访问的B命名空间里面的静态对象S。验证代码如下：
-class B { protected: static int S; }; int B::S = 0; class D:public B { public: void print () { printf (&quot;%dn&quot;, S); }; }; class E:public B { public: static void rewrite () { S = 1; }; }; int _tmain (int argc, _TCHAR * argv[]){ D d; d.print (); E::rewrite (); d.print (); return 0; }  上例中可以看到，两个继承类，其实都是将父类的命名空间导入而已。假定我们要使得每类专有一个静态成员，例如我们要计算每个类的生成对象个数，怎么办呢？
-如果不用继承，我们可以在每个类里面加一个静态成员。然后在构造函数中加1，析构中减1。但是如果我们想把这个功能放到基类中，事情就麻烦了。因为所有类从同一个基类派生，我们算出来的其实是所有从基类继承的类的总对象生成个数。
-当然，我们可以用实现的方法来做。把所需要的功能抽离出来，放到一个单独的计数类中。然后构造的时候调用加1，析构的时候减1。听起来很蠢，那是因为例子容易的关系。比较复杂的时候，这样抽象相对简单的。计数类可以用于多个类，实现了代码重用。但是仍旧没有解决关键问题，怎么让继承类特化基类的静态对象？(虚拟化和特化的意思差不多，就是针对具体对象使用具体方法)
-答案最后被我在More Effective C++中找到了，正确的方法不是寻找一个特化的方法，而是继承不同的基类，使用同一套代码。既然是不同基类，怎么具备同一套代码呢？想到了吧，模版。
-template&lt;T&gt; class B { protected: static int S; }; class D:public B&lt;D&gt; { public: void print () { printf (&quot;%dn&quot;, S); }; }; int B&lt;D&gt;::S = 0; class E:public B&lt;E&gt; { public: static void rewrite () { S = 1; }; }; int B&lt;E&gt;::S = 0; int _tmain (int argc, _TCHAR * argv[]) { D d; d.</p>
-          
-            <footer>
-              <a href="//blog.shell909090.org/blog/archives/357/" rel="full-article">Read On &rarr;</a>
-            </footer>
           
         
       </article>
@@ -646,6 +640,12 @@ template&lt;T&gt; class B { protected: static int S; }; class D:public B&lt;D&gt
           
             
               <li class="post">
+                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
+              </li>
+            
+          
+            
+              <li class="post">
                 <a href="/blog/archives/2867/">996</a>
               </li>
             
@@ -695,12 +695,6 @@ template&lt;T&gt; class B { protected: static int S; }; class D:public B&lt;D&gt
             
               <li class="post">
                 <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2858/">京都游记</a>
               </li>
             
           

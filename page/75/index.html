@@ -105,6 +105,38 @@ if (!doNotTrack) {
         
 
 <header>
+  <p class="meta">Feb 2, 2007
+     - 1 minute read 
+    
+
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/357/">继承类静态对象虚拟化</a>
+  </h1>
+</header>
+
+        
+          <p>其实这个标题不准确，准确的说，应该是继承类拥有自己的基类静态对象。
+我们知道，类中的静态对象本质上是全局变量，不过名字在类命名空间里面。如果类B有静态对象S，D继承了B(先按照public继承讨论，其他其实也一样)。那么在D里面访问S的时候，其实是访问的B命名空间里面的静态对象S。验证代码如下：
+class B { protected: static int S; }; int B::S = 0; class D:public B { public: void print () { printf (&quot;%dn&quot;, S); }; }; class E:public B { public: static void rewrite () { S = 1; }; }; int _tmain (int argc, _TCHAR * argv[]){ D d; d.print (); E::rewrite (); d.print (); return 0; }  上例中可以看到，两个继承类，其实都是将父类的命名空间导入而已。假定我们要使得每类专有一个静态成员，例如我们要计算每个类的生成对象个数，怎么办呢？
+如果不用继承，我们可以在每个类里面加一个静态成员。然后在构造函数中加1，析构中减1。但是如果我们想把这个功能放到基类中，事情就麻烦了。因为所有类从同一个基类派生，我们算出来的其实是所有从基类继承的类的总对象生成个数。
+当然，我们可以用实现的方法来做。把所需要的功能抽离出来，放到一个单独的计数类中。然后构造的时候调用加1，析构的时候减1。听起来很蠢，那是因为例子容易的关系。比较复杂的时候，这样抽象相对简单的。计数类可以用于多个类，实现了代码重用。但是仍旧没有解决关键问题，怎么让继承类特化基类的静态对象？(虚拟化和特化的意思差不多，就是针对具体对象使用具体方法)
+答案最后被我在More Effective C++中找到了，正确的方法不是寻找一个特化的方法，而是继承不同的基类，使用同一套代码。既然是不同基类，怎么具备同一套代码呢？想到了吧，模版。
+template&lt;T&gt; class B { protected: static int S; }; class D:public B&lt;D&gt; { public: void print () { printf (&quot;%dn&quot;, S); }; }; int B&lt;D&gt;::S = 0; class E:public B&lt;E&gt; { public: static void rewrite () { S = 1; }; }; int B&lt;E&gt;::S = 0; int _tmain (int argc, _TCHAR * argv[]) { D d; d.</p>
+          
+            <footer>
+              <a href="//blog.shell909090.org/blog/archives/357/" rel="full-article">Read On &rarr;</a>
+            </footer>
+          
+        
+      </article>
+      
+      <article>
+        
+        
+
+<header>
   <p class="meta">Jan 30, 2007
      - 1 minute read 
     
@@ -392,37 +424,6 @@ find . -type f -size +0 -exec md5sum {} ; | sort &gt; report.txt  差一个转�
         
       </article>
       
-      <article>
-        
-        
-
-<header>
-  <p class="meta">Jan 13, 2007
-     - 1 minute read 
-    
-
-    
-  </p>
-  <h1 class="entry-title">
-    <a href="//blog.shell909090.org/blog/archives/347/">构造过程</a>
-  </h1>
-</header>
-
-        
-          <p>在进入正题前，我们首先回顾下我们的基础C++常识。如果调用某个对象的某个方法，那么会调用到什么？
-一般来说，如果这个方法是普通函数，则按照这个对象的声明类型去调用。就好像(&amp;obj)-&gt;obj_type::function(param&hellip;);。而如果是虚函数，则是按照这个对象的构造类型去调用。就好像(&amp;obj)-&gt;((&amp;obj)-&gt;_v_ptr[n])(param&hellip;);。或者说简单点，一个是按照这个类看起来像是哪个类来调用，一个是按照这个类实际是哪个类来调用。
-那么，如果在一个基类的某个成员里面调用这个类的另外一个虚函数，调用的是哪个呢？
-任何正常人来说，都应该说是，按照这个类的构造类型来确定。基本上没错，不过有一个函数例外。
-那么先看一个问题。
-class B { public: B(){test ();} virtual void test (){printf (&quot;parentn&quot;);} void out (){test ();} }; class D:public B { public: virtual void test (){printf (&quot;childn&quot;);} }; int _tmain(int argc, _TCHAR* argv[]){ D d; d.out(); return 0; }  想像下输出，再运行下。想想为什么，再看下面。想通了就不用看了。
-&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;我是无敌的分割线&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;
-C++标准规定，任何一个带有虚函数的类都有一个_v_ptr成员，这个成员必须存放在这个类内存地址中头部。这个成员指向了这个类的虚函数表。于是，调用虚函数的时候，我们首先确定这个是虚函数。(按照这个逻辑，如果父类不声明为虚函数，子类重载为虚函数，还是没用的)然后，我们确定这是第几个虚函数(严格来说，这并不符合面对对象的设计规范，应该是按照函数名字查表的，_v_ptr也不应该仅仅指向虚函数表，而应该是类形态表)。最后，我们去虚函数表中取得入口地址进行调用。
-那么为什么在构造函数中调用就无法调用子类的虚函数呢？问题在于_v_ptr的初始化时间上。某个类的构造函数启动前，这个类的_v_ptr才能完成初始化。如果是多重继承，那么首先调用最初类的，然后是次类的，最后是子类的。_v_ptr首先指向基类的，再是继承类，最后是子类。我们在父类构造函数中，_v_ptr指针还指向了父类的虚函数表，所以调用不到子类的虚函数。
-其实我们可以这么说，构造函数以前，子类不存在。</p>
-          
-        
-      </article>
-      
       
       
 
@@ -701,6 +702,12 @@ C++标准规定，任何一个带有虚函数的类都有一个_v_ptr成员，�
           
             
               <li class="post">
+                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
+              </li>
+            
+          
+            
+              <li class="post">
                 <a href="/blog/archives/2867/">996</a>
               </li>
             
@@ -750,12 +757,6 @@ C++标准规定，任何一个带有虚函数的类都有一个_v_ptr成员，�
             
               <li class="post">
                 <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2858/">京都游记</a>
               </li>
             
           

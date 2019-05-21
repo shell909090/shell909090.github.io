@@ -105,6 +105,32 @@ if (!doNotTrack) {
         
 
 <header>
+  <p class="meta">May 24, 2011
+     - 1 minute read 
+    
+
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/1809/">debian中文初学者引导——中文化</a>
+  </h1>
+</header>
+
+        
+          <p>讲了半天废话，都是在介绍你应该用什么应该用什么，基本没讲到中文用户最关心的一个问题，中文化和输入法。
+其实没讲是有原因的，因为debian的中文实在太简单了。在你安装的时候选择中国地区和中文，装出来应该就是中文的。如果不是，或者你安装的时候忘记选择了，可以先运行dpkg-reconfigure locales，出现一个很长的语言列表。其中选择中文的几项，常见的有zh_CN GBK(不推荐18030，多出来的字很少用到，生成时间极长)，zh_CN UTF-8，zh_HK UTF-8(香港地区编码，不用可以不选)，zh_TW BIG5，zh_TW UTF-8(后两者为台湾地区编码，不用可以不选)。选择好后，确定，推荐zh_CN UTF-8为默认编码。然后就是漫长的生成，完事。试试看重启后你的env | grep LANG有没有变成zh_CN.UTF-8？过去就对了，没有的话，手工修改/etc/default/locale加入也一样。其实dpkg-reconfigure locales就是修改了/etc/default/locale和/etc/locale.gen，然后locale-gen一下。
+不过这不代表你能正确的使用中文，只是你的满屏看不懂的东西变成了一堆方块而已。因为，你还没装字体。当linux不支持该种语言的时候，出现的是满屏的乱码。如果支持了但是没有字体，则是一个个方块。下面是我常用的一堆字体，保证不含windows，大家可以选择自己喜欢的用。ttf-arphic-bkai00mp，ttf-arphic-bsmi00lp，ttf-arphic-gbsn00lp，ttf-arphic-gkai00mp，ttf-arphic-ukai，ttf-arphic-uming，ttf-wqy-zenhei。其中最后一个就是赫赫有名的文泉驿正黑。安装方法都很简单，aptitude install就好。如果你还不满足，非要自己安装字体。那就在/usr/share/fonts下面新建个目录，把你的字体复制进去（符号链接也可以），然后在这个目录中运行mkfontscale，mkfontdir。全局运行fc-cache。
+OK，中文支持快走到最后一步了。你现在应该可以看到满屏的中文，可是，可是——你还什么都输入不进去。恩，没装输入法吧。debian的特点是什么东西都是自己来装，而不是系统帮你装好。所以，你需要自己装输入法。简体中文而言，比较流行的有三种，fcitx（传说中的小企鹅），scim，ibus。下面就要根据你的具体配置选择了。ibus是我用过的比较好的输入法，但是相对比较费cpu，在低端机器（例如netbook）上老是丢字，scim对这种情况略好些。如果你安装了一个以上，可能你还需要im-switch来切换输入法。这个软件会调整/etc/alternatives/xinput-zh_CN的链接指向，这是debian的alternative系统，细节不说。
+另外说一句额外的提示，做完上面的步骤，你应当可以阅读和输入中文，但是你看到的软件还是满眼的鸟语，对不对？这是因为软件的语言在软件书写的时候就确定了，他不会随着你的内容改变而改变。但是这并不是说常见软件没有中文版。例如你安装一下iceweasel-l10n-zh-cn这个包，再跑iceweasel (firefox)看看？</p>
+          
+        
+      </article>
+      
+      <article>
+        
+        
+
+<header>
   <p class="meta">May 20, 2011
      - 1 minute read 
     
@@ -352,31 +378,6 @@ OK，现在你有一台配置了分流的squid，然后你需要一个可以翻�
         
           <p>专为职业用户介绍，菜鸟就别看了。
  barnacle wifi tether，将手机变成3G无线路由器，紧急的时候可以拿来让普通笔记本上网。当然，如果你3G带宽或者流量不够，就别考虑了。 comicbricks，漫画阅读器，支持从网络上拖一堆漫画离线慢慢看。 connectbot，功能强大的ssh客户端，支持密钥方式连接服务器，可以做简单的操作。适合在车站，想看看服务器状态的时候用。 es文件浏览器，还算不错，支持ftp和smb方式文件共享。很容易使用windows文件共享进行操作。 gtasks，如果你平时使用google calendar的任务列表管理自己的任务，gtasks就是你需要的东西。 keepassdroid，平时各种密码一大堆，是不是记不住？用keepassdroid，支持linux和windows共享密码文件，记忆一个密码就可以到处用。 openvpn settings，不解释，翻墙必备。倒是自带的pptp客户端连接不上去，很奇怪。 QQ影音，虽说腾讯到处抄，但是QQ影音做的确实不错。功能中规中矩，大部分格式都能放，而且程序体积不大。 realcalc，计算器，不解释。 seesmic，twitter客户端，支持api代理，功能强大，不解释。 sshdroid，ssh服务器端。有了这个东西后，你就不需要连接usb连线并且安装adb这个大家伙了。凡是能操作ssh的机器都能登录操作，支持文件上下传(sftp)，支持密码和密钥。 安全隧道，翻墙必备，不过是走ssh代理的。 大众点评，出门吃饭消费必备。我所知的信息最全的LBS。 静读天下，小型阅读器，可堪一用。体积比ireader小，也没那么多花哨的功能。打开文件的时候有点慢，没有别的缺点。 快图浏览，强烈推荐替代android自己的图库。速度如飞一般，图片瞬间出来。不过仔细看的话，从出来到清晰化大约有一秒的间隔，可见底下还是用模糊运算的。 麦当劳优惠券，打折优惠应用。这类应用都差不多，从网络上下载一段时间的某品牌优惠组合，然后统一显示给你，方便你直接挑合适的组合去。严格来说，麦当劳优惠券不算真的优惠券，只能算优惠组合。当然，有些品牌的产品还是需要看一眼优惠券的，这时候这类应用也提供图片的优惠券。总之，在外面混的时候，带上这个应用，不知道什么时候就有点小折扣。 迷你飞信，不介绍了。比较小巧，消息存储在系统信息里面。和系统自身整合做的不错。 墨迹天气，体积比较大，不过支持多个地区天气，预报比较准（有几个预报误差太大），皮肤不错。 淘宝，什么都不说了，在超市里尤其有用。就是家附近的沃尔玛没信号&hellip;&hellip; 天天动听，播放器，支持网络自动搜索，找封面和歌词。 宜搜小说，自动从网络上找最新的小说来看，追连载的利器。用这个软件连找都不必了，上下班直接看就好。  注意，此处comicbricks和宜搜小说有违反版权的问题，请对版权敏感的人不要用。</p>
-          
-        
-      </article>
-      
-      <article>
-        
-        
-
-<header>
-  <p class="meta">May 4, 2011
-     - 1 minute read 
-    
-
-    
-  </p>
-  <h1 class="entry-title">
-    <a href="//blog.shell909090.org/blog/archives/1790/">地铁和保安</a>
-  </h1>
-</header>
-
-        
-          <p>我没说反对保安，当然，我也不赞同。
-我只是说，要么把保安撤了，省的浪费我们的钱，站着还碍眼。要么通过程序，地铁强制安检。
-目前的体系，我们花了钱花了时间，但是真想危害公共安全的人，一点也不困难的可以混进来。
-坑爹阿。</p>
           
         
       </article>
@@ -659,6 +660,12 @@ OK，现在你有一台配置了分流的squid，然后你需要一个可以翻�
           
             
               <li class="post">
+                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
+              </li>
+            
+          
+            
+              <li class="post">
                 <a href="/blog/archives/2867/">996</a>
               </li>
             
@@ -708,12 +715,6 @@ OK，现在你有一台配置了分流的squid，然后你需要一个可以翻�
             
               <li class="post">
                 <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2858/">京都游记</a>
               </li>
             
           

@@ -105,6 +105,31 @@ if (!doNotTrack) {
         
 
 <header>
+  <p class="meta">Jun 10, 2011
+     - 1 minute read 
+    
+
+    
+  </p>
+  <h1 class="entry-title">
+    <a href="//blog.shell909090.org/blog/archives/1828/">从毒奶粉到塑化剂</a>
+  </h1>
+</header>
+
+        
+          <p>大陆出毒奶粉的时候，大家纷纷指责，怎么这种东西都不检验？好了，现在可以说明这不是大陆质检部门的独门失误了。因为台湾质检也没有想到有人会给食品内添加塑化剂，说明要检测一种你根本想不到会被添加到食物中的物质时，还是比较困难的。
+忘记从哪里看到了，欧洲的食品要求是可追查添加的。就是从源头开始，每一步加工技术对食品的影响都要求可控。例如挤奶，然后得到牛奶。牛奶内的成分就检验一遍，得到一个基准值。然后每个环节如何加工都是需要填报的，这样就可以追查某个环节上产生的异常变化是如何来的。例如后续突然发生了蛋白质含量上升，就要说明如何发生。到底是加入了添加剂，是否合法。还是进行了浓缩，浓缩比例多少。
+这个方法对于监控添加剂是比较有效的，可惜的是，在中国（包括台湾）的体制内都很难实施。一方面，这种做法耗费很大，需要大量的生化技术人员参与到每个环节的检验校对中。另一方面，中国文化是个关系社会。很多问题往往不是简简单单的技术问题，而是关系问题影响技术。当然，后者在欧美国家也有类似表现，就是各种化工原料公司游说国会，将他们的产品列入非监管，无害的名录。
+事情如何收尾？台湾方面的做法比大陆高明的多，也许是吸收了教训。大陆方面拼命掩饰，甚至不惜提高牛奶中添加剂含量的标准，降低牛奶质量，使得大部分的牛奶能够安全过关。但是几年下来，情况越来越糟。牛奶贩子知道政府不敢管，于是越来越嚣张。结果牛奶质量每况愈下，标准一降再降。弄到现在中国人跑到香港澳门去带奶粉，已经造成香港和澳门奶粉严重缺货。两地政府限制销售，同时海关对奶粉抽重税。这说明中国奶粉已经彻底完蛋了，未来十年内都不会恢复元气。而台湾方面的做法则是惩罚有问题的公司，无论涉及多少，一概严惩，标准只能升不能降。剔除了有问题的公司后，好的公司可以继续存活，甚至因为市场的真空茁壮成长。而不负责任的公司则是彻底完蛋，对未来其他想加入添加剂的公司也是个警告。</p>
+          
+        
+      </article>
+      
+      <article>
+        
+        
+
+<header>
   <p class="meta">Jun 9, 2011
      - 1 minute read 
     
@@ -345,32 +370,6 @@ C++就比较搞笑了，纯C++是一个非常糟糕的东西。我们列举其�
 
         
           <p>wsgi是python的一个标准web服务接口，具体去google pep文档，不解释。在李木头的忽悠下，贝壳试用了一下uwsgi搭建python服务器，感觉还不错。 首先，贝壳将uwsgi打包成deb包，因为这东西和python基本没什么关系，就是一个标准的系统守护服务程序。其中贝壳测试了一下，uwsgi编译的时候是依赖版本的。所以请教了一下thomas，打了uwsgi2.6和uwsgi2.7两个包。没办法，mercurial对python2.7的支持不是很好，每次都出问题。具体的可以加贝壳的repos: https://home.shell909090.org/debian/ testing，然后通过一下贝壳的key，就可以直接安装uwsgi2.6了。当然，不通过key也可以，只是每次安装升级都有警告。 贝壳写了一个很简单的init.d，使用&ndash;vhost来启动uwsgi为服务模式。这种模式的好处是，uwsgi的具体执行的应用都是由nginx来确定的，因此所有的映射只需要修改nginx配置就好。uwsgi参数很多，包括可以指定内存限制，工作进程/线程，定时重启工作进程，多解释器等等。是一个高效的，功能强大的服务器。具体可以自己参考调整。最好的的地方是，uwsgi还支持virtualenv，你可以给不同的应用建立不同的工作环境，从而在环境中使用指定的包，而不是系统包。 下面是一个nginx配置的例子。 location /ticket { include uwsgi_params; uwsgi_param UWSGI_PYHOME /usr; uwsgi_param UWSGI_CHDIR /home/shell/workspace/hg/thost; uwsgi_param UWSGI_SCRIPT main; uwsgi_pass unix:/var/run/uwsgi.socket; } location /mlocate { include uwsgi_params; uwsgi_param UWSGI_PYHOME /usr; uwsgi_param UWSGI_CHDIR /home/shell/workspace/hg/thost; uwsgi_param UWSGI_SCRIPT main; uwsgi_pass unix:/var/run/uwsgi.socket; } location /hg { include uwsgi_params; uwsgi_param UWSGI_PYHOME /usr; uwsgi_param UWSGI_CHDIR /home/shell/workspace/hg; uwsgi_param UWSGI_SCRIPT hgweb; uwsgi_param SCRIPT_NAME /; uwsgi_param SERVER_NAME hgweb; uwsgi_pass unix:/var/run/uwsgi.socket; } 这里面设定了三个应用。由于贝壳不需要virtualenv，所以PYHOME设定了/usr。第一二个应用的基础路径在/home/shell/workspace/hg/thost，脚本叫做main.py。第三个应用的基础路径在/home/shell/workspace/hg，脚本叫做hgweb.py。需要注意的是，uwsgi会以模块方式导入这些脚本，然后使用其中的application对象作为wsgi处理函数。所以不要把application对象赋值放在if __name__ == &lsquo;__main__&lsquo;里面，那没用的。第三个应用指定了SCRIPT_NAME和SERVER_NAME，是因为hg的wsgi模块没有SCRIPT_NAME不工作，而这个应用和前两个不在一起，所以如果不指定SERVER_NAME会导致覆盖冲突。 这种部署模式的好处是，我可以使用一个宿主来管理所有的应用，而不必每个应用启动一个宿主，省去了多个宿主管理的麻烦。而多进程，压力分布等等问题都被uwsgi的配置系统搞定了。于是应用程序宿主做到了彻底的免管理，即装即用，只用调节性能匹配即可。具体程序配置下放到nginx中，要修改映射关系只用管理一个位置。</p>
-          
-        
-      </article>
-      
-      <article>
-        
-        
-
-<header>
-  <p class="meta">May 24, 2011
-     - 1 minute read 
-    
-
-    
-  </p>
-  <h1 class="entry-title">
-    <a href="//blog.shell909090.org/blog/archives/1809/">debian中文初学者引导——中文化</a>
-  </h1>
-</header>
-
-        
-          <p>讲了半天废话，都是在介绍你应该用什么应该用什么，基本没讲到中文用户最关心的一个问题，中文化和输入法。
-其实没讲是有原因的，因为debian的中文实在太简单了。在你安装的时候选择中国地区和中文，装出来应该就是中文的。如果不是，或者你安装的时候忘记选择了，可以先运行dpkg-reconfigure locales，出现一个很长的语言列表。其中选择中文的几项，常见的有zh_CN GBK(不推荐18030，多出来的字很少用到，生成时间极长)，zh_CN UTF-8，zh_HK UTF-8(香港地区编码，不用可以不选)，zh_TW BIG5，zh_TW UTF-8(后两者为台湾地区编码，不用可以不选)。选择好后，确定，推荐zh_CN UTF-8为默认编码。然后就是漫长的生成，完事。试试看重启后你的env | grep LANG有没有变成zh_CN.UTF-8？过去就对了，没有的话，手工修改/etc/default/locale加入也一样。其实dpkg-reconfigure locales就是修改了/etc/default/locale和/etc/locale.gen，然后locale-gen一下。
-不过这不代表你能正确的使用中文，只是你的满屏看不懂的东西变成了一堆方块而已。因为，你还没装字体。当linux不支持该种语言的时候，出现的是满屏的乱码。如果支持了但是没有字体，则是一个个方块。下面是我常用的一堆字体，保证不含windows，大家可以选择自己喜欢的用。ttf-arphic-bkai00mp，ttf-arphic-bsmi00lp，ttf-arphic-gbsn00lp，ttf-arphic-gkai00mp，ttf-arphic-ukai，ttf-arphic-uming，ttf-wqy-zenhei。其中最后一个就是赫赫有名的文泉驿正黑。安装方法都很简单，aptitude install就好。如果你还不满足，非要自己安装字体。那就在/usr/share/fonts下面新建个目录，把你的字体复制进去（符号链接也可以），然后在这个目录中运行mkfontscale，mkfontdir。全局运行fc-cache。
-OK，中文支持快走到最后一步了。你现在应该可以看到满屏的中文，可是，可是——你还什么都输入不进去。恩，没装输入法吧。debian的特点是什么东西都是自己来装，而不是系统帮你装好。所以，你需要自己装输入法。简体中文而言，比较流行的有三种，fcitx（传说中的小企鹅），scim，ibus。下面就要根据你的具体配置选择了。ibus是我用过的比较好的输入法，但是相对比较费cpu，在低端机器（例如netbook）上老是丢字，scim对这种情况略好些。如果你安装了一个以上，可能你还需要im-switch来切换输入法。这个软件会调整/etc/alternatives/xinput-zh_CN的链接指向，这是debian的alternative系统，细节不说。
-另外说一句额外的提示，做完上面的步骤，你应当可以阅读和输入中文，但是你看到的软件还是满眼的鸟语，对不对？这是因为软件的语言在软件书写的时候就确定了，他不会随着你的内容改变而改变。但是这并不是说常见软件没有中文版。例如你安装一下iceweasel-l10n-zh-cn这个包，再跑iceweasel (firefox)看看？</p>
           
         
       </article>
@@ -653,6 +652,12 @@ OK，中文支持快走到最后一步了。你现在应该可以看到满屏的
           
             
               <li class="post">
+                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
+              </li>
+            
+          
+            
+              <li class="post">
                 <a href="/blog/archives/2867/">996</a>
               </li>
             
@@ -702,12 +707,6 @@ OK，中文支持快走到最后一步了。你现在应该可以看到满屏的
             
               <li class="post">
                 <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2858/">京都游记</a>
               </li>
             
           
