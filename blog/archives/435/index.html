@@ -1,122 +1,134 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>一些使用firefox的技巧 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>一些使用firefox的技巧</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="一些使用firefox的技巧"/>
+<meta name="twitter:description" content="在linux下和windows下共享同样配置/插件。这个很简单，上面的blog中有篇文章说到thnunderbird在双系统下共享同样邮件的问题，firefox也一样解决。能用linux的人不会查不出配置目录位置吧。
+节约内存技巧。
+firefox虽然号称小巧，然而很多时候我们发现他的内存消耗也非常惊人。在贝壳的机器上，有的时候会高达150M，基本等于普通编辑器/播放器的10倍。事实上，不是firefox浪费内存，而是默认的内存配置是针对&rdquo;机器上只开firefox&rdquo;设计的。如果你机器内存小，或者需要同时开其他程序，最好自己配置一下firefox。
+首先就是fasterfox，关闭其中的&rdquo;增强预读&rdquo;，这东西很消耗内存。然后是内存缓存，调整到32M吧。一般一个网页上所有文件差不多1M-2M，32M够把20个网页的所有内容缓存起来，再多就不大正常了。根据贝壳自己的猜测，渲染动作应当是动态进行的，否则内存根本顶不住长文本的渲染。这样在浏览的时候，从后台抓取内容，动态渲染的速度就非常重要，因此强烈推荐不要小于8M。否则连5个页面的内容都不在内存中命中，还玩个P阿～
+还有渲染中的&rdquo;启用快速返回&rdquo;，将内存中的保留页面数调整小，贝壳用的是3。当然，这个只适用于firefox1.5。
+其次是session manager，将&rdquo;撤销关闭&rdquo;尽量减小。反正贝壳减小到了1个窗口3个页面。这些页面在关闭后还是继续消耗系统的内存，因此越小越好。当然，小到多少是要看你的具体需要了。
+最后，少用插件，少启用插件，除非你真的需要。长期不需要的就禁用，或者干脆卸载。
+内存回收技巧。
+很简单，觉得不够了，关了再开。反正有session manager，正在浏览的网页根本不会有影响。
+同时打开大批网页技巧。
+最好使用Tree Style Tab，这样方便。另外，如果需要打开一个页面的所有连接，可以这样做。先察看页面信息，选择&rdquo;链接&rdquo;-&gt;&ldquo;全部选择&rdquo;-&gt;&ldquo;复制&rdquo;，然后开一个文本文件，把内容粘贴进去。可以看到内容其实是一堆的页面链接。当然，如果页面内有js做的链接指向，可以试试用Convert javascript or onclick to normal links这个greasemonkey脚本转换成目标链接。然后，把这个文本文件改名成htm，打开。通常情况下应该是一堆无法点击的文字，不过你可以用Linkify ting来把文字转换成一堆链接。然后……一个个点过去吧。
+上面是使用greasemonkey解决的方法，当然，也有更简单的方法。你可以安装flashgot，然后新增一个下载管理器，名字叫做firefox。路径就指向firefox的执行文件路径，参数不用动。平时用你喜欢的管理器，需要打开全部链接的时候，更改为firefox，然后&rdquo;使用flashgot下载全部链接&rdquo;。当然，缺点是对付不了js脚本，除非你加载Convert javascript or onclick to normal。
+不过鉴于内存状态考虑，建议不要同时打开大量页面。维持在10-20个上下最好。"/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="一些使用firefox的技巧" />
+<meta property="og:description" content="在linux下和windows下共享同样配置/插件。这个很简单，上面的blog中有篇文章说到thnunderbird在双系统下共享同样邮件的问题，firefox也一样解决。能用linux的人不会查不出配置目录位置吧。
+节约内存技巧。
+firefox虽然号称小巧，然而很多时候我们发现他的内存消耗也非常惊人。在贝壳的机器上，有的时候会高达150M，基本等于普通编辑器/播放器的10倍。事实上，不是firefox浪费内存，而是默认的内存配置是针对&rdquo;机器上只开firefox&rdquo;设计的。如果你机器内存小，或者需要同时开其他程序，最好自己配置一下firefox。
+首先就是fasterfox，关闭其中的&rdquo;增强预读&rdquo;，这东西很消耗内存。然后是内存缓存，调整到32M吧。一般一个网页上所有文件差不多1M-2M，32M够把20个网页的所有内容缓存起来，再多就不大正常了。根据贝壳自己的猜测，渲染动作应当是动态进行的，否则内存根本顶不住长文本的渲染。这样在浏览的时候，从后台抓取内容，动态渲染的速度就非常重要，因此强烈推荐不要小于8M。否则连5个页面的内容都不在内存中命中，还玩个P阿～
+还有渲染中的&rdquo;启用快速返回&rdquo;，将内存中的保留页面数调整小，贝壳用的是3。当然，这个只适用于firefox1.5。
+其次是session manager，将&rdquo;撤销关闭&rdquo;尽量减小。反正贝壳减小到了1个窗口3个页面。这些页面在关闭后还是继续消耗系统的内存，因此越小越好。当然，小到多少是要看你的具体需要了。
+最后，少用插件，少启用插件，除非你真的需要。长期不需要的就禁用，或者干脆卸载。
+内存回收技巧。
+很简单，觉得不够了，关了再开。反正有session manager，正在浏览的网页根本不会有影响。
+同时打开大批网页技巧。
+最好使用Tree Style Tab，这样方便。另外，如果需要打开一个页面的所有连接，可以这样做。先察看页面信息，选择&rdquo;链接&rdquo;-&gt;&ldquo;全部选择&rdquo;-&gt;&ldquo;复制&rdquo;，然后开一个文本文件，把内容粘贴进去。可以看到内容其实是一堆的页面链接。当然，如果页面内有js做的链接指向，可以试试用Convert javascript or onclick to normal links这个greasemonkey脚本转换成目标链接。然后，把这个文本文件改名成htm，打开。通常情况下应该是一堆无法点击的文字，不过你可以用Linkify ting来把文字转换成一堆链接。然后……一个个点过去吧。
+上面是使用greasemonkey解决的方法，当然，也有更简单的方法。你可以安装flashgot，然后新增一个下载管理器，名字叫做firefox。路径就指向firefox的执行文件路径，参数不用动。平时用你喜欢的管理器，需要打开全部链接的时候，更改为firefox，然后&rdquo;使用flashgot下载全部链接&rdquo;。当然，缺点是对付不了js脚本，除非你加载Convert javascript or onclick to normal。
+不过鉴于内存状态考虑，建议不要同时打开大量页面。维持在10-20个上下最好。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/435/" />
+<meta property="article:published_time" content="2008-03-10T13:33:31+08:00" />
+<meta property="article:modified_time" content="2008-03-10T13:33:31+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">Mar 10, 2008
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     一些使用firefox的技巧 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          <p>在linux下和windows下共享同样配置/插件。这个很简单，上面的blog中有篇文章说到thnunderbird在双系统下共享同样邮件的问题，firefox也一样解决。能用linux的人不会查不出配置目录位置吧。</p>
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">一些使用firefox的技巧</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Mar 10, 2008
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/browser/">browser</a><a class="tag" href="//blog.shell909090.org/tags/firefox/">firefox</a><a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a><a class="tag" href="//blog.shell909090.org/tags/windows/">windows</a></div></div>
+    </header>
+    <div class="post-content">
+      <p>在linux下和windows下共享同样配置/插件。这个很简单，上面的blog中有篇文章说到thnunderbird在双系统下共享同样邮件的问题，firefox也一样解决。能用linux的人不会查不出配置目录位置吧。</p>
 
 <p>节约内存技巧。</p>
 
@@ -142,169 +154,12 @@ if (!doNotTrack) {
 
 <p>不过鉴于内存状态考虑，建议不要同时打开大量页面。维持在10-20个上下最好。</p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>Mar 10, 2008</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/browser">browser</a>  <a class="category" href="//blog.shell909090.org/tags/firefox">firefox</a>  <a class="category" href="//blog.shell909090.org/tags/linux">linux</a>  <a class="category" href="//blog.shell909090.org/tags/windows">windows</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/434/" title="大灌篮的广告">大灌篮的广告</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/8/" title="None">None</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

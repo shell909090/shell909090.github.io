@@ -1,122 +1,186 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>KMP // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>KMP</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="KMP"/>
+<meta name="twitter:description" content="KMP是一个给人捧滥了的算法，其实单看同时有三个发明人这点，就知道这个算法是自古华山一条路，没别的想法的。KMP的算法每步虽然难想但是自然有道理，没有别的方法的。不像排序算法，一嘟噜的算法还没完。根据各种侧重点不同有不同的算法可用。
+KMP的比较算法核心在于不回朔。我们先看一个正常的例子。
+SSSSSSSSSSSSSS
+TTTTT i=0, j=1,2,3&hellip;
+TTTTT i=1, j=1,2,3&hellip;
+TTTTT i=2, j=1,2,3&hellip;
+我们用T去匹配S，先对齐T和S的头部，然后对比T和S。如果T的范围内，TS内容一致，则匹配成功。不成功的话就将T向后移动一个字符。再次匹配T范围内TS的内容是否一致。ij的范围最大会在0&lt;=i&lt;=&ldquo;j KMP算法的核心在于，如果T范围内TS的内容不一致，那么T向后移动不是一个字符，而是多个。而当前比较位置永远不向前移动。如果您写出来的算法当前比较位置向前移动了，那么肯定是写错了。
+我们假定T范围内第i个字符匹配失败(0&lt;=i
+为什么能移动一个以上呢？Next[i]怎么确定呢？我们看一个抽象的例子：M代表匹配，N不匹配，U不知道。
+MMMMMNUUUUU
+TTTTTTTTTTTTTTT
+TTTTTTTTTTTTTTT
+我们可以看到，向后移动字符的时候，T自身有重合的部分。这时候有三种状况，我们先假定一种重合的状况。假定T向后移动了一些字符，P代表当前比较位置。在这个位置上TS出现了不匹配。
+..MMMNUUU..
+..TTTTTPTTTT..
+..MMNTTTTTT..
+在这个T向后移动一些距离后，在当前比较位置前已经出现了自身和自身不匹配的状况。根据上面我们知道，当前位置以前的T和S是匹配的。那么就是说，移动了这些字符后。T当前的位置上不可能取得匹配。我们称这种情况为这个位置的自身完全不匹配。
+然后是另外一种匹配状况，符号和上面一致。
+..MMMNUUU..
+..TTTTTPTTTT..
+..MMMNTTTT..
+这个时候，T在当前匹配位置上自身不匹配，前面位置都匹配。同理可以知道，T在滑移到这个位置后可能取得匹配。我们称这种情况为这个位置的自身部分不匹配。
+最后一种匹配情况是。
+..MMMNUUU..
+..TTTTTPTTTT..
+..MMMMUUU..
+这个时候，T在在前面和当前位置都匹配。我们知道前面是匹配的，然而当前既然已经被证明了和S不匹配。那么滑移这些位置后，新的位置上T也不可能和S取得匹配。我们称这种情况为这个位置的自身完全匹配。
+然后我们可以回头看看比较过程了。当我们对齐TS，然后进行比较的过程中。出现了不匹配。
+注意一个问题，我们回朔是为了知道移动后的T是否仍旧匹配。所以如果我们知道T匹配不匹配，就不用回朔。
+这个时候我们不移动一次T，然后回朔。而是将T滑移一下，先滑移1位好了。假设出现了当前比较位置的自身完全不匹配或者自身完全匹配，那么滑动1位肯定也无法获得一个有效的匹配。那么就继续滑动，直到出现了自身部分不匹配，或者T已经完全的滑动到了当前位置的后面。这时候T的位置才是有可能获得匹配的位置，其余的位置就没必要浪费时间了。
+也就是说，滑移距离Next[i]是i这个位置上滑动距离逐渐增加的时候，首次出现自身部分不匹配情况的位置。如果这情况不出现，那么就设定为&lt;1的值。操作上将整个T滑动到当前位置的后面，并且从下一个位置开始比较起。
+然后附上初始版的代码和比较过程。
+int *cul_next (char *lpTpl)
+{
+unsigned int i = 0, j = 0, l = 0;
+int *next;
+l = strlen (lpTpl);
+next = new int[l];
+memset (next, 0, l * sizeof (int));"/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="KMP" />
+<meta property="og:description" content="KMP是一个给人捧滥了的算法，其实单看同时有三个发明人这点，就知道这个算法是自古华山一条路，没别的想法的。KMP的算法每步虽然难想但是自然有道理，没有别的方法的。不像排序算法，一嘟噜的算法还没完。根据各种侧重点不同有不同的算法可用。
+KMP的比较算法核心在于不回朔。我们先看一个正常的例子。
+SSSSSSSSSSSSSS
+TTTTT i=0, j=1,2,3&hellip;
+TTTTT i=1, j=1,2,3&hellip;
+TTTTT i=2, j=1,2,3&hellip;
+我们用T去匹配S，先对齐T和S的头部，然后对比T和S。如果T的范围内，TS内容一致，则匹配成功。不成功的话就将T向后移动一个字符。再次匹配T范围内TS的内容是否一致。ij的范围最大会在0&lt;=i&lt;=&ldquo;j KMP算法的核心在于，如果T范围内TS的内容不一致，那么T向后移动不是一个字符，而是多个。而当前比较位置永远不向前移动。如果您写出来的算法当前比较位置向前移动了，那么肯定是写错了。
+我们假定T范围内第i个字符匹配失败(0&lt;=i
+为什么能移动一个以上呢？Next[i]怎么确定呢？我们看一个抽象的例子：M代表匹配，N不匹配，U不知道。
+MMMMMNUUUUU
+TTTTTTTTTTTTTTT
+TTTTTTTTTTTTTTT
+我们可以看到，向后移动字符的时候，T自身有重合的部分。这时候有三种状况，我们先假定一种重合的状况。假定T向后移动了一些字符，P代表当前比较位置。在这个位置上TS出现了不匹配。
+..MMMNUUU..
+..TTTTTPTTTT..
+..MMNTTTTTT..
+在这个T向后移动一些距离后，在当前比较位置前已经出现了自身和自身不匹配的状况。根据上面我们知道，当前位置以前的T和S是匹配的。那么就是说，移动了这些字符后。T当前的位置上不可能取得匹配。我们称这种情况为这个位置的自身完全不匹配。
+然后是另外一种匹配状况，符号和上面一致。
+..MMMNUUU..
+..TTTTTPTTTT..
+..MMMNTTTT..
+这个时候，T在当前匹配位置上自身不匹配，前面位置都匹配。同理可以知道，T在滑移到这个位置后可能取得匹配。我们称这种情况为这个位置的自身部分不匹配。
+最后一种匹配情况是。
+..MMMNUUU..
+..TTTTTPTTTT..
+..MMMMUUU..
+这个时候，T在在前面和当前位置都匹配。我们知道前面是匹配的，然而当前既然已经被证明了和S不匹配。那么滑移这些位置后，新的位置上T也不可能和S取得匹配。我们称这种情况为这个位置的自身完全匹配。
+然后我们可以回头看看比较过程了。当我们对齐TS，然后进行比较的过程中。出现了不匹配。
+注意一个问题，我们回朔是为了知道移动后的T是否仍旧匹配。所以如果我们知道T匹配不匹配，就不用回朔。
+这个时候我们不移动一次T，然后回朔。而是将T滑移一下，先滑移1位好了。假设出现了当前比较位置的自身完全不匹配或者自身完全匹配，那么滑动1位肯定也无法获得一个有效的匹配。那么就继续滑动，直到出现了自身部分不匹配，或者T已经完全的滑动到了当前位置的后面。这时候T的位置才是有可能获得匹配的位置，其余的位置就没必要浪费时间了。
+也就是说，滑移距离Next[i]是i这个位置上滑动距离逐渐增加的时候，首次出现自身部分不匹配情况的位置。如果这情况不出现，那么就设定为&lt;1的值。操作上将整个T滑动到当前位置的后面，并且从下一个位置开始比较起。
+然后附上初始版的代码和比较过程。
+int *cul_next (char *lpTpl)
+{
+unsigned int i = 0, j = 0, l = 0;
+int *next;
+l = strlen (lpTpl);
+next = new int[l];
+memset (next, 0, l * sizeof (int));" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/349/" />
+<meta property="article:published_time" content="2007-01-16T00:53:52+08:00" />
+<meta property="article:modified_time" content="2007-01-16T00:53:52+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">Jan 16, 2007
-     - 3 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     KMP 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          <p>   
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">KMP</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Jan 16, 2007
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          3 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/algorithm/">algorithm</a><a class="tag" href="//blog.shell909090.org/tags/program/">program</a></div></div>
+    </header>
+    <div class="post-content">
+      <p>   
 KMP是一个给人捧滥了的算法，其实单看同时有三个发明人这点，就知道这个算法是自古华山一条路，没别的想法的。KMP的算法每步虽然难想但是自然有道理，没有别的方法的。不像排序算法，一嘟噜的算法还没完。根据各种侧重点不同有不同的算法可用。<br />
     KMP的比较算法核心在于不回朔。我们先看一个正常的例子。<br />
 SSSSSSSSSSSSSS<br />
@@ -412,169 +476,12 @@ b<br />
 b<br />
 46</p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>Jan 16, 2007</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/algorithm">algorithm</a>  <a class="category" href="//blog.shell909090.org/tags/program">program</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/348/" title="查找重复文件">查找重复文件</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/350/" title="全局初始化">全局初始化</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

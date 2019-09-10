@@ -1,122 +1,134 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>支付宝体系的问题 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>支付宝体系的问题</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="支付宝体系的问题"/>
+<meta name="twitter:description" content=" 今天和几位朋友讨论了一下支付宝的问题，又查了一下case，发现支付宝的问题不仅是那么简单而已。先不吐槽支付宝的问题了，赶快出验证和方案。
+在被人恶意补卡的情况下是否安全 关于恶意补卡，这里有个例子。简单来说，就是知道你的身份证和手机号，去异地营业厅用假身份证补手机卡。然后用手机卡获得支付宝系统，再套现。
+贝壳分析了自己的系统，如果恶意补卡的话，对于200以上的消费转账，会要求输入宝令。宝令是绑定在手机而非卡上的，所以攻击者会无法消费。而要取消宝令就必须输入宝令，通过手机卡无法取消。因此攻击者即使补贝壳的卡，也无法进行200以上的消费。
+但是如果你用的是U盾，那问题就没那么简单。在支付宝的设计中，手机是可以解除U盾绑定的。所以U盾不能对抗恶意补卡。
+结论：如果仅仅是200而已，我可以认为这个系统是安全的。
+在手机丢失的情况下是否安全 如果手机丢失，问题就更加严重。支付宝密码，支付密码均会被找回，宝令本身就在手机里，因此支付宝的支付系统全面沦陷。支付宝内资金肯定不保。问题是卡上资金。
+贝壳绑定了两张卡，浦发和招商，先从快捷支付检查起。检查浦发的卡发现，对支付宝默认开了20000的签约支付额度，当场汗就下来。对于快捷支付来说，这太高了。速度改成300。对于超过300的，依然可以通过网银验证来支付，比较安全。
+招行的快捷支付我从头到脚就没看到签约这回事，貌似必须进行网银支付。那就需要我的卡号有效期密码什么的。我觉得这个不大可能出问题。
+再检查浦发的普通支付，这需要登录浦发的网上银行。浦发网银是通过手机加密码验证的，基本可以保证转账汇款的安全。
+结论：目前调整的结果，一次损失300左右。
+网银的一点隐忧 目前网银的密码都太弱了。浦发只有6位数字，招行也只有8位数字字母。难道就不能设定强一些的密码么？
+浦发可能是要和卡本身的密码兼容，将手机作为补强。可是手机也会掉啊。一旦手机掉了，整个安全性就由6位数字密码保护。这和掉银行卡一样严重。
+建议  移动和联通关闭身份证显示，尤其是最后四位！ 无论哪种级别，使用支付宝一定要打开宝令。目前只有宝令可以有效对抗补卡攻击。 在智能机上又绑定网银的，就不要乱装软件，更不要root/越狱。 中国移动的补卡修改流程。如果当前卡处于激活中，先持续警告旧卡24小时后再激活新卡。 移动至少应当允许客户自行选择“这个手机号码极端重要，不得实行异地补卡，不得显示个人信息，复机/补卡间隔需要在24小时以上”的增强选项。 理论上说，移动应当可以推进二代身份证验证能力。使得补卡业务实行时，必须凭借二代身份证验证身份后进行。杜绝假身份证。 支付宝的密码找回功能降速。从开始找回，发短信和邮件通知，到完成找回密码至少要一小时，最好要24小时才能找回密码。或者允许可以设定“我自愿将找回密码时限改为24小时”以增强安全性。  "/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="支付宝体系的问题" />
+<meta property="og:description" content=" 今天和几位朋友讨论了一下支付宝的问题，又查了一下case，发现支付宝的问题不仅是那么简单而已。先不吐槽支付宝的问题了，赶快出验证和方案。
+在被人恶意补卡的情况下是否安全 关于恶意补卡，这里有个例子。简单来说，就是知道你的身份证和手机号，去异地营业厅用假身份证补手机卡。然后用手机卡获得支付宝系统，再套现。
+贝壳分析了自己的系统，如果恶意补卡的话，对于200以上的消费转账，会要求输入宝令。宝令是绑定在手机而非卡上的，所以攻击者会无法消费。而要取消宝令就必须输入宝令，通过手机卡无法取消。因此攻击者即使补贝壳的卡，也无法进行200以上的消费。
+但是如果你用的是U盾，那问题就没那么简单。在支付宝的设计中，手机是可以解除U盾绑定的。所以U盾不能对抗恶意补卡。
+结论：如果仅仅是200而已，我可以认为这个系统是安全的。
+在手机丢失的情况下是否安全 如果手机丢失，问题就更加严重。支付宝密码，支付密码均会被找回，宝令本身就在手机里，因此支付宝的支付系统全面沦陷。支付宝内资金肯定不保。问题是卡上资金。
+贝壳绑定了两张卡，浦发和招商，先从快捷支付检查起。检查浦发的卡发现，对支付宝默认开了20000的签约支付额度，当场汗就下来。对于快捷支付来说，这太高了。速度改成300。对于超过300的，依然可以通过网银验证来支付，比较安全。
+招行的快捷支付我从头到脚就没看到签约这回事，貌似必须进行网银支付。那就需要我的卡号有效期密码什么的。我觉得这个不大可能出问题。
+再检查浦发的普通支付，这需要登录浦发的网上银行。浦发网银是通过手机加密码验证的，基本可以保证转账汇款的安全。
+结论：目前调整的结果，一次损失300左右。
+网银的一点隐忧 目前网银的密码都太弱了。浦发只有6位数字，招行也只有8位数字字母。难道就不能设定强一些的密码么？
+浦发可能是要和卡本身的密码兼容，将手机作为补强。可是手机也会掉啊。一旦手机掉了，整个安全性就由6位数字密码保护。这和掉银行卡一样严重。
+建议  移动和联通关闭身份证显示，尤其是最后四位！ 无论哪种级别，使用支付宝一定要打开宝令。目前只有宝令可以有效对抗补卡攻击。 在智能机上又绑定网银的，就不要乱装软件，更不要root/越狱。 中国移动的补卡修改流程。如果当前卡处于激活中，先持续警告旧卡24小时后再激活新卡。 移动至少应当允许客户自行选择“这个手机号码极端重要，不得实行异地补卡，不得显示个人信息，复机/补卡间隔需要在24小时以上”的增强选项。 理论上说，移动应当可以推进二代身份证验证能力。使得补卡业务实行时，必须凭借二代身份证验证身份后进行。杜绝假身份证。 支付宝的密码找回功能降速。从开始找回，发短信和邮件通知，到完成找回密码至少要一小时，最好要24小时才能找回密码。或者允许可以设定“我自愿将找回密码时限改为24小时”以增强安全性。  " />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2302/" />
+<meta property="article:published_time" content="2012-12-31T01:54:19+08:00" />
+<meta property="article:modified_time" content="2012-12-31T01:54:19+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">Dec 31, 2012
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     支付宝体系的问题 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">支付宝体系的问题</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Dec 31, 2012
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/security/">security</a><a class="tag" href="//blog.shell909090.org/tags/others/">others</a></div></div>
+    </header>
+    <div class="post-content">
+      
 
 <p>今天和几位朋友讨论了一下支付宝的问题，又查了一下case，发现支付宝的问题不仅是那么简单而已。先不吐槽支付宝的问题了，赶快出验证和方案。</p>
 
@@ -160,169 +172,12 @@ if (!doNotTrack) {
 <li>支付宝的密码找回功能降速。从开始找回，发短信和邮件通知，到完成找回密码至少要一小时，最好要24小时才能找回密码。或者允许可以设定“我自愿将找回密码时限改为24小时”以增强安全性。</li>
 </ol>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>Dec 31, 2012</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/security">security</a>  <a class="category" href="//blog.shell909090.org/tags/others">others</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/2296/" title="移动的一点漏洞">移动的一点漏洞</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/2307/" title="关于民用航空上禁止使用电子设备的分析">关于民用航空上禁止使用电子设备的分析</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

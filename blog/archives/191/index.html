@@ -1,122 +1,120 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>windows系统一 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>windows系统一</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="windows系统一"/>
+<meta name="twitter:description" content="一，启动
+任何一个系统，一般都从启动讲起的。这里讲启动本来从NTLDR讲就好，可是怕有人不懂，所以简略概述加电后系统的启动流程。
+系统加电后，会将CS:IP（注意不是EIP）设定为FFFF:0000。然后开始BIOS自检流程（Power-On Self Test,POST），最后初始化0地址的中断向量表，将引导盘CHS(0,0,1)读入系统0000:7C00开始执行。我们假定这是硬盘（软盘的没有MBR这步），并且没有安装LILO到MBR（否则流程不大一样）。于是MBR会先读取分区表（Disk Partition Table,DPT），寻找活动分区并且载入其第一扇区到000:7C00位置执行。这样MBR等于一个透明层，无论哪个分区（逻辑磁盘不行哦）获得了活动分区，其引导区（OS Boot Record,OBR）都可以当做自己是被BIOS读取执行的。而后如果是9X系统，引导区会读取系统文件（FAT32）头部来执行。这个就是我们非常熟悉的DOS启动流程。同时插句话，如果您无法format一个DOS系统盘出来。那么先彻底格式化（注意彻底，否则FAT遗留信息会让你失败）磁盘，然后COPY IO.SYS上去。照样可以产生系统盘，当然这种BT非常规手法只有了解系统才干的出来……
+如果是NT系统嘛，就会按照某种方法载入NTLDR这个文件。具体方法我也不清楚。因为NTLDR文件没有位置要求支持NTFS和FAT两种格式。按理这么一来引导代码会超过引导区的容量。根据分析NT系统的引导区内容总共有六个连续扇区，分布在头六扇区中。当然第一个扇区还包含了文件系统相关信息BPB（BIOS Parameter Block，研究MFT的还有一个Extend）。这样的大小还是无法容纳整个文件系统的支持阿？要解决除非我愿意反向引导代码，不过为了这么一个问题反向引导代码……等我有空再说吧。
+下面NTLDR会进入保护模式，设置了GDT,LDT等等东西，并且彻底支持了NTFS和FAT的读取（引导区只要能从两个格式盘上马找到一个文件就好）。然后会根据BOOT.ini中内容决定如何进行引导，如果出现文字，还可能需要bootfont.bin字体文件。一般来说，会直接调用NTDETECT.COM来检测硬件变化，继续系统加载过程。这个就是我们经常看到的黑色屏幕上有东西从左到右闪的那个……
+后面的东西就是微软内部的资料，众人根据推理分析得来，所以不是很准确。不过可以肯定，后面的东西全在system32中打转。根据分析，首先加载的是NTOSKRNL.EXE（单处理器）或者NTKRNLPA.EXE（SMP，对称多处理器）。这个东西就是windows的微内核，由它导出了windows全部NativeAPI的实现。然后是SMSS.EXE，这是进程管理器，也可以说是头个系统派生的进程。后续所有进程可以视为它的子例。由它派生了CSRSS.EXE和WINLOGON.EXE。后者接管了系统的很多部分，例如GINA。它派生了SERVICES.EXE进程，系统开始加载各种服务。最后在登陆后由GINA启动EXPLORER.EXE。出现桌面等操作界面，启动基本完成。按照上述分析，多数服务的宿主进程都是SERVICES.EXE的派生进程（有特例，例如贝壳手里的RaidenFTPD守护进程就是先由SERVICES.EXE派生，再两次派生所成的）。而多数应用程序的进程都是EXPLORER.EXE的派生进程（当然，或者再派生进程）。EXPLORER.EXE负责的内容包括了开始菜单等等，所以除非你通过某个服务去启动程序，否则都是它的子孙。（特例包括Process Explorer工具作为Ctrl&#43;Atl&#43;Del启动时，是WINLOGON.EXE的子例。所以在上面启动一个CMD就成了服务派生，无服务身份。还有MSN弹出的邮件或者Space都是作为某个服务的派生的，所以也不是EXPLORER.EXE的子例。）"/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="windows系统一" />
+<meta property="og:description" content="一，启动
+任何一个系统，一般都从启动讲起的。这里讲启动本来从NTLDR讲就好，可是怕有人不懂，所以简略概述加电后系统的启动流程。
+系统加电后，会将CS:IP（注意不是EIP）设定为FFFF:0000。然后开始BIOS自检流程（Power-On Self Test,POST），最后初始化0地址的中断向量表，将引导盘CHS(0,0,1)读入系统0000:7C00开始执行。我们假定这是硬盘（软盘的没有MBR这步），并且没有安装LILO到MBR（否则流程不大一样）。于是MBR会先读取分区表（Disk Partition Table,DPT），寻找活动分区并且载入其第一扇区到000:7C00位置执行。这样MBR等于一个透明层，无论哪个分区（逻辑磁盘不行哦）获得了活动分区，其引导区（OS Boot Record,OBR）都可以当做自己是被BIOS读取执行的。而后如果是9X系统，引导区会读取系统文件（FAT32）头部来执行。这个就是我们非常熟悉的DOS启动流程。同时插句话，如果您无法format一个DOS系统盘出来。那么先彻底格式化（注意彻底，否则FAT遗留信息会让你失败）磁盘，然后COPY IO.SYS上去。照样可以产生系统盘，当然这种BT非常规手法只有了解系统才干的出来……
+如果是NT系统嘛，就会按照某种方法载入NTLDR这个文件。具体方法我也不清楚。因为NTLDR文件没有位置要求支持NTFS和FAT两种格式。按理这么一来引导代码会超过引导区的容量。根据分析NT系统的引导区内容总共有六个连续扇区，分布在头六扇区中。当然第一个扇区还包含了文件系统相关信息BPB（BIOS Parameter Block，研究MFT的还有一个Extend）。这样的大小还是无法容纳整个文件系统的支持阿？要解决除非我愿意反向引导代码，不过为了这么一个问题反向引导代码……等我有空再说吧。
+下面NTLDR会进入保护模式，设置了GDT,LDT等等东西，并且彻底支持了NTFS和FAT的读取（引导区只要能从两个格式盘上马找到一个文件就好）。然后会根据BOOT.ini中内容决定如何进行引导，如果出现文字，还可能需要bootfont.bin字体文件。一般来说，会直接调用NTDETECT.COM来检测硬件变化，继续系统加载过程。这个就是我们经常看到的黑色屏幕上有东西从左到右闪的那个……
+后面的东西就是微软内部的资料，众人根据推理分析得来，所以不是很准确。不过可以肯定，后面的东西全在system32中打转。根据分析，首先加载的是NTOSKRNL.EXE（单处理器）或者NTKRNLPA.EXE（SMP，对称多处理器）。这个东西就是windows的微内核，由它导出了windows全部NativeAPI的实现。然后是SMSS.EXE，这是进程管理器，也可以说是头个系统派生的进程。后续所有进程可以视为它的子例。由它派生了CSRSS.EXE和WINLOGON.EXE。后者接管了系统的很多部分，例如GINA。它派生了SERVICES.EXE进程，系统开始加载各种服务。最后在登陆后由GINA启动EXPLORER.EXE。出现桌面等操作界面，启动基本完成。按照上述分析，多数服务的宿主进程都是SERVICES.EXE的派生进程（有特例，例如贝壳手里的RaidenFTPD守护进程就是先由SERVICES.EXE派生，再两次派生所成的）。而多数应用程序的进程都是EXPLORER.EXE的派生进程（当然，或者再派生进程）。EXPLORER.EXE负责的内容包括了开始菜单等等，所以除非你通过某个服务去启动程序，否则都是它的子孙。（特例包括Process Explorer工具作为Ctrl&#43;Atl&#43;Del启动时，是WINLOGON.EXE的子例。所以在上面启动一个CMD就成了服务派生，无服务身份。还有MSN弹出的邮件或者Space都是作为某个服务的派生的，所以也不是EXPLORER.EXE的子例。）" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/191/" />
+<meta property="article:published_time" content="2005-07-13T23:59:26+08:00" />
+<meta property="article:modified_time" content="2005-07-13T23:59:26+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">Jul 13, 2005
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     windows系统一 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          <p>一，启动</p>
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">windows系统一</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Jul 13, 2005
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/system/">system</a><a class="tag" href="//blog.shell909090.org/tags/windows/">windows</a></div></div>
+    </header>
+    <div class="post-content">
+      <p>一，启动</p>
 
 <p>任何一个系统，一般都从启动讲起的。这里讲启动本来从NTLDR讲就好，可是怕有人不懂，所以简略概述加电后系统的启动流程。</p>
 
@@ -128,169 +126,12 @@ if (!doNotTrack) {
 
 <p>后面的东西就是微软内部的资料，众人根据推理分析得来，所以不是很准确。不过可以肯定，后面的东西全在system32中打转。根据分析，首先加载的是NTOSKRNL.EXE（单处理器）或者NTKRNLPA.EXE（SMP，对称多处理器）。这个东西就是windows的微内核，由它导出了windows全部NativeAPI的实现。然后是SMSS.EXE，这是进程管理器，也可以说是头个系统派生的进程。后续所有进程可以视为它的子例。由它派生了CSRSS.EXE和WINLOGON.EXE。后者接管了系统的很多部分，例如GINA。它派生了SERVICES.EXE进程，系统开始加载各种服务。最后在登陆后由GINA启动EXPLORER.EXE。出现桌面等操作界面，启动基本完成。按照上述分析，多数服务的宿主进程都是SERVICES.EXE的派生进程（有特例，例如贝壳手里的RaidenFTPD守护进程就是先由SERVICES.EXE派生，再两次派生所成的）。而多数应用程序的进程都是EXPLORER.EXE的派生进程（当然，或者再派生进程）。EXPLORER.EXE负责的内容包括了开始菜单等等，所以除非你通过某个服务去启动程序，否则都是它的子孙。（特例包括Process Explorer工具作为Ctrl+Atl+Del启动时，是WINLOGON.EXE的子例。所以在上面启动一个CMD就成了服务派生，无服务身份。还有MSN弹出的邮件或者Space都是作为某个服务的派生的，所以也不是EXPLORER.EXE的子例。）</p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>Jul 13, 2005</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/system">system</a>  <a class="category" href="//blog.shell909090.org/tags/windows">windows</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/190/" title="Windows系统引论">Windows系统引论</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/192/" title="病毒编年史-近代">病毒编年史-近代</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

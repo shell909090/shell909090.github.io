@@ -1,122 +1,128 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>计算机中的海森堡效应和罗素悖论 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>计算机中的海森堡效应和罗素悖论</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="计算机中的海森堡效应和罗素悖论"/>
+<meta name="twitter:description" content="有点标题党，海森堡测不准原理大家都知道吧，你观测一个东西以获得他精确的描述，然而你测量行为本身就会干扰这个东西的存在，从而永远无法准确测量。
+近日贝壳碰到一个计算机中的海森堡效应，因为工作需要，贝壳需要获得/proc/loadavg中的load参数。这个参数在uptime时会显示，大致意义是这一秒内平均的活跃进程数。(对电脑无爱者请自行跳过以下内容到下一段)准确的计算方法是在一秒内的所有tick上，累加当前的待运行线程列表长度，而后除以一秒内的所有tick。当tick趋于无穷小时，相当于对活跃进程的定积分除以横轴长度，即平均值。
+同个文件内有另外一个值，活跃进程数，是当前的待运行队列长度。从理论上说，如果贝壳要计算一个小时(或者其他大尺度时间)的loadavg，可以高速取样该值，在一小时内求平均，即复现load参数的意义？
+想法很好，不过实际上差很多。开发服务器上的loadavg大约是0.01-0.05，但是贝壳按照后者算出来的load总大于1。问题在哪里？
+记住一点，当你去获得loadavg的时候，你当前的线程永远是在运行的。因此你获取的行为会增长活跃进程的值，哪怕其他时间什么都不做，这样会将取值的瞬间的load提高至少1。而内核的计算的时候，是不会把自己的行为计算为活跃进程的。
+那么将值减去1对不对？也未必。在知道上述问题的同时，我们可以想象。在高压力下，你的线程什么时候会获得运行的机会？只有在最高优先级的任务空闲的时候。因此，你取得的值会严格的小于真实的压力。
+因此，不要相信当前活跃进程数，那个值永远大于1，并且不总正确。如果那个值是0，那逻辑上讲，你就碰到了罗素悖论。
+咳咳，又来一个问题，什么是罗素悖论？
+很简单。如果说真话的人永远说真话，说假话的人永远说假话。有人对你说：“我在说谎”。你就听到了罗素悖论。同理，如果理发师只给不给理发师理发的人理发，而所有理发师的头发都有人理，那你也碰到了罗素悖论。同样，如果有程序告诉你，我读取了当前的活跃进程数，但是这个数表明我不活跃。
+同样，你也碰到了罗素悖论。"/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="计算机中的海森堡效应和罗素悖论" />
+<meta property="og:description" content="有点标题党，海森堡测不准原理大家都知道吧，你观测一个东西以获得他精确的描述，然而你测量行为本身就会干扰这个东西的存在，从而永远无法准确测量。
+近日贝壳碰到一个计算机中的海森堡效应，因为工作需要，贝壳需要获得/proc/loadavg中的load参数。这个参数在uptime时会显示，大致意义是这一秒内平均的活跃进程数。(对电脑无爱者请自行跳过以下内容到下一段)准确的计算方法是在一秒内的所有tick上，累加当前的待运行线程列表长度，而后除以一秒内的所有tick。当tick趋于无穷小时，相当于对活跃进程的定积分除以横轴长度，即平均值。
+同个文件内有另外一个值，活跃进程数，是当前的待运行队列长度。从理论上说，如果贝壳要计算一个小时(或者其他大尺度时间)的loadavg，可以高速取样该值，在一小时内求平均，即复现load参数的意义？
+想法很好，不过实际上差很多。开发服务器上的loadavg大约是0.01-0.05，但是贝壳按照后者算出来的load总大于1。问题在哪里？
+记住一点，当你去获得loadavg的时候，你当前的线程永远是在运行的。因此你获取的行为会增长活跃进程的值，哪怕其他时间什么都不做，这样会将取值的瞬间的load提高至少1。而内核的计算的时候，是不会把自己的行为计算为活跃进程的。
+那么将值减去1对不对？也未必。在知道上述问题的同时，我们可以想象。在高压力下，你的线程什么时候会获得运行的机会？只有在最高优先级的任务空闲的时候。因此，你取得的值会严格的小于真实的压力。
+因此，不要相信当前活跃进程数，那个值永远大于1，并且不总正确。如果那个值是0，那逻辑上讲，你就碰到了罗素悖论。
+咳咳，又来一个问题，什么是罗素悖论？
+很简单。如果说真话的人永远说真话，说假话的人永远说假话。有人对你说：“我在说谎”。你就听到了罗素悖论。同理，如果理发师只给不给理发师理发的人理发，而所有理发师的头发都有人理，那你也碰到了罗素悖论。同样，如果有程序告诉你，我读取了当前的活跃进程数，但是这个数表明我不活跃。
+同样，你也碰到了罗素悖论。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/77/" />
+<meta property="article:published_time" content="2009-09-08T17:58:00+08:00" />
+<meta property="article:modified_time" content="2009-09-08T17:58:00+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">Sep 8, 2009
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     计算机中的海森堡效应和罗素悖论 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          <p>有点标题党，海森堡测不准原理大家都知道吧，你观测一个东西以获得他精确的描述，然而你测量行为本身就会干扰这个东西的存在，从而永远无法准确测量。</p>
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">计算机中的海森堡效应和罗素悖论</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Sep 8, 2009
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/program/">program</a></div></div>
+    </header>
+    <div class="post-content">
+      <p>有点标题党，海森堡测不准原理大家都知道吧，你观测一个东西以获得他精确的描述，然而你测量行为本身就会干扰这个东西的存在，从而永远无法准确测量。</p>
 
 <p>近日贝壳碰到一个计算机中的海森堡效应，因为工作需要，贝壳需要获得/proc/loadavg中的load参数。这个参数在uptime时会显示，大致意义是这一秒内平均的活跃进程数。(对电脑无爱者请自行跳过以下内容到下一段)准确的计算方法是在一秒内的所有tick上，累加当前的待运行线程列表长度，而后除以一秒内的所有tick。当tick趋于无穷小时，相当于对活跃进程的定积分除以横轴长度，即平均值。</p>
 
@@ -136,169 +142,12 @@ if (!doNotTrack) {
 
 <p>同样，你也碰到了罗素悖论。</p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>Sep 8, 2009</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/program">program</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/76/" title="搭建家用的OpenVPN服务器">搭建家用的OpenVPN服务器</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/78/" title="软件自由英雄谱">软件自由英雄谱</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

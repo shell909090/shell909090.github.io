@@ -1,122 +1,122 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>debian中文初学者引导——安装 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>debian中文初学者引导——安装</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="debian中文初学者引导——安装"/>
+<meta name="twitter:description" content="这篇主要讲安装。所以，请去这里（ http://www.debian.org/CD/http-ftp/#stable ）下载一张stable光盘。如果你对testing和unstable比较感兴趣，没问题，装好了可以改的。但是对于初学者，我建议你从stable开始玩起。在选择了合适的架构后，你会被引导到光盘镜像服务器上。作为国内玩家，我建议你别用官方服务器，那个在美国，很慢。个人推荐中科大服务器（ ftp://ftp.cn.debian.org/debian-cd/ ）去下载合适镜像，服务器是电信联通教育网三线路的，无论是学生还是商业人士都很合适。目前而言，我推荐你下载debian-6.0.1a-i386-netinst.iso作为安装镜像。这个镜像只安装最小部分，而且在安装时无须联网，适合大多数场合。注意，如果你的机器只有无线网络，请不要使用这张镜像，因为难度太高了。
+好吧，下面我假定你有镜像了，你有三种常见的安装模式，刻录光盘安装，liveusb安装，虚拟机直接使用镜像。刻录光盘没什么好多说的，虚拟机直接使用就看你会不会用虚拟机，liveusb就有点复杂。具体参考我写的这篇文章（ http://blog.shell909090.org/blog/archives/1646 ）。无论从哪里开始，你都必须保证开机启动的是你的debian安装镜像。所以发生例如debian安装时进入了硬盘上的windows这种问题别来问我，直接去google BIOS设定。
+很多人经常问的一个问题，是关于如何安装linux和windows共存。其实这种模式并不好，至少我知道的使用这种模式学习linux的人都失败了。因为你平时会经常进入windows，然后懒得出来了。最好的方法是，彻底告别你的windows，然后下定决心用linux解决所有问题。如果你觉得底气不足，可以用虚拟机运行一个小实例，至少我觉得这比共存模式方便。因此，我不会介绍windows和linux共存的有关问题——这些问题太复杂了，虽然技术上说并不难，但是会占用大量篇幅。
+单独安装linux也需要划分分区。通常的建议是/ /usr /var /home /tmp swap全部可以考虑分开。不过作为初学者，我建议你用一个分区/就够了。如果内存在1G及其以上，也不一定需要用swap。减少麻烦不是什么值得羞耻的事情，制造麻烦才是。如果你看了半天，搞不懂这段话什么意思，我建议你先看看下一篇《系统管理》中关于linux文件组织结构的介绍。如果你觉得有些不安，常见的方法是/ /home swap。这通常用于大型机器上，分离的home会让你在重装时无须额外的做数据保留操作，swap则提供更高的内存使用率。文件系统的建议是全ext3，这个会减少你很多的管理麻烦。如果你想尝试一些新的文件系统，最好不要在/上面尝试。
+安装过程没什么好多说的，安装完成后，才是一系列最艰难的地方。debian-netinst是不带X系统的，所以如果你想使用图形界面，安装完成后的配置才是最关键的。通常你的电脑可以联网，因为安装的时候会自动配置你的网卡。如果你是无线网卡，请先连一根有线。如果不行，那就不是初学者课程了——你需要自行安装wpasupplicant，iw和相关依赖包，然后手工建立config文件。通过config连接合适的ap，再手工dhcp获得地址。总之，这些问题初学者就不要想了，请直接拉一根网线，接上，启动机器（次序不要反），你的机器就联网了。如果不是，找人求助吧。
+第一件事，请先去/etc/apt/source.list下面，修改你所选用的镜像。如果你希望用testing或者unstable，直接修改此处就可以了。通常我们需要安装contrib和non-free部分，所以在main后面加上contrib和non-free。这里有些重要的商业程序，例如sun-java，rar/unrar，flashplugin等等。另外就是名称。通常镜像后面的名称是lenny这类的代号，建议改成stable这样的代号。当debian升级，版本切换的时候，你的系统会自动的升上去。当然，商业级别的服务器反之，不要用stable这样的代号，因为会造成稳定性问题。
+当你修改完source后，执行aptitude update，然后再执行aptitude install vim slim xfce4。当然，如果你喜欢用gnome，那就是aptitude install vim gdm gnome。然后重启？你的机器应当出现了一个可爱的，花里胡哨的界面。啧啧，简直俗毙了。不过鉴于新手都比较习惯图形界面，我还是继续从图形界面开始介绍吧。"/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="debian中文初学者引导——安装" />
+<meta property="og:description" content="这篇主要讲安装。所以，请去这里（ http://www.debian.org/CD/http-ftp/#stable ）下载一张stable光盘。如果你对testing和unstable比较感兴趣，没问题，装好了可以改的。但是对于初学者，我建议你从stable开始玩起。在选择了合适的架构后，你会被引导到光盘镜像服务器上。作为国内玩家，我建议你别用官方服务器，那个在美国，很慢。个人推荐中科大服务器（ ftp://ftp.cn.debian.org/debian-cd/ ）去下载合适镜像，服务器是电信联通教育网三线路的，无论是学生还是商业人士都很合适。目前而言，我推荐你下载debian-6.0.1a-i386-netinst.iso作为安装镜像。这个镜像只安装最小部分，而且在安装时无须联网，适合大多数场合。注意，如果你的机器只有无线网络，请不要使用这张镜像，因为难度太高了。
+好吧，下面我假定你有镜像了，你有三种常见的安装模式，刻录光盘安装，liveusb安装，虚拟机直接使用镜像。刻录光盘没什么好多说的，虚拟机直接使用就看你会不会用虚拟机，liveusb就有点复杂。具体参考我写的这篇文章（ http://blog.shell909090.org/blog/archives/1646 ）。无论从哪里开始，你都必须保证开机启动的是你的debian安装镜像。所以发生例如debian安装时进入了硬盘上的windows这种问题别来问我，直接去google BIOS设定。
+很多人经常问的一个问题，是关于如何安装linux和windows共存。其实这种模式并不好，至少我知道的使用这种模式学习linux的人都失败了。因为你平时会经常进入windows，然后懒得出来了。最好的方法是，彻底告别你的windows，然后下定决心用linux解决所有问题。如果你觉得底气不足，可以用虚拟机运行一个小实例，至少我觉得这比共存模式方便。因此，我不会介绍windows和linux共存的有关问题——这些问题太复杂了，虽然技术上说并不难，但是会占用大量篇幅。
+单独安装linux也需要划分分区。通常的建议是/ /usr /var /home /tmp swap全部可以考虑分开。不过作为初学者，我建议你用一个分区/就够了。如果内存在1G及其以上，也不一定需要用swap。减少麻烦不是什么值得羞耻的事情，制造麻烦才是。如果你看了半天，搞不懂这段话什么意思，我建议你先看看下一篇《系统管理》中关于linux文件组织结构的介绍。如果你觉得有些不安，常见的方法是/ /home swap。这通常用于大型机器上，分离的home会让你在重装时无须额外的做数据保留操作，swap则提供更高的内存使用率。文件系统的建议是全ext3，这个会减少你很多的管理麻烦。如果你想尝试一些新的文件系统，最好不要在/上面尝试。
+安装过程没什么好多说的，安装完成后，才是一系列最艰难的地方。debian-netinst是不带X系统的，所以如果你想使用图形界面，安装完成后的配置才是最关键的。通常你的电脑可以联网，因为安装的时候会自动配置你的网卡。如果你是无线网卡，请先连一根有线。如果不行，那就不是初学者课程了——你需要自行安装wpasupplicant，iw和相关依赖包，然后手工建立config文件。通过config连接合适的ap，再手工dhcp获得地址。总之，这些问题初学者就不要想了，请直接拉一根网线，接上，启动机器（次序不要反），你的机器就联网了。如果不是，找人求助吧。
+第一件事，请先去/etc/apt/source.list下面，修改你所选用的镜像。如果你希望用testing或者unstable，直接修改此处就可以了。通常我们需要安装contrib和non-free部分，所以在main后面加上contrib和non-free。这里有些重要的商业程序，例如sun-java，rar/unrar，flashplugin等等。另外就是名称。通常镜像后面的名称是lenny这类的代号，建议改成stable这样的代号。当debian升级，版本切换的时候，你的系统会自动的升上去。当然，商业级别的服务器反之，不要用stable这样的代号，因为会造成稳定性问题。
+当你修改完source后，执行aptitude update，然后再执行aptitude install vim slim xfce4。当然，如果你喜欢用gnome，那就是aptitude install vim gdm gnome。然后重启？你的机器应当出现了一个可爱的，花里胡哨的界面。啧啧，简直俗毙了。不过鉴于新手都比较习惯图形界面，我还是继续从图形界面开始介绍吧。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/1802/" />
+<meta property="article:published_time" content="2011-05-17T10:25:58+08:00" />
+<meta property="article:modified_time" content="2011-05-17T10:25:58+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">May 17, 2011
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     debian中文初学者引导——安装 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          <p>这篇主要讲安装。所以，请去这里（ <a href="http://www.debian.org/CD/http-ftp/#stable">http://www.debian.org/CD/http-ftp/#stable</a> ）下载一张stable光盘。如果你对testing和unstable比较感兴趣，没问题，装好了可以改的。但是对于初学者，我建议你从stable开始玩起。在选择了合适的架构后，你会被引导到光盘镜像服务器上。作为国内玩家，我建议你别用官方服务器，那个在美国，很慢。个人推荐中科大服务器（ <a href="ftp://ftp.cn.debian.org/debian-cd/">ftp://ftp.cn.debian.org/debian-cd/</a> ）去下载合适镜像，服务器是电信联通教育网三线路的，无论是学生还是商业人士都很合适。目前而言，我推荐你下载debian-6.0.1a-i386-netinst.iso作为安装镜像。这个镜像只安装最小部分，而且在安装时无须联网，适合大多数场合。注意，如果你的机器只有无线网络，请不要使用这张镜像，因为难度太高了。</p>
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">debian中文初学者引导——安装</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          May 17, 2011
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/debian/">debian</a><a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a></div></div>
+    </header>
+    <div class="post-content">
+      <p>这篇主要讲安装。所以，请去这里（ <a href="http://www.debian.org/CD/http-ftp/#stable">http://www.debian.org/CD/http-ftp/#stable</a> ）下载一张stable光盘。如果你对testing和unstable比较感兴趣，没问题，装好了可以改的。但是对于初学者，我建议你从stable开始玩起。在选择了合适的架构后，你会被引导到光盘镜像服务器上。作为国内玩家，我建议你别用官方服务器，那个在美国，很慢。个人推荐中科大服务器（ <a href="ftp://ftp.cn.debian.org/debian-cd/">ftp://ftp.cn.debian.org/debian-cd/</a> ）去下载合适镜像，服务器是电信联通教育网三线路的，无论是学生还是商业人士都很合适。目前而言，我推荐你下载debian-6.0.1a-i386-netinst.iso作为安装镜像。这个镜像只安装最小部分，而且在安装时无须联网，适合大多数场合。注意，如果你的机器只有无线网络，请不要使用这张镜像，因为难度太高了。</p>
 
 <p>好吧，下面我假定你有镜像了，你有三种常见的安装模式，刻录光盘安装，liveusb安装，虚拟机直接使用镜像。刻录光盘没什么好多说的，虚拟机直接使用就看你会不会用虚拟机，liveusb就有点复杂。具体参考我写的这篇文章（ <a href="http://blog.shell909090.org/blog/archives/1646">http://blog.shell909090.org/blog/archives/1646</a> ）。无论从哪里开始，你都必须保证开机启动的是你的debian安装镜像。所以发生例如debian安装时进入了硬盘上的windows这种问题别来问我，直接去google BIOS设定。</p>
 
@@ -130,169 +130,12 @@ if (!doNotTrack) {
 
 <p>当你修改完source后，执行aptitude update，然后再执行aptitude install vim slim xfce4。当然，如果你喜欢用gnome，那就是aptitude install vim gdm gnome。然后重启？你的机器应当出现了一个可爱的，花里胡哨的界面。啧啧，简直俗毙了。不过鉴于新手都比较习惯图形界面，我还是继续从图形界面开始介绍吧。</p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>May 17, 2011</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/debian">debian</a>  <a class="category" href="//blog.shell909090.org/tags/linux">linux</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/1800/" title="debian中文初学者引导——系统管理">debian中文初学者引导——系统管理</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/1804/" title="组合翻墙方法——细节">组合翻墙方法——细节</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

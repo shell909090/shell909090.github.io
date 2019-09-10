@@ -1,122 +1,128 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>磁盘对倒迁移 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>磁盘对倒迁移</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="磁盘对倒迁移"/>
+<meta name="twitter:description" content="贝壳的本本坏了。
+Acer的质量真不怎么的，只是正常使用而已，买来不到一个月就返修。费时费力不说，还差点因为IWT的问题无法修理而要付钱。结果刚刚过保半年，总共买了一年半后，坏了。
+趁机问老板要了一台ThinkPad，虽说联想的做工不如IBM，不过依旧非常舒服，不愧是商务王者。但是，贝壳原来在笔记本上配置的复杂到死的系统，要是在新机器上一一重装的话，费力先不说，项目肯定是无法按期完工了。
+贝壳修旧机器的时候，拆下了硬盘和电池。这里顺便提醒送修笔记本的同志们，记得拆下硬盘和电池。硬盘是你机要数据的所在，将来要恢复系统就全靠他了。而电池——到时候要是发现电量少了，这种东西谁都说不清楚。所以还是拆下来的好。那么，最低限度的，要从旧硬盘上读出数据，否则很多东西完全无法运作了。所以——贝壳找人借了一个移动硬盘盒。嘿嘿，这种东西可以将笔记本的SATA转换成USB使用，从而在新电脑上直接读取旧电脑数据。
+为了不重装电脑，贝壳决定在新电脑上直接使用旧电脑的系统。将旧电脑的数据整个复制到新电脑上，就是俗称的磁盘对倒。下面是一个关键的问题，是重建文件系统，然后复制数据好呢？还是直接镜像整个系统？如果是复制数据，相对的数据清晰干净，但是容易发生一些莫名其妙的错误。如果是整个镜像，对了错一并带入新系统。贝壳在这里选择比较保守的方案，镜像整个磁盘。
+首先贝壳从U盘启动(刚刚做了U live debian，冲着拯救去的系统，不知道是说幸运呢，还是乌鸦嘴呢)，而后删除原有磁盘的所有分区，输入dd if=/dev/sdc of=/dev/sda，将整个磁盘复制到新电脑上。这里注意，贝壳没有设定区块大小，因此速度比较慢，正确的设定大小有助于加速复制。贝壳的数据是 120G(因此向公司申请的电脑最低是120G硬盘)，复制速度是10M/s多一点，复制时间大约是3小时15分钟。从晚上9点一刻一直到晚上12点半。在完成复制后，直接重启，从硬盘启动Linux，成功！
+在几乎没有任何干预的情况下，Linux就可以开机成功，不得不说这给了我很大信心。然后我去启动windows——不动。
+贝壳被迫回到了Linux，仔细调试驱动，设法最快的弄出一个可用的系统。下面详细记录了ThinkPadT61上安装Debian的全过程，有兴趣的可以看看。至于六牙四皂和某猫小姐就可以跳过了。
+首先贝壳调整了复制后的硬盘上的分区。由于分区表是按照120G的时候计算的，因此新硬盘上的分区使用不足。启动gparted调整大小后，sda6占用了全部新增空间，暴增到200G。而后贝壳开始查看pci设备和驱动。
+# lspci -nn 00:00.0 Host bridge [0600]: Intel Corporation Mobile PM965/GM965/GL960 Memory Controller Hub [8086:2a00] (rev 0c) 00:02.0 VGA compatible controller [0300]: Intel Corporation Mobile GM965/GL960 Integrated Graphics Controller [8086:2a02] (rev 0c) 00:02.1 Display controller [0380]: Intel Corporation Mobile GM965/GL960 Integrated Graphics Controller [8086:2a03] (rev 0c) 00:19.0 Ethernet controller [0200]: Intel Corporation 82566MM Gigabit Network Connection [8086:1049] (rev 03) 00:1a."/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="磁盘对倒迁移" />
+<meta property="og:description" content="贝壳的本本坏了。
+Acer的质量真不怎么的，只是正常使用而已，买来不到一个月就返修。费时费力不说，还差点因为IWT的问题无法修理而要付钱。结果刚刚过保半年，总共买了一年半后，坏了。
+趁机问老板要了一台ThinkPad，虽说联想的做工不如IBM，不过依旧非常舒服，不愧是商务王者。但是，贝壳原来在笔记本上配置的复杂到死的系统，要是在新机器上一一重装的话，费力先不说，项目肯定是无法按期完工了。
+贝壳修旧机器的时候，拆下了硬盘和电池。这里顺便提醒送修笔记本的同志们，记得拆下硬盘和电池。硬盘是你机要数据的所在，将来要恢复系统就全靠他了。而电池——到时候要是发现电量少了，这种东西谁都说不清楚。所以还是拆下来的好。那么，最低限度的，要从旧硬盘上读出数据，否则很多东西完全无法运作了。所以——贝壳找人借了一个移动硬盘盒。嘿嘿，这种东西可以将笔记本的SATA转换成USB使用，从而在新电脑上直接读取旧电脑数据。
+为了不重装电脑，贝壳决定在新电脑上直接使用旧电脑的系统。将旧电脑的数据整个复制到新电脑上，就是俗称的磁盘对倒。下面是一个关键的问题，是重建文件系统，然后复制数据好呢？还是直接镜像整个系统？如果是复制数据，相对的数据清晰干净，但是容易发生一些莫名其妙的错误。如果是整个镜像，对了错一并带入新系统。贝壳在这里选择比较保守的方案，镜像整个磁盘。
+首先贝壳从U盘启动(刚刚做了U live debian，冲着拯救去的系统，不知道是说幸运呢，还是乌鸦嘴呢)，而后删除原有磁盘的所有分区，输入dd if=/dev/sdc of=/dev/sda，将整个磁盘复制到新电脑上。这里注意，贝壳没有设定区块大小，因此速度比较慢，正确的设定大小有助于加速复制。贝壳的数据是 120G(因此向公司申请的电脑最低是120G硬盘)，复制速度是10M/s多一点，复制时间大约是3小时15分钟。从晚上9点一刻一直到晚上12点半。在完成复制后，直接重启，从硬盘启动Linux，成功！
+在几乎没有任何干预的情况下，Linux就可以开机成功，不得不说这给了我很大信心。然后我去启动windows——不动。
+贝壳被迫回到了Linux，仔细调试驱动，设法最快的弄出一个可用的系统。下面详细记录了ThinkPadT61上安装Debian的全过程，有兴趣的可以看看。至于六牙四皂和某猫小姐就可以跳过了。
+首先贝壳调整了复制后的硬盘上的分区。由于分区表是按照120G的时候计算的，因此新硬盘上的分区使用不足。启动gparted调整大小后，sda6占用了全部新增空间，暴增到200G。而后贝壳开始查看pci设备和驱动。
+# lspci -nn 00:00.0 Host bridge [0600]: Intel Corporation Mobile PM965/GM965/GL960 Memory Controller Hub [8086:2a00] (rev 0c) 00:02.0 VGA compatible controller [0300]: Intel Corporation Mobile GM965/GL960 Integrated Graphics Controller [8086:2a02] (rev 0c) 00:02.1 Display controller [0380]: Intel Corporation Mobile GM965/GL960 Integrated Graphics Controller [8086:2a03] (rev 0c) 00:19.0 Ethernet controller [0200]: Intel Corporation 82566MM Gigabit Network Connection [8086:1049] (rev 03) 00:1a." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/52/" />
+<meta property="article:published_time" content="2009-02-12T15:40:00+08:00" />
+<meta property="article:modified_time" content="2009-02-12T15:40:00+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">Feb 12, 2009
-     - 5 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     磁盘对倒迁移 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          <p>贝壳的本本坏了。</p>
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">磁盘对倒迁移</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Feb 12, 2009
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          5 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/acer/">acer</a><a class="tag" href="//blog.shell909090.org/tags/disk/">disk</a><a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a><a class="tag" href="//blog.shell909090.org/tags/system/">system</a></div></div>
+    </header>
+    <div class="post-content">
+      <p>贝壳的本本坏了。</p>
 
 <p>Acer的质量真不怎么的，只是正常使用而已，买来不到一个月就返修。费时费力不说，还差点因为IWT的问题无法修理而要付钱。结果刚刚过保半年，总共买了一年半后，坏了。</p>
 
@@ -351,169 +357,12 @@ session        required    pam_limits.so
 [8].Debian/testing简要安装记录.<a href="http://hi.baidu.com/airpot/blog/item/7e72b0b4d05de3708bd4b2d9.html">http://hi.baidu.com/airpot/blog/item/7e72b0b4d05de3708bd4b2d9.html</a>
 [9].Debian 笔记本驱动安装.<a href="http://www.unifiedkernel.com/forum/viewtopic.php?f=5&amp;t=10">http://www.unifiedkernel.com/forum/viewtopic.php?f=5&amp;t=10</a></p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>Feb 12, 2009</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/acer">acer</a>  <a class="category" href="//blog.shell909090.org/tags/disk">disk</a>  <a class="category" href="//blog.shell909090.org/tags/linux">linux</a>  <a class="category" href="//blog.shell909090.org/tags/system">system</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/51/" title="回京感想">回京感想</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/53/" title="Remember The Milk">Remember The Milk</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

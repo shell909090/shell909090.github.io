@@ -1,122 +1,124 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>信任的逻辑（一） // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>信任的逻辑（一）</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="信任的逻辑（一）"/>
+<meta name="twitter:description" content="贝壳打算撰文一个系列，详细描述信任和信任系统。其中涉及很多博弈论，信息安全学的内容。欢迎拍砖。
+首先是一个场景。一个管理组织，调查某种人占总人群的比例。不幸的是，有很多恶意的攻击方试图改变这个数据（增大或减小）。对于被调查人群来说，这个数字不准确会使得每个人都受到损失。那么，怎么去信任这个组织，来确认数据的正确性呢？
+首先是管理组织造假的形态，一般来说有四种方法。一种是修改某个具体人物的属性，来增加或者减小总体比例。一种是向名单中添加不存在的人，来调整总体数字。一种是挑选某个属性的人组成名单。一种是睁眼说瞎话，名单正确但是统计数字和名单不吻合。
+最简单的方法是公布名单，标明每个人是或不是。对于每个人，都可以独立验证自己在名单中的正确性，因此无法修改某个具体人物的属性。通过对名单公布出来的人进行逆向回访（是否存在，是否参与调查）来确认没有添加不存在的人。要求每个参与调查的人都&rdquo;必须&rdquo;包含在名单内，来避免挑选属性。名单的统计比例是公布的，可以独立核算的，因此名单无法造假。但是我们知道，很多情况下名单是不能公开的。例如，我们调查艾滋流行状况，如果这个名单公开真的就天下大乱了。那么如何来监督呢？
+我们也许能想到最初的变形，这个组织不开放名单，而开放查询。每个人独立查询自己的属性，因此可以验证具体人物属性，也可以抵御挑选属性。但是对于其他两者，都无法成功防御。因此开放查询实际上对造假是没有抵抗力的。
+而后，我们想到了一种中间方法，每个人可以凭借自己的姓名查询到自己的独立代号（ID，一般是一个数字），但是不能凭借独立代号查询到姓名。于是，我们可以独立的获得代号，从而防御修改人物属性和挑选属性的攻击，也可以防御统计修改。但是对于名单中添加不存在的人，则没有什么防御手段。组织可以向名单中添加一堆不存在的代号来增加总体数量。同时，这种方法其实还隐含了泄密的可能，因为其他知道你姓名信息的人（例如配偶），很容易查到你的属性。
+所以，我们修改上文的方法，将通过名字查询代号改为调查时发放查询代号。这样可以杜绝泄密的可能性。而对抗添加代号则非常麻烦。总体不外乎两种手法——回访和鉴权。
+回访是指通过任意指定名单中一些个体，要求其现身说明自身的属性。如果这个人不出现，或者未参与调查，或者属性错误，就可以确定出现了添加代号。但是很明显，为了保证隐私，这个方法无法工作。鉴权则是要由一个更高可信度的机构实行，对每个用户实行保密身份验证。"/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="信任的逻辑（一）" />
+<meta property="og:description" content="贝壳打算撰文一个系列，详细描述信任和信任系统。其中涉及很多博弈论，信息安全学的内容。欢迎拍砖。
+首先是一个场景。一个管理组织，调查某种人占总人群的比例。不幸的是，有很多恶意的攻击方试图改变这个数据（增大或减小）。对于被调查人群来说，这个数字不准确会使得每个人都受到损失。那么，怎么去信任这个组织，来确认数据的正确性呢？
+首先是管理组织造假的形态，一般来说有四种方法。一种是修改某个具体人物的属性，来增加或者减小总体比例。一种是向名单中添加不存在的人，来调整总体数字。一种是挑选某个属性的人组成名单。一种是睁眼说瞎话，名单正确但是统计数字和名单不吻合。
+最简单的方法是公布名单，标明每个人是或不是。对于每个人，都可以独立验证自己在名单中的正确性，因此无法修改某个具体人物的属性。通过对名单公布出来的人进行逆向回访（是否存在，是否参与调查）来确认没有添加不存在的人。要求每个参与调查的人都&rdquo;必须&rdquo;包含在名单内，来避免挑选属性。名单的统计比例是公布的，可以独立核算的，因此名单无法造假。但是我们知道，很多情况下名单是不能公开的。例如，我们调查艾滋流行状况，如果这个名单公开真的就天下大乱了。那么如何来监督呢？
+我们也许能想到最初的变形，这个组织不开放名单，而开放查询。每个人独立查询自己的属性，因此可以验证具体人物属性，也可以抵御挑选属性。但是对于其他两者，都无法成功防御。因此开放查询实际上对造假是没有抵抗力的。
+而后，我们想到了一种中间方法，每个人可以凭借自己的姓名查询到自己的独立代号（ID，一般是一个数字），但是不能凭借独立代号查询到姓名。于是，我们可以独立的获得代号，从而防御修改人物属性和挑选属性的攻击，也可以防御统计修改。但是对于名单中添加不存在的人，则没有什么防御手段。组织可以向名单中添加一堆不存在的代号来增加总体数量。同时，这种方法其实还隐含了泄密的可能，因为其他知道你姓名信息的人（例如配偶），很容易查到你的属性。
+所以，我们修改上文的方法，将通过名字查询代号改为调查时发放查询代号。这样可以杜绝泄密的可能性。而对抗添加代号则非常麻烦。总体不外乎两种手法——回访和鉴权。
+回访是指通过任意指定名单中一些个体，要求其现身说明自身的属性。如果这个人不出现，或者未参与调查，或者属性错误，就可以确定出现了添加代号。但是很明显，为了保证隐私，这个方法无法工作。鉴权则是要由一个更高可信度的机构实行，对每个用户实行保密身份验证。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/142/" />
+<meta property="article:published_time" content="2010-09-13T12:36:00+08:00" />
+<meta property="article:modified_time" content="2010-09-13T12:36:00+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">Sep 13, 2010
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     信任的逻辑（一） 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          <p>贝壳打算撰文一个系列，详细描述信任和信任系统。其中涉及很多博弈论，信息安全学的内容。欢迎拍砖。</p>
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">信任的逻辑（一）</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Sep 13, 2010
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/thinking/">thinking</a></div></div>
+    </header>
+    <div class="post-content">
+      <p>贝壳打算撰文一个系列，详细描述信任和信任系统。其中涉及很多博弈论，信息安全学的内容。欢迎拍砖。</p>
 
 <p>首先是一个场景。一个管理组织，调查某种人占总人群的比例。不幸的是，有很多恶意的攻击方试图改变这个数据（增大或减小）。对于被调查人群来说，这个数字不准确会使得每个人都受到损失。那么，怎么去信任这个组织，来确认数据的正确性呢？</p>
 
@@ -132,169 +134,12 @@ if (!doNotTrack) {
 
 <p>回访是指通过任意指定名单中一些个体，要求其现身说明自身的属性。如果这个人不出现，或者未参与调查，或者属性错误，就可以确定出现了添加代号。但是很明显，为了保证隐私，这个方法无法工作。鉴权则是要由一个更高可信度的机构实行，对每个用户实行保密身份验证。</p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>Sep 13, 2010</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/thinking">thinking</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/141/" title="钓鱼台渔船乱评">钓鱼台渔船乱评</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/143/" title="淀山湖徒步">淀山湖徒步</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

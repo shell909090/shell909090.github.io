@@ -1,122 +1,128 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>emacs简介 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>emacs简介</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="emacs简介"/>
+<meta name="twitter:description" content="emacs一定是我梦想中的编辑器，设计者一定是个超级的混蛋。
+emacs是一种多平台的编辑器，具有非常古老的历史，和vi一起并称为黑客常用两大编辑器（在贝壳学习linux后，就“顺带”学习了vi——因为根本没有其他选择）。作为编辑器来说，他只接受文本编辑，但是却具有收发邮件，编译软件，调试程序，甚至煮咖啡等各种诡异的非正经功能。很多人疯狂的热爱他，认为他是人工智能的结晶，化妆成编辑器的操作系统。但也有人疯狂的咒骂他，认为这东西纯粹就是折磨人用的。贝壳这次的blog，就是侃侃emacs到底是什么。
+说emacs是人工智能平台，其实这个说法并没有错。emacs的运作机理和我们通常的编辑器都有不同。通常来说，一个编辑器可能有多个windows啦，frame啦什么的，但是最终作用于一个文本。你可以添加，删除，修改，或者标记一段文本，进行剪切，复制，粘贴等动作。设计比较完善的还有回退和重做。让我们专注于其中一个任务，例如，删除，看看我们的编辑器是如何工作的。
+以notepad&#43;&#43;为例吧，在选中一段文字删除的时候，你可以用键，同样，如果没有选中文字，这个键作用于当前光标后面的一个文字。（在此我们不讨论和前后删除的关系）这很简单，一个内容，按删除，就没了。但是你是否注意了这个过程本身，为什么按下是删除，为什么不是按下键或者键？
+按照程序员的思维来说，编辑器的基础是一个文本内容和一个光标（或者说一个position），我们通过修改数据结构变更这两者以达到某种目的，这个过程被称为操作。例如，作为删除操作，我们移除（remove）了文本内容的position处的字符。而后，我们将这个操作（也可以称为函数）绑定到键上。于是，我们在按下键的时候，触发了删除函数，导致内容被删除。这个是能够删除文本的核心过程。从正常人思维的角度来说，一般我们都会将这个功能绑定到上面，而不会是或者，或者其他更疯狂的键。同样的机理，我们按下，文件存盘，是因为存盘的功能被绑定到了这个键上。好的编辑器一般带有键绑定修改功能，notepad&#43;&#43;就可以自行修改热键。而emacs则更进一步。
+emacs允许你自行编写扩充函数，并且将这些新的函数绑定到键上，这样就赋予了编辑器无限的可能性。例如，你可以写一个过程，每次触发就在当前光标处插入当前时间对应的纽约时间。或者你可以写一个过程，自动根据一个预定义的数据表格补充你输入人名的头衔。可以想象，当你需要重复单一工作时，这种扩充能力是非常重要的。你可以免除记忆一堆领导的详细头衔，免除重复输入，免除繁重的劳动，只要你编写一次扩展程序，并且绑定到某个键上。然而现在编辑器的趋势是，我们使用编辑器从事各种不同的工作。有的时候，我们用编辑器记事，有的时候用来写程序，有的时候用来看源码。因此我们对编辑器的个性化能力和强大都没有要求，反之对编辑器的标准化要求很高。说的更通俗点，我们不需要自行扩充一个插件来省事，但是我们一定要用来复制，用来粘帖。因为我们（指普通用户，而非以电脑为生的专业用户或者是变态的geek）不会程序，或者不喜欢为了某个目地花费时间来编写程序，毕竟现在不是70年代，当时接触电脑的都是智力最高的一帮变态。现在接触电脑的都只是普通用户而已，我们不需要强大的扩充，但是我希望我用一个编辑器的时候，这些基本功能在另外一个编辑器上不会产生区别。从这点来说，emacs差劲透了。
+emacs的键绑定是根据上世纪70年代unix下（那时候linus都没出生，何况linux）的键盘来的，因此emacs假定你有一个Meta键。这个键在今天的电脑上已经找不到了，我们用Atl来替代。但是同志们，Atl是系统键，这么替代是有副作用的。例如自动补齐的函数热键是M-Tab，但是请试试在windows下按Atl&#43;Tab。亲爱的，你会跳到另外一个程序上。那是windows切换程序的热键。还有我们经常用来复制，来退回。可是在当时的linux下，代表终止程序运行，代表挂起程序到后台。emacs当然要避免这两个热键，于是——你自己试试在emacs下按这两个热键的结果吧。
+从热键约定的角度说，emacs是当之无愧的最差编辑器。不过这个很难怪罪emacs，毕竟他出生的年代不用说windows，连dos都没有出生，cp/m还只是个样品。要怪只能怪windows的设计人员在考虑热键的时候根本没有考虑emacs的现有标准，自己瞎设计一通（尤其是最常用的，虽然从人机工程角度这个是最合适的键）。
+emacs更强大的特性是，可以根据当前文件的特征鉴定文件类型，并且采用正确的模式。例如，我可以在python模式下编写python程序，在C&#43;&#43;模式下编写C&#43;&#43;程序。对于用户来说，这两种模式看不出区别，然而他们本身有着非常多的细节不同。例如，在C&#43;&#43;模式下，/**/是注释，而python下，#才是注释。灵活的模式允许你使用同样的方法操作不同类型的文件，并且还具有各种扩充。对于C&#43;&#43;，他可以编译，对于python，他可以校验。并且有一些比较常用的超级扩充，例如etags。这个程序可以用来生成一些文件，帮助你找到一个符号的位置。利用这个扩充，你可以快速的寻找符号位置，自动完成，等等。这些近几年才在VSIDE和eclipse里面出现的特性，早在数十年前就出现在了emacs里面。
+如果你有程序基础，并且长期从事相似的工作，例如写程序，写文档，并且有很多重复的工作，希望解放自己的劳动力，那么推荐你使用emacs。如果你是个找酷的新新人类，希望找一个很少人用的编辑器，具有真正酷的特性，被很多人称赞，那么建议你用emacs。除此外的人，请珍爱生命，远离emacs——这东西太容易上瘾了。~~~~~~~~~~~~"/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="emacs简介" />
+<meta property="og:description" content="emacs一定是我梦想中的编辑器，设计者一定是个超级的混蛋。
+emacs是一种多平台的编辑器，具有非常古老的历史，和vi一起并称为黑客常用两大编辑器（在贝壳学习linux后，就“顺带”学习了vi——因为根本没有其他选择）。作为编辑器来说，他只接受文本编辑，但是却具有收发邮件，编译软件，调试程序，甚至煮咖啡等各种诡异的非正经功能。很多人疯狂的热爱他，认为他是人工智能的结晶，化妆成编辑器的操作系统。但也有人疯狂的咒骂他，认为这东西纯粹就是折磨人用的。贝壳这次的blog，就是侃侃emacs到底是什么。
+说emacs是人工智能平台，其实这个说法并没有错。emacs的运作机理和我们通常的编辑器都有不同。通常来说，一个编辑器可能有多个windows啦，frame啦什么的，但是最终作用于一个文本。你可以添加，删除，修改，或者标记一段文本，进行剪切，复制，粘贴等动作。设计比较完善的还有回退和重做。让我们专注于其中一个任务，例如，删除，看看我们的编辑器是如何工作的。
+以notepad&#43;&#43;为例吧，在选中一段文字删除的时候，你可以用键，同样，如果没有选中文字，这个键作用于当前光标后面的一个文字。（在此我们不讨论和前后删除的关系）这很简单，一个内容，按删除，就没了。但是你是否注意了这个过程本身，为什么按下是删除，为什么不是按下键或者键？
+按照程序员的思维来说，编辑器的基础是一个文本内容和一个光标（或者说一个position），我们通过修改数据结构变更这两者以达到某种目的，这个过程被称为操作。例如，作为删除操作，我们移除（remove）了文本内容的position处的字符。而后，我们将这个操作（也可以称为函数）绑定到键上。于是，我们在按下键的时候，触发了删除函数，导致内容被删除。这个是能够删除文本的核心过程。从正常人思维的角度来说，一般我们都会将这个功能绑定到上面，而不会是或者，或者其他更疯狂的键。同样的机理，我们按下，文件存盘，是因为存盘的功能被绑定到了这个键上。好的编辑器一般带有键绑定修改功能，notepad&#43;&#43;就可以自行修改热键。而emacs则更进一步。
+emacs允许你自行编写扩充函数，并且将这些新的函数绑定到键上，这样就赋予了编辑器无限的可能性。例如，你可以写一个过程，每次触发就在当前光标处插入当前时间对应的纽约时间。或者你可以写一个过程，自动根据一个预定义的数据表格补充你输入人名的头衔。可以想象，当你需要重复单一工作时，这种扩充能力是非常重要的。你可以免除记忆一堆领导的详细头衔，免除重复输入，免除繁重的劳动，只要你编写一次扩展程序，并且绑定到某个键上。然而现在编辑器的趋势是，我们使用编辑器从事各种不同的工作。有的时候，我们用编辑器记事，有的时候用来写程序，有的时候用来看源码。因此我们对编辑器的个性化能力和强大都没有要求，反之对编辑器的标准化要求很高。说的更通俗点，我们不需要自行扩充一个插件来省事，但是我们一定要用来复制，用来粘帖。因为我们（指普通用户，而非以电脑为生的专业用户或者是变态的geek）不会程序，或者不喜欢为了某个目地花费时间来编写程序，毕竟现在不是70年代，当时接触电脑的都是智力最高的一帮变态。现在接触电脑的都只是普通用户而已，我们不需要强大的扩充，但是我希望我用一个编辑器的时候，这些基本功能在另外一个编辑器上不会产生区别。从这点来说，emacs差劲透了。
+emacs的键绑定是根据上世纪70年代unix下（那时候linus都没出生，何况linux）的键盘来的，因此emacs假定你有一个Meta键。这个键在今天的电脑上已经找不到了，我们用Atl来替代。但是同志们，Atl是系统键，这么替代是有副作用的。例如自动补齐的函数热键是M-Tab，但是请试试在windows下按Atl&#43;Tab。亲爱的，你会跳到另外一个程序上。那是windows切换程序的热键。还有我们经常用来复制，来退回。可是在当时的linux下，代表终止程序运行，代表挂起程序到后台。emacs当然要避免这两个热键，于是——你自己试试在emacs下按这两个热键的结果吧。
+从热键约定的角度说，emacs是当之无愧的最差编辑器。不过这个很难怪罪emacs，毕竟他出生的年代不用说windows，连dos都没有出生，cp/m还只是个样品。要怪只能怪windows的设计人员在考虑热键的时候根本没有考虑emacs的现有标准，自己瞎设计一通（尤其是最常用的，虽然从人机工程角度这个是最合适的键）。
+emacs更强大的特性是，可以根据当前文件的特征鉴定文件类型，并且采用正确的模式。例如，我可以在python模式下编写python程序，在C&#43;&#43;模式下编写C&#43;&#43;程序。对于用户来说，这两种模式看不出区别，然而他们本身有着非常多的细节不同。例如，在C&#43;&#43;模式下，/**/是注释，而python下，#才是注释。灵活的模式允许你使用同样的方法操作不同类型的文件，并且还具有各种扩充。对于C&#43;&#43;，他可以编译，对于python，他可以校验。并且有一些比较常用的超级扩充，例如etags。这个程序可以用来生成一些文件，帮助你找到一个符号的位置。利用这个扩充，你可以快速的寻找符号位置，自动完成，等等。这些近几年才在VSIDE和eclipse里面出现的特性，早在数十年前就出现在了emacs里面。
+如果你有程序基础，并且长期从事相似的工作，例如写程序，写文档，并且有很多重复的工作，希望解放自己的劳动力，那么推荐你使用emacs。如果你是个找酷的新新人类，希望找一个很少人用的编辑器，具有真正酷的特性，被很多人称赞，那么建议你用emacs。除此外的人，请珍爱生命，远离emacs——这东西太容易上瘾了。~~~~~~~~~~~~" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/48/" />
+<meta property="article:published_time" content="2008-12-17T11:14:00+08:00" />
+<meta property="article:modified_time" content="2008-12-17T11:14:00+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">Dec 17, 2008
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     emacs简介 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          <p>emacs一定是我梦想中的编辑器，设计者一定是个超级的混蛋。</p>
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">emacs简介</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Dec 17, 2008
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/computer/">computer</a><a class="tag" href="//blog.shell909090.org/tags/emacs/">emacs</a><a class="tag" href="//blog.shell909090.org/tags/vi/">vi</a></div></div>
+    </header>
+    <div class="post-content">
+      <p>emacs一定是我梦想中的编辑器，设计者一定是个超级的混蛋。</p>
 
 <p>emacs是一种多平台的编辑器，具有非常古老的历史，和vi一起并称为黑客常用两大编辑器（在贝壳学习linux后，就“顺带”学习了vi——因为根本没有其他选择）。作为编辑器来说，他只接受文本编辑，但是却具有收发邮件，编译软件，调试程序，甚至煮咖啡等各种诡异的非正经功能。很多人疯狂的热爱他，认为他是人工智能的结晶，化妆成编辑器的操作系统。但也有人疯狂的咒骂他，认为这东西纯粹就是折磨人用的。贝壳这次的blog，就是侃侃emacs到底是什么。</p>
 
@@ -136,169 +142,12 @@ if (!doNotTrack) {
 
 <p>如果你有程序基础，并且长期从事相似的工作，例如写程序，写文档，并且有很多重复的工作，希望解放自己的劳动力，那么推荐你使用emacs。如果你是个找酷的新新人类，希望找一个很少人用的编辑器，具有真正酷的特性，被很多人称赞，那么建议你用emacs。除此外的人，请珍爱生命，远离emacs——这东西太容易上瘾了。~~~~~~~~~~~~</p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>Dec 17, 2008</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/computer">computer</a>  <a class="category" href="//blog.shell909090.org/tags/emacs">emacs</a>  <a class="category" href="//blog.shell909090.org/tags/vi">vi</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/479/" title="U盘启动">U盘启动</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/481/" title="新年快乐">新年快乐</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

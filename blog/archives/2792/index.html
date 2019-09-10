@@ -1,122 +1,139 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>代码不小心泄漏了怎么办？ // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>代码不小心泄漏了怎么办？</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="代码不小心泄漏了怎么办？"/>
+<meta name="twitter:description" content="我靠，今天看新闻看的不能忍了。
+最开始，我看的是这条新闻 github 上 fork 了一个项目，有人发 PR 让我删掉，我该怎么办？。这个前几天比较火，各种可乐。同类的消息来源还有这里 在 GitHub 上面泄露了公司源码怎么办？。然后我在里面看到了乌云上的这个漏洞苏宁某站企业信息泄露(推广&#43;结算&#43;报表等) 。
+事实是，其实在很久以前，这个仓库已经泄漏了。比较让我想吐槽的是厂商评价，漏洞等级，中？
+中？
+中是什么概念？在本公司内部评定中，对非关键平台产生影响的漏洞被评估为低级，对关键平台产生影响的评估为中级。凡举严重信息泄漏，DOS，执行任意代码，一旦查证确实，统统是高级漏洞。根据公司规定，快速响应时间是24小时。
+那么多核心资料的上传，苏宁居然只是评价为中？送礼品卡？我靠，这种漏洞难道不是立刻评价为最高风险漏洞，然后去和github的人交涉去删除repo么？那TM在一两个月前仓库应该已经删光了。而且发现者发的居然是——礼品卡？
+也许腾讯结算工资的时候能发Q币，可是苏宁的礼品卡，这汇率怎么定呢？
+好吧，我们就先不吐槽员工的下限了，上一篇刚刚吐槽过。我们还是说正经的，你的代码要是不小心泄漏到了github上怎么办？
+首先，联系github去删除这个repo。
+其次，里面所有涉及到的关键地方都需要改掉，例如密码，内置的参数，等等。能改的全改了。
+最后，把这个代码自己开源发布出去。
+是的。仓库一旦泄漏，就永远泄漏了。一帮人在讨论github上怎么删除清空仓库，其实什么用都没有。因为那么多人，总有人会clone到本地。然后事情就变得无聊了——你难道去硬盘上删除么？
+我们也曾经发生过类似的事情。在和某著名漏洞平台合作渗透自己的时候，被白帽子拿到了一个管理用的repo，里面有一些key。结局就是严重安全漏洞。出问题的漏洞快速封闭，紧急检查泄漏情况，泄漏出去的key全部更换一遍。涉事员工点名批评，有人被吊销了权限。整套管理机制都被review一遍，拉去整改。我们检查过日志，原则上说，只有我们和攻击者（也是友方）有访问过这个repo。我们不质疑合作方的专业性，但是如果指望这就没事了，可以当作没发生过了，那么就是我们的失职和不专业。在这种情况下，就只能假设我们的这些key在外面满天飞了。幸运的是，这些key更换后就可以杜绝问题，不会因为这些key曾经泄漏导致新的key有风险。而且相关系统日志表明，攻击者并没有进一步利用这些key，数据也没有发生进一步的泄密。可见我们的合作方还是很专业的。
+后面更low的来了。twitter上有这么个消息： V2EX 上已经有回复的主题，不会被删除。请苏宁云商不要再通过各种渠道骚扰我了。你们的代码泄漏了，最重要的事情是内部控制和沟通，而不是想着来和谐整个互联网上关于这件事的讨论。 。
+我靠，第一时间被雷的天雷滚滚。
+我知道互联网上这种捂盖子的事情很普通。但是是怎么回事，离开捂盖子就不会做事做人了么？
+作为一个企业，要想安全的基础，首先是不要讳言自己不安全。你得承认，企业里面人多手杂，每个人水平也有高低之分。没有什么企业是真正安全的。但是最起码的，你得承认，自己会出事故。如果不会出事故，那我们还需要漏洞平台做什么呢？你还接受别人的警告做什么呢？这种“捂盖子”的想法，其实和漏洞评价中是一脉相承的。我大企业万世无忧，在商场上正面打败对手才是事情的要点。这种事情只是芥藓小疾不足为道，打发要饭似的打发一点，不要惹出新闻就得了。等出了问题，更多的也是考虑面子和公关问题，而不是安全问题本身——这根本不是一种对用户负责的态度。
+当然，作为公司，我们更希望漏洞的发现者和我们沟通。最好漏洞就是我们自己发现的。发现者和漏洞产生者的关系越近，漏洞上花费的成本越低。如果是同部门的，大概只要请吃顿饭。如果是同公司的，估计就会被批评一顿。如果是友商，那就可能涉及到处罚。而如果发现者都不向公司汇报漏洞了，这其实不是代表公司没事了，而是代表黑产很开心。"/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="代码不小心泄漏了怎么办？" />
+<meta property="og:description" content="我靠，今天看新闻看的不能忍了。
+最开始，我看的是这条新闻 github 上 fork 了一个项目，有人发 PR 让我删掉，我该怎么办？。这个前几天比较火，各种可乐。同类的消息来源还有这里 在 GitHub 上面泄露了公司源码怎么办？。然后我在里面看到了乌云上的这个漏洞苏宁某站企业信息泄露(推广&#43;结算&#43;报表等) 。
+事实是，其实在很久以前，这个仓库已经泄漏了。比较让我想吐槽的是厂商评价，漏洞等级，中？
+中？
+中是什么概念？在本公司内部评定中，对非关键平台产生影响的漏洞被评估为低级，对关键平台产生影响的评估为中级。凡举严重信息泄漏，DOS，执行任意代码，一旦查证确实，统统是高级漏洞。根据公司规定，快速响应时间是24小时。
+那么多核心资料的上传，苏宁居然只是评价为中？送礼品卡？我靠，这种漏洞难道不是立刻评价为最高风险漏洞，然后去和github的人交涉去删除repo么？那TM在一两个月前仓库应该已经删光了。而且发现者发的居然是——礼品卡？
+也许腾讯结算工资的时候能发Q币，可是苏宁的礼品卡，这汇率怎么定呢？
+好吧，我们就先不吐槽员工的下限了，上一篇刚刚吐槽过。我们还是说正经的，你的代码要是不小心泄漏到了github上怎么办？
+首先，联系github去删除这个repo。
+其次，里面所有涉及到的关键地方都需要改掉，例如密码，内置的参数，等等。能改的全改了。
+最后，把这个代码自己开源发布出去。
+是的。仓库一旦泄漏，就永远泄漏了。一帮人在讨论github上怎么删除清空仓库，其实什么用都没有。因为那么多人，总有人会clone到本地。然后事情就变得无聊了——你难道去硬盘上删除么？
+我们也曾经发生过类似的事情。在和某著名漏洞平台合作渗透自己的时候，被白帽子拿到了一个管理用的repo，里面有一些key。结局就是严重安全漏洞。出问题的漏洞快速封闭，紧急检查泄漏情况，泄漏出去的key全部更换一遍。涉事员工点名批评，有人被吊销了权限。整套管理机制都被review一遍，拉去整改。我们检查过日志，原则上说，只有我们和攻击者（也是友方）有访问过这个repo。我们不质疑合作方的专业性，但是如果指望这就没事了，可以当作没发生过了，那么就是我们的失职和不专业。在这种情况下，就只能假设我们的这些key在外面满天飞了。幸运的是，这些key更换后就可以杜绝问题，不会因为这些key曾经泄漏导致新的key有风险。而且相关系统日志表明，攻击者并没有进一步利用这些key，数据也没有发生进一步的泄密。可见我们的合作方还是很专业的。
+后面更low的来了。twitter上有这么个消息： V2EX 上已经有回复的主题，不会被删除。请苏宁云商不要再通过各种渠道骚扰我了。你们的代码泄漏了，最重要的事情是内部控制和沟通，而不是想着来和谐整个互联网上关于这件事的讨论。 。
+我靠，第一时间被雷的天雷滚滚。
+我知道互联网上这种捂盖子的事情很普通。但是是怎么回事，离开捂盖子就不会做事做人了么？
+作为一个企业，要想安全的基础，首先是不要讳言自己不安全。你得承认，企业里面人多手杂，每个人水平也有高低之分。没有什么企业是真正安全的。但是最起码的，你得承认，自己会出事故。如果不会出事故，那我们还需要漏洞平台做什么呢？你还接受别人的警告做什么呢？这种“捂盖子”的想法，其实和漏洞评价中是一脉相承的。我大企业万世无忧，在商场上正面打败对手才是事情的要点。这种事情只是芥藓小疾不足为道，打发要饭似的打发一点，不要惹出新闻就得了。等出了问题，更多的也是考虑面子和公关问题，而不是安全问题本身——这根本不是一种对用户负责的态度。
+当然，作为公司，我们更希望漏洞的发现者和我们沟通。最好漏洞就是我们自己发现的。发现者和漏洞产生者的关系越近，漏洞上花费的成本越低。如果是同部门的，大概只要请吃顿饭。如果是同公司的，估计就会被批评一顿。如果是友商，那就可能涉及到处罚。而如果发现者都不向公司汇报漏洞了，这其实不是代表公司没事了，而是代表黑产很开心。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2792/" />
+<meta property="article:published_time" content="2015-09-29T00:00:00+00:00" />
+<meta property="article:modified_time" content="2015-09-29T00:00:00+00:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">Sep 29, 2015
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     代码不小心泄漏了怎么办？ 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          <p>我靠，今天看新闻看的不能忍了。</p>
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">代码不小心泄漏了怎么办？</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Sep 29, 2015
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div></div>
+    </header>
+    <div class="post-content">
+      <p>我靠，今天看新闻看的不能忍了。</p>
 
 <p>最开始，我看的是这条新闻 <a href="https://v2ex.com/t/223610">github 上 fork 了一个项目，有人发 PR 让我删掉，我该怎么办？</a>。这个前几天比较火，各种可乐。同类的消息来源还有这里 <a href="http://www.zhihu.com/question/35904468">在 GitHub 上面泄露了公司源码怎么办？</a>。然后我在里面看到了乌云上的这个漏洞<a href="http://www.wooyun.org/bugs/wooyun-2010-0119349">苏宁某站企业信息泄露(推广+结算+报表等)</a>
 。</p>
@@ -154,164 +171,12 @@ if (!doNotTrack) {
 
 <p>当然，作为公司，我们更希望漏洞的发现者和我们沟通。最好漏洞就是我们自己发现的。发现者和漏洞产生者的关系越近，漏洞上花费的成本越低。如果是同部门的，大概只要请吃顿饭。如果是同公司的，估计就会被批评一顿。如果是友商，那就可能涉及到处罚。而如果发现者都不向公司汇报漏洞了，这其实不是代表公司没事了，而是代表黑产很开心。</p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>Sep 29, 2015</time>
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/2789/" title="从xcode说起——开发中的那些傻逼事">从xcode说起——开发中的那些傻逼事</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/2795/" title="印度游记-1">印度游记-1</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

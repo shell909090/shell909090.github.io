@@ -1,290 +1,125 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>babylon // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>babylon</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="babylon"/>
+<meta name="twitter:description" content="真TMD麻烦，从网络上下了一个babylon。上了破解补丁，然后发现不能安装词库。安装词库就会出现授权无效，然后八天一过就用不了了。毛主席说，自己动手，丰衣足食。拿出OllyDbg拆开研究看看。反正补丁的类型是文件改写型，不用担心太麻烦。
+不过我还是低估了babylon的难度，从昨天晚上到今天下午，经过将近一天的努力，我还是绕在babylon里面出不来。关键是我找到了显示判别无效的代码，但是在附近没有找到判别代码。NND原来他的判别代码在很久以前执行的，然后放在全局变量里面。害的我好找。然后发现判别代码分了两部分，一个是判断是否有效，一个是判断是否过期。经过一天的修改，还是没有发现过期代码的识别。不过幸好后来想到有一个现成的key，只是因为词典安装太多给识别成无效。这个好解决的很，前面的判别自动判断为有效就好了。然后跟踪后发现修改一个字节就可以暂时解决这个问题。不错不错。
+然后是写补丁的问题，我上了一个原来的补丁壳子。发现这个补丁壳子实在奇怪，明明写的是8，却按照B去编译，结果修改地址错误了，导致破解失败。更倒霉的是程序把备份文件的名字起的和网络上的补丁一样，结果按照补丁规则默认覆盖了。闹的我连原始文件都没有了……不得以只好将现在的程序备份重新安装，然后提取出一个主文件来。看来不重新写一个补丁壳子不行了，这次写的完美点……"/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="babylon" />
+<meta property="og:description" content="真TMD麻烦，从网络上下了一个babylon。上了破解补丁，然后发现不能安装词库。安装词库就会出现授权无效，然后八天一过就用不了了。毛主席说，自己动手，丰衣足食。拿出OllyDbg拆开研究看看。反正补丁的类型是文件改写型，不用担心太麻烦。
+不过我还是低估了babylon的难度，从昨天晚上到今天下午，经过将近一天的努力，我还是绕在babylon里面出不来。关键是我找到了显示判别无效的代码，但是在附近没有找到判别代码。NND原来他的判别代码在很久以前执行的，然后放在全局变量里面。害的我好找。然后发现判别代码分了两部分，一个是判断是否有效，一个是判断是否过期。经过一天的修改，还是没有发现过期代码的识别。不过幸好后来想到有一个现成的key，只是因为词典安装太多给识别成无效。这个好解决的很，前面的判别自动判断为有效就好了。然后跟踪后发现修改一个字节就可以暂时解决这个问题。不错不错。
+然后是写补丁的问题，我上了一个原来的补丁壳子。发现这个补丁壳子实在奇怪，明明写的是8，却按照B去编译，结果修改地址错误了，导致破解失败。更倒霉的是程序把备份文件的名字起的和网络上的补丁一样，结果按照补丁规则默认覆盖了。闹的我连原始文件都没有了……不得以只好将现在的程序备份重新安装，然后提取出一个主文件来。看来不重新写一个补丁壳子不行了，这次写的完美点……" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/177/" />
+<meta property="article:published_time" content="2005-06-08T00:40:42+08:00" />
+<meta property="article:modified_time" content="2005-06-08T00:40:42+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">Jun 8, 2005
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     babylon 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          <p>真TMD麻烦，从网络上下了一个babylon。上了破解补丁，然后发现不能安装词库。安装词库就会出现授权无效，然后八天一过就用不了了。毛主席说，自己动手，丰衣足食。拿出OllyDbg拆开研究看看。反正补丁的类型是文件改写型，不用担心太麻烦。</p>
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">babylon</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Jun 8, 2005
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/computer/">computer</a><a class="tag" href="//blog.shell909090.org/tags/crack/">crack</a></div></div>
+    </header>
+    <div class="post-content">
+      <p>真TMD麻烦，从网络上下了一个babylon。上了破解补丁，然后发现不能安装词库。安装词库就会出现授权无效，然后八天一过就用不了了。毛主席说，自己动手，丰衣足食。拿出OllyDbg拆开研究看看。反正补丁的类型是文件改写型，不用担心太麻烦。</p>
 
 <p>不过我还是低估了babylon的难度，从昨天晚上到今天下午，经过将近一天的努力，我还是绕在babylon里面出不来。关键是我找到了显示判别无效的代码，但是在附近没有找到判别代码。NND原来他的判别代码在很久以前执行的，然后放在全局变量里面。害的我好找。然后发现判别代码分了两部分，一个是判断是否有效，一个是判断是否过期。经过一天的修改，还是没有发现过期代码的识别。不过幸好后来想到有一个现成的key，只是因为词典安装太多给识别成无效。这个好解决的很，前面的判别自动判断为有效就好了。然后跟踪后发现修改一个字节就可以暂时解决这个问题。不错不错。</p>
 
 <p>然后是写补丁的问题，我上了一个原来的补丁壳子。发现这个补丁壳子实在奇怪，明明写的是8，却按照B去编译，结果修改地址错误了，导致破解失败。更倒霉的是程序把备份文件的名字起的和网络上的补丁一样，结果按照补丁规则默认覆盖了。闹的我连原始文件都没有了……不得以只好将现在的程序备份重新安装，然后提取出一个主文件来。看来不重新写一个补丁壳子不行了，这次写的完美点……</p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>Jun 8, 2005</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/computer">computer</a>  <a class="category" href="//blog.shell909090.org/tags/crack">crack</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/176/" title="郁闷，发不了了……">郁闷，发不了了……</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/178/" title="抱怨">抱怨</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

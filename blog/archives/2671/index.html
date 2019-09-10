@@ -1,122 +1,176 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>服务器操作系统的选择 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>服务器操作系统的选择</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="服务器操作系统的选择"/>
+<meta name="twitter:description" content="今天被LTN问了一下怎么看一个知乎问题：
+服务器操作系统应该选择 Debian/Ubuntu 还是CentOS？
+其实我觉得他的大部分说法都没有错。如果你需要装一个服务器，确实首选是RH系的。
+但是。。。
+选用RH系的主要理由 其实你把回复从头看到尾，主要论点就一点：
+哪个发行版，可以在长达7-10年的时间里，始终保持硬件稳定性的同时，又持续的升级补丁？
+结论当然是RH！这是RH的主要卖点。
+我们真的需要长达7年的硬件稳定性支持？ 咳咳，今年上半年，蔽厂的运维碰到了这么一件尴尬事。
+他们进货，去机房装系统，配置网络结构，加入运维管理系统，添加监控，交付。除去采购外，整个一套流程大概是一周。
+我们在机房里面原本大约有10个机柜，那么一般扩充的时候，一次扩充一个机柜。
+结果今年上半年的某一段时间，一周一个机柜的事情持续了两个月。运维同学辛辛苦苦装好一个机柜，周末打算轻松一下。被老大通知，又来客户了，机柜又不够用了，下周继续。
+是的，我们现在20个机柜不止。机房有多少机柜我不知道，不过照这个趋势来看，我们快把机房包下来了。现在我们的带宽已经没有限制了，每个月月底按照合同秋后算账。
+我们有一些有三年历史的服务器，台数不多。现在来看，性能已经远远不够。CPU不够快，也没有SSD，硬盘读写次数也太多。这些机器的下场，多数会被换下来折旧卖掉，或者作为测试服务器，搬去测试机房。而现在机房里面大半机器，都是两年以下历史的。而且至少一半服务器历史不超过半年（。。。）。从现状上看，把老服务器留在机房，其性价比并不合算。因为机房有机架密度问题，限制着我们的单机房极限，这相当于变相的租金。
+如果考虑到这点，我们的线上服务器生命周期大概也就三年。最多。很多时候甚至还不到。
+比我们更极端的是页游。他们的一组服务器生命周期一般是半年。半年内，要赚钱的也赚完了，不赚钱的也死完了。所以他们甚至不会新采购硬件服务器，而是直接使用虚拟机。
+当然，虚拟机内的系统，支持时间是一年还是十年，对他们一点意义都没有。
+为什么我们不喜欢三年以上的系统？ RH系的提供10年级别的维护性，我换个说法，也就是最近的软件在RH的官方库里面找不到。当然，装最新的RH是有的，但是在安装了三年的一个系统上？肯定没戏。
+怎么办？编译呗。
+这大概就是国内谈到RH必编译的由来。
+可是，我引用文内的一段话。
+如果我今天告诉大家，我要做一个 http 的服务器，我不用 apache 不用 nginx， 为了性能我要用 xxx 为基础重写一套出来。我相信绝大多数人会问同样的问题， “你觉得你写的能比 ng 好么？” 再回头看看那时候你们自己吧。  同样，自己编译的软件，补丁维护速度，能和新系统比么？而且我们还得扔一个人下去搞补丁维护。
+所以，正解是什么？
+装一套新的，把数据导过去用呗。
+我们的”数据“，都是装载在磁盘上的。而换”系统“并不需要更新这些数据，只要把系统盘擦掉重部署一遍，然后配置好deploy系统就OK。在开发之初，”环境“，”程序“和”数据“分离，就是一项基本原则。而且即使是”数据“，丢掉一台机器上的所有”数据“也不会构成问题。这应当是运维基础中的基础。只有少数几台服务器，既不能直接更换也不能停机。这些机器我们做特别的管理。
+为什么蔽厂使用Ubuntu？ 很简单。因为最初的开发希望在Linux上进行。直接在Linux上开发和测试，对于startup的快速开发是非常重要的。而开发用什么版本，服务器跟什么版本，这是最省事和好办的。如果你硬要和我争，说开发在Mac上，跑在Linux上一点事都没有。或者说开发一个发行，服务器一个发行也OK。
+我至少得说这对于golang和python都不是事实。除非不用cgo，也不用python的C扩展。
+先不提Mac下和Linux下的差异。我们今年在升14.04的时候就发现，12.04和14.04的编译互不通行。所以现在12.04的编译可以程序员自己编译了本地测，14.04的就必须在测试环境里干。一帮程序员远程tcpdump出结果，拷回本地wireshark一把。。。
+看看就蛋疼。
+当然，这也有个问题。就是上面”我们不喜欢三年以上的系统“。所以呢。明年我们的系统大概会轮换重装，14.04。。。
+也很蛋疼。
+Debian系的补丁不靠谱么？ 那要看和谁比。这里有HeartBleed事件的统计。虽然不普遍，但是我觉得这种大漏洞比较有代表性。
+CVE-2014-0160 - OpenSSL安全漏洞的非技術事件
+我引用他的重点整理：
+RedHat 修復的速度比 OpenSSL 官方還快。 RedHat 派系的修復時間，除了 RedHat 外都算慢，如 Fedora 及 CentOS、Scentific， 他們都比 RedHat 慢 16 小時以上。 Debian 派系的修復時間，如 Debian 及 Ubuntu，都比 RedHat 慢上至少 12 小時以上。 Scentific 是列表中修復最慢的。 若以資安黃金 6 小時來說，Fedora、CentOS、OpenSUSE、Gentoo 及 Scentific 都不及格。  如果和RH比，Debian的修复速度是不及格，但是和CentOS比。。。怎么说呢？6个小时对10个小时，有种五十步笑百步的味道？"/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="服务器操作系统的选择" />
+<meta property="og:description" content="今天被LTN问了一下怎么看一个知乎问题：
+服务器操作系统应该选择 Debian/Ubuntu 还是CentOS？
+其实我觉得他的大部分说法都没有错。如果你需要装一个服务器，确实首选是RH系的。
+但是。。。
+选用RH系的主要理由 其实你把回复从头看到尾，主要论点就一点：
+哪个发行版，可以在长达7-10年的时间里，始终保持硬件稳定性的同时，又持续的升级补丁？
+结论当然是RH！这是RH的主要卖点。
+我们真的需要长达7年的硬件稳定性支持？ 咳咳，今年上半年，蔽厂的运维碰到了这么一件尴尬事。
+他们进货，去机房装系统，配置网络结构，加入运维管理系统，添加监控，交付。除去采购外，整个一套流程大概是一周。
+我们在机房里面原本大约有10个机柜，那么一般扩充的时候，一次扩充一个机柜。
+结果今年上半年的某一段时间，一周一个机柜的事情持续了两个月。运维同学辛辛苦苦装好一个机柜，周末打算轻松一下。被老大通知，又来客户了，机柜又不够用了，下周继续。
+是的，我们现在20个机柜不止。机房有多少机柜我不知道，不过照这个趋势来看，我们快把机房包下来了。现在我们的带宽已经没有限制了，每个月月底按照合同秋后算账。
+我们有一些有三年历史的服务器，台数不多。现在来看，性能已经远远不够。CPU不够快，也没有SSD，硬盘读写次数也太多。这些机器的下场，多数会被换下来折旧卖掉，或者作为测试服务器，搬去测试机房。而现在机房里面大半机器，都是两年以下历史的。而且至少一半服务器历史不超过半年（。。。）。从现状上看，把老服务器留在机房，其性价比并不合算。因为机房有机架密度问题，限制着我们的单机房极限，这相当于变相的租金。
+如果考虑到这点，我们的线上服务器生命周期大概也就三年。最多。很多时候甚至还不到。
+比我们更极端的是页游。他们的一组服务器生命周期一般是半年。半年内，要赚钱的也赚完了，不赚钱的也死完了。所以他们甚至不会新采购硬件服务器，而是直接使用虚拟机。
+当然，虚拟机内的系统，支持时间是一年还是十年，对他们一点意义都没有。
+为什么我们不喜欢三年以上的系统？ RH系的提供10年级别的维护性，我换个说法，也就是最近的软件在RH的官方库里面找不到。当然，装最新的RH是有的，但是在安装了三年的一个系统上？肯定没戏。
+怎么办？编译呗。
+这大概就是国内谈到RH必编译的由来。
+可是，我引用文内的一段话。
+如果我今天告诉大家，我要做一个 http 的服务器，我不用 apache 不用 nginx， 为了性能我要用 xxx 为基础重写一套出来。我相信绝大多数人会问同样的问题， “你觉得你写的能比 ng 好么？” 再回头看看那时候你们自己吧。  同样，自己编译的软件，补丁维护速度，能和新系统比么？而且我们还得扔一个人下去搞补丁维护。
+所以，正解是什么？
+装一套新的，把数据导过去用呗。
+我们的”数据“，都是装载在磁盘上的。而换”系统“并不需要更新这些数据，只要把系统盘擦掉重部署一遍，然后配置好deploy系统就OK。在开发之初，”环境“，”程序“和”数据“分离，就是一项基本原则。而且即使是”数据“，丢掉一台机器上的所有”数据“也不会构成问题。这应当是运维基础中的基础。只有少数几台服务器，既不能直接更换也不能停机。这些机器我们做特别的管理。
+为什么蔽厂使用Ubuntu？ 很简单。因为最初的开发希望在Linux上进行。直接在Linux上开发和测试，对于startup的快速开发是非常重要的。而开发用什么版本，服务器跟什么版本，这是最省事和好办的。如果你硬要和我争，说开发在Mac上，跑在Linux上一点事都没有。或者说开发一个发行，服务器一个发行也OK。
+我至少得说这对于golang和python都不是事实。除非不用cgo，也不用python的C扩展。
+先不提Mac下和Linux下的差异。我们今年在升14.04的时候就发现，12.04和14.04的编译互不通行。所以现在12.04的编译可以程序员自己编译了本地测，14.04的就必须在测试环境里干。一帮程序员远程tcpdump出结果，拷回本地wireshark一把。。。
+看看就蛋疼。
+当然，这也有个问题。就是上面”我们不喜欢三年以上的系统“。所以呢。明年我们的系统大概会轮换重装，14.04。。。
+也很蛋疼。
+Debian系的补丁不靠谱么？ 那要看和谁比。这里有HeartBleed事件的统计。虽然不普遍，但是我觉得这种大漏洞比较有代表性。
+CVE-2014-0160 - OpenSSL安全漏洞的非技術事件
+我引用他的重点整理：
+RedHat 修復的速度比 OpenSSL 官方還快。 RedHat 派系的修復時間，除了 RedHat 外都算慢，如 Fedora 及 CentOS、Scentific， 他們都比 RedHat 慢 16 小時以上。 Debian 派系的修復時間，如 Debian 及 Ubuntu，都比 RedHat 慢上至少 12 小時以上。 Scentific 是列表中修復最慢的。 若以資安黃金 6 小時來說，Fedora、CentOS、OpenSUSE、Gentoo 及 Scentific 都不及格。  如果和RH比，Debian的修复速度是不及格，但是和CentOS比。。。怎么说呢？6个小时对10个小时，有种五十步笑百步的味道？" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2671/" />
+<meta property="article:published_time" content="2014-08-14T16:25:32+08:00" />
+<meta property="article:modified_time" content="2014-08-14T16:25:32+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">Aug 14, 2014
-     - 2 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     服务器操作系统的选择 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">服务器操作系统的选择</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Aug 14, 2014
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          2 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a></div></div>
+    </header>
+    <div class="post-content">
+      
 
 <p>今天被LTN问了一下怎么看一个知乎问题：</p>
 
@@ -395,169 +449,12 @@ obtained the centos.info and centos.org domains.[12]
 
 <p>我们没有用RHEL，都买了RH的订阅。RH的订阅非常有指导意义。</p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>Aug 14, 2014</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/linux">linux</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/2669/" title="架构师">架构师</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/2676/" title="如何分辨网站真假">如何分辨网站真假</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

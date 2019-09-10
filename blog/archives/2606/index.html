@@ -1,122 +1,152 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>携程网信用卡泄密问题 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>携程网信用卡泄密问题</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="携程网信用卡泄密问题"/>
+<meta name="twitter:description" content="事情经过 2014年3月22日晚上6点多，乌云平台报告了携程平台支付日志泄漏问题，然后信息快速传播。晚上八点左右我就得到消息。
+从描述中大致来看，应当是支付过程的各种信息都被打到了日志里面，然后日志泄漏了。
+第二天，携程发表声明。简单归纳就是几点:
+ 漏洞系调试所致。 受影响的用户为21-22日的用户，统计仅93人。 因漏洞引起损失，携程将全额赔付。  个人认为，携程的声明基本就是在推卸责任。
+过程还原 漏洞细节虽然没有暴露，但是从透露出来的信息仍然可以拼凑出部分过程。
+ 某个时间开始，携程的某个内部人员打开了线上系统的日志，用来做调试。不幸的是，日志里面包含了信用卡所有刷卡信息，而且日志可以被穷举下载。这个人是谁，什么时间开始，不知道。 22日，漏洞发现者(猪猪侠)发现了这个问题，并报告在了乌云上。 携程收到信息后，立刻关闭了调试模式。并且把系统日志拉出来看看，发现里面有一些人。于是携程就发表声明。  问题分析 在整个过程中，暴露出几个问题：
+ 携程未必是故意记录CVV信息。但是根据携程可以让用户仅提供卡号后四位就可以完成刷卡来看，携程一定是记录某些信息的，但是未受到本次漏洞影响。 交易过程所交流的数据属于机密，到底是什么人有权限打开调试日志，又没有经过严格的访问控制？是主管级以上？还是普通员工？无论哪个级别都是严重的问题。如果是普通员工，说明携程对员工的管理不到位，权限分割控制不合理。任何恶意员工可以打开日志得到数据而主管无法察觉。如果是主管以上级别则更加糟糕。说明主管根本不懂技术，也不知道如何保护客户的安全。 时间是否仅限于21-22日？如果是的话，意味着仅仅2天就被攻击者找到了漏洞。如果是偶然的话也太快了，如果是必然的话，则代表携程内部其实还有其他问题。 两天的交易仅仅是93人？没有更多？为什么只是部分用户受影响？携程并没有披露更多细节。要么是这里仍旧隐藏着漏洞，要么是携程的危机公关不到家。  评论 为什么说携程的声明是推卸责任？
+ 首先，对于受到影响的用户，只要能证明是携程的责任，无论携程是否发布声明，都可以打官司获得赔偿。携程的声明仅仅是表达了他必然受到的法律后果。如同驾驶员发表声明：“我喝醉后所撞伤的所有人，我将全额赔付其医疗费”一样，没有任何意义。而如果无法证明是携程的责任，携程当然不会管你。 携程是否隐瞒了更久以前服务器调试开启的事实？这并不好说。个人倾向于善意的揣测携程不会隐瞒，但是在行动上不妨恶意的揣测其实调试信息打开时间更长，受影响的人更多。 为什么只有93人受到影响，携程并没有公布。携程的事后分析，应当都是基于这个漏洞的特性“下载日志”而定的。其赔偿基线也是根据“下载日志就会有日志”而产生。但是是否有可能被擦脚印？或者内部人员打开日志然后关闭而逃过被抓？这些携程并不能回答。从问题分析2来看，这种可能并不能排除。而携程的声明并没有表示对这些情况负责(当然就算想要负责也无能为力)。 由于携程信息的不透明，其声明“只有93人受到影响，其他用户安全不受影响”，换个说法就是，“不接受任何赔偿请求，除非你们有足够证据”。问题是用户怎么可能有证据？证据都在携程的服务器上和拿到信息者手里。当有用户的信用卡被盗刷，如何确认是自己的责任还是携程的责任？  基于上述几点，我认为携程的声明是在推卸责任。
+建议 如果你是93人之一，当然，携程应该已经联系你换卡了。
+如果你不是93人之一，根据上文分析，携程是不会理你的。基于携程并没有透露更多的信息，也没有第三方机构佐证其说法的事实。你需要自行考量信用卡信息泄漏的风险。因此，我对所有在三年以内在携程使用过信用卡的所有用户的建议是，立刻用各种方法冻结信用卡或额度，并尽快换卡。
+我对所有人将来的建议是，远离携程直到其展现出对用户隐私和安全足够的尊重，或者关门。
+PS，你可以用下面几种方法冻结信用卡:
+ 打电话给发卡行，要求冻结。发卡行核对一些基本信息后就会帮你冻结。 使用网银将额度改为1元。根据网友反馈，建行的额度是千元为单位设定的，建议建行的用户们尽快弃卡。  信用卡的固有弱点 信用卡消费的几个要素是，卡号，CVV号，还有有效期。如果是线下消费，需要核对签名(理论上如此)。如果有设定密码，需要核对密码。
+密码的问题是，如果设定了密码，一旦信用卡被盗刷，而密码一次正确，将被视为用户责任。而且很多发卡行的跨境消费是设定了密码但是没有密码也能成功的。因此信用卡的建议是不打开密码。
+在网络使用中，这里有个很严重的不便——卡号，CVV，有效期，都是发行时即固定，不可更换。这导致一旦你将这些信息交给对方，你的安全就全由对方保护，发卡行无法帮你做任何事情。
+正常来说，应当使用密码乃至在信用卡上附上电子token来加强安全性需求。这样的话，token信息无法保存，密码可以修改。当出现携程这类问题时(或者更普遍的，当碰到有恶意的商家时)，可以通过修改密码来解决问题，不需要换卡。
+一个小故事——我和携程打交到的经历，还有我为什么幸运的逃过一劫 我在某年，使用携程订机票的时候，对方业务员让我报出身份证号。我当时就一阵错愕——难道身份证号不是应当使用手机键盘输入么？
+两者的区别在于，手机键盘输入，信息是直接输入到VI系统的电脑中，业务员只能看到尾号。而如果是业务员输入，那么他就有我的所有信息——从身份证号到信用卡号。也许我可以相信携程，但是我如何相信业务员？出了问题，我如何证明？
+所以我就向携程的客户经理投诉了这个问题。具体经历在网络安全——你需要知道的东西里面已经描述了。这里面甚至我质疑了携程保存信用卡的安全性，几乎和今天的问题类似。
+结果没多久，我打给携程的时候，丫的业务员和我说，如果你信不过我，咱们可以走这套系统。
+我了个大去，这种系统还允许旁路绕过？那有个毛线的意义？
+从此(12年年中吧)我再也没有用过携程的业务——用也是让公司同事帮我用。因此，当去年(13年某个时候)我的老卡到期，我就换用了新卡。新卡还没有在携程上用过。所以本次问题我一点事都没有。"/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="携程网信用卡泄密问题" />
+<meta property="og:description" content="事情经过 2014年3月22日晚上6点多，乌云平台报告了携程平台支付日志泄漏问题，然后信息快速传播。晚上八点左右我就得到消息。
+从描述中大致来看，应当是支付过程的各种信息都被打到了日志里面，然后日志泄漏了。
+第二天，携程发表声明。简单归纳就是几点:
+ 漏洞系调试所致。 受影响的用户为21-22日的用户，统计仅93人。 因漏洞引起损失，携程将全额赔付。  个人认为，携程的声明基本就是在推卸责任。
+过程还原 漏洞细节虽然没有暴露，但是从透露出来的信息仍然可以拼凑出部分过程。
+ 某个时间开始，携程的某个内部人员打开了线上系统的日志，用来做调试。不幸的是，日志里面包含了信用卡所有刷卡信息，而且日志可以被穷举下载。这个人是谁，什么时间开始，不知道。 22日，漏洞发现者(猪猪侠)发现了这个问题，并报告在了乌云上。 携程收到信息后，立刻关闭了调试模式。并且把系统日志拉出来看看，发现里面有一些人。于是携程就发表声明。  问题分析 在整个过程中，暴露出几个问题：
+ 携程未必是故意记录CVV信息。但是根据携程可以让用户仅提供卡号后四位就可以完成刷卡来看，携程一定是记录某些信息的，但是未受到本次漏洞影响。 交易过程所交流的数据属于机密，到底是什么人有权限打开调试日志，又没有经过严格的访问控制？是主管级以上？还是普通员工？无论哪个级别都是严重的问题。如果是普通员工，说明携程对员工的管理不到位，权限分割控制不合理。任何恶意员工可以打开日志得到数据而主管无法察觉。如果是主管以上级别则更加糟糕。说明主管根本不懂技术，也不知道如何保护客户的安全。 时间是否仅限于21-22日？如果是的话，意味着仅仅2天就被攻击者找到了漏洞。如果是偶然的话也太快了，如果是必然的话，则代表携程内部其实还有其他问题。 两天的交易仅仅是93人？没有更多？为什么只是部分用户受影响？携程并没有披露更多细节。要么是这里仍旧隐藏着漏洞，要么是携程的危机公关不到家。  评论 为什么说携程的声明是推卸责任？
+ 首先，对于受到影响的用户，只要能证明是携程的责任，无论携程是否发布声明，都可以打官司获得赔偿。携程的声明仅仅是表达了他必然受到的法律后果。如同驾驶员发表声明：“我喝醉后所撞伤的所有人，我将全额赔付其医疗费”一样，没有任何意义。而如果无法证明是携程的责任，携程当然不会管你。 携程是否隐瞒了更久以前服务器调试开启的事实？这并不好说。个人倾向于善意的揣测携程不会隐瞒，但是在行动上不妨恶意的揣测其实调试信息打开时间更长，受影响的人更多。 为什么只有93人受到影响，携程并没有公布。携程的事后分析，应当都是基于这个漏洞的特性“下载日志”而定的。其赔偿基线也是根据“下载日志就会有日志”而产生。但是是否有可能被擦脚印？或者内部人员打开日志然后关闭而逃过被抓？这些携程并不能回答。从问题分析2来看，这种可能并不能排除。而携程的声明并没有表示对这些情况负责(当然就算想要负责也无能为力)。 由于携程信息的不透明，其声明“只有93人受到影响，其他用户安全不受影响”，换个说法就是，“不接受任何赔偿请求，除非你们有足够证据”。问题是用户怎么可能有证据？证据都在携程的服务器上和拿到信息者手里。当有用户的信用卡被盗刷，如何确认是自己的责任还是携程的责任？  基于上述几点，我认为携程的声明是在推卸责任。
+建议 如果你是93人之一，当然，携程应该已经联系你换卡了。
+如果你不是93人之一，根据上文分析，携程是不会理你的。基于携程并没有透露更多的信息，也没有第三方机构佐证其说法的事实。你需要自行考量信用卡信息泄漏的风险。因此，我对所有在三年以内在携程使用过信用卡的所有用户的建议是，立刻用各种方法冻结信用卡或额度，并尽快换卡。
+我对所有人将来的建议是，远离携程直到其展现出对用户隐私和安全足够的尊重，或者关门。
+PS，你可以用下面几种方法冻结信用卡:
+ 打电话给发卡行，要求冻结。发卡行核对一些基本信息后就会帮你冻结。 使用网银将额度改为1元。根据网友反馈，建行的额度是千元为单位设定的，建议建行的用户们尽快弃卡。  信用卡的固有弱点 信用卡消费的几个要素是，卡号，CVV号，还有有效期。如果是线下消费，需要核对签名(理论上如此)。如果有设定密码，需要核对密码。
+密码的问题是，如果设定了密码，一旦信用卡被盗刷，而密码一次正确，将被视为用户责任。而且很多发卡行的跨境消费是设定了密码但是没有密码也能成功的。因此信用卡的建议是不打开密码。
+在网络使用中，这里有个很严重的不便——卡号，CVV，有效期，都是发行时即固定，不可更换。这导致一旦你将这些信息交给对方，你的安全就全由对方保护，发卡行无法帮你做任何事情。
+正常来说，应当使用密码乃至在信用卡上附上电子token来加强安全性需求。这样的话，token信息无法保存，密码可以修改。当出现携程这类问题时(或者更普遍的，当碰到有恶意的商家时)，可以通过修改密码来解决问题，不需要换卡。
+一个小故事——我和携程打交到的经历，还有我为什么幸运的逃过一劫 我在某年，使用携程订机票的时候，对方业务员让我报出身份证号。我当时就一阵错愕——难道身份证号不是应当使用手机键盘输入么？
+两者的区别在于，手机键盘输入，信息是直接输入到VI系统的电脑中，业务员只能看到尾号。而如果是业务员输入，那么他就有我的所有信息——从身份证号到信用卡号。也许我可以相信携程，但是我如何相信业务员？出了问题，我如何证明？
+所以我就向携程的客户经理投诉了这个问题。具体经历在网络安全——你需要知道的东西里面已经描述了。这里面甚至我质疑了携程保存信用卡的安全性，几乎和今天的问题类似。
+结果没多久，我打给携程的时候，丫的业务员和我说，如果你信不过我，咱们可以走这套系统。
+我了个大去，这种系统还允许旁路绕过？那有个毛线的意义？
+从此(12年年中吧)我再也没有用过携程的业务——用也是让公司同事帮我用。因此，当去年(13年某个时候)我的老卡到期，我就换用了新卡。新卡还没有在携程上用过。所以本次问题我一点事都没有。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2606/" />
+<meta property="article:published_time" content="2014-03-23T22:15:38+08:00" />
+<meta property="article:modified_time" content="2014-03-23T22:15:38+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">Mar 23, 2014
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     携程网信用卡泄密问题 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">携程网信用卡泄密问题</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Mar 23, 2014
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/security/">security</a><a class="tag" href="//blog.shell909090.org/tags/thinking/">thinking</a></div></div>
+    </header>
+    <div class="post-content">
+      
 
 <h1 id="事情经过">事情经过</h1>
 
@@ -207,169 +237,12 @@ if (!doNotTrack) {
 
 <p>从此(12年年中吧)我再也没有用过携程的业务——用也是让公司同事帮我用。因此，当去年(13年某个时候)我的老卡到期，我就换用了新卡。新卡还没有在携程上用过。所以本次问题我一点事都没有。</p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>Mar 23, 2014</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/security">security</a>  <a class="category" href="//blog.shell909090.org/tags/thinking">thinking</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/2600/" title="台湾反服贸占领立法院中，网络干了点什么">台湾反服贸占领立法院中，网络干了点什么</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/2611/" title="安全的几点快速说明">安全的几点快速说明</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

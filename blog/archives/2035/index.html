@@ -1,122 +1,184 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>关于密码——你们不知道的很多事情 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>关于密码——你们不知道的很多事情</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="关于密码——你们不知道的很多事情"/>
+<meta name="twitter:description" content="1.hash密码安全么？
+只要你的原始密码不大复杂，hash密码也完全没有安全性可言。不信？echo &lsquo;abc&rsquo; | md5sum，去www.cmd5.com，看看有没有。同样，拿你自己的密码试试看？
+注：null同学对此提出了异议，表示这个网站的可信性也值得怀疑，不要输入你自己的密码。我考虑过后觉得有道理。从基本安全性上说，网站只能收集密钥，无法收集用户，所以密码泄漏的风险不大。从我个人来说，一个网站如果爆出hash泄露，基本等同于密码泄漏。所以本质上避免问题的方法是一次一密。但是鉴于国内很多网站还是直接使用了hash（尤其是md5）保存了密码，在这个网站上输入了密码等于将自己的密码加入了字典，从而减低了安全性。
+在此，向所有被我忽悠的同学诚挚致歉。如果你在里面输入过密码，建议你将密码改为一次一密。即每个网站使用不同的密码。通常一次一密的同学不会再把自己的密码到这个网站上进行搜索了吧？
+2.国内哪些网站不是明文密码。
+我说出来你信么？再说，配合1，这个问题重要么？一次一密，经常修改才是王道，长度和频率看这篇文章《密码管理规范》。另外，现在记得去公布出来的密码表里面搜一下自己的密码。
+3.一次一密就安全了么？
+差了远了去了。你有没有在别人机器上登录的经历？你可以信任他么？你自己家里装的一堆插件你都相信么？你确定他们对你的银行密码没有兴趣？你要知道，银行开发安全插件的人和做恶意插件的人是同一个圈子的人——不会攻击就不能防范么。而且我们阴谋论一点说，你就确定这些软件商没有接到上级指令要求加入后门？现在你还敢在自己家里的机器上装中国软件么？QQ，迅雷，这些都算大软件，看着的人比较多。你自己可以搜他们抓你行为上传的文章——用谷歌搜。其他小站点的各种软件呢？你装了多少？
+4.还有哪些比较低级的情况？
+当年，有一个网站，提供一个功能。你可以在他的网站上直接登录其他邮箱。相信我，这可比这次的问题严重多了，那可是一收集一批阿。
+5.为什么我以前都不知道？
+要和你说我们有安全问题，你还用不用了？
+再说我和很多人说起过这些问题，他们当年的态度都是——没关系，反正没人会对我的信息感兴趣的。我估计这次，还有不少人会说——没关系，反正我没有CSDN帐号/人人网上面的数据看到就看到咯。
+很多人第一次知道安全问题的严重性，都是在他们丢了钱之后。往往都是莫名其妙，钱怎么丢的？
+6.那银行呢？
+银行还是相对安全的，不过你要确认银行有以下几个功能。登录失败警告功能。五次登录失败自动锁定账户，要隔天由本人解锁，解锁后最好强制更换密码。关闭网银和电话银行功能，不拿着本人身份证经过24小时以上申请不能打开。密码丢失需要一周以上的时间才允许重设。大额取款通知用户功能。
+听上去很麻烦？通常来说，越麻烦的银行越安全。以上功能都有了，并且使用了，那么银行本身而言，还是比较安全的。
+7.可是我要用网银。
+那你用U盾，而且不要用水货版的。我07年选择招行的理由是，招行是唯一当时我觉得没有安全问题的银行。现在这个列表应该加入浦发，并成为首选——对linux友好而且不容易破解。但是不要用只有手机动态密码的模式。
+有些U盾就是密码文件隐秘的放入的一个U盘，这种U盾我都可以复制出一堆来。用上这种U盾，最多满足你自己的心理因素。
+而且，更好的方法是对信用卡申请网银，而银行卡关闭（如果银行支持的话）。这样的话损失最大不超过一张信用卡可用额度，我目前的信用卡而言，最多一次损失几千——总好过几万的学费吧。同类的思路可以选择支付宝，你一次打个1000进去可以用一阵，丢了只有这1000。
+8.你知道U盾的正确用法么？
+U盾应该在需要的时候才插上去，用完立刻拔出。虽然说不像拆炸弹，不过还是插入时间越短越好。
+因为很偶尔的情况下，入侵者刚好在看你的电脑。发现U盾后，可以指挥你完成登录的网银系统进行交易。但是网银交易必须以U盾为基础，拔掉他们就干不了坏事了。
+9.为什么手机不是安全设备。
+手机安全是相对的，只能说比电脑安全。你以为手机就安全？首先，智能机上面已经满足了恶意软件存在的基础。例如小米——虽然我很喜欢他——你确定雷布斯没有在小米里面加入后门，截取你的密码再偷偷转发？现在没有——以后呢？同样，你确定你信得过苹果？将来苹果也不会出现安全漏洞？
+即使退一步说，你的手机很安全。来，把手机给我，不要看它，然后告诉我，手机里有多少软件可以读取你的本机信息，有多少可以读取短信？即使是完全安全的系统，我只要写个小游戏，号称因为需要短信分享，需要操作你的短信。你会怀疑么？我趁着你不注意，读取你的手机，和泄露出来的卡号-手机信息交叉比对。对你的卡号申请动态密码，然后让我的程序偷偷的拦下来短信，不让你知道，发送到服务器端。你是不是丢钱丢的莫名其妙？
+相信这条写到这里，九成九的用智能机的朋友已经满脸汗了——妈的这些程序能读取我的银行卡动态密码？技术上说，真可以。
+普通手机用户也别高兴，我没记错的话，GSM协议已经被破解了。就是说，我可以在你旁边拿个设备直接接受你能收到的短信。这TMD叫安全设备？
+10.那你说的keepass？
+这东西能在手机和电脑上运行，就肯定不安全。数据文件放在硬盘上的时候没问题，即使入侵者拿到也没办法。但是你输入密钥的时候有keylogger就完蛋了。
+所以我只在linux和android上用，虽然android不安全，但是目前我还不知道有keylogger。
+11.妈的，我还有什么安全的。
+这个真没有，RMS说过，安全是个笑话。让用户来完成安全更是笑话中的笑话。当然，没有用户的安全意识，银行/网站再努力也没用。但是本质上说，应当以侵犯隐私去起诉泄密单位，而且应该打下来是巨额赔偿。
+然后这个事情就会变成，各家单位纷纷表示，我们不对免费用户的信息安全负责，并且推出免责条款。然后又是扯不清的糊涂帐——如同我们今天的EULA一样。
+只是在景德镇，你连操作第一步的机会都没有。还是用脚投票，放弃一些实在不安全的公司吧。例如业界很知名的某个做恶意软件出身的公司，还有某个买了这个公司的前身的大搜索软件商。某个以动物作为Logo的公司，还有被国家大哥曝光多次的某家公司。凡是业界已经臭了名声的，最好都别用。
+12.日子还过不过了？
+淡定，我明天还会写一篇，你要注意的东西。虽然不说一定安全，不过普通用用问题不大的。"/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="关于密码——你们不知道的很多事情" />
+<meta property="og:description" content="1.hash密码安全么？
+只要你的原始密码不大复杂，hash密码也完全没有安全性可言。不信？echo &lsquo;abc&rsquo; | md5sum，去www.cmd5.com，看看有没有。同样，拿你自己的密码试试看？
+注：null同学对此提出了异议，表示这个网站的可信性也值得怀疑，不要输入你自己的密码。我考虑过后觉得有道理。从基本安全性上说，网站只能收集密钥，无法收集用户，所以密码泄漏的风险不大。从我个人来说，一个网站如果爆出hash泄露，基本等同于密码泄漏。所以本质上避免问题的方法是一次一密。但是鉴于国内很多网站还是直接使用了hash（尤其是md5）保存了密码，在这个网站上输入了密码等于将自己的密码加入了字典，从而减低了安全性。
+在此，向所有被我忽悠的同学诚挚致歉。如果你在里面输入过密码，建议你将密码改为一次一密。即每个网站使用不同的密码。通常一次一密的同学不会再把自己的密码到这个网站上进行搜索了吧？
+2.国内哪些网站不是明文密码。
+我说出来你信么？再说，配合1，这个问题重要么？一次一密，经常修改才是王道，长度和频率看这篇文章《密码管理规范》。另外，现在记得去公布出来的密码表里面搜一下自己的密码。
+3.一次一密就安全了么？
+差了远了去了。你有没有在别人机器上登录的经历？你可以信任他么？你自己家里装的一堆插件你都相信么？你确定他们对你的银行密码没有兴趣？你要知道，银行开发安全插件的人和做恶意插件的人是同一个圈子的人——不会攻击就不能防范么。而且我们阴谋论一点说，你就确定这些软件商没有接到上级指令要求加入后门？现在你还敢在自己家里的机器上装中国软件么？QQ，迅雷，这些都算大软件，看着的人比较多。你自己可以搜他们抓你行为上传的文章——用谷歌搜。其他小站点的各种软件呢？你装了多少？
+4.还有哪些比较低级的情况？
+当年，有一个网站，提供一个功能。你可以在他的网站上直接登录其他邮箱。相信我，这可比这次的问题严重多了，那可是一收集一批阿。
+5.为什么我以前都不知道？
+要和你说我们有安全问题，你还用不用了？
+再说我和很多人说起过这些问题，他们当年的态度都是——没关系，反正没人会对我的信息感兴趣的。我估计这次，还有不少人会说——没关系，反正我没有CSDN帐号/人人网上面的数据看到就看到咯。
+很多人第一次知道安全问题的严重性，都是在他们丢了钱之后。往往都是莫名其妙，钱怎么丢的？
+6.那银行呢？
+银行还是相对安全的，不过你要确认银行有以下几个功能。登录失败警告功能。五次登录失败自动锁定账户，要隔天由本人解锁，解锁后最好强制更换密码。关闭网银和电话银行功能，不拿着本人身份证经过24小时以上申请不能打开。密码丢失需要一周以上的时间才允许重设。大额取款通知用户功能。
+听上去很麻烦？通常来说，越麻烦的银行越安全。以上功能都有了，并且使用了，那么银行本身而言，还是比较安全的。
+7.可是我要用网银。
+那你用U盾，而且不要用水货版的。我07年选择招行的理由是，招行是唯一当时我觉得没有安全问题的银行。现在这个列表应该加入浦发，并成为首选——对linux友好而且不容易破解。但是不要用只有手机动态密码的模式。
+有些U盾就是密码文件隐秘的放入的一个U盘，这种U盾我都可以复制出一堆来。用上这种U盾，最多满足你自己的心理因素。
+而且，更好的方法是对信用卡申请网银，而银行卡关闭（如果银行支持的话）。这样的话损失最大不超过一张信用卡可用额度，我目前的信用卡而言，最多一次损失几千——总好过几万的学费吧。同类的思路可以选择支付宝，你一次打个1000进去可以用一阵，丢了只有这1000。
+8.你知道U盾的正确用法么？
+U盾应该在需要的时候才插上去，用完立刻拔出。虽然说不像拆炸弹，不过还是插入时间越短越好。
+因为很偶尔的情况下，入侵者刚好在看你的电脑。发现U盾后，可以指挥你完成登录的网银系统进行交易。但是网银交易必须以U盾为基础，拔掉他们就干不了坏事了。
+9.为什么手机不是安全设备。
+手机安全是相对的，只能说比电脑安全。你以为手机就安全？首先，智能机上面已经满足了恶意软件存在的基础。例如小米——虽然我很喜欢他——你确定雷布斯没有在小米里面加入后门，截取你的密码再偷偷转发？现在没有——以后呢？同样，你确定你信得过苹果？将来苹果也不会出现安全漏洞？
+即使退一步说，你的手机很安全。来，把手机给我，不要看它，然后告诉我，手机里有多少软件可以读取你的本机信息，有多少可以读取短信？即使是完全安全的系统，我只要写个小游戏，号称因为需要短信分享，需要操作你的短信。你会怀疑么？我趁着你不注意，读取你的手机，和泄露出来的卡号-手机信息交叉比对。对你的卡号申请动态密码，然后让我的程序偷偷的拦下来短信，不让你知道，发送到服务器端。你是不是丢钱丢的莫名其妙？
+相信这条写到这里，九成九的用智能机的朋友已经满脸汗了——妈的这些程序能读取我的银行卡动态密码？技术上说，真可以。
+普通手机用户也别高兴，我没记错的话，GSM协议已经被破解了。就是说，我可以在你旁边拿个设备直接接受你能收到的短信。这TMD叫安全设备？
+10.那你说的keepass？
+这东西能在手机和电脑上运行，就肯定不安全。数据文件放在硬盘上的时候没问题，即使入侵者拿到也没办法。但是你输入密钥的时候有keylogger就完蛋了。
+所以我只在linux和android上用，虽然android不安全，但是目前我还不知道有keylogger。
+11.妈的，我还有什么安全的。
+这个真没有，RMS说过，安全是个笑话。让用户来完成安全更是笑话中的笑话。当然，没有用户的安全意识，银行/网站再努力也没用。但是本质上说，应当以侵犯隐私去起诉泄密单位，而且应该打下来是巨额赔偿。
+然后这个事情就会变成，各家单位纷纷表示，我们不对免费用户的信息安全负责，并且推出免责条款。然后又是扯不清的糊涂帐——如同我们今天的EULA一样。
+只是在景德镇，你连操作第一步的机会都没有。还是用脚投票，放弃一些实在不安全的公司吧。例如业界很知名的某个做恶意软件出身的公司，还有某个买了这个公司的前身的大搜索软件商。某个以动物作为Logo的公司，还有被国家大哥曝光多次的某家公司。凡是业界已经臭了名声的，最好都别用。
+12.日子还过不过了？
+淡定，我明天还会写一篇，你要注意的东西。虽然不说一定安全，不过普通用用问题不大的。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2035/" />
+<meta property="article:published_time" content="2011-12-22T23:32:27+08:00" />
+<meta property="article:modified_time" content="2011-12-22T23:32:27+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">Dec 22, 2011
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     关于密码——你们不知道的很多事情 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          <p>1.hash密码安全么？</p>
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">关于密码——你们不知道的很多事情</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Dec 22, 2011
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/computer/">computer</a><a class="tag" href="//blog.shell909090.org/tags/crypt/">crypt</a></div></div>
+    </header>
+    <div class="post-content">
+      <p>1.hash密码安全么？</p>
 
 <p>只要你的原始密码不大复杂，hash密码也完全没有安全性可言。不信？echo &lsquo;abc&rsquo; | md5sum，去<a href="http://www.cmd5.com">www.cmd5.com</a>，看看有没有。<del>同样，拿你自己的密码试试看</del>？</p>
 
@@ -192,169 +254,12 @@ if (!doNotTrack) {
 
 <p>淡定，我明天还会写一篇，你要注意的东西。虽然不说一定安全，不过普通用用问题不大的。</p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>Dec 22, 2011</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/computer">computer</a>  <a class="category" href="//blog.shell909090.org/tags/crypt">crypt</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/2032/" title="密码为什么明文存放">密码为什么明文存放</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/2038/" title="网络安全——你需要知道的东西">网络安全——你需要知道的东西</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

@@ -1,122 +1,151 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>gpg pubkey ID碰撞 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>gpg pubkey ID碰撞</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="gpg pubkey ID碰撞"/>
+<meta name="twitter:description" content="昨天和朋友碰了个头，然后做了交叉签署。
+朋友签署完了，还没上传签署的时候。我手贱（幸好手贱）去server上update了一下我的key。结果发现多出一支key回来。
+纳尼？
+上pgp.mit.edu去搜我的邮箱，一堆key。我废弃过不少key，这就算了。有一支2014年签署的key引起了我的注意，因为ID和我的KeyID完全一致，UserID也一样。显然这是撞出来的，不过我不记得自己有做过这样的事情。
+下面是我的真实key的fp：
+ 2276 57F3 6E16 9B90 4186 2EBF 29A9 7386 0914 A01A
+ 这是有问题的那支key的fp：
+ 875D 447A E720 9037 84A0 7888 909F 2614 0914 A01A
+ 可以看到，两者最后部分完全一致，这导致两者有同样的KeyID。
+我点进去看了一下，后面一支key完全不是我的，签的情况也乱七八糟。但是UserID显然一致。然后汗毛一竖赶紧通知朋友。朋友看了一眼，果然签错成那支假的了。
+我擦，我给你写我的fp是签名留念用的吗？
+一般来说，签名很难吊销。他要是签错了，那就麻烦大了。幸好他没上传。整个删除后重新签署，这个问题总算是顺利解决。
+我继续追踪，发现有趣的事来了。
+这个key被很多人签署，其中有个人和我的签署人KeyID和UserID又和我互相签署的某人一致。这相当于攻击者不但碰撞伪造了我和他的外观一样的Key，而且连我们的互相签署关系都伪造出来了。。。
+我OO了个XX的，这是想干嘛？
+然后，某位朋友给了我这个站点：Stop it with those short PGP key IDs!
+里面提到了这种伪造碰撞的现象。
+同时，里面也提到了解决方法。
+首先，向你的gpg.conf里面加入keyid-format 0xlong，这样可以使你的ID变为64位的长ID。碰撞难度更高，当然，也更难一眼看明白谁是谁。
+其次，在写程序的时候，不要使用ShortID来指明身份了，因为这种方法显然受到了攻击。继续使用ShortID可能为你程序未来的安全性埋下隐患。
+最后，验证fp的时候一定要用纸质传递，签署的时候一定要验证完整fp。
+验证fp的时候一定要用纸质传递，签署的时候一定要验证完整fp。
+验证fp的时候一定要用纸质传递，签署的时候一定要验证完整fp。
+因为很重要所以说三遍。"/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="gpg pubkey ID碰撞" />
+<meta property="og:description" content="昨天和朋友碰了个头，然后做了交叉签署。
+朋友签署完了，还没上传签署的时候。我手贱（幸好手贱）去server上update了一下我的key。结果发现多出一支key回来。
+纳尼？
+上pgp.mit.edu去搜我的邮箱，一堆key。我废弃过不少key，这就算了。有一支2014年签署的key引起了我的注意，因为ID和我的KeyID完全一致，UserID也一样。显然这是撞出来的，不过我不记得自己有做过这样的事情。
+下面是我的真实key的fp：
+ 2276 57F3 6E16 9B90 4186 2EBF 29A9 7386 0914 A01A
+ 这是有问题的那支key的fp：
+ 875D 447A E720 9037 84A0 7888 909F 2614 0914 A01A
+ 可以看到，两者最后部分完全一致，这导致两者有同样的KeyID。
+我点进去看了一下，后面一支key完全不是我的，签的情况也乱七八糟。但是UserID显然一致。然后汗毛一竖赶紧通知朋友。朋友看了一眼，果然签错成那支假的了。
+我擦，我给你写我的fp是签名留念用的吗？
+一般来说，签名很难吊销。他要是签错了，那就麻烦大了。幸好他没上传。整个删除后重新签署，这个问题总算是顺利解决。
+我继续追踪，发现有趣的事来了。
+这个key被很多人签署，其中有个人和我的签署人KeyID和UserID又和我互相签署的某人一致。这相当于攻击者不但碰撞伪造了我和他的外观一样的Key，而且连我们的互相签署关系都伪造出来了。。。
+我OO了个XX的，这是想干嘛？
+然后，某位朋友给了我这个站点：Stop it with those short PGP key IDs!
+里面提到了这种伪造碰撞的现象。
+同时，里面也提到了解决方法。
+首先，向你的gpg.conf里面加入keyid-format 0xlong，这样可以使你的ID变为64位的长ID。碰撞难度更高，当然，也更难一眼看明白谁是谁。
+其次，在写程序的时候，不要使用ShortID来指明身份了，因为这种方法显然受到了攻击。继续使用ShortID可能为你程序未来的安全性埋下隐患。
+最后，验证fp的时候一定要用纸质传递，签署的时候一定要验证完整fp。
+验证fp的时候一定要用纸质传递，签署的时候一定要验证完整fp。
+验证fp的时候一定要用纸质传递，签署的时候一定要验证完整fp。
+因为很重要所以说三遍。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2838/" />
+<meta property="article:published_time" content="2016-07-20T00:07:59+08:00" />
+<meta property="article:modified_time" content="2016-07-20T00:07:59+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">Jul 20, 2016
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     gpg pubkey ID碰撞 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          <p>昨天和朋友碰了个头，然后做了交叉签署。</p>
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">gpg pubkey ID碰撞</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Jul 20, 2016
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div></div>
+    </header>
+    <div class="post-content">
+      <p>昨天和朋友碰了个头，然后做了交叉签署。</p>
 
 <p>朋友签署完了，还没上传签署的时候。我手贱（幸好手贱）去server上update了一下我的key。结果发现多出一支key回来。</p>
 
@@ -168,164 +197,12 @@ if (!doNotTrack) {
 
 <p>因为很重要所以说三遍。</p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>Jul 20, 2016</time>
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/2837/" title="更换blog声明">更换blog声明</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/2839/" title="CentOS 6下安装Python2.7">CentOS 6下安装Python2.7</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

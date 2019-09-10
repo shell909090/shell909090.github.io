@@ -1,122 +1,116 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>Windows系统引论 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>Windows系统引论</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Windows系统引论"/>
+<meta name="twitter:description" content="最近在开linux系统，找找发现资料那个叫……哎。到不是说少，linux号称开放源码，想要什么没有阿。问题是精论系统结构和意义的很少，一般都是讨论某个技术点如何如何的。没有大略的瞻观（当然，也有可能是英文，贝壳的E文水平看了等于没看到）。而一般系统中要做某个应用，除了经验，就是根据系统的运作方法、构架、原理等等去模拟。例如了解了file
+HANDLE这种东西后，自然会就如何将一个HiddenConsole的Output转Dump到一个windows的text中产生想法。或者了解了[\.]()系列文件后，自然会想到如何制作的ISO。当然，其实还有ATAPI的方法。如果了解了winsock的层实现流程，自然会知道防火墙如何实现。所以了解一个系统，无须了解内核的每句代码（对于windows，根本无法了解。即使是linux，了解了全部也要数年。届时你了解的也该淘汰了。）。系统主要了解其构架和思想，关键部分才了解实现。
+现在看linux系统，犹如隔纱而望。当然，系统的命令我了解了不少（其实了解了ls和man已经差不多了）。但是每个命令是哪里的？系统的目录如何设置？什么配置应该看什么地方。linux载入进程是如何实现的。（估计这个是ELF的范畴，不过肯定要先啃过内核在看的懂。否则就如同我当年不知道NativeAPI的时候看NE和PE一样）
+所以现在写一个windows系统引论，希望抛砖引玉。毕竟windows的资料全，了解时间长。所以难保还有哪位大大也写过类似文章，大家姑且看之吧。"/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="Windows系统引论" />
+<meta property="og:description" content="最近在开linux系统，找找发现资料那个叫……哎。到不是说少，linux号称开放源码，想要什么没有阿。问题是精论系统结构和意义的很少，一般都是讨论某个技术点如何如何的。没有大略的瞻观（当然，也有可能是英文，贝壳的E文水平看了等于没看到）。而一般系统中要做某个应用，除了经验，就是根据系统的运作方法、构架、原理等等去模拟。例如了解了file
+HANDLE这种东西后，自然会就如何将一个HiddenConsole的Output转Dump到一个windows的text中产生想法。或者了解了[\.]()系列文件后，自然会想到如何制作的ISO。当然，其实还有ATAPI的方法。如果了解了winsock的层实现流程，自然会知道防火墙如何实现。所以了解一个系统，无须了解内核的每句代码（对于windows，根本无法了解。即使是linux，了解了全部也要数年。届时你了解的也该淘汰了。）。系统主要了解其构架和思想，关键部分才了解实现。
+现在看linux系统，犹如隔纱而望。当然，系统的命令我了解了不少（其实了解了ls和man已经差不多了）。但是每个命令是哪里的？系统的目录如何设置？什么配置应该看什么地方。linux载入进程是如何实现的。（估计这个是ELF的范畴，不过肯定要先啃过内核在看的懂。否则就如同我当年不知道NativeAPI的时候看NE和PE一样）
+所以现在写一个windows系统引论，希望抛砖引玉。毕竟windows的资料全，了解时间长。所以难保还有哪位大大也写过类似文章，大家姑且看之吧。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/190/" />
+<meta property="article:published_time" content="2005-07-13T23:15:09+08:00" />
+<meta property="article:modified_time" content="2005-07-13T23:15:09+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">Jul 13, 2005
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     Windows系统引论 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          <p>最近在开linux系统，找找发现资料那个叫……哎。到不是说少，linux号称开放源码，想要什么没有阿。问题是精论系统结构和意义的很少，一般都是讨论某个技术点如何如何的。没有大略的瞻观（当然，也有可能是英文，贝壳的E文水平看了等于没看到）。而一般系统中要做某个应用，除了经验，就是根据系统的运作方法、构架、原理等等去模拟。例如了解了file</p>
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">Windows系统引论</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Jul 13, 2005
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a><a class="tag" href="//blog.shell909090.org/tags/windows/">windows</a></div></div>
+    </header>
+    <div class="post-content">
+      <p>最近在开linux系统，找找发现资料那个叫……哎。到不是说少，linux号称开放源码，想要什么没有阿。问题是精论系统结构和意义的很少，一般都是讨论某个技术点如何如何的。没有大略的瞻观（当然，也有可能是英文，贝壳的E文水平看了等于没看到）。而一般系统中要做某个应用，除了经验，就是根据系统的运作方法、构架、原理等等去模拟。例如了解了file</p>
 
 <p>HANDLE这种东西后，自然会就如何将一个HiddenConsole的Output转Dump到一个windows的text中产生想法。或者了解了[\.]()系列文件后，自然会想到如何制作的ISO。当然，其实还有ATAPI的方法。如果了解了winsock的层实现流程，自然会知道防火墙如何实现。所以了解一个系统，无须了解内核的每句代码（对于windows，根本无法了解。即使是linux，了解了全部也要数年。届时你了解的也该淘汰了。）。系统主要了解其构架和思想，关键部分才了解实现。</p>
 
@@ -124,169 +118,12 @@ if (!doNotTrack) {
 
 <p>所以现在写一个windows系统引论，希望抛砖引玉。毕竟windows的资料全，了解时间长。所以难保还有哪位大大也写过类似文章，大家姑且看之吧。</p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>Jul 13, 2005</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/linux">linux</a>  <a class="category" href="//blog.shell909090.org/tags/windows">windows</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/189/" title="史上最倒霉的一天">史上最倒霉的一天</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/191/" title="windows系统一">windows系统一</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

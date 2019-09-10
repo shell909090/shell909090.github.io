@@ -1,122 +1,124 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>组合翻墙方法——细节 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>组合翻墙方法——细节</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="组合翻墙方法——细节"/>
+<meta name="twitter:description" content="中国这网络，越来越没法上了。现在你访问国外禁网，就会中断连接10分钟。问题是我也不知道哪个网是禁止的&hellip;
+现在教大家一招，基本能够永久套上翻墙。理论上你就没有中招的可能，尤其适用于公司使用。
+首先是squid，这个是流量分离和缓存的关键部件。你可以用pac替代，但是这只局限于某台具体的机器，并且代理用户支持pac。squid的好处是，任何http访问都可以分流，而且无须客户端支持。甚至如果你精通squid配置，你可以配置成透明代理（cache拦截），从而避免在每台机器上修改代理配置。当然，cache拦截是有技术问题的，具体请参考这篇（http://home.arcor.de/pangj/squid/chap09.html#a6）。
+squid的配置如下：
+include /etc/squid3/gfw.conf acl localnet src [192.168.0.0/16](http://192.168.0.0/16) http\_access allow localnet http\_access allow localhost cache\_peer 127.0.0.1 parent 8123 0 no-delay no-query cache\_peer\_access 127.0.0.1 allow gfw always\_direct deny gfw never\_direct allow gfw  以上配置是允许192.168.0.0的C类内部子网访问本机，所有gfw规则的域名必须通过8123端口的上层代理，而其他的直接访问。注意以上不是完整配置，不保证可以独立运行，只保证在debian的标准配置文件的基础上，修改以上内容就可以工作。独立配置你可能还需要加入以下两句。
+http\_access deny all http\_port 3128  配置中的gfw.conf是gfw这个规则的定义文件，这个文件是由程序生成的，程序如下。注意，你系统上的python版本应当在2.5以上。
+#!/usr/bin/python from \_\_future\_\_ import with\_statement with open(&#39;gfw&#39;, &#39;r&#39;) as fi: for line in fi: print &#39;acl gfw dstdomain .%s&#39; % line.strip()  以上内容，保存为平文本，赋予执行权限后，直接执行即可。同目录下必须有一个gfw文件，平文本，里面一行保存一个域名。域名不以.开头，可以使用泛域名（例如google.com匹配www.google.com）。执行后打印出内容，所以你还需要重定向。./gfw2squid &gt; /etc/squid3/gfw.conf。当每次gfw文件升级时，你都需要重新生成，并且迫使squid加载。方法是squid -k reconfigure。
+OK，现在你有一台配置了分流的squid，然后你需要一个可以翻墙的代理。由于我的目标是看youtube，所以我采取了一个非常复杂而高性能高可靠的方案。"/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="组合翻墙方法——细节" />
+<meta property="og:description" content="中国这网络，越来越没法上了。现在你访问国外禁网，就会中断连接10分钟。问题是我也不知道哪个网是禁止的&hellip;
+现在教大家一招，基本能够永久套上翻墙。理论上你就没有中招的可能，尤其适用于公司使用。
+首先是squid，这个是流量分离和缓存的关键部件。你可以用pac替代，但是这只局限于某台具体的机器，并且代理用户支持pac。squid的好处是，任何http访问都可以分流，而且无须客户端支持。甚至如果你精通squid配置，你可以配置成透明代理（cache拦截），从而避免在每台机器上修改代理配置。当然，cache拦截是有技术问题的，具体请参考这篇（http://home.arcor.de/pangj/squid/chap09.html#a6）。
+squid的配置如下：
+include /etc/squid3/gfw.conf acl localnet src [192.168.0.0/16](http://192.168.0.0/16) http\_access allow localnet http\_access allow localhost cache\_peer 127.0.0.1 parent 8123 0 no-delay no-query cache\_peer\_access 127.0.0.1 allow gfw always\_direct deny gfw never\_direct allow gfw  以上配置是允许192.168.0.0的C类内部子网访问本机，所有gfw规则的域名必须通过8123端口的上层代理，而其他的直接访问。注意以上不是完整配置，不保证可以独立运行，只保证在debian的标准配置文件的基础上，修改以上内容就可以工作。独立配置你可能还需要加入以下两句。
+http\_access deny all http\_port 3128  配置中的gfw.conf是gfw这个规则的定义文件，这个文件是由程序生成的，程序如下。注意，你系统上的python版本应当在2.5以上。
+#!/usr/bin/python from \_\_future\_\_ import with\_statement with open(&#39;gfw&#39;, &#39;r&#39;) as fi: for line in fi: print &#39;acl gfw dstdomain .%s&#39; % line.strip()  以上内容，保存为平文本，赋予执行权限后，直接执行即可。同目录下必须有一个gfw文件，平文本，里面一行保存一个域名。域名不以.开头，可以使用泛域名（例如google.com匹配www.google.com）。执行后打印出内容，所以你还需要重定向。./gfw2squid &gt; /etc/squid3/gfw.conf。当每次gfw文件升级时，你都需要重新生成，并且迫使squid加载。方法是squid -k reconfigure。
+OK，现在你有一台配置了分流的squid，然后你需要一个可以翻墙的代理。由于我的目标是看youtube，所以我采取了一个非常复杂而高性能高可靠的方案。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/1804/" />
+<meta property="article:published_time" content="2011-05-18T09:53:48+08:00" />
+<meta property="article:modified_time" content="2011-05-18T09:53:48+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">May 18, 2011
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     组合翻墙方法——细节 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          <p>中国这网络，越来越没法上了。现在你访问国外禁网，就会中断连接10分钟。问题是我也不知道哪个网是禁止的&hellip;</p>
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">组合翻墙方法——细节</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          May 18, 2011
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/antigfw/">antigfw</a><a class="tag" href="//blog.shell909090.org/tags/gfw/">gfw</a><a class="tag" href="//blog.shell909090.org/tags/program/">program</a><a class="tag" href="//blog.shell909090.org/tags/proxy/">proxy</a></div></div>
+    </header>
+    <div class="post-content">
+      <p>中国这网络，越来越没法上了。现在你访问国外禁网，就会中断连接10分钟。问题是我也不知道哪个网是禁止的&hellip;</p>
 
 <p>现在教大家一招，基本能够永久套上翻墙。理论上你就没有中招的可能，尤其适用于公司使用。</p>
 
@@ -188,169 +190,12 @@ srvtimeout      20000
 
 <p>至于另一个核心问题，gfwlist的获得，你可以从autoproxy中提取一个，自己处理，过程很是繁琐哦。贝壳已经处理好了一个，做了签名压缩，你可以找我要。</p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>May 18, 2011</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/antigfw">antigfw</a>  <a class="category" href="//blog.shell909090.org/tags/gfw">gfw</a>  <a class="category" href="//blog.shell909090.org/tags/program">program</a>  <a class="category" href="//blog.shell909090.org/tags/proxy">proxy</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/1802/" title="debian中文初学者引导——安装">debian中文初学者引导——安装</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/1805/" title="debian中文初学者引导——办公">debian中文初学者引导——办公</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

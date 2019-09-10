@@ -1,122 +1,110 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>使用uwsgi搭建python应用 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>使用uwsgi搭建python应用</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="使用uwsgi搭建python应用"/>
+<meta name="twitter:description" content="wsgi是python的一个标准web服务接口，具体去google pep文档，不解释。在李木头的忽悠下，贝壳试用了一下uwsgi搭建python服务器，感觉还不错。 首先，贝壳将uwsgi打包成deb包，因为这东西和python基本没什么关系，就是一个标准的系统守护服务程序。其中贝壳测试了一下，uwsgi编译的时候是依赖版本的。所以请教了一下thomas，打了uwsgi2.6和uwsgi2.7两个包。没办法，mercurial对python2.7的支持不是很好，每次都出问题。具体的可以加贝壳的repos: https://home.shell909090.org/debian/ testing，然后通过一下贝壳的key，就可以直接安装uwsgi2.6了。当然，不通过key也可以，只是每次安装升级都有警告。 贝壳写了一个很简单的init.d，使用&ndash;vhost来启动uwsgi为服务模式。这种模式的好处是，uwsgi的具体执行的应用都是由nginx来确定的，因此所有的映射只需要修改nginx配置就好。uwsgi参数很多，包括可以指定内存限制，工作进程/线程，定时重启工作进程，多解释器等等。是一个高效的，功能强大的服务器。具体可以自己参考调整。最好的的地方是，uwsgi还支持virtualenv，你可以给不同的应用建立不同的工作环境，从而在环境中使用指定的包，而不是系统包。 下面是一个nginx配置的例子。 location /ticket { include uwsgi_params; uwsgi_param UWSGI_PYHOME /usr; uwsgi_param UWSGI_CHDIR /home/shell/workspace/hg/thost; uwsgi_param UWSGI_SCRIPT main; uwsgi_pass unix:/var/run/uwsgi.socket; } location /mlocate { include uwsgi_params; uwsgi_param UWSGI_PYHOME /usr; uwsgi_param UWSGI_CHDIR /home/shell/workspace/hg/thost; uwsgi_param UWSGI_SCRIPT main; uwsgi_pass unix:/var/run/uwsgi.socket; } location /hg { include uwsgi_params; uwsgi_param UWSGI_PYHOME /usr; uwsgi_param UWSGI_CHDIR /home/shell/workspace/hg; uwsgi_param UWSGI_SCRIPT hgweb; uwsgi_param SCRIPT_NAME /; uwsgi_param SERVER_NAME hgweb; uwsgi_pass unix:/var/run/uwsgi.socket; } 这里面设定了三个应用。由于贝壳不需要virtualenv，所以PYHOME设定了/usr。第一二个应用的基础路径在/home/shell/workspace/hg/thost，脚本叫做main.py。第三个应用的基础路径在/home/shell/workspace/hg，脚本叫做hgweb.py。需要注意的是，uwsgi会以模块方式导入这些脚本，然后使用其中的application对象作为wsgi处理函数。所以不要把application对象赋值放在if __name__ == &lsquo;__main__&lsquo;里面，那没用的。第三个应用指定了SCRIPT_NAME和SERVER_NAME，是因为hg的wsgi模块没有SCRIPT_NAME不工作，而这个应用和前两个不在一起，所以如果不指定SERVER_NAME会导致覆盖冲突。 这种部署模式的好处是，我可以使用一个宿主来管理所有的应用，而不必每个应用启动一个宿主，省去了多个宿主管理的麻烦。而多进程，压力分布等等问题都被uwsgi的配置系统搞定了。于是应用程序宿主做到了彻底的免管理，即装即用，只用调节性能匹配即可。具体程序配置下放到nginx中，要修改映射关系只用管理一个位置。"/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="使用uwsgi搭建python应用" />
+<meta property="og:description" content="wsgi是python的一个标准web服务接口，具体去google pep文档，不解释。在李木头的忽悠下，贝壳试用了一下uwsgi搭建python服务器，感觉还不错。 首先，贝壳将uwsgi打包成deb包，因为这东西和python基本没什么关系，就是一个标准的系统守护服务程序。其中贝壳测试了一下，uwsgi编译的时候是依赖版本的。所以请教了一下thomas，打了uwsgi2.6和uwsgi2.7两个包。没办法，mercurial对python2.7的支持不是很好，每次都出问题。具体的可以加贝壳的repos: https://home.shell909090.org/debian/ testing，然后通过一下贝壳的key，就可以直接安装uwsgi2.6了。当然，不通过key也可以，只是每次安装升级都有警告。 贝壳写了一个很简单的init.d，使用&ndash;vhost来启动uwsgi为服务模式。这种模式的好处是，uwsgi的具体执行的应用都是由nginx来确定的，因此所有的映射只需要修改nginx配置就好。uwsgi参数很多，包括可以指定内存限制，工作进程/线程，定时重启工作进程，多解释器等等。是一个高效的，功能强大的服务器。具体可以自己参考调整。最好的的地方是，uwsgi还支持virtualenv，你可以给不同的应用建立不同的工作环境，从而在环境中使用指定的包，而不是系统包。 下面是一个nginx配置的例子。 location /ticket { include uwsgi_params; uwsgi_param UWSGI_PYHOME /usr; uwsgi_param UWSGI_CHDIR /home/shell/workspace/hg/thost; uwsgi_param UWSGI_SCRIPT main; uwsgi_pass unix:/var/run/uwsgi.socket; } location /mlocate { include uwsgi_params; uwsgi_param UWSGI_PYHOME /usr; uwsgi_param UWSGI_CHDIR /home/shell/workspace/hg/thost; uwsgi_param UWSGI_SCRIPT main; uwsgi_pass unix:/var/run/uwsgi.socket; } location /hg { include uwsgi_params; uwsgi_param UWSGI_PYHOME /usr; uwsgi_param UWSGI_CHDIR /home/shell/workspace/hg; uwsgi_param UWSGI_SCRIPT hgweb; uwsgi_param SCRIPT_NAME /; uwsgi_param SERVER_NAME hgweb; uwsgi_pass unix:/var/run/uwsgi.socket; } 这里面设定了三个应用。由于贝壳不需要virtualenv，所以PYHOME设定了/usr。第一二个应用的基础路径在/home/shell/workspace/hg/thost，脚本叫做main.py。第三个应用的基础路径在/home/shell/workspace/hg，脚本叫做hgweb.py。需要注意的是，uwsgi会以模块方式导入这些脚本，然后使用其中的application对象作为wsgi处理函数。所以不要把application对象赋值放在if __name__ == &lsquo;__main__&lsquo;里面，那没用的。第三个应用指定了SCRIPT_NAME和SERVER_NAME，是因为hg的wsgi模块没有SCRIPT_NAME不工作，而这个应用和前两个不在一起，所以如果不指定SERVER_NAME会导致覆盖冲突。 这种部署模式的好处是，我可以使用一个宿主来管理所有的应用，而不必每个应用启动一个宿主，省去了多个宿主管理的麻烦。而多进程，压力分布等等问题都被uwsgi的配置系统搞定了。于是应用程序宿主做到了彻底的免管理，即装即用，只用调节性能匹配即可。具体程序配置下放到nginx中，要修改映射关系只用管理一个位置。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/1811/" />
+<meta property="article:published_time" content="2011-05-25T11:08:38+08:00" />
+<meta property="article:modified_time" content="2011-05-25T11:08:38+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">May 25, 2011
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     使用uwsgi搭建python应用 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          <p>   wsgi是python的一个标准web服务接口，具体去google
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">使用uwsgi搭建python应用</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          May 25, 2011
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/debian/">debian</a><a class="tag" href="//blog.shell909090.org/tags/nginx/">nginx</a><a class="tag" href="//blog.shell909090.org/tags/program/">program</a><a class="tag" href="//blog.shell909090.org/tags/python/">python</a><a class="tag" href="//blog.shell909090.org/tags/uwsgi/">uwsgi</a></div></div>
+    </header>
+    <div class="post-content">
+      <p>   wsgi是python的一个标准web服务接口，具体去google
 pep文档，不解释。在李木头的忽悠下，贝壳试用了一下uwsgi搭建python服务器，感觉还不错。
  
  首先，贝壳将uwsgi打包成deb包，因为这东西和python基本没什么关系，就是一个标准的系统守护服务程序。其中贝壳测试了一下，uwsgi编译的时候是依赖版本的。所以请教了一下thomas，打了uwsgi2.6和uwsgi2.7两个包。没办法，mercurial对python2.7的支持不是很好，每次都出问题。具体的可以加贝壳的repos:
@@ -146,169 +134,12 @@ __name__ ==
    
 这种部署模式的好处是，我可以使用一个宿主来管理所有的应用，而不必每个应用启动一个宿主，省去了多个宿主管理的麻烦。而多进程，压力分布等等问题都被uwsgi的配置系统搞定了。于是应用程序宿主做到了彻底的免管理，即装即用，只用调节性能匹配即可。具体程序配置下放到nginx中，要修改映射关系只用管理一个位置。</p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>May 25, 2011</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/debian">debian</a>  <a class="category" href="//blog.shell909090.org/tags/nginx">nginx</a>  <a class="category" href="//blog.shell909090.org/tags/program">program</a>  <a class="category" href="//blog.shell909090.org/tags/python">python</a>  <a class="category" href="//blog.shell909090.org/tags/uwsgi">uwsgi</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/1809/" title="debian中文初学者引导——中文化">debian中文初学者引导——中文化</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/1813/" title="上海地铁的七宗罪">上海地铁的七宗罪</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

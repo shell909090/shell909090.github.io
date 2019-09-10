@@ -1,122 +1,148 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>网络安全——你需要知道的东西 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>网络安全——你需要知道的东西</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="网络安全——你需要知道的东西"/>
+<meta name="twitter:description" content="首先，我也不是专家，如果里面有什么错漏，欢迎补充。补充和转载请注明我的blog: http://blog.shell909090.org/blog/，我会根据你的发言在上面直接修改，没同步过去可不赖我。
+要安全的使用网络/服务，你所需要注意的头两个问题就是你的安全级别和客户端的安全级别。对于零级密码，你随便在什么客户端上输入，都没有关系的。但是网银之类的最高级别密码，你不能在不可信机器上输入。什么叫不可信？别人的机器，你要相信这个人的技术和人品。自己的机器，你要在上面装了杀毒软件，没有执行过各种奇怪的程序/小游戏。这才叫可信的终端。如果你的密码在别人机器上用了，回来马上修改密码（不要在对方那里修改，没意义）。最好的方法，就是找一台旧电脑，专门装一个系统，装杀毒，用来使用网银和各种安全应用。别用深度定制版的操作系统，别人用过就重装。
+当然，大多数的人都觉得，这样好麻烦啊。好吧，你可以无视这条规则——只要你对下面的各种病毒隔离和恢复措施做的够到位，对自己的技术够自信——至少我还没有这个自信。或者你可以认为我在危言耸听，彻底无视我的建议。大部分的情况下，你都是对的。这些事情都是徒劳的白做工。不过很低的概率下，你会中招——自己考虑。
+其次，不要使用不可信的服务/产品。这条的执行力度自己考虑。一家公司，曾经做过流氓插件，你用不用他的产品？一家公司，曾经被央视曝光，你用不用他的产品？一家企业，敢于劫持客户的数据，将内容替换成自己的广告，你用不用他的服务？很多时候，我们都是别无选择，只能听天由命。不过当你有的选择的时候，尽量使用名声比较好的公司的产品。也许你觉得——这个不重要。好吧，Who care是最大的无力。
+接下来，你要注意你的个人信息。被各个地方窃取使用个人信息已经很无奈了，你自己再爆出去就是无语了。你有没有在开心上公布手机号？有没有公布自己生日？有没有写自己的邮箱地址？有没有说过自己的家庭地址？这些信息都会被用于社会工程攻击，例如伪装你朋友的邮箱给你的邮箱写信，说借我二百。。。别笑，从开心上很容易收集这样的数据，伪装和发送也很自动。
+后面一点对一些普通人可能比较困难——你要区分什么是可以信任的，什么是不可信的。下面的事情你权当笑话去听，是否照做自己判断。
+1.来电号码是不可信的，来电无法验证身份，短信和电子邮件也不行。如果你的一个朋友来电或者发消息说让你干什么事情，认证身份的最低办法是打回去。更加通用和安全的方法是共同知识验证——哎，大学的时候，我们隔壁宿舍摔断胳膊那哥们当时干啥摔断胳膊来着？伪装者怎么知道TM那倒霉孙子胳膊是怎么断的？通常人人上也不会说这个吧——除非丢的正好是人人帐号。
+2.传票是邮寄到家的，公安局找你都是上门或者通过街道。如果有人电话给你说是某法院/公安局，你不妨要他的电话和部门名称，然后打114查号，再打过去。通常情况下，不管也行——真有问题他们会上门找你的。
+3.网站什么都不能说明，即使那个网站里面有所谓的标识。例如qq.c0m（假如这个注册的出来的话）不代表腾讯，这个上面有人说你中奖一点意义都没有。即使来源真的是qq.com，那也不代表事情是真的。同样，靠谱的方法是要他的号码和部门，114查证后打过去。
+4.400电话打过去都不可信，你要是打一个400电话，和打一个民居没什么区别。对方有个声音很好听的小姐接听，还有——请稍等，我为您转接一位同事——也一点意义都没有。号码来自百度也没意义。
+5.用114电话比用百度的好处是，百度给钱就可以瞎排，这个都上央视了。114目前我还不知道有什么竞价排名的东西，所以你找一个电话多数都是靠谱的。注意，这个不绝对。
+6.手机这东西少借给别人，尤其是不熟悉的人。里面多个窃听器发信器你都不知道是谁干的。现实中没那么玄乎，也就是拿你的卡号申请动态令牌，申请前找你借五分钟手机而已。
+7.软件怎么判别是否可信？通常来说，敢开源的都是比较可信的，毕竟里面干了些什么大家都看的到。闭源的软件和服务就看你是否信的过这家公司了。
+8.对于别人推荐的玩意，尤其是朋友推荐的玩意，你最好确定一下确实是本人推荐的。即使是，我也保留的打开——技术上说，就是专门找台机器来运行。
+9.有的时候，要敏感。你打给一家订票网站，他们需要你的身份证和信用卡号，给不给？实话说，这是个风险，而且不小。很多人的问题不是评判失误，而是根本没意识到这样做的风险。要知道，目前一代身份证还没有完全废弃，万一对方拿你的身份证号伪造了一张身份证，然后申请重置密码之类的事情。虽然能不能成两说，但是这两个号码同时泄露给一家网站总归是个风险。同样的还有携程——去年我曾经向他们的客户经理投诉，他们的电话语音系统居然要我人工报卡号，身份证之类的。我说如果是电话输入系统还好说，人工操作万一你的接线员记下来怎么办？这个你能保证么？今年大家打携程电话去看看？虽然我没有完全信任携程，但是电话系统比人工系统的安全性总是高那么一点点——除非他们故意在设计时捣糨糊，明明是电话录入系统，还是能让操作员看到全部卡号。
+其实万千方案归结到后来都是八个字，多听多看，谨小慎微。会来看这篇blog的都是多听多看的，那么只要谨小慎微就好了。哪怕这谨小慎微有的时候显得有点小人和扭曲——不敢用别人的电脑上自己的帐号，不敢打开别人给的软件，不给别人玩自己的手机。到底多谨慎，看你自己觉得自己多重要。要是觉得一人吃饱全家不饿，就算全国密码泄露也与你无关。如果你觉得自己还是有点身家，有些该坚持的问题上还是要坚持一下。
+最后说一点无奈的事情。即使你上面的事情全部做到，有很多事情还是无可奈何。例如携程的问题，他们有一个业务是只需要输入卡号后四位就可以订票，很明显，这是记录过全部的卡号才可以做到的事情。如果他们的数据库泄漏，攻击者是否就可以直接从中划帐呢？外推考虑这个问题，你会发现所有输入过信用卡号的公司，无论他们是否可信，你都要假定他们保存了你的卡号信息。所以事情就只能信赖银行的信用卡系统，包括大笔消费警告，未经手消费复核，先行赔付等等。只有消费后能够复核的信用卡公司，才是可以信赖的公司。
+PS:
+另外做一点广告。全国各家涉密公司，如果你们不希望你们的管理员/操作员随意接触高级管理帐号，希望能够审查谁接触过用户账户信息，你可以用我们的系统。http://www.shterm.com/。我们目前做的是堡垒机密码托管，除了一个最高管理者外，管理员都不知道自己使用账户的密码是多少。同时，访问过用户账户信息会留下无法清除的记录，事后可以审查。
+注意：普通用户上这套系统没用！"/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="网络安全——你需要知道的东西" />
+<meta property="og:description" content="首先，我也不是专家，如果里面有什么错漏，欢迎补充。补充和转载请注明我的blog: http://blog.shell909090.org/blog/，我会根据你的发言在上面直接修改，没同步过去可不赖我。
+要安全的使用网络/服务，你所需要注意的头两个问题就是你的安全级别和客户端的安全级别。对于零级密码，你随便在什么客户端上输入，都没有关系的。但是网银之类的最高级别密码，你不能在不可信机器上输入。什么叫不可信？别人的机器，你要相信这个人的技术和人品。自己的机器，你要在上面装了杀毒软件，没有执行过各种奇怪的程序/小游戏。这才叫可信的终端。如果你的密码在别人机器上用了，回来马上修改密码（不要在对方那里修改，没意义）。最好的方法，就是找一台旧电脑，专门装一个系统，装杀毒，用来使用网银和各种安全应用。别用深度定制版的操作系统，别人用过就重装。
+当然，大多数的人都觉得，这样好麻烦啊。好吧，你可以无视这条规则——只要你对下面的各种病毒隔离和恢复措施做的够到位，对自己的技术够自信——至少我还没有这个自信。或者你可以认为我在危言耸听，彻底无视我的建议。大部分的情况下，你都是对的。这些事情都是徒劳的白做工。不过很低的概率下，你会中招——自己考虑。
+其次，不要使用不可信的服务/产品。这条的执行力度自己考虑。一家公司，曾经做过流氓插件，你用不用他的产品？一家公司，曾经被央视曝光，你用不用他的产品？一家企业，敢于劫持客户的数据，将内容替换成自己的广告，你用不用他的服务？很多时候，我们都是别无选择，只能听天由命。不过当你有的选择的时候，尽量使用名声比较好的公司的产品。也许你觉得——这个不重要。好吧，Who care是最大的无力。
+接下来，你要注意你的个人信息。被各个地方窃取使用个人信息已经很无奈了，你自己再爆出去就是无语了。你有没有在开心上公布手机号？有没有公布自己生日？有没有写自己的邮箱地址？有没有说过自己的家庭地址？这些信息都会被用于社会工程攻击，例如伪装你朋友的邮箱给你的邮箱写信，说借我二百。。。别笑，从开心上很容易收集这样的数据，伪装和发送也很自动。
+后面一点对一些普通人可能比较困难——你要区分什么是可以信任的，什么是不可信的。下面的事情你权当笑话去听，是否照做自己判断。
+1.来电号码是不可信的，来电无法验证身份，短信和电子邮件也不行。如果你的一个朋友来电或者发消息说让你干什么事情，认证身份的最低办法是打回去。更加通用和安全的方法是共同知识验证——哎，大学的时候，我们隔壁宿舍摔断胳膊那哥们当时干啥摔断胳膊来着？伪装者怎么知道TM那倒霉孙子胳膊是怎么断的？通常人人上也不会说这个吧——除非丢的正好是人人帐号。
+2.传票是邮寄到家的，公安局找你都是上门或者通过街道。如果有人电话给你说是某法院/公安局，你不妨要他的电话和部门名称，然后打114查号，再打过去。通常情况下，不管也行——真有问题他们会上门找你的。
+3.网站什么都不能说明，即使那个网站里面有所谓的标识。例如qq.c0m（假如这个注册的出来的话）不代表腾讯，这个上面有人说你中奖一点意义都没有。即使来源真的是qq.com，那也不代表事情是真的。同样，靠谱的方法是要他的号码和部门，114查证后打过去。
+4.400电话打过去都不可信，你要是打一个400电话，和打一个民居没什么区别。对方有个声音很好听的小姐接听，还有——请稍等，我为您转接一位同事——也一点意义都没有。号码来自百度也没意义。
+5.用114电话比用百度的好处是，百度给钱就可以瞎排，这个都上央视了。114目前我还不知道有什么竞价排名的东西，所以你找一个电话多数都是靠谱的。注意，这个不绝对。
+6.手机这东西少借给别人，尤其是不熟悉的人。里面多个窃听器发信器你都不知道是谁干的。现实中没那么玄乎，也就是拿你的卡号申请动态令牌，申请前找你借五分钟手机而已。
+7.软件怎么判别是否可信？通常来说，敢开源的都是比较可信的，毕竟里面干了些什么大家都看的到。闭源的软件和服务就看你是否信的过这家公司了。
+8.对于别人推荐的玩意，尤其是朋友推荐的玩意，你最好确定一下确实是本人推荐的。即使是，我也保留的打开——技术上说，就是专门找台机器来运行。
+9.有的时候，要敏感。你打给一家订票网站，他们需要你的身份证和信用卡号，给不给？实话说，这是个风险，而且不小。很多人的问题不是评判失误，而是根本没意识到这样做的风险。要知道，目前一代身份证还没有完全废弃，万一对方拿你的身份证号伪造了一张身份证，然后申请重置密码之类的事情。虽然能不能成两说，但是这两个号码同时泄露给一家网站总归是个风险。同样的还有携程——去年我曾经向他们的客户经理投诉，他们的电话语音系统居然要我人工报卡号，身份证之类的。我说如果是电话输入系统还好说，人工操作万一你的接线员记下来怎么办？这个你能保证么？今年大家打携程电话去看看？虽然我没有完全信任携程，但是电话系统比人工系统的安全性总是高那么一点点——除非他们故意在设计时捣糨糊，明明是电话录入系统，还是能让操作员看到全部卡号。
+其实万千方案归结到后来都是八个字，多听多看，谨小慎微。会来看这篇blog的都是多听多看的，那么只要谨小慎微就好了。哪怕这谨小慎微有的时候显得有点小人和扭曲——不敢用别人的电脑上自己的帐号，不敢打开别人给的软件，不给别人玩自己的手机。到底多谨慎，看你自己觉得自己多重要。要是觉得一人吃饱全家不饿，就算全国密码泄露也与你无关。如果你觉得自己还是有点身家，有些该坚持的问题上还是要坚持一下。
+最后说一点无奈的事情。即使你上面的事情全部做到，有很多事情还是无可奈何。例如携程的问题，他们有一个业务是只需要输入卡号后四位就可以订票，很明显，这是记录过全部的卡号才可以做到的事情。如果他们的数据库泄漏，攻击者是否就可以直接从中划帐呢？外推考虑这个问题，你会发现所有输入过信用卡号的公司，无论他们是否可信，你都要假定他们保存了你的卡号信息。所以事情就只能信赖银行的信用卡系统，包括大笔消费警告，未经手消费复核，先行赔付等等。只有消费后能够复核的信用卡公司，才是可以信赖的公司。
+PS:
+另外做一点广告。全国各家涉密公司，如果你们不希望你们的管理员/操作员随意接触高级管理帐号，希望能够审查谁接触过用户账户信息，你可以用我们的系统。http://www.shterm.com/。我们目前做的是堡垒机密码托管，除了一个最高管理者外，管理员都不知道自己使用账户的密码是多少。同时，访问过用户账户信息会留下无法清除的记录，事后可以审查。
+注意：普通用户上这套系统没用！" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2038/" />
+<meta property="article:published_time" content="2011-12-23T12:00:41+08:00" />
+<meta property="article:modified_time" content="2011-12-23T12:00:41+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">Dec 23, 2011
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     网络安全——你需要知道的东西 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          <p>首先，我也不是专家，如果里面有什么错漏，欢迎补充。补充和转载请注明我的blog: <a href="http://blog.shell909090.org/blog/">http://blog.shell909090.org/blog/</a>，我会根据你的发言在上面直接修改，没同步过去可不赖我。</p>
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">网络安全——你需要知道的东西</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Dec 23, 2011
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/computer/">computer</a><a class="tag" href="//blog.shell909090.org/tags/crypt/">crypt</a></div></div>
+    </header>
+    <div class="post-content">
+      <p>首先，我也不是专家，如果里面有什么错漏，欢迎补充。补充和转载请注明我的blog: <a href="http://blog.shell909090.org/blog/">http://blog.shell909090.org/blog/</a>，我会根据你的发言在上面直接修改，没同步过去可不赖我。</p>
 
 <p>要安全的使用网络/服务，你所需要注意的头两个问题就是你的安全级别和客户端的安全级别。对于零级密码，你随便在什么客户端上输入，都没有关系的。但是网银之类的最高级别密码，你不能在不可信机器上输入。什么叫不可信？别人的机器，你要相信这个人的技术和人品。自己的机器，你要在上面装了杀毒软件，没有执行过各种奇怪的程序/小游戏。这才叫可信的终端。如果你的密码在别人机器上用了，回来马上修改密码（不要在对方那里修改，没意义）。最好的方法，就是找一台旧电脑，专门装一个系统，装杀毒，用来使用网银和各种安全应用。别用深度定制版的操作系统，别人用过就重装。</p>
 
@@ -156,169 +182,12 @@ if (!doNotTrack) {
 
 <p><strong>注意：普通用户上这套系统没用！</strong></p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>Dec 23, 2011</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/computer">computer</a>  <a class="category" href="//blog.shell909090.org/tags/crypt">crypt</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/2035/" title="关于密码——你们不知道的很多事情">关于密码——你们不知道的很多事情</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/2040/" title="关于今天六点到十点间无法访问的事情">关于今天六点到十点间无法访问的事情</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

@@ -1,122 +1,168 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>python conf 2011无线组网总结和分享 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>python conf 2011无线组网总结和分享</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="python conf 2011无线组网总结和分享"/>
+<meta name="twitter:description" content="这次python conf 2011结束了，具体成败sting去总结。我主要负责网络部分，把网络部分的总结一下吧。总体来说，网络不算成功也不算失败。在现有条件下，资源没有都发挥出来。但是万幸的是，关键部分还没有掉链子。下面是具体总结。
+1.没在场地里面拉好线并且实地测定过所有地点信号的不算部署完毕。
+这次的会场平时不允许进入，只能在工作日去，所以只能在会议前一天跑现场。而且进入时没有长网线，墙壁上也没有网线接口。因此是会议前一天先根据具体环境完成了设定，支支下午去买了线，第二天早上部署的。这留下一个严重隐患，我把设备间当成了贵宾室，凭经验估计信号覆盖范围的时候出了错，信号没有覆盖到贵宾室，而且没有考虑门口。第一天的嘉宾和志愿者们，是否感觉信号像渣一样（尤其是杨毅涛）。其实这主要就是因为根本没有考虑到信号覆盖的问题所致的。
+要解决这个问题，必须先知道会场结构，包括贵宾室，设备间，签到处等等重要但是部署时又不容易想起来的地方。然后估算需要多少个多强的AP才能覆盖。例如本次的贵宾室，最佳方案是拉40米网线到贵宾室，然后再架一个AP。会场往往没有线，需要自带网线。因此最好是有人知道会场大致结构（手绘亦可，但是标注一下承重墙），然后计算AP位置和网线长度，再去购买。或者直接买一箱网线，配上水晶头打线剪自己做。会议前至少一天去部署，用android测试每个点的信号强度，最好都达到-70db以上。完成后把电线和网线都用胶带封在地上，以防绊倒。
+2.足够的AP和信号。
+在估算AP和信号的时候，这次经验是，多一个天线，信号强10db。支支的三天线AP信号明显强于我的双天线AP。AP的信号是和距离的立方成反比的，一个AP保证20-30米的无阻挡会场是没问题的。但是每穿一道墙，信号就会下降大约20db。低于-70db就开始出现大量掉包了，-80db的时候tcp重传严重，导致基本无法使用。
+一个AP可以接入的客户端是有限的，按照我看下来，大约在50上下（TP-LINK）。这个和事先估计一致。本来我想用6个AP，但是很难凑够这么多，而且带宽不足，就没借这么多。预定就是需要一些人没有设备或者接不上去的，否则就是所有人都不能顺利上网了。结果有一个AP在连接10个设备后就会崩溃，所以等于无法容纳用户。大部分用户都拥挤在同一个AP上，导致踢掉非常严重。会场峰值时刻，300人，有120个设备试图获得IP或者已经获得成功，但是AP在线只有20/50（AP1/AP2），即40%左右的设备被踢掉或者自动断开了Wifi（部分手机为了省电会发生这样的事情）。如果三个AP完好，120人在线刚刚好支撑的起来（20/50/50），但是这样的话连线设备可能还要多一些。
+下次部署的时候，除了要考虑信号覆盖问题，还要考虑预留一些AP作为备用。因为会场AP都是民用过去支持，这些设备以前也没有做过大容量测试。我只能说TP-LINK的两台机器很给力，说到50就到50，多了就不能支撑，但是不死机。有台机器就频频死机，这样就需要备机更换。
+另外，我们这次最高三个AP，因此分别设定为1/6/11频道就行了。如果AP还要多，请注意让同样频段的设备分到会场的远端。
+3.世界真的很麻烦，有的时候有位置却没有电源。
+这次电源还算给力，从墙上引出了不少拖线板，基本满足组委需求。至于普通听众就抱歉了，自带拖线板坐到边上的，互相交错给便携设备还能充个电。中间听众只有依靠地接。偏偏地接基本都拉给了组委的摄像机，周围一圈的人可以沾沾摄像机拖线板的光，其他人就只能相信电池续航了。
+我们的AP3，第二天搬到了贵宾室那个方向。反正上面只能接不到10个人，给贵宾室小规模用用还可以。结果线只有30米，拉不到贵宾室。合适的位置又没有电源。只好委屈在后门口接了一下，把贵宾室的信号提高了不到10db。
+据说有的会场更恶心，只有一两个电源接口。这种会场就必须带够插线板和移动设备来保证电力。
+3.留出会议运营所需资源。
+这次还算成功的一点，是为大会组委和志愿者/嘉宾保留了一路AP。大会的签到系统，嘉宾演讲都需要Wifi支持，为了让听众上网导致演讲失败就本末倒置了。为嘉宾保留的是AP1，上面还有一些比较活跃，或者着急使用网络的普通听众，一般大约20人左右，相对比较空。可是这个AP又不敢开放给听众使用，一使用就怕嘉宾没法演讲了。
+wifi管理者比较怕的问题，主要就是有人使用wifi下载比较大的内容。因此开始的时候，会议需要网络的时候，我都用平板监控网络使用状况。如果有人正在使用大流量，就准备踢人。幸好，大家都很安分（或者是AP上不来）。后来也就放松警惕了，结果老外演讲的时候延迟很厉害，我差点就跑去拔掉AP2的电源了。这会断开所有人的网络，但是演讲者的使用就通畅了。
+按照雨苍说的，组委wifi组一个重要任务往往就是封锁各个debian/ubuntu镜像的下载。我们这次没有出现这么恶劣的问题，谢天谢地。
+4.会场的网络使用有非常强的峰值效应
+这次会议只有2M带宽，因此我一直担心不够。后来开始看看还不错。但是休息的时候一直接到wifi很慢的投诉，空下来一直测不出。我第二天休息的时候去测试了一下，我的天，带宽全满，延时超高。说明演讲者水准很不错，大家专心听会，不怎么用网络。一休息，得，网络不够了。
+这个没法解决，要解决只有增加带宽，或者在不休息的时候再使用一些比较耗费流量的业务。一个缓解的办法是使用qos系统，但是这次dir-825没有前往会场，所以没机会调试qos系统。
+相对来说，路由器的NAT让我很放心。TP-LINK普通路由器的NAT在支撑80-90人的极限在线的时候仍然很稳健，速度不快是带宽问题，路由器没有崩溃就是万幸。
+5.根据具体情况配置。
+WEP比较节约资源，所以我们开始配置的是WEP信号。但是测试下来，苹果系统对WEP的支持非常差，基本接不上去。所以就不要节约了，使用WPA/WPA2。
+运营商的接入情况比较多变，而且很难控制。这次运营商给我们的是一个内网IP，192.168.1.2。他们已经有了一个路由器在前面。我使用了双重NAT方案，而且避开192.168.1.x网段，来避免修改它们的路由器（我们无权控制）。
+这次我们使用的是192.168.0.1&frasl;24网段，三台AP的连接模式是一主多桥。一个主router负责DHCP和NAT，其余的全部当单纯的AP使用。从1到3分别分配0.1-3的IP，2/3的DHCP关闭，1的DHCP从20开始分配起，直到254，共计最高容纳234人在线。20以前的IP让组委的人作为静态IP预留。如果还要多，建议使用192.168.2.0/23网段，最高可以容纳500人不到，足够大部分的会展使用。如果再不够——你们考虑10网段吧。
+最后的经验总结。
+1.会前勘察真的很重要，尤其是会场平面结构，承重墙位置，会场部署，电源插座位置，一定要提前至少三天确认。提前一天的时候要配好所有AP，备件和网线到会场部署，然后测试信号。
+2.会场带宽一定要大，万一实在不够大，想办法ban掉debian/ubuntu的镜像，然后做qos或者squid。
+3.自带足够材料，如果没有胶带/接线板/剪刀，那很多事情就要抓瞎。
+4.据说TP-LINK之类的路由器在人数多到一定程度的时候会自爆，推荐使用高级设备或者电脑来做NAT/DHCP。不过我至少肯定100人的时候还没问题。"/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="python conf 2011无线组网总结和分享" />
+<meta property="og:description" content="这次python conf 2011结束了，具体成败sting去总结。我主要负责网络部分，把网络部分的总结一下吧。总体来说，网络不算成功也不算失败。在现有条件下，资源没有都发挥出来。但是万幸的是，关键部分还没有掉链子。下面是具体总结。
+1.没在场地里面拉好线并且实地测定过所有地点信号的不算部署完毕。
+这次的会场平时不允许进入，只能在工作日去，所以只能在会议前一天跑现场。而且进入时没有长网线，墙壁上也没有网线接口。因此是会议前一天先根据具体环境完成了设定，支支下午去买了线，第二天早上部署的。这留下一个严重隐患，我把设备间当成了贵宾室，凭经验估计信号覆盖范围的时候出了错，信号没有覆盖到贵宾室，而且没有考虑门口。第一天的嘉宾和志愿者们，是否感觉信号像渣一样（尤其是杨毅涛）。其实这主要就是因为根本没有考虑到信号覆盖的问题所致的。
+要解决这个问题，必须先知道会场结构，包括贵宾室，设备间，签到处等等重要但是部署时又不容易想起来的地方。然后估算需要多少个多强的AP才能覆盖。例如本次的贵宾室，最佳方案是拉40米网线到贵宾室，然后再架一个AP。会场往往没有线，需要自带网线。因此最好是有人知道会场大致结构（手绘亦可，但是标注一下承重墙），然后计算AP位置和网线长度，再去购买。或者直接买一箱网线，配上水晶头打线剪自己做。会议前至少一天去部署，用android测试每个点的信号强度，最好都达到-70db以上。完成后把电线和网线都用胶带封在地上，以防绊倒。
+2.足够的AP和信号。
+在估算AP和信号的时候，这次经验是，多一个天线，信号强10db。支支的三天线AP信号明显强于我的双天线AP。AP的信号是和距离的立方成反比的，一个AP保证20-30米的无阻挡会场是没问题的。但是每穿一道墙，信号就会下降大约20db。低于-70db就开始出现大量掉包了，-80db的时候tcp重传严重，导致基本无法使用。
+一个AP可以接入的客户端是有限的，按照我看下来，大约在50上下（TP-LINK）。这个和事先估计一致。本来我想用6个AP，但是很难凑够这么多，而且带宽不足，就没借这么多。预定就是需要一些人没有设备或者接不上去的，否则就是所有人都不能顺利上网了。结果有一个AP在连接10个设备后就会崩溃，所以等于无法容纳用户。大部分用户都拥挤在同一个AP上，导致踢掉非常严重。会场峰值时刻，300人，有120个设备试图获得IP或者已经获得成功，但是AP在线只有20/50（AP1/AP2），即40%左右的设备被踢掉或者自动断开了Wifi（部分手机为了省电会发生这样的事情）。如果三个AP完好，120人在线刚刚好支撑的起来（20/50/50），但是这样的话连线设备可能还要多一些。
+下次部署的时候，除了要考虑信号覆盖问题，还要考虑预留一些AP作为备用。因为会场AP都是民用过去支持，这些设备以前也没有做过大容量测试。我只能说TP-LINK的两台机器很给力，说到50就到50，多了就不能支撑，但是不死机。有台机器就频频死机，这样就需要备机更换。
+另外，我们这次最高三个AP，因此分别设定为1/6/11频道就行了。如果AP还要多，请注意让同样频段的设备分到会场的远端。
+3.世界真的很麻烦，有的时候有位置却没有电源。
+这次电源还算给力，从墙上引出了不少拖线板，基本满足组委需求。至于普通听众就抱歉了，自带拖线板坐到边上的，互相交错给便携设备还能充个电。中间听众只有依靠地接。偏偏地接基本都拉给了组委的摄像机，周围一圈的人可以沾沾摄像机拖线板的光，其他人就只能相信电池续航了。
+我们的AP3，第二天搬到了贵宾室那个方向。反正上面只能接不到10个人，给贵宾室小规模用用还可以。结果线只有30米，拉不到贵宾室。合适的位置又没有电源。只好委屈在后门口接了一下，把贵宾室的信号提高了不到10db。
+据说有的会场更恶心，只有一两个电源接口。这种会场就必须带够插线板和移动设备来保证电力。
+3.留出会议运营所需资源。
+这次还算成功的一点，是为大会组委和志愿者/嘉宾保留了一路AP。大会的签到系统，嘉宾演讲都需要Wifi支持，为了让听众上网导致演讲失败就本末倒置了。为嘉宾保留的是AP1，上面还有一些比较活跃，或者着急使用网络的普通听众，一般大约20人左右，相对比较空。可是这个AP又不敢开放给听众使用，一使用就怕嘉宾没法演讲了。
+wifi管理者比较怕的问题，主要就是有人使用wifi下载比较大的内容。因此开始的时候，会议需要网络的时候，我都用平板监控网络使用状况。如果有人正在使用大流量，就准备踢人。幸好，大家都很安分（或者是AP上不来）。后来也就放松警惕了，结果老外演讲的时候延迟很厉害，我差点就跑去拔掉AP2的电源了。这会断开所有人的网络，但是演讲者的使用就通畅了。
+按照雨苍说的，组委wifi组一个重要任务往往就是封锁各个debian/ubuntu镜像的下载。我们这次没有出现这么恶劣的问题，谢天谢地。
+4.会场的网络使用有非常强的峰值效应
+这次会议只有2M带宽，因此我一直担心不够。后来开始看看还不错。但是休息的时候一直接到wifi很慢的投诉，空下来一直测不出。我第二天休息的时候去测试了一下，我的天，带宽全满，延时超高。说明演讲者水准很不错，大家专心听会，不怎么用网络。一休息，得，网络不够了。
+这个没法解决，要解决只有增加带宽，或者在不休息的时候再使用一些比较耗费流量的业务。一个缓解的办法是使用qos系统，但是这次dir-825没有前往会场，所以没机会调试qos系统。
+相对来说，路由器的NAT让我很放心。TP-LINK普通路由器的NAT在支撑80-90人的极限在线的时候仍然很稳健，速度不快是带宽问题，路由器没有崩溃就是万幸。
+5.根据具体情况配置。
+WEP比较节约资源，所以我们开始配置的是WEP信号。但是测试下来，苹果系统对WEP的支持非常差，基本接不上去。所以就不要节约了，使用WPA/WPA2。
+运营商的接入情况比较多变，而且很难控制。这次运营商给我们的是一个内网IP，192.168.1.2。他们已经有了一个路由器在前面。我使用了双重NAT方案，而且避开192.168.1.x网段，来避免修改它们的路由器（我们无权控制）。
+这次我们使用的是192.168.0.1&frasl;24网段，三台AP的连接模式是一主多桥。一个主router负责DHCP和NAT，其余的全部当单纯的AP使用。从1到3分别分配0.1-3的IP，2/3的DHCP关闭，1的DHCP从20开始分配起，直到254，共计最高容纳234人在线。20以前的IP让组委的人作为静态IP预留。如果还要多，建议使用192.168.2.0/23网段，最高可以容纳500人不到，足够大部分的会展使用。如果再不够——你们考虑10网段吧。
+最后的经验总结。
+1.会前勘察真的很重要，尤其是会场平面结构，承重墙位置，会场部署，电源插座位置，一定要提前至少三天确认。提前一天的时候要配好所有AP，备件和网线到会场部署，然后测试信号。
+2.会场带宽一定要大，万一实在不够大，想办法ban掉debian/ubuntu的镜像，然后做qos或者squid。
+3.自带足够材料，如果没有胶带/接线板/剪刀，那很多事情就要抓瞎。
+4.据说TP-LINK之类的路由器在人数多到一定程度的时候会自爆，推荐使用高级设备或者电脑来做NAT/DHCP。不过我至少肯定100人的时候还没问题。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2002/" />
+<meta property="article:published_time" content="2011-12-05T10:44:38+08:00" />
+<meta property="article:modified_time" content="2011-12-05T10:44:38+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">Dec 5, 2011
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     python conf 2011无线组网总结和分享 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          <p>这次python conf 2011结束了，具体成败sting去总结。我主要负责网络部分，把网络部分的总结一下吧。总体来说，网络不算成功也不算失败。在现有条件下，资源没有都发挥出来。但是万幸的是，关键部分还没有掉链子。下面是具体总结。</p>
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">python conf 2011无线组网总结和分享</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Dec 5, 2011
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/computer/">computer</a><a class="tag" href="//blog.shell909090.org/tags/network/">network</a><a class="tag" href="//blog.shell909090.org/tags/python/">python</a><a class="tag" href="//blog.shell909090.org/tags/wifi/">wifi</a></div></div>
+    </header>
+    <div class="post-content">
+      <p>这次python conf 2011结束了，具体成败sting去总结。我主要负责网络部分，把网络部分的总结一下吧。总体来说，网络不算成功也不算失败。在现有条件下，资源没有都发挥出来。但是万幸的是，关键部分还没有掉链子。下面是具体总结。</p>
 
 <p>1.没在场地里面拉好线并且实地测定过所有地点信号的不算部署完毕。</p>
 
@@ -176,169 +222,12 @@ if (!doNotTrack) {
 
 <p>4.据说TP-LINK之类的路由器在人数多到一定程度的时候会自爆，推荐使用高级设备或者电脑来做NAT/DHCP。不过我至少肯定100人的时候还没问题。</p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>Dec 5, 2011</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/computer">computer</a>  <a class="category" href="//blog.shell909090.org/tags/network">network</a>  <a class="category" href="//blog.shell909090.org/tags/python">python</a>  <a class="category" href="//blog.shell909090.org/tags/wifi">wifi</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/2000/" title="从网页中爬链接的一个小技巧">从网页中爬链接的一个小技巧</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/2004/" title="拨号的几个简化">拨号的几个简化</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

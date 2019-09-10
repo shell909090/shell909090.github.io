@@ -1,122 +1,124 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>debian中文初学者引导——上网 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>debian中文初学者引导——上网</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="debian中文初学者引导——上网"/>
+<meta name="twitter:description" content="上网是linux系统的一大强项，除了那个变态的QQ外。
+通常而言，上网指的是网络三大基础应用，浏览器，IM工具，电子邮件。最后一个我们介绍过了，那么我们就集中介绍一下linux的两大杀手级浏览器。firefox和chrome。
+firefox是debian内置的，不过用的是开放分支，iceweasel。其实主要就是改个名字换个图标做做兼容性测试打几个下游补丁什么的，内核还是一样的，版本号和firefox都保持一致。目前testing下的firefox还是3，不过估计很快就会升到4。firefox下有很多插件，你可以挑选部分来安装，改善浏览器特性。记得linux是一个多用户系统么？对了，你在firefox下安装的插件(addons)都是针对个人起效的。所以，你老婆安装了一堆插件，对你不会构成任何干扰。如果你打算全局安装，可以用apt-get来安装部分插件。
+用firefox的话，你可能疑惑flash插件怎么装。系统会给你默认安装拉，不过那个非常不好用。你需要用non-free版本的flashplugin-nonfree，直接从仓库中可以下到。注意这个组件是x86 only的，如果你用64好像要自己装ia32来做模拟，否则无法生效。如果连这个都说版本太老，就去adobe的网站上弄个最新linux版本回来，for debian或者for ubuntu都可以，自己装。
+chrome的安装使用就比firefox简单很多了，直接去这里( http://www.google.com/chrome/ )下载合适的包，安装后，你的系统/etc/apt/sources.list.d/位置下会多出一个google-chrome.list，每次update的时候会检查google的仓库，跟随升级。这点chrome做的非常无缝，你基本没有感觉。
+另外就是IM软件的选用。国内装机量最大的是QQ，不过鉴于我对企鹅这厮没什么好感，我强烈不推荐你用QQ。整个开源社区做QQ兼容做了不下三次(QQ for pidgin, luma, eva)，还都是在未公布资料的黑盒情况下做的。每次都被腾讯改协议给封掉。自己出了个linuxqq，做的烂不说，还多年不升级，也不管客户反应。微软就算讨厌开源，也好歹没有封杀开源办公软件兼容他的文件格式。既然这厮不打算支持开源，那么开源也不打算支持他。你非要用，可以用webqq，或者很痛苦的用linuxqq。有不支持的功能，请打电话给腾讯吧。
+linux下用的比较多的IM还是gtalk,msn和skype三种。不得不感慨大中华局域网的威力，国内和国外的东西都不一样的。国外好用的东西就是进不来，国内的山寨货大家玩的不亦乐乎。首先是最多的gtalk，这个东西什么都不支持。没有定制表情，不一定能传输文件，没有远程协作。那为什么列为第一推荐IM呢？因为这个东西就是为了随时通讯而生的。支持gmail内置客户端，可以在无客户端的情况下用网页使用（这也就是为什么不一定能传输文件的原因）。支持几乎所有的第三方客户端，支持手机，强安全通讯。（腾讯的另外一个问题是，在同一个网段内的人可能可以获得你的聊天记录）并且，这是我所知唯一能同时在多个地点登录的IM工具。你可以在地铁上通过手机聊天，到了公司后直接登录，不必担心手机和电脑互相提下线的问题。电脑关机，手机持续在线。
+MSN是老牌IM，不过微软逐步淡化了这个系统。某个版本后居然需要安装100M&#43;的客户端，我就没在windows下继续使用。但是linux下的pidgin可以同时支持gtalk(协议是jabber)和MSN，开一个软件可同时登录多个账户，也不需要一个超级庞大不知道干了点啥的客户端，非常方便。skype是国外知名的IM工具，特点是音频支持能力，说白了基本当电话来用的，在国内发行的版本有记录聊天记录的问题。linux下要使用skype需要独立下载软件，pidgin-skype这个东西居然要skype在运行才能使用，这不是扯淡么？贝壳的repos里面有skype的安装包，你也可以去下载官网的安装包，应该没什么问题。不过最近这厮被微软收购了，也不知道将来命运如何。"/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="debian中文初学者引导——上网" />
+<meta property="og:description" content="上网是linux系统的一大强项，除了那个变态的QQ外。
+通常而言，上网指的是网络三大基础应用，浏览器，IM工具，电子邮件。最后一个我们介绍过了，那么我们就集中介绍一下linux的两大杀手级浏览器。firefox和chrome。
+firefox是debian内置的，不过用的是开放分支，iceweasel。其实主要就是改个名字换个图标做做兼容性测试打几个下游补丁什么的，内核还是一样的，版本号和firefox都保持一致。目前testing下的firefox还是3，不过估计很快就会升到4。firefox下有很多插件，你可以挑选部分来安装，改善浏览器特性。记得linux是一个多用户系统么？对了，你在firefox下安装的插件(addons)都是针对个人起效的。所以，你老婆安装了一堆插件，对你不会构成任何干扰。如果你打算全局安装，可以用apt-get来安装部分插件。
+用firefox的话，你可能疑惑flash插件怎么装。系统会给你默认安装拉，不过那个非常不好用。你需要用non-free版本的flashplugin-nonfree，直接从仓库中可以下到。注意这个组件是x86 only的，如果你用64好像要自己装ia32来做模拟，否则无法生效。如果连这个都说版本太老，就去adobe的网站上弄个最新linux版本回来，for debian或者for ubuntu都可以，自己装。
+chrome的安装使用就比firefox简单很多了，直接去这里( http://www.google.com/chrome/ )下载合适的包，安装后，你的系统/etc/apt/sources.list.d/位置下会多出一个google-chrome.list，每次update的时候会检查google的仓库，跟随升级。这点chrome做的非常无缝，你基本没有感觉。
+另外就是IM软件的选用。国内装机量最大的是QQ，不过鉴于我对企鹅这厮没什么好感，我强烈不推荐你用QQ。整个开源社区做QQ兼容做了不下三次(QQ for pidgin, luma, eva)，还都是在未公布资料的黑盒情况下做的。每次都被腾讯改协议给封掉。自己出了个linuxqq，做的烂不说，还多年不升级，也不管客户反应。微软就算讨厌开源，也好歹没有封杀开源办公软件兼容他的文件格式。既然这厮不打算支持开源，那么开源也不打算支持他。你非要用，可以用webqq，或者很痛苦的用linuxqq。有不支持的功能，请打电话给腾讯吧。
+linux下用的比较多的IM还是gtalk,msn和skype三种。不得不感慨大中华局域网的威力，国内和国外的东西都不一样的。国外好用的东西就是进不来，国内的山寨货大家玩的不亦乐乎。首先是最多的gtalk，这个东西什么都不支持。没有定制表情，不一定能传输文件，没有远程协作。那为什么列为第一推荐IM呢？因为这个东西就是为了随时通讯而生的。支持gmail内置客户端，可以在无客户端的情况下用网页使用（这也就是为什么不一定能传输文件的原因）。支持几乎所有的第三方客户端，支持手机，强安全通讯。（腾讯的另外一个问题是，在同一个网段内的人可能可以获得你的聊天记录）并且，这是我所知唯一能同时在多个地点登录的IM工具。你可以在地铁上通过手机聊天，到了公司后直接登录，不必担心手机和电脑互相提下线的问题。电脑关机，手机持续在线。
+MSN是老牌IM，不过微软逐步淡化了这个系统。某个版本后居然需要安装100M&#43;的客户端，我就没在windows下继续使用。但是linux下的pidgin可以同时支持gtalk(协议是jabber)和MSN，开一个软件可同时登录多个账户，也不需要一个超级庞大不知道干了点啥的客户端，非常方便。skype是国外知名的IM工具，特点是音频支持能力，说白了基本当电话来用的，在国内发行的版本有记录聊天记录的问题。linux下要使用skype需要独立下载软件，pidgin-skype这个东西居然要skype在运行才能使用，这不是扯淡么？贝壳的repos里面有skype的安装包，你也可以去下载官网的安装包，应该没什么问题。不过最近这厮被微软收购了，也不知道将来命运如何。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/1806/" />
+<meta property="article:published_time" content="2011-05-20T13:46:38+08:00" />
+<meta property="article:modified_time" content="2011-05-20T13:46:38+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">May 20, 2011
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     debian中文初学者引导——上网 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          <p>上网是linux系统的一大强项，除了那个变态的QQ外。</p>
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">debian中文初学者引导——上网</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          May 20, 2011
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/debian/">debian</a><a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a></div></div>
+    </header>
+    <div class="post-content">
+      <p>上网是linux系统的一大强项，除了那个变态的QQ外。</p>
 
 <p>通常而言，上网指的是网络三大基础应用，浏览器，IM工具，电子邮件。最后一个我们介绍过了，那么我们就集中介绍一下linux的两大杀手级浏览器。firefox和chrome。</p>
 
@@ -132,169 +134,12 @@ if (!doNotTrack) {
 
 <p>MSN是老牌IM，不过微软逐步淡化了这个系统。某个版本后居然需要安装100M+的客户端，我就没在windows下继续使用。但是linux下的pidgin可以同时支持gtalk(协议是jabber)和MSN，开一个软件可同时登录多个账户，也不需要一个超级庞大不知道干了点啥的客户端，非常方便。skype是国外知名的IM工具，特点是音频支持能力，说白了基本当电话来用的，在国内发行的版本有记录聊天记录的问题。linux下要使用skype需要独立下载软件，pidgin-skype这个东西居然要skype在运行才能使用，这不是扯淡么？贝壳的repos里面有skype的安装包，你也可以去下载官网的安装包，应该没什么问题。不过最近这厮被微软收购了，也不知道将来命运如何。</p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>May 20, 2011</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/debian">debian</a>  <a class="category" href="//blog.shell909090.org/tags/linux">linux</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/1805/" title="debian中文初学者引导——办公">debian中文初学者引导——办公</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/1809/" title="debian中文初学者引导——中文化">debian中文初学者引导——中文化</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

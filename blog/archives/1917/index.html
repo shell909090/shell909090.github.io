@@ -1,122 +1,138 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>合用两个路由器的几种方案 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>合用两个路由器的几种方案</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="合用两个路由器的几种方案"/>
+<meta name="twitter:description" content="为什么用两个路由器？最常见的理由是延长信号。在超级大的场地中，中间放一个路由器，用四根线连接到周围的几个路由器上面，信号覆盖整个场地。这是最常见的理由。也有可能是因为你的主路由器LAN接口不足了。当然，也可能是因为蛋疼，或者其他原因。不论如何，为了在多个路由器上达到同时上网的目的，你有以下几个选项。桥接模式，路由模式，双层NAT模式。
+我先解说一下一些基础的环境。我假定你有一个互联网线，有一个路由器的WAN口接到了互联网上面，这个路由器称为M。其他路由器分别称为S1,S2&hellip;。直接连接到M的LAN口的电脑称为ML1,ML2&hellip;，通过无线连接的就称为MW1,MW1&hellip;。同样，连接到路由器S1的LAN和无线的分别叫做S1L1,S1W1，类推。
+1.桥接模式
+这是你第一个应当尝试的模式，连接方法是路由器S1的LAN口直接连接路由器M的LAN口。这个模式不一定能够配通，原因是因为要求路由器S必须支持桥接模式。基于某些理由，很多路由器并不支持桥接。一般来说，有可能LAN口支持桥接而WIFI不支持。因此S1L1支持桥接成功的概率比S1W1支持桥接成功的概率高。如果你需要一台支持桥接的路由器，TP-LINK的TL-WR*系列路由器好像大多支持。希望大家补充哪款路由器支持桥接或者不支持。
+桥接是将路由器S完全的作为一个交换机使用，所以你的ML1和S1L1在同一个网段，两者可以互相ping通，发送各种包，也可以看到对方的广播。这种模式一旦连接成功，连接模式是透明的。因此，应当关闭DHCP，只启用一台路由器的DHCP功能。或者最好手工分配IP。
+严格来说，只有S是一个无线路由的时候，这个模式才叫做桥接。如果只做有线连接，这个模式应当叫做交换模式。
+2.路由模式
+路由模式，是一个比桥接复杂，效果好，但是用途相对比较窄的方案。接法是路由器S1的WAN口连接路由器M的LAN口，并且为S手工指定IP，再关闭S的NAT功能。M的网段和S的网段必须不为同一个网段，例如M配置为192.168.0.0/24网段，S配置为192.168.1.0/24网段。S的WAN口手工指定为192.168.0.2。然后在M1上配置人工路由，将192.168.1.0的所有包交由路由器192.168.0.2处理。并在S1上配置默认路由为192.168.0.1(M的地址)。
+这个模式是将路由器S和M作为路由器使用。当S1L1发送包时，会被S1转发到M去处理。而M收到要发送给S1L1的包时，会交由S1处理。这一模式能够工作的基础是你能够控制M的路由表，并且S可以关闭NAT。通常情况下，这个S最好是OpenWRT/DDWRT。这也是为什么用途比较窄的原因，毕竟支持桥接的路由器好找，OpenWRT/DDWRT就相对小众了。
+当这个模式连接完成后，ML1和S1L1在不同网段，但是两者可以互相ping通，发送各种包，却无法看到对方的广播。因此这种模式的效果比桥接好一些，因为地址范围更大，而且很容易隔离广播风暴。这种模式一旦连接成功，连接模式是透明的。
+3.双层NAT模式
+如果上两种模式都不工作，你就必须使用双层NAT模式。这种模式保证一定工作，但是在使用上比较麻烦，需要用户自行计算访问规则。
+接法是路由器S1的WAN口连接路由器M的LAN口，并且将S配置为DHCP。M的网段和S的网段必须不为同一个网段，例如M配置为192.168.0.0/24网段，S配置为192.168.1.0/24网段。
+S的数据包会被NAT两次再发到互联网上，要进行端口转发也必须配置两次。性能相对比较差，而且无法做NAT穿透。
+当这个模式连接完成后，ML1和S1L1在不同网段，S1L1可以ping通ML1，但是反过来不行。因此，S1L1可以主动连接上ML1，而反过来不行。这种模式不是透明的，两者进行连接时必须考虑网络转换和端口转发。"/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="合用两个路由器的几种方案" />
+<meta property="og:description" content="为什么用两个路由器？最常见的理由是延长信号。在超级大的场地中，中间放一个路由器，用四根线连接到周围的几个路由器上面，信号覆盖整个场地。这是最常见的理由。也有可能是因为你的主路由器LAN接口不足了。当然，也可能是因为蛋疼，或者其他原因。不论如何，为了在多个路由器上达到同时上网的目的，你有以下几个选项。桥接模式，路由模式，双层NAT模式。
+我先解说一下一些基础的环境。我假定你有一个互联网线，有一个路由器的WAN口接到了互联网上面，这个路由器称为M。其他路由器分别称为S1,S2&hellip;。直接连接到M的LAN口的电脑称为ML1,ML2&hellip;，通过无线连接的就称为MW1,MW1&hellip;。同样，连接到路由器S1的LAN和无线的分别叫做S1L1,S1W1，类推。
+1.桥接模式
+这是你第一个应当尝试的模式，连接方法是路由器S1的LAN口直接连接路由器M的LAN口。这个模式不一定能够配通，原因是因为要求路由器S必须支持桥接模式。基于某些理由，很多路由器并不支持桥接。一般来说，有可能LAN口支持桥接而WIFI不支持。因此S1L1支持桥接成功的概率比S1W1支持桥接成功的概率高。如果你需要一台支持桥接的路由器，TP-LINK的TL-WR*系列路由器好像大多支持。希望大家补充哪款路由器支持桥接或者不支持。
+桥接是将路由器S完全的作为一个交换机使用，所以你的ML1和S1L1在同一个网段，两者可以互相ping通，发送各种包，也可以看到对方的广播。这种模式一旦连接成功，连接模式是透明的。因此，应当关闭DHCP，只启用一台路由器的DHCP功能。或者最好手工分配IP。
+严格来说，只有S是一个无线路由的时候，这个模式才叫做桥接。如果只做有线连接，这个模式应当叫做交换模式。
+2.路由模式
+路由模式，是一个比桥接复杂，效果好，但是用途相对比较窄的方案。接法是路由器S1的WAN口连接路由器M的LAN口，并且为S手工指定IP，再关闭S的NAT功能。M的网段和S的网段必须不为同一个网段，例如M配置为192.168.0.0/24网段，S配置为192.168.1.0/24网段。S的WAN口手工指定为192.168.0.2。然后在M1上配置人工路由，将192.168.1.0的所有包交由路由器192.168.0.2处理。并在S1上配置默认路由为192.168.0.1(M的地址)。
+这个模式是将路由器S和M作为路由器使用。当S1L1发送包时，会被S1转发到M去处理。而M收到要发送给S1L1的包时，会交由S1处理。这一模式能够工作的基础是你能够控制M的路由表，并且S可以关闭NAT。通常情况下，这个S最好是OpenWRT/DDWRT。这也是为什么用途比较窄的原因，毕竟支持桥接的路由器好找，OpenWRT/DDWRT就相对小众了。
+当这个模式连接完成后，ML1和S1L1在不同网段，但是两者可以互相ping通，发送各种包，却无法看到对方的广播。因此这种模式的效果比桥接好一些，因为地址范围更大，而且很容易隔离广播风暴。这种模式一旦连接成功，连接模式是透明的。
+3.双层NAT模式
+如果上两种模式都不工作，你就必须使用双层NAT模式。这种模式保证一定工作，但是在使用上比较麻烦，需要用户自行计算访问规则。
+接法是路由器S1的WAN口连接路由器M的LAN口，并且将S配置为DHCP。M的网段和S的网段必须不为同一个网段，例如M配置为192.168.0.0/24网段，S配置为192.168.1.0/24网段。
+S的数据包会被NAT两次再发到互联网上，要进行端口转发也必须配置两次。性能相对比较差，而且无法做NAT穿透。
+当这个模式连接完成后，ML1和S1L1在不同网段，S1L1可以ping通ML1，但是反过来不行。因此，S1L1可以主动连接上ML1，而反过来不行。这种模式不是透明的，两者进行连接时必须考虑网络转换和端口转发。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/1917/" />
+<meta property="article:published_time" content="2011-09-26T12:03:30+08:00" />
+<meta property="article:modified_time" content="2011-09-26T12:03:30+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">Sep 26, 2011
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     合用两个路由器的几种方案 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          <p>为什么用两个路由器？最常见的理由是延长信号。在超级大的场地中，中间放一个路由器，用四根线连接到周围的几个路由器上面，信号覆盖整个场地。这是最常见的理由。也有可能是因为你的主路由器LAN接口不足了。当然，也可能是因为蛋疼，或者其他原因。不论如何，为了在多个路由器上达到同时上网的目的，你有以下几个选项。桥接模式，路由模式，双层NAT模式。</p>
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">合用两个路由器的几种方案</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Sep 26, 2011
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/computer/">computer</a><a class="tag" href="//blog.shell909090.org/tags/network/">network</a><a class="tag" href="//blog.shell909090.org/tags/openwrt/">openwrt</a></div></div>
+    </header>
+    <div class="post-content">
+      <p>为什么用两个路由器？最常见的理由是延长信号。在超级大的场地中，中间放一个路由器，用四根线连接到周围的几个路由器上面，信号覆盖整个场地。这是最常见的理由。也有可能是因为你的主路由器LAN接口不足了。当然，也可能是因为蛋疼，或者其他原因。不论如何，为了在多个路由器上达到同时上网的目的，你有以下几个选项。桥接模式，路由模式，双层NAT模式。</p>
 
 <p>我先解说一下一些基础的环境。我假定你有一个互联网线，有一个路由器的WAN口接到了互联网上面，这个路由器称为M。其他路由器分别称为S1,S2&hellip;。直接连接到M的LAN口的电脑称为ML1,ML2&hellip;，通过无线连接的就称为MW1,MW1&hellip;。同样，连接到路由器S1的LAN和无线的分别叫做S1L1,S1W1，类推。</p>
 
@@ -146,169 +162,12 @@ if (!doNotTrack) {
 
 <p>当这个模式连接完成后，ML1和S1L1在不同网段，S1L1可以ping通ML1，但是反过来不行。因此，S1L1可以主动连接上ML1，而反过来不行。这种模式不是透明的，两者进行连接时必须考虑网络转换和端口转发。</p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>Sep 26, 2011</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/computer">computer</a>  <a class="category" href="//blog.shell909090.org/tags/network">network</a>  <a class="category" href="//blog.shell909090.org/tags/openwrt">openwrt</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/1915/" title="密码管理规范">密码管理规范</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/1919/" title="uwsgi under debian">uwsgi under debian</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

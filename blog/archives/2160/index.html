@@ -1,122 +1,132 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>dvc和vc简评 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>dvc和vc简评</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="dvc和vc简评"/>
+<meta name="twitter:description" content="我有必要换git么 实话说，这得分干吗。目前的推荐是，如果是企业级项目，对权限要求比较严格，你必须用svn。如果是普通项目，你可以尝试使用git，但是这并不表示git是最适合你项目的。有的时候svn比git合用的多。
+svn是什么模式 svn的核心思路是，取出，修改，提交，合并。即，你从核心库中取得数据，修改，然后提交上去。如果有两个一样的修改，那么要求你进行合并。当然，svn工具会首先尝试自动合并，然后再让你手工干。但即使如此，合并的时候还是很费力。
+svn的模式很容易理解，然而在使用中却有两个实际缺陷。
+ 保存数据的唯一方式就是提交，而提交是不可撤销的。 必须连接核心库使用。  第一点问题，就是说，如果你希望暂时保存一下当前的修改状态，然后进行某个测试性修改。如果失败，退回当前。抱歉，做不到。你的提交一定会进入svn库。虽然你可以退回到你提交前的版本，但是很麻烦，而且版本记录不会消失。而第二个问题更加致命。如果在网络不稳定/没网络的时候，还干不干活了？
+因此，svn的设计模式并不鼓励你提交。当你有修改的时候，你必须保持修改的状态，直到某个稳定的状态。你需要检查代码是基本可用的，然后才应当提交。svn提交有个基础原则，不能塞住head，讲的就是这个。
+所以有了hg hg正是为了解决上述问题而出现的。hg实际上是用python实现的，解决上两个问题的svn。
+hg拥有本地版本库，这解决了离线模式。至于暂存性提交，你可以在本地随便提交。只要不提交到核心库上，就不会导致塞住。如果你觉得本地库不行，可以直接重新co，而不进行push。
+git和hg哪个好 锤子和扳手哪个好？我永远无法回答你这个问题，因为这两个的目标根本不同，因此根本没有可比性。同样，git和hg的工作流程和模式完全是两回事，因此不要问这个问题，没意义。
+哦，那么git是 git的设计核心思路，是取出，分支，修改，提交，合并分支。git的分支是处理工作的利器。
+要彻底理解git，你必须接受平行世界假定。假设世界并不是顺序发展的，由于你的选择不同，而会变成不同的几个分支。git可以让你在分支间自由穿越，并且让世界变成某个分支上的某个点的状态。你可以重新选择，产生一个不同的分支。当你需要时，可以对两个分支进行合并。如果两个分支从源头分开后，对世界的影响各自不同，那么合并就是自动的。
+git的同步就是在同步这颗世界树。树扩展成什么样子和你在树的什么位置没有关系，因此fetch后如果不chechout，那么就不会应用最新的修改。
+我没看出多大区别 实际是非常大的。有了平行世界假定，我可以正交的对一个源码做两件以上不同的事情。而在hg中，虽然也可以做两个不同的分支，然而却很难在两个分支间切换，从而使得切换到做另一件事情非常困难。这也导致了一个人实际上只能做一件事情，否则就无法将过程同时纳入vc管理，又满足正交。"/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="dvc和vc简评" />
+<meta property="og:description" content="我有必要换git么 实话说，这得分干吗。目前的推荐是，如果是企业级项目，对权限要求比较严格，你必须用svn。如果是普通项目，你可以尝试使用git，但是这并不表示git是最适合你项目的。有的时候svn比git合用的多。
+svn是什么模式 svn的核心思路是，取出，修改，提交，合并。即，你从核心库中取得数据，修改，然后提交上去。如果有两个一样的修改，那么要求你进行合并。当然，svn工具会首先尝试自动合并，然后再让你手工干。但即使如此，合并的时候还是很费力。
+svn的模式很容易理解，然而在使用中却有两个实际缺陷。
+ 保存数据的唯一方式就是提交，而提交是不可撤销的。 必须连接核心库使用。  第一点问题，就是说，如果你希望暂时保存一下当前的修改状态，然后进行某个测试性修改。如果失败，退回当前。抱歉，做不到。你的提交一定会进入svn库。虽然你可以退回到你提交前的版本，但是很麻烦，而且版本记录不会消失。而第二个问题更加致命。如果在网络不稳定/没网络的时候，还干不干活了？
+因此，svn的设计模式并不鼓励你提交。当你有修改的时候，你必须保持修改的状态，直到某个稳定的状态。你需要检查代码是基本可用的，然后才应当提交。svn提交有个基础原则，不能塞住head，讲的就是这个。
+所以有了hg hg正是为了解决上述问题而出现的。hg实际上是用python实现的，解决上两个问题的svn。
+hg拥有本地版本库，这解决了离线模式。至于暂存性提交，你可以在本地随便提交。只要不提交到核心库上，就不会导致塞住。如果你觉得本地库不行，可以直接重新co，而不进行push。
+git和hg哪个好 锤子和扳手哪个好？我永远无法回答你这个问题，因为这两个的目标根本不同，因此根本没有可比性。同样，git和hg的工作流程和模式完全是两回事，因此不要问这个问题，没意义。
+哦，那么git是 git的设计核心思路，是取出，分支，修改，提交，合并分支。git的分支是处理工作的利器。
+要彻底理解git，你必须接受平行世界假定。假设世界并不是顺序发展的，由于你的选择不同，而会变成不同的几个分支。git可以让你在分支间自由穿越，并且让世界变成某个分支上的某个点的状态。你可以重新选择，产生一个不同的分支。当你需要时，可以对两个分支进行合并。如果两个分支从源头分开后，对世界的影响各自不同，那么合并就是自动的。
+git的同步就是在同步这颗世界树。树扩展成什么样子和你在树的什么位置没有关系，因此fetch后如果不chechout，那么就不会应用最新的修改。
+我没看出多大区别 实际是非常大的。有了平行世界假定，我可以正交的对一个源码做两件以上不同的事情。而在hg中，虽然也可以做两个不同的分支，然而却很难在两个分支间切换，从而使得切换到做另一件事情非常困难。这也导致了一个人实际上只能做一件事情，否则就无法将过程同时纳入vc管理，又满足正交。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2160/" />
+<meta property="article:published_time" content="2012-05-03T03:28:18+08:00" />
+<meta property="article:modified_time" content="2012-05-03T03:28:18+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">May 3, 2012
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     dvc和vc简评 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">dvc和vc简评</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          May 3, 2012
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/program/">program</a><a class="tag" href="//blog.shell909090.org/tags/versioncontrol/">versioncontrol</a></div></div>
+    </header>
+    <div class="post-content">
+      
 
 <h1 id="我有必要换git么">我有必要换git么</h1>
 
@@ -159,169 +169,12 @@ if (!doNotTrack) {
 
 <p>实际是非常大的。有了平行世界假定，我可以正交的对一个源码做两件以上不同的事情。而在hg中，虽然也可以做两个不同的分支，然而却很难在两个分支间切换，从而使得切换到做另一件事情非常困难。这也导致了一个人实际上只能做一件事情，否则就无法将过程同时纳入vc管理，又满足正交。</p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>May 3, 2012</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/program">program</a>  <a class="category" href="//blog.shell909090.org/tags/versioncontrol">versioncontrol</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/2158/" title="首次bsp日记">首次bsp日记</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/2162/" title="关于翻墙服务几句">关于翻墙服务几句</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

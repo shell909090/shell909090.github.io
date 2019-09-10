@@ -1,122 +1,120 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>linux tty部分源码阅读 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>linux tty部分源码阅读</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="linux tty部分源码阅读"/>
+<meta name="twitter:description" content="1.事情从file开始 file的定义在include/linux/fs.h中，其中有两个field，一个叫file_operations
+*f_op，一个叫void *private_data。file_operations定义了所有file能够进行的操作，在tty这个层面而言，drivers/tty/tty_io.c能看到有个叫做file_operations tty_fops的东西，下面有个叫console_fops的东西。两者区别不大，就是write函数进行了一下包装而已。从这里可以看出，系统将某个file的读写操作，转包给了tty_io.c这个文件。这个转包的手法非常类似虚函数。如果将tty_io.c里面的函数看作一个类的所有成员，那么tty_fops就是虚函数表，而f_op就是虚函数指针_v_ptr。
+2.tty_io的二转包 tty_io做了什么？他直接转包给了ldisc来处理这个事情。从tty_struct的结构我们能够看到，有这么一个field，tty_ldisc *ldisc。而tty_ldisc.h文件里面，我们能看到这个结构又有这么一个成员，tty_ldisc_ops *ops。同样手法，第二次使用。目标是tty/下面很多n_开始的文件，例如n_gsm，估计是处理手机的。我们的目标看起来像是n_tty.c中的tty_ldisc_ops tty_ldisc_N_TTY对象。
+3.n_tty做了些什么 n_tty也做了很多转包，例如对于n_tty_write而言，他使用了tty-&gt;ops-&gt;write这个函数。我们从struct tty_struct中可以看到这个field，tty_operations *ops。目标是谁？看起来像是pty.c，他里面有很多定义，例如tty_operations master_pty_ops_bsd，tty_operations slave_pty_ops_bsd，tty_operations ptm_unix98_ops，tty_operations pty_unix98_ops。
+4.pty总不转包了吧 以write而言，pty.c做的很简单，就是tty_insert_flip_string而已。不过之后调用了tty_flip_buffer_push，这个又会调用flush_to_ldisc，这个里面会调用ldisc-&gt;ops。从上文中我们知道，这个函数的实体在n_tty.c的n_tty_receive_buf。
+5.n_tty_receive_buf做了些什么 这个函数对每个字符依次处理，如果是普通字符，就调用n_tty_receive_char。这个函数会调用put_tty_queue，经过两次转手，最终，这个字符进入了read_buf。这是一个循环队列。"/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="linux tty部分源码阅读" />
+<meta property="og:description" content="1.事情从file开始 file的定义在include/linux/fs.h中，其中有两个field，一个叫file_operations
+*f_op，一个叫void *private_data。file_operations定义了所有file能够进行的操作，在tty这个层面而言，drivers/tty/tty_io.c能看到有个叫做file_operations tty_fops的东西，下面有个叫console_fops的东西。两者区别不大，就是write函数进行了一下包装而已。从这里可以看出，系统将某个file的读写操作，转包给了tty_io.c这个文件。这个转包的手法非常类似虚函数。如果将tty_io.c里面的函数看作一个类的所有成员，那么tty_fops就是虚函数表，而f_op就是虚函数指针_v_ptr。
+2.tty_io的二转包 tty_io做了什么？他直接转包给了ldisc来处理这个事情。从tty_struct的结构我们能够看到，有这么一个field，tty_ldisc *ldisc。而tty_ldisc.h文件里面，我们能看到这个结构又有这么一个成员，tty_ldisc_ops *ops。同样手法，第二次使用。目标是tty/下面很多n_开始的文件，例如n_gsm，估计是处理手机的。我们的目标看起来像是n_tty.c中的tty_ldisc_ops tty_ldisc_N_TTY对象。
+3.n_tty做了些什么 n_tty也做了很多转包，例如对于n_tty_write而言，他使用了tty-&gt;ops-&gt;write这个函数。我们从struct tty_struct中可以看到这个field，tty_operations *ops。目标是谁？看起来像是pty.c，他里面有很多定义，例如tty_operations master_pty_ops_bsd，tty_operations slave_pty_ops_bsd，tty_operations ptm_unix98_ops，tty_operations pty_unix98_ops。
+4.pty总不转包了吧 以write而言，pty.c做的很简单，就是tty_insert_flip_string而已。不过之后调用了tty_flip_buffer_push，这个又会调用flush_to_ldisc，这个里面会调用ldisc-&gt;ops。从上文中我们知道，这个函数的实体在n_tty.c的n_tty_receive_buf。
+5.n_tty_receive_buf做了些什么 这个函数对每个字符依次处理，如果是普通字符，就调用n_tty_receive_char。这个函数会调用put_tty_queue，经过两次转手，最终，这个字符进入了read_buf。这是一个循环队列。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2020/" />
+<meta property="article:published_time" content="2011-12-19T16:08:11+08:00" />
+<meta property="article:modified_time" content="2011-12-19T16:08:11+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">Dec 19, 2011
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     linux tty部分源码阅读 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">linux tty部分源码阅读</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Dec 19, 2011
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/kernel/">kernel</a><a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a><a class="tag" href="//blog.shell909090.org/tags/source/">source</a></div></div>
+    </header>
+    <div class="post-content">
+      
 
 <h1 id="1-事情从file开始">1.事情从file开始</h1>
 
@@ -140,169 +138,12 @@ if (!doNotTrack) {
 
 <p>这个函数对每个字符依次处理，如果是普通字符，就调用n_tty_receive_char。这个函数会调用put_tty_queue，经过两次转手，最终，这个字符进入了read_buf。这是一个循环队列。</p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>Dec 19, 2011</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/kernel">kernel</a>  <a class="category" href="//blog.shell909090.org/tags/linux">linux</a>  <a class="category" href="//blog.shell909090.org/tags/source">source</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/2018/" title="android几个常识">android几个常识</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/2024/" title="某日的一点小事">某日的一点小事</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

@@ -1,129 +1,130 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>2012年4月12日断网的技术记录 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title></title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="2012年4月12日断网的技术记录"/>
+<meta name="twitter:description" content="4月12日上午, 大约北京时间10点(UTC02:00前后),
+中国大部分地区发生了一次断网. 这次断网我有幸正好在使用网络, 因此跟踪调试了整个过程.
+ 网络开始中断  当时我在公司里面用ssh调整一台国外的机器, 同时用另一台机器作为ssh跳板访问google. 问题发生的时候, 很多国外网站都无法打开, ssh指令不能工作. 我的第一反应就是, GFW针对ssh做了拦截.
+鉴于其他可能, 我登录回了家中, 从家里的机器直接ssh到国外的跳板, 一切正常. 莫非只是我这里的ssh发生了断路? 我正在这么猜测的时候, 家里的ssh也随即断开. 我kill了当前进程, 重新连接后, 恢复了对家里服务器的控制, 但是境外的ssh跳板已经不能连接.
+至此, 可以确定中国出国网络逐步发生中断, 针对什么协议, 机制如何尚不清楚.
+但是, 我同时用同一台机器打开了openvpn, openvpn会提供一个内网接口.
+我偶然的用这个内网iface访问了一下, 一切正常. 再尝试了一下, openvpn上网正常. 这说明问题可能局限在ssh上.
+ 这不是一个个例, 这是大规模断网  既然我对境外服务器还有控制能力, 我就更换了一个ssh端口, 但是问题并没有解决. 这似乎说明封锁不是针对端口(port), 而是针对协议(protocol)的. 为了确证这点, 我对通讯过程做了抓包, 但是结果出乎我的意料. 问题并不出现在ssh握手的时候, 而是tcp第二步的syn-ack回包彻底消失. 这表明封锁并不针对ssh协议, 而是tcp协议栈!
+这非常疯狂, 如果是这样的话, 大部分基于tcp的网络协议将无法工作, 包括境外大部分网站的http协议. 我从twitter上看到, 很多人的各种工具都相继失效, 并且境外很多的http(而非https)确实无法访问, 这和我的判断相一致. 这是针对tcp协议栈的大规模拦截.
+ 为什么特殊  通常而言, GFW有三个常见工作模式.
+ dns污染"/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="2012年4月12日断网的技术记录" />
+<meta property="og:description" content="4月12日上午, 大约北京时间10点(UTC02:00前后),
+中国大部分地区发生了一次断网. 这次断网我有幸正好在使用网络, 因此跟踪调试了整个过程.
+ 网络开始中断  当时我在公司里面用ssh调整一台国外的机器, 同时用另一台机器作为ssh跳板访问google. 问题发生的时候, 很多国外网站都无法打开, ssh指令不能工作. 我的第一反应就是, GFW针对ssh做了拦截.
+鉴于其他可能, 我登录回了家中, 从家里的机器直接ssh到国外的跳板, 一切正常. 莫非只是我这里的ssh发生了断路? 我正在这么猜测的时候, 家里的ssh也随即断开. 我kill了当前进程, 重新连接后, 恢复了对家里服务器的控制, 但是境外的ssh跳板已经不能连接.
+至此, 可以确定中国出国网络逐步发生中断, 针对什么协议, 机制如何尚不清楚.
+但是, 我同时用同一台机器打开了openvpn, openvpn会提供一个内网接口.
+我偶然的用这个内网iface访问了一下, 一切正常. 再尝试了一下, openvpn上网正常. 这说明问题可能局限在ssh上.
+ 这不是一个个例, 这是大规模断网  既然我对境外服务器还有控制能力, 我就更换了一个ssh端口, 但是问题并没有解决. 这似乎说明封锁不是针对端口(port), 而是针对协议(protocol)的. 为了确证这点, 我对通讯过程做了抓包, 但是结果出乎我的意料. 问题并不出现在ssh握手的时候, 而是tcp第二步的syn-ack回包彻底消失. 这表明封锁并不针对ssh协议, 而是tcp协议栈!
+这非常疯狂, 如果是这样的话, 大部分基于tcp的网络协议将无法工作, 包括境外大部分网站的http协议. 我从twitter上看到, 很多人的各种工具都相继失效, 并且境外很多的http(而非https)确实无法访问, 这和我的判断相一致. 这是针对tcp协议栈的大规模拦截.
+ 为什么特殊  通常而言, GFW有三个常见工作模式.
+ dns污染" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2142/" />
+<meta property="article:published_time" content="2012-04-16T02:24:40+08:00" />
+<meta property="article:modified_time" content="2012-04-16T02:24:40+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">Jan 1, 0001
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
       
-  </h1>
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          <p>!xxx!+++
-title = &ldquo;2012年4月12日断网的技术记录&rdquo;
-date = &ldquo;2012-04-16T02:24:40+08:00&rdquo;
-type = &ldquo;post&rdquo;
-tags = [&lsquo;computer&rsquo;, &lsquo;gfw&rsquo;, &lsquo;network&rsquo;]
-+++</p>
-
-<p>4月12日上午, 大约北京时间10点(UTC02:00前后),</p>
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">2012年4月12日断网的技术记录</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Apr 16, 2012
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/computer/">computer</a><a class="tag" href="//blog.shell909090.org/tags/gfw/">gfw</a><a class="tag" href="//blog.shell909090.org/tags/network/">network</a></div></div>
+    </header>
+    <div class="post-content">
+      <p>4月12日上午, 大约北京时间10点(UTC02:00前后),</p>
 
 <p>中国大部分地区发生了一次断网. 这次断网我有幸正好在使用网络, 因此跟踪调试了整个过程.</p>
 
@@ -177,162 +178,12 @@ tags = [&lsquo;computer&rsquo;, &lsquo;gfw&rsquo;, &lsquo;network&rsquo;]
 
 <p>白名单是很难对付的一种模式. 对于深度包检测, 可以通过修改包的封装性质予以绕过. ssh/vpn都是这类的典型方式. 然而白名单使得你很难在境外部署一台处于你自己控制之下的服务器. 即使你可以在境外弄到一台服务器(这到不困难), 也没有希望将服务器ip加入白名单内. 由于白名单内的都是国家认可的服务器, 因此上面运作的服务基本都是无可能进行绕行的.</p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>Jan 1, 0001</time>
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/161/" title="无题">无题</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

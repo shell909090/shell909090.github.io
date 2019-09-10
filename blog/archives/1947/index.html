@@ -1,122 +1,138 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>P81HD的特性和问题 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>P81HD的特性和问题</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="P81HD的特性和问题"/>
+<meta name="twitter:description" content="情况简介和简评 1.续航问题 5小时，正常使用没有问题，包括看电影。如果比这个短，那就说明你在待机时有程序在工作。这个细节不解释。如果开启3G，或者拖其他OTG设备，大概会减少到2小时左右。
+2.3G问题 别的不敢说，配送的eth网卡和MF190联通3G网卡可以顺利支持。 接入3G网卡后自动识别，大概需要20s启动和初始化。监控流量可以用3g watchdog。我一个月包了200M，估计用不掉。
+3.物理按键问题 Home键的设计者是个白痴，这个键能不能换个地方？我每次拿的时候，都很容易误触。待机就唤醒，开机就程序消失。此为P81HD最白痴的特性，没有之一。 没有物理的回退键也是个错误，状态栏经常崩溃，消失后系统就没法用，没有回退键。有时会自动启动，恢复正常状态。有时三五分钟依旧不恢复，必须重启机器。这是P81HD第二白痴的特性，没有物理回退键，学3.0用状态栏，状态栏又不稳定。
+4.屏幕问题 屏幕很清晰，但是细看的话颗粒很粗。从右边和下边看，屏幕发黑，典型的非IPS屏问题，视角很小。
+5.性能评测 实际能够使用的最大内存是282M，其余应当是系统使用了。去掉系统进程后，可以用于程序的内存大约是150M。CPU基本都够用，安装和删除程序很快，输入无卡顿。3D加速一般，切水果时略卡，可接受（我打了550多分）。看flash的时候有小幅卡顿，不严重，可接受。有少数时候，系统会失去反应。怀疑是内存耗尽，回收导致CPU耗尽。发生频率不高，每次大约需要10-20s恢复。在驱动3g/同步/后台发生其他行为的时候，前台程序明显很卡，甚至会丢失按键，严重时无法流畅使用。估计是前台程序的优先级调整有问题，在htc g2上也有类似问题，可能是android系统的通病。使用双核的系统明显没有这个问题。
+6.手感问题 512g，略重，再挑的时候希望轻一点。由于Home键的存在，手持的时候总要避开下方，并不很方便持拿。
+7.零散错误 在首次连接3G网卡的时候，出现方向显示和输入错误。现象是显示方向和正常一致，但是点击左边，右边出反应。 在连接3G网卡的时候，反应缓慢。怀疑是由于开始同步和3G驱动导致CPU大量被使用。 周边的点击有时会错位。 有时莫名其妙死机，需要捅菊花。一周内发生十多次，不过其中有一多半发生在系统调整/安装程序的时候。
+可解决的，或者不是问题的问题 1.root方法 这不是个问题，装GingerBreak，直接重启，不多废话。
+2.充电问题 这是P81HD历来反应的第一问题，其实P81HD充电问题不一定和root有关，我没root的时候也碰到过。主要是这样的。你插入充电器，看到充电符号的时候，其实充电器不一定工作。只有你看到电量上升，才代表充电器工作正常。而且，当线被动过后，也可能会变成假充电状态。有充电符号没有实际充电。 设备不支持USB充电，但是很幸运的，充电电压是5V，电流0.5-2.5A。所以你可以买一条USB2DC线路，将USB的5V电压直接充上去。原装的线也太短，不爽。
+3.不支持联系人/日历同步，没有gtalk的问题 默认的rom里面没有，你可以从这里下载到合适的apk文件。这些是从我手机（htc magic chock4 2.2 rom）中提取出来，2.2用的。安装后可以正常工作。 本地下载链接（请不要盗链）：GoogleCalendarSyncAdapter.apkGoogleContactsSyncAdapter.apkgtalk.apk
+4.不支持的程序 不要用flash11，至少到目前为止不行。用flash 10.3就好了。链接在这里。
+5.wifi channel 12&frasl;13 中国设备规范中都不支持这两个频道，不要想了，在中国你就不应当使用这两个频道。
+6.wifi tether 默认机器是不可以adhoc的，不但不能接入其他设备（例如手机）开的adhoc，而且连自己设定里面做的wifi共享3G的功能都不能用，用之会死机，必须捅菊花。不过你可以用barnacle这个程序。这个程序很牛，可以绕过wpa_supplicant工作，直接将wifi置于adhoc模式。这样其他机器能看到这个共享点。但是注意，由于android无法连接到adhoc，所以，你手机做出来的wifi热点电脑能用，P81HD不能。P81HD做出来的，电脑能用，手机不能。
+不能解决的问题 1.adhoc连接问题 android设备无法连接到adhoc网络。据说这个特性是wpa_supplicant过滤了adhoc模式的所有网络所致。如果我闲的蛋疼，会去研究一下怎么绕过这个机制。直接使用网络上的补丁会导致网络无法连接。
+2.vpn问题 默认没有额外的kernel modules支持，没有openvpn文件，没有busybox工具。busybox可以安装busybox installer来进行安装，openvpn可以安装openvpn installer来进行安装。但是即使完整安装工具链，也没有办法加载tun模块，使用openvpn连接。cifs没有测试过。 pptp/l2tp测试无法连接，服务器日志表明连接后马上断开，原因未知。 安全隧道测试无法连接，原因未知。"/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="P81HD的特性和问题" />
+<meta property="og:description" content="情况简介和简评 1.续航问题 5小时，正常使用没有问题，包括看电影。如果比这个短，那就说明你在待机时有程序在工作。这个细节不解释。如果开启3G，或者拖其他OTG设备，大概会减少到2小时左右。
+2.3G问题 别的不敢说，配送的eth网卡和MF190联通3G网卡可以顺利支持。 接入3G网卡后自动识别，大概需要20s启动和初始化。监控流量可以用3g watchdog。我一个月包了200M，估计用不掉。
+3.物理按键问题 Home键的设计者是个白痴，这个键能不能换个地方？我每次拿的时候，都很容易误触。待机就唤醒，开机就程序消失。此为P81HD最白痴的特性，没有之一。 没有物理的回退键也是个错误，状态栏经常崩溃，消失后系统就没法用，没有回退键。有时会自动启动，恢复正常状态。有时三五分钟依旧不恢复，必须重启机器。这是P81HD第二白痴的特性，没有物理回退键，学3.0用状态栏，状态栏又不稳定。
+4.屏幕问题 屏幕很清晰，但是细看的话颗粒很粗。从右边和下边看，屏幕发黑，典型的非IPS屏问题，视角很小。
+5.性能评测 实际能够使用的最大内存是282M，其余应当是系统使用了。去掉系统进程后，可以用于程序的内存大约是150M。CPU基本都够用，安装和删除程序很快，输入无卡顿。3D加速一般，切水果时略卡，可接受（我打了550多分）。看flash的时候有小幅卡顿，不严重，可接受。有少数时候，系统会失去反应。怀疑是内存耗尽，回收导致CPU耗尽。发生频率不高，每次大约需要10-20s恢复。在驱动3g/同步/后台发生其他行为的时候，前台程序明显很卡，甚至会丢失按键，严重时无法流畅使用。估计是前台程序的优先级调整有问题，在htc g2上也有类似问题，可能是android系统的通病。使用双核的系统明显没有这个问题。
+6.手感问题 512g，略重，再挑的时候希望轻一点。由于Home键的存在，手持的时候总要避开下方，并不很方便持拿。
+7.零散错误 在首次连接3G网卡的时候，出现方向显示和输入错误。现象是显示方向和正常一致，但是点击左边，右边出反应。 在连接3G网卡的时候，反应缓慢。怀疑是由于开始同步和3G驱动导致CPU大量被使用。 周边的点击有时会错位。 有时莫名其妙死机，需要捅菊花。一周内发生十多次，不过其中有一多半发生在系统调整/安装程序的时候。
+可解决的，或者不是问题的问题 1.root方法 这不是个问题，装GingerBreak，直接重启，不多废话。
+2.充电问题 这是P81HD历来反应的第一问题，其实P81HD充电问题不一定和root有关，我没root的时候也碰到过。主要是这样的。你插入充电器，看到充电符号的时候，其实充电器不一定工作。只有你看到电量上升，才代表充电器工作正常。而且，当线被动过后，也可能会变成假充电状态。有充电符号没有实际充电。 设备不支持USB充电，但是很幸运的，充电电压是5V，电流0.5-2.5A。所以你可以买一条USB2DC线路，将USB的5V电压直接充上去。原装的线也太短，不爽。
+3.不支持联系人/日历同步，没有gtalk的问题 默认的rom里面没有，你可以从这里下载到合适的apk文件。这些是从我手机（htc magic chock4 2.2 rom）中提取出来，2.2用的。安装后可以正常工作。 本地下载链接（请不要盗链）：GoogleCalendarSyncAdapter.apkGoogleContactsSyncAdapter.apkgtalk.apk
+4.不支持的程序 不要用flash11，至少到目前为止不行。用flash 10.3就好了。链接在这里。
+5.wifi channel 12&frasl;13 中国设备规范中都不支持这两个频道，不要想了，在中国你就不应当使用这两个频道。
+6.wifi tether 默认机器是不可以adhoc的，不但不能接入其他设备（例如手机）开的adhoc，而且连自己设定里面做的wifi共享3G的功能都不能用，用之会死机，必须捅菊花。不过你可以用barnacle这个程序。这个程序很牛，可以绕过wpa_supplicant工作，直接将wifi置于adhoc模式。这样其他机器能看到这个共享点。但是注意，由于android无法连接到adhoc，所以，你手机做出来的wifi热点电脑能用，P81HD不能。P81HD做出来的，电脑能用，手机不能。
+不能解决的问题 1.adhoc连接问题 android设备无法连接到adhoc网络。据说这个特性是wpa_supplicant过滤了adhoc模式的所有网络所致。如果我闲的蛋疼，会去研究一下怎么绕过这个机制。直接使用网络上的补丁会导致网络无法连接。
+2.vpn问题 默认没有额外的kernel modules支持，没有openvpn文件，没有busybox工具。busybox可以安装busybox installer来进行安装，openvpn可以安装openvpn installer来进行安装。但是即使完整安装工具链，也没有办法加载tun模块，使用openvpn连接。cifs没有测试过。 pptp/l2tp测试无法连接，服务器日志表明连接后马上断开，原因未知。 安全隧道测试无法连接，原因未知。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/1947/" />
+<meta property="article:published_time" content="2011-10-18T10:50:17+08:00" />
+<meta property="article:modified_time" content="2011-10-18T10:50:17+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">Oct 18, 2011
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     P81HD的特性和问题 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">P81HD的特性和问题</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Oct 18, 2011
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/computer/">computer</a><a class="tag" href="//blog.shell909090.org/tags/tablet/">tablet</a></div></div>
+    </header>
+    <div class="post-content">
+      
 
 <h1 id="情况简介和简评">情况简介和简评</h1>
 
@@ -163,169 +179,12 @@ if (!doNotTrack) {
   pptp/l2tp测试无法连接，服务器日志表明连接后马上断开，原因未知。
   安全隧道测试无法连接，原因未知。</p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>Oct 18, 2011</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/computer">computer</a>  <a class="category" href="//blog.shell909090.org/tags/tablet">tablet</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/1945/" title="北京护照申请攻略(第二本)">北京护照申请攻略(第二本)</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/1949/" title="jobs">jobs</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

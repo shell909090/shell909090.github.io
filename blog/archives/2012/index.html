@@ -1,122 +1,172 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>家庭网关，三网融合 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>家庭网关，三网融合</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="家庭网关，三网融合"/>
+<meta name="twitter:description" content="Sunny Sunny&lt;sunnyboyme@gmail.com&gt;:
+要做一个关于home gateway的论文，讨论不同服务下的 Service Level Agreement （SLA），带宽，延时，数据包 schedule 策略 等等。不知大家有什么好的 想法/Question/Hypothesis，或者 以往的使用体验。
+希望来个 头脑风暴，呵呵 ～～
+shell:
+我好像全都部署了，就是不整那么多名词而已，不知道你要干啥。
+出口是光纤，20M下行/1M上行。路由器是dir-825，上面部署iptables arptables 还有tc。可以控制端口进出，还有控制机器的访问权。tc负责控制QoS。
+后面主要是两台机器，一台atom，上面放2T硬盘，作为NAS/开发服务器/电视的长期支撑设备/家里的定时通知机器/闹钟/将来准备接个摄像头做更好玩的应用。
+另一台amd x955 8G，两个人用。一个DVI连接显示器，一个HDMI连接电视，可以看看高清电影，开发也很舒服，一般开虚拟机干各种应用。
+其余设备都走了网线或者无线，最近考虑装一个网络电话。
+电视是三星的，上面集成了一个简单的android，就是app market是专用的，里面没有vnc/rdp客户端，否则我连atom都不需要登录就可以直接访问各种服务器了，更方便。
+电话，电视，网络，全部走在了ethernet上面，不知道算不算三网融合。不过我吐槽过一篇文章，这年头不知道要电视和电话干吗用。给我视频网站和手机就能很high了。
+ 在 11-12-11，Sunny Sunny&lt;sunnyboyme@gmail.com&gt; 写道：
+ 哇咔咔,不错不错,可以拿来当模板用~~
+ 不知道你的电视和电话走网路时候用的是什么协议?或者说,用的哪家公司的服务?
+电视走网络(IPTV?)会带来巨大流量,相比普通电视/数字电视有什么优势?
+   在 2011年12月12日 上午9:16，Stone Zhang&lt;kelxzhang@gmail.com&gt;写道：
+ 其实，我感觉三网融合现在最大的问题是，在三层没有连上的时候，如果可以打电话。
+就是说，在断网时（就是物理连上，但拿不到IP
+）普通用户如何能够打电话。 还是就是收费问题。
+ 何必走专用协议呢？现在中国没有一家服务是大到可以称为标准协议的。
+电话我还在考虑，用SIP还是skype。前者有很多现成的网关，也很容易和普通电话通话。后者看样子也不差。反正我手头有atom服务器，用skype长期开机也是没什么问题的。
+电视更简单，直接上youku/tudou/verycd搜索就好。其实你本心的想一想，我们到底是为了解决问题而发明标准还是为了制造问题而发明标准？使用目前已经存在的服务能解决需求就好了。这些点播唯一的缺陷是还缺少一些连续播放的视频DJ/选材制作，我在吃饭的时候看节目往往还要自己挑。所以目前我吃饭的时候都在看电影，atom机器一天能下N部高清下来，就是我怕现在的导演们没那么多时间去拍。。。
+视频走网络有什么好处？论广播能力，格式兼容性，不如RF。论节目，也比电视台差了很多。但是电视走网络胜在制式可以几乎无限上升，目前我看1024x768已经觉得不够清楚了。你觉得目前的IPTV，就算加上数字电视机顶盒，能够到多少分辨率？
+至于电话问题，断网是极端情况。虽然网络比电话线不稳定，但是也不是天天断的。有网络用网络，没网络用手机。android加上sipdroid也可以当作sip客户端用。如果手机都走不了，那问题就不在三网融合的设计上了。
+你可以想想，网络电话到底有什么优势？电话到底干吗用的？在我们业务类型大幅变化的时代，讨论如何将上个世纪的业务完全不差的照搬到网络时代真的有帮助么？我们真的需要在网络时代，等待一个前向兼容的标准么？实话说，这是中老年业务。我家里没有普通电话，外婆和岳母说要装一个，我和老婆都没什么兴趣。因为除了多交钱，没有任何帮助。要找我们，手机总能找到。手机找不到，电话也找不到。
+传统认为，使用可以容忍的语音标准，提供持续而稳定的服务是电话服务的第一要素。实话说，在网络时代，这个可能要改为低成本，高可用性。网络（尤其是中国网络）已经把我们训练的很有抵抗力，对无法服务的系统基本可以接受，只要这个系统大部分时候能跑通。让我选择十年保证故障在1小时以内的普通电话服务，我宁可选择一年保证故障在五小时以内的网络电话服务，只要这个电话服务可以：
+1.大部分时候打的通，比移动/联通打不通的机会低。
+2.便宜，我可以和远程一聊数小时，甚至干脆保持一两天不断线。
+3.功能集成，例如视频电话？多人电话？
+为什么不选择后者呢？我正在准备把老婆家里的设备做一下定制，让她的电脑可以很方便的视频保持和我服务器的连接。这样岳母可以通过她家里的电脑和我这里保持持续通讯几个小时，甚至可以一边吃饭一边聊天，双方还能互相可见——免费。我不觉得普通电话业务能够提供这种优势，更不提昂贵的话费。
+另一个例子是我一个朋友，也在shlug里面。他十月去日本，带的是一台iTouch。在日本可以很容易的连上wifi，速度还很快。通过skype打电话回家，价格便宜服务稳定。如果是我，我更希望带一个3G设备，直接用当地的3G接入保持持续通讯。你觉得带传统手机出国然后办理套餐需要多少手续和多少钱？这是一个移动电话被网络服务比下去的例子。也许有人说中国的网络没这么好——好吧，看看五年前的网络，看看今天的，想想看五年后，这个论点还有没有优势。
+同样，在网络时代抱着电视不放也将会是种无谋。目前网络视频还是替换不了普通电视，不过这天总会来的。"/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="家庭网关，三网融合" />
+<meta property="og:description" content="Sunny Sunny&lt;sunnyboyme@gmail.com&gt;:
+要做一个关于home gateway的论文，讨论不同服务下的 Service Level Agreement （SLA），带宽，延时，数据包 schedule 策略 等等。不知大家有什么好的 想法/Question/Hypothesis，或者 以往的使用体验。
+希望来个 头脑风暴，呵呵 ～～
+shell:
+我好像全都部署了，就是不整那么多名词而已，不知道你要干啥。
+出口是光纤，20M下行/1M上行。路由器是dir-825，上面部署iptables arptables 还有tc。可以控制端口进出，还有控制机器的访问权。tc负责控制QoS。
+后面主要是两台机器，一台atom，上面放2T硬盘，作为NAS/开发服务器/电视的长期支撑设备/家里的定时通知机器/闹钟/将来准备接个摄像头做更好玩的应用。
+另一台amd x955 8G，两个人用。一个DVI连接显示器，一个HDMI连接电视，可以看看高清电影，开发也很舒服，一般开虚拟机干各种应用。
+其余设备都走了网线或者无线，最近考虑装一个网络电话。
+电视是三星的，上面集成了一个简单的android，就是app market是专用的，里面没有vnc/rdp客户端，否则我连atom都不需要登录就可以直接访问各种服务器了，更方便。
+电话，电视，网络，全部走在了ethernet上面，不知道算不算三网融合。不过我吐槽过一篇文章，这年头不知道要电视和电话干吗用。给我视频网站和手机就能很high了。
+ 在 11-12-11，Sunny Sunny&lt;sunnyboyme@gmail.com&gt; 写道：
+ 哇咔咔,不错不错,可以拿来当模板用~~
+ 不知道你的电视和电话走网路时候用的是什么协议?或者说,用的哪家公司的服务?
+电视走网络(IPTV?)会带来巨大流量,相比普通电视/数字电视有什么优势?
+   在 2011年12月12日 上午9:16，Stone Zhang&lt;kelxzhang@gmail.com&gt;写道：
+ 其实，我感觉三网融合现在最大的问题是，在三层没有连上的时候，如果可以打电话。
+就是说，在断网时（就是物理连上，但拿不到IP
+）普通用户如何能够打电话。 还是就是收费问题。
+ 何必走专用协议呢？现在中国没有一家服务是大到可以称为标准协议的。
+电话我还在考虑，用SIP还是skype。前者有很多现成的网关，也很容易和普通电话通话。后者看样子也不差。反正我手头有atom服务器，用skype长期开机也是没什么问题的。
+电视更简单，直接上youku/tudou/verycd搜索就好。其实你本心的想一想，我们到底是为了解决问题而发明标准还是为了制造问题而发明标准？使用目前已经存在的服务能解决需求就好了。这些点播唯一的缺陷是还缺少一些连续播放的视频DJ/选材制作，我在吃饭的时候看节目往往还要自己挑。所以目前我吃饭的时候都在看电影，atom机器一天能下N部高清下来，就是我怕现在的导演们没那么多时间去拍。。。
+视频走网络有什么好处？论广播能力，格式兼容性，不如RF。论节目，也比电视台差了很多。但是电视走网络胜在制式可以几乎无限上升，目前我看1024x768已经觉得不够清楚了。你觉得目前的IPTV，就算加上数字电视机顶盒，能够到多少分辨率？
+至于电话问题，断网是极端情况。虽然网络比电话线不稳定，但是也不是天天断的。有网络用网络，没网络用手机。android加上sipdroid也可以当作sip客户端用。如果手机都走不了，那问题就不在三网融合的设计上了。
+你可以想想，网络电话到底有什么优势？电话到底干吗用的？在我们业务类型大幅变化的时代，讨论如何将上个世纪的业务完全不差的照搬到网络时代真的有帮助么？我们真的需要在网络时代，等待一个前向兼容的标准么？实话说，这是中老年业务。我家里没有普通电话，外婆和岳母说要装一个，我和老婆都没什么兴趣。因为除了多交钱，没有任何帮助。要找我们，手机总能找到。手机找不到，电话也找不到。
+传统认为，使用可以容忍的语音标准，提供持续而稳定的服务是电话服务的第一要素。实话说，在网络时代，这个可能要改为低成本，高可用性。网络（尤其是中国网络）已经把我们训练的很有抵抗力，对无法服务的系统基本可以接受，只要这个系统大部分时候能跑通。让我选择十年保证故障在1小时以内的普通电话服务，我宁可选择一年保证故障在五小时以内的网络电话服务，只要这个电话服务可以：
+1.大部分时候打的通，比移动/联通打不通的机会低。
+2.便宜，我可以和远程一聊数小时，甚至干脆保持一两天不断线。
+3.功能集成，例如视频电话？多人电话？
+为什么不选择后者呢？我正在准备把老婆家里的设备做一下定制，让她的电脑可以很方便的视频保持和我服务器的连接。这样岳母可以通过她家里的电脑和我这里保持持续通讯几个小时，甚至可以一边吃饭一边聊天，双方还能互相可见——免费。我不觉得普通电话业务能够提供这种优势，更不提昂贵的话费。
+另一个例子是我一个朋友，也在shlug里面。他十月去日本，带的是一台iTouch。在日本可以很容易的连上wifi，速度还很快。通过skype打电话回家，价格便宜服务稳定。如果是我，我更希望带一个3G设备，直接用当地的3G接入保持持续通讯。你觉得带传统手机出国然后办理套餐需要多少手续和多少钱？这是一个移动电话被网络服务比下去的例子。也许有人说中国的网络没这么好——好吧，看看五年前的网络，看看今天的，想想看五年后，这个论点还有没有优势。
+同样，在网络时代抱着电视不放也将会是种无谋。目前网络视频还是替换不了普通电视，不过这天总会来的。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2012/" />
+<meta property="article:published_time" content="2011-12-12T10:24:48+08:00" />
+<meta property="article:modified_time" content="2011-12-12T10:24:48+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">Dec 12, 2011
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     家庭网关，三网融合 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          <p>Sunny Sunny&lt;<a href="mailto:sunnyboyme@gmail.com">sunnyboyme@gmail.com</a>&gt;:</p>
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">家庭网关，三网融合</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Dec 12, 2011
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/network/">network</a><a class="tag" href="//blog.shell909090.org/tags/thinking/">thinking</a></div></div>
+    </header>
+    <div class="post-content">
+      <p>Sunny Sunny&lt;<a href="mailto:sunnyboyme@gmail.com">sunnyboyme@gmail.com</a>&gt;:</p>
 
 <p>要做一个关于home gateway的论文，讨论不同服务下的 Service Level Agreement （SLA），带宽，延时，数据包 schedule 策略 等等。不知大家有什么好的 想法/Question/Hypothesis，或者 以往的使用体验。</p>
 
@@ -189,169 +239,12 @@ if (!doNotTrack) {
 
 <p>同样，在网络时代抱着电视不放也将会是种无谋。目前网络视频还是替换不了普通电视，不过这天总会来的。</p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>Dec 12, 2011</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/network">network</a>  <a class="category" href="//blog.shell909090.org/tags/thinking">thinking</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/2010/" title="吐槽招聘几件事">吐槽招聘几件事</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/2016/" title="从python-support改为dh_python2的方法">从python-support改为dh_python2的方法</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

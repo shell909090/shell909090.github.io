@@ -1,122 +1,144 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>gnupg密钥签署原理和过程 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>gnupg密钥签署原理和过程</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="gnupg密钥签署原理和过程"/>
+<meta name="twitter:description" content="gnupg的密钥基础运用比较简单，有能力跑过来看我blog的应该都比较清楚了。不过最近接触了gnupg密钥的一些复杂运用，才发现——这玩意，居然能构造类似于PKI的复杂密码体系呢。
+gnupg的密码体系和PKI类似，又有区别。PKI密码体系有数个根节点，负责验证服务。然而gnupg没有这种根节点，一切都是以社会关系网络运作的。更加复杂，也更加接近自然社会体系。
+首先是gnupg的基本密码原理，公钥和私钥对。利用私钥签署，公钥验证。公钥加密，私钥解密。这是最基础的两种用法，我们略过不谈。密钥签署的问题提出来源于，我如何相信我得到的密钥，真的来自他所声称的这个人？
+例如，我得到了来自Linus Benedict Torvalds的一封邮件，上面说blahblah。当然，听起来应当高兴，不过暂缓，这个信真的是linus本人写的么？这时候，我可以导入linus的公钥，验证签名——当然，如果有签名的话。不过问题又来了，你如何保证得到的是linus本人的公钥，而不是某个试图破坏系统的人伪造的呢？
+好吧，为了解决这个问题，gnupg设计了互相签署机制。当我签署了某个人的公钥，并且将我的签署上传到公钥服务器（或者发送回给本人）的时候，我就为这个人的真实性做出了背书。例如，当我为thomas做了公钥签署，然后上传到了公钥服务器。然后thomas向某个他并不直接认识的我的朋友发送了一封邮件——例如发送给了julia。julia收到信的时候，会从服务器上下载thomas的公钥，然后看到我的背书。如果julia相信(trust)我，那么gnupg就会自动完成验证。当然，将公钥上传到服务器会略微降低安全性，所以如果限于安全考虑，我没有上传到公钥服务器，而是传回给本人。那么thomas就必须在给julia发送邮件的时候，附上公钥。julia一样能看到公钥上我的签名。
+下面是如何操作。
+首先你必须获得公钥，以下是从公钥服务器上下载的方法。
+gpg --keyserver &lt;keyserver&gt; --recv-keys &lt;Key\_ID&gt;  而后，你需要看到这个公钥的fingerprint。
+gpg --fingerprint &lt;Key\_ID&gt;  再然后，就是比较困难的部分。你需要和这个公钥的拥有者碰头，找个地方喝个咖啡，或者一起出来玩什么的。然后，查看他的有效证件，和本人对照，并且取得他本人认可的fingerprint。
+这点非常重要，不要轻易的使用线上fingerprint交换来替代这个过程，也不要随意的为别人进行签署。你必须*确定*你签署了本人的密钥，线上获得的key，是完全可能被修改的，这是对所有信任你的人的负责。
+再然后，就是简单的签署。
+gpg --default-key &lt;Key\_to\_use&gt; --sign-key &lt;Key\_ID&gt;  最后，上传公钥，或者传回给本人。以下例子是上传到服务器的，不过记得先征求对方同意——除非你原本也是从服务器上取得的公钥。
+gpg --keyserver &lt;keyserver&gt; --send-key &lt;Key\_ID&gt;  至于revoke什么的，暂且就不说了。
+其中最麻烦的，就是上述过程中，两个人碰头的部分。为了简化这个部分，gnupg使用者经常有种gnupg
+keysigning party[2]的聚会，互相交换和签署密钥。
+reference:
+[1].The GNU Privacy Handbookhttp://www.gnupg.org/gph/en/manual.html
+[2].GnuPG Keysigning Party HOWTOhttp://alfie.ist.org/projects/gpg-party/gpg-party.zh-tw.html"/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="gnupg密钥签署原理和过程" />
+<meta property="og:description" content="gnupg的密钥基础运用比较简单，有能力跑过来看我blog的应该都比较清楚了。不过最近接触了gnupg密钥的一些复杂运用，才发现——这玩意，居然能构造类似于PKI的复杂密码体系呢。
+gnupg的密码体系和PKI类似，又有区别。PKI密码体系有数个根节点，负责验证服务。然而gnupg没有这种根节点，一切都是以社会关系网络运作的。更加复杂，也更加接近自然社会体系。
+首先是gnupg的基本密码原理，公钥和私钥对。利用私钥签署，公钥验证。公钥加密，私钥解密。这是最基础的两种用法，我们略过不谈。密钥签署的问题提出来源于，我如何相信我得到的密钥，真的来自他所声称的这个人？
+例如，我得到了来自Linus Benedict Torvalds的一封邮件，上面说blahblah。当然，听起来应当高兴，不过暂缓，这个信真的是linus本人写的么？这时候，我可以导入linus的公钥，验证签名——当然，如果有签名的话。不过问题又来了，你如何保证得到的是linus本人的公钥，而不是某个试图破坏系统的人伪造的呢？
+好吧，为了解决这个问题，gnupg设计了互相签署机制。当我签署了某个人的公钥，并且将我的签署上传到公钥服务器（或者发送回给本人）的时候，我就为这个人的真实性做出了背书。例如，当我为thomas做了公钥签署，然后上传到了公钥服务器。然后thomas向某个他并不直接认识的我的朋友发送了一封邮件——例如发送给了julia。julia收到信的时候，会从服务器上下载thomas的公钥，然后看到我的背书。如果julia相信(trust)我，那么gnupg就会自动完成验证。当然，将公钥上传到服务器会略微降低安全性，所以如果限于安全考虑，我没有上传到公钥服务器，而是传回给本人。那么thomas就必须在给julia发送邮件的时候，附上公钥。julia一样能看到公钥上我的签名。
+下面是如何操作。
+首先你必须获得公钥，以下是从公钥服务器上下载的方法。
+gpg --keyserver &lt;keyserver&gt; --recv-keys &lt;Key\_ID&gt;  而后，你需要看到这个公钥的fingerprint。
+gpg --fingerprint &lt;Key\_ID&gt;  再然后，就是比较困难的部分。你需要和这个公钥的拥有者碰头，找个地方喝个咖啡，或者一起出来玩什么的。然后，查看他的有效证件，和本人对照，并且取得他本人认可的fingerprint。
+这点非常重要，不要轻易的使用线上fingerprint交换来替代这个过程，也不要随意的为别人进行签署。你必须*确定*你签署了本人的密钥，线上获得的key，是完全可能被修改的，这是对所有信任你的人的负责。
+再然后，就是简单的签署。
+gpg --default-key &lt;Key\_to\_use&gt; --sign-key &lt;Key\_ID&gt;  最后，上传公钥，或者传回给本人。以下例子是上传到服务器的，不过记得先征求对方同意——除非你原本也是从服务器上取得的公钥。
+gpg --keyserver &lt;keyserver&gt; --send-key &lt;Key\_ID&gt;  至于revoke什么的，暂且就不说了。
+其中最麻烦的，就是上述过程中，两个人碰头的部分。为了简化这个部分，gnupg使用者经常有种gnupg
+keysigning party[2]的聚会，互相交换和签署密钥。
+reference:
+[1].The GNU Privacy Handbookhttp://www.gnupg.org/gph/en/manual.html
+[2].GnuPG Keysigning Party HOWTOhttp://alfie.ist.org/projects/gpg-party/gpg-party.zh-tw.html" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/1903/" />
+<meta property="article:published_time" content="2011-09-07T10:52:29+08:00" />
+<meta property="article:modified_time" content="2011-09-07T10:52:29+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">Sep 7, 2011
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     gnupg密钥签署原理和过程 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          <p>gnupg的密钥基础运用比较简单，有能力跑过来看我blog的应该都比较清楚了。不过最近接触了gnupg密钥的一些复杂运用，才发现——这玩意，居然能构造类似于PKI的复杂密码体系呢。</p>
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">gnupg密钥签署原理和过程</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Sep 7, 2011
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/computer/">computer</a><a class="tag" href="//blog.shell909090.org/tags/crypt/">crypt</a><a class="tag" href="//blog.shell909090.org/tags/gnupg/">gnupg</a></div></div>
+    </header>
+    <div class="post-content">
+      <p>gnupg的密钥基础运用比较简单，有能力跑过来看我blog的应该都比较清楚了。不过最近接触了gnupg密钥的一些复杂运用，才发现——这玩意，居然能构造类似于PKI的复杂密码体系呢。</p>
 
 <p>gnupg的密码体系和PKI类似，又有区别。PKI密码体系有数个根节点，负责验证服务。然而gnupg没有这种根节点，一切都是以社会关系网络运作的。更加复杂，也更加接近自然社会体系。</p>
 
@@ -164,169 +186,12 @@ if (!doNotTrack) {
 
 <p>[2].GnuPG Keysigning Party HOWTO<a href="http://alfie.ist.org/projects/gpg-party/gpg-party.zh-tw.html">http://alfie.ist.org/projects/gpg-party/gpg-party.zh-tw.html</a></p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>Sep 7, 2011</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/computer">computer</a>  <a class="category" href="//blog.shell909090.org/tags/crypt">crypt</a>  <a class="category" href="//blog.shell909090.org/tags/gnupg">gnupg</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/1901/" title="为什么恳谈行不通">为什么恳谈行不通</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/1905/" title="悲崔的散热片改良">悲崔的散热片改良</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

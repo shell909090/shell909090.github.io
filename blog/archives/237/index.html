@@ -1,122 +1,116 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>IE内嵌对象提取方法 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>IE内嵌对象提取方法</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="IE内嵌对象提取方法"/>
+<meta name="twitter:description" content="我发现很多MM喜欢在blog里面嵌入各种对象，例如flash或者music。例如光MM的光良的歌，功MM的如果的事。一般来说要将这些内嵌对象保存下来是比较麻烦的。因为内嵌对象直接播放，没有引用和连接，那么用连接跟踪器就分析不出结果。
+通常来说URL是通过阅读代码来获得的，但是有的时候网页是通过javascript来引用的。这个时候代码分析和代码分析器（例如Mozilla内嵌的那个）就无效了。一般来说是用sniffer来解决问题的，贝壳以前用的是iris。后来出现了种种的特种sniffer分析器（其实分析cap抓包文件就好了），所以这个问题看似就解决了。但是恶搞是没有境界的，还有别的解决方法吗？
+贝壳首先想到的是COM分析和跟踪，跟踪COM的dll载入过程和接口参数。这样当然可以获得对象，问题是成本太高了。然后贝壳又设想了文件钩子，在向缓存区域写入特定文件的时候hook到。然后导出这个文件。但是文件确定的问题太困难了，假如同时有1000个内嵌的mid，这个方法等于没用。这个还不是最严重的问题，最严重的问题是这个解决方案可不比特种sniffer简单。
+后来贝壳在用ProcExp（www.sysinternal.com出品）的时候发现这个软件可以跟踪进程的句柄。这样的话IE内嵌对象必定在缓存区缓存，COM在打开的时候肯定使用了句柄。我们只要跟踪所有文件句柄，其中不会有很多的。（其实这个方法和前面的方法一样，要确定文件名是个困难的事情。）然后将文件的路径复制到console里面，运行下copy指令，文件就出来了。这个是我想的到的最简单的IE内嵌对象提取方法了。"/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="IE内嵌对象提取方法" />
+<meta property="og:description" content="我发现很多MM喜欢在blog里面嵌入各种对象，例如flash或者music。例如光MM的光良的歌，功MM的如果的事。一般来说要将这些内嵌对象保存下来是比较麻烦的。因为内嵌对象直接播放，没有引用和连接，那么用连接跟踪器就分析不出结果。
+通常来说URL是通过阅读代码来获得的，但是有的时候网页是通过javascript来引用的。这个时候代码分析和代码分析器（例如Mozilla内嵌的那个）就无效了。一般来说是用sniffer来解决问题的，贝壳以前用的是iris。后来出现了种种的特种sniffer分析器（其实分析cap抓包文件就好了），所以这个问题看似就解决了。但是恶搞是没有境界的，还有别的解决方法吗？
+贝壳首先想到的是COM分析和跟踪，跟踪COM的dll载入过程和接口参数。这样当然可以获得对象，问题是成本太高了。然后贝壳又设想了文件钩子，在向缓存区域写入特定文件的时候hook到。然后导出这个文件。但是文件确定的问题太困难了，假如同时有1000个内嵌的mid，这个方法等于没用。这个还不是最严重的问题，最严重的问题是这个解决方案可不比特种sniffer简单。
+后来贝壳在用ProcExp（www.sysinternal.com出品）的时候发现这个软件可以跟踪进程的句柄。这样的话IE内嵌对象必定在缓存区缓存，COM在打开的时候肯定使用了句柄。我们只要跟踪所有文件句柄，其中不会有很多的。（其实这个方法和前面的方法一样，要确定文件名是个困难的事情。）然后将文件的路径复制到console里面，运行下copy指令，文件就出来了。这个是我想的到的最简单的IE内嵌对象提取方法了。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/237/" />
+<meta property="article:published_time" content="2005-10-19T03:49:29+08:00" />
+<meta property="article:modified_time" content="2005-10-19T03:49:29+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">Oct 19, 2005
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     IE内嵌对象提取方法 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          <p>我发现很多MM喜欢在blog里面嵌入各种对象，例如flash或者music。例如光MM的光良的歌，功MM的如果的事。一般来说要将这些内嵌对象保存下来是比较麻烦的。因为内嵌对象直接播放，没有引用和连接，那么用连接跟踪器就分析不出结果。</p>
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">IE内嵌对象提取方法</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Oct 19, 2005
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/computer/">computer</a></div></div>
+    </header>
+    <div class="post-content">
+      <p>我发现很多MM喜欢在blog里面嵌入各种对象，例如flash或者music。例如光MM的光良的歌，功MM的如果的事。一般来说要将这些内嵌对象保存下来是比较麻烦的。因为内嵌对象直接播放，没有引用和连接，那么用连接跟踪器就分析不出结果。</p>
 
 <p>通常来说URL是通过阅读代码来获得的，但是有的时候网页是通过javascript来引用的。这个时候代码分析和代码分析器（例如Mozilla内嵌的那个）就无效了。一般来说是用sniffer来解决问题的，贝壳以前用的是iris。后来出现了种种的特种sniffer分析器（其实分析cap抓包文件就好了），所以这个问题看似就解决了。但是恶搞是没有境界的，还有别的解决方法吗？</p>
 
@@ -124,169 +118,12 @@ if (!doNotTrack) {
 
 <p>后来贝壳在用ProcExp（<a href="http://www.sysinternal.com">www.sysinternal.com</a>出品）的时候发现这个软件可以跟踪进程的句柄。这样的话IE内嵌对象必定在缓存区缓存，COM在打开的时候肯定使用了句柄。我们只要跟踪所有文件句柄，其中不会有很多的。（其实这个方法和前面的方法一样，要确定文件名是个困难的事情。）然后将文件的路径复制到console里面，运行下copy指令，文件就出来了。这个是我想的到的最简单的IE内嵌对象提取方法了。</p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>Oct 19, 2005</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/computer">computer</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/236/" title="错车记">错车记</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/238/" title="火灾">火灾</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

@@ -1,122 +1,132 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>lfs under debian注记 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>lfs under debian注记</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="lfs under debian注记"/>
+<meta name="twitter:description" content="1.严格按照说明做，少看一点无关内容后面就一堆err了。
+2.新分区大点，4G不够的，最小用8G。我用了20G的，硬盘不值钱。另外说一句，并不是4G不能够做到，而是你可能被迫删除不少有用东西，或者是移到其他位置，增加复杂度。
+3.每次你进入一个section，以前针对这个包进行解压，打补丁，并修改的source都作废了。直接删除它们，然后重新解压。lfs不依赖于以前解开的源码，在任何一节的开始都不需要翻以前怎么处理（解压，打补丁，修改）源码的。你在任何一节都可以（并且必须）独立操作源码。
+4.mawk会出错，装一个gawk。
+5.yacc没有的时候，装bison，it&rsquo;s works。
+6.如果碰到见鬼的tar.xz，用tar Jxf。或者更简单的，现代tar都支持xf直接解压，不用再自己选择zjJ。
+7.chapter5的流程？先用系统的编译器编译了binutils，gcc和glibc，然后再用刚刚编译好的再编译这三个，这样编译系统就统统连接到了/tools上。然后用/tools的连接编译了一堆编译用工具，bash啦，make啦。这样，就完成了编译环境的建立，/tools是一个独立于主系统的，完整而可用的编译系统。用这个编译系统编译任何东西的结果应当是相对可控的。
+8.如果我是你，在chapter5完成的时候会tar czf ~/tools.tar.gz /tools。这样会让你在chapter6中犯错的时候不至于血本无归。
+9.chapter6的流程？用chapter5的编译系统，编译了新系统的编译系统。当然，这个不容易，因为刚刚的编译系统所有指向都是/tools。所以lfs指导你做了不少patch。然后重复chapter5的过程，逐步把源码编译安装到正式系统中。
+10.lfs真TMD的辛苦，连source code的typo都需要在书中指出和fix。。。而且lfs自己还有errata。
+11.lfs的56两章看起来像是两个人写的，风格习惯不一致。chapter5用``，chapter6用\$()。还有gcc-pass2的时候，cp -v XXX{,.tmp}; sed XXX.tmp &hellip; &gt; XXX。而chapter6的binutils则是sed -i.bak。当然，有可能是因为有些系统的sed不支持-i，例如redhat的系统始终不支持netstat -nlp46，I hate it。BTW，我喜欢sed -i。
+12.编译过程真心傻X，大部分都是解开源码，configure &ndash;prefix=&hellip; &amp;&amp; make &amp;&amp; make check &amp;&amp; make install。这些过程好像可以用一个不知道啥脚本来简化，建议不要手工干这堆事情，没意思的。相反，倒是很多调整有些意思。"/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="lfs under debian注记" />
+<meta property="og:description" content="1.严格按照说明做，少看一点无关内容后面就一堆err了。
+2.新分区大点，4G不够的，最小用8G。我用了20G的，硬盘不值钱。另外说一句，并不是4G不能够做到，而是你可能被迫删除不少有用东西，或者是移到其他位置，增加复杂度。
+3.每次你进入一个section，以前针对这个包进行解压，打补丁，并修改的source都作废了。直接删除它们，然后重新解压。lfs不依赖于以前解开的源码，在任何一节的开始都不需要翻以前怎么处理（解压，打补丁，修改）源码的。你在任何一节都可以（并且必须）独立操作源码。
+4.mawk会出错，装一个gawk。
+5.yacc没有的时候，装bison，it&rsquo;s works。
+6.如果碰到见鬼的tar.xz，用tar Jxf。或者更简单的，现代tar都支持xf直接解压，不用再自己选择zjJ。
+7.chapter5的流程？先用系统的编译器编译了binutils，gcc和glibc，然后再用刚刚编译好的再编译这三个，这样编译系统就统统连接到了/tools上。然后用/tools的连接编译了一堆编译用工具，bash啦，make啦。这样，就完成了编译环境的建立，/tools是一个独立于主系统的，完整而可用的编译系统。用这个编译系统编译任何东西的结果应当是相对可控的。
+8.如果我是你，在chapter5完成的时候会tar czf ~/tools.tar.gz /tools。这样会让你在chapter6中犯错的时候不至于血本无归。
+9.chapter6的流程？用chapter5的编译系统，编译了新系统的编译系统。当然，这个不容易，因为刚刚的编译系统所有指向都是/tools。所以lfs指导你做了不少patch。然后重复chapter5的过程，逐步把源码编译安装到正式系统中。
+10.lfs真TMD的辛苦，连source code的typo都需要在书中指出和fix。。。而且lfs自己还有errata。
+11.lfs的56两章看起来像是两个人写的，风格习惯不一致。chapter5用``，chapter6用\$()。还有gcc-pass2的时候，cp -v XXX{,.tmp}; sed XXX.tmp &hellip; &gt; XXX。而chapter6的binutils则是sed -i.bak。当然，有可能是因为有些系统的sed不支持-i，例如redhat的系统始终不支持netstat -nlp46，I hate it。BTW，我喜欢sed -i。
+12.编译过程真心傻X，大部分都是解开源码，configure &ndash;prefix=&hellip; &amp;&amp; make &amp;&amp; make check &amp;&amp; make install。这些过程好像可以用一个不知道啥脚本来简化，建议不要手工干这堆事情，没意思的。相反，倒是很多调整有些意思。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2088/" />
+<meta property="article:published_time" content="2012-02-09T07:04:06+08:00" />
+<meta property="article:modified_time" content="2012-02-09T07:04:06+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">Feb 9, 2012
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     lfs under debian注记 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          <p>1.严格按照说明做，少看一点无关内容后面就一堆err了。</p>
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">lfs under debian注记</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Feb 9, 2012
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/debian/">debian</a><a class="tag" href="//blog.shell909090.org/tags/lfs/">lfs</a><a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a></div></div>
+    </header>
+    <div class="post-content">
+      <p>1.严格按照说明做，少看一点无关内容后面就一堆err了。</p>
 
 <p>2.新分区大点，4G不够的，最小用8G。我用了20G的，硬盘不值钱。另外说一句，并不是4G不能够做到，而是你可能被迫删除不少有用东西，或者是移到其他位置，增加复杂度。</p>
 
@@ -140,169 +150,12 @@ if (!doNotTrack) {
 
 <p>12.编译过程真心傻X，大部分都是解开源码，configure &ndash;prefix=&hellip; &amp;&amp; make &amp;&amp; make check &amp;&amp; make install。这些过程好像可以用一个不知道啥脚本来简化，建议不要手工干这堆事情，没意思的。相反，倒是很多调整有些意思。</p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>Feb 9, 2012</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/debian">debian</a>  <a class="category" href="//blog.shell909090.org/tags/lfs">lfs</a>  <a class="category" href="//blog.shell909090.org/tags/linux">linux</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/2086/" title="windows下那些好用的免费程序">windows下那些好用的免费程序</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/2090/" title="外包和派遣的一些问题和顾虑">外包和派遣的一些问题和顾虑</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

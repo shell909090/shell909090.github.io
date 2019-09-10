@@ -1,122 +1,146 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>时间消费分析 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>时间消费分析</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="时间消费分析"/>
+<meta name="twitter:description" content="前面篇文章A同学说看不懂，OK，这次来个看的懂的。再看不懂去看统计学里面IO表去。
+上班的时候总觉得时间不够用，上学的时候不明显阿。我的时间哪里去，做个投入产出分析好咯。
+首先做消费分析，周期是周(Week)。所以用周是因为休息基本按周算的，平均的话差异最小。
+一周的投入是175H，固定的。
+一周的基本产出是这样的：
+睡觉8*7=56-60H，固定的。当然，特殊情况可以熬夜。不过天天熬夜的就成苦海神龙咯。
+吃饭0.5*3*7=10.5H，固定的。有的人边吃饭便做事情，奉劝饭要好好吃，胃是自己的。
+上厕所，刷牙洗脸。这个没啥固定时间的，如果你不拉稀不便秘，再加上其他必须做的杂碎事情，每天大概就是花半个小时吧。0.5*7=3.5H
+OK，这个是固定产出。你可以不上班不上学，但是不能不吃饭睡觉。吃饭可以蹭可以报公帐，但是事情花的时间不能省。去了这些时间，我们还剩下175H-60H-10.5H-3.5H=101H。
+顺便讲解下，有的同学听说做软件的有3W的薪水，觉得很高。其实没啥好奇怪的。如果封闭开发，吃饭睡觉都不许走出去，不许上网不许玩的情况下。周工作时间就是100H，最高工作时间，除非压缩吃饭睡觉。同等也要拿人家两个半月的薪水，何况这种工作肯定要加薪的，能不高吗？如果倒算过来，薪水只有12000。差不多咯。
+然后我们就要分配100H去上班上课学习娱乐。这里我们先算下理论的标准工作时间。国家一年有10天带薪假期，一个企业一般也给七天带薪假的。都是白给的。这样就是8(H/D)*17(D/Y)/52(W/Y)=2.6(H/W)，就是每周2.6小时带薪假期。那么理论上每周工作时间就是37.4H。
+基本上来说这是必须上的班，除非工作性质特殊，否则不上足是要出问题的。我们所需要的就是将剩下的101H-37.4H=63.6H发挥最大效率。这是我们的纯投入，前面的投入只是为了产出能正常工作生活的人。OK，作为一个无奈的事实，我们必须将这个投入中的部分用来做无聊的事情。大致来说有这几样：
+坐车走路，我是每天1.5*5=7.5H。自主时间的11.8%就这么浪费了。剩下56.1H。
+锻炼身体，我是每周6H，自主时间的9.4%就没了。像坐办公室的，不练身体的话，上班等于伤命，不可不练阿。剩下50.1H。
+额外加班，说不准多少时间，具体也算不出来，不过每周总会多出6-7个小时。因为毕竟上班要提前到，宁早勿晚。下班要以后走，宁晚勿早。这种时间很无奈的。，占9.4％，剩下44.1H。(Stella同学，如果刚刚你没有感觉神经一紧怎么这么熟悉，那么我可以肯定你做音乐处理没前途咯)
+磨磨蹭蹭东张西望不知道在干吗，偶尔有点时间上网逛逛写个博客。这种时间一般人都会有吧，每天愣个20分钟，一周就是2.4H，占3.8%，剩下40.3小时。
+换句话说，每周我们的剩余时间就是40H上下，大致和上班一样。在这个时间里面我们要处理各种个人杂事约会见面看同学吃饭请客逛街还偶尔要拿去加班。如果你人不怎么和别人打交道，那么每周处理下个人杂事5-10个小时就够了，剩下30-35H拿去加班，最高可以加班出周工作70-75H的记录。这就是所谓每周正常加班不能超过36H的由来，再多就妨碍个人正常生活了。不过话说回来，国家规定加班是每周多少呢？我查了查，正常状态下是不超过9H！如果说的苛刻的话，我每天光上下班多出来的时间就快让公司违法了(注：这个时间不能算入加班，所以大家不用高兴)。
+但是作为计算机程序员来说，我的时间具有特殊性。为什么呢？我需要不断学习。
+举个例子来说，如果说翻译学了外语，他基本不用怎么学习新的知识，因为语言变化速度相对比较慢。但是软件业几年就淘汰一代，如果没有相对的学习速度，吃饭减产是注定的。我们下面就无法进行消费分析了，必须用投入产出分析。"/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="时间消费分析" />
+<meta property="og:description" content="前面篇文章A同学说看不懂，OK，这次来个看的懂的。再看不懂去看统计学里面IO表去。
+上班的时候总觉得时间不够用，上学的时候不明显阿。我的时间哪里去，做个投入产出分析好咯。
+首先做消费分析，周期是周(Week)。所以用周是因为休息基本按周算的，平均的话差异最小。
+一周的投入是175H，固定的。
+一周的基本产出是这样的：
+睡觉8*7=56-60H，固定的。当然，特殊情况可以熬夜。不过天天熬夜的就成苦海神龙咯。
+吃饭0.5*3*7=10.5H，固定的。有的人边吃饭便做事情，奉劝饭要好好吃，胃是自己的。
+上厕所，刷牙洗脸。这个没啥固定时间的，如果你不拉稀不便秘，再加上其他必须做的杂碎事情，每天大概就是花半个小时吧。0.5*7=3.5H
+OK，这个是固定产出。你可以不上班不上学，但是不能不吃饭睡觉。吃饭可以蹭可以报公帐，但是事情花的时间不能省。去了这些时间，我们还剩下175H-60H-10.5H-3.5H=101H。
+顺便讲解下，有的同学听说做软件的有3W的薪水，觉得很高。其实没啥好奇怪的。如果封闭开发，吃饭睡觉都不许走出去，不许上网不许玩的情况下。周工作时间就是100H，最高工作时间，除非压缩吃饭睡觉。同等也要拿人家两个半月的薪水，何况这种工作肯定要加薪的，能不高吗？如果倒算过来，薪水只有12000。差不多咯。
+然后我们就要分配100H去上班上课学习娱乐。这里我们先算下理论的标准工作时间。国家一年有10天带薪假期，一个企业一般也给七天带薪假的。都是白给的。这样就是8(H/D)*17(D/Y)/52(W/Y)=2.6(H/W)，就是每周2.6小时带薪假期。那么理论上每周工作时间就是37.4H。
+基本上来说这是必须上的班，除非工作性质特殊，否则不上足是要出问题的。我们所需要的就是将剩下的101H-37.4H=63.6H发挥最大效率。这是我们的纯投入，前面的投入只是为了产出能正常工作生活的人。OK，作为一个无奈的事实，我们必须将这个投入中的部分用来做无聊的事情。大致来说有这几样：
+坐车走路，我是每天1.5*5=7.5H。自主时间的11.8%就这么浪费了。剩下56.1H。
+锻炼身体，我是每周6H，自主时间的9.4%就没了。像坐办公室的，不练身体的话，上班等于伤命，不可不练阿。剩下50.1H。
+额外加班，说不准多少时间，具体也算不出来，不过每周总会多出6-7个小时。因为毕竟上班要提前到，宁早勿晚。下班要以后走，宁晚勿早。这种时间很无奈的。，占9.4％，剩下44.1H。(Stella同学，如果刚刚你没有感觉神经一紧怎么这么熟悉，那么我可以肯定你做音乐处理没前途咯)
+磨磨蹭蹭东张西望不知道在干吗，偶尔有点时间上网逛逛写个博客。这种时间一般人都会有吧，每天愣个20分钟，一周就是2.4H，占3.8%，剩下40.3小时。
+换句话说，每周我们的剩余时间就是40H上下，大致和上班一样。在这个时间里面我们要处理各种个人杂事约会见面看同学吃饭请客逛街还偶尔要拿去加班。如果你人不怎么和别人打交道，那么每周处理下个人杂事5-10个小时就够了，剩下30-35H拿去加班，最高可以加班出周工作70-75H的记录。这就是所谓每周正常加班不能超过36H的由来，再多就妨碍个人正常生活了。不过话说回来，国家规定加班是每周多少呢？我查了查，正常状态下是不超过9H！如果说的苛刻的话，我每天光上下班多出来的时间就快让公司违法了(注：这个时间不能算入加班，所以大家不用高兴)。
+但是作为计算机程序员来说，我的时间具有特殊性。为什么呢？我需要不断学习。
+举个例子来说，如果说翻译学了外语，他基本不用怎么学习新的知识，因为语言变化速度相对比较慢。但是软件业几年就淘汰一代，如果没有相对的学习速度，吃饭减产是注定的。我们下面就无法进行消费分析了，必须用投入产出分析。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/297/" />
+<meta property="article:published_time" content="2006-04-02T19:31:40+08:00" />
+<meta property="article:modified_time" content="2006-04-02T19:31:40+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">Apr 2, 2006
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     时间消费分析 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          <p>前面篇文章A同学说看不懂，OK，这次来个看的懂的。再看不懂去看统计学里面IO表去。</p>
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">时间消费分析</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Apr 2, 2006
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/others/">others</a></div></div>
+    </header>
+    <div class="post-content">
+      <p>前面篇文章A同学说看不懂，OK，这次来个看的懂的。再看不懂去看统计学里面IO表去。</p>
 
 <p>上班的时候总觉得时间不够用，上学的时候不明显阿。我的时间哪里去，做个投入产出分析好咯。</p>
 
@@ -154,169 +178,12 @@ if (!doNotTrack) {
 
 <p>举个例子来说，如果说翻译学了外语，他基本不用怎么学习新的知识，因为语言变化速度相对比较慢。但是软件业几年就淘汰一代，如果没有相对的学习速度，吃饭减产是注定的。我们下面就无法进行消费分析了，必须用投入产出分析。</p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>Apr 2, 2006</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/others">others</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/296/" title="整死人">整死人</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/298/" title="虹桥机场最长的一天">虹桥机场最长的一天</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

@@ -1,122 +1,139 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>FIN-WAIT-1的问题一例 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>FIN-WAIT-1的问题一例</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="FIN-WAIT-1的问题一例"/>
+<meta name="twitter:description" content="这是一个早应该知道的事情。但是还是被整了半天。
+引子 tcp关闭时有多少个状态？
+当当，别数了，应该是6个，不算CLOSED。分别是FIN-WAIT-1/FIN-WAIT-2,CLOSING, TIME_WAIT, CLOSE_WAIT,LAST_ACK。如果不能瞬间想起一个方块来，说明tcp状态不算熟。
+问题 今天的故事来自今天BI同事提出的一个问题。在线上，他发现这么一个现象。在一组系统中，客户端全都FIN-WAIT-1了，但是服务器还是ESTAB。
+我的第一反应很简单，这明显差了一个FIN包的距离。而且鉴于两者在同一网络中，而且重复出现。建议他首先排查中间的防火墙设备和防火墙设置。
+会找上我的问题，当然没这么简单。中间没有任何防火墙或软件防火墙设定。
+分析 下一步呢？有点没方向了。抓包分析。发现FIN端向ESTAB端不停的发起ACK，但是看起来和FIN没什么太大关系。
+偶然，同事注意到所有出现现象的链接都有写缓冲区数据。这是一个不常见的现象。写缓冲区一般会有点数据，但是应该很快就被消费，而不会长期堆积，更不会长期维持同样的数字。这是写缓冲区满。结合刚刚的ACK，其实本质是对端停止消费数据。
+这是一个TCP的边角。当读缓冲区满的时候，tcp协议栈会声明window=0。当读缓冲区恢复的时候，读方会用ack with window来重新宣告可用缓冲区。但是在tcp里，ack是不重传的。所以这个ack会丢失。因此写方有责任定期请求确认读方window，来确定整个过程不会卡死。这就是刚刚看到的不停ACK的现象。
+而这里就有个非常重要的可能性——FIN包的处理方式。为此我阅读了源码。源码告诉我们，FIN包被接收到的时候，并不是即时处理的。实际上，在ESTAB状态收到的FIN，正常path下会进入tcp_data_queue。这个函数会将包堆积到队列中，并根据当前seq来处理包。主要包括三种seq，当前包，过去包，未来包。只有在以下两种情况下，fin包才会被处理：
+ 当前收到一个fin包。 当前收到一个包，完成处理后out of order队列中有数据，因而进入tcp_ofo_queue。而队列中有fin包。  而不幸的是，当前包处理流程第一步就是判断tcp_receive_window。如果没空间了，会进入out_of_window过程。后者会快速的触发一个ack返回，然后就把包给丢了。
+我猜对了开头，可是没有猜到结局。
+结论 通过python的快速复现，验证了这个结论。建立一对连接，其中一个不接收任何数据，而其中一个发送足够长的数据。当读缓冲区满后，再去close，出现一端FIN-WAIT-1，一端ESTAB的现象。
+因此，结论如下：
+当写缓冲区满之后，收到的fin包会被丢弃，而发送端并不会重发。而只要写缓冲还有剩余空间，哪怕一个字节，都可以正常处理。  内核参数 根据文档，可能有几个内核参数与此有关。
+ net.ipv4.tcp_max_orphans net.ipv4.tcp_orphan_retries  测试表明，net.ipv4.tcp_max_orphans可以抑制这个现象。当减低这个数值后，再进入FIN-WAIT-1状态的连接会自动消失。ss -natp不能看到连接。有趣的是，如果进程尚未关闭的话，可以在/proc/[pid]/fd下面看到fd仍然存在，而且还可以读出数据。
+抓包表明，连接实际是被一个RST干掉的。阅读源码，在tcp_close的最后部分，可以看到tcp_too_many_orphans被调用了。如果超过限制，就会发出reset，并且关闭连接。
+而tcp_orphan_retirs，根据我的理解和测试，和这事没有关系。这主要是指这么一种现象：当对端机器poweroff(而不是shutdown)的情况下，你所发出的报文会丢失。因此理所当然的，写者的写缓冲区会很快充满。此时会发起连接探测，以确定对方是不是掉线了。套在close的这个case上，就是一边是FIN-WAIT-1，另一边死不响应。需要通过多次探测来宣告对方死亡。因此，如果对方机器死机导致不响应你的FIN，才是用tcp_orphan_retirs的场合。"/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="FIN-WAIT-1的问题一例" />
+<meta property="og:description" content="这是一个早应该知道的事情。但是还是被整了半天。
+引子 tcp关闭时有多少个状态？
+当当，别数了，应该是6个，不算CLOSED。分别是FIN-WAIT-1/FIN-WAIT-2,CLOSING, TIME_WAIT, CLOSE_WAIT,LAST_ACK。如果不能瞬间想起一个方块来，说明tcp状态不算熟。
+问题 今天的故事来自今天BI同事提出的一个问题。在线上，他发现这么一个现象。在一组系统中，客户端全都FIN-WAIT-1了，但是服务器还是ESTAB。
+我的第一反应很简单，这明显差了一个FIN包的距离。而且鉴于两者在同一网络中，而且重复出现。建议他首先排查中间的防火墙设备和防火墙设置。
+会找上我的问题，当然没这么简单。中间没有任何防火墙或软件防火墙设定。
+分析 下一步呢？有点没方向了。抓包分析。发现FIN端向ESTAB端不停的发起ACK，但是看起来和FIN没什么太大关系。
+偶然，同事注意到所有出现现象的链接都有写缓冲区数据。这是一个不常见的现象。写缓冲区一般会有点数据，但是应该很快就被消费，而不会长期堆积，更不会长期维持同样的数字。这是写缓冲区满。结合刚刚的ACK，其实本质是对端停止消费数据。
+这是一个TCP的边角。当读缓冲区满的时候，tcp协议栈会声明window=0。当读缓冲区恢复的时候，读方会用ack with window来重新宣告可用缓冲区。但是在tcp里，ack是不重传的。所以这个ack会丢失。因此写方有责任定期请求确认读方window，来确定整个过程不会卡死。这就是刚刚看到的不停ACK的现象。
+而这里就有个非常重要的可能性——FIN包的处理方式。为此我阅读了源码。源码告诉我们，FIN包被接收到的时候，并不是即时处理的。实际上，在ESTAB状态收到的FIN，正常path下会进入tcp_data_queue。这个函数会将包堆积到队列中，并根据当前seq来处理包。主要包括三种seq，当前包，过去包，未来包。只有在以下两种情况下，fin包才会被处理：
+ 当前收到一个fin包。 当前收到一个包，完成处理后out of order队列中有数据，因而进入tcp_ofo_queue。而队列中有fin包。  而不幸的是，当前包处理流程第一步就是判断tcp_receive_window。如果没空间了，会进入out_of_window过程。后者会快速的触发一个ack返回，然后就把包给丢了。
+我猜对了开头，可是没有猜到结局。
+结论 通过python的快速复现，验证了这个结论。建立一对连接，其中一个不接收任何数据，而其中一个发送足够长的数据。当读缓冲区满后，再去close，出现一端FIN-WAIT-1，一端ESTAB的现象。
+因此，结论如下：
+当写缓冲区满之后，收到的fin包会被丢弃，而发送端并不会重发。而只要写缓冲还有剩余空间，哪怕一个字节，都可以正常处理。  内核参数 根据文档，可能有几个内核参数与此有关。
+ net.ipv4.tcp_max_orphans net.ipv4.tcp_orphan_retries  测试表明，net.ipv4.tcp_max_orphans可以抑制这个现象。当减低这个数值后，再进入FIN-WAIT-1状态的连接会自动消失。ss -natp不能看到连接。有趣的是，如果进程尚未关闭的话，可以在/proc/[pid]/fd下面看到fd仍然存在，而且还可以读出数据。
+抓包表明，连接实际是被一个RST干掉的。阅读源码，在tcp_close的最后部分，可以看到tcp_too_many_orphans被调用了。如果超过限制，就会发出reset，并且关闭连接。
+而tcp_orphan_retirs，根据我的理解和测试，和这事没有关系。这主要是指这么一种现象：当对端机器poweroff(而不是shutdown)的情况下，你所发出的报文会丢失。因此理所当然的，写者的写缓冲区会很快充满。此时会发起连接探测，以确定对方是不是掉线了。套在close的这个case上，就是一边是FIN-WAIT-1，另一边死不响应。需要通过多次探测来宣告对方死亡。因此，如果对方机器死机导致不响应你的FIN，才是用tcp_orphan_retirs的场合。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2730/" />
+<meta property="article:published_time" content="2015-02-26T00:00:00+00:00" />
+<meta property="article:modified_time" content="2015-02-26T00:00:00+00:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">Feb 26, 2015
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     FIN-WAIT-1的问题一例 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">FIN-WAIT-1的问题一例</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Feb 26, 2015
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div></div>
+    </header>
+    <div class="post-content">
+      
 
 <p>这是一个早应该知道的事情。但是还是被整了半天。</p>
 
@@ -177,164 +194,12 @@ if (!doNotTrack) {
 
 <p>而tcp_orphan_retirs，根据我的理解和测试，和这事没有关系。这主要是指这么一种现象：当对端机器poweroff(而不是shutdown)的情况下，你所发出的报文会丢失。因此理所当然的，写者的写缓冲区会很快充满。此时会发起连接探测，以确定对方是不是掉线了。套在close的这个case上，就是一边是FIN-WAIT-1，另一边死不响应。需要通过多次探测来宣告对方死亡。因此，如果对方机器死机导致不响应你的FIN，才是用tcp_orphan_retirs的场合。</p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>Feb 26, 2015</time>
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/2727/" title="p2p vpn的部署方法">p2p vpn的部署方法</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/2734/" title="EFI和GPT的研究">EFI和GPT的研究</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

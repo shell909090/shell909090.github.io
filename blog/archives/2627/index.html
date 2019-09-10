@@ -1,122 +1,158 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>goproxy和msocks简介 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>goproxy和msocks简介</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="goproxy和msocks简介"/>
+<meta name="twitter:description" content="goproxy是我个人写的，和shadowsocks同类的软件。当然，在设计之初我完全不知道shadowsocks的存在，goproxy的最初目标也不是成为shadowsocks的同类。只是我一直无法实现一个可靠的，能够达成目标的系统。最后想，那这样吧，我找一个跳一跳能够够到的苹果。大幅简化的结果就是goproxy——后来我才知道shadowsocks。
+shadowsocks的基本原理 shadowsocks的基本概念，就是利用某种不同于SSL的协议，将本地的socks数据流转发到远程。这个协议，在默认版本中是一个凯撒变换，后来有了aes等加密算法。goproxy也采用了类似的做法，同样支持aes等加密算法。在每次连接时，客户端先用加密通道连接服务器端，然后完成整个连接通路。这样的设计鲁棒性相当好，但是作为代价的，也有不少缺陷。
+首先，goproxy和shadowsocks不约而同的采用了自己的协议，而非将socks5透明的转发到远程的服务器端。为什么？因为socksv5协议中，握手过程是三次交互。客户发送握手包，服务器响应允许的握手验证方法。客户发送验证报文，服务器端返回是否成功，客户发送要连接的目标，服务器端返回是否成功。细节我记得不是很清楚，但是2-3次往返是必须的。
+这种工作机制需要client -&gt; proxy-client -&gt; proxy-server -&gt; server的一个链条，本身就比直连多了两次TCP握手。加上上述的往返过程，更加耗时。而且这个消耗在每次建立链接时都要来一次，而HTTP是一种短连接协议——这就更加无法容忍了。因此改用自有协议，一次交互完成握手，就会更加快速。
+更根本的原因在于，这两个系统都需要越过IDS，而三次交互的报文大小是几乎固定的——就算加密也无法改变报文大小。不但大小一样，而且由于用户名密码相同，起始加密过程和IV一致，因此采用socks协议的话，每个链接开始都有相同的来返数据。
+我不知道shadowsocks怎么处理的这个问题。qsocks协议（msocks）的前身规定，每次握手时客户端提供一组IV，然后发送一个头部变长的字符串（256字符以内），在远程丢弃同样长度的随机字符。经过这样的处理，每次链接时的报文长度和内容序列都不一样，增加了破译难度。至于多出来的几十个字节，和验证报文在一个报文内，开销相比一次RTO几乎可以忽略不计。
+但是还是有一点无法避免的问题。如果你看到某个服务器上有一个端口，频繁的被一个或多个IP链接。每个链接都不长，每次都是客户端吐一堆数据，服务器返回一堆，然后关闭链接。尽管协议无法破解，但是基本可以肯定这就是shadowsocks。根据这个特性，可以有效的阻挡服务——这也是我最近碰到的问题。
+而且每个链接都需要验证和TCP握手太慢了。
+msocks的改进 所以，我参考SPDY协议，做了msocks。msocks的核心思路和qsocks很类似，主要修改是以下两点：
+ 使用一个可靠链接（这里是经过加密的TCP），在这个链接里面封装多对传输。 每个链接只要一次验证。  这样做，首先减少了一次TCP握手和一次身份验证，工作速度更加快。其次多个传输叠加在一个流里面，流特征更加变化莫测。最后，无论是服务器端还是客户端的开销都小了很多。
+当然，这也带来不少问题。例如TCP原本的拥塞控制窗口是为了一对传输序列设计的。当很多传输序列在一对TCP上传递的时候，丢报文造成的影响会作用作用在全体传输序列上。包括丢了一个报文重传的时候，所有序列都必须阻塞。还有基础的TCP被施加了丢包，导致全体序列共享5k带宽。当然，经过评估后，我觉得这些问题比频繁握手更加轻，所以就设计了msocks协议。
+协议设计的时候，有几个细节问题。
+多对复用 我采用了一个map，来记录某个id是否对应到了一个控制结构。这个映射只能被客户端更改，并且有个专门的函数负责查找空闲的id，每次生成的id都是递增的，如果碰到最大值则绕回。
+id的大小是16位，足够容纳65536对同时链接。其实不修改内核的话，500对代理就会导致too many files。
+实际上一般到id达到400后，单一的tcp就断线重连了。目前我还没见过上千的数字呢。
+连接状态 连接一般情况下可以看到5种状态，连接请求发送，连接请求接收，连接建立，主动关闭连接中，被动关闭连接中。
+当客户端请求代理连接一个远程服务器时，进入连接请求发送。代理远程端接受后在连接目标服务器的过程中，进入连接请求接收。当成功后，双方进入连接建立。
+当关闭时，主动发起关闭一端进入主动关闭，另一端进入被动关闭。当被动关闭端调用close，或者主动关闭端收到对方关闭，整个链接就销毁。
+由于tcp是可靠传输，因此三次握手和四次关闭都是不必须的。
+简单吧。
+拥塞控制 TCP原本是带有拥塞控制的——借助SSN双序列和窗口机制。但是在多路复用的时候，我们需要自行控制拥塞——而且不能采用会和机制。会和会导致后续已经到达的其他链接的报文被一个没人接收的报文阻挡。所以必须采用带拥塞控制的缓存队列机制。
+不过幸好，TCP本身是可靠传输协议，所以我不用担心丢包重发之类的问题。我需要做的，就是把对方读取的字节数传递回来，减在控制器上，即可。
+不过，我没有做对应于silly window syndrome的优化，在每次读取小数据量后，这个读取造成的window扩张都会被传回。当然，这么设计是有原因的。我默认采用了8K的buffer进行fd间拷贝，所以一般碰不到SWS。
+为了解决tcp链接复用造成的单连接带宽问题，我强烈的建议你做以下的设定：
+net.ipv4.tcp_congestion_control = htcp net.core.rmem_default = 2621440 net.core.rmem_max = 16777216 net.core.wmem_default = 655360 net.core.wmem_max = 16777216 net.ipv4.tcp_rmem = 4096 2621440 16777216 net.ipv4.tcp_wmem = 4096 655360 16777216  ip选择算法和DNS 在goproxy中，我沿用了一个做法。通过DNS获得请求的目标IP，和中国IP范围核对。如果在国内则直接访问，否则透过代理。这个方法能够极快的加速访问，而且几乎不依赖于需要更新的列表（中国IP列表相对来说固定）。"/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="goproxy和msocks简介" />
+<meta property="og:description" content="goproxy是我个人写的，和shadowsocks同类的软件。当然，在设计之初我完全不知道shadowsocks的存在，goproxy的最初目标也不是成为shadowsocks的同类。只是我一直无法实现一个可靠的，能够达成目标的系统。最后想，那这样吧，我找一个跳一跳能够够到的苹果。大幅简化的结果就是goproxy——后来我才知道shadowsocks。
+shadowsocks的基本原理 shadowsocks的基本概念，就是利用某种不同于SSL的协议，将本地的socks数据流转发到远程。这个协议，在默认版本中是一个凯撒变换，后来有了aes等加密算法。goproxy也采用了类似的做法，同样支持aes等加密算法。在每次连接时，客户端先用加密通道连接服务器端，然后完成整个连接通路。这样的设计鲁棒性相当好，但是作为代价的，也有不少缺陷。
+首先，goproxy和shadowsocks不约而同的采用了自己的协议，而非将socks5透明的转发到远程的服务器端。为什么？因为socksv5协议中，握手过程是三次交互。客户发送握手包，服务器响应允许的握手验证方法。客户发送验证报文，服务器端返回是否成功，客户发送要连接的目标，服务器端返回是否成功。细节我记得不是很清楚，但是2-3次往返是必须的。
+这种工作机制需要client -&gt; proxy-client -&gt; proxy-server -&gt; server的一个链条，本身就比直连多了两次TCP握手。加上上述的往返过程，更加耗时。而且这个消耗在每次建立链接时都要来一次，而HTTP是一种短连接协议——这就更加无法容忍了。因此改用自有协议，一次交互完成握手，就会更加快速。
+更根本的原因在于，这两个系统都需要越过IDS，而三次交互的报文大小是几乎固定的——就算加密也无法改变报文大小。不但大小一样，而且由于用户名密码相同，起始加密过程和IV一致，因此采用socks协议的话，每个链接开始都有相同的来返数据。
+我不知道shadowsocks怎么处理的这个问题。qsocks协议（msocks）的前身规定，每次握手时客户端提供一组IV，然后发送一个头部变长的字符串（256字符以内），在远程丢弃同样长度的随机字符。经过这样的处理，每次链接时的报文长度和内容序列都不一样，增加了破译难度。至于多出来的几十个字节，和验证报文在一个报文内，开销相比一次RTO几乎可以忽略不计。
+但是还是有一点无法避免的问题。如果你看到某个服务器上有一个端口，频繁的被一个或多个IP链接。每个链接都不长，每次都是客户端吐一堆数据，服务器返回一堆，然后关闭链接。尽管协议无法破解，但是基本可以肯定这就是shadowsocks。根据这个特性，可以有效的阻挡服务——这也是我最近碰到的问题。
+而且每个链接都需要验证和TCP握手太慢了。
+msocks的改进 所以，我参考SPDY协议，做了msocks。msocks的核心思路和qsocks很类似，主要修改是以下两点：
+ 使用一个可靠链接（这里是经过加密的TCP），在这个链接里面封装多对传输。 每个链接只要一次验证。  这样做，首先减少了一次TCP握手和一次身份验证，工作速度更加快。其次多个传输叠加在一个流里面，流特征更加变化莫测。最后，无论是服务器端还是客户端的开销都小了很多。
+当然，这也带来不少问题。例如TCP原本的拥塞控制窗口是为了一对传输序列设计的。当很多传输序列在一对TCP上传递的时候，丢报文造成的影响会作用作用在全体传输序列上。包括丢了一个报文重传的时候，所有序列都必须阻塞。还有基础的TCP被施加了丢包，导致全体序列共享5k带宽。当然，经过评估后，我觉得这些问题比频繁握手更加轻，所以就设计了msocks协议。
+协议设计的时候，有几个细节问题。
+多对复用 我采用了一个map，来记录某个id是否对应到了一个控制结构。这个映射只能被客户端更改，并且有个专门的函数负责查找空闲的id，每次生成的id都是递增的，如果碰到最大值则绕回。
+id的大小是16位，足够容纳65536对同时链接。其实不修改内核的话，500对代理就会导致too many files。
+实际上一般到id达到400后，单一的tcp就断线重连了。目前我还没见过上千的数字呢。
+连接状态 连接一般情况下可以看到5种状态，连接请求发送，连接请求接收，连接建立，主动关闭连接中，被动关闭连接中。
+当客户端请求代理连接一个远程服务器时，进入连接请求发送。代理远程端接受后在连接目标服务器的过程中，进入连接请求接收。当成功后，双方进入连接建立。
+当关闭时，主动发起关闭一端进入主动关闭，另一端进入被动关闭。当被动关闭端调用close，或者主动关闭端收到对方关闭，整个链接就销毁。
+由于tcp是可靠传输，因此三次握手和四次关闭都是不必须的。
+简单吧。
+拥塞控制 TCP原本是带有拥塞控制的——借助SSN双序列和窗口机制。但是在多路复用的时候，我们需要自行控制拥塞——而且不能采用会和机制。会和会导致后续已经到达的其他链接的报文被一个没人接收的报文阻挡。所以必须采用带拥塞控制的缓存队列机制。
+不过幸好，TCP本身是可靠传输协议，所以我不用担心丢包重发之类的问题。我需要做的，就是把对方读取的字节数传递回来，减在控制器上，即可。
+不过，我没有做对应于silly window syndrome的优化，在每次读取小数据量后，这个读取造成的window扩张都会被传回。当然，这么设计是有原因的。我默认采用了8K的buffer进行fd间拷贝，所以一般碰不到SWS。
+为了解决tcp链接复用造成的单连接带宽问题，我强烈的建议你做以下的设定：
+net.ipv4.tcp_congestion_control = htcp net.core.rmem_default = 2621440 net.core.rmem_max = 16777216 net.core.wmem_default = 655360 net.core.wmem_max = 16777216 net.ipv4.tcp_rmem = 4096 2621440 16777216 net.ipv4.tcp_wmem = 4096 655360 16777216  ip选择算法和DNS 在goproxy中，我沿用了一个做法。通过DNS获得请求的目标IP，和中国IP范围核对。如果在国内则直接访问，否则透过代理。这个方法能够极快的加速访问，而且几乎不依赖于需要更新的列表（中国IP列表相对来说固定）。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2627/" />
+<meta property="article:published_time" content="2014-05-08T16:41:25+08:00" />
+<meta property="article:modified_time" content="2014-05-08T16:41:25+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">May 8, 2014
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     goproxy和msocks简介 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">goproxy和msocks简介</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          May 8, 2014
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/golang/">golang</a><a class="tag" href="//blog.shell909090.org/tags/program/">program</a></div></div>
+    </header>
+    <div class="post-content">
+      
 
 <p>goproxy是我个人写的，和shadowsocks同类的软件。当然，在设计之初我完全不知道shadowsocks的存在，goproxy的最初目标也不是成为shadowsocks的同类。只是我一直无法实现一个可靠的，能够达成目标的系统。最后想，那这样吧，我找一个跳一跳能够够到的苹果。大幅简化的结果就是goproxy——后来我才知道shadowsocks。</p>
 
@@ -207,169 +243,12 @@ net.ipv4.tcp_wmem = 4096    655360  16777216
 
 <p>debian/ubuntu安装包：<a href="http://xuzhixiang.u.qiniudn.com/program/goproxy_2.1.2_amd64.deb">amd64</a> <a href="http://xuzhixiang.u.qiniudn.com/program/goproxy_2.1.2_i386.deb">i386</a></p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>May 8, 2014</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/golang">golang</a>  <a class="category" href="//blog.shell909090.org/tags/program">program</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/2618/" title="CVE-2014-0160(openssl)严重漏洞及其对应">CVE-2014-0160(openssl)严重漏洞及其对应</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/2635/" title="台北地铁砍人事件">台北地铁砍人事件</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

@@ -1,122 +1,126 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>debain // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>debain</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="debain"/>
+<meta name="twitter:description" content="根据babylon的结果，没有debian这个词。根据我的拼音加加的结果，debian打出来是“得便”的意思。而事实上……debian是一个linux的版本。
+不过我很奇怪了，why所有的linux发行版本都这么大呢？windows2000的发行版本是4in1，四个版本合一张光盘。而RedHat9的发行版本是1in3，一个版本放了三张光盘……这个居然还好意思号称内核精简。windows的内核严格说起来也只有2M而已，smss大约100K，Csrss不知道多大，加上NTDLL.user32.Kernel32.win32k.gdi32也没有多大。不过windows组件模型比较大，搞得整个windows貌似比较庞大而已。一般来说，优化过后服务器上大约需要2-3G的分区空间。而一个正常可以跑的linux桌面大致也需要这么多的空间……界面和通用性上还不及。这厢真是郁闷大了。
+不过仔细想想，linux和windows的传奇都貌似到了顶点。windows自从2003后就基本没有了声音，就算现在他出什么新版本我会不会买账还是回事情。（2003现在都没有试过呢……）linux出新版本总比windows落后一步，usb如此，摄像头亦如此。加上PDA或者智能手机一类的嵌入设备中越来越多的使用WinCE（就是PPC啦），ActiveSync和windows捆绑的迹象越发严重。linux的路不好走啊。
+下面恐怕就是分布式系统了吧，如同我前面所讲。分布式系统相对正常系统具备极大的优势。例如硬盘空间共享，这样利用效率就会上升。软件的安装和维护集成，节约成本。CPU资源共用，有利于承担突发事件，并且方便利用用户使用不了的CPU时间。（例如一个在看网页的人的空闲CPU可以分配给运行大型程序的）不过最大的问题就是保密性、可维护性和网络速度问题。一般来说只有当网络速度和硬盘读写速度量级相当的时候才可以考虑分布系统。目前的接入普遍都不快，只有内部网络貌似可以达到这个级别。100Mbps=12.8MB/s，硬盘大约是30MB/s-60MB/s。尚可以考虑考虑。
+分布系统的话首先应当选择微内核，否则不同的机器跑不同的内核岂不乱套。网络部分可能会编译到内核里面来加速。不过最大的问题就是，进程如何跨越机器？如果进程无法跨越机器，那么分布系统啥意思都没有了，干脆上一个DFS算了。如果进程要跨越机器，那么操作台占有，信号，等待，互斥等等就都成了问题。以前可能不明显的互斥问题在网络上就会产生明显效应，不同的互斥算法造成的效率差异会非常显著。
+我设想分布系统可能如此实现。网络和文件系统编译入内核来加速。程序的运行都要在中央服务器上启动才行。每个进程会派生出控制端的概念，控制端对应不同的权限。严格来说，控制端是一个亚进程的概念。因为同样一个程序可能又多个机器要运行，例如IE一类的浏览器。如果放出多个进程恐怕太过浪费，但是如果放出一个进程，那么这个进程的权限又不好控制。考虑中是否可以将界面控制部分和程序分立开，成为控制端。控制端具备独立的变量空间和权限环境，对应不同终端上的用户窗口，可以容纳多个线程。或者进一步说，同样代码在不同机器上运行时候，环境理论上应当相同，除了控制端部分的数据应当不同（替换成本地的数据）。这样输出窗口的时候可以输出到不同的窗口上。
+理论上说，每个程序应当只允许运行一个Instance。如果有人运行某个程序，则应当建立程序的私有空间，并且初始化程序，察看是否已经在运行中。如果在运行中则自网络上虚拟映射入整个程序。而后初始化控制端，并且派生出本地线程。由本地线程来运作整个程序。程序对非控制端部分的操作都要进行互斥访问……真麻烦。
+如果某个机器具备空CPU，而另外一个机器CPU运行满，则将整个进程映射入空闲机器中，包括控制端部分。这样可以用空闲的CPU，当然前提必须是支持多线程，这样才可以移动一个线程过去。不过问题是保密性，还有如果空闲的机器也要运行这个程序了怎么办？这样恐怕就要将线程移动回去，然后清空控制端重新初始化。但是空闲的CPU就无法利用了。
+呃……貌似扯的蛮远了，从linux安装失败一直扯到了分布系统……今天就这样吧，郁闷……"/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="debain" />
+<meta property="og:description" content="根据babylon的结果，没有debian这个词。根据我的拼音加加的结果，debian打出来是“得便”的意思。而事实上……debian是一个linux的版本。
+不过我很奇怪了，why所有的linux发行版本都这么大呢？windows2000的发行版本是4in1，四个版本合一张光盘。而RedHat9的发行版本是1in3，一个版本放了三张光盘……这个居然还好意思号称内核精简。windows的内核严格说起来也只有2M而已，smss大约100K，Csrss不知道多大，加上NTDLL.user32.Kernel32.win32k.gdi32也没有多大。不过windows组件模型比较大，搞得整个windows貌似比较庞大而已。一般来说，优化过后服务器上大约需要2-3G的分区空间。而一个正常可以跑的linux桌面大致也需要这么多的空间……界面和通用性上还不及。这厢真是郁闷大了。
+不过仔细想想，linux和windows的传奇都貌似到了顶点。windows自从2003后就基本没有了声音，就算现在他出什么新版本我会不会买账还是回事情。（2003现在都没有试过呢……）linux出新版本总比windows落后一步，usb如此，摄像头亦如此。加上PDA或者智能手机一类的嵌入设备中越来越多的使用WinCE（就是PPC啦），ActiveSync和windows捆绑的迹象越发严重。linux的路不好走啊。
+下面恐怕就是分布式系统了吧，如同我前面所讲。分布式系统相对正常系统具备极大的优势。例如硬盘空间共享，这样利用效率就会上升。软件的安装和维护集成，节约成本。CPU资源共用，有利于承担突发事件，并且方便利用用户使用不了的CPU时间。（例如一个在看网页的人的空闲CPU可以分配给运行大型程序的）不过最大的问题就是保密性、可维护性和网络速度问题。一般来说只有当网络速度和硬盘读写速度量级相当的时候才可以考虑分布系统。目前的接入普遍都不快，只有内部网络貌似可以达到这个级别。100Mbps=12.8MB/s，硬盘大约是30MB/s-60MB/s。尚可以考虑考虑。
+分布系统的话首先应当选择微内核，否则不同的机器跑不同的内核岂不乱套。网络部分可能会编译到内核里面来加速。不过最大的问题就是，进程如何跨越机器？如果进程无法跨越机器，那么分布系统啥意思都没有了，干脆上一个DFS算了。如果进程要跨越机器，那么操作台占有，信号，等待，互斥等等就都成了问题。以前可能不明显的互斥问题在网络上就会产生明显效应，不同的互斥算法造成的效率差异会非常显著。
+我设想分布系统可能如此实现。网络和文件系统编译入内核来加速。程序的运行都要在中央服务器上启动才行。每个进程会派生出控制端的概念，控制端对应不同的权限。严格来说，控制端是一个亚进程的概念。因为同样一个程序可能又多个机器要运行，例如IE一类的浏览器。如果放出多个进程恐怕太过浪费，但是如果放出一个进程，那么这个进程的权限又不好控制。考虑中是否可以将界面控制部分和程序分立开，成为控制端。控制端具备独立的变量空间和权限环境，对应不同终端上的用户窗口，可以容纳多个线程。或者进一步说，同样代码在不同机器上运行时候，环境理论上应当相同，除了控制端部分的数据应当不同（替换成本地的数据）。这样输出窗口的时候可以输出到不同的窗口上。
+理论上说，每个程序应当只允许运行一个Instance。如果有人运行某个程序，则应当建立程序的私有空间，并且初始化程序，察看是否已经在运行中。如果在运行中则自网络上虚拟映射入整个程序。而后初始化控制端，并且派生出本地线程。由本地线程来运作整个程序。程序对非控制端部分的操作都要进行互斥访问……真麻烦。
+如果某个机器具备空CPU，而另外一个机器CPU运行满，则将整个进程映射入空闲机器中，包括控制端部分。这样可以用空闲的CPU，当然前提必须是支持多线程，这样才可以移动一个线程过去。不过问题是保密性，还有如果空闲的机器也要运行这个程序了怎么办？这样恐怕就要将线程移动回去，然后清空控制端重新初始化。但是空闲的CPU就无法利用了。
+呃……貌似扯的蛮远了，从linux安装失败一直扯到了分布系统……今天就这样吧，郁闷……" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/168/" />
+<meta property="article:published_time" content="2005-05-31T20:54:40+08:00" />
+<meta property="article:modified_time" content="2005-05-31T20:54:40+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">May 31, 2005
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     debain 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          <p>根据babylon的结果，没有debian这个词。根据我的拼音加加的结果，debian打出来是“得便”的意思。而事实上……debian是一个linux的版本。</p>
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">debain</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          May 31, 2005
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a><a class="tag" href="//blog.shell909090.org/tags/system/">system</a></div></div>
+    </header>
+    <div class="post-content">
+      <p>根据babylon的结果，没有debian这个词。根据我的拼音加加的结果，debian打出来是“得便”的意思。而事实上……debian是一个linux的版本。</p>
 
 <p>不过我很奇怪了，why所有的linux发行版本都这么大呢？windows2000的发行版本是4in1，四个版本合一张光盘。而RedHat9的发行版本是1in3，一个版本放了三张光盘……这个居然还好意思号称内核精简。windows的内核严格说起来也只有2M而已，smss大约100K，Csrss不知道多大，加上NTDLL.user32.Kernel32.win32k.gdi32也没有多大。不过windows组件模型比较大，搞得整个windows貌似比较庞大而已。一般来说，优化过后服务器上大约需要2-3G的分区空间。而一个正常可以跑的linux桌面大致也需要这么多的空间……界面和通用性上还不及。这厢真是郁闷大了。</p>
 
@@ -134,169 +138,12 @@ if (!doNotTrack) {
 
 <p>呃……貌似扯的蛮远了，从linux安装失败一直扯到了分布系统……今天就这样吧，郁闷……</p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>May 31, 2005</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/linux">linux</a>  <a class="category" href="//blog.shell909090.org/tags/system">system</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/167/" title="la paloma">la paloma</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/169/" title="Bittorrent">Bittorrent</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

@@ -1,122 +1,150 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>debian live // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>debian live</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="debian live"/>
+<meta name="twitter:description" content="准备做debian
+live了，期间有什么东西都会写在这里。大致来说就是打算实践一个项目。
+copyright
+Shell.E.Xu撰写，按GPL发布。
+abstract
+用debian3.1testing为基础建立live cd。128M以内，无X系统，无交换区和/tmp，使用内存盘。
+target
+用于挂载ext3 ntfs vfat文件系统，实施文件系统管理和修复，访问文件系统内容并修改。
+注：准备特别针对3721，yahoo助手之类类似rootkit的东西实施扫描清理。
+environment
+debian 3.1 starg testing（貌似是废话）
+grub stage2_eltorito支持光盘启动
+linux-kernel-2.6.15-8 直接使用deb包中内容
+initrd 在kernel包中包含
+step by step
+1.建立基础文件系统并且复制所需文件
+建立~/syscd/boot/grub/，复制menu.lst stage2_eltorito文件过去。
+复制vmlinuz system.map config到~/syscd/boot中，注意ISO9660格式中文件名不能过长（多少记不清了）。
+复制/lib到~/syscd/lib，并且调节内容。（我个人在其中添加了我需要的nVIDIA显卡驱动）
+2.grub和iso
+cd \~ mkdir initrd #关于initrd的原理生成和使用后面讲 mkdir root #这个是用于内存的镜像内容 mkdir cramfs #这个是只读镜像内容 vi \~/testsyscd ------------------我是邪恶的分割线-------------------- #!/bin/bash qemu -no-kqemu -cdrom \~/syscd.iso -boot d &gt;/dev/null ------------------我是邪恶的分割线-------------------- chmod 755 \~/testsyscd vi \~/mksyscd ------------------我是邪恶的分割线-------------------- #!/bin/bash COMPRESS_MODE=-9 cd \~ # block of create initrd."/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="debian live" />
+<meta property="og:description" content="准备做debian
+live了，期间有什么东西都会写在这里。大致来说就是打算实践一个项目。
+copyright
+Shell.E.Xu撰写，按GPL发布。
+abstract
+用debian3.1testing为基础建立live cd。128M以内，无X系统，无交换区和/tmp，使用内存盘。
+target
+用于挂载ext3 ntfs vfat文件系统，实施文件系统管理和修复，访问文件系统内容并修改。
+注：准备特别针对3721，yahoo助手之类类似rootkit的东西实施扫描清理。
+environment
+debian 3.1 starg testing（貌似是废话）
+grub stage2_eltorito支持光盘启动
+linux-kernel-2.6.15-8 直接使用deb包中内容
+initrd 在kernel包中包含
+step by step
+1.建立基础文件系统并且复制所需文件
+建立~/syscd/boot/grub/，复制menu.lst stage2_eltorito文件过去。
+复制vmlinuz system.map config到~/syscd/boot中，注意ISO9660格式中文件名不能过长（多少记不清了）。
+复制/lib到~/syscd/lib，并且调节内容。（我个人在其中添加了我需要的nVIDIA显卡驱动）
+2.grub和iso
+cd \~ mkdir initrd #关于initrd的原理生成和使用后面讲 mkdir root #这个是用于内存的镜像内容 mkdir cramfs #这个是只读镜像内容 vi \~/testsyscd ------------------我是邪恶的分割线-------------------- #!/bin/bash qemu -no-kqemu -cdrom \~/syscd.iso -boot d &gt;/dev/null ------------------我是邪恶的分割线-------------------- chmod 755 \~/testsyscd vi \~/mksyscd ------------------我是邪恶的分割线-------------------- #!/bin/bash COMPRESS_MODE=-9 cd \~ # block of create initrd." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/307/" />
+<meta property="article:published_time" content="2006-07-11T09:10:46+08:00" />
+<meta property="article:modified_time" content="2006-07-11T09:10:46+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">Jul 11, 2006
-     - 2 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     debian live 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          <p>准备做debian</p>
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">debian live</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Jul 11, 2006
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          2 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/debian/">debian</a><a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a></div></div>
+    </header>
+    <div class="post-content">
+      <p>准备做debian</p>
 
 <p>live了，期间有什么东西都会写在这里。大致来说就是打算实践一个项目。</p>
 
@@ -267,169 +295,12 @@ mountroot ()
 
 <p>[5]cramfs是一种压缩只读文件格式，做光盘live的时候最适合使用，我们假定做了一个cdrom.cramfs放在光盘根目录下面（这个其实是用mksyscd自动把cramfs目录生成出来的）。这个时候挂载就好了，指令不复杂。不过挂载前要</p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>Jul 11, 2006</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/debian">debian</a>  <a class="category" href="//blog.shell909090.org/tags/linux">linux</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/306/" title="linux中文说">linux中文说</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/308/" title="论linux引导过程">论linux引导过程</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

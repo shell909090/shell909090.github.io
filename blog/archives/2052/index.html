@@ -1,122 +1,130 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>哈希冲突漏洞的原理和对策 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>哈希冲突漏洞的原理和对策</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="哈希冲突漏洞的原理和对策"/>
+<meta name="twitter:description" content="cpug上面最近在讨论一个严重级漏洞，漏洞的相关资料如下： ERT-VN:VU#903934 CVE-2011-4815 CVE-2011-3414 CVE-2011-4838 CVE-2011-4885
+上面主要讨论的是这么一个概念，当用户post一个数据，而且这个数据又是一个form的时候，应用需要先将form解析为dict，然后才能方便的使用。例如a=1&amp;b=2，可以解析为{&#39;a&#39;:&#39;1&#39;, &#39;b&#39;:&#39;2&#39;}。之所以1和2是字符串，是因为只有用户自己才清楚这个数据的类型。
+通常情况下，这个form的key都是随机的，生成的hash碰撞概率很低，因此dict的默认实现——hash table没什么问题。但是当攻击者恶意构造数据的时候，情况就完全不同。我们首先讨论一下hash table的实现——开链法和二次探测法。
+所谓开链，就是指对所有同余hash，将他们挂到一个hash表项上，形成一个链表。而所谓二次探测，就是在第一次hash冲突后，再进行一次hash，作为第二地址。
+开链法对碰撞冲突是有先天缺陷的，因为同余碰撞的构造远比hash碰撞的构造简单。假定hash
+table有11个表项，那么平均11次尝试就可以得到一个元素，和原始元素hash同余。如果选用这样的恶意key序列，在执行构造的时候，hash
+table就退化为了链表。链表的插入复杂度是O(n\^2)级的。而作为攻击者，为了获得n个hash同余对象，所需消耗的复杂度做如下估量。首先考虑hash table length和n同阶，因此以n作为hash table长度。这样每n次尝试就可以获得一个恶意元素，获得n个元素的复杂度为O(n\^2)级。
+也就是说，即使是sha256这样强的hash算法，只要保证哈希函数特性，对同样的值得到同样的哈希，就无法保证开链法的安全。
+而二次探测法对这个是有先天抵抗的，二次探测法的第一次碰撞并不难构造，但是第二次哈希后依然保持同余的构造难度就由n增加到了n\^2，多次碰撞的构造难度以此类推。虽然我没有完整的计算过这个值，但是猜测难度量级应当是O(n*n\^n)级别的。这个级别基本就不用玩了——前提是哈希算法必须是安全的。
+由于为了节约计算过程，因此python和php的hash算法都没有采用md5之类的高散列算法，而是一个很简单的算法。我摘抄一下Python2.7.2中的这段代码。python_string_hash.c
+static long string_hash(PyStringObject *a) { register Py_ssize_t len; register unsigned char *p; register long x; if (a-&gt;ob_shash != -1) return a-&gt;ob_shash; len = Py_SIZE(a); p = (unsigned char *) a-&gt;ob_sval; x = *p &lt;&lt; 7; while (--len &gt;= 0) x = (1000003*x) ^ *p&#43;&#43;; x ^= Py_SIZE(a); if (x == -1) x = -2; a-&gt;ob_shash = x; return x; }  按照&lt;python."/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="哈希冲突漏洞的原理和对策" />
+<meta property="og:description" content="cpug上面最近在讨论一个严重级漏洞，漏洞的相关资料如下： ERT-VN:VU#903934 CVE-2011-4815 CVE-2011-3414 CVE-2011-4838 CVE-2011-4885
+上面主要讨论的是这么一个概念，当用户post一个数据，而且这个数据又是一个form的时候，应用需要先将form解析为dict，然后才能方便的使用。例如a=1&amp;b=2，可以解析为{&#39;a&#39;:&#39;1&#39;, &#39;b&#39;:&#39;2&#39;}。之所以1和2是字符串，是因为只有用户自己才清楚这个数据的类型。
+通常情况下，这个form的key都是随机的，生成的hash碰撞概率很低，因此dict的默认实现——hash table没什么问题。但是当攻击者恶意构造数据的时候，情况就完全不同。我们首先讨论一下hash table的实现——开链法和二次探测法。
+所谓开链，就是指对所有同余hash，将他们挂到一个hash表项上，形成一个链表。而所谓二次探测，就是在第一次hash冲突后，再进行一次hash，作为第二地址。
+开链法对碰撞冲突是有先天缺陷的，因为同余碰撞的构造远比hash碰撞的构造简单。假定hash
+table有11个表项，那么平均11次尝试就可以得到一个元素，和原始元素hash同余。如果选用这样的恶意key序列，在执行构造的时候，hash
+table就退化为了链表。链表的插入复杂度是O(n\^2)级的。而作为攻击者，为了获得n个hash同余对象，所需消耗的复杂度做如下估量。首先考虑hash table length和n同阶，因此以n作为hash table长度。这样每n次尝试就可以获得一个恶意元素，获得n个元素的复杂度为O(n\^2)级。
+也就是说，即使是sha256这样强的hash算法，只要保证哈希函数特性，对同样的值得到同样的哈希，就无法保证开链法的安全。
+而二次探测法对这个是有先天抵抗的，二次探测法的第一次碰撞并不难构造，但是第二次哈希后依然保持同余的构造难度就由n增加到了n\^2，多次碰撞的构造难度以此类推。虽然我没有完整的计算过这个值，但是猜测难度量级应当是O(n*n\^n)级别的。这个级别基本就不用玩了——前提是哈希算法必须是安全的。
+由于为了节约计算过程，因此python和php的hash算法都没有采用md5之类的高散列算法，而是一个很简单的算法。我摘抄一下Python2.7.2中的这段代码。python_string_hash.c
+static long string_hash(PyStringObject *a) { register Py_ssize_t len; register unsigned char *p; register long x; if (a-&gt;ob_shash != -1) return a-&gt;ob_shash; len = Py_SIZE(a); p = (unsigned char *) a-&gt;ob_sval; x = *p &lt;&lt; 7; while (--len &gt;= 0) x = (1000003*x) ^ *p&#43;&#43;; x ^= Py_SIZE(a); if (x == -1) x = -2; a-&gt;ob_shash = x; return x; }  按照&lt;python." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2052/" />
+<meta property="article:published_time" content="2012-01-04T03:59:57+08:00" />
+<meta property="article:modified_time" content="2012-01-04T03:59:57+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">Jan 4, 2012
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     哈希冲突漏洞的原理和对策 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          <p>cpug上面最近在讨论一个严重级漏洞，漏洞的相关资料如下： <a href="http://www.kb.cert.org/vuls/id/903934">ERT-VN:VU#903934</a> <a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2011-4815">CVE-2011-4815</a> <a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2011-3414">CVE-2011-3414</a> <a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2011-4838">CVE-2011-4838</a> <a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2011-4885">CVE-2011-4885</a></p>
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">哈希冲突漏洞的原理和对策</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Jan 4, 2012
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/computer/">computer</a><a class="tag" href="//blog.shell909090.org/tags/crypt/">crypt</a></div></div>
+    </header>
+    <div class="post-content">
+      <p>cpug上面最近在讨论一个严重级漏洞，漏洞的相关资料如下： <a href="http://www.kb.cert.org/vuls/id/903934">ERT-VN:VU#903934</a> <a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2011-4815">CVE-2011-4815</a> <a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2011-3414">CVE-2011-3414</a> <a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2011-4838">CVE-2011-4838</a> <a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2011-4885">CVE-2011-4885</a></p>
 
 <p>上面主要讨论的是这么一个概念，当用户post一个数据，而且这个数据又是一个form的时候，应用需要先将form解析为dict，然后才能方便的使用。例如a=1&amp;b=2，可以解析为<code>{'a':'1', 'b':'2'}</code>。之所以1和2是字符串，是因为只有用户自己才清楚这个数据的类型。</p>
 
@@ -187,169 +195,12 @@ string_hash(PyStringObject *a)
 
 <p>从Universal hashing的算法时间来看，这是一个很古老的漏洞了。只是以前大家都没有在意。突然有一天，大家发现——原来世界还是很脆弱的。</p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>Jan 4, 2012</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/computer">computer</a>  <a class="category" href="//blog.shell909090.org/tags/crypt">crypt</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/2050/" title="理想的平板">理想的平板</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/2054/" title="广西游记上">广西游记上</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

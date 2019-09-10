@@ -1,122 +1,154 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>论linux引导过程 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>论linux引导过程</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="论linux引导过程"/>
+<meta name="twitter:description" content="keywords
+引导过程, initrd, init, rc
+copyright
+Shell.E.Xu撰写，按GPL发布。
+abstract
+简要介绍了引导流程的流转。
+main
+1.grub&amp;lilo
+引导的第一步，是启动引导管理器。这个种类非常复杂，从最早的MBR&#43;专用引导扇区到现在的NTLDR,LILO,GRUB，大小和功能都有非常大的变化。但是主要来讲目的都是一样的。当今引导程序一般都分两个部分，引导扇区和主引导模块。NTLDR来说，C:NTLDR文件即是主引导模块。GRUB的主引导模块在/boot/grub/stage2，至于引导扇区，不用太过关心的。
+主引导模块在加载后都会读取引导配置文件，当代流行引导管理器其实都有命令交互功能，可是你总不能指望每次启动都先敲堆命令吧。GRUB来说，配置文件是/boot/grub/menu.lst。注意，GRUB是在启动的时候读取配置的，但是LILO是根据配置来安装的。所以LILO在改变配置的时候需要重新安装。
+2.vmlinuz&amp;initrd
+引导管理器会自动的将vmlinuz安置在内存中，然后寻找initrd传给vmlinuz。在没有initrd的情况下也可以引导，不过当下的趋势是将引导过程用脚本管理，放置在initrd中。这样引导参数解析，模块加载，设备管理都纳入了脚本的范围内。用linux哪能不会脚本，因此linux引导就有非常强的可以定制特性。
+initrd分两种，cpio-initrd和ramfs。这里主要介绍
+cpio-initrd。cpio-initrd的建立方法很简单，我上篇文章中有介绍。大致来说，就是把一些内容打包备份而已。vmlinuz会启动根下面的init脚本，我下篇文章会专门解析debian中配置的initrd.img的init脚本。现在大致说下。
+init首先建立两个目录，建立/dev系统，并且建立null和console文件，否则udev的运做会出错。然后解析引导参数，解析到每个变量。而后依次运作init-top,init-premount,init-bottom（这些目录内的文件）。在init-bottom运行前会运行包含指定的脚本，这个脚本由BOOT参数指定，并且内部包含mount函数。这样可以通过指定BOOT参数定制mountroot的过程。最后是迁移大部分的系统过去（主要是/sys和/proc），最后通过run-init直接chroot和init。
+3.init&amp;rc
+init运行的开始，会寻找inittab。其中指定了系统的很多特性，最主要的是runlevel。首先是寻找/etc/init.d/rc并且运行，并且把运行级别作为第一参数传递。然后rc会寻找/etc/init.d/rcS和/etc/default/rcS，如果有的话则包含或者运行。然后rc会以参数S运行自身，过程和正常启动一样。这个作为基础启动参数，无论你以何种级别运行都会运行rcS.d里面的脚本。
+4.service
+service启动的时候，是用rc?.d的脚本启动的。多数会用start-stop-daemon作为另外一个身份启动成守护进程。
+5.bash&amp;gdm
+6.conf files
+reference:
+[1]."/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="论linux引导过程" />
+<meta property="og:description" content="keywords
+引导过程, initrd, init, rc
+copyright
+Shell.E.Xu撰写，按GPL发布。
+abstract
+简要介绍了引导流程的流转。
+main
+1.grub&amp;lilo
+引导的第一步，是启动引导管理器。这个种类非常复杂，从最早的MBR&#43;专用引导扇区到现在的NTLDR,LILO,GRUB，大小和功能都有非常大的变化。但是主要来讲目的都是一样的。当今引导程序一般都分两个部分，引导扇区和主引导模块。NTLDR来说，C:NTLDR文件即是主引导模块。GRUB的主引导模块在/boot/grub/stage2，至于引导扇区，不用太过关心的。
+主引导模块在加载后都会读取引导配置文件，当代流行引导管理器其实都有命令交互功能，可是你总不能指望每次启动都先敲堆命令吧。GRUB来说，配置文件是/boot/grub/menu.lst。注意，GRUB是在启动的时候读取配置的，但是LILO是根据配置来安装的。所以LILO在改变配置的时候需要重新安装。
+2.vmlinuz&amp;initrd
+引导管理器会自动的将vmlinuz安置在内存中，然后寻找initrd传给vmlinuz。在没有initrd的情况下也可以引导，不过当下的趋势是将引导过程用脚本管理，放置在initrd中。这样引导参数解析，模块加载，设备管理都纳入了脚本的范围内。用linux哪能不会脚本，因此linux引导就有非常强的可以定制特性。
+initrd分两种，cpio-initrd和ramfs。这里主要介绍
+cpio-initrd。cpio-initrd的建立方法很简单，我上篇文章中有介绍。大致来说，就是把一些内容打包备份而已。vmlinuz会启动根下面的init脚本，我下篇文章会专门解析debian中配置的initrd.img的init脚本。现在大致说下。
+init首先建立两个目录，建立/dev系统，并且建立null和console文件，否则udev的运做会出错。然后解析引导参数，解析到每个变量。而后依次运作init-top,init-premount,init-bottom（这些目录内的文件）。在init-bottom运行前会运行包含指定的脚本，这个脚本由BOOT参数指定，并且内部包含mount函数。这样可以通过指定BOOT参数定制mountroot的过程。最后是迁移大部分的系统过去（主要是/sys和/proc），最后通过run-init直接chroot和init。
+3.init&amp;rc
+init运行的开始，会寻找inittab。其中指定了系统的很多特性，最主要的是runlevel。首先是寻找/etc/init.d/rc并且运行，并且把运行级别作为第一参数传递。然后rc会寻找/etc/init.d/rcS和/etc/default/rcS，如果有的话则包含或者运行。然后rc会以参数S运行自身，过程和正常启动一样。这个作为基础启动参数，无论你以何种级别运行都会运行rcS.d里面的脚本。
+4.service
+service启动的时候，是用rc?.d的脚本启动的。多数会用start-stop-daemon作为另外一个身份启动成守护进程。
+5.bash&amp;gdm
+6.conf files
+reference:
+[1]." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/308/" />
+<meta property="article:published_time" content="2006-07-13T23:36:57+08:00" />
+<meta property="article:modified_time" content="2006-07-13T23:36:57+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">Jul 13, 2006
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     论linux引导过程 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          <p>keywords</p>
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">论linux引导过程</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Jul 13, 2006
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/bash/">bash</a><a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a></div></div>
+    </header>
+    <div class="post-content">
+      <p>keywords</p>
 
 <p>引导过程, initrd, init, rc</p>
 
@@ -162,169 +194,12 @@ if (!doNotTrack) {
 
 <p>[1].</p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>Jul 13, 2006</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/bash">bash</a>  <a class="category" href="//blog.shell909090.org/tags/linux">linux</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/307/" title="debian live">debian live</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/309/" title="删除无赖">删除无赖</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

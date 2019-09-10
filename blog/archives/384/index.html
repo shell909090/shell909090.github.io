@@ -1,122 +1,158 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>字符编码概论 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>字符编码概论</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="字符编码概论"/>
+<meta name="twitter:description" content="首先，阐明几个基本概念。字符集，编码方案，编码范围，编码方法，编码位数，兼容性，编码兼容性。
+字符集是指一系列符号的集合。计算机中只能处理数字，因此符号必须给予编码，而后储存符号编码。打印时按照编码索引到符号，再索引到字体。因此一个字符集编码为数字的方案就是编码方案。其中西文编码规范就是ASCII(ISO-8859-1)。
+编码范围是指字符集的有效符号编码的范围。例如当前的ASCII编码范围是0-127，因此所有兼容ASCII的编码，其编码范围必定要回避0-127，否则就会出现编码冲突。而编码方法(不等同于编码方案)则是这个数字转换为计算机内数据的方法，一般分big endian(大端点)和little endian(小端点)两种。
+big endian和little endian是CPU处理多字节数的不同方式。例如“汉”字的Unicode编码是6C49。那么写到文件里时，究竟是将6C写在前面，还是将49写在前面？如果将6C写在前面，就是big endian。还是将49写在前面，就是little endian。“endian”这个词出自《格列佛游记》。小人国的内战就源于吃鸡蛋时是究竟从大头(Big-Endian)敲开还是从小头(Little-Endian)敲开，由此曾发生过六次叛乱，其中一个皇帝送了命，另一个丢了王位。
+当然，编码方法还有其他情况，例如UTF-8就也是一种编码方法，叫做非等长编码。非等长编码在安全性，扩充性和兼容性上优于等长编码，但是使用起来效率非常差。不信的可以用windows中的_mbsdec函数看看，除了当前指针，还需要起始指针进行逆遍历，效率可想而知。
+在大端点和小端点的情况下，存储一个符号所需要用的位数叫做编码位数。位数分为固定位数和浮动位数。又因为编码位数一般都为8的整数倍，因此一般都使用编码字节数来代替。
+兼容是指一个字符集的文字在另外一个字符集中全部存在。所以，A字符集兼容B，一般B字符集不兼容A，否则两者就相同了。编码兼容性是指一个字符集的文字在另外一个字符集中全部存在，并且同一文字表示的编码一致。可以想见，编码兼容的字符集本身一定兼容。
+其次，GB3212, GBK, GB18030, BIG5, CNS11643, CJK, Unicode, UCS-2, UTF-8的区别。
+简体中文来说，基本是GB系列的大陆地区简体中文国家标准，全部都是向下编码兼容的(附注：存在部分的兼容错误)。有GB3212, GBK, GB18030三个标准。编码方案都是兼容小端点序。(GB18030有变长编码)
+1980年制定的GB2312是国家早期的字符编码规范。一共收录了7445个字符，范围是0xA1A1 - 0xFEFE。现在意义基本等同于国家最小字符编码集。支持中文的产品最小要支持所有GB2312字符的显示。
+1995年制定的汉字扩展规范GBK1.0，简称GBK。收录了21886个符号，范围是0x8140 - 0xFEFE。现在多数电脑的字符集都是这个，向下编码兼容GB2312标准。
+2000年的GB18030是取代GBK1.0的正式国家标准，该标准收录了27484个汉字，同时还收录了藏文、蒙文、维吾尔文等主要的少数民族文字。编码是变长的，其二字节部分与GBK兼容；四字节部分是扩充的字形、字位，其编码范围是首字节0x81-0xfe、二字节0x30-0x39、三字节0x81-0xfe、四字节0x30-0x39。向下编码兼容GBK1.0，当前使用中，GB18030和GBK的区别一般人无法区分(也没有多少人碰的上这种字)，所以一般GBK就通用指代了GB系列中比较复杂的那种编码。
+繁体中文来说，有BIG5, CNS11643, HKSCS三种。贝壳实际应用比较少，下面可能存在错误，请大家指正。
+BIG5是在CCCII不為政府單位採納，國家頒布的中文標準碼又不堪用的情況下。在1984年，由台北市電腦公會主導，聯合了十三家業者，
+共同制定，并在2003年进行了修订(Big5-2003)，旨在提供一个小型基本字符集以便对当前的繁体中文字符进行编码。Big5-2003是Big5的扩展，仅有2个平面，包含13051个繁体中文字符和778个符号，共13829个字符。编码范围是0xA140 - 0xF9FE, 0xA1A1 - 0xF9FE。对于熟悉电脑的人来说，都知道Big5是繁体字的事实标准。
+CNS11643在1992年制定，并在2004年进行了修订(称为CNS11643-2004)，旨在提供足够的字符编码以便对所有当前的繁体中文字符进行编码。CNS11643-2004是CNS11643的扩展，可以有 80 个编码平面。该标准支持： 8836 x 80 = 706,880 个编码点。原来的CNS11643标准仅有16个编码平面。在平面4以及平面12到15中，包含了台湾地区政府允许的所有法定人名用繁体中文字符。CNS11643直接取用了Big5的大部分编码，因此不考虑几个特例的情况下(准确的说，是两个)，CNS11643编码兼容了Big5。
+香港增补字符集(HKSCS)原来叫做政府通用字库(GCCS)，分两个编码方案。其中Big5版是香港政府为big5加的3049个字，因此也可以说HKSCS编码兼容了BIg5。ISO 10646方案是香港政府在给Big5添加符号后向ISO标准委员会提交了申请的结果，和Big5的版本互相兼容，只是编码方案(不是编码方法)不一致而已。
+再附加一点说明，一般我们说的编码转换，就是在Big5和GB2312间转换。鉴于繁体和简体文字的非严格对应性，转换可能存在误差。至于最大字符集组GB18030和CNS11643间的完美转换——还是等世界和平吧。
+下面说明Unicode家族，根据网络上的介绍，原来Unicode联盟和ISO标准组织都要对整个人类的符号进行编码工作(背景音乐：数星星啊数星星～××)，后来两者联合，这事就成了(it was so，玩笑玩笑)。大家知道，中国文件和东南亚各国间互相交流，因此字符重复者甚众。其中CJK是原来中国(包括香港、台湾地区)与朝鲜、韩国、日本联合制定的三国文字集合，现在已经被收入Unicode中。Unicode是一个单纯的编码方案，不过编码方法就相对复杂了，分为UCS-2，UCS-4，UTF-8等等。
+UCS-2和UCS-4是等长编码方法，简单来说就是U&#43;65535以内的可以编码入UCS-2，以上就需要使用UCS-4了(目前这个范围还没有启用)。UCS-2总共有65535个编码点，又叫做UCS-4的BMP区域。本质上是使用大端点或者小端点编码方法直接编码，可以在字符串开始的地方加入FF FE或者FE FF加以判别。优点是将所有字符熔於一个体系，没有编码冲突问题，因此可以在一个容器内引用多国文字(例如在同一句话中引用简体和繁体中文)，效率非常高，但是有个致命缺点，不兼容ASCII。
+为了解决这个问题，我们一般使用Unicode的时候，使用它的UTF-8编码方法。这个编码方法是非等长的，其中多数汉字需要使用三字节来存储。如果您看到有什么中文变成乱码后长度增加了一半的，那多数就是UTF-8编码。对于ASCII，UTF-8就是一字节码，于是就完整的兼容了ASCII。对于UCS-4中可能出现的最大编码来说，这时候就需要六字节来描述一个符号。因此可以想见，将来UTF-8是一定要灭亡的。
+Reference:
+[1].谈谈Unicode编码 http://www.windsn.com/article/viewmore.asp?id=227
+[2].中文编码基础知识介绍 http://www.eygle.com/digest/2007/01/zhs16gbk_char.html
+[3].The CJK package for LaTeX http://cjk."/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="字符编码概论" />
+<meta property="og:description" content="首先，阐明几个基本概念。字符集，编码方案，编码范围，编码方法，编码位数，兼容性，编码兼容性。
+字符集是指一系列符号的集合。计算机中只能处理数字，因此符号必须给予编码，而后储存符号编码。打印时按照编码索引到符号，再索引到字体。因此一个字符集编码为数字的方案就是编码方案。其中西文编码规范就是ASCII(ISO-8859-1)。
+编码范围是指字符集的有效符号编码的范围。例如当前的ASCII编码范围是0-127，因此所有兼容ASCII的编码，其编码范围必定要回避0-127，否则就会出现编码冲突。而编码方法(不等同于编码方案)则是这个数字转换为计算机内数据的方法，一般分big endian(大端点)和little endian(小端点)两种。
+big endian和little endian是CPU处理多字节数的不同方式。例如“汉”字的Unicode编码是6C49。那么写到文件里时，究竟是将6C写在前面，还是将49写在前面？如果将6C写在前面，就是big endian。还是将49写在前面，就是little endian。“endian”这个词出自《格列佛游记》。小人国的内战就源于吃鸡蛋时是究竟从大头(Big-Endian)敲开还是从小头(Little-Endian)敲开，由此曾发生过六次叛乱，其中一个皇帝送了命，另一个丢了王位。
+当然，编码方法还有其他情况，例如UTF-8就也是一种编码方法，叫做非等长编码。非等长编码在安全性，扩充性和兼容性上优于等长编码，但是使用起来效率非常差。不信的可以用windows中的_mbsdec函数看看，除了当前指针，还需要起始指针进行逆遍历，效率可想而知。
+在大端点和小端点的情况下，存储一个符号所需要用的位数叫做编码位数。位数分为固定位数和浮动位数。又因为编码位数一般都为8的整数倍，因此一般都使用编码字节数来代替。
+兼容是指一个字符集的文字在另外一个字符集中全部存在。所以，A字符集兼容B，一般B字符集不兼容A，否则两者就相同了。编码兼容性是指一个字符集的文字在另外一个字符集中全部存在，并且同一文字表示的编码一致。可以想见，编码兼容的字符集本身一定兼容。
+其次，GB3212, GBK, GB18030, BIG5, CNS11643, CJK, Unicode, UCS-2, UTF-8的区别。
+简体中文来说，基本是GB系列的大陆地区简体中文国家标准，全部都是向下编码兼容的(附注：存在部分的兼容错误)。有GB3212, GBK, GB18030三个标准。编码方案都是兼容小端点序。(GB18030有变长编码)
+1980年制定的GB2312是国家早期的字符编码规范。一共收录了7445个字符，范围是0xA1A1 - 0xFEFE。现在意义基本等同于国家最小字符编码集。支持中文的产品最小要支持所有GB2312字符的显示。
+1995年制定的汉字扩展规范GBK1.0，简称GBK。收录了21886个符号，范围是0x8140 - 0xFEFE。现在多数电脑的字符集都是这个，向下编码兼容GB2312标准。
+2000年的GB18030是取代GBK1.0的正式国家标准，该标准收录了27484个汉字，同时还收录了藏文、蒙文、维吾尔文等主要的少数民族文字。编码是变长的，其二字节部分与GBK兼容；四字节部分是扩充的字形、字位，其编码范围是首字节0x81-0xfe、二字节0x30-0x39、三字节0x81-0xfe、四字节0x30-0x39。向下编码兼容GBK1.0，当前使用中，GB18030和GBK的区别一般人无法区分(也没有多少人碰的上这种字)，所以一般GBK就通用指代了GB系列中比较复杂的那种编码。
+繁体中文来说，有BIG5, CNS11643, HKSCS三种。贝壳实际应用比较少，下面可能存在错误，请大家指正。
+BIG5是在CCCII不為政府單位採納，國家頒布的中文標準碼又不堪用的情況下。在1984年，由台北市電腦公會主導，聯合了十三家業者，
+共同制定，并在2003年进行了修订(Big5-2003)，旨在提供一个小型基本字符集以便对当前的繁体中文字符进行编码。Big5-2003是Big5的扩展，仅有2个平面，包含13051个繁体中文字符和778个符号，共13829个字符。编码范围是0xA140 - 0xF9FE, 0xA1A1 - 0xF9FE。对于熟悉电脑的人来说，都知道Big5是繁体字的事实标准。
+CNS11643在1992年制定，并在2004年进行了修订(称为CNS11643-2004)，旨在提供足够的字符编码以便对所有当前的繁体中文字符进行编码。CNS11643-2004是CNS11643的扩展，可以有 80 个编码平面。该标准支持： 8836 x 80 = 706,880 个编码点。原来的CNS11643标准仅有16个编码平面。在平面4以及平面12到15中，包含了台湾地区政府允许的所有法定人名用繁体中文字符。CNS11643直接取用了Big5的大部分编码，因此不考虑几个特例的情况下(准确的说，是两个)，CNS11643编码兼容了Big5。
+香港增补字符集(HKSCS)原来叫做政府通用字库(GCCS)，分两个编码方案。其中Big5版是香港政府为big5加的3049个字，因此也可以说HKSCS编码兼容了BIg5。ISO 10646方案是香港政府在给Big5添加符号后向ISO标准委员会提交了申请的结果，和Big5的版本互相兼容，只是编码方案(不是编码方法)不一致而已。
+再附加一点说明，一般我们说的编码转换，就是在Big5和GB2312间转换。鉴于繁体和简体文字的非严格对应性，转换可能存在误差。至于最大字符集组GB18030和CNS11643间的完美转换——还是等世界和平吧。
+下面说明Unicode家族，根据网络上的介绍，原来Unicode联盟和ISO标准组织都要对整个人类的符号进行编码工作(背景音乐：数星星啊数星星～××)，后来两者联合，这事就成了(it was so，玩笑玩笑)。大家知道，中国文件和东南亚各国间互相交流，因此字符重复者甚众。其中CJK是原来中国(包括香港、台湾地区)与朝鲜、韩国、日本联合制定的三国文字集合，现在已经被收入Unicode中。Unicode是一个单纯的编码方案，不过编码方法就相对复杂了，分为UCS-2，UCS-4，UTF-8等等。
+UCS-2和UCS-4是等长编码方法，简单来说就是U&#43;65535以内的可以编码入UCS-2，以上就需要使用UCS-4了(目前这个范围还没有启用)。UCS-2总共有65535个编码点，又叫做UCS-4的BMP区域。本质上是使用大端点或者小端点编码方法直接编码，可以在字符串开始的地方加入FF FE或者FE FF加以判别。优点是将所有字符熔於一个体系，没有编码冲突问题，因此可以在一个容器内引用多国文字(例如在同一句话中引用简体和繁体中文)，效率非常高，但是有个致命缺点，不兼容ASCII。
+为了解决这个问题，我们一般使用Unicode的时候，使用它的UTF-8编码方法。这个编码方法是非等长的，其中多数汉字需要使用三字节来存储。如果您看到有什么中文变成乱码后长度增加了一半的，那多数就是UTF-8编码。对于ASCII，UTF-8就是一字节码，于是就完整的兼容了ASCII。对于UCS-4中可能出现的最大编码来说，这时候就需要六字节来描述一个符号。因此可以想见，将来UTF-8是一定要灭亡的。
+Reference:
+[1].谈谈Unicode编码 http://www.windsn.com/article/viewmore.asp?id=227
+[2].中文编码基础知识介绍 http://www.eygle.com/digest/2007/01/zhs16gbk_char.html
+[3].The CJK package for LaTeX http://cjk." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/384/" />
+<meta property="article:published_time" content="2007-05-11T17:11:31+08:00" />
+<meta property="article:modified_time" content="2007-05-11T17:11:31+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">May 11, 2007
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     字符编码概论 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          <p>首先，阐明几个基本概念。字符集，编码方案，编码范围，编码方法，编码位数，兼容性，编码兼容性。</p>
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">字符编码概论</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          May 11, 2007
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/codec/">codec</a><a class="tag" href="//blog.shell909090.org/tags/program/">program</a></div></div>
+    </header>
+    <div class="post-content">
+      <p>首先，阐明几个基本概念。字符集，编码方案，编码范围，编码方法，编码位数，兼容性，编码兼容性。</p>
 
 <p>字符集是指一系列符号的集合。计算机中只能处理数字，因此符号必须给予编码，而后储存符号编码。打印时按照编码索引到符号，再索引到字体。因此一个字符集编码为数字的方案就是编码方案。其中西文编码规范就是ASCII(ISO-8859-1)。</p>
 
@@ -172,169 +208,12 @@ if (!doNotTrack) {
 
 <p>[6].Unicode Home Page    <a href="http://www.unicode.org/">http://www.unicode.org/</a></p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>May 11, 2007</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/codec">codec</a>  <a class="category" href="//blog.shell909090.org/tags/program">program</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/383/" title="南京游记3">南京游记3</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/385/" title="什么客户都是存在的">什么客户都是存在的</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

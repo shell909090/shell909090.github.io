@@ -1,122 +1,114 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>windows service的C&#43;&#43;封装实现 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>windows service的C&#43;&#43;封装实现</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="windows service的C&#43;&#43;封装实现"/>
+<meta name="twitter:description" content="windows系统服务入口的封装类，service是基类，service_manager是管理类。支持UNICODE，可以多服务封装在一个程序里面，过程当然都是自动的。拥有自动防错系统，在服务异常退出的时候会去关闭服务，而不是开着服务直接没了进程。写一个类，继承service，然后在哪里出一个实例，就可以了。service中有很多虚函数，可以重载了监听对应事件(我应该写的比较明白吧)。get_service_name，返回UNICODE的字符串指针，定义服务名称。注意是纯虚函数，必须实现。get_dependence，也是返回UNICODE的字符指针。指明这个服务依赖什么服务。get_service_type返回服务类型，其实也就是是否可以交互。get_contral_accepts，支持的信号(例如是否可以暂停)，默认可以暂停。on_start开始时候调用的函数，下同。
+使用方法
+#include #include &quot;service.h&quot; class test_service : public service{ public: virtual LPTSTRget_service_name (); virtual DWORD on_start (DWORD argc, LPTSTR * argv); virtual DWORD on_stop (); virtual DWORD on_shutdown (); }; LPTSTR test_service::get_service_name () { return _T (&quot;test_service&quot;); } DWORD test_service::on_start (DWORD argc, LPTSTR * argv) { return service::on_start (argc, argv); } DWORD test_service::on_stop () { return service::on_stop (); } DWORD test_service::on_shutdown () { return service::on_shutdown (); } int _tmain (int argc, _TCHAR * argv[]) { test_service ts; if (argc == 1) service_manager::start (); else if (!"/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="windows service的C&#43;&#43;封装实现" />
+<meta property="og:description" content="windows系统服务入口的封装类，service是基类，service_manager是管理类。支持UNICODE，可以多服务封装在一个程序里面，过程当然都是自动的。拥有自动防错系统，在服务异常退出的时候会去关闭服务，而不是开着服务直接没了进程。写一个类，继承service，然后在哪里出一个实例，就可以了。service中有很多虚函数，可以重载了监听对应事件(我应该写的比较明白吧)。get_service_name，返回UNICODE的字符串指针，定义服务名称。注意是纯虚函数，必须实现。get_dependence，也是返回UNICODE的字符指针。指明这个服务依赖什么服务。get_service_type返回服务类型，其实也就是是否可以交互。get_contral_accepts，支持的信号(例如是否可以暂停)，默认可以暂停。on_start开始时候调用的函数，下同。
+使用方法
+#include #include &quot;service.h&quot; class test_service : public service{ public: virtual LPTSTRget_service_name (); virtual DWORD on_start (DWORD argc, LPTSTR * argv); virtual DWORD on_stop (); virtual DWORD on_shutdown (); }; LPTSTR test_service::get_service_name () { return _T (&quot;test_service&quot;); } DWORD test_service::on_start (DWORD argc, LPTSTR * argv) { return service::on_start (argc, argv); } DWORD test_service::on_stop () { return service::on_stop (); } DWORD test_service::on_shutdown () { return service::on_shutdown (); } int _tmain (int argc, _TCHAR * argv[]) { test_service ts; if (argc == 1) service_manager::start (); else if (!" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/338/" />
+<meta property="article:published_time" content="2006-12-20T20:09:10+08:00" />
+<meta property="article:modified_time" content="2006-12-20T20:09:10+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">Dec 20, 2006
-     - 6 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     windows service的C&#43;&#43;封装实现 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          <p>windows系统服务入口的封装类，service是基类，service_manager是管理类。支持UNICODE，可以多服务封装在一个程序里面，过程当然都是自动的。拥有自动防错系统，在服务异常退出的时候会去关闭服务，而不是开着服务直接没了进程。写一个类，继承service，然后在哪里出一个实例，就可以了。service中有很多虚函数，可以重载了监听对应事件(我应该写的比较明白吧)。get_service_name，返回UNICODE的字符串指针，定义服务名称。注意是纯虚函数，必须实现。get_dependence，也是返回UNICODE的字符指针。指明这个服务依赖什么服务。get_service_type返回服务类型，其实也就是是否可以交互。get_contral_accepts，支持的信号(例如是否可以暂停)，默认可以暂停。on_start开始时候调用的函数，下同。</p>
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">windows service的C&#43;&#43;封装实现</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Dec 20, 2006
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          6 min read
+        </div><div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+  <title>tag</title>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+</svg>
+          <a class="tag" href="//blog.shell909090.org/tags/c/">c</a><a class="tag" href="//blog.shell909090.org/tags/windows/">windows</a></div></div>
+    </header>
+    <div class="post-content">
+      <p>windows系统服务入口的封装类，service是基类，service_manager是管理类。支持UNICODE，可以多服务封装在一个程序里面，过程当然都是自动的。拥有自动防错系统，在服务异常退出的时候会去关闭服务，而不是开着服务直接没了进程。写一个类，继承service，然后在哪里出一个实例，就可以了。service中有很多虚函数，可以重载了监听对应事件(我应该写的比较明白吧)。get_service_name，返回UNICODE的字符串指针，定义服务名称。注意是纯虚函数，必须实现。get_dependence，也是返回UNICODE的字符指针。指明这个服务依赖什么服务。get_service_type返回服务类型，其实也就是是否可以交互。get_contral_accepts，支持的信号(例如是否可以暂停)，默认可以暂停。on_start开始时候调用的函数，下同。</p>
 
 <p>使用方法</p>
 
@@ -607,169 +599,12 @@ service_manager *service_manager::get_service_manager ()
 
 <p>之所有list没有写成map是因为在某个服务处理过程中可能需要用到服务的名称。写成map就需要反向查询，也不是很方便。register_service中会查询这个服务是否已经注册过，注意不能用服务名对比的方法。这也是我才发现的一个问题，C++在基类的构造函数中的时候，虚函数指针是指向基类虚函数表的。在某个service子类构造的时候，其基类(service)构造函数会自动调用register_service方法注册自身。如果在register_service用取得服务名的方法，此时虚函数指针指向了基类的虚函数表。也就是说，我们会调用到一个纯虚函数入口，从而产生C++错误。所以必须手工来匹配指针，大家忍耐忍耐。</p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>Dec 20, 2006</time>
-    
-      <span class="categories">
-        Tags:
-        
-          <a class="category" href="//blog.shell909090.org/tags/c">c</a>  <a class="category" href="//blog.shell909090.org/tags/windows">windows</a>  
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/337/" title="出差到宁波">出差到宁波</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/339/" title="正则表达式解析文本">正则表达式解析文本</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-

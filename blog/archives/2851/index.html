@@ -1,122 +1,129 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>/proc/net/dev中bonding网卡的流量计算 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
 
-  
-  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
-
-  
     
-    
-      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    
-  
-
-  
-  <title>/proc/net/dev中bonding网卡的流量计算</title>
-
-  
-  
-  <link rel="stylesheet" href="/css/hugo-octopress.css">
-
-  
-  
-
-  
-    <link rel="stylesheet" href="/css/fork-awesome.min.css">
-  
-
-  
-  <link href="//blog.shell909090.org/favicon.png" rel="icon">
-
-  
-  
-
-  <meta name="description" content="" />
-  <meta name="keywords" content="">
-  <meta name="author" content="Shell Xu">
-
-  
-  <meta name="generator" content="Hugo 0.59.0-DEV" />
-
-  
-  
 <script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 	ga('create', 'UA-48816091-1', 'auto');
 	
 	ga('send', 'pageview');
 }
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="/proc/net/dev中bonding网卡的流量计算"/>
+<meta name="twitter:description" content="最近有需要，看了一下。我觉得还是讲一下，但是不讲太细了。以下代码是以4.4为基准的，不是的会特别指出。
+/proc/net/dev的读取问题 procfs的代码在fs/proc/proc_net.c，但是基本没干点啥事。真正的核心代码在net/core/net-procfs.c:dev_seq_show，我这里是105行。这个函数会打印个头，然后调用上面的dev_seq_printf_stats。dev_seq_printf_stats则是取设备最新信息，并打印。
+这里要注意的一点是，整个过程并没有锁，只是在fs/seq_file.c:seq_read上面上了一把锁。这把锁的目地更像是排斥两个进程同时读取同一个文件，而不是保证计数器正确。因此，实际上每个设备的性能计数都是单独读取的，而且读取时计数器还在持续递增。
+结论是什么？对于/proc/net/dev里的多个设备，做bonding加和是不可靠的。你不能假定设备1和2做了bonding，那么设备1的计数加上2的计数精确等于bonding的计数——虽然实际上就是这么算的。
+bonding的数据获取 我们再看dev_get_stats，这个函数里面实际上是用了ops-&gt;ndo_get_stats来获得设备的数据。对于bonding来说，这个文件在drivers/net/bonding/bond_main.c:bond_get_stats。从下面的实现中，你能看到，实际上bonding网卡的计数就是用各个设备的加和。然而计算没有那么直接，用的是每个设备的当前值减去原来保存值，差值加到bonding的保存值上。换个说法就是，bonding的margin等于各个设备的margin。
+这个特性是由这个补丁引入的：make global bonding stats more reliable，时间是2014年9月29日，版本是3.17.0-rc6。主要是解决bonding中去掉一块网卡的时候，计数器会掉下来的问题。在这个之前，还有两个补丁。
+ Enable 64-bit net device statistics on 32-bit architectures的引入时间是2010年6月8日，版本是2.6.35-rc1。这个版本首次引入了64位计数器（因此，RH6里面默认配置的2.6.32内核应当是32位计数器），但是写出了bug。 fix 64 bit counters on 32 bit arches的引入时间是2010年7月8日，版本同样是2.6.35-rc1。主要是解决补丁1在32位系统上非锁定读写64位计数器造成数据跨越总线宽度，导致多个CPU竞争读写时高低位被分别写入产生不一致的问题。  由这两个补丁，我们可以简单总结出bonding的问题历史。
+ 在2010年，2.6.35之前，内核计数器只有32位，分分钟会出问题。实话说我完全不敢相信，有当时用过/proc/net/dev的朋友来讲讲么？ 2010年的时候，有短暂的bug，只影响2.6.35。这是一个开发内核，我们可以忽略。 2014年，3.17.0之前。去掉一块网卡的时候，bonding计数器会掉下来。  然而，其实问题并没有结束。如果你仔细看代码的话，会发现，bond_get_stats根本没加锁。如果两个context同时调用，有可能发生这么一个过程。
+ context1读取数据并计算，计算完成后，写入bond-&gt;bond_stats数据前被switch out。 context2开始运算，完成计算并写入bond-&gt;bond_stats。很明显，由于context2的启动时间比1晚，context2的数据结果比1大。 context1被switch in，写入bond-&gt;bond_stats。 在随后的时间里，计数器的增长比context2和context1的差值大。  满足上述条件的话，bonding计数器就有可能倒涨。当然，里面还有其他竟态情况，可能导致各种问题。由于这是3.17.0内核引入的，因此只会发生在这个版本之后。
+当然，有朋友可能会说，/proc/net/dev里有锁啊。问题是，dev_get_stats可不是只有/proc/net/dev会用，rtnetlink也有可能哦。
+这个问题是这个补丁修复的：fix bond_get_stats，时间是2016年3月18日，版本是4.5.0-rc7。在补丁的说明里，说到了这个问题。
+因此，我们延伸一下故障列表：
+ 在2010年，2.6.35之前，内核计数器只有32位，分分钟会出问题。实话说我完全不敢相信，有当时用过/proc/net/dev的朋友来讲讲么？ 2010年的时候，有短暂的bug，只影响2.6.35。这是一个开发内核，我们可以忽略。 2014年，3.17.0之前。去掉一块网卡的时候，bonding计数器会掉下来。 2014-2016年，3.17.0到4.5.0之间。多个CPU同时读写时，会发生竞争出错。 2016年，4.5.0版本以上。未知。  另外注意。并不是说3.17.0之前没有竞争问题，而是由于没有写回状态，所以竞争问题并不产生明显影响。"/>
 
-  
-  
-</head>
-<body>
+    <meta property="og:title" content="/proc/net/dev中bonding网卡的流量计算" />
+<meta property="og:description" content="最近有需要，看了一下。我觉得还是讲一下，但是不讲太细了。以下代码是以4.4为基准的，不是的会特别指出。
+/proc/net/dev的读取问题 procfs的代码在fs/proc/proc_net.c，但是基本没干点啥事。真正的核心代码在net/core/net-procfs.c:dev_seq_show，我这里是105行。这个函数会打印个头，然后调用上面的dev_seq_printf_stats。dev_seq_printf_stats则是取设备最新信息，并打印。
+这里要注意的一点是，整个过程并没有锁，只是在fs/seq_file.c:seq_read上面上了一把锁。这把锁的目地更像是排斥两个进程同时读取同一个文件，而不是保证计数器正确。因此，实际上每个设备的性能计数都是单独读取的，而且读取时计数器还在持续递增。
+结论是什么？对于/proc/net/dev里的多个设备，做bonding加和是不可靠的。你不能假定设备1和2做了bonding，那么设备1的计数加上2的计数精确等于bonding的计数——虽然实际上就是这么算的。
+bonding的数据获取 我们再看dev_get_stats，这个函数里面实际上是用了ops-&gt;ndo_get_stats来获得设备的数据。对于bonding来说，这个文件在drivers/net/bonding/bond_main.c:bond_get_stats。从下面的实现中，你能看到，实际上bonding网卡的计数就是用各个设备的加和。然而计算没有那么直接，用的是每个设备的当前值减去原来保存值，差值加到bonding的保存值上。换个说法就是，bonding的margin等于各个设备的margin。
+这个特性是由这个补丁引入的：make global bonding stats more reliable，时间是2014年9月29日，版本是3.17.0-rc6。主要是解决bonding中去掉一块网卡的时候，计数器会掉下来的问题。在这个之前，还有两个补丁。
+ Enable 64-bit net device statistics on 32-bit architectures的引入时间是2010年6月8日，版本是2.6.35-rc1。这个版本首次引入了64位计数器（因此，RH6里面默认配置的2.6.32内核应当是32位计数器），但是写出了bug。 fix 64 bit counters on 32 bit arches的引入时间是2010年7月8日，版本同样是2.6.35-rc1。主要是解决补丁1在32位系统上非锁定读写64位计数器造成数据跨越总线宽度，导致多个CPU竞争读写时高低位被分别写入产生不一致的问题。  由这两个补丁，我们可以简单总结出bonding的问题历史。
+ 在2010年，2.6.35之前，内核计数器只有32位，分分钟会出问题。实话说我完全不敢相信，有当时用过/proc/net/dev的朋友来讲讲么？ 2010年的时候，有短暂的bug，只影响2.6.35。这是一个开发内核，我们可以忽略。 2014年，3.17.0之前。去掉一块网卡的时候，bonding计数器会掉下来。  然而，其实问题并没有结束。如果你仔细看代码的话，会发现，bond_get_stats根本没加锁。如果两个context同时调用，有可能发生这么一个过程。
+ context1读取数据并计算，计算完成后，写入bond-&gt;bond_stats数据前被switch out。 context2开始运算，完成计算并写入bond-&gt;bond_stats。很明显，由于context2的启动时间比1晚，context2的数据结果比1大。 context1被switch in，写入bond-&gt;bond_stats。 在随后的时间里，计数器的增长比context2和context1的差值大。  满足上述条件的话，bonding计数器就有可能倒涨。当然，里面还有其他竟态情况，可能导致各种问题。由于这是3.17.0内核引入的，因此只会发生在这个版本之后。
+当然，有朋友可能会说，/proc/net/dev里有锁啊。问题是，dev_get_stats可不是只有/proc/net/dev会用，rtnetlink也有可能哦。
+这个问题是这个补丁修复的：fix bond_get_stats，时间是2016年3月18日，版本是4.5.0-rc7。在补丁的说明里，说到了这个问题。
+因此，我们延伸一下故障列表：
+ 在2010年，2.6.35之前，内核计数器只有32位，分分钟会出问题。实话说我完全不敢相信，有当时用过/proc/net/dev的朋友来讲讲么？ 2010年的时候，有短暂的bug，只影响2.6.35。这是一个开发内核，我们可以忽略。 2014年，3.17.0之前。去掉一块网卡的时候，bonding计数器会掉下来。 2014-2016年，3.17.0到4.5.0之间。多个CPU同时读写时，会发生竞争出错。 2016年，4.5.0版本以上。未知。  另外注意。并不是说3.17.0之前没有竞争问题，而是由于没有写回状态，所以竞争问题并不产生明显影响。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2851/" />
+<meta property="article:published_time" content="2017-05-16T11:29:52+08:00" />
+<meta property="article:modified_time" content="2017-05-16T11:29:52+08:00" />
 
-
-<header role="banner">
-<hgroup>
-  
-  <h1><a href="//blog.shell909090.org/">Shell&#39;s Home</a></h1>
-    <h2></h2>
-</hgroup></header>
-
-
-<nav role="navigation">
-<fieldset class="mobile-nav">
-  
-  <select onchange="location = this.value;">
-    <option value="">Navigate…</option>
-      
-  </select>
-</fieldset>
-
-
-<ul class="main-navigation">
-  
-  
-</ul>
-
-<ul class="subscription">
-  
-</ul>
-
-
-</nav>
-
-
-<div id="main">
-  <div id="content">
-    <div>
-      <article class="hentry" role="article">
-
-        
-        
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
 
 <header>
-  <p class="meta">May 16, 2017
-     - 1 minute read 
-    
 
-    
-  </p>
-  <h1 class="entry-title">
-     /proc/net/dev中bonding网卡的流量计算 
-  </h1>
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
 </header>
 
 
-        <div class="entry-content">
-          
-          
-          
-          
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">/proc/net/dev中bonding网卡的流量计算</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          May 16, 2017
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div></div>
+    </header>
+    <div class="post-content">
+      
 
 <p>最近有需要，看了一下。我觉得还是讲一下，但是不讲太细了。以下代码是以4.4为基准的，不是的会特别指出。</p>
 
@@ -174,164 +181,12 @@ if (!doNotTrack) {
 
 <p>另外注意。并不是说3.17.0之前没有竞争问题，而是由于没有写回状态，所以竞争问题并不产生明显影响。</p>
 
-        </div>
-        
-
-<footer>
-  <p class="meta">
-    <span class="byline author vcard">Posted by <span class="fn">Shell Xu</span></span>
-    
-    <time>May 16, 2017</time>
-    
-    </span>
-  </p>
-
-  
-
-  <p class="meta">
-    
-        <a class="basic-alignment left" href="//blog.shell909090.org/blog/archives/2850/" title="SI的七个基础单位">SI的七个基础单位</a>
-    
-
-    
-      <a class="basic-alignment right" href="//blog.shell909090.org/blog/archives/2852/" title="Puerro Galera游记">Puerro Galera游记</a>
-    
-  </p>
-  
-</footer>
-
-      </article>
     </div>
-    
-
-<aside class="sidebar thirds">
-  <section class="first odd">
-
-    
-
-    <p>
+    <div class="post-footer">
       
-    </p>
-  </section>
+    </div>
+  </article>
 
-
-
-  
-  <ul class="sidebar-nav">
-    <li class="sidebar-nav-item">
-      
-      
-      
-      
-      
-         
-      
-      
-      
-      
-      
-      
-      
-      
-
-    
-    
-    </li>
-  </ul>
-
-  
-
-  
-
-  
-  
-  
-    
-      <section class="even">
-        <h1>Recent Posts</h1>
-        <ul id="recent_posts">
-          
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2868/">外设接口和供电的演化史</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2867/">996</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2866/">关于抵制洋节</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2865/">恒春潜水记录</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2864/">递归有关的几个小问题</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2863/">openssl证书相关</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2862/">openssl基本密码学操作</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2861/">密码学基本原理</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2860/">similan船宿</a>
-              </li>
-            
-          
-            
-              <li class="post">
-                <a href="/blog/archives/2859/">在云存储上叠加加密文件系统</a>
-              </li>
-            
-          
-        </ul>
-      </section>
-    
-  
-</aside>
-
-  </div>
-</div>
-
-    <footer role="contentinfo">
-      <p>Copyright &copy; 2019 Shell Xu - <a href="//blog.shell909090.org/license/">License</a> -
-        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
-      </p>
-    </footer>
-
-    
-    
-    
-
-    
+    </main>
   </body>
 </html>
-
