@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>tls,http2,grpc的拦截分析 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+
+    
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-48816091-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="tls,http2,grpc的拦截分析"/>
+<meta name="twitter:description" content="wireshark抓解tls报文 方法1：导出shared secret 很简单，设定环境变量SSLKEYLOGFILE为一个文件，然后启动浏览器。浏览器就会把中间的所有shared secret写入这个log文件里。然后在wireshark的Perferences里，把TLS的&rdquo;(Pre)-Master-Secret log filename&rdquo;，设定为这个文件。随后wireshark就可以解开tls流量。
+参考：
+ NSS Key Log Format  方法2：安装证书进行MITM fiddler和mitmproxy都行，我选mitmproxy。主要是linux下面好装。
+mitmproxy是需要客户端设定代理的，代理类型http代理。有个关键步骤是装证书，大致可以参考下面的参考2。Chrome有个细节是，进入&rdquo;Manage certificates&rdquo;之后，要跑去Authorities下面，import一本cer证书。我开始去了&rdquo;Your certificates&rdquo;，那个是给你装客户端证书的，p12格式。两回事。
+理论上说，mitmproxy结合安卓安装证书，加透明代理，可以调试安卓的通讯。不过这个我没试过，就不多说了。
+参考：
+ Getting Started About Certificates Install System CA Certificate on Android Emulator  方法3：mitmproxy&#43;wireshark 这个方法有点无聊。mitmproxy也是支持SSLKEYLOGFILE的，所以它可以导出key供wireshark分析。
+参考：
+ Wireshark and SSL/TLS Master Secrets  wireshark抓解http2协议 注意一点。
+TLS层，Client Hello报文里，ALPN(application_layer_protocol_negotiation)里面应该有h2。ALPN带有h2是客户端想连接http2协议的标志。理论上说，缺失这个标志的Client Hello就不应该跟PRI * HTTP/2.0。同样，服务器端的Encrypted Extensions报文里，也应该带有ALPN标志，且里面包含h2。双方ALPN协商一致后，客户端发出的明文报文就可以是PRI * HTTP/2.0。
+原则上说，http2还有一种非TLS模式。客户端在启动时在头部带上Upgrade: h2c，服务器端经过正确响应，之后的通讯数据就是http2数据了。当然，此时http2的数据会跑在非加密连接上。但是我实测下来这种模式没跑通过。curl的客户端可以构造出这种请求，方法是curl -v --http2 http://[host]...。然而，当我用这个请求向我自己的nginx和google分别请求时，两者都像是没有看见Upgrade头一样，直接该给我返回啥就返回啥。反倒是另一种http2的非TLS我跑通了。在grpc时，用grpc.WithInsecure()来Dial。此时整个客户端就没有什么HTTP/1.1握手升级上来的事情了。它会像使用TLS连接一样使用TCP连接。
+grpc协议解析  一个请求开一个stream。请求时POST到一个和Interface/Function同名的URL。 调用参数用请求的data frame发送，格式为protobuf。如果是stream，那么会有多个data frame。 返回结果用响应的data frame发送，格式同样为protobuf。stream同理。 最后一个header frame会关掉stream。  参考："/>
+
+    <meta property="og:title" content="tls,http2,grpc的拦截分析" />
+<meta property="og:description" content="wireshark抓解tls报文 方法1：导出shared secret 很简单，设定环境变量SSLKEYLOGFILE为一个文件，然后启动浏览器。浏览器就会把中间的所有shared secret写入这个log文件里。然后在wireshark的Perferences里，把TLS的&rdquo;(Pre)-Master-Secret log filename&rdquo;，设定为这个文件。随后wireshark就可以解开tls流量。
+参考：
+ NSS Key Log Format  方法2：安装证书进行MITM fiddler和mitmproxy都行，我选mitmproxy。主要是linux下面好装。
+mitmproxy是需要客户端设定代理的，代理类型http代理。有个关键步骤是装证书，大致可以参考下面的参考2。Chrome有个细节是，进入&rdquo;Manage certificates&rdquo;之后，要跑去Authorities下面，import一本cer证书。我开始去了&rdquo;Your certificates&rdquo;，那个是给你装客户端证书的，p12格式。两回事。
+理论上说，mitmproxy结合安卓安装证书，加透明代理，可以调试安卓的通讯。不过这个我没试过，就不多说了。
+参考：
+ Getting Started About Certificates Install System CA Certificate on Android Emulator  方法3：mitmproxy&#43;wireshark 这个方法有点无聊。mitmproxy也是支持SSLKEYLOGFILE的，所以它可以导出key供wireshark分析。
+参考：
+ Wireshark and SSL/TLS Master Secrets  wireshark抓解http2协议 注意一点。
+TLS层，Client Hello报文里，ALPN(application_layer_protocol_negotiation)里面应该有h2。ALPN带有h2是客户端想连接http2协议的标志。理论上说，缺失这个标志的Client Hello就不应该跟PRI * HTTP/2.0。同样，服务器端的Encrypted Extensions报文里，也应该带有ALPN标志，且里面包含h2。双方ALPN协商一致后，客户端发出的明文报文就可以是PRI * HTTP/2.0。
+原则上说，http2还有一种非TLS模式。客户端在启动时在头部带上Upgrade: h2c，服务器端经过正确响应，之后的通讯数据就是http2数据了。当然，此时http2的数据会跑在非加密连接上。但是我实测下来这种模式没跑通过。curl的客户端可以构造出这种请求，方法是curl -v --http2 http://[host]...。然而，当我用这个请求向我自己的nginx和google分别请求时，两者都像是没有看见Upgrade头一样，直接该给我返回啥就返回啥。反倒是另一种http2的非TLS我跑通了。在grpc时，用grpc.WithInsecure()来Dial。此时整个客户端就没有什么HTTP/1.1握手升级上来的事情了。它会像使用TLS连接一样使用TCP连接。
+grpc协议解析  一个请求开一个stream。请求时POST到一个和Interface/Function同名的URL。 调用参数用请求的data frame发送，格式为protobuf。如果是stream，那么会有多个data frame。 返回结果用响应的data frame发送，格式同样为protobuf。stream同理。 最后一个header frame会关掉stream。  参考：" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2884/" />
+<meta property="article:published_time" content="2022-04-05T17:21:51+08:00" />
+<meta property="article:modified_time" content="2022-04-05T17:21:51+08:00" />
+
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
+
+<header>
+
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
+</header>
+
+
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2022 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">tls,http2,grpc的拦截分析</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Apr 5, 2022
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div></div>
+    </header>
+    <div class="post-content">
+      
+
+<h1 id="wireshark抓解tls报文">wireshark抓解tls报文</h1>
+
+<h2 id="方法1-导出shared-secret">方法1：导出shared secret</h2>
+
+<p>很简单，设定环境变量<code>SSLKEYLOGFILE</code>为一个文件，然后启动浏览器。浏览器就会把中间的所有shared secret写入这个log文件里。然后在wireshark的Perferences里，把TLS的&rdquo;(Pre)-Master-Secret log filename&rdquo;，设定为这个文件。随后wireshark就可以解开tls流量。</p>
+
+<p>参考：</p>
+
+<ol>
+<li><a href="https://firefox-source-docs.mozilla.org/security/nss/legacy/key_log_format/index.html">NSS Key Log Format</a></li>
+</ol>
+
+<h2 id="方法2-安装证书进行mitm">方法2：安装证书进行MITM</h2>
+
+<p>fiddler和mitmproxy都行，我选mitmproxy。主要是linux下面好装。</p>
+
+<p>mitmproxy是需要客户端设定代理的，代理类型http代理。有个关键步骤是装证书，大致可以参考下面的参考2。Chrome有个细节是，进入&rdquo;Manage certificates&rdquo;之后，要跑去Authorities下面，import一本cer证书。我开始去了&rdquo;Your certificates&rdquo;，那个是给你装客户端证书的，p12格式。两回事。</p>
+
+<p>理论上说，mitmproxy结合安卓安装证书，加透明代理，可以调试安卓的通讯。不过这个我没试过，就不多说了。</p>
+
+<p>参考：</p>
+
+<ol>
+<li><a href="https://docs.mitmproxy.org/stable/overview-getting-started/">Getting Started</a></li>
+<li><a href="https://docs.mitmproxy.org/stable/concepts-certificates/">About Certificates</a></li>
+<li><a href="https://docs.mitmproxy.org/stable/howto-install-system-trusted-ca-android/">Install System CA Certificate on Android Emulator</a></li>
+</ol>
+
+<h2 id="方法3-mitmproxy-wireshark">方法3：mitmproxy+wireshark</h2>
+
+<p>这个方法有点无聊。mitmproxy也是支持<code>SSLKEYLOGFILE</code>的，所以它可以导出key供wireshark分析。</p>
+
+<p>参考：</p>
+
+<ol>
+<li><a href="https://docs.mitmproxy.org/stable/howto-wireshark-tls/">Wireshark and SSL/TLS Master Secrets</a></li>
+</ol>
+
+<h1 id="wireshark抓解http2协议">wireshark抓解http2协议</h1>
+
+<p>注意一点。</p>
+
+<p>TLS层，Client Hello报文里，ALPN(application_layer_protocol_negotiation)里面应该有h2。ALPN带有h2是客户端想连接http2协议的标志。理论上说，缺失这个标志的Client Hello就不应该跟<code>PRI * HTTP/2.0</code>。同样，服务器端的Encrypted Extensions报文里，也应该带有ALPN标志，且里面包含h2。双方ALPN协商一致后，客户端发出的明文报文就可以是<code>PRI * HTTP/2.0</code>。</p>
+
+<p>原则上说，http2还有一种非TLS模式。客户端在启动时在头部带上<code>Upgrade: h2c</code>，服务器端经过正确响应，之后的通讯数据就是http2数据了。当然，此时http2的数据会跑在非加密连接上。但是我实测下来这种模式没跑通过。curl的客户端可以构造出这种请求，方法是<code>curl -v --http2 http://[host]...</code>。然而，当我用这个请求向我自己的nginx和google分别请求时，两者都像是没有看见Upgrade头一样，直接该给我返回啥就返回啥。反倒是另一种http2的非TLS我跑通了。在grpc时，用<code>grpc.WithInsecure()</code>来Dial。此时整个客户端就没有什么HTTP/1.1握手升级上来的事情了。它会像使用TLS连接一样使用TCP连接。</p>
+
+<h1 id="grpc协议解析">grpc协议解析</h1>
+
+<ol>
+<li>一个请求开一个stream。请求时POST到一个和Interface/Function同名的URL。</li>
+<li>调用参数用请求的data frame发送，格式为protobuf。如果是stream，那么会有多个data frame。</li>
+<li>返回结果用响应的data frame发送，格式同样为protobuf。stream同理。</li>
+<li>最后一个header frame会关掉stream。</li>
+</ol>
+
+<p>参考：</p>
+
+<ol>
+<li><a href="https://segmentfault.com/a/1190000019608421">从实践到原理，带你参透 gRPC</a></li>
+</ol>
+
+<h1 id="mitmproxy脚本开发">mitmproxy脚本开发</h1>
+
+<p>基本参照mitmproxy文档里的example就能搞，推荐addons写法。API参考上面的API文档。</p>
+
+<p>参考：</p>
+
+<ol>
+<li><a href="https://docs.mitmproxy.org/stable/addons-examples/">Addon Examples</a></li>
+<li><a href="https://docs.mitmproxy.org/stable/api/events.html">Event Hooks &amp; API</a></li>
+</ol>
+
+    </div>
+    <div class="post-footer">
+      
+    </div>
+  </article>
+
+    </main>
+  </body>
+</html>

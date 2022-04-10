@@ -7,10 +7,30 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Fri, 25 Mar 2022 21:33:42 +0800</lastBuildDate>
+    <lastBuildDate>Tue, 05 Apr 2022 17:21:51 +0800</lastBuildDate>
     
 	<atom:link href="//blog.shell909090.org/blog/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>tls,http2,grpc的拦截分析</title>
+      <link>//blog.shell909090.org/blog/archives/2884/</link>
+      <pubDate>Tue, 05 Apr 2022 17:21:51 +0800</pubDate>
+      
+      <guid>//blog.shell909090.org/blog/archives/2884/</guid>
+      <description>wireshark抓解tls报文 方法1：导出shared secret 很简单，设定环境变量SSLKEYLOGFILE为一个文件，然后启动浏览器。浏览器就会把中间的所有shared secret写入这个log文件里。然后在wireshark的Perferences里，把TLS的&amp;rdquo;(Pre)-Master-Secret log filename&amp;rdquo;，设定为这个文件。随后wireshark就可以解开tls流量。
+参考：
+ NSS Key Log Format  方法2：安装证书进行MITM fiddler和mitmproxy都行，我选mitmproxy。主要是linux下面好装。
+mitmproxy是需要客户端设定代理的，代理类型http代理。有个关键步骤是装证书，大致可以参考下面的参考2。Chrome有个细节是，进入&amp;rdquo;Manage certificates&amp;rdquo;之后，要跑去Authorities下面，import一本cer证书。我开始去了&amp;rdquo;Your certificates&amp;rdquo;，那个是给你装客户端证书的，p12格式。两回事。
+理论上说，mitmproxy结合安卓安装证书，加透明代理，可以调试安卓的通讯。不过这个我没试过，就不多说了。
+参考：
+ Getting Started About Certificates Install System CA Certificate on Android Emulator  方法3：mitmproxy+wireshark 这个方法有点无聊。mitmproxy也是支持SSLKEYLOGFILE的，所以它可以导出key供wireshark分析。
+参考：
+ Wireshark and SSL/TLS Master Secrets  wireshark抓解http2协议 注意一点。
+TLS层，Client Hello报文里，ALPN(application_layer_protocol_negotiation)里面应该有h2。ALPN带有h2是客户端想连接http2协议的标志。理论上说，缺失这个标志的Client Hello就不应该跟PRI * HTTP/2.0。同样，服务器端的Encrypted Extensions报文里，也应该带有ALPN标志，且里面包含h2。双方ALPN协商一致后，客户端发出的明文报文就可以是PRI * HTTP/2.0。
+原则上说，http2还有一种非TLS模式。客户端在启动时在头部带上Upgrade: h2c，服务器端经过正确响应，之后的通讯数据就是http2数据了。当然，此时http2的数据会跑在非加密连接上。但是我实测下来这种模式没跑通过。curl的客户端可以构造出这种请求，方法是curl -v --http2 http://[host]...。然而，当我用这个请求向我自己的nginx和google分别请求时，两者都像是没有看见Upgrade头一样，直接该给我返回啥就返回啥。反倒是另一种http2的非TLS我跑通了。在grpc时，用grpc.WithInsecure()来Dial。此时整个客户端就没有什么HTTP/1.1握手升级上来的事情了。它会像使用TLS连接一样使用TCP连接。
+grpc协议解析  一个请求开一个stream。请求时POST到一个和Interface/Function同名的URL。 调用参数用请求的data frame发送，格式为protobuf。如果是stream，那么会有多个data frame。 返回结果用响应的data frame发送，格式同样为protobuf。stream同理。 最后一个header frame会关掉stream。  参考：</description>
+    </item>
     
     <item>
       <title>css cascade算法</title>
