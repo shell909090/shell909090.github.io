@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>wifi有关的一些问题 // Shell&#39;s Home</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+
+    
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-48816091-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="wifi有关的一些问题"/>
+<meta name="twitter:description" content="abstract 讲一点wifi通讯的杂七杂八的问题。关于无线网络问题的诊断，可以回看之前文章。
+技术标准  技术标准：802.11a/b/g/n/ac/ax，也叫wifi4/5/6。粗略讲起来，wifi4=802.11n，wifi5=802.11ac，wifi6=802.11ax。 频率：wifi传输数据所用的无线电频率。wifi只能使用ISM频率。一般就是使用2400MHz-2500Mhz这一块，还有5100MHz-5800MHz附近一块。这两块俗称2.4GHz和5Ghz频率。注意5GHz不是5G通讯协议那个5G。 频宽：在频率许可范围内，占用多少范围内的频率。一般来说，在技术标准许可的范围内，频宽翻倍，速度大约翻倍（一般是翻倍多一点，也有翻倍）。如果两个AP的频宽重叠，那么会产生干扰。 MIMO：简单来说，几根天线。在标准许可的范围内，一倍的天线增加一倍左右的速度（一般是翻倍）。  为什么技术标准有两套名字？简单来说Wifi联盟（注意不是英雄联盟）认为，技术标准的名字叫802.11ax太拗口了，不利于宣传。所以直接冠以wifi6的名字。前面的a/b/g/n/ac，自然就变成了1/2/3/4/5。就这么简单。
+如果你大概看了上面的介绍，就应该知道，技术标准是一切的核心。技术标准规定了能用几根天线，多少频率，多少频宽。例如，如果你自己来的话，你可能希望有100根天线，整个路由器就像麻辣烫似的一捆，速度爆炸。但是很不幸，技术规定限死最多3MIMO，也就是三根天线。而且，即便规定了三根天线，也要收发双方都支持才行。例如你可以从这里查到MBP各款的天线数量。大部分都是2MIMO，17-19款的有3MIMO。所以MBP19之后款的其实不支持3MIMO，哪怕路由器支持也没用。
+不过苹果去掉3MIMO还真不是骗钱。因为11ac和11ax最高都只有2MIMO。所以3MIMO这东西只有11n用&hellip;
+关于每个版本的协议，支持哪些参数，提供多少速率。可以看这里。
+特别注意。11ac不支持2.4G。这导致很多路由器的2.4G频率停留在11n标准上。该标准对应的最大速率是450Mbps，所以好多路由都标自己2.4G是450Mbps。实际从上面的表可以看出。这种路由器在碰到新款MBP的时候，最多跑到300Mbps。
+“穿墙” 先说重点。2.4G绕射能力好，所以“穿墙”性能好。5G反之。所谓穿墙，其实穿不过去。是wifi信号通过一些非阻挡物的穿透，再绕射到被钢筋水泥挡住的死角里。2.4G在绕射能力明显优于5G。但是从通讯角度来看，穿墙能力好不一定是优点。如果你用一个穿墙能力非常好的方案，能穿整个地球。那么理论上你的手机上会显示出地球上所有AP的名字&hellip;
+那还用个P，是吧。
+另外2.4G由于优秀的通用性，所以被各种地方普遍使用。门铃也是2.4G的，无绳电话也是2.4G的，蓝牙也是2.4G的。这些都算了。微波炉也是2.4G的。所以在家打开AP会让家里字面意义上的变成微波炉&hellip;
+幸好功率不够。
+由于2.4G绕射性能良好，且用途广泛，所以你的2.4G频率经常会被干扰。这就是这个频率最大的缺点。5G频率反之。站在路由器直射区，速度感人。一跑远，很快就渣。而且由于上面说的11ac不支持2.4G问题，因此很多家庭AP的2.4G性能严重差于5G。如果你恰好是这种AP，不妨给2.4G和5G起不一样的名字，手工选择看看。
+MIMO和天线 通常来说，多MIMO代表多天线。如果是典型的2MIMO双频路由器，那就是4根天线。
+推荐一个摆法。把5G的两根天线，一根垂直一根水平放置。2.4G也是如此。最好不要全平行放置。如这里所说。
+频率频宽和合法性 另一个是频率/频宽/合法性问题。我们用2.4G作为例子，讲点形象的东西。
+2.4G频率的ch1，中心频率是2412MHz。使用20MHz频宽的时候，频率范围是2402-2422MHz。但是ch2中心频率是2417MHz，ch3中心频率是2422MHz，每个ch中心频率互相差5MHz。这些都会和ch1x20MHz的组合冲突。实际上你可以很容易算出，理论上ch5中心频率2432MHz。频宽20MHz情况下，下边缘2422MHz，刚好和ch1x20MHz重叠。所以ch1和ch6在20MHz模式下不冲突，ch2和ch7不冲突，以下类推。最直接结论就是，ch1-ch11里，最多可以塞下三个互不冲突的20MHz通讯带。即ch1/ch6/ch11。如果一个办公室里有三个AP。一个AP一个频率，正好互不冲突。
+如果改成40MHz频宽，情况就更加糟糕。ch1肯定不能用，最低是ch3，中心频率2422MHz，上边缘2442MHz。而ch11的中心频率2462MHz，下边缘一致。其实这已经发生了轻微冲突。所以2.4G频率在40MHz频宽下，只能塞下一个互不重叠的AP。第二个一定会和第一个发生冲突。如果此时办公室里有三个AP，它们就会有部分频率冲突，影响效率。
+至于80MHz频宽。11ac根本不支持2.4G，11ax才重新支持，所以一定是11ax的标准。80MHz频宽下，ch根本没法选。只有ch7，中心频率2442MHz，2402MHz-2482MHz，正正好塞到整个频率里。如果办公室里此时有三个AP，他们的通讯将会正面冲突。而且下面我们会说到，2.4G其实根本不支持80MHz频宽。
+为什么2.4G不支持80MHz频宽？为什么不能用足2400-2500MHz的范围呢？这就是是另一个问题——合法性。中国的规定是2400MHz-2500MHz都归属ISM用。（参考无线电频率划分规定）香港规定2400-2483.5MHz归ISM，2483.5-2500MHz归卫星。所以wifi的普适性产品，最多有13个ch。而美国更夸张，ch12已经违法了——算一下就知道，频率上边缘大约是2475MHz左右。所以美国恰好塞不进80MHz——这可能是11ac干脆不支持2.4G的在重要原因——兼容性频宽不足。
+比较完整的世界各国信道一览可以看这里。长话短说，中国在5GHz频段，有以下ch可用。
+ ch38, 5190MHz，40MHz，5170-5210MHz。注意ch38=ch36&#43;ch40，下同。 ch46，5230MHz，40MHz，5210-5250MHz。 ch54，5270MHz，40MHz，5250-5290MHz，DFS。所谓DFS是碰到雷达波避让。因为这个频率里，ISM是次要业务。 ch62，5310MHz，40MHz，5290-5330MHz，DFS。 ch151，5755MHz，40MHz，5735-5775MHz。 ch159，5795MHz，40MHz，5775-5815MHz。  可以看到，5G的频谱和2.4G不同，是不连续的。大致分为5170-5330MHz和5735-5815MHz这两段，分别配有160MHz和80MHz的总频宽。和2.4G相比，哪怕是中国，5G的频宽分配也远远比2.4G充足（大约是3倍吧）。这对于160MHz频宽非常重要。因为5G只能塞下一个160MHz，而2.4G压根儿没戏。
+有一点细节要注意。从11ac标准开始支持160MHz频宽，和之前的20/40/80有所不同。之前的20-40频宽变化，速度都是翻倍多一点儿。40-80也是基本如此。但是80-160频宽变化，速度标标准准翻倍。其中有一个因素就是，由于频率割裂，所以160MHz规范有连续160MHz和80&#43;80MHz两种模式。
+顺便一提，中国合法的ISM频率分别是：
+ 13553-13567kHz 26957-27283kHz 40.66-40.70MHz 902-928MHz 2400-2500MHz 5150-5350MHz 5725-5875MHz 24-24.25GHz  参考：
+ 中华人民共和国无线电频率划分规定 工业和信息化部关于加强和规范2400MHz、5100MHz和5800MHz频段无线电管理有关事宜的通知  速度计算 下面我们假定有个设备，是2MIMO，支持2.4G和5G频率，支持/不支持wifi6标准。来算算理想通讯速度。
+ 不支持wifi6  2.4G，11n标准，理想速度40MHz下300Mbps。 5G，11ac标准，理想速度80MHz下866Mbps。（不考虑wave2中160MHz） 一般来说，这路由器会宣称自己是1200M路由器（300&#43;866，余数不要太认真）。当然，不支持wifi6中的顶格路由器是3x2.4G&#43;2x5G天线。1300M（450&#43;866）。  支持wifi6  2.4G，理想速度40MHz下601Mbps。 5G，理想速度160MHz下2."/>
+
+    <meta property="og:title" content="wifi有关的一些问题" />
+<meta property="og:description" content="abstract 讲一点wifi通讯的杂七杂八的问题。关于无线网络问题的诊断，可以回看之前文章。
+技术标准  技术标准：802.11a/b/g/n/ac/ax，也叫wifi4/5/6。粗略讲起来，wifi4=802.11n，wifi5=802.11ac，wifi6=802.11ax。 频率：wifi传输数据所用的无线电频率。wifi只能使用ISM频率。一般就是使用2400MHz-2500Mhz这一块，还有5100MHz-5800MHz附近一块。这两块俗称2.4GHz和5Ghz频率。注意5GHz不是5G通讯协议那个5G。 频宽：在频率许可范围内，占用多少范围内的频率。一般来说，在技术标准许可的范围内，频宽翻倍，速度大约翻倍（一般是翻倍多一点，也有翻倍）。如果两个AP的频宽重叠，那么会产生干扰。 MIMO：简单来说，几根天线。在标准许可的范围内，一倍的天线增加一倍左右的速度（一般是翻倍）。  为什么技术标准有两套名字？简单来说Wifi联盟（注意不是英雄联盟）认为，技术标准的名字叫802.11ax太拗口了，不利于宣传。所以直接冠以wifi6的名字。前面的a/b/g/n/ac，自然就变成了1/2/3/4/5。就这么简单。
+如果你大概看了上面的介绍，就应该知道，技术标准是一切的核心。技术标准规定了能用几根天线，多少频率，多少频宽。例如，如果你自己来的话，你可能希望有100根天线，整个路由器就像麻辣烫似的一捆，速度爆炸。但是很不幸，技术规定限死最多3MIMO，也就是三根天线。而且，即便规定了三根天线，也要收发双方都支持才行。例如你可以从这里查到MBP各款的天线数量。大部分都是2MIMO，17-19款的有3MIMO。所以MBP19之后款的其实不支持3MIMO，哪怕路由器支持也没用。
+不过苹果去掉3MIMO还真不是骗钱。因为11ac和11ax最高都只有2MIMO。所以3MIMO这东西只有11n用&hellip;
+关于每个版本的协议，支持哪些参数，提供多少速率。可以看这里。
+特别注意。11ac不支持2.4G。这导致很多路由器的2.4G频率停留在11n标准上。该标准对应的最大速率是450Mbps，所以好多路由都标自己2.4G是450Mbps。实际从上面的表可以看出。这种路由器在碰到新款MBP的时候，最多跑到300Mbps。
+“穿墙” 先说重点。2.4G绕射能力好，所以“穿墙”性能好。5G反之。所谓穿墙，其实穿不过去。是wifi信号通过一些非阻挡物的穿透，再绕射到被钢筋水泥挡住的死角里。2.4G在绕射能力明显优于5G。但是从通讯角度来看，穿墙能力好不一定是优点。如果你用一个穿墙能力非常好的方案，能穿整个地球。那么理论上你的手机上会显示出地球上所有AP的名字&hellip;
+那还用个P，是吧。
+另外2.4G由于优秀的通用性，所以被各种地方普遍使用。门铃也是2.4G的，无绳电话也是2.4G的，蓝牙也是2.4G的。这些都算了。微波炉也是2.4G的。所以在家打开AP会让家里字面意义上的变成微波炉&hellip;
+幸好功率不够。
+由于2.4G绕射性能良好，且用途广泛，所以你的2.4G频率经常会被干扰。这就是这个频率最大的缺点。5G频率反之。站在路由器直射区，速度感人。一跑远，很快就渣。而且由于上面说的11ac不支持2.4G问题，因此很多家庭AP的2.4G性能严重差于5G。如果你恰好是这种AP，不妨给2.4G和5G起不一样的名字，手工选择看看。
+MIMO和天线 通常来说，多MIMO代表多天线。如果是典型的2MIMO双频路由器，那就是4根天线。
+推荐一个摆法。把5G的两根天线，一根垂直一根水平放置。2.4G也是如此。最好不要全平行放置。如这里所说。
+频率频宽和合法性 另一个是频率/频宽/合法性问题。我们用2.4G作为例子，讲点形象的东西。
+2.4G频率的ch1，中心频率是2412MHz。使用20MHz频宽的时候，频率范围是2402-2422MHz。但是ch2中心频率是2417MHz，ch3中心频率是2422MHz，每个ch中心频率互相差5MHz。这些都会和ch1x20MHz的组合冲突。实际上你可以很容易算出，理论上ch5中心频率2432MHz。频宽20MHz情况下，下边缘2422MHz，刚好和ch1x20MHz重叠。所以ch1和ch6在20MHz模式下不冲突，ch2和ch7不冲突，以下类推。最直接结论就是，ch1-ch11里，最多可以塞下三个互不冲突的20MHz通讯带。即ch1/ch6/ch11。如果一个办公室里有三个AP。一个AP一个频率，正好互不冲突。
+如果改成40MHz频宽，情况就更加糟糕。ch1肯定不能用，最低是ch3，中心频率2422MHz，上边缘2442MHz。而ch11的中心频率2462MHz，下边缘一致。其实这已经发生了轻微冲突。所以2.4G频率在40MHz频宽下，只能塞下一个互不重叠的AP。第二个一定会和第一个发生冲突。如果此时办公室里有三个AP，它们就会有部分频率冲突，影响效率。
+至于80MHz频宽。11ac根本不支持2.4G，11ax才重新支持，所以一定是11ax的标准。80MHz频宽下，ch根本没法选。只有ch7，中心频率2442MHz，2402MHz-2482MHz，正正好塞到整个频率里。如果办公室里此时有三个AP，他们的通讯将会正面冲突。而且下面我们会说到，2.4G其实根本不支持80MHz频宽。
+为什么2.4G不支持80MHz频宽？为什么不能用足2400-2500MHz的范围呢？这就是是另一个问题——合法性。中国的规定是2400MHz-2500MHz都归属ISM用。（参考无线电频率划分规定）香港规定2400-2483.5MHz归ISM，2483.5-2500MHz归卫星。所以wifi的普适性产品，最多有13个ch。而美国更夸张，ch12已经违法了——算一下就知道，频率上边缘大约是2475MHz左右。所以美国恰好塞不进80MHz——这可能是11ac干脆不支持2.4G的在重要原因——兼容性频宽不足。
+比较完整的世界各国信道一览可以看这里。长话短说，中国在5GHz频段，有以下ch可用。
+ ch38, 5190MHz，40MHz，5170-5210MHz。注意ch38=ch36&#43;ch40，下同。 ch46，5230MHz，40MHz，5210-5250MHz。 ch54，5270MHz，40MHz，5250-5290MHz，DFS。所谓DFS是碰到雷达波避让。因为这个频率里，ISM是次要业务。 ch62，5310MHz，40MHz，5290-5330MHz，DFS。 ch151，5755MHz，40MHz，5735-5775MHz。 ch159，5795MHz，40MHz，5775-5815MHz。  可以看到，5G的频谱和2.4G不同，是不连续的。大致分为5170-5330MHz和5735-5815MHz这两段，分别配有160MHz和80MHz的总频宽。和2.4G相比，哪怕是中国，5G的频宽分配也远远比2.4G充足（大约是3倍吧）。这对于160MHz频宽非常重要。因为5G只能塞下一个160MHz，而2.4G压根儿没戏。
+有一点细节要注意。从11ac标准开始支持160MHz频宽，和之前的20/40/80有所不同。之前的20-40频宽变化，速度都是翻倍多一点儿。40-80也是基本如此。但是80-160频宽变化，速度标标准准翻倍。其中有一个因素就是，由于频率割裂，所以160MHz规范有连续160MHz和80&#43;80MHz两种模式。
+顺便一提，中国合法的ISM频率分别是：
+ 13553-13567kHz 26957-27283kHz 40.66-40.70MHz 902-928MHz 2400-2500MHz 5150-5350MHz 5725-5875MHz 24-24.25GHz  参考：
+ 中华人民共和国无线电频率划分规定 工业和信息化部关于加强和规范2400MHz、5100MHz和5800MHz频段无线电管理有关事宜的通知  速度计算 下面我们假定有个设备，是2MIMO，支持2.4G和5G频率，支持/不支持wifi6标准。来算算理想通讯速度。
+ 不支持wifi6  2.4G，11n标准，理想速度40MHz下300Mbps。 5G，11ac标准，理想速度80MHz下866Mbps。（不考虑wave2中160MHz） 一般来说，这路由器会宣称自己是1200M路由器（300&#43;866，余数不要太认真）。当然，不支持wifi6中的顶格路由器是3x2.4G&#43;2x5G天线。1300M（450&#43;866）。  支持wifi6  2.4G，理想速度40MHz下601Mbps。 5G，理想速度160MHz下2." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2886/" />
+<meta property="article:published_time" content="2022-08-29T20:34:34+08:00" />
+<meta property="article:modified_time" content="2022-08-29T20:34:34+08:00" />
+
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
+
+<header>
+
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
+</header>
+
+
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <h1>Shell&#39;s Home</h1>
+      <p>贝壳的壳</p>
+      <div class="app-header-social">
+        
+      </div>
+      <p>Copyright &copy; 2022 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">wifi有关的一些问题</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Aug 29, 2022
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div></div>
+    </header>
+    <div class="post-content">
+      
+
+<h1 id="abstract">abstract</h1>
+
+<p>讲一点wifi通讯的杂七杂八的问题。关于<a href="http://blog.shell909090.org/blog/archives/2130/">无线网络问题的诊断</a>，可以回看之前文章。</p>
+
+<h1 id="技术标准">技术标准</h1>
+
+<ul>
+<li>技术标准：802.11a/b/g/n/ac/ax，也叫wifi4/5/6。粗略讲起来，wifi4=802.11n，wifi5=802.11ac，wifi6=802.11ax。</li>
+<li>频率：wifi传输数据所用的无线电频率。wifi只能使用<a href="https://zh.wikipedia.org/wiki/ISM%E9%A2%91%E6%AE%B5">ISM频率</a>。一般就是使用2400MHz-2500Mhz这一块，还有5100MHz-5800MHz附近一块。这两块俗称2.4GHz和5Ghz频率。注意5GHz不是5G通讯协议那个5G。</li>
+<li><a href="https://zh.wikipedia.org/zh-cn/%E5%B8%A6%E5%AE%BD">频宽</a>：在频率许可范围内，占用多少范围内的频率。一般来说，在技术标准许可的范围内，频宽翻倍，速度大约翻倍（一般是翻倍多一点，也有翻倍）。如果两个AP的频宽重叠，那么会产生干扰。</li>
+<li><a href="https://zh.wikipedia.org/zh-cn/MIMO">MIMO</a>：简单来说，几根天线。在标准许可的范围内，一倍的天线增加一倍左右的速度（一般是翻倍）。</li>
+</ul>
+
+<p>为什么技术标准有两套名字？简单来说Wifi联盟（注意不是英雄联盟）认为，技术标准的名字叫802.11ax太拗口了，不利于宣传。所以直接冠以wifi6的名字。前面的a/b/g/n/ac，自然就变成了1/2/3/4/5。就这么简单。</p>
+
+<p>如果你大概看了上面的介绍，就应该知道，技术标准是一切的核心。技术标准规定了能用几根天线，多少频率，多少频宽。例如，如果你自己来的话，你可能希望有100根天线，整个路由器就像麻辣烫似的一捆，速度爆炸。但是很不幸，技术规定限死最多3MIMO，也就是三根天线。而且，即便规定了三根天线，也要收发双方都支持才行。例如你可以从<a href="https://support.apple.com/guide/deployment/macbook-pro-wi-fi-specification-details-dep2ac3e3b51/web">这里</a>查到MBP各款的天线数量。大部分都是2MIMO，17-19款的有3MIMO。所以MBP19之后款的其实不支持3MIMO，哪怕路由器支持也没用。</p>
+
+<p>不过苹果去掉3MIMO还真不是骗钱。因为11ac和11ax最高都只有2MIMO。所以3MIMO这东西只有11n用&hellip;</p>
+
+<p>关于每个版本的协议，支持哪些参数，提供多少速率。可以看<a href="https://www.intel.cn/content/www/cn/zh/support/articles/000005725/wireless/legacy-intel-wireless-products.html">这里</a>。</p>
+
+<p>特别注意。11ac不支持2.4G。这导致很多路由器的2.4G频率停留在11n标准上。该标准对应的最大速率是450Mbps，所以好多路由都标自己2.4G是450Mbps。实际从上面的表可以看出。这种路由器在碰到新款MBP的时候，最多跑到300Mbps。</p>
+
+<h1 id="穿墙">“穿墙”</h1>
+
+<p>先说重点。2.4G绕射能力好，所以“穿墙”性能好。5G反之。所谓穿墙，其实穿不过去。是wifi信号通过一些非阻挡物的穿透，再绕射到被钢筋水泥挡住的死角里。2.4G在绕射能力明显优于5G。但是从通讯角度来看，穿墙能力好不一定是优点。如果你用一个穿墙能力非常好的方案，能穿整个地球。那么理论上你的手机上会显示出地球上所有AP的名字&hellip;</p>
+
+<p>那还用个P，是吧。</p>
+
+<p>另外2.4G由于优秀的通用性，所以被各种地方普遍使用。门铃也是2.4G的，无绳电话也是2.4G的，蓝牙也是2.4G的。这些都算了。微波炉也是2.4G的。所以在家打开AP会让家里字面意义上的变成微波炉&hellip;</p>
+
+<p>幸好功率不够。</p>
+
+<p>由于2.4G绕射性能良好，且用途广泛，所以你的2.4G频率经常会被干扰。这就是这个频率最大的缺点。5G频率反之。站在路由器直射区，速度感人。一跑远，很快就渣。而且由于上面说的11ac不支持2.4G问题，因此很多家庭AP的2.4G性能严重差于5G。如果你恰好是这种AP，不妨给2.4G和5G起不一样的名字，手工选择看看。</p>
+
+<h1 id="mimo和天线">MIMO和天线</h1>
+
+<p>通常来说，多MIMO代表多天线。如果是典型的2MIMO双频路由器，那就是4根天线。</p>
+
+<p>推荐一个摆法。把5G的两根天线，一根垂直一根水平放置。2.4G也是如此。最好不要全平行放置。如<a href="https://www.sohu.com/a/470493844_121106854">这里</a>所说。</p>
+
+<h1 id="频率频宽和合法性">频率频宽和合法性</h1>
+
+<p>另一个是频率/频宽/合法性问题。我们用2.4G作为例子，讲点形象的东西。</p>
+
+<p>2.4G频率的ch1，中心频率是2412MHz。使用20MHz频宽的时候，频率范围是2402-2422MHz。但是ch2中心频率是2417MHz，ch3中心频率是2422MHz，每个ch中心频率互相差5MHz。这些都会和ch1x20MHz的组合冲突。实际上你可以很容易算出，理论上ch5中心频率2432MHz。频宽20MHz情况下，下边缘2422MHz，刚好和ch1x20MHz重叠。所以ch1和ch6在20MHz模式下不冲突，ch2和ch7不冲突，以下类推。最直接结论就是，ch1-ch11里，最多可以塞下三个互不冲突的20MHz通讯带。即ch1/ch6/ch11。如果一个办公室里有三个AP。一个AP一个频率，正好互不冲突。</p>
+
+<p>如果改成40MHz频宽，情况就更加糟糕。ch1肯定不能用，最低是ch3，中心频率2422MHz，上边缘2442MHz。而ch11的中心频率2462MHz，下边缘一致。其实这已经发生了轻微冲突。所以2.4G频率在40MHz频宽下，只能塞下一个互不重叠的AP。第二个一定会和第一个发生冲突。如果此时办公室里有三个AP，它们就会有部分频率冲突，影响效率。</p>
+
+<p>至于80MHz频宽。11ac根本不支持2.4G，11ax才重新支持，所以一定是11ax的标准。80MHz频宽下，ch根本没法选。只有ch7，中心频率2442MHz，2402MHz-2482MHz，正正好塞到整个频率里。如果办公室里此时有三个AP，他们的通讯将会正面冲突。而且下面我们会说到，2.4G其实根本不支持80MHz频宽。</p>
+
+<p>为什么2.4G不支持80MHz频宽？为什么不能用足2400-2500MHz的范围呢？这就是是另一个问题——合法性。中国的规定是2400MHz-2500MHz都归属ISM用。（参考<a href="http://www.srrc.org.cn/article23480.aspx">无线电频率划分规定</a>）香港规定2400-2483.5MHz归ISM，2483.5-2500MHz归卫星。所以wifi的普适性产品，最多有13个ch。而美国更夸张，ch12已经违法了——算一下就知道，频率上边缘大约是2475MHz左右。所以美国恰好塞不进80MHz——这可能是11ac干脆不支持2.4G的在重要原因——兼容性频宽不足。</p>
+
+<p>比较完整的世界各国信道一览可以看<a href="https://cloud.tencent.com/developer/article/1662000">这里</a>。长话短说，中国在5GHz频段，有以下ch可用。</p>
+
+<ol>
+<li>ch38, 5190MHz，40MHz，5170-5210MHz。注意ch38=ch36+ch40，下同。</li>
+<li>ch46，5230MHz，40MHz，5210-5250MHz。</li>
+<li>ch54，5270MHz，40MHz，5250-5290MHz，DFS。所谓DFS是碰到雷达波避让。因为这个频率里，ISM是次要业务。</li>
+<li>ch62，5310MHz，40MHz，5290-5330MHz，DFS。</li>
+<li>ch151，5755MHz，40MHz，5735-5775MHz。</li>
+<li>ch159，5795MHz，40MHz，5775-5815MHz。</li>
+</ol>
+
+<p>可以看到，5G的频谱和2.4G不同，是不连续的。大致分为5170-5330MHz和5735-5815MHz这两段，分别配有160MHz和80MHz的总频宽。和2.4G相比，哪怕是中国，5G的频宽分配也远远比2.4G充足（大约是3倍吧）。这对于160MHz频宽非常重要。因为5G只能塞下一个160MHz，而2.4G压根儿没戏。</p>
+
+<p>有一点细节要注意。从11ac标准开始支持160MHz频宽，和之前的20/40/80有所不同。之前的20-40频宽变化，速度都是翻倍多一点儿。40-80也是基本如此。但是80-160频宽变化，速度标标准准翻倍。其中有一个因素就是，由于频率割裂，所以160MHz规范有连续160MHz和80+80MHz两种模式。</p>
+
+<p>顺便一提，中国合法的ISM频率分别是：</p>
+
+<ul>
+<li>13553-13567kHz</li>
+<li>26957-27283kHz</li>
+<li>40.66-40.70MHz</li>
+<li>902-928MHz</li>
+<li>2400-2500MHz</li>
+<li>5150-5350MHz</li>
+<li>5725-5875MHz</li>
+<li>24-24.25GHz</li>
+</ul>
+
+<p>参考：</p>
+
+<ol>
+<li><a href="http://www.moj.gov.cn/pub/sfbgw/flfggz/flfggzbmgz/201503/t20150306_145442.html">中华人民共和国无线电频率划分规定</a></li>
+<li><a href="https://wap.miit.gov.cn/jgsj/wgj/wjfb/art/2021/art_58b24430cb93476fb18a51fe7a350b61.html">工业和信息化部关于加强和规范2400MHz、5100MHz和5800MHz频段无线电管理有关事宜的通知</a></li>
+</ol>
+
+<h1 id="速度计算">速度计算</h1>
+
+<p>下面我们假定有个设备，是2MIMO，支持2.4G和5G频率，支持/不支持wifi6标准。来算算理想通讯速度。</p>
+
+<ul>
+<li>不支持wifi6
+
+<ul>
+<li>2.4G，11n标准，理想速度40MHz下300Mbps。</li>
+<li>5G，11ac标准，理想速度80MHz下866Mbps。（不考虑wave2中160MHz）</li>
+<li>一般来说，这路由器会宣称自己是1200M路由器（300+866，余数不要太认真）。当然，不支持wifi6中的顶格路由器是3x2.4G+2x5G天线。1300M（450+866）。</li>
+</ul></li>
+<li>支持wifi6
+
+<ul>
+<li>2.4G，理想速度40MHz下601Mbps。</li>
+<li>5G，理想速度160MHz下2.4Gbps。</li>
+<li>所以这就是3000M路由器。</li>
+</ul></li>
+</ul>
+
+    </div>
+    <div class="post-footer">
+      
+    </div>
+  </article>
+
+    </main>
+  </body>
+</html>
