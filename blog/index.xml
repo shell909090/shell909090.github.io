@@ -7,10 +7,36 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Mon, 29 Aug 2022 20:34:34 +0800</lastBuildDate>
+    <lastBuildDate>Fri, 24 Mar 2023 20:40:39 +0800</lastBuildDate>
     
 	<atom:link href="//blog.shell909090.org/blog/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>如何在colab上用whisper识别语音</title>
+      <link>//blog.shell909090.org/blog/archives/2887/</link>
+      <pubDate>Fri, 24 Mar 2023 20:40:39 +0800</pubDate>
+      
+      <guid>//blog.shell909090.org/blog/archives/2887/</guid>
+      <description>Abstract 简述了使用whisper识别语音的方法，以及如何使用colab的GPU加速runtime来识别语音内容。
+Whisper whisper是OpenAI开源的工具，你可以在这里找到介绍。在这里下载源码。中文的指引可以参考这篇。
+Linux上运行Whisper的准备  ffmpeg: linux上很容易安装。 git: linux上很容易安装。 pytorch: 上pytorch.org，选择合适的发行，复制代码，安装。 whisper:  pip install git+https://github.com/openai/whisper.git pip install &amp;ndash;upgrade &amp;ndash;no-deps &amp;ndash;force-reinstall git+https://github.com/openai/whisper.git   4.2那步我看不懂为啥要reinstall，不过反正照做了。
+3步那里，有GPU选择GPU安装，没有GPU选择CPU安装。
+使用 time whisper --language Chinese --model medium [filename]
+如果没有模型，会现场下载。文件位置在~/.cache/whisper/。
+注意，执行时内存要求巨大。small大约需要3G，medium没有8G就别试了。我本来想打个docker版，结果被带崩了N次，放弃了。要打docker版，起码得是直接在宿主机上直接安装docker。
+效果对比 small和medium对比过一下，small我基本无法接受，medium基本就能接受了。
+small的pt文件大约500M。medium的pt文件1.5G。所有关联包1.3G左右。
+速度对比 对一个22分钟的电话录音，进行识别。Colab的GPU版本耗时约8分钟，我的电脑（i3-9100，4cores4.2G）执行118分钟。性能差距15倍。基本上GPU耗时约原始语料的1/3，CPU耗时约原始语料的5倍。
+在Virtualenv里安装工具链 其实很简单。用apt安装python3-virtualenv，再用virtualenv安装pip下的所有工具就行。ffmpeg和git用apt单装。
+Docker上运行Whisper Webservice 参考这里。
+CPU版本：
+docker run -d -p 9000:9000 -e ASR_MODEL=base onerahmet/openai-whisper-asr-webservice:latest
+Colab Colab是Google推出的&amp;rdquo;类Jupyter&amp;rdquo;计算平台。最大的好处是可以选择GPU机型，上面搭载了16G显存，可以做一些简单计算。具体可以看这里。
+注意，Colab虽然是免费的，但大量使用昂贵的节点进行计算（尤其是GPU）会消耗你的计算单元。当计算单元消耗到一定程度的时候，就会受到一些限制。如果你希望大量执行GPU运算，最好直接买Colab的计算单元，或者干脆租用一台GPU型的机器。
+在Colab上进行Whisper识别 没啥好多说的。
+!nvidia-smi !pip3 install torch torchvision torchaudio !pip3 install git+https://github.</description>
+    </item>
     
     <item>
       <title>wifi有关的一些问题</title>
