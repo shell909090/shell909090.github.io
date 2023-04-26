@@ -7,10 +7,26 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Fri, 24 Mar 2023 20:40:39 +0800</lastBuildDate>
+    <lastBuildDate>Wed, 26 Apr 2023 10:34:16 +0800</lastBuildDate>
     
 	<atom:link href="//blog.shell909090.org/blog/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>k8s中如何用DaemonSet在大量节点上执行脚本</title>
+      <link>//blog.shell909090.org/blog/archives/2888/</link>
+      <pubDate>Wed, 26 Apr 2023 10:34:16 +0800</pubDate>
+      
+      <guid>//blog.shell909090.org/blog/archives/2888/</guid>
+      <description>如何使用DaemonSet执行特权代码 简单点说，最低有三个条件。
+ spec.hostPID is true. spec.containers.securityContext.privileged is true. 镜像里有nsenter.  条件1主要是为了让你能找到host的mnt namespace，然后你用条件3里的nsenter来在这个namespace里执行代码。就像这样。
+/usr/bin/nsenter -m/proc/1/ns/mnt bash /runOnHost.sh  host上如何执行脚本 nsenter在host namespace下执行的时候，是不访问容器内文件系统的（或者很麻烦）。所以在host上执行脚本，最简单的办法就是拷过去。
+cp /srv/runOnHost.sh /host/runOnHost.sh /usr/bin/nsenter -m/proc/1/ns/mnt bash /runOnHost.sh rm /host/runOnHost.sh  这就引出了一个新要求。如果要复制文件，pod需要挂载host文件系统。
+ containers: volumeMounts: - mountPath: /host name: host-mount volumes: - hostPath: path: / type: &amp;quot;&amp;quot; name: host-mount  如何访问网络 注意，虽然我们进入了host的mnt namespace，但是network用的还是容器的。如果你的代码不需要网络，或者容器网络就能工作，那很好。如果需要host网络，那么需要设置spec.hostNetwork为true。
+最简化镜像 很幸运的是，ubuntu官方镜像带了bash和nsenter，因此不单独pack一个image来执行脚本是可能的。
+ 使用ubuntu镜像。 用文件目录创建一个ConfigMap。 在DaemonSet里引用这个ConfigMap并且mount。
+ containers: volumeMounts: - mountPath: /srv name: scripts volumes: - configMap: defaultMode: 0755 name: rce-testing name: scripts   Put all together runOnHost.</description>
+    </item>
     
     <item>
       <title>如何在colab上用whisper识别语音</title>
