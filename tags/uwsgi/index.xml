@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>uwsgi on Shell&#39;s Home</title>
@@ -7,11 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Mon, 09 Jul 2012 08:45:28 +0800</lastBuildDate>
-    
-	<atom:link href="//blog.shell909090.org/tags/uwsgi/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Mon, 09 Jul 2012 08:45:28 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/uwsgi/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>debian wheezy下以uwsgi安装graphite</title>
       <link>//blog.shell909090.org/blog/archives/2200/</link>
@@ -19,21 +15,21 @@
       
       <guid>//blog.shell909090.org/blog/archives/2200/</guid>
       <description>abstract graphite是一个python写的性能监控系统。这个系统是由多个分离的部分组成的。
- graphite-web: 由django写的web界面系统。 carbon: 数据收集的守护进程。 whisper: 一种python写的数据库，类似rrd，便于大量的性能日志数据收集和处理。上两个组件会调用这个库。 collectd: 数据收集守护进程，向carbon中喂数据的数据源。  另外，有一点黑色幽默的就是，graphite的意思是石墨，是炭(carbon)的一种同素异形体。因此在graphite项目中，多次出现carbon这个名字。当然，另两个同素异形体是钻石(diamond)和足球烯(footballene)，你就暂时别指望看到他们的身影了。
+graphite-web: 由django写的web界面系统。 carbon: 数据收集的守护进程。 whisper: 一种python写的数据库，类似rrd，便于大量的性能日志数据收集和处理。上两个组件会调用这个库。 collectd: 数据收集守护进程，向carbon中喂数据的数据源。 另外，有一点黑色幽默的就是，graphite的意思是石墨，是炭(carbon)的一种同素异形体。因此在graphite项目中，多次出现carbon这个名字。当然，另两个同素异形体是钻石(diamond)和足球烯(footballene)，你就暂时别指望看到他们的身影了。
 另一个用python写的，以元素命名的著名软件是mercurial。化学元素中的汞，俗称水银，符号hg。因此mercurial的命令行简写才是hg。
 以上几个的结构大概是这样的：
 collectd(source) -network-&amp;gt; carbon -&amp;gt; writing-&amp;gt; whisper
 database -&amp;gt; reading-&amp;gt; graphite-web
 下文描述了在debian wheezy下，以nginx+uwsgi模式安装graphite的过程。之所以用这个模式，是因为我的大部分系统都是python写的，同样安装在uwsgi下面。一事不烦二主。
 carbon carbon有对应的debian包，可以很简单的安装。
-sudo aptitude install graphite-carbon  默认的数据端口是2003，默认的数据路径是/var/lib/graphite/，这个在下文需要用到。
+sudo aptitude install graphite-carbon 默认的数据端口是2003，默认的数据路径是/var/lib/graphite/，这个在下文需要用到。
 graphite virtual graphite有部分需要安装到系统中，因此最好用virtualenv进行安装。
-cd /var/web/ sudo aptitude install python-virtualenv virtualenv --system-site-packages graphite  我假定你的安装路径是/var/web/graphite，这个在下面要反复用到。
+cd /var/web/ sudo aptitude install python-virtualenv virtualenv --system-site-packages graphite 我假定你的安装路径是/var/web/graphite，这个在下面要反复用到。
 install 在安装路径下，执行以下内容
-source bin/activite pip install graphite-web --install-option=&amp;quot;--prefix=/var/web/graphite&amp;quot; --install-option=&amp;quot;--install-lib=/var/web/graphite/webapp&amp;quot;  注意，/var/web/graphite需要根据上面的设定自行修改，webapp是你的django基础路径。
+source bin/activite pip install graphite-web --install-option=&amp;quot;--prefix=/var/web/graphite&amp;quot; --install-option=&amp;quot;--install-lib=/var/web/graphite/webapp&amp;quot; 注意，/var/web/graphite需要根据上面的设定自行修改，webapp是你的django基础路径。
 configure 在/var/web/graphite/webapp/graphite下面，执行以下内容
-cp local_settings.py.example local_settings.py  然后编辑local_settings.py
-GRAPHITE_ROOT = &#39;/var/web/graphite&#39; WHISPER_DIR = &#39;/var/lib/graphite/whisper&#39; DATABASES = .</description>
+cp local_settings.py.example local_settings.py 然后编辑local_settings.py
+GRAPHITE_ROOT = &#39;/var/web/graphite&#39; WHISPER_DIR = &#39;/var/lib/graphite/whisper&#39; DATABASES = ... 注意databases，不要在settings.</description>
     </item>
     
     <item>
@@ -46,10 +42,10 @@ GRAPHITE_ROOT = &#39;/var/web/graphite&#39; WHISPER_DIR = &#39;/var/lib/graphite
 下面说说，使用debian官方的包如何做uwsgi发布，还是vhost模式哦。
 首先安装uwsgi，uwsgi-plugin-python这两个包。uwsgi-plugin-greenlet-python也可以考虑，装不装看你的需求。
 然后在/etc/uwsgi/apps-available/sites.xml下面写一个文本文件，内容如下：
-&amp;lt;uwsgi&amp;gt; &amp;lt;vhost/&amp;gt; &amp;lt;no-site/&amp;gt; &amp;lt;/uwsgi&amp;gt;  再从/etc/uwsgi/apps-enabled/sites.xml链接过去，重启uwsgi服务，事情就搞定了。
+&amp;lt;uwsgi&amp;gt; &amp;lt;vhost/&amp;gt; &amp;lt;no-site/&amp;gt; &amp;lt;/uwsgi&amp;gt; 再从/etc/uwsgi/apps-enabled/sites.xml链接过去，重启uwsgi服务，事情就搞定了。
 默认的配置在/usr/share/uwsgi/conf/default.ini，可以看看是否都满意了。一般来说，master和no-orphans都建议打开，chmod-socket最高660，改成600应该也可以工作。贝壳的机器负载小，只用一个worker就够了，所以完整的配置是这样的：
-&amp;lt;uwsgi&amp;gt; &amp;lt;plugins&amp;gt;greenlet,ugreen&amp;lt;/plugins&amp;gt; &amp;lt;workers&amp;gt;1&amp;lt;/workers&amp;gt; &amp;lt;reload-on-as&amp;gt;128&amp;lt;/reload-on-as&amp;gt; &amp;lt;vhost/&amp;gt; &amp;lt;no-site/&amp;gt; &amp;lt;/uwsgi&amp;gt;  nginx里面如此设定：
-location /asdf { include uwsgi\_params; uwsgi\_param UWSGI\_PYHOME /usr; uwsgi\_param UWSGI\_CHDIR /var/web/hosts; uwsgi\_param UWSGI\_SCRIPT main; uwsgi\_pass unix:/run/uwsgi/sites/socket; }  其中，我的程序放在/var/web/hosts底下，使用系统环境来运行（而不是virtualenv），主脚本（带applications那个）是main.py。unix
+&amp;lt;uwsgi&amp;gt; &amp;lt;plugins&amp;gt;greenlet,ugreen&amp;lt;/plugins&amp;gt; &amp;lt;workers&amp;gt;1&amp;lt;/workers&amp;gt; &amp;lt;reload-on-as&amp;gt;128&amp;lt;/reload-on-as&amp;gt; &amp;lt;vhost/&amp;gt; &amp;lt;no-site/&amp;gt; &amp;lt;/uwsgi&amp;gt; nginx里面如此设定：
+location /asdf { include uwsgi\_params; uwsgi\_param UWSGI\_PYHOME /usr; uwsgi\_param UWSGI\_CHDIR /var/web/hosts; uwsgi\_param UWSGI\_SCRIPT main; uwsgi\_pass unix:/run/uwsgi/sites/socket; } 其中，我的程序放在/var/web/hosts底下，使用系统环境来运行（而不是virtualenv），主脚本（带applications那个）是main.py。unix
 socket和上文default.ini里面的socket正好对应上。
 同理，我们其实还可以开多个uwsgi应用，只要放置多个xml配置就好。不过既然都采用了vhost模式，何必还开多个呢？这毕竟不是虚拟网站，要给其他人使用的。</description>
     </item>

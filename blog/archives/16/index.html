@@ -2,24 +2,23 @@
 <html lang="en-us">
   <head>
     <title>反射的几个类型 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
@@ -27,18 +26,18 @@ if (!doNotTrack) {
 <meta name="twitter:title" content="反射的几个类型"/>
 <meta name="twitter:description" content="所谓反射，其实就是在运行时可以获得代码数据的技术，算是面对对象编程语言的专利。从这个意义上说，反射可以分为三个类型。
 头一类是RTTI，其实这根本不算反射，本质上只能说多态。RTTI是一种鉴别某个对象是否为某个类的派生实例的技术，在C&#43;&#43;中就有实现。简单的方法就是实现一个特定的虚函数，将当前对象所属的类虚函数表和所属父类的虚函数表一一返回。这样对比某个类的虚函数表，就可以知道是否为派生实例了。支持RTTI，程序才算真正支持了面对对象，而反射则是更高一层的技术。
-第二类就是在C#和Java中盛行的反射技术，这种技术的核心在于可以通过名称寻找到对象。例如，我们可以寻找到一个叫做abc的对象，枚举其中的成员和方法，并且执行调用，这才是反射最大的意义。当我们遇到不同的数据输入时，我们可以调用不同的方法来处理这个数据，并且这个过程是动态配置的。而在C&#43;&#43;中，我们无法通过编译器支持这个能力，必须手工的建立一个名称和一个对象的关联关系表，在合适的时候通过这个表，获得某个名称的函数入口指针。其实C#和Java中实现的方法和VM息息相关，他们的代码在目标文件中还保持着命名空间-类-对象的结构，Java还进一步的保留了源码(只是被翻译为了更快的P代码)，而C#只保留了IL代码。这样VM在执行的时候自然可以很轻松的找到对应的函数，并且获得函数签名。而C类语言的特征是汇编时代的&rdquo;符号链接&rdquo;方式，编译的时候保有符号，完成链接就没了。
+第二类就是在C#和Java中盛行的反射技术，这种技术的核心在于可以通过名称寻找到对象。例如，我们可以寻找到一个叫做abc的对象，枚举其中的成员和方法，并且执行调用，这才是反射最大的意义。当我们遇到不同的数据输入时，我们可以调用不同的方法来处理这个数据，并且这个过程是动态配置的。而在C&#43;&#43;中，我们无法通过编译器支持这个能力，必须手工的建立一个名称和一个对象的关联关系表，在合适的时候通过这个表，获得某个名称的函数入口指针。其实C#和Java中实现的方法和VM息息相关，他们的代码在目标文件中还保持着命名空间-类-对象的结构，Java还进一步的保留了源码(只是被翻译为了更快的P代码)，而C#只保留了IL代码。这样VM在执行的时候自然可以很轻松的找到对应的函数，并且获得函数签名。而C类语言的特征是汇编时代的&quot;符号链接&quot;方式，编译的时候保有符号，完成链接就没了。
 中间插一句，其实我们完全可以写一个只支持高阶语言的系统。这样的系统未必高效，可一定方便阿。
 最后一种则是python中的系统，当用户调用一个类中的函数的时候，使用一个专门的函数来决定调用哪个。因此当对付SOAP这种东西的时候，python可以直接上。而C#，Java，C&#43;&#43;都要通过工具生成代理方法。再用代理方法去调用公共函数库，实现调用。因为python直接将调用定向到了一个统一的函数上，所以压根不需要这步。不过这步的代价是严重的性能问题，因为每次函数调用都要去检查调用目标。python是纯脚本语言，占了这点便宜，所以才能这么干。"/>
 
     <meta property="og:title" content="反射的几个类型" />
 <meta property="og:description" content="所谓反射，其实就是在运行时可以获得代码数据的技术，算是面对对象编程语言的专利。从这个意义上说，反射可以分为三个类型。
 头一类是RTTI，其实这根本不算反射，本质上只能说多态。RTTI是一种鉴别某个对象是否为某个类的派生实例的技术，在C&#43;&#43;中就有实现。简单的方法就是实现一个特定的虚函数，将当前对象所属的类虚函数表和所属父类的虚函数表一一返回。这样对比某个类的虚函数表，就可以知道是否为派生实例了。支持RTTI，程序才算真正支持了面对对象，而反射则是更高一层的技术。
-第二类就是在C#和Java中盛行的反射技术，这种技术的核心在于可以通过名称寻找到对象。例如，我们可以寻找到一个叫做abc的对象，枚举其中的成员和方法，并且执行调用，这才是反射最大的意义。当我们遇到不同的数据输入时，我们可以调用不同的方法来处理这个数据，并且这个过程是动态配置的。而在C&#43;&#43;中，我们无法通过编译器支持这个能力，必须手工的建立一个名称和一个对象的关联关系表，在合适的时候通过这个表，获得某个名称的函数入口指针。其实C#和Java中实现的方法和VM息息相关，他们的代码在目标文件中还保持着命名空间-类-对象的结构，Java还进一步的保留了源码(只是被翻译为了更快的P代码)，而C#只保留了IL代码。这样VM在执行的时候自然可以很轻松的找到对应的函数，并且获得函数签名。而C类语言的特征是汇编时代的&rdquo;符号链接&rdquo;方式，编译的时候保有符号，完成链接就没了。
+第二类就是在C#和Java中盛行的反射技术，这种技术的核心在于可以通过名称寻找到对象。例如，我们可以寻找到一个叫做abc的对象，枚举其中的成员和方法，并且执行调用，这才是反射最大的意义。当我们遇到不同的数据输入时，我们可以调用不同的方法来处理这个数据，并且这个过程是动态配置的。而在C&#43;&#43;中，我们无法通过编译器支持这个能力，必须手工的建立一个名称和一个对象的关联关系表，在合适的时候通过这个表，获得某个名称的函数入口指针。其实C#和Java中实现的方法和VM息息相关，他们的代码在目标文件中还保持着命名空间-类-对象的结构，Java还进一步的保留了源码(只是被翻译为了更快的P代码)，而C#只保留了IL代码。这样VM在执行的时候自然可以很轻松的找到对应的函数，并且获得函数签名。而C类语言的特征是汇编时代的&quot;符号链接&quot;方式，编译的时候保有符号，完成链接就没了。
 中间插一句，其实我们完全可以写一个只支持高阶语言的系统。这样的系统未必高效，可一定方便阿。
 最后一种则是python中的系统，当用户调用一个类中的函数的时候，使用一个专门的函数来决定调用哪个。因此当对付SOAP这种东西的时候，python可以直接上。而C#，Java，C&#43;&#43;都要通过工具生成代理方法。再用代理方法去调用公共函数库，实现调用。因为python直接将调用定向到了一个统一的函数上，所以压根不需要这步。不过这步的代价是严重的性能问题，因为每次函数调用都要去检查调用目标。python是纯脚本语言，占了这点便宜，所以才能这么干。" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/16/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/16/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2008-05-06T16:53:00+08:00" />
 <meta property="article:modified_time" content="2008-05-06T16:53:00+08:00" />
 
@@ -78,11 +77,8 @@ if (!doNotTrack) {
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -92,34 +88,35 @@ if (!doNotTrack) {
       <h1 class ="post-title">反射的几个类型</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           May 6, 2008
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/c/">c</a><a class="tag" href="//blog.shell909090.org/tags/program/">program</a><a class="tag" href="//blog.shell909090.org/tags/reflection/">reflection</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/c/">c</a>
+              <a class="tag" href="//blog.shell909090.org/tags/program/">program</a>
+              <a class="tag" href="//blog.shell909090.org/tags/reflection/">reflection</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
       <p>所谓反射，其实就是在运行时可以获得代码数据的技术，算是面对对象编程语言的专利。从这个意义上说，反射可以分为三个类型。</p>
-
 <p>头一类是RTTI，其实这根本不算反射，本质上只能说多态。RTTI是一种鉴别某个对象是否为某个类的派生实例的技术，在C++中就有实现。简单的方法就是实现一个特定的虚函数，将当前对象所属的类虚函数表和所属父类的虚函数表一一返回。这样对比某个类的虚函数表，就可以知道是否为派生实例了。支持RTTI，程序才算真正支持了面对对象，而反射则是更高一层的技术。</p>
-
-<p>第二类就是在C#和Java中盛行的反射技术，这种技术的核心在于可以通过名称寻找到对象。例如，我们可以寻找到一个叫做abc的对象，枚举其中的成员和方法，并且执行调用，这才是反射最大的意义。当我们遇到不同的数据输入时，我们可以调用不同的方法来处理这个数据，并且这个过程是动态配置的。而在C++中，我们无法通过编译器支持这个能力，必须手工的建立一个名称和一个对象的关联关系表，在合适的时候通过这个表，获得某个名称的函数入口指针。其实C#和Java中实现的方法和VM息息相关，他们的代码在目标文件中还保持着命名空间-类-对象的结构，Java还进一步的保留了源码(只是被翻译为了更快的P代码)，而C#只保留了IL代码。这样VM在执行的时候自然可以很轻松的找到对应的函数，并且获得函数签名。而C类语言的特征是汇编时代的&rdquo;符号链接&rdquo;方式，编译的时候保有符号，完成链接就没了。</p>
-
+<p>第二类就是在C#和Java中盛行的反射技术，这种技术的核心在于可以通过名称寻找到对象。例如，我们可以寻找到一个叫做abc的对象，枚举其中的成员和方法，并且执行调用，这才是反射最大的意义。当我们遇到不同的数据输入时，我们可以调用不同的方法来处理这个数据，并且这个过程是动态配置的。而在C++中，我们无法通过编译器支持这个能力，必须手工的建立一个名称和一个对象的关联关系表，在合适的时候通过这个表，获得某个名称的函数入口指针。其实C#和Java中实现的方法和VM息息相关，他们的代码在目标文件中还保持着命名空间-类-对象的结构，Java还进一步的保留了源码(只是被翻译为了更快的P代码)，而C#只保留了IL代码。这样VM在执行的时候自然可以很轻松的找到对应的函数，并且获得函数签名。而C类语言的特征是汇编时代的&quot;符号链接&quot;方式，编译的时候保有符号，完成链接就没了。</p>
 <p>中间插一句，其实我们完全可以写一个只支持高阶语言的系统。这样的系统未必高效，可一定方便阿。</p>
-
 <p>最后一种则是python中的系统，当用户调用一个类中的函数的时候，使用一个专门的函数来决定调用哪个。因此当对付SOAP这种东西的时候，python可以直接上。而C#，Java，C++都要通过工具生成代理方法。再用代理方法去调用公共函数库，实现调用。因为python直接将调用定向到了一个统一的函数上，所以压根不需要这步。不过这步的代价是严重的性能问题，因为每次函数调用都要去检查调用目标。python是纯脚本语言，占了这点便宜，所以才能这么干。</p>
 
     </div>

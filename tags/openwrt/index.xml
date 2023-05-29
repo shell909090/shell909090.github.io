@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>openwrt on Shell&#39;s Home</title>
@@ -7,11 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Tue, 31 Jan 2012 03:14:14 +0800</lastBuildDate>
-    
-	<atom:link href="//blog.shell909090.org/tags/openwrt/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Tue, 31 Jan 2012 03:14:14 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/openwrt/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>PXE模式使用openwrt网络安装debian</title>
       <link>//blog.shell909090.org/blog/archives/2076/</link>
@@ -21,19 +17,18 @@
       <description>废话不说，上干货。
 首先，禁用arptables。当然，如果你没开这个防火墙，那么没必要。其次，注意你的openwrt必须有udisk，否则空间相差太多，根本没有实现的可能。
 然后，如果你用的是新版的rom，应该在/etc/init.d/dnsmasq里面看到，dnsmasq()这个函数里面有。
-append_parm &amp;quot;$cfg&amp;quot; &amp;quot;tftp_root&amp;quot; &amp;quot;--tftp-root&amp;quot; append_parm &amp;quot;$cfg&amp;quot; &amp;quot;dhcp_boot&amp;quot; &amp;quot;--dhcp-boot&amp;quot;  如果没有，加一下，有的话说明原生支持。下面可以直接修改。
+append_parm &amp;quot;$cfg&amp;quot; &amp;quot;tftp_root&amp;quot; &amp;quot;--tftp-root&amp;quot; append_parm &amp;quot;$cfg&amp;quot; &amp;quot;dhcp_boot&amp;quot; &amp;quot;--dhcp-boot&amp;quot; 如果没有，加一下，有的话说明原生支持。下面可以直接修改。
 dnsmasq是一个dhcp/dns双重服务器，而pxe引导的第一步就是支持bootp协议。这个选项在/etc/config/dhcp里面。config
 dnsmasq一节上，增加。
-option &#39;dhcp_boot&#39; &#39;pxelinux.0&#39;  重启dnsmasq，完成bootp准备。
+option &#39;dhcp_boot&#39; &#39;pxelinux.0&#39; 重启dnsmasq，完成bootp准备。
 然后，安装tftpd-hpa，opkg update，opkg install
 tftpd-hpa。这是一个tftp服务器，默认不启动。如果你打算让pxe引导模式持久化，那么就改为默认启动，同时永久关闭arp防火墙。在/var/tftpd-hpa里面，可以看到tftpd的根路径。从参考3的的连接里面，你可以找到合适的一个下载路径，下载netboot.tar.gz到这个文件。解压后，可以看到pxelinux.0，这个和上面的pxelinux.0相对应。这是pxelinux的组件，隶属于syslinux项目，可以用来完成启动。
 这样，就完成了安装的所有准备工作。你可以找一个设备实验一下，应当可以完成网络安装的步骤。
 另外，如果需要启动选择amd64或者是i386，或者更进一步定制。那么需要下载其他镜像，自己生成pxelinux.cfg这个目录中的内容。
- PXEhttp://wiki.debian.org/PXE
- NetbootPXEhttp://wiki.debian.org/DebianInstaller/NetbootPXE
- netinsthttp://www.debian.org/distrib/netinst
- 配置pxe，安装debian和ubuntuhttp://my.unix-center.net/~whtbie/wordpress/?p=290
-  </description>
+PXEhttp://wiki.debian.org/PXE
+NetbootPXEhttp://wiki.debian.org/DebianInstaller/NetbootPXE
+netinsthttp://www.debian.org/distrib/netinst
+配置pxe，安装debian和ubuntuhttp://my.unix-center.net/~whtbie/wordpress/?p=290</description>
     </item>
     
     <item>
@@ -54,7 +49,7 @@ DIR-825用户，把你的第二AP设定成和第一AP不同的频率。如果两
       
       <guid>//blog.shell909090.org/blog/archives/1976/</guid>
       <description>还记得如何配置openvpn么？手工配置有个问题，当我ppp0连接断掉，需要重启路由器的时候，网络会短暂的断开。然后，openvpn就失效了，导致各种混乱后果。为了解决这个问题，我测试了一下，做了以下设置。
------/etc/hotplug.d/iface/30-openvpn----- #!/bin/sh [ &amp;quot;$ACTION&amp;quot; = &amp;quot;ifup&amp;quot; -a &amp;quot;$INTERFACE&amp;quot; = &amp;quot;wan&amp;quot; ] &amp;amp;&amp;amp; [ -z &amp;quot;`/sbin/ifconfig tun0 2&amp;gt;&amp;amp;1 | grep inet`&amp;quot; ] &amp;amp;&amp;amp; { /etc/init.d/openvpn start } [ &amp;quot;$ACTION&amp;quot; = &amp;quot;ifdown&amp;quot; -a &amp;quot;$INTERFACE&amp;quot; = &amp;quot;wan&amp;quot; ] &amp;amp;&amp;amp; [ -n &amp;quot;`/sbin/ifconfig tun0 2&amp;gt;&amp;amp;1 | grep inet`&amp;quot; ] &amp;amp;&amp;amp; { /etc/init.d/openvpn stop } -----end files-----  好了，你重启外网连接的时候，就会自动连接openvpn。
+-----/etc/hotplug.d/iface/30-openvpn----- #!/bin/sh [ &amp;quot;$ACTION&amp;quot; = &amp;quot;ifup&amp;quot; -a &amp;quot;$INTERFACE&amp;quot; = &amp;quot;wan&amp;quot; ] &amp;amp;&amp;amp; [ -z &amp;quot;`/sbin/ifconfig tun0 2&amp;gt;&amp;amp;1 | grep inet`&amp;quot; ] &amp;amp;&amp;amp; { /etc/init.d/openvpn start } [ &amp;quot;$ACTION&amp;quot; = &amp;quot;ifdown&amp;quot; -a &amp;quot;$INTERFACE&amp;quot; = &amp;quot;wan&amp;quot; ] &amp;amp;&amp;amp; [ -n &amp;quot;`/sbin/ifconfig tun0 2&amp;gt;&amp;amp;1 | grep inet`&amp;quot; ] &amp;amp;&amp;amp; { /etc/init.d/openvpn stop } -----end files----- 好了，你重启外网连接的时候，就会自动连接openvpn。
 参考：
 OpenWRT下的动态DNS(用3322.org的服务)</description>
     </item>
@@ -66,7 +61,7 @@ OpenWRT下的动态DNS(用3322.org的服务)</description>
       
       <guid>//blog.shell909090.org/blog/archives/1973/</guid>
       <description>让其他人的设备无法使用网络。
-opkg install arptables --------/etc/init.d/arptables-------- \#!/bin/sh /etc/rc.common start (){ arptables -F INPUT arptables -A INPUT --src-mac aaa -j ACCEPT arptables -P INPUT DROP } stop (){ arptables -F INPUT arptables -P INPUT ACCEPT } --------end files--------  注意，千万把自己的mac地址写对了，否则一个/etc/init.d/arptables restart下去，你自己的机器就断线连不上了。不过一般来说，重启后arp限制会失效，因此可以重启来去掉限制。实在不行也可以拔下U盘，在电脑上进行mount和修改，然后再插回去启动设备。根据测试结果，内网还是可以访问的，不过路由器无法访问了。有一个链叫做FORWARD，也许改这个可以解决。但是我没有找到相关资料，因此没有下手。</description>
+opkg install arptables --------/etc/init.d/arptables-------- \#!/bin/sh /etc/rc.common start (){ arptables -F INPUT arptables -A INPUT --src-mac aaa -j ACCEPT arptables -P INPUT DROP } stop (){ arptables -F INPUT arptables -P INPUT ACCEPT } --------end files-------- 注意，千万把自己的mac地址写对了，否则一个/etc/init.d/arptables restart下去，你自己的机器就断线连不上了。不过一般来说，重启后arp限制会失效，因此可以重启来去掉限制。实在不行也可以拔下U盘，在电脑上进行mount和修改，然后再插回去启动设备。根据测试结果，内网还是可以访问的，不过路由器无法访问了。有一个链叫做FORWARD，也许改这个可以解决。但是我没有找到相关资料，因此没有下手。</description>
     </item>
     
     <item>
@@ -77,7 +72,7 @@ opkg install arptables --------/etc/init.d/arptables-------- \#!/bin/sh /etc/rc.
       <guid>//blog.shell909090.org/blog/archives/1971/</guid>
       <description>你还在为使用openwrt路由器无法使用pptp客户端而烦恼么？请看这个页面。按照他的说法，输入以下句子就可以解决你的烦恼。
 If you use a pptp client behind an openwrt router, and pptp tunnel not work, look at thispage.
-opkg update opkg install kmod-ipt-nathelper-extra  这个方法不仅对路由器内使用一个pptp有效，而且对多个pptp也有效。
+opkg update opkg install kmod-ipt-nathelper-extra 这个方法不仅对路由器内使用一个pptp有效，而且对多个pptp也有效。
 It&amp;rsquo;s work for both single pptp tunnel and for multi pptp tunnels.
 然后，记得重启。
 Remember to reboot router.</description>
@@ -126,10 +121,10 @@ S的数据包会被NAT两次再发到互联网上，要进行端口转发也必�
       
       <guid>//blog.shell909090.org/blog/archives/1836/</guid>
       <description>如果说路由规则还能讲讲，iptables防火墙规则就彻底没法讲。简直是千变万化无所不能。下面就简单说一下，对于新增的tun0设备如何设定防火墙规则。
-----------config/network---------- config &#39;interface&#39; &#39;tun&#39; option &#39;ifname&#39; &#39;tun+&#39; option &#39;proto&#39; &#39;none&#39; ** ----------config/firewall---------- config &#39;zone&#39; option &#39;name&#39; &#39;tun&#39; option &#39;input&#39; &#39;ACCEPT&#39; option &#39;output&#39; &#39;ACCEPT&#39; option &#39;forward&#39; &#39;REJECT&#39; config &#39;forwarding&#39; option &#39;src&#39; &#39;lan&#39; option &#39;dest&#39; &#39;tun&#39; option &#39;mtu\_fix&#39; &#39;0&#39; config &#39;forwarding&#39; option &#39;src&#39; &#39;tun&#39; option &#39;dest&#39; &#39;lan&#39; option &#39;mtu\_fix&#39; &#39;0&#39;  好了，新增了一个网口，叫做tun，处理所有tun+（就是任何tun设备）的吞吐。默认规则是可以收发，拒绝转发。转发规则是可以和lan互相转发。
-/etc/init.d/network restart /etc/init.d/firewall restart  然后你看看你的配置是否正确。
-iptables -L -v  另外，这个配置方法有个bug。由于你的网口是tun+，所以在启动时，无法自动启用这个接口。在路由器重启后必须/etc/init.d/network restart才能工作。对我来说，每次路由器重启后都是手工开启openvpn的，问题不大。但是对于某些人就比较麻烦。对此推荐这些人直接修改/etc/firewall.user，直接加入以下指令。
-iptables -I INPUT -i tun+ -j ACCEPT iptables -I OUTPUT -o tun+ -j ACCEPT iptables -I FORWARD -i tun+ -j ACCEPT iptables -I FORWARD -o tun+ -j ACCEPT  使用interface配置的最终效果也差不多，不过比较简单整齐好理解。</description>
+----------config/network---------- config &#39;interface&#39; &#39;tun&#39; option &#39;ifname&#39; &#39;tun+&#39; option &#39;proto&#39; &#39;none&#39; ** ----------config/firewall---------- config &#39;zone&#39; option &#39;name&#39; &#39;tun&#39; option &#39;input&#39; &#39;ACCEPT&#39; option &#39;output&#39; &#39;ACCEPT&#39; option &#39;forward&#39; &#39;REJECT&#39; config &#39;forwarding&#39; option &#39;src&#39; &#39;lan&#39; option &#39;dest&#39; &#39;tun&#39; option &#39;mtu\_fix&#39; &#39;0&#39; config &#39;forwarding&#39; option &#39;src&#39; &#39;tun&#39; option &#39;dest&#39; &#39;lan&#39; option &#39;mtu\_fix&#39; &#39;0&#39; 好了，新增了一个网口，叫做tun，处理所有tun+（就是任何tun设备）的吞吐。默认规则是可以收发，拒绝转发。转发规则是可以和lan互相转发。
+/etc/init.d/network restart /etc/init.d/firewall restart 然后你看看你的配置是否正确。
+iptables -L -v 另外，这个配置方法有个bug。由于你的网口是tun+，所以在启动时，无法自动启用这个接口。在路由器重启后必须/etc/init.d/network restart才能工作。对我来说，每次路由器重启后都是手工开启openvpn的，问题不大。但是对于某些人就比较麻烦。对此推荐这些人直接修改/etc/firewall.user，直接加入以下指令。
+iptables -I INPUT -i tun+ -j ACCEPT iptables -I OUTPUT -o tun+ -j ACCEPT iptables -I FORWARD -i tun+ -j ACCEPT iptables -I FORWARD -o tun+ -j ACCEPT 使用interface配置的最终效果也差不多，不过比较简单整齐好理解。</description>
     </item>
     
     <item>
@@ -144,7 +139,7 @@ iptables -I INPUT -i tun+ -j ACCEPT iptables -I OUTPUT -o tun+ -j ACCEPT iptable
 当然，根据上面的解释我们可以知道，路由表只管发出报文。如果目标设备需要返回一个报文，他必须保证返回路由的正确。因此在下面的openvpn讲解中，你在vps也必须配置路由。很幸运，这个问题openvpn已经帮我们做好了。
 通常而言，我们拨号上网后应当有三条路由规则，第一条不解释。第二条通常是内网IP通过内网端口发出——这是当然的，否则内网包就暴露了。第三条通常是其他IP通过外网发出。当内网需要向外网发送数据的时候，会设定路由器作为网关。路由器会转发内网的包到他的上级路由器上。而当外网有数据要发送给内网的时候，情况则正好相反。注意，实际中一般是要进行NAT的，不是这么直接收发。
 如果当你使用了openvpn的routed模式，那么你就有了两个内网——常规内网和虚拟内网。我们可以想像，首先需要配置的是两个内网的互通问题。在你本地的网关上，需要配置虚拟网络段发送到tun0设备上。而在远程，需要配置常规内网段发送到拨号上来的这个IP上。大致要配置这些东西。
------------------vps-server.conf------------------- client-config-dir /etc/openvpn/ccd route 192.168.x.0 255.255.255.0 --------------------ccd/openwrt--------------------- iroute 192.168.x.0 255.255.255.0  这样，当openwrt这个用户拨号上来后，vps上就会添加一条路由，192.168.1.0网段通过刚刚拨号的地址来转发。
+-----------------vps-server.conf------------------- client-config-dir /etc/openvpn/ccd route 192.168.x.0 255.255.255.0 --------------------ccd/openwrt--------------------- iroute 192.168.x.0 255.255.255.0 这样，当openwrt这个用户拨号上来后，vps上就会添加一条路由，192.168.1.0网段通过刚刚拨号的地址来转发。
 其次，哪些数据发送到拨号网络，哪些需要通过虚拟内网呢？这规则通常由你来定。不过千万注意，不要用tun0这个设备来发送到服务器的数据——这会引发循环。这个问题一个不是那么明显的例子是，你设定使用tun0来发送default，但是又没有特别指定vps的地址使用ppp0发送。</description>
     </item>
     
@@ -156,11 +151,11 @@ iptables -I INPUT -i tun+ -j ACCEPT iptables -I OUTPUT -o tun+ -j ACCEPT iptable
       <guid>//blog.shell909090.org/blog/archives/1833/</guid>
       <description>在openwrt下面配置openvpn是非常简单的事情，当然我假定你有linux下面配置openvpn的经验。
 首先，将配置文件，证书等等复制到/etc/openvpn下面。我的配置大概是这样。
-client dev tun proto udp remote ipaddr port resolv-retry infinite nobind persist-key persist-tun ca /etc/openvpn/ca.crt cert /etc/openvpn/openwrt.crt key /etc/openvpn/openwrt.key ns-cert-type server tls-auth /etc/openvpn/ta.key 1 cipher DES-EDE3-CBC comp-lzo verb 3 script-security 3 up /etc/openvpn/dftup down /etc/openvpn/dftdown  注意，其中的路径必须写完整，貌似测试下来不支持相对目录。其中的up和down是指在启动和关闭时会自动执行的两个脚本。根据贝壳的测试，redirect-gateway是无效的，不知道为什么。具体的路由配置方法，会在下一章中具体介绍。
+client dev tun proto udp remote ipaddr port resolv-retry infinite nobind persist-key persist-tun ca /etc/openvpn/ca.crt cert /etc/openvpn/openwrt.crt key /etc/openvpn/openwrt.key ns-cert-type server tls-auth /etc/openvpn/ta.key 1 cipher DES-EDE3-CBC comp-lzo verb 3 script-security 3 up /etc/openvpn/dftup down /etc/openvpn/dftdown 注意，其中的路径必须写完整，貌似测试下来不支持相对目录。其中的up和down是指在启动和关闭时会自动执行的两个脚本。根据贝壳的测试，redirect-gateway是无效的，不知道为什么。具体的路由配置方法，会在下一章中具体介绍。
 然后，你需要将这个配置启用，方法是修改/etc/config/openvpn，在其中加入以下内容。
-config openvpn name option enable 1 option config /etc/openvpn/name.conf  name是你的配置名，下面的路径和配置文件路径吻合。
+config openvpn name option enable 1 option config /etc/openvpn/name.conf name是你的配置名，下面的路径和配置文件路径吻合。
 然后，你可以这样启动vpn。
-/etc/init.d/openvpn restart  </description>
+/etc/init.d/openvpn restart </description>
     </item>
     
     <item>
@@ -172,11 +167,11 @@ config openvpn name option enable 1 option config /etc/openvpn/name.conf  name�
       <description>贝壳入手了一个DIR-825路由器，机器不错，可惜存储太小。所以要用extroot做成U盘启动。
 首先，你需要安装kmod-usb2，kmod-usb-uhci，kmod-usb-ohci，kmod-usb-storage，kmod-usb-storage-extras这几个包，以保证系统可以正常访问你的USB key。而后安装block-mount block-hotplug block-extroot这几个包，来启用U盘启动。最后不要忘记安装kmod-fs-ext3，驱动文件系统。
 当你搞定这几步后，修改/etc/config/fstab这个文件，如下配置。
-config mount option device /dev/sda1 option fstype ext3 option options rw,sync option enabled 1 option enabled\_fsck 1 option is\_rootfs 1 config swap option device /dev/sda2 option enabled 1  然后，恭喜你，你就拥有一个可以从U盘引导的路由器设备了。当然，如果不从U盘引导，那么还是可以正常使用目前有路由拥有的普通功能。在使用U盘后，路由器的包和设定就完全存储在了U盘上。如果配置错误，拔下U盘就可以还原。你也可以复制自己的U盘给别人，在同样型号，并且安装了同样上述包和配置的路由器上继续使用（当然，会沿用你的配置）。
+config mount option device /dev/sda1 option fstype ext3 option options rw,sync option enabled 1 option enabled\_fsck 1 option is\_rootfs 1 config swap option device /dev/sda2 option enabled 1 然后，恭喜你，你就拥有一个可以从U盘引导的路由器设备了。当然，如果不从U盘引导，那么还是可以正常使用目前有路由拥有的普通功能。在使用U盘后，路由器的包和设定就完全存储在了U盘上。如果配置错误，拔下U盘就可以还原。你也可以复制自己的U盘给别人，在同样型号，并且安装了同样上述包和配置的路由器上继续使用（当然，会沿用你的配置）。
 下面，是如何创建可被openwrt引导的U盘。
-mkdir /tmp/sda1 mkdir /tmp/root mount /dev/sda1 /tmp/sda1 mount -o bind / /tmp/root cp -a /tmp/root/\* /tmp/sda1  上面几步，更详细的可以参考这篇文章（http://ddnas.org:88/blog/index.php/archives/2.html）。
+mkdir /tmp/sda1 mkdir /tmp/root mount /dev/sda1 /tmp/sda1 mount -o bind / /tmp/root cp -a /tmp/root/\* /tmp/sda1 上面几步，更详细的可以参考这篇文章（http://ddnas.org:88/blog/index.php/archives/2.html）。
 下面说一下使用U盘启动后，你很可能需要的一些包。
- bash 当有了空间，你可以修改/etc/passwd来使用bash作为你的默认sh，这样比较习惯。 ifstat 非常常用的软件，监控各个网卡设备上的吞吐。 iftop 监控各个IP的访问情况。 iperf 测试路由器到各个节点的速度。 openssh-server sshd openvpn vpn软件 screen 一个ssh中运行多个bash的玩意。  注意，openssh使用~/.</description>
+bash 当有了空间，你可以修改/etc/passwd来使用bash作为你的默认sh，这样比较习惯。 ifstat 非常常用的软件，监控各个网卡设备上的吞吐。 iftop 监控各个IP的访问情况。 iperf 测试路由器到各个节点的速度。 openssh-server sshd openvpn vpn软件 screen 一个ssh中运行多个bash的玩意。 注意，openssh使用~/.ssh/authorized_keys作为验证文件，并且该文件必须是600以下权限。而dropbear不使用这个文件。因此必须先产生该文件，再禁用openssh的password验证模式，不要想当然直接以为dropbear已经产生了这个文件。</description>
     </item>
     
   </channel>

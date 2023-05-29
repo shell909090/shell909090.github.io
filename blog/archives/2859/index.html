@@ -2,24 +2,23 @@
 <html lang="en-us">
   <head>
     <title>在云存储上叠加加密文件系统 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
@@ -30,11 +29,12 @@ if (!doNotTrack) {
 同时又要注意，云存储用的加密文件系统和普通的加密文件系统还有点差别。很多加密文件系统的daemon会认为自己是唯一一个会访问加密内容的进程，而云存储可能随时接收来自远程的修改。所以这会造成一些问题。
 备选方案 我对比了四种方案，EncFS，CryFS，GoCryptFS，eCryptFS。对比的方法是用这四种分别建立一个加密目录，然后用不同的方法做写入测试，看他的各种参数。顺便说一句，如果你要看的话，其实看这份表格就好。我只是在自己的机器上复现了一下，顺便了解一下各家特点。
 测试语句：
-time dd if=/dev/zero of=test bs=1048576 count=1024 time dd if=/dev/zero of=test bs=1024 count=1048576 time tar xf linux-4.13.12.tar.xz  其中，在裸盘上直接解压内核源码耗时7.568s，空间使用870M。
-数据对比 &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43; | |time1 |size1|time2 |size2|time3 |size3|comment | &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43; |EncFS |13.210s|1.1G |39.039s|1.1G |26.496s|894M | | &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43; |CryFS |9.327s |1.1G |21.230s|1.1G |42.918s|2.5G |删除耗时2.804s| &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43; |GoCryptFS|3.515s |1.1G |28.180s|1.1G |19.874s|918M | | &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43; |eCryptFS |3.132s |1.1G |10.218s|1.1G |9.448s |1.4G | | &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43;  解读 首先说怎么解读。time1是连续写入性能，time2是离散写入性能，time3是小文件写入性能，size3是大量小文件膨胀系统。size1和size2没啥用。
+time dd if=/dev/zero of=test bs=1048576 count=1024 time dd if=/dev/zero of=test bs=1024 count=1048576 time tar xf linux-4.13.12.tar.xz 其中，在裸盘上直接解压内核源码耗时7.568s，空间使用870M。
+数据对比 &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43; | |time1 |size1|time2 |size2|time3 |size3|comment | &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43; |EncFS |13.210s|1.1G |39.039s|1.1G |26.496s|894M | | &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43; |CryFS |9.327s |1.1G |21.230s|1.1G |42.918s|2.5G |删除耗时2.804s| &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43; |GoCryptFS|3.515s |1.1G |28.180s|1.1G |19.874s|918M | | &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43; |eCryptFS |3.132s |1.1G |10.218s|1.1G |9.448s |1.4G | | &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43; 解读 首先说怎么解读。time1是连续写入性能，time2是离散写入性能，time3是小文件写入性能，size3是大量小文件膨胀系统。size1和size2没啥用。
 下面先看性能。从性能上看，最优秀的是eCryptFS。这是理所当然，因为这是唯一一个内核态而且和内核整合的系统。GoCryptFS次之。EncFS要慢上好多。至于CryFS，一开始写小文件就原型毕露了。何况这是唯一一个删除大文件时间超过1s的，达到2.8s。你看我其他系统测试里都没写。
 然后是膨胀率。EncFS膨胀2.75%，CryFS膨胀近三倍，GoCryptFS膨胀5.52%，eCryptFS膨胀65%。相比起来，EncFS膨胀率最小，GoCryptFS次之，CryFS最糟糕。
-安全性 下面是同一个人出的三份审计报告："/>
+安全性 下面是同一个人出的三份审计报告：
+encfs的审计报告 gocryptfs的审计报告 ecryptfs的审计报告 根据报告可以得到这么几个意见。"/>
 
     <meta property="og:title" content="在云存储上叠加加密文件系统" />
 <meta property="og:description" content="目标很简单。云存储上很多文件都挺私人的，直接放着很吓人。虽说云存储采用各种方法来保证你的安全，但是世界上没有绝对的安全。万一密码泄漏，或者更糟糕，云存储泄漏。此时你的各种文件就在网络上裸奔了。
@@ -42,13 +42,14 @@ time dd if=/dev/zero of=test bs=1048576 count=1024 time dd if=/dev/zero of=test 
 同时又要注意，云存储用的加密文件系统和普通的加密文件系统还有点差别。很多加密文件系统的daemon会认为自己是唯一一个会访问加密内容的进程，而云存储可能随时接收来自远程的修改。所以这会造成一些问题。
 备选方案 我对比了四种方案，EncFS，CryFS，GoCryptFS，eCryptFS。对比的方法是用这四种分别建立一个加密目录，然后用不同的方法做写入测试，看他的各种参数。顺便说一句，如果你要看的话，其实看这份表格就好。我只是在自己的机器上复现了一下，顺便了解一下各家特点。
 测试语句：
-time dd if=/dev/zero of=test bs=1048576 count=1024 time dd if=/dev/zero of=test bs=1024 count=1048576 time tar xf linux-4.13.12.tar.xz  其中，在裸盘上直接解压内核源码耗时7.568s，空间使用870M。
-数据对比 &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43; | |time1 |size1|time2 |size2|time3 |size3|comment | &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43; |EncFS |13.210s|1.1G |39.039s|1.1G |26.496s|894M | | &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43; |CryFS |9.327s |1.1G |21.230s|1.1G |42.918s|2.5G |删除耗时2.804s| &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43; |GoCryptFS|3.515s |1.1G |28.180s|1.1G |19.874s|918M | | &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43; |eCryptFS |3.132s |1.1G |10.218s|1.1G |9.448s |1.4G | | &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43;  解读 首先说怎么解读。time1是连续写入性能，time2是离散写入性能，time3是小文件写入性能，size3是大量小文件膨胀系统。size1和size2没啥用。
+time dd if=/dev/zero of=test bs=1048576 count=1024 time dd if=/dev/zero of=test bs=1024 count=1048576 time tar xf linux-4.13.12.tar.xz 其中，在裸盘上直接解压内核源码耗时7.568s，空间使用870M。
+数据对比 &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43; | |time1 |size1|time2 |size2|time3 |size3|comment | &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43; |EncFS |13.210s|1.1G |39.039s|1.1G |26.496s|894M | | &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43; |CryFS |9.327s |1.1G |21.230s|1.1G |42.918s|2.5G |删除耗时2.804s| &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43; |GoCryptFS|3.515s |1.1G |28.180s|1.1G |19.874s|918M | | &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43; |eCryptFS |3.132s |1.1G |10.218s|1.1G |9.448s |1.4G | | &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43; 解读 首先说怎么解读。time1是连续写入性能，time2是离散写入性能，time3是小文件写入性能，size3是大量小文件膨胀系统。size1和size2没啥用。
 下面先看性能。从性能上看，最优秀的是eCryptFS。这是理所当然，因为这是唯一一个内核态而且和内核整合的系统。GoCryptFS次之。EncFS要慢上好多。至于CryFS，一开始写小文件就原型毕露了。何况这是唯一一个删除大文件时间超过1s的，达到2.8s。你看我其他系统测试里都没写。
 然后是膨胀率。EncFS膨胀2.75%，CryFS膨胀近三倍，GoCryptFS膨胀5.52%，eCryptFS膨胀65%。相比起来，EncFS膨胀率最小，GoCryptFS次之，CryFS最糟糕。
-安全性 下面是同一个人出的三份审计报告：" />
+安全性 下面是同一个人出的三份审计报告：
+encfs的审计报告 gocryptfs的审计报告 ecryptfs的审计报告 根据报告可以得到这么几个意见。" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2859/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2859/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2017-12-17T11:29:29+08:00" />
 <meta property="article:modified_time" content="2017-12-17T11:29:29+08:00" />
 
@@ -88,11 +89,8 @@ time dd if=/dev/zero of=test bs=1048576 count=1024 time dd if=/dev/zero of=test 
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -102,44 +100,34 @@ time dd if=/dev/zero of=test bs=1048576 count=1024 time dd if=/dev/zero of=test 
       <h1 class ="post-title">在云存储上叠加加密文件系统</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Dec 17, 2017
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div></div>
+        </div>
+      </div>
     </header>
     <div class="post-content">
-      
-
-<p>目标很简单。云存储上很多文件都挺私人的，直接放着很吓人。虽说云存储采用各种方法来保证你的安全，但是世界上没有绝对的安全。万一密码泄漏，或者更糟糕，云存储泄漏。此时你的各种文件就在网络上裸奔了。</p>
-
+      <p>目标很简单。云存储上很多文件都挺私人的，直接放着很吓人。虽说云存储采用各种方法来保证你的安全，但是世界上没有绝对的安全。万一密码泄漏，或者更糟糕，云存储泄漏。此时你的各种文件就在网络上裸奔了。</p>
 <p>最简单的解决方法是什么？在底层存储上套一层加密呗。不过由于是云存储，所以基于块设备的加密方案不能用，例如LUKS。否则你同步到云上的就是一个超级巨大的块文件，然后每次修改，云存储客户端都要找到差别上传。这太蛋疼了。正解是每个文件分别加密上传。但即便如此，对于超大文件进行加密后依然会影响上传效率，请提前考虑一下这个问题。</p>
-
 <p>同时又要注意，云存储用的加密文件系统和普通的加密文件系统还有点差别。很多加密文件系统的daemon会认为自己是唯一一个会访问加密内容的进程，而云存储可能随时接收来自远程的修改。所以这会造成一些问题。</p>
-
 <h1 id="备选方案">备选方案</h1>
-
 <p>我对比了四种方案，EncFS，CryFS，GoCryptFS，eCryptFS。对比的方法是用这四种分别建立一个加密目录，然后用不同的方法做写入测试，看他的各种参数。顺便说一句，如果你要看的话，其实看<a href="https://nuetzlich.net/gocryptfs/comparison/">这份表格</a>就好。我只是在自己的机器上复现了一下，顺便了解一下各家特点。</p>
-
 <p>测试语句：</p>
-
 <pre><code>time dd if=/dev/zero of=test bs=1048576 count=1024
 time dd if=/dev/zero of=test bs=1024 count=1048576
 time tar xf linux-4.13.12.tar.xz
 </code></pre>
-
 <p>其中，在裸盘上直接解压内核源码耗时7.568s，空间使用870M。</p>
-
 <h1 id="数据对比">数据对比</h1>
-
 <pre><code>+---------+-------+-----+-------+-----+-------+-----+--------------+
 |         |time1  |size1|time2  |size2|time3  |size3|comment       |
 +---------+-------+-----+-------+-----+-------+-----+--------------+
@@ -152,41 +140,27 @@ time tar xf linux-4.13.12.tar.xz
 |eCryptFS |3.132s |1.1G |10.218s|1.1G |9.448s |1.4G |              |
 +---------+-------+-----+-------+-----+-------+-----+--------------+
 </code></pre>
-
 <h1 id="解读">解读</h1>
-
 <p>首先说怎么解读。time1是连续写入性能，time2是离散写入性能，time3是小文件写入性能，size3是大量小文件膨胀系统。size1和size2没啥用。</p>
-
 <p>下面先看性能。从性能上看，最优秀的是eCryptFS。这是理所当然，因为这是唯一一个内核态而且和内核整合的系统。GoCryptFS次之。EncFS要慢上好多。至于CryFS，一开始写小文件就原型毕露了。何况这是唯一一个删除大文件时间超过1s的，达到2.8s。你看我其他系统测试里都没写。</p>
-
 <p>然后是膨胀率。EncFS膨胀2.75%，CryFS膨胀近三倍，GoCryptFS膨胀5.52%，eCryptFS膨胀65%。相比起来，EncFS膨胀率最小，GoCryptFS次之，CryFS最糟糕。</p>
-
 <h1 id="安全性">安全性</h1>
-
 <p>下面是同一个人出的三份审计报告：</p>
-
 <ul>
 <li><a href="https://defuse.ca/audits/encfs.htm">encfs的审计报告</a></li>
 <li><a href="https://defuse.ca/downloads/audits/gocryptfs-cryptography-design-audit.pdf">gocryptfs的审计报告</a></li>
 <li><a href="https://defuse.ca/audits/ecryptfs.htm">ecryptfs的审计报告</a></li>
 </ul>
-
 <p>根据报告可以得到这么几个意见。</p>
-
 <ul>
 <li>EncFS有安全性隐患，目前未解决。主要隐患来自于文件块加密模式上。如果攻击者有机会获得多份密文副本，那么就是不安全的。</li>
 <li>GoCryptFS有一定安全问题，目前未解决。下面细说。</li>
 <li>eCryptFS需要进一步审计，目前可视为安全。</li>
 </ul>
-
 <h1 id="综叙">综叙</h1>
-
 <p>可能出乎大家意料，我首先排除了encfs和ecryptfs。encfs是因为有安全性隐患。ecryptfs是因为不便于使用和不兼容云存储模式。ecryptfs在每次挂载时都需要独立输入所有参数，这样使用起来比较不方便。更糟糕的是，ecryptfs并不支持同时有人访问加密数据本身。这样会造成竞争问题。对于一个内核级的东西来说，这有极大的危险性。同时，这货的膨胀率有点高。</p>
-
 <p>然后在CryFS和GoCryptFS里，我选择GoCryptFS。虽然CryFS是唯一一个明确声明自己兼容云存储的，但是其膨胀率实在太高了。虽然是云存储，但是毕竟要考虑性价比的。</p>
-
 <p>那么GoCryptFS的安全问题是什么呢？主要隐患来自和云存储混用时，攻击者虽然对文件内容一无所知，但是可以修改文件内容。例如将其他加密文件复制过来，或者将部分内容嫁接过来。审计报告里提供了一系列的POC来说明这一风险。这一风险对于特定情况的用户来说是非常危险的，例如在加密区域存储多个可信身份/帐号身份文件的人。</p>
-
 <p>很幸运，我对这方面没要求。GoCryptFS的膨胀率不大，仅高于EncFS，完全可以接受。性能也不错，仅次于eCryptFS。使用非常方便，同时还能提供过得去的安全特性。因此综合上面所有情况，我选择GoCryptFS作为云存储上叠加的加密文件系统。</p>
 
     </div>

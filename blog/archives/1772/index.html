@@ -2,24 +2,23 @@
 <html lang="en-us">
   <head>
     <title>说说x509证书链 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
@@ -27,34 +26,36 @@ if (!doNotTrack) {
 <meta name="twitter:title" content="说说x509证书链"/>
 <meta name="twitter:description" content="x509证书一般会用到三类文件，key，csr，crt。key是私用密钥，openssl格式，通常是rsa算法，爱咋用咋用的。csr是证书请求文件，用于申请证书。在申请的时候，必须使用自己的私钥来签署申请，还可以设定一个密钥。crt是证书文件（windows下面的csr，其实是crt），是签署人用自己的key给你签署的凭证。通常签名证书的时候都需要一个序列号，避免两个证书重复，当指明序列文件后，被签名证书会使用这个文件，并且文件会发生变化。另外一个额外说明的东西是dh参数，做openvpn的时候需要这个东西，大致是什么算法的初始参数，在下面有生成方法。
 key的生成方法：
-openssl genrsa -des3 -out in.key 2048  这样是生成rsa私钥，des3算法，openssl格式，2048位强度。ca.key是文件名。为了生成这样的密钥，需要一个至少四位的密码。可以通过以下方法去除。
-openssl rsa -in in.key -out out.key  输入密钥后，out.key就是没有密码的版本了。
+openssl genrsa -des3 -out in.key 2048 这样是生成rsa私钥，des3算法，openssl格式，2048位强度。ca.key是文件名。为了生成这样的密钥，需要一个至少四位的密码。可以通过以下方法去除。
+openssl rsa -in in.key -out out.key 输入密钥后，out.key就是没有密码的版本了。
 csr的生成方法：
-openssl req -new -key server.key -out server.csr  需要依次输入国家，地区，组织，email。最重要的是，有一个common name，可以写你的名字或者域名。如果为了https申请，这个必须和域名吻合，否则会引发浏览器警报。
+openssl req -new -key server.key -out server.csr 需要依次输入国家，地区，组织，email。最重要的是，有一个common name，可以写你的名字或者域名。如果为了https申请，这个必须和域名吻合，否则会引发浏览器警报。
 crt生成方法：
-openssl x509 -md5 -days 3560 -req -CA ca.crt -CAkey ca.key -CAcreateserial -CAserial ca.srl -in server.csr -out server.crt  输入key的密钥后，完成证书生成。-CA选项指明用于签名的ca证书，-CAkey选项指明用于签名的密钥。-CAserial指明序列号文件，而-CAcreateserial指明文件不存在时自动生成。
-openssl req -new -x509 -days 3650 -key ca.key -out ca.crt  这个是用于生成自签名证书的。
+openssl x509 -md5 -days 3560 -req -CA ca.crt -CAkey ca.key -CAcreateserial -CAserial ca.srl -in server.csr -out server.crt 输入key的密钥后，完成证书生成。-CA选项指明用于签名的ca证书，-CAkey选项指明用于签名的密钥。-CAserial指明序列号文件，而-CAcreateserial指明文件不存在时自动生成。
+openssl req -new -x509 -days 3650 -key ca.key -out ca.crt 这个是用于生成自签名证书的。
 dh参数生成方法：
-openssl dhparam -out dh1024.pem  1024是位数，一般1024已经够了。
+openssl dhparam -out dh1024.pem 1024是位数，一般1024已经够了。
 x509的证书链是这样的。crt上有证书持有人的信息，持有人的公钥，签署者的签名。当你安装了一个证书后，就信任了这份证书。证书上会说明用途，例如服务器认证，客户端认证，或者签署其他证书。当系统收到一份新的证书的时候，证书会说明，是由谁签署的。如果这个签署者确实可以签署其他证书，并且收到证书上的签名和签署者的公钥可以对上的时候，系统就自动信任新的证书。
-在系统开始的时候，会自动安装信任一些证书机构，这些被称为根证书机构（CA）。根证书机构会为其他公司颁发证书，用于各种用途。当然，被签署的证书也可能是一份“可签署证书”，这样就要检查对方的资质。这样逐层签署，就会形成一个叫做“证书链”的东西。从拓扑结构上来说，其实应该是森林结构。"/>
+在系统开始的时候，会自动安装信任一些证书机构，这些被称为根证书机构（CA）。根证书机构会为其他公司颁发证书，用于各种用途。当然，被签署的证书也可能是一份“可签署证书”，这样就要检查对方的资质。这样逐层签署，就会形成一个叫做“证书链”的东西。从拓扑结构上来说，其实应该是森林结构。
+当然，如果我们要弄ssl，又没有钱请CA给我们签署的时候（他们的验证费都好贵的），可以考虑自己给自己签署。生成一份key，生成一个req，然后用自己的key签署自己的req。当你使用这份证书做ssl的时候，就会产生不受信任的证书警报。你可以在客户那里安装这张证书为根证书，就不会弹出这个警告了。当然，考究的人，签署用证书和服务器身份认证证书要分开。先做一个自签署证书作为根证书，然后用这个根证书签署一个服务器证书。这样在客户那里安装根证书后，服务器证书就会自动信任。这样的好处是，一本证书只能颁发给一个特定域名。如果你有多个域名，就要反复在客户这里安装证书。然而如果采用根证书签名，那么只要安装一张根证书，其他都是自动的。不过如果事情只要干一次，就不用讲究这么多了。"/>
 
     <meta property="og:title" content="说说x509证书链" />
 <meta property="og:description" content="x509证书一般会用到三类文件，key，csr，crt。key是私用密钥，openssl格式，通常是rsa算法，爱咋用咋用的。csr是证书请求文件，用于申请证书。在申请的时候，必须使用自己的私钥来签署申请，还可以设定一个密钥。crt是证书文件（windows下面的csr，其实是crt），是签署人用自己的key给你签署的凭证。通常签名证书的时候都需要一个序列号，避免两个证书重复，当指明序列文件后，被签名证书会使用这个文件，并且文件会发生变化。另外一个额外说明的东西是dh参数，做openvpn的时候需要这个东西，大致是什么算法的初始参数，在下面有生成方法。
 key的生成方法：
-openssl genrsa -des3 -out in.key 2048  这样是生成rsa私钥，des3算法，openssl格式，2048位强度。ca.key是文件名。为了生成这样的密钥，需要一个至少四位的密码。可以通过以下方法去除。
-openssl rsa -in in.key -out out.key  输入密钥后，out.key就是没有密码的版本了。
+openssl genrsa -des3 -out in.key 2048 这样是生成rsa私钥，des3算法，openssl格式，2048位强度。ca.key是文件名。为了生成这样的密钥，需要一个至少四位的密码。可以通过以下方法去除。
+openssl rsa -in in.key -out out.key 输入密钥后，out.key就是没有密码的版本了。
 csr的生成方法：
-openssl req -new -key server.key -out server.csr  需要依次输入国家，地区，组织，email。最重要的是，有一个common name，可以写你的名字或者域名。如果为了https申请，这个必须和域名吻合，否则会引发浏览器警报。
+openssl req -new -key server.key -out server.csr 需要依次输入国家，地区，组织，email。最重要的是，有一个common name，可以写你的名字或者域名。如果为了https申请，这个必须和域名吻合，否则会引发浏览器警报。
 crt生成方法：
-openssl x509 -md5 -days 3560 -req -CA ca.crt -CAkey ca.key -CAcreateserial -CAserial ca.srl -in server.csr -out server.crt  输入key的密钥后，完成证书生成。-CA选项指明用于签名的ca证书，-CAkey选项指明用于签名的密钥。-CAserial指明序列号文件，而-CAcreateserial指明文件不存在时自动生成。
-openssl req -new -x509 -days 3650 -key ca.key -out ca.crt  这个是用于生成自签名证书的。
+openssl x509 -md5 -days 3560 -req -CA ca.crt -CAkey ca.key -CAcreateserial -CAserial ca.srl -in server.csr -out server.crt 输入key的密钥后，完成证书生成。-CA选项指明用于签名的ca证书，-CAkey选项指明用于签名的密钥。-CAserial指明序列号文件，而-CAcreateserial指明文件不存在时自动生成。
+openssl req -new -x509 -days 3650 -key ca.key -out ca.crt 这个是用于生成自签名证书的。
 dh参数生成方法：
-openssl dhparam -out dh1024.pem  1024是位数，一般1024已经够了。
+openssl dhparam -out dh1024.pem 1024是位数，一般1024已经够了。
 x509的证书链是这样的。crt上有证书持有人的信息，持有人的公钥，签署者的签名。当你安装了一个证书后，就信任了这份证书。证书上会说明用途，例如服务器认证，客户端认证，或者签署其他证书。当系统收到一份新的证书的时候，证书会说明，是由谁签署的。如果这个签署者确实可以签署其他证书，并且收到证书上的签名和签署者的公钥可以对上的时候，系统就自动信任新的证书。
-在系统开始的时候，会自动安装信任一些证书机构，这些被称为根证书机构（CA）。根证书机构会为其他公司颁发证书，用于各种用途。当然，被签署的证书也可能是一份“可签署证书”，这样就要检查对方的资质。这样逐层签署，就会形成一个叫做“证书链”的东西。从拓扑结构上来说，其实应该是森林结构。" />
+在系统开始的时候，会自动安装信任一些证书机构，这些被称为根证书机构（CA）。根证书机构会为其他公司颁发证书，用于各种用途。当然，被签署的证书也可能是一份“可签署证书”，这样就要检查对方的资质。这样逐层签署，就会形成一个叫做“证书链”的东西。从拓扑结构上来说，其实应该是森林结构。
+当然，如果我们要弄ssl，又没有钱请CA给我们签署的时候（他们的验证费都好贵的），可以考虑自己给自己签署。生成一份key，生成一个req，然后用自己的key签署自己的req。当你使用这份证书做ssl的时候，就会产生不受信任的证书警报。你可以在客户那里安装这张证书为根证书，就不会弹出这个警告了。当然，考究的人，签署用证书和服务器身份认证证书要分开。先做一个自签署证书作为根证书，然后用这个根证书签署一个服务器证书。这样在客户那里安装根证书后，服务器证书就会自动信任。这样的好处是，一本证书只能颁发给一个特定域名。如果你有多个域名，就要反复在客户这里安装证书。然而如果采用根证书签名，那么只要安装一张根证书，其他都是自动的。不过如果事情只要干一次，就不用讲究这么多了。" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/1772/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/1772/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2011-04-11T11:03:47+08:00" />
 <meta property="article:modified_time" content="2011-04-11T11:03:47+08:00" />
 
@@ -94,11 +95,8 @@ x509的证书链是这样的。crt上有证书持有人的信息，持有人的�
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -108,70 +106,57 @@ x509的证书链是这样的。crt上有证书持有人的信息，持有人的�
       <h1 class ="post-title">说说x509证书链</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Apr 11, 2011
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/certificate/">certificate</a><a class="tag" href="//blog.shell909090.org/tags/openssl/">openssl</a><a class="tag" href="//blog.shell909090.org/tags/program/">program</a><a class="tag" href="//blog.shell909090.org/tags/x509/">x509</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/certificate/">certificate</a>
+              <a class="tag" href="//blog.shell909090.org/tags/openssl/">openssl</a>
+              <a class="tag" href="//blog.shell909090.org/tags/program/">program</a>
+              <a class="tag" href="//blog.shell909090.org/tags/x509/">x509</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
       <p>x509证书一般会用到三类文件，key，csr，crt。key是私用密钥，openssl格式，通常是rsa算法，爱咋用咋用的。csr是证书请求文件，用于申请证书。在申请的时候，必须使用自己的私钥来签署申请，还可以设定一个密钥。crt是证书文件（windows下面的csr，其实是crt），是签署人用自己的key给你签署的凭证。通常签名证书的时候都需要一个序列号，避免两个证书重复，当指明序列文件后，被签名证书会使用这个文件，并且文件会发生变化。另外一个额外说明的东西是dh参数，做openvpn的时候需要这个东西，大致是什么算法的初始参数，在下面有生成方法。</p>
-
 <p>key的生成方法：</p>
-
 <pre><code>openssl genrsa -des3 -out in.key 2048
 </code></pre>
-
 <p>这样是生成rsa私钥，des3算法，openssl格式，2048位强度。ca.key是文件名。为了生成这样的密钥，需要一个至少四位的密码。可以通过以下方法去除。</p>
-
 <pre><code>openssl rsa -in in.key -out out.key
 </code></pre>
-
 <p>输入密钥后，out.key就是没有密码的版本了。</p>
-
 <p>csr的生成方法：</p>
-
 <pre><code>openssl req -new -key server.key -out server.csr
 </code></pre>
-
 <p>需要依次输入国家，地区，组织，email。最重要的是，有一个common name，可以写你的名字或者域名。如果为了https申请，这个必须和域名吻合，否则会引发浏览器警报。</p>
-
 <p>crt生成方法：</p>
-
 <pre><code>openssl x509 -md5 -days 3560 -req -CA ca.crt -CAkey ca.key -CAcreateserial -CAserial ca.srl -in server.csr -out server.crt
 </code></pre>
-
 <p>输入key的密钥后，完成证书生成。-CA选项指明用于签名的ca证书，-CAkey选项指明用于签名的密钥。-CAserial指明序列号文件，而-CAcreateserial指明文件不存在时自动生成。</p>
-
 <pre><code>openssl req -new -x509 -days 3650 -key ca.key -out ca.crt
 </code></pre>
-
 <p>这个是用于生成自签名证书的。</p>
-
 <p>dh参数生成方法：</p>
-
 <pre><code>openssl dhparam -out dh1024.pem
 </code></pre>
-
 <p>1024是位数，一般1024已经够了。</p>
-
 <p>x509的证书链是这样的。crt上有证书持有人的信息，持有人的公钥，签署者的签名。当你安装了一个证书后，就信任了这份证书。证书上会说明用途，例如服务器认证，客户端认证，或者签署其他证书。当系统收到一份新的证书的时候，证书会说明，是由谁签署的。如果这个签署者确实可以签署其他证书，并且收到证书上的签名和签署者的公钥可以对上的时候，系统就自动信任新的证书。</p>
-
 <p>在系统开始的时候，会自动安装信任一些证书机构，这些被称为根证书机构（CA）。根证书机构会为其他公司颁发证书，用于各种用途。当然，被签署的证书也可能是一份“可签署证书”，这样就要检查对方的资质。这样逐层签署，就会形成一个叫做“证书链”的东西。从拓扑结构上来说，其实应该是森林结构。</p>
-
 <p>当然，如果我们要弄ssl，又没有钱请CA给我们签署的时候（他们的验证费都好贵的），可以考虑自己给自己签署。生成一份key，生成一个req，然后用自己的key签署自己的req。当你使用这份证书做ssl的时候，就会产生不受信任的证书警报。你可以在客户那里安装这张证书为根证书，就不会弹出这个警告了。当然，考究的人，签署用证书和服务器身份认证证书要分开。先做一个自签署证书作为根证书，然后用这个根证书签署一个服务器证书。这样在客户那里安装根证书后，服务器证书就会自动信任。这样的好处是，一本证书只能颁发给一个特定域名。如果你有多个域名，就要反复在客户这里安装证书。然而如果采用根证书签名，那么只要安装一张根证书，其他都是自动的。不过如果事情只要干一次，就不用讲究这么多了。</p>
 
     </div>

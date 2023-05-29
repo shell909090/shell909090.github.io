@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>webserver on Shell&#39;s Home</title>
@@ -7,11 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Tue, 16 Nov 2010 10:18:00 +0800</lastBuildDate>
-    
-	<atom:link href="//blog.shell909090.org/tags/webserver/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Tue, 16 Nov 2010 10:18:00 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/webserver/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>为什么高性能框架都是http的</title>
       <link>//blog.shell909090.org/blog/archives/1613/</link>
@@ -49,8 +45,7 @@
       <pubDate>Fri, 02 Apr 2010 03:40:00 +0800</pubDate>
       
       <guid>//blog.shell909090.org/blog/archives/108/</guid>
-      <description>本文系电脑资料，同步到blog上。小黄姐姐不必看了，可以帮我留个言。 nginx性能不错，可惜不支持WebDAV，因此没法拿来作为subversion的http服务。于是考虑开一个nginx作为前端，后端就跑一个apache来作为容器。配置这么写的(节选)： =========/etc/nginx/sites-enabled/default========= server { listen 443; server_name OOXX ssl on; ssl_certificate keys/server.crt; ssl_certificate_key keys/server.key; ssl_session_timeout 5m; ssl_protocols SSLv2 SSLv3 TLSv1; ssl_ciphers ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP; ssl_prefer_server_ciphers on; access_log /var/log/nginx/localhost.access.log; include /etc/nginx/mapping-ssl; error_page 500 502 503 504 /50x.html;
-location = /50x.html { root /var/www/nginx-default; } } 打开了一个https的服务，这是当然的，svn传输的数据使用http很危险。 ===========/etc/nginx/mapping-ssl============= location \^~ /svn { proxy_set_header Destination \$http_destination; proxy_pass http://apache_svr; proxy_set_header Host \$host; proxy_set_header X-Real-IP \$remote_addr; proxy_set_header X-Forwarded-Host \$host; proxy_set_header X-Forwarded-Proto https; proxy_set_header X-Forwarded-Server \$host; proxy_set_header X-Forwarded-For</description>
+      <description>本文系电脑资料，同步到blog上。小黄姐姐不必看了，可以帮我留个言。 nginx性能不错，可惜不支持WebDAV，因此没法拿来作为subversion的http服务。于是考虑开一个nginx作为前端，后端就跑一个apache来作为容器。配置这么写的(节选)： =========/etc/nginx/sites-enabled/default========= server { listen 443; server_name OOXX ssl on; ssl_certificate keys/server.crt; ssl_certificate_key keys/server.key; ssl_session_timeout 5m; ssl_protocols SSLv2 SSLv3 TLSv1; ssl_ciphers ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP; ssl_prefer_server_ciphers on; access_log /var/log/nginx/localhost.access.log; include /etc/nginx/mapping-ssl; error_page 500 502 503 504 /50x.html; location = /50x.html { root /var/www/nginx-default; } } 打开了一个https的服务，这是当然的，svn传输的数据使用http很危险。 ===========/etc/nginx/mapping-ssl============= location ^~ /svn { proxy_set_header Destination $http_destination; proxy_pass http://apache_svr; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-Host $host; proxy_set_header X-Forwarded-Proto https; proxy_set_header X-Forwarded-Server $host; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; } 将/svn下面的所有请求交给apache2。 =====/etc/apache2/mods-enabled/dav_svn.</description>
     </item>
     
     <item>
@@ -59,7 +54,7 @@ location = /50x.html { root /var/www/nginx-default; } } 打开了一个https的
       <pubDate>Mon, 07 Dec 2009 09:58:00 +0800</pubDate>
       
       <guid>//blog.shell909090.org/blog/archives/82/</guid>
-      <description>我们上面说过，Prefork模式有着先天的缺陷。针对http这种大量短请求的应用(当然，http1.1以来，有不少客户端使用了长连接)，Prefork的最高并发很让人不满。并且，无论是否高并发，Prefork的性能都非常不好。现在我们介绍一下Thread模式。 和Prefork非常类似，每Thread模式通过新建的线程来控制对象的传输。和Prefork模式不同的是，一个用户能够建立多少个线程并没有限制。在系统上似乎有限制，65535个，但是同样，文件句柄最高也就能打开65535个，因此通常而言一个服务器最高也就能顶50000并发，无法再高了(nginx就能够支撑5W并发，再高要使用一些特殊手法来均衡负载)。而且线程的建立和销毁的开销非常小——没有独立的空间，不用复制句柄，只要复制一份栈和上下文对象就可以。但是，由于所有线程运行在同一个进程空间中，因此每线程模式有几个非常麻烦的瓶颈。 首先是对象锁定和同步，在每进程模式中，由于进程空间独立，因此一个对象被两个进程使用的时候，他们使用了两个完全不同的对象。而线程模式下，他们访问的是同一个对象。如果两个线程需要进行排他性访问，就必须使用锁，或者其他线程同步工具来进行线程同步。其次，由于使用同一个进程空间，因此一旦有一个连接处理的时候发生错误，整个程序就会崩溃。对于这一问题，可以通过watchdog方式来进行部分规避。原理是通过一个父进程启动子进程，子进程使用每线程处理请求。如果子进程崩溃，父进程的wait就会返回结果。此时父进程重启子进程。使用了watchdog后，服务不会中断，但是程序崩溃时正在处理的连接会全部丢失。最后，是python特有的问题——GIL。由于GIL的存在，因此无论多少线程，实际上只有一个线程可以处理请求，这无形中降低了效率。下面我们看一下Thread模式的测试结果： 测试指令： ab -n 1000 -c 100 http://localhost:8000/py-web-server 返回结果： Document Path: /py-web-server Document Length: 1682 bytes Concurrency Level: 100 Time taken for tests: 3.834 seconds Complete requests: 1000 Failed requests: 0 Write errors: 0 Total transferred: 1723000 bytes HTML transferred: 1682000 bytes Requests per second: 260.85 [#/sec] (mean) Time per request: 383.362 [ms] (mean) Time per request: 3.834 [ms] (mean, across all concurrent requests) Transfer rate: 438.91 [Kbytes/sec] received Connection Times (ms) min mean[+/-sd] median max Connect: 0 75 468.</description>
+      <description> </description>
     </item>
     
     <item>
@@ -73,8 +68,8 @@ location = /50x.html { root /var/www/nginx-default; } } 打开了一个https的
 主进程在每次进入accept后阻塞，子进程在每次进入recv后阻塞。这样会带来几方面的好处。首先是模型分离，即使一个子进程崩溃，也不会影响到其他子进程。其次是身份分离，当你需要让http server以高于常规运行(常规都是以apache, www-data, nobody运行的)用户的权限进行工作时，每进程模式是唯一安全的模式。其他模式都会造成同一进程内的其他session也暂时获得这个权限的问题。但是同样，这样有几方面的问题，主要就是性能问题。
 由于每个连接都需要fork出一个新进程去处理。因此针对大量小连接的时候，fork和exit消耗了大量CPU。问题更严重的是，由于用户进程总数是有限的(PEM或者ulimit都会限制这个数量)，因此压力大到一定程度时(通常是1024或者2048)，就会出现无法创建连接的情况。而对小型服务器而言，在压力还没大道这个程度以前，服务器就会由于性能达到限制而造成段错误。以下是实际试验指令和结果：
 测试指令：
-ab -n 10000 -c 100 &amp;lt;http://localhost:8000/py-web-server&amp;gt;  服务器报错：
-20090924 05:51:18: Traceback (most recent call last): 20090924 05:51:18: File &amp;ldquo;main.py&amp;rdquo;, line 19, in  20090924 05:51:18: 20090924 05:51:18: sock.run (); 20090924 05:51:18: File &amp;ldquo;/home/shell/py-web-server/server.py&amp;rdquo;, line 30, in run 20090924 05:51:18: 20090924 05:51:18: while loop_func (): pass 20090924 05:51:18: File &amp;ldquo;/home/shell/py-web-server/server.py&amp;rdquo;, line 56, in do_loop 20090924 05:51:18: 20090924 05:51:18: if os.fork () == 0:</description>
+ab -n 10000 -c 100 &amp;lt;http://localhost:8000/py-web-server&amp;gt; 服务器报错：
+[20090924 05:51:18]: Traceback (most recent call last): [20090924 05:51:18]: File &amp;ldquo;main.py&amp;rdquo;, line 19, in [20090924 05:51:18]: [20090924 05:51:18]: sock.run (); [20090924 05:51:18]: File &amp;ldquo;/home/shell/py-web-server/server.py&amp;rdquo;, line 30, in run [20090924 05:51:18]: [20090924 05:51:18]: while loop_func (): pass [20090924 05:51:18]: File &amp;ldquo;/home/shell/py-web-server/server.py&amp;rdquo;, line 56, in do_loop [20090924 05:51:18]: [20090924 05:51:18]: if os.fork () == 0: [20090924 05:51:18]: OSError [20090924 05:51:18]: : [20090924 05:51:18]: [Errno 11] Resource temporarily unavailable</description>
     </item>
     
     <item>
@@ -85,7 +80,7 @@ ab -n 10000 -c 100 &amp;lt;http://localhost:8000/py-web-server&amp;gt;  服务�
       <guid>//blog.shell909090.org/blog/archives/79/</guid>
       <description>本系列文章的所有代码，都发布在http://code.google.com/p/py-web-server/。项目的目的，是通过写作一个可用的http web server，学习服务器程序编写中的一些方法，以及http协议的细节。
 如同我在项目介绍中说的，项目遵循以下几个设计原则。
- []() []() []() []() []()  有兴趣的，可以也通过本文的介绍，不看代码写一个类似的东西。而后对比代码，找出设计上的异同和优劣。如果您也设计了一个，请告诉我，我很高兴能够得到大家的指正。</description>
+有兴趣的，可以也通过本文的介绍，不看代码写一个类似的东西。而后对比代码，找出设计上的异同和优劣。如果您也设计了一个，请告诉我，我很高兴能够得到大家的指正。</description>
     </item>
     
     <item>
@@ -95,11 +90,12 @@ ab -n 10000 -c 100 &amp;lt;http://localhost:8000/py-web-server&amp;gt;  服务�
       
       <guid>//blog.shell909090.org/blog/archives/272/</guid>
       <description>首先为 CA 创建一个 RSA 私用密钥
-openssl genrsa -des3 -out ca.key 1024  利用 CA 的 RSA 密钥创建一个自签署的 CA 证书（X.509结构）
-openssl req -new -x509 -days 3650 -key ca.key -out ca.crt  首先为你的 Apache 创建一个 RSA 私用密钥
-openssl genrsa -des3 -out server.key 1024  用 server.key 生成证书签署请求 CSR
-openssl req -new -key server.key -out server.csr  签署证书
-openssl x509 -md5 -days 3560 -req -signkey server.key -CAcreateserial -CAserial ca.crt -in server.csr -out server.crt  最后apache设置，将下面的参数改为</description>
+openssl genrsa -des3 -out ca.key 1024 利用 CA 的 RSA 密钥创建一个自签署的 CA 证书（X.509结构）
+openssl req -new -x509 -days 3650 -key ca.key -out ca.crt 首先为你的 Apache 创建一个 RSA 私用密钥
+openssl genrsa -des3 -out server.key 1024 用 server.key 生成证书签署请求 CSR
+openssl req -new -key server.key -out server.csr 签署证书
+openssl x509 -md5 -days 3560 -req -signkey server.key -CAcreateserial -CAserial ca.crt -in server.csr -out server.crt 最后apache设置，将下面的参数改为
+SSLCertificateFILE /usr/local/apache/conf/server.crt SSLCertificateKeyFile /usr/local/apache/conf/server.</description>
     </item>
     
     <item>
@@ -110,8 +106,8 @@ openssl x509 -md5 -days 3560 -req -signkey server.key -CAcreateserial -CAserial 
       <guid>//blog.shell909090.org/blog/archives/270/</guid>
       <description>make不通过
 出错如下
-clude/linux -I../common -DCPU=&amp;quot;i386&amp;quot; -DOS= -c -o ssl.o ssl.c In file included from /usr/include/openssl/ssl.h:179, from ssl.c:62: /usr/include/openssl/kssl.h:72:18: krb5.h: No such file or directory In file included from /usr/include/openssl/ssl.h:179, from ssl.c:62:  解决方法：
-export LOCALDEFS=&amp;quot;-DOPENSSL_NO_KRB5&amp;quot; export C_INCLUDE_PATH=&amp;quot;/usr/kerberos/include&amp;quot;  引用自http://www.thinkjam.org/meteor/archives/2005/04/as3resin.html</description>
+clude/linux -I../common -DCPU=&amp;quot;i386&amp;quot; -DOS= -c -o ssl.o ssl.c In file included from /usr/include/openssl/ssl.h:179, from ssl.c:62: /usr/include/openssl/kssl.h:72:18: krb5.h: No such file or directory In file included from /usr/include/openssl/ssl.h:179, from ssl.c:62: 解决方法：
+export LOCALDEFS=&amp;quot;-DOPENSSL_NO_KRB5&amp;quot; export C_INCLUDE_PATH=&amp;quot;/usr/kerberos/include&amp;quot; 引用自http://www.thinkjam.org/meteor/archives/2005/04/as3resin.html</description>
     </item>
     
     <item>
@@ -124,10 +120,10 @@ export LOCALDEFS=&amp;quot;-DOPENSSL_NO_KRB5&amp;quot; export C_INCLUDE_PATH=&am
 拿到resin，放在目标目录下面，然后tar -jxvf。完成后用ln -s做一个链接上去，使用resin的名字，这样可以方便的替换版本。然后在主目录下面运行./configure，make一下。一般来说，会出不少错误，最后生成一个libresin.so放到libexec下面，并且更新了resin的主执行程序。这个so很具有迷惑性，开始贝壳就被他骗了。这个so貌似是resin在本地平台下的加速程序，而不是嵌入到apache系列服务器中的整合插件。其中最大的差异是没有caucho_module导出符号，在apache加载的时候肯定会失败。
 跑到src/c/plugins/apache2下面运行make。可能会报错，可能没有。贝壳这里报了错，不过贝壳运行configure的时候没有加任何参数，也许加了参数就正常了。如果不正常，出错的代码可能分别是httpd.h找不到或者apr_time.h找不到。运行vi Makefile，看到有INCLUDE的目录吗？那里面要包含/usr/include/apache2和/usr/include/apr-0两个目录，没有就肯定出错。好了，修改然后重新make。得到的文件是mod_caucho.so。将它cp到$RESIN_HOME/libexec下面，这个动态库导出了caucho_module符号。
 在/etc/apache2/httpd.conf里面编辑一下，添加这个内容。
-LoadModule caucho_module /usr/resin/libexec/mod_caucho.so &amp;lt;IfModule mod_caucho.c&amp;gt; CauchoConfigFile ......../resin.conf &amp;lt;Location /caucho-status&amp;gt; SetHandler caucho-status &amp;lt;/Location&amp;gt; &amp;lt;/IfModule&amp;gt;  在/usr/resin/conf/resin.conf里面，添加这些内容。
-&amp;lt;doc-dir&amp;gt;/var/www/htdocs&amp;lt;/doc-dir&amp;gt; &amp;lt;war-dir id=&#39;/var/www/htdocs&#39;/&amp;gt;  在/etc/apache2/sites-available/default中可能要修改如下配置。
-DocumentRoot /var/www/htdocs/ &amp;lt;Directory /var/www/htdocs/&amp;gt;  然后注销
-RedirectMatch ^/$ /apache2-default/  OK，这样就基本完成了整个系统的整合配置。</description>
+LoadModule caucho_module /usr/resin/libexec/mod_caucho.so &amp;lt;IfModule mod_caucho.c&amp;gt; CauchoConfigFile ......../resin.conf &amp;lt;Location /caucho-status&amp;gt; SetHandler caucho-status &amp;lt;/Location&amp;gt; &amp;lt;/IfModule&amp;gt; 在/usr/resin/conf/resin.conf里面，添加这些内容。
+&amp;lt;doc-dir&amp;gt;/var/www/htdocs&amp;lt;/doc-dir&amp;gt; &amp;lt;war-dir id=&#39;/var/www/htdocs&#39;/&amp;gt; 在/etc/apache2/sites-available/default中可能要修改如下配置。
+DocumentRoot /var/www/htdocs/ &amp;lt;Directory /var/www/htdocs/&amp;gt; 然后注销
+RedirectMatch ^/$ /apache2-default/ OK，这样就基本完成了整个系统的整合配置。</description>
     </item>
     
   </channel>

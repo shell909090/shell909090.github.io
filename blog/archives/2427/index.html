@@ -2,24 +2,23 @@
 <html lang="en-us">
   <head>
     <title>nagios配置 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
@@ -35,14 +34,14 @@ nagios页面在nginx上的配置 这个过程比较繁琐，因为apache会自�
 首先，你需要安装php-fpm宿主进程，这个是nginx搭配php执行的最佳宿主。在nagios中有用到php，所以你需要php执行能力。
 其次，安装fcgiwrap这个包。这是cgi执行宿主，以fastcgi协议暴露。这里需要注意。如果你的nginx和nagios的宿主不在同一个设备上（例如像贝壳这样执行了虚拟化的），那么实际上只要在nagios的宿主上执行fcgiwrap即可。php-fpm和nginx可以执行在其他不同设备上，没有关系。只是前者必须有nagios的cgi代码，后两者必须有nagios的网页和php代码。而这三者又都在nagios3-cgi包里面。因此几台机器都需要安装nagios3-cgi包。
 最后，配置nginx。
-location /nagios3 { index index.html index.htm index.php; } location /nagios3/stylesheets { root /etc; }  第一个映射是nagios的基础目录，在根目录中，我其实配置了nagios3 -&gt; /usr/share/nagios3/htdocs/（debian中的链接位置）。第二个映射是样式表配置，我用系统缺省的。
-location ~ ^/nagios3/.*.php$ { include fastcgi_params; fastcgi_pass unix:/var/run/php5-fpm.sock; }  这个是nagios的php解析代码。我的php-fpm执行在同一台机器上，因此直接如此配置即可。
-location /cgi-bin/nagios3 { root /usr/lib; include fastcgi_params; fastcgi_param REMOTE_USER $remote_user; fastcgi_pass dev:port; }  最后是cgi暴露的配置。由于我的nagios宿主并不在web服务器上，因此fastcgi是个远程地址。而且注意REMOTE_USER，传递这个才能让远程认到你的用户basic auth。由于nagios的cgi通过这个工作，因此没有这个会直接导致对方始终认为你是无权限用户。
+location /nagios3 { index index.html index.htm index.php; } location /nagios3/stylesheets { root /etc; } 第一个映射是nagios的基础目录，在根目录中，我其实配置了nagios3 -&gt; /usr/share/nagios3/htdocs/（debian中的链接位置）。第二个映射是样式表配置，我用系统缺省的。
+location ~ ^/nagios3/.*.php$ { include fastcgi_params; fastcgi_pass unix:/var/run/php5-fpm.sock; } 这个是nagios的php解析代码。我的php-fpm执行在同一台机器上，因此直接如此配置即可。
+location /cgi-bin/nagios3 { root /usr/lib; include fastcgi_params; fastcgi_param REMOTE_USER $remote_user; fastcgi_pass dev:port; } 最后是cgi暴露的配置。由于我的nagios宿主并不在web服务器上，因此fastcgi是个远程地址。而且注意REMOTE_USER，传递这个才能让远程认到你的用户basic auth。由于nagios的cgi通过这个工作，因此没有这个会直接导致对方始终认为你是无权限用户。
 nagios的简单配置 我们首先认清一点，nagios并不负责管理机器的维护。他的设计目标是“可用性”。因此目标是否可达，服务是否可用，是nagios的关心重点。至于磁盘，负载，只是顺便监控而已。所以你可以看到，nagios并没有直接的插件来监控CPU或者内存。他只有snmp插件可以查询到这些数据。
 所以，我们开心一点。最低限度，我们将所有需要监控的设备和服务端口加入列表。当这些设备不可达时，nagios会发出告警（有邮件）。而如果运气好，我们是可以监控到这台机器是否有apt包需要升级，磁盘空间是否够的。作为建议，其实你只需要监控load和磁盘空间利用率就够了。其余的东西一般不大需要。当内存或者CPU发生问题的时候，你的query其实也拿不到返回。相对的，目标端口很快失去响应进而引发告警才是我们的预期。
 OK，在这个基础之上，让我们看看有什么可以配置的。
 服务器添加 首先，你可以定义一些机器。localhost_nagios2.cfg里面有例子，大致是这个样子。
-define host{ use generic-host ; Name of host template to use host_name host alias host address IP }  我建议你专门弄个文件来管理这些自己的设备，例如我这里叫hosts."/>
+define host{ use generic-host ; Name of host template to use host_name host alias host address IP } 我建议你专门弄个文件来管理这些自己的设备，例如我这里叫hosts."/>
 
     <meta property="og:title" content="nagios配置" />
 <meta property="og:description" content="nagios的结构 nagios的结构其实很简单，一个监视系统，一个web展现系统，一个remote服务器，没了。
@@ -55,16 +54,16 @@ nagios页面在nginx上的配置 这个过程比较繁琐，因为apache会自�
 首先，你需要安装php-fpm宿主进程，这个是nginx搭配php执行的最佳宿主。在nagios中有用到php，所以你需要php执行能力。
 其次，安装fcgiwrap这个包。这是cgi执行宿主，以fastcgi协议暴露。这里需要注意。如果你的nginx和nagios的宿主不在同一个设备上（例如像贝壳这样执行了虚拟化的），那么实际上只要在nagios的宿主上执行fcgiwrap即可。php-fpm和nginx可以执行在其他不同设备上，没有关系。只是前者必须有nagios的cgi代码，后两者必须有nagios的网页和php代码。而这三者又都在nagios3-cgi包里面。因此几台机器都需要安装nagios3-cgi包。
 最后，配置nginx。
-location /nagios3 { index index.html index.htm index.php; } location /nagios3/stylesheets { root /etc; }  第一个映射是nagios的基础目录，在根目录中，我其实配置了nagios3 -&gt; /usr/share/nagios3/htdocs/（debian中的链接位置）。第二个映射是样式表配置，我用系统缺省的。
-location ~ ^/nagios3/.*.php$ { include fastcgi_params; fastcgi_pass unix:/var/run/php5-fpm.sock; }  这个是nagios的php解析代码。我的php-fpm执行在同一台机器上，因此直接如此配置即可。
-location /cgi-bin/nagios3 { root /usr/lib; include fastcgi_params; fastcgi_param REMOTE_USER $remote_user; fastcgi_pass dev:port; }  最后是cgi暴露的配置。由于我的nagios宿主并不在web服务器上，因此fastcgi是个远程地址。而且注意REMOTE_USER，传递这个才能让远程认到你的用户basic auth。由于nagios的cgi通过这个工作，因此没有这个会直接导致对方始终认为你是无权限用户。
+location /nagios3 { index index.html index.htm index.php; } location /nagios3/stylesheets { root /etc; } 第一个映射是nagios的基础目录，在根目录中，我其实配置了nagios3 -&gt; /usr/share/nagios3/htdocs/（debian中的链接位置）。第二个映射是样式表配置，我用系统缺省的。
+location ~ ^/nagios3/.*.php$ { include fastcgi_params; fastcgi_pass unix:/var/run/php5-fpm.sock; } 这个是nagios的php解析代码。我的php-fpm执行在同一台机器上，因此直接如此配置即可。
+location /cgi-bin/nagios3 { root /usr/lib; include fastcgi_params; fastcgi_param REMOTE_USER $remote_user; fastcgi_pass dev:port; } 最后是cgi暴露的配置。由于我的nagios宿主并不在web服务器上，因此fastcgi是个远程地址。而且注意REMOTE_USER，传递这个才能让远程认到你的用户basic auth。由于nagios的cgi通过这个工作，因此没有这个会直接导致对方始终认为你是无权限用户。
 nagios的简单配置 我们首先认清一点，nagios并不负责管理机器的维护。他的设计目标是“可用性”。因此目标是否可达，服务是否可用，是nagios的关心重点。至于磁盘，负载，只是顺便监控而已。所以你可以看到，nagios并没有直接的插件来监控CPU或者内存。他只有snmp插件可以查询到这些数据。
 所以，我们开心一点。最低限度，我们将所有需要监控的设备和服务端口加入列表。当这些设备不可达时，nagios会发出告警（有邮件）。而如果运气好，我们是可以监控到这台机器是否有apt包需要升级，磁盘空间是否够的。作为建议，其实你只需要监控load和磁盘空间利用率就够了。其余的东西一般不大需要。当内存或者CPU发生问题的时候，你的query其实也拿不到返回。相对的，目标端口很快失去响应进而引发告警才是我们的预期。
 OK，在这个基础之上，让我们看看有什么可以配置的。
 服务器添加 首先，你可以定义一些机器。localhost_nagios2.cfg里面有例子，大致是这个样子。
-define host{ use generic-host ; Name of host template to use host_name host alias host address IP }  我建议你专门弄个文件来管理这些自己的设备，例如我这里叫hosts." />
+define host{ use generic-host ; Name of host template to use host_name host alias host address IP } 我建议你专门弄个文件来管理这些自己的设备，例如我这里叫hosts." />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2427/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2427/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2013-06-08T09:32:28+08:00" />
 <meta property="article:modified_time" content="2013-06-08T09:32:28+08:00" />
 
@@ -104,11 +103,8 @@ define host{ use generic-host ; Name of host template to use host_name host alia
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -118,127 +114,90 @@ define host{ use generic-host ; Name of host template to use host_name host alia
       <h1 class ="post-title">nagios配置</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Jun 8, 2013
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
-      
-
-<h1 id="nagios的结构">nagios的结构</h1>
-
+      <h1 id="nagios的结构">nagios的结构</h1>
 <p>nagios的结构其实很简单，一个监视系统，一个web展现系统，一个remote服务器，没了。</p>
-
 <p>监视系统是根本，在debian中，需要安装的包是nagios3。在安装这个包之后，会启动一个监视进程，负责检查所有的服务是否OK。不OK就触发事件。</p>
-
 <p>检查的时候，nagios会去调一些“插件”。这些插件其实都在/etc/nagios-plugins/config下面注册过的。每个插件配置都是name!v1!v2&hellip;的格式。在注册里面，可以看到这个command_name，对应一个command_line。你很容易看到这就将一个定义转换为了一个命令行。</p>
-
 <p>直接执行这个命令行，你可以看到一个标准输出。nagios就是解析这个标准输出，得到值是否在一个合法的范围内的。所以从原理上说，你可以自己写插件，对任何事情做nagios的监控。</p>
-
 <p>对于某些远程可以获得的信息，目标设备上可以什么都不动，例如ping连通性，或者是端口连通性等。而对于其他信息，例如磁盘空间剩余值，靠远程可能没法获得，就需要在目标设备上装nrpe，Nagios
 Remote Plugin Executor
 Server。在debian中，就是nagios-nrpe-server这个包。如果获得本地信息，不需要这个包。</p>
-
 <p>最后，cgi会将本地的信息暴露给web查询，这就构成了完整的nagios体系。在debian中，这是nagios3-cgi这个包。</p>
-
 <h1 id="nagios页面在nginx上的配置">nagios页面在nginx上的配置</h1>
-
 <p>这个过程比较繁琐，因为apache会自动配置，而nginx没有宿主进程，也没有cgi。因此实际上需要运行两个宿主进程。</p>
-
 <p>首先，你需要安装php-fpm宿主进程，这个是nginx搭配php执行的最佳宿主。在nagios中有用到php，所以你需要php执行能力。</p>
-
 <p>其次，安装fcgiwrap这个包。这是cgi执行宿主，以fastcgi协议暴露。这里需要注意。如果你的nginx和nagios的宿主不在同一个设备上（例如像贝壳这样执行了虚拟化的），那么实际上只要在nagios的宿主上执行fcgiwrap即可。php-fpm和nginx可以执行在其他不同设备上，没有关系。只是前者必须有nagios的cgi代码，后两者必须有nagios的网页和php代码。而这三者又都在nagios3-cgi包里面。因此几台机器都需要安装nagios3-cgi包。</p>
-
 <p>最后，配置nginx。</p>
-
 <pre><code>location /nagios3 {
-    index index.html index.htm index.php;
+	index index.html index.htm index.php;
 }
 location /nagios3/stylesheets {
-    root /etc;
+	root /etc;
 }
 </code></pre>
-
 <p>第一个映射是nagios的基础目录，在根目录中，我其实配置了nagios3 -&gt; /usr/share/nagios3/htdocs/（debian中的链接位置）。第二个映射是样式表配置，我用系统缺省的。</p>
-
 <pre><code>location ~ ^/nagios3/.*.php$ {
-    include fastcgi_params;
-    fastcgi_pass unix:/var/run/php5-fpm.sock;
+	include fastcgi_params;
+	fastcgi_pass unix:/var/run/php5-fpm.sock;
 }
 </code></pre>
-
 <p>这个是nagios的php解析代码。我的php-fpm执行在同一台机器上，因此直接如此配置即可。</p>
-
 <pre><code>location /cgi-bin/nagios3 {
-    root /usr/lib;
-    include fastcgi_params;
-    fastcgi_param REMOTE_USER $remote_user;
-    fastcgi_pass dev:port;
+	root /usr/lib;
+	include fastcgi_params;
+	fastcgi_param REMOTE_USER $remote_user;
+	fastcgi_pass dev:port;
 }
 </code></pre>
-
 <p>最后是cgi暴露的配置。由于我的nagios宿主并不在web服务器上，因此fastcgi是个远程地址。而且注意REMOTE_USER，传递这个才能让远程认到你的用户basic auth。由于nagios的cgi通过这个工作，因此没有这个会直接导致对方始终认为你是无权限用户。</p>
-
 <h1 id="nagios的简单配置">nagios的简单配置</h1>
-
 <p>我们首先认清一点，nagios并不负责管理机器的维护。他的设计目标是“可用性”。因此目标是否可达，服务是否可用，是nagios的关心重点。至于磁盘，负载，只是顺便监控而已。所以你可以看到，nagios并没有直接的插件来监控CPU或者内存。他只有snmp插件可以查询到这些数据。</p>
-
 <p>所以，我们开心一点。最低限度，我们将所有需要监控的设备和服务端口加入列表。当这些设备不可达时，nagios会发出告警（有邮件）。而如果运气好，我们是可以监控到这台机器是否有apt包需要升级，磁盘空间是否够的。作为建议，其实你只需要监控load和磁盘空间利用率就够了。其余的东西一般不大需要。当内存或者CPU发生问题的时候，你的query其实也拿不到返回。相对的，目标端口很快失去响应进而引发告警才是我们的预期。</p>
-
 <p>OK，在这个基础之上，让我们看看有什么可以配置的。</p>
-
 <h2 id="服务器添加">服务器添加</h2>
-
 <p>首先，你可以定义一些机器。localhost_nagios2.cfg里面有例子，大致是这个样子。</p>
-
 <pre><code>define host{
-    use generic-host ; Name of host template to use host_name
-    host alias host address IP
+	use generic-host ; Name of host template to use host_name
+	host alias host address IP
 }
 </code></pre>
-
 <p>我建议你专门弄个文件来管理这些自己的设备，例如我这里叫hosts.cfg。</p>
-
 <h2 id="基本服务">基本服务</h2>
-
 <p>hostgroups_nagios2.cfg中有很多服务器组，其中有一个ssh组和http组是内置的。如果你的设备有这两个最常见服务，你直接添加到这两个组里面，设备的对应服务就会被监控。</p>
-
 <p>其中有个debian组需要多说一下，这个组并没有服务，但是这个组定义了设备的类型为debian。你在web中可以看到logo。</p>
-
 <p>在services_nagios2.cfg里面，你还可以定义其他自己的常见服务，并且将服务器加入到hostgroups中。</p>
-
 <p>对于少数特殊的服务，就要在services里面开了。在hosts里面直接定义一些服务比较简单直接。</p>
-
 <h2 id="服务器定义">服务器定义</h2>
-
 <p>默认的generic-host是带有keep-alive的，服务器会通过ping来确认设备活着。如果你的目标上面为了安全加防火墙关了icmp，你又很难让目标机器对你的IP互信的话。那么开着ping会很烦。每天看着有个服务器挂了，其实没事。</p>
-
 <p>你可以在generic-host_nagios2.cfg里面，将标准配置复制一份，去掉下面一行。这个服务器就不会检查是否活着了。</p>
-
 <pre><code>check_command check-host-alive
 </code></pre>
-
 <h2 id="nrpe">nrpe</h2>
-
 <p>nrpe的配置比较繁琐，你首先要在nrpe服务的配置文件中，将需要执行的指令定义好。然后在nagios的服务这里用check_nrpe检查返回。</p>
-
 <h1 id="参考">参考</h1>
-
 <p><a href="http://www.linuxany.com/archives/2004.html">http://www.linuxany.com/archives/2004.html</a></p>
 
     </div>

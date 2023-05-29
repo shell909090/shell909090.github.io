@@ -2,24 +2,23 @@
 <html lang="en-us">
   <head>
     <title>python的性能问题 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
@@ -28,17 +27,17 @@ if (!doNotTrack) {
 <meta name="twitter:description" content="贝壳最近在一个朋友的网站上看到了关于SICP零钱兑换问题的python求解，使用了记忆机制，然后他给出了代码。然而他的代码计时上有点小问题，也没有用包装器(奇怪的是，有写)，而且python的栈深度有限。因此贝壳做了几个修改的版本，需要测试下性能，下面就是关于性能的几个问题和过程。
 本文详细论述了python语言下和C&#43;&#43;语言下使用各种方法测试代码性能的方法，以及粗略的关于两种语言不同算法性能对比。
 原始的python代码是这样的：
-def change_coins(money): first_denomination = { 1: 1, 2: 5, 3: 10, 4: 25, 5: 50, } def cc(amount, kinds_of_coins): if amount == 0: return 1 elif amount &lt; 0 or kinds_of_coins == 0: return 0 else: kind = cc(amount, kinds_of_coins - 1) kind &#43;= cc( amount-first_denomination[kinds_of_coins], kinds_of_coins) return kind print(&quot;change_coins return %s&quot; % cc(money, 5)) change_coins(300)  利用记忆原理包装后是这样的：
-def memoiza(fun): cache = {} def proc(*arg): if arg in cache: return cache[arg] else: x = fun(*arg) cache[arg] = x return x return proc def decorator_change_coins(money): first_denomination = { 1: 1, 2: 5, 3: 10, 4: 25, 5: 50, } @memoiza def cc(amount, kinds_of_coins): if amount == 0: return 1 elif amount &lt; 0 or kinds_of_coins == 0: return 0 else: kind = cc(amount, kinds_of_coins - 1) kind &#43;= cc( amount - first_denomination[kinds_of_coins], kinds_of_coins) return kind print(&quot;decorator_change_coins return %s&quot; % cc(money, 5)) decorator_change_coins(300)  不记忆，利用栈模拟递归展开是这样的："/>
+def change_coins(money): first_denomination = { 1: 1, 2: 5, 3: 10, 4: 25, 5: 50, } def cc(amount, kinds_of_coins): if amount == 0: return 1 elif amount &lt; 0 or kinds_of_coins == 0: return 0 else: kind = cc(amount, kinds_of_coins - 1) kind &#43;= cc( amount-first_denomination[kinds_of_coins], kinds_of_coins) return kind print(&quot;change_coins return %s&quot; % cc(money, 5)) change_coins(300) 利用记忆原理包装后是这样的：
+def memoiza(fun): cache = {} def proc(*arg): if arg in cache: return cache[arg] else: x = fun(*arg) cache[arg] = x return x return proc def decorator_change_coins(money): first_denomination = { 1: 1, 2: 5, 3: 10, 4: 25, 5: 50, } @memoiza def cc(amount, kinds_of_coins): if amount == 0: return 1 elif amount &lt; 0 or kinds_of_coins == 0: return 0 else: kind = cc(amount, kinds_of_coins - 1) kind &#43;= cc( amount - first_denomination[kinds_of_coins], kinds_of_coins) return kind print(&quot;decorator_change_coins return %s&quot; % cc(money, 5)) decorator_change_coins(300) 不记忆，利用栈模拟递归展开是这样的："/>
 
     <meta property="og:title" content="python的性能问题" />
 <meta property="og:description" content="贝壳最近在一个朋友的网站上看到了关于SICP零钱兑换问题的python求解，使用了记忆机制，然后他给出了代码。然而他的代码计时上有点小问题，也没有用包装器(奇怪的是，有写)，而且python的栈深度有限。因此贝壳做了几个修改的版本，需要测试下性能，下面就是关于性能的几个问题和过程。
 本文详细论述了python语言下和C&#43;&#43;语言下使用各种方法测试代码性能的方法，以及粗略的关于两种语言不同算法性能对比。
 原始的python代码是这样的：
-def change_coins(money): first_denomination = { 1: 1, 2: 5, 3: 10, 4: 25, 5: 50, } def cc(amount, kinds_of_coins): if amount == 0: return 1 elif amount &lt; 0 or kinds_of_coins == 0: return 0 else: kind = cc(amount, kinds_of_coins - 1) kind &#43;= cc( amount-first_denomination[kinds_of_coins], kinds_of_coins) return kind print(&quot;change_coins return %s&quot; % cc(money, 5)) change_coins(300)  利用记忆原理包装后是这样的：
-def memoiza(fun): cache = {} def proc(*arg): if arg in cache: return cache[arg] else: x = fun(*arg) cache[arg] = x return x return proc def decorator_change_coins(money): first_denomination = { 1: 1, 2: 5, 3: 10, 4: 25, 5: 50, } @memoiza def cc(amount, kinds_of_coins): if amount == 0: return 1 elif amount &lt; 0 or kinds_of_coins == 0: return 0 else: kind = cc(amount, kinds_of_coins - 1) kind &#43;= cc( amount - first_denomination[kinds_of_coins], kinds_of_coins) return kind print(&quot;decorator_change_coins return %s&quot; % cc(money, 5)) decorator_change_coins(300)  不记忆，利用栈模拟递归展开是这样的：" />
+def change_coins(money): first_denomination = { 1: 1, 2: 5, 3: 10, 4: 25, 5: 50, } def cc(amount, kinds_of_coins): if amount == 0: return 1 elif amount &lt; 0 or kinds_of_coins == 0: return 0 else: kind = cc(amount, kinds_of_coins - 1) kind &#43;= cc( amount-first_denomination[kinds_of_coins], kinds_of_coins) return kind print(&quot;change_coins return %s&quot; % cc(money, 5)) change_coins(300) 利用记忆原理包装后是这样的：
+def memoiza(fun): cache = {} def proc(*arg): if arg in cache: return cache[arg] else: x = fun(*arg) cache[arg] = x return x return proc def decorator_change_coins(money): first_denomination = { 1: 1, 2: 5, 3: 10, 4: 25, 5: 50, } @memoiza def cc(amount, kinds_of_coins): if amount == 0: return 1 elif amount &lt; 0 or kinds_of_coins == 0: return 0 else: kind = cc(amount, kinds_of_coins - 1) kind &#43;= cc( amount - first_denomination[kinds_of_coins], kinds_of_coins) return kind print(&quot;decorator_change_coins return %s&quot; % cc(money, 5)) decorator_change_coins(300) 不记忆，利用栈模拟递归展开是这样的：" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/31/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/31/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2008-08-27T22:18:00+08:00" />
 <meta property="article:modified_time" content="2008-08-27T22:18:00+08:00" />
 
@@ -78,11 +77,8 @@ def memoiza(fun): cache = {} def proc(*arg): if arg in cache: return cache[arg] 
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -92,129 +88,126 @@ def memoiza(fun): cache = {} def proc(*arg): if arg in cache: return cache[arg] 
       <h1 class ="post-title">python的性能问题</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Aug 27, 2008
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           4 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/c/">c</a><a class="tag" href="//blog.shell909090.org/tags/performance/">performance</a><a class="tag" href="//blog.shell909090.org/tags/program/">program</a><a class="tag" href="//blog.shell909090.org/tags/python/">python</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/c/">c</a>
+              <a class="tag" href="//blog.shell909090.org/tags/performance/">performance</a>
+              <a class="tag" href="//blog.shell909090.org/tags/program/">program</a>
+              <a class="tag" href="//blog.shell909090.org/tags/python/">python</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
       <p>贝壳最近在一个朋友的网站上看到了关于SICP零钱兑换问题的python求解，使用了记忆机制，然后他给出了代码。然而他的代码计时上有点小问题，也没有用包装器(奇怪的是，有写)，而且python的栈深度有限。因此贝壳做了几个修改的版本，需要测试下性能，下面就是关于性能的几个问题和过程。</p>
-
 <p>本文详细论述了python语言下和C++语言下使用各种方法测试代码性能的方法，以及粗略的关于两种语言不同算法性能对比。</p>
-
 <p>原始的python代码是这样的：</p>
-
 <pre><code>def change_coins(money):
-    first_denomination = {
-        1: 1,
-        2: 5,
-        3: 10,
-        4: 25,
-        5: 50,
-    }
+	first_denomination = {
+		1: 1,
+		2: 5,
+		3: 10,
+		4: 25,
+		5: 50,
+	}
 
-    def cc(amount, kinds_of_coins):
-        if amount == 0:
-            return 1
-        elif amount &lt; 0 or kinds_of_coins == 0:
-            return 0
-        else:
-            kind = cc(amount, kinds_of_coins - 1)
-            kind += cc(
-                amount-first_denomination[kinds_of_coins], kinds_of_coins)
-            return kind
+	def cc(amount, kinds_of_coins):
+		if amount == 0:
+			return 1
+		elif amount &lt; 0 or kinds_of_coins == 0:
+			return 0
+		else:
+			kind = cc(amount, kinds_of_coins - 1)
+			kind += cc(
+				amount-first_denomination[kinds_of_coins], kinds_of_coins)
+			return kind
 
-    print(&quot;change_coins return %s&quot; % cc(money, 5))
+	print(&quot;change_coins return %s&quot; % cc(money, 5))
 
 change_coins(300)
 </code></pre>
-
 <p>利用记忆原理包装后是这样的：</p>
-
 <pre><code>def memoiza(fun):
-    cache = {}
+	cache = {}
 
-    def proc(*arg):
-        if arg in cache:
-            return cache[arg]
-        else:
-            x = fun(*arg)
-            cache[arg] = x
-            return x
+	def proc(*arg):
+		if arg in cache:
+			return cache[arg]
+		else:
+			x = fun(*arg)
+			cache[arg] = x
+			return x
 
-    return proc
+	return proc
 
 
 def decorator_change_coins(money):
-    first_denomination = {
-        1: 1,
-        2: 5,
-        3: 10,
-        4: 25,
-        5: 50,
-    }
+	first_denomination = {
+		1: 1,
+		2: 5,
+		3: 10,
+		4: 25,
+		5: 50,
+	}
 
-    @memoiza
-    def cc(amount, kinds_of_coins):
-        if amount == 0:
-            return 1
-        elif amount &lt; 0 or kinds_of_coins == 0:
-            return 0
-        else:
-            kind = cc(amount, kinds_of_coins - 1)
-            kind += cc(
-                amount - first_denomination[kinds_of_coins], kinds_of_coins)
-            return kind
-    print(&quot;decorator_change_coins return %s&quot; % cc(money, 5))
+	@memoiza
+	def cc(amount, kinds_of_coins):
+		if amount == 0:
+			return 1
+		elif amount &lt; 0 or kinds_of_coins == 0:
+			return 0
+		else:
+			kind = cc(amount, kinds_of_coins - 1)
+			kind += cc(
+				amount - first_denomination[kinds_of_coins], kinds_of_coins)
+			return kind
+	print(&quot;decorator_change_coins return %s&quot; % cc(money, 5))
 
 decorator_change_coins(300)
 </code></pre>
-
 <p>不记忆，利用栈模拟递归展开是这样的：</p>
-
 <pre><code>def native_change_coins(money):
-    first_denomination = {
-        1: 1,
-        2: 5,
-        3: 10,
-        4: 25,
-        5: 50,
-    }
+	first_denomination = {
+		1: 1,
+		2: 5,
+		3: 10,
+		4: 25,
+		5: 50,
+	}
 
-    stack = [(money, 5)]
-    rslt = 0
-    while len(stack) &gt; 0:
-        param = stack.pop()
-        if param[0] == 0:
-            rslt += 1
-            continue
-        elif param[0] &lt; 0 or param[1] == 0:
-            continue
-        else:
-            stack.append((param[0], param[1] - 1))
-            stack.append((param[0] - first_denomination[param[1]], param[1]))
-            continue
-    print(&quot;native_change_coins return %s&quot; % rslt)
+	stack = [(money, 5)]
+	rslt = 0
+	while len(stack) &gt; 0:
+		param = stack.pop()
+		if param[0] == 0:
+			rslt += 1
+			continue
+		elif param[0] &lt; 0 or param[1] == 0:
+			continue
+		else:
+			stack.append((param[0], param[1] - 1))
+			stack.append((param[0] - first_denomination[param[1]], param[1]))
+			continue
+	print(&quot;native_change_coins return %s&quot; % rslt)
 
 native_change_coins(300)
 </code></pre>
-
 <p>贝壳主要需要测试上面三个代码的执行效率和瓶颈，所以贝壳用的主代码是这样的：</p>
-
 <pre><code>import time
 import timeit
 import profile
@@ -223,22 +216,20 @@ def test_func(f):
     f(300)
 
 if __name__ == &quot;__main__&quot;:
-    t = timeit.Timer(&quot;test_func (change_coins)&quot;, &quot;from __main__ import *&quot;)
-    print min(t.repeat (5, 1))
+	t = timeit.Timer(&quot;test_func (change_coins)&quot;, &quot;from __main__ import *&quot;)
+	print min(t.repeat (5, 1))
 
-    t = timeit.Timer(&quot;test_func (decorator_change_coins)&quot;, &quot;from __main__ import *&quot;)
-    print min(t.repeat (5, 1))
+	t = timeit.Timer(&quot;test_func (decorator_change_coins)&quot;, &quot;from __main__ import *&quot;)
+	print min(t.repeat (5, 1))
 
-    t = timeit.Timer(&quot;test_func (native_change_coins)&quot;, &quot;from __main__ import *&quot;)
-    print min(t.repeat (5, 1))
+	t = timeit.Timer(&quot;test_func (native_change_coins)&quot;, &quot;from __main__ import *&quot;)
+	print min(t.repeat (5, 1))
 
-    profile.run(&quot;test_func (change_coins)&quot;)
-    profile.run(&quot;test_func (decorator_change_coins)&quot;)
-    profile.run(&quot;test_func (native_change_coins)&quot;)
+	profile.run(&quot;test_func (change_coins)&quot;)
+	profile.run(&quot;test_func (decorator_change_coins)&quot;)
+	profile.run(&quot;test_func (native_change_coins)&quot;)
 </code></pre>
-
 <p>下面是部分结果：</p>
-
 <pre><code>change_coins return 9590
 1.22809910198
 decorator_change_coins return 9590
@@ -246,9 +237,7 @@ decorator_change_coins return 9590
 native_change_coins return 9590
 2.69215193551
 </code></pre>
-
 <p>以上是时间测试结果，使用timeit模块来测试运行时间，重复5次，取最小值。具体原理可以看dive into python，详细请看上面的代码。从结果中我们可以看到，使用记忆技术后，性能提升了500多倍，这是符合规律的。然而使用了集合模拟栈之后，性能大幅下降。下面我们看看为什么。</p>
-
 <pre><code>change_coins return 9590
 1292596 function calls (6 primitive calls) in 13.591 CPU seconds
 
@@ -296,96 +285,90 @@ ncalls  tottime  percall  cumtime  percall filename:lineno(function)
 0    0.000             0.000          profile:0(profiler)
 1    0.000    0.000   38.798   38.798 profile:0(test_func (native_change_coins))
 </code></pre>
-
 <p>以上是白盒分析结果，使用profile测试，主要分析函数的调用花费。具体可以参考 <a href="http://www.sqlite.com.cn/MySqlite/11/480.Html">http://www.sqlite.com.cn/MySqlite/11/480.Html</a> 。从上面的报表中，我们可以看出，最初的函数执行时间全消耗在了cc上。而记忆后，则是proc和cc基本对半，有的时候has_key测试也花点时间。这表示cc花费的时间大幅下降，记忆技术则花了比较多的时间。而模拟的呢？大部分时间都花在了 append,len,pop这三个函数上！这说明原始集合的效率严重制约了模拟效率。如果要提升性能的话，使用其他的集合吧。</p>
-
 <p>另外贝壳又用C++写了一个，如下：</p>
-
 <pre><code>const int coin_map[] = {
-    1, 5, 10, 25, 50
+	1, 5, 10, 25, 50
 };
 
 const int coin_count = 5;
 
 int cc (int amount, int kind_of_coins)
 {
-    if (amount == 0)
-        return 1;
-    if (amount &lt; 0 || kind_of_coins &lt;= 0)
-        return 0;
-    return cc (amount, kind_of_coins - 1) + cc (amount - coin_map[kind_of_coins - 1], kind_of_coins);
+	if (amount == 0)
+		return 1;
+	if (amount &lt; 0 || kind_of_coins &lt;= 0)
+		return 0;
+	return cc (amount, kind_of_coins - 1) + cc (amount - coin_map[kind_of_coins - 1], kind_of_coins);
 }
 
 int dd (int amount, int kind_of_coins)
 {
-    if (amount == 0)
-        return 1;
-    if (amount &lt; 0 || kind_of_coins &lt;= 0)
-        return 0;
-    int rslt = 0;
-    for (int i = 0; i &lt;= amount / coin_map[kind_of_coins - 1]; ++i)
-        rslt += dd (amount - i * coin_map[kind_of_coins - 1], kind_of_coins - 1);
-    return rslt;
+	if (amount == 0)
+		return 1;
+	if (amount &lt; 0 || kind_of_coins &lt;= 0)
+		return 0;
+	int rslt = 0;
+	for (int i = 0; i &lt;= amount / coin_map[kind_of_coins - 1]; ++i)
+		rslt += dd (amount - i * coin_map[kind_of_coins - 1], kind_of_coins - 1);
+	return rslt;
 }
 
 class keys{
 public:
-    int amount;
-    int kind_of_coins;
-    keys (int amount_p, int kind_of_coins_p):
-        amount(amount_p), kind_of_coins(kind_of_coins_p)
-        {}
-    bool operator == (const keys &amp;amp; k) const{
-        return (amount == k.amount &amp;amp;&amp;amp; kind_of_coins == k.kind_of_coins);
-    }
-    bool operator &lt; (const keys &amp;amp; k) const{
-        if (kind_of_coins == k.kind_of_coins)
-            return amount &lt; k.amount;
-        return kind_of_coins &lt; k.kind_of_coins;
-    }
+	int amount;
+	int kind_of_coins;
+	keys (int amount_p, int kind_of_coins_p):
+		amount(amount_p), kind_of_coins(kind_of_coins_p)
+		{}
+	bool operator == (const keys &amp;amp; k) const{
+		return (amount == k.amount &amp;amp;&amp;amp; kind_of_coins == k.kind_of_coins);
+	}
+	bool operator &lt; (const keys &amp;amp; k) const{
+		if (kind_of_coins == k.kind_of_coins)
+			return amount &lt; k.amount;
+		return kind_of_coins &lt; k.kind_of_coins;
+	}
 };
 
 map mCache;
 
 int ee (int amount, int kind_of_coins)
 {
-    if (amount == 0)
-        return 1;
-    if (amount &lt; 0 || kind_of_coins &lt;= 0)
-        return 0;
-    keys k (amount, kind_of_coins);
-    map::iterator iter = mCache.find(k);
-    if (iter != mCache.end ())
-        return iter-&gt;second;
-    int rslt = 0;
-    for (int i = 0; i &lt;= amount / coin_map[kind_of_coins - 1]; ++i)
-        rslt += dd (amount - i * coin_map[kind_of_coins - 1], kind_of_coins - 1);
-    mCache.insert(pair(k, rslt));
-    return rslt;
+	if (amount == 0)
+		return 1;
+	if (amount &lt; 0 || kind_of_coins &lt;= 0)
+		return 0;
+	keys k (amount, kind_of_coins);
+	map::iterator iter = mCache.find(k);
+	if (iter != mCache.end ())
+		return iter-&gt;second;
+	int rslt = 0;
+	for (int i = 0; i &lt;= amount / coin_map[kind_of_coins - 1]; ++i)
+		rslt += dd (amount - i * coin_map[kind_of_coins - 1], kind_of_coins - 1);
+	mCache.insert(pair(k, rslt));
+	return rslt;
 }
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-    const int loop_times = 300;
-    clock_t s = clock();
-    printf (&quot;kind of coins: %dn&quot;, cc (loop_times, coin_count));
-    printf (&quot;times:%dn&quot;, clock () - s);
+	const int loop_times = 300;
+	clock_t s = clock();
+	printf (&quot;kind of coins: %dn&quot;, cc (loop_times, coin_count));
+	printf (&quot;times:%dn&quot;, clock () - s);
 
-    s = clock();
-    printf (&quot;kind of coins: %dn&quot;, dd (loop_times, coin_count));
-    printf (&quot;times:%dn&quot;, clock () - s);
+	s = clock();
+	printf (&quot;kind of coins: %dn&quot;, dd (loop_times, coin_count));
+	printf (&quot;times:%dn&quot;, clock () - s);
 
-    s = clock();
-    printf (&quot;kind of coins: %dn&quot;, ee (loop_times, coin_count));
-    printf (&quot;times:%dn&quot;, clock () - s);
-    return 0;
+	s = clock();
+	printf (&quot;kind of coins: %dn&quot;, ee (loop_times, coin_count));
+	printf (&quot;times:%dn&quot;, clock () - s);
+	return 0;
 }
 </code></pre>
-
 <p>注意到主函数中，使用的是clock来计量时间。如果C++下要做白盒性能测试就比较麻烦，需要用精确计时函数和宏。需要的可以单独和我联系。下面是部分计算结果，cc的和ee的，没有dd的。</p>
-
 <p>300的计算结果</p>
-
 <pre><code>kind of coins: 9590
 times:62
 kind of coins: 9590
@@ -396,13 +379,9 @@ times:15953
 kind of coins: 801451
 times:11000
 </code></pre>
-
 <p>单位，ms。</p>
-
 <p>原生的效率差异是20倍，用了缓存后性能只有略略上升？！反而是python比较快？</p>
-
 <p>看来C++下的map效率也不高，要用hash_map才好。</p>
-
 <p>倒是栈长度好很多，贝壳估计是131072次调用，大约是16384分。</p>
 
     </div>

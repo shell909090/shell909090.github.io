@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>lvm on Shell&#39;s Home</title>
@@ -7,11 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Thu, 23 Jan 2014 11:04:34 +0800</lastBuildDate>
-    
-	<atom:link href="//blog.shell909090.org/tags/lvm/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Thu, 23 Jan 2014 11:04:34 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/lvm/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>lxc和virtualbox和物理机的简单性能测试和对比</title>
       <link>//blog.shell909090.org/blog/archives/2542/</link>
@@ -21,11 +17,11 @@
       <description>说明 测试各种虚拟化系统下的虚拟机性能。
 测试使用sysbench。
 CPU采用如下指令测试。
-sysbench --test=cpu --num-threads=2 --cpu-max-prime=50000 run  文件IO采用如下指令测试。
-sysbench --test=fileio --file-total-size=10G prepare sysbench --test=fileio --file-total-size=10G --file-test-mode=rndrw --init-rng=on --max-time=300 --max-requests=0 run  内存采用如下指令测试。
-sysbench --test=memory --num-threads=2 --memory-access-mode=seq run sysbench --test=memory --num-threads=2 --memory-access-mode=rnd run  线程采用如下指令。
-sysbench --test=threads --num-threads=2 run sysbench --test=mutex --num-threads=2 --mutex-locks=1000000 run  裸硬盘测试采用如下指令。
-hdparm -tT &amp;lt;dev&amp;gt;  物理机上有三个文件系统，ext4/xfs/btrfs，前两者仅做fileio测试以对比性能。
+sysbench --test=cpu --num-threads=2 --cpu-max-prime=50000 run 文件IO采用如下指令测试。
+sysbench --test=fileio --file-total-size=10G prepare sysbench --test=fileio --file-total-size=10G --file-test-mode=rndrw --init-rng=on --max-time=300 --max-requests=0 run 内存采用如下指令测试。
+sysbench --test=memory --num-threads=2 --memory-access-mode=seq run sysbench --test=memory --num-threads=2 --memory-access-mode=rnd run 线程采用如下指令。
+sysbench --test=threads --num-threads=2 run sysbench --test=mutex --num-threads=2 --mutex-locks=1000000 run 裸硬盘测试采用如下指令。
+hdparm -tT &amp;lt;dev&amp;gt; 物理机上有三个文件系统，ext4/xfs/btrfs，前两者仅做fileio测试以对比性能。
 另外做两个特殊文件系统对比，aufs带复制和aufs无复制。前者在只读层上准备好测试文件，而后进行随机读写测试。其中就附带了文件复制开销。后者在aufs建立后初始化测试文件，因此消除了文件复制开销。
 所有测试都是测试数次，取最高者（因为低者可能受到各种干扰）。一般是2-3次。
 物理机是一台DELL Intel 64位桌面系统，支持硬件虚拟化，有4G内存。系统采用debian jessie，测试于2014年1月17日-20日执行，内核3.12.6-2 (2013-12-29) x86_64。
@@ -47,7 +43,7 @@ hdparm -tT &amp;lt;dev&amp;gt;  物理机上有三个文件系统，ext4/xfs/btr
 lvm的结构是pv -&amp;gt; pg -&amp;gt; lv，也就是物理卷-&amp;gt;物理组-&amp;gt;逻辑卷。物理的各个分区首先被组织成物理组，再被划分为逻辑卷。这样设计是因为可能有多个磁盘上的空间，被划分为多个逻辑卷。在不改变逻辑的情况下，lvm的默认组织构型是raid0的。不过这对我不是个问题，我只有一个磁盘。
 首先创建pv，使用命令pvcreate，没什么好多说的。然后是产生vg，使用vgcreate main /dev/sda7，之所以需要main，是因为需要一个vg命名。而后我们需要从这个vg中创建出一个lv来，执行指令lvcreate -L150G -nhome main，设定lv的名字叫做main-home，大小150G。此时在/dev/mapper/main-home，就产生了一个设备文件，大小150G，可以当作/dev/sda1之类的设备一样使用。不过，这个设备没有经过任何格式化过程，所以还需要mkfs.ext3 /dev/mapper/main-home。在这个指令后，我很习惯的跟了一个tune2fs -c 0 /dev/mapper/main-home来关闭重启检测。使用blkid，发现这个设备已经成功创立，并且有了ID。把UUID复制进（这时就知道X的好处了，console下面比较绕路）/etc/fstab，并且修改刚刚被注释掉的/home一行，更改UUID和分区格式。贝壳当时光记得复制，忘记改分区格式，导致系统进不去。不过也不困难，修改/etc/fstab后mount -a一下就可以了。
 此时我们已经建立了有效的逻辑卷，并且正确配置。下面要创建一个交换分区，并且挂上去。废话不多说，lvcreate -L6G -nswap main，mkswap /dev/mapper/main-swap。而后一样blkid和vi /etc/fstab。系统就基本配置好了。验证一下看看。
-shell-deb:\~\# pvs PV VG Fmt Attr PSize PFree /dev/sda7 main lvm2 a- 229.19g 73.19g shell-deb:\~\# lvs LV VG Attr LSize Origin Snap% Move Log Copy% Convert home main -wi-ao 150.00g swap main -wi-ao 6.00g  而后就是新系统的启用过程，首先要退出X，注销shell用户的所有进程，然后以root删除/home下的所有数据。如果不删除的话，重启后，这里的数据无法访问，变成垃圾。而后重启，就可以看到正确结果了。不过还不要着急登入shell。首先执行rsync -av /mnt/mdisk/sync/home /home，将备份同步回去。这样我们登入shell的时候就可以看到有效的定制化界面了。另外一点细节是，mdisk使用了ntfs格式，所以导致数据恢复后属性混乱。使用find . -type d -exec chmod 755 {} ;和find .</description>
+shell-deb:\~\# pvs PV VG Fmt Attr PSize PFree /dev/sda7 main lvm2 a- 229.19g 73.19g shell-deb:\~\# lvs LV VG Attr LSize Origin Snap% Move Log Copy% Convert home main -wi-ao 150.00g swap main -wi-ao 6.00g 而后就是新系统的启用过程，首先要退出X，注销shell用户的所有进程，然后以root删除/home下的所有数据。如果不删除的话，重启后，这里的数据无法访问，变成垃圾。而后重启，就可以看到正确结果了。不过还不要着急登入shell。首先执行rsync -av /mnt/mdisk/sync/home /home，将备份同步回去。这样我们登入shell的时候就可以看到有效的定制化界面了。另外一点细节是，mdisk使用了ntfs格式，所以导致数据恢复后属性混乱。使用find . -type d -exec chmod 755 {} ;和find .</description>
     </item>
     
   </channel>

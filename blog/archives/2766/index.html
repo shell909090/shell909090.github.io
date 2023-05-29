@@ -2,24 +2,23 @@
 <html lang="en-us">
   <head>
     <title>hosts配错导致ldap安装问题一例 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
@@ -32,7 +31,7 @@ ubuntu下，最简单的方法是修改/etc/hosts，添加自己的域名，例�
 方法1 绕过。
 怎么绕？
 经过检查发现，basedn这些东西，其实都是从debconf里读的，而不是直接来自系统。所以我可以重设debconf来修改配置。
-echo slapd slapd/domain string shell909090.org | debconf-set-selections echo slapd shared/organization string shell909090.org | debconf-set-selections  然后再安装，就全部正确了。
+echo slapd slapd/domain string shell909090.org | debconf-set-selections echo slapd shared/organization string shell909090.org | debconf-set-selections 然后再安装，就全部正确了。
 方法2 为什么？
 检查同样发现了本质的原因。如果debconf里没有配，则去读取hostname -d。在一台机器上，这个配置没事，另一台就不行。
 经过我反复测试，发现原因是这样的。
@@ -48,7 +47,7 @@ ubuntu下，最简单的方法是修改/etc/hosts，添加自己的域名，例�
 方法1 绕过。
 怎么绕？
 经过检查发现，basedn这些东西，其实都是从debconf里读的，而不是直接来自系统。所以我可以重设debconf来修改配置。
-echo slapd slapd/domain string shell909090.org | debconf-set-selections echo slapd shared/organization string shell909090.org | debconf-set-selections  然后再安装，就全部正确了。
+echo slapd slapd/domain string shell909090.org | debconf-set-selections echo slapd shared/organization string shell909090.org | debconf-set-selections 然后再安装，就全部正确了。
 方法2 为什么？
 检查同样发现了本质的原因。如果debconf里没有配，则去读取hostname -d。在一台机器上，这个配置没事，另一台就不行。
 经过我反复测试，发现原因是这样的。
@@ -56,7 +55,7 @@ hostname -d读取域名的时候，是寻找/etc/hostname对应的域名作为�
 而出问题的那台机器，/etc/hosts配置和没问题的那台严格一致。包括机器编号！
 谁TM抄卷子把名字也抄了？" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2766/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2766/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2015-06-30T00:00:00+00:00" />
 <meta property="article:modified_time" content="2015-06-30T00:00:00+00:00" />
 
@@ -96,11 +95,8 @@ hostname -d读取域名的时候，是寻找/etc/hostname对应的域名作为�
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -110,57 +106,40 @@ hostname -d读取域名的时候，是寻找/etc/hostname对应的域名作为�
       <h1 class ="post-title">hosts配错导致ldap安装问题一例</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Jun 30, 2015
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div></div>
+        </div>
+      </div>
     </header>
     <div class="post-content">
-      
-
-<p>不废话了，要装ldap。</p>
-
+      <p>不废话了，要装ldap。</p>
 <p>ubuntu下，最简单的方法是修改/etc/hosts，添加自己的域名，例如ldap.shell909090.org。然后安装包的时候，就会使用dc=shell909090,dc=org作为basedn。里面自动添加一个admin。</p>
-
 <p>结果在某机器上，丫硬是一直管自己叫nodomain。</p>
-
 <p>当然，内容可以后改。但是很麻烦。先要删除原始的，添加新的。还有一堆杂七杂八的问题。关键是，为啥TMD这么简单一个问题我居然搞不定。</p>
-
 <h1 id="方法1">方法1</h1>
-
 <p>绕过。</p>
-
 <p>怎么绕？</p>
-
 <p>经过检查发现，basedn这些东西，其实都是从debconf里读的，而不是直接来自系统。所以我可以重设debconf来修改配置。</p>
-
 <pre><code>echo slapd slapd/domain string shell909090.org | debconf-set-selections
 echo slapd shared/organization string shell909090.org | debconf-set-selections
 </code></pre>
-
 <p>然后再安装，就全部正确了。</p>
-
 <h1 id="方法2">方法2</h1>
-
 <p>为什么？</p>
-
 <p>检查同样发现了本质的原因。如果debconf里没有配，则去读取hostname -d。在一台机器上，这个配置没事，另一台就不行。</p>
-
 <p>经过我反复测试，发现原因是这样的。</p>
-
 <p>hostname -d读取域名的时候，是寻找/etc/hostname对应的域名作为行尾的那行，而不是127.0.0.1所在的那行。。。</p>
-
 <p>而出问题的那台机器，/etc/hosts配置和没问题的那台严格一致。包括机器编号！</p>
-
 <p>谁TM抄卷子把名字也抄了？</p>
 
     </div>

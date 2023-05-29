@@ -2,35 +2,34 @@
 <html lang="en-us">
   <head>
     <title>linux迁移和全盘加密 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
     <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="linux迁移和全盘加密"/>
 <meta name="twitter:description" content="系统迁移 迁移挺容易的。启一个live系统。把原始系统照样子mount好，把目标盘分区分好，照着你想的样子mount起来。然后对拷数据就行。我踩的一个坑是忘了清理.cache下面各种文件，结果这里复制了好久，我差点以为死机了。Ctrl&#43;C断下来，干掉.cache后速度就快多了。等全部复制好了。umount掉原始系统，然后chroot到新系统里面去，加上以下四个文件系统。[1]（其实应该是两个在chroot前做，两个在chroot后做）
-$ sudo mount --bind /dev /mnt/dev $ sudo mount --bind /run /mnt/run $ sudo chroot /mnt/ $ sudo mount --types=proc proc /proc $ sudo mount --types=sysfs sys /sys  然后你就可以在目标系统里跑grub系列指令了。grub-install和update-grub2一下。整个迁移就完事了。
+$ sudo mount --bind /dev /mnt/dev $ sudo mount --bind /run /mnt/run $ sudo chroot /mnt/ $ sudo mount --types=proc proc /proc $ sudo mount --types=sysfs sys /sys 然后你就可以在目标系统里跑grub系列指令了。grub-install和update-grub2一下。整个迁移就完事了。
 EFI 其实grub的重点压根不在install上，而在于引导链条的工作机制。以我这种情况来说，我建议别犹豫，直接上UEFI。让你感觉到无比的轻松。
 EFI的引导机制是从磁盘上的EFI分区开始的。当然，你的分区表需要是GPT格式的。EFI分区使用fat32文件格式，里面会存放N个代码文件。以前主板不认识文件系统，所以只能取磁盘第一个分区加载到7C00的方式来引导。因此通行做法是在这个扇区里放一个启动管理器，由管理器加载系统。现在BIOS可以认识文件系统了，因此完全没必要这么干。一个盘上有两个系统的话，就在EFI分区里放两个启动代码，再在BIOS里写两个引导表项。启动的时候你选哪个表项，BIOS就会读取对应的文件来继续引导。如果你有多个盘，每个盘又有多个系统，也可以这么干，只是会形成多个启动表项。所以引导管理就变得非常简单。
 对于这样一种结构，我有以下建议：
- 基础系统不要跨设备。什么意思呢？以linux为例，你的root和boot最好在一个物理硬盘上，EFI也就安装在这个物理盘上。为什么呢？因为如果这三个跨了多个盘，任意一个盘的丢失都会导致系统挂掉。这等于把问题放大了一倍。如果你做了lvm和分区镜像。也请确保不是任意一个盘丢失你的系统就无法启动了。至于后续mount的各种分区，那到无所谓。反正你有一个基础的系统了，很多问题比较容易修复。 如果你有多个系统，最好的办法是一个系统一块硬盘。最多是每个盘切出一块来，给对方系统作为数据盘。这个方案同时适配传统引导和EFI引导。这么做的话，每个系统都认为自己独占了硬盘。他的分区结构之类的，是接近最简单设计的。 主系统最好用SSD。应用程序和主系统的读取频率高，写入频率低，但是对速率的影响很明显。因此我建议你把系统放SSD。数据盘反倒是用不用SSD自己斟酌。 但是如果你接受了建议3，那么在多数情况下，你就不大会接受建议2了。因为你不大会买两块SSD，一个系统一块。多半就是两个系统合用一个SSD，然后看要不要上HD了。这种情况下，请保证存储空间是够的。一个系统请最少保留不少于500G的存储空间。当然，Linux其实有个4G存储就能玩的很欢快了。500G是保证你在机器上开虚拟机/docker，也能流畅执行无需腾挪。Windows的系统就要保留100G。打游戏的话，500G只多不少。所以SSD要玩双系统，最低就是1T起。现在价格，600上下吧，不算太贵。你的时间比这点空间费用值钱。  引导链条 然后我们说回引导链条。对于EFI，我们一般会用grub-efi-amd64。这个模块装到EFI上的过程大约是，grub-install把EFI有关的文件都复制到/boot/efi/下面去。所以你首先需要把磁盘的对应EFI分区挂载到这里。然后grub-install会写BIOS的表项，产生一项指向那个位置的项目。你可以用efibootmgr -v查看。
+基础系统不要跨设备。什么意思呢？以linux为例，你的root和boot最好在一个物理硬盘上，EFI也就安装在这个物理盘上。为什么呢？因为如果这三个跨了多个盘，任意一个盘的丢失都会导致系统挂掉。这等于把问题放大了一倍。如果你做了lvm和分区镜像。也请确保不是任意一个盘丢失你的系统就无法启动了。至于后续mount的各种分区，那到无所谓。反正你有一个基础的系统了，很多问题比较容易修复。 如果你有多个系统，最好的办法是一个系统一块硬盘。最多是每个盘切出一块来，给对方系统作为数据盘。这个方案同时适配传统引导和EFI引导。这么做的话，每个系统都认为自己独占了硬盘。他的分区结构之类的，是接近最简单设计的。 主系统最好用SSD。应用程序和主系统的读取频率高，写入频率低，但是对速率的影响很明显。因此我建议你把系统放SSD。数据盘反倒是用不用SSD自己斟酌。 但是如果你接受了建议3，那么在多数情况下，你就不大会接受建议2了。因为你不大会买两块SSD，一个系统一块。多半就是两个系统合用一个SSD，然后看要不要上HD了。这种情况下，请保证存储空间是够的。一个系统请最少保留不少于500G的存储空间。当然，Linux其实有个4G存储就能玩的很欢快了。500G是保证你在机器上开虚拟机/docker，也能流畅执行无需腾挪。Windows的系统就要保留100G。打游戏的话，500G只多不少。所以SSD要玩双系统，最低就是1T起。现在价格，600上下吧，不算太贵。你的时间比这点空间费用值钱。 引导链条 然后我们说回引导链条。对于EFI，我们一般会用grub-efi-amd64。这个模块装到EFI上的过程大约是，grub-install把EFI有关的文件都复制到/boot/efi/下面去。所以你首先需要把磁盘的对应EFI分区挂载到这里。然后grub-install会写BIOS的表项，产生一项指向那个位置的项目。你可以用efibootmgr -v查看。
 随后，grug-install会更新efi下面的grub.cfg配置。里面有一个search.fs_uuid uuid root。这个指向boot或者root，用来指明efi模块被引导之后，接着读哪个盘。请检查这是不是你想要的boot/root。如果是的话，下面的配置会驱动它去读grub/grub.cfg文件，来进入grub stage 2。
 grub stage 2的主要配置很复杂。Debian的配置其实是从系统里生成的。主要的生成配置在/etc/default/grub。一般你不需要改动这个文件。但是你需要看一下生成出来的/boot/grub/grub.cfg文件对不对。最主要就是search后面跟的uuid，是不是boot的uuid。如果是的话，grub2就能找到kernel。然后再看kernel启动参数后面的root参数，uuid是不是root。
 如果都没问题的话，你开机应该能进入系统了。
@@ -38,15 +37,15 @@ grub stage 2的主要配置很复杂。Debian的配置其实是从系统里生�
 全盘加密 最后我们要说到全盘加密的设计实现。全盘加密的困难处是需要先加载kernel才能解密全盘。但是kernel又在盘里面。所以完整的全盘加密需要grub支持luks。
 我没搞那么极端。我分出来一个/boot分区未加密，这样就不需要grub支持luks了。当然，原则上来说，这样攻击者可以插入恶意代码来获得我的密码。例如替换掉我的kernel，插入他的恶意代码。但是EFI方案的问题之一就是，EFI上面的引导代码本身就是可被攻击的。攻击EFI引导代码和攻击kernel没有区别（除了会稍微麻烦一点）。要防御这个需要构成可信引导链条。要构成可信链条，需要EFI验证引导代码被签署，引导代码验证kernel被签署，etc。但是linux本身就不鸟这个思路，因为没一家BIOS接受grub的签署。大家一般也就是支持微软的签署，苹果自己支持自己的签署。所以，这东西没有任何开放意义，只能在微软自家里面用。用Linux的话就别被人近身吧。就这样。
 kernel这层呢，需要安装cryptsetup-initramfs。这个工具会把/etc/crypttab这个文件打包到initrd.img里去。这个文件最新的版本不是很好解开。你需要先下载binwalk这个工具，然后查到里面的gzip数据块。再用cpio这个工具解开这个数据块[2]。大致指令是。
-binwalk initrd.img-5.10.0-9-amd64 mkdir initrd cd initrd dd if=../initrd.img-5.10.0-9-amd64 bs=N skip=1 | gunzip | cpio -idmv  然后你就能看到crypttab这个文件的存在。"/>
+binwalk initrd.img-5.10.0-9-amd64 mkdir initrd cd initrd dd if=../initrd.img-5.10.0-9-amd64 bs=N skip=1 | gunzip | cpio -idmv 然后你就能看到crypttab这个文件的存在。"/>
 
     <meta property="og:title" content="linux迁移和全盘加密" />
 <meta property="og:description" content="系统迁移 迁移挺容易的。启一个live系统。把原始系统照样子mount好，把目标盘分区分好，照着你想的样子mount起来。然后对拷数据就行。我踩的一个坑是忘了清理.cache下面各种文件，结果这里复制了好久，我差点以为死机了。Ctrl&#43;C断下来，干掉.cache后速度就快多了。等全部复制好了。umount掉原始系统，然后chroot到新系统里面去，加上以下四个文件系统。[1]（其实应该是两个在chroot前做，两个在chroot后做）
-$ sudo mount --bind /dev /mnt/dev $ sudo mount --bind /run /mnt/run $ sudo chroot /mnt/ $ sudo mount --types=proc proc /proc $ sudo mount --types=sysfs sys /sys  然后你就可以在目标系统里跑grub系列指令了。grub-install和update-grub2一下。整个迁移就完事了。
+$ sudo mount --bind /dev /mnt/dev $ sudo mount --bind /run /mnt/run $ sudo chroot /mnt/ $ sudo mount --types=proc proc /proc $ sudo mount --types=sysfs sys /sys 然后你就可以在目标系统里跑grub系列指令了。grub-install和update-grub2一下。整个迁移就完事了。
 EFI 其实grub的重点压根不在install上，而在于引导链条的工作机制。以我这种情况来说，我建议别犹豫，直接上UEFI。让你感觉到无比的轻松。
 EFI的引导机制是从磁盘上的EFI分区开始的。当然，你的分区表需要是GPT格式的。EFI分区使用fat32文件格式，里面会存放N个代码文件。以前主板不认识文件系统，所以只能取磁盘第一个分区加载到7C00的方式来引导。因此通行做法是在这个扇区里放一个启动管理器，由管理器加载系统。现在BIOS可以认识文件系统了，因此完全没必要这么干。一个盘上有两个系统的话，就在EFI分区里放两个启动代码，再在BIOS里写两个引导表项。启动的时候你选哪个表项，BIOS就会读取对应的文件来继续引导。如果你有多个盘，每个盘又有多个系统，也可以这么干，只是会形成多个启动表项。所以引导管理就变得非常简单。
 对于这样一种结构，我有以下建议：
- 基础系统不要跨设备。什么意思呢？以linux为例，你的root和boot最好在一个物理硬盘上，EFI也就安装在这个物理盘上。为什么呢？因为如果这三个跨了多个盘，任意一个盘的丢失都会导致系统挂掉。这等于把问题放大了一倍。如果你做了lvm和分区镜像。也请确保不是任意一个盘丢失你的系统就无法启动了。至于后续mount的各种分区，那到无所谓。反正你有一个基础的系统了，很多问题比较容易修复。 如果你有多个系统，最好的办法是一个系统一块硬盘。最多是每个盘切出一块来，给对方系统作为数据盘。这个方案同时适配传统引导和EFI引导。这么做的话，每个系统都认为自己独占了硬盘。他的分区结构之类的，是接近最简单设计的。 主系统最好用SSD。应用程序和主系统的读取频率高，写入频率低，但是对速率的影响很明显。因此我建议你把系统放SSD。数据盘反倒是用不用SSD自己斟酌。 但是如果你接受了建议3，那么在多数情况下，你就不大会接受建议2了。因为你不大会买两块SSD，一个系统一块。多半就是两个系统合用一个SSD，然后看要不要上HD了。这种情况下，请保证存储空间是够的。一个系统请最少保留不少于500G的存储空间。当然，Linux其实有个4G存储就能玩的很欢快了。500G是保证你在机器上开虚拟机/docker，也能流畅执行无需腾挪。Windows的系统就要保留100G。打游戏的话，500G只多不少。所以SSD要玩双系统，最低就是1T起。现在价格，600上下吧，不算太贵。你的时间比这点空间费用值钱。  引导链条 然后我们说回引导链条。对于EFI，我们一般会用grub-efi-amd64。这个模块装到EFI上的过程大约是，grub-install把EFI有关的文件都复制到/boot/efi/下面去。所以你首先需要把磁盘的对应EFI分区挂载到这里。然后grub-install会写BIOS的表项，产生一项指向那个位置的项目。你可以用efibootmgr -v查看。
+基础系统不要跨设备。什么意思呢？以linux为例，你的root和boot最好在一个物理硬盘上，EFI也就安装在这个物理盘上。为什么呢？因为如果这三个跨了多个盘，任意一个盘的丢失都会导致系统挂掉。这等于把问题放大了一倍。如果你做了lvm和分区镜像。也请确保不是任意一个盘丢失你的系统就无法启动了。至于后续mount的各种分区，那到无所谓。反正你有一个基础的系统了，很多问题比较容易修复。 如果你有多个系统，最好的办法是一个系统一块硬盘。最多是每个盘切出一块来，给对方系统作为数据盘。这个方案同时适配传统引导和EFI引导。这么做的话，每个系统都认为自己独占了硬盘。他的分区结构之类的，是接近最简单设计的。 主系统最好用SSD。应用程序和主系统的读取频率高，写入频率低，但是对速率的影响很明显。因此我建议你把系统放SSD。数据盘反倒是用不用SSD自己斟酌。 但是如果你接受了建议3，那么在多数情况下，你就不大会接受建议2了。因为你不大会买两块SSD，一个系统一块。多半就是两个系统合用一个SSD，然后看要不要上HD了。这种情况下，请保证存储空间是够的。一个系统请最少保留不少于500G的存储空间。当然，Linux其实有个4G存储就能玩的很欢快了。500G是保证你在机器上开虚拟机/docker，也能流畅执行无需腾挪。Windows的系统就要保留100G。打游戏的话，500G只多不少。所以SSD要玩双系统，最低就是1T起。现在价格，600上下吧，不算太贵。你的时间比这点空间费用值钱。 引导链条 然后我们说回引导链条。对于EFI，我们一般会用grub-efi-amd64。这个模块装到EFI上的过程大约是，grub-install把EFI有关的文件都复制到/boot/efi/下面去。所以你首先需要把磁盘的对应EFI分区挂载到这里。然后grub-install会写BIOS的表项，产生一项指向那个位置的项目。你可以用efibootmgr -v查看。
 随后，grug-install会更新efi下面的grub.cfg配置。里面有一个search.fs_uuid uuid root。这个指向boot或者root，用来指明efi模块被引导之后，接着读哪个盘。请检查这是不是你想要的boot/root。如果是的话，下面的配置会驱动它去读grub/grub.cfg文件，来进入grub stage 2。
 grub stage 2的主要配置很复杂。Debian的配置其实是从系统里生成的。主要的生成配置在/etc/default/grub。一般你不需要改动这个文件。但是你需要看一下生成出来的/boot/grub/grub.cfg文件对不对。最主要就是search后面跟的uuid，是不是boot的uuid。如果是的话，grub2就能找到kernel。然后再看kernel启动参数后面的root参数，uuid是不是root。
 如果都没问题的话，你开机应该能进入系统了。
@@ -54,9 +53,9 @@ grub stage 2的主要配置很复杂。Debian的配置其实是从系统里生�
 全盘加密 最后我们要说到全盘加密的设计实现。全盘加密的困难处是需要先加载kernel才能解密全盘。但是kernel又在盘里面。所以完整的全盘加密需要grub支持luks。
 我没搞那么极端。我分出来一个/boot分区未加密，这样就不需要grub支持luks了。当然，原则上来说，这样攻击者可以插入恶意代码来获得我的密码。例如替换掉我的kernel，插入他的恶意代码。但是EFI方案的问题之一就是，EFI上面的引导代码本身就是可被攻击的。攻击EFI引导代码和攻击kernel没有区别（除了会稍微麻烦一点）。要防御这个需要构成可信引导链条。要构成可信链条，需要EFI验证引导代码被签署，引导代码验证kernel被签署，etc。但是linux本身就不鸟这个思路，因为没一家BIOS接受grub的签署。大家一般也就是支持微软的签署，苹果自己支持自己的签署。所以，这东西没有任何开放意义，只能在微软自家里面用。用Linux的话就别被人近身吧。就这样。
 kernel这层呢，需要安装cryptsetup-initramfs。这个工具会把/etc/crypttab这个文件打包到initrd.img里去。这个文件最新的版本不是很好解开。你需要先下载binwalk这个工具，然后查到里面的gzip数据块。再用cpio这个工具解开这个数据块[2]。大致指令是。
-binwalk initrd.img-5.10.0-9-amd64 mkdir initrd cd initrd dd if=../initrd.img-5.10.0-9-amd64 bs=N skip=1 | gunzip | cpio -idmv  然后你就能看到crypttab这个文件的存在。" />
+binwalk initrd.img-5.10.0-9-amd64 mkdir initrd cd initrd dd if=../initrd.img-5.10.0-9-amd64 bs=N skip=1 | gunzip | cpio -idmv 然后你就能看到crypttab这个文件的存在。" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2881/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2881/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2021-12-16T23:02:51+08:00" />
 <meta property="article:modified_time" content="2021-12-16T23:02:51+08:00" />
 
@@ -96,11 +95,8 @@ binwalk initrd.img-5.10.0-9-amd64 mkdir initrd cd initrd dd if=../initrd.img-5.1
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -110,83 +106,57 @@ binwalk initrd.img-5.10.0-9-amd64 mkdir initrd cd initrd dd if=../initrd.img-5.1
       <h1 class ="post-title">linux迁移和全盘加密</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Dec 16, 2021
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div></div>
+        </div>
+      </div>
     </header>
     <div class="post-content">
-      
-
-<h1 id="系统迁移">系统迁移</h1>
-
+      <h1 id="系统迁移">系统迁移</h1>
 <p>迁移挺容易的。启一个live系统。把原始系统照样子mount好，把目标盘分区分好，照着你想的样子mount起来。然后对拷数据就行。我踩的一个坑是忘了清理<code>.cache</code>下面各种文件，结果这里复制了好久，我差点以为死机了。Ctrl+C断下来，干掉<code>.cache</code>后速度就快多了。等全部复制好了。umount掉原始系统，然后chroot到新系统里面去，加上以下四个文件系统。[1]（其实应该是两个在chroot前做，两个在chroot后做）</p>
-
-<pre><code>$ sudo mount --bind /dev /mnt/dev
+<pre tabindex="0"><code>$ sudo mount --bind /dev /mnt/dev
 $ sudo mount --bind /run /mnt/run
 $ sudo chroot /mnt/
 $ sudo mount --types=proc proc /proc
 $ sudo mount --types=sysfs sys /sys
-</code></pre>
-
-<p>然后你就可以在目标系统里跑grub系列指令了。<code>grub-install</code>和<code>update-grub2</code>一下。整个迁移就完事了。</p>
-
+</code></pre><p>然后你就可以在目标系统里跑grub系列指令了。<code>grub-install</code>和<code>update-grub2</code>一下。整个迁移就完事了。</p>
 <h1 id="efi">EFI</h1>
-
 <p>其实grub的重点压根不在install上，而在于引导链条的工作机制。以我这种情况来说，我建议别犹豫，直接上UEFI。让你感觉到无比的轻松。</p>
-
 <p>EFI的引导机制是从磁盘上的EFI分区开始的。当然，你的分区表需要是GPT格式的。EFI分区使用fat32文件格式，里面会存放N个代码文件。以前主板不认识文件系统，所以只能取磁盘第一个分区加载到7C00的方式来引导。因此通行做法是在这个扇区里放一个启动管理器，由管理器加载系统。现在BIOS可以认识文件系统了，因此完全没必要这么干。一个盘上有两个系统的话，就在EFI分区里放两个启动代码，再在BIOS里写两个引导表项。启动的时候你选哪个表项，BIOS就会读取对应的文件来继续引导。如果你有多个盘，每个盘又有多个系统，也可以这么干，只是会形成多个启动表项。所以引导管理就变得非常简单。</p>
-
 <p>对于这样一种结构，我有以下建议：</p>
-
 <ol>
 <li>基础系统不要跨设备。什么意思呢？以linux为例，你的root和boot最好在一个物理硬盘上，EFI也就安装在这个物理盘上。为什么呢？因为如果这三个跨了多个盘，任意一个盘的丢失都会导致系统挂掉。这等于把问题放大了一倍。如果你做了lvm和分区镜像。也请确保不是任意一个盘丢失你的系统就无法启动了。至于后续mount的各种分区，那到无所谓。反正你有一个基础的系统了，很多问题比较容易修复。</li>
 <li>如果你有多个系统，最好的办法是一个系统一块硬盘。最多是每个盘切出一块来，给对方系统作为数据盘。这个方案同时适配传统引导和EFI引导。这么做的话，每个系统都认为自己独占了硬盘。他的分区结构之类的，是接近最简单设计的。</li>
 <li>主系统最好用SSD。应用程序和主系统的读取频率高，写入频率低，但是对速率的影响很明显。因此我建议你把系统放SSD。数据盘反倒是用不用SSD自己斟酌。</li>
 <li>但是如果你接受了建议3，那么在多数情况下，你就不大会接受建议2了。因为你不大会买两块SSD，一个系统一块。多半就是两个系统合用一个SSD，然后看要不要上HD了。这种情况下，请保证存储空间是够的。一个系统请最少保留不少于500G的存储空间。当然，Linux其实有个4G存储就能玩的很欢快了。500G是保证你在机器上开虚拟机/docker，也能流畅执行无需腾挪。Windows的系统就要保留100G。打游戏的话，500G只多不少。所以SSD要玩双系统，最低就是1T起。现在价格，600上下吧，不算太贵。你的时间比这点空间费用值钱。</li>
 </ol>
-
 <h1 id="引导链条">引导链条</h1>
-
 <p>然后我们说回引导链条。对于EFI，我们一般会用<code>grub-efi-amd64</code>。这个模块装到EFI上的过程大约是，<code>grub-install</code>把EFI有关的文件都复制到<code>/boot/efi/</code>下面去。所以你首先需要把磁盘的对应EFI分区挂载到这里。然后<code>grub-install</code>会写BIOS的表项，产生一项指向那个位置的项目。你可以用<code>efibootmgr -v</code>查看。</p>
-
 <p>随后，<code>grug-install</code>会更新efi下面的<code>grub.cfg</code>配置。里面有一个<code>search.fs_uuid uuid root</code>。这个指向boot或者root，用来指明efi模块被引导之后，接着读哪个盘。请检查这是不是你想要的boot/root。如果是的话，下面的配置会驱动它去读<code>grub/grub.cfg</code>文件，来进入grub stage 2。</p>
-
 <p>grub stage 2的主要配置很复杂。Debian的配置其实是从系统里生成的。主要的生成配置在<code>/etc/default/grub</code>。一般你不需要改动这个文件。但是你需要看一下生成出来的<code>/boot/grub/grub.cfg</code>文件对不对。最主要就是search后面跟的uuid，是不是boot的uuid。如果是的话，grub2就能找到kernel。然后再看kernel启动参数后面的root参数，uuid是不是root。</p>
-
 <p>如果都没问题的话，你开机应该能进入系统了。</p>
-
 <p>这一圈核对对一般系统是没必要的。一般系统没这个烦恼。但如果是系统迁移，原系统又没有umount掉就开始装新系统的grub。一个搞不好哪里的uuid就指向了原来的。然后就怎么引导就是回到老系统上去。此时就要沿着引导链条排查。</p>
-
 <h1 id="全盘加密">全盘加密</h1>
-
 <p>最后我们要说到全盘加密的设计实现。全盘加密的困难处是需要先加载kernel才能解密全盘。但是kernel又在盘里面。所以完整的全盘加密需要grub支持luks。</p>
-
 <p>我没搞那么极端。我分出来一个/boot分区未加密，这样就不需要grub支持luks了。当然，原则上来说，这样攻击者可以插入恶意代码来获得我的密码。例如替换掉我的kernel，插入他的恶意代码。但是EFI方案的问题之一就是，EFI上面的引导代码本身就是可被攻击的。攻击EFI引导代码和攻击kernel没有区别（除了会稍微麻烦一点）。要防御这个需要构成可信引导链条。要构成可信链条，需要EFI验证引导代码被签署，引导代码验证kernel被签署，etc。但是linux本身就不鸟这个思路，因为没一家BIOS接受grub的签署。大家一般也就是支持微软的签署，苹果自己支持自己的签署。所以，这东西没有任何开放意义，只能在微软自家里面用。用Linux的话就别被人近身吧。就这样。</p>
-
 <p>kernel这层呢，需要安装<code>cryptsetup-initramfs</code>。这个工具会把<code>/etc/crypttab</code>这个文件打包到initrd.img里去。这个文件最新的版本不是很好解开。你需要先下载binwalk这个工具，然后查到里面的gzip数据块。再用cpio这个工具解开这个数据块[2]。大致指令是。</p>
-
-<pre><code>binwalk initrd.img-5.10.0-9-amd64
+<pre tabindex="0"><code>binwalk initrd.img-5.10.0-9-amd64
 mkdir initrd
 cd initrd
 dd if=../initrd.img-5.10.0-9-amd64 bs=N skip=1 | gunzip | cpio -idmv
-</code></pre>
-
-<p>然后你就能看到crypttab这个文件的存在。</p>
-
+</code></pre><p>然后你就能看到crypttab这个文件的存在。</p>
 <p>这个文件要包括几个内容。target name, source device, key file, options。这个文件的目地其实是驱动cryptsetup来干活。精确的说就是<code>cryptsetup luksOpen &lt;source device&gt; &lt;target name&gt;</code>，后面可以跟key file或options。注意这个写法现在应当写作<code>cryptsetup open --type luks &lt;source device&gt; &lt;target name&gt;</code>。在cryptsetup干完之后，会产生一个<code>/dev/mapper/&lt;target name&gt;</code>的设备文件。随后你就可以在<code>/etc/fstab</code>里面随便mount这个文件了。</p>
-
 <h1 id="引用">引用</h1>
-
 <ol>
 <li><a href="https://devconnected.com/how-to-encrypt-root-filesystem-on-linux/">How To Encrypt Root Filesystem on Linux</a></li>
 <li><a href="https://unix.stackexchange.com/questions/163346/why-is-it-that-my-initrd-only-has-one-directory-namely-kernel">Why is it that my initrd only has one directory, namely, &lsquo;kernel&rsquo;?</a></li>

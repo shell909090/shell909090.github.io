@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>sche on Shell&#39;s Home</title>
@@ -7,11 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Wed, 03 Mar 2010 16:51:00 +0800</lastBuildDate>
-    
-	<atom:link href="//blog.shell909090.org/tags/sche/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Wed, 03 Mar 2010 16:51:00 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/sche/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>emacs配置系统</title>
       <link>//blog.shell909090.org/blog/archives/100/</link>
@@ -21,11 +17,11 @@
       <description>emacs是个超级复杂的程序，尤其在配置问题上。贝壳的emacs要跨越三个环境。环境一，WindowsXP+Emacs23。环境二，Debian Testing + Xfce4。环境三，CentOS + Ssh。而整个的操作方式，个性设定需要保持一致。因此，引出一个问题。配置如何设置，跨平台，同步。
 首先解决配置的同步问题，贝壳建立了一个svn仓库，用于存储该配置系统。然后在各个系统中co出这个仓库，当有需要调整时ci就可以保持同步了。Linux下可以使用ln连接文件，Windows下比较麻烦点，NTFS格式(大多都是NTFS格式了吧)可以去sysinternals下一个叫做junction的工具，以建立目录的工具链接，当然，.emacs文件只能手工拷贝了。
 然后是配置的切分问题，如果只有一个文件，即使使用了版本控制，意义也不大。同时，将配置切割成不同的部分，控制载入过程，也可以跨平台和加速。以下是贝壳的.emacs文件。
-;; .emacs profile, written by shell.xu ;; load other set (add-to-list &#39;load-path &amp;quot;~/.emacs.d/&amp;quot;) (add-to-list &#39;load-path &amp;quot;~/.emacs.d/auto-complete/&amp;quot;) (add-to-list &#39;load-path &amp;quot;~/.emacs.d/plugins/&amp;quot;) (load &amp;quot;emacs-setup&amp;quot;) (load &amp;quot;emacs-redef&amp;quot;) (load &amp;quot;emacs-plugin&amp;quot;) (cond ((not (boundp &#39;initial-window-system)) (load &amp;quot;emacs-console&amp;quot;)) ((memq initial-window-system &#39;(x w32)) (cond ((memq system-type &#39;(windows-nt cygwin)) (load &amp;quot;emacs-win&amp;quot;)) ((memq system-type &#39;(gnu/linux)) (load &amp;quot;emacs-linux&amp;quot;))))) (load &amp;quot;emacs-keymap&amp;quot;)  从上可以看出，我们先设定了.emacs.d作为默认加载路径——大多数文件都是放在这里。plugins是各种第三方程序的安装路径，这样这些程序就无需在各个平台上各自安装一次。而auto-complete单独拆出来纯粹是因为文件太多了。而后，我们加载了setup，这个文件内定义了emacs的基本配置，redef文件内定义了各种自定义函数和变量，plugin内控制了需要加载的各个插件和配置。
+;; .emacs profile, written by shell.xu ;; load other set (add-to-list &#39;load-path &amp;quot;~/.emacs.d/&amp;quot;) (add-to-list &#39;load-path &amp;quot;~/.emacs.d/auto-complete/&amp;quot;) (add-to-list &#39;load-path &amp;quot;~/.emacs.d/plugins/&amp;quot;) (load &amp;quot;emacs-setup&amp;quot;) (load &amp;quot;emacs-redef&amp;quot;) (load &amp;quot;emacs-plugin&amp;quot;) (cond ((not (boundp &#39;initial-window-system)) (load &amp;quot;emacs-console&amp;quot;)) ((memq initial-window-system &#39;(x w32)) (cond ((memq system-type &#39;(windows-nt cygwin)) (load &amp;quot;emacs-win&amp;quot;)) ((memq system-type &#39;(gnu/linux)) (load &amp;quot;emacs-linux&amp;quot;))))) (load &amp;quot;emacs-keymap&amp;quot;) 从上可以看出，我们先设定了.emacs.d作为默认加载路径——大多数文件都是放在这里。plugins是各种第三方程序的安装路径，这样这些程序就无需在各个平台上各自安装一次。而auto-complete单独拆出来纯粹是因为文件太多了。而后，我们加载了setup，这个文件内定义了emacs的基本配置，redef文件内定义了各种自定义函数和变量，plugin内控制了需要加载的各个插件和配置。
 下面就有点复杂，简单来说，设定无Windows系统的时候加载emacs-console文件，有Windows的情况下，在windows下加载emacs-win，在linux下加载emacs-linux。这是实现跨平台设置的核心。
 最后是keymap，经过上面复杂的设定，按键设置是统一的。
 setup文件就不细说了，大家按照自己的习惯设定就好。下面我说几个redef中定义的函数。
-(defun switch-windows-buffer () (interactive) (let ((this-buffer (window-buffer))) (switch-to-buffer (window-buffer (next-window (selected-window)))) (switch-to-buffer-other-window this-buffer) (other-window 1)))  这个函数的目标是用热键交换两个窗口的位置。如果你经常用C-x 3分栏，并且在两者间跳来跳去的话，有的时候往往希望两者的位置换一下。通常都是C-x b切换当前的窗口，然后C-x o切到隔壁去再换。这个太繁琐了。</description>
+(defun switch-windows-buffer () (interactive) (let ((this-buffer (window-buffer))) (switch-to-buffer (window-buffer (next-window (selected-window)))) (switch-to-buffer-other-window this-buffer) (other-window 1))) 这个函数的目标是用热键交换两个窗口的位置。如果你经常用C-x 3分栏，并且在两者间跳来跳去的话，有的时候往往希望两者的位置换一下。通常都是C-x b切换当前的窗口，然后C-x o切到隔壁去再换。这个太繁琐了。</description>
     </item>
     
   </channel>

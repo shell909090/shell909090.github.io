@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>filesystem on Shell&#39;s Home</title>
@@ -7,21 +7,19 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Mon, 15 Aug 2011 10:07:03 +0800</lastBuildDate>
-    
-	<atom:link href="//blog.shell909090.org/tags/filesystem/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Mon, 15 Aug 2011 10:07:03 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/filesystem/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>linux下的文件系统选型</title>
       <link>//blog.shell909090.org/blog/archives/1883/</link>
       <pubDate>Mon, 15 Aug 2011 10:07:03 +0800</pubDate>
       
       <guid>//blog.shell909090.org/blog/archives/1883/</guid>
-      <description>贝壳原来一直认为文件系统可以随便选，结果最近吃了两次苦头。一个是btrfs对虚拟机支持不良，另一个是特定情况下xfs性能比ext3高20倍。痛定思痛，打算列一下文件系统选型的方法和依据，欢迎拍砖。 
- 下面我列一下纳入参考的文件系统，当然，ntfs就不要出来搞基了，玩嵌入式/光盘live之类的朋友也不要来凑热闹了阿。btrfs(简介), ext3, ext4(简介), jfs(简介), reiserfs, xfs，基本涵盖常用文件系统。最下面加入ntfs和zfs对比，实际上不参与选型。以下进制换算为1024，大小依次为KB,MB,GB,TB,PB,EB,ZB。
-
- --------------- --------- -------------- ---------------- ---------------- ---------------- ------------------ --------- ----------- ------------ 文件系统 btrfs ext3 ext4 jfs reiserfs reiser4 xfs ntfs zfs 最大卷容量 16 EB 32 TB 1 EB (16TB) 32 PB 16 TB ?? 16 EB 256 TB 16 EB 最大文件容量 16 EB 2 TB 16 TB 4 PB 8TB 8TB 8 EB 16 TB 16 EB 目录结构 B tree list/tree list/Htree B tree B+ tree dancing B\* tree B+ tree B+ tree hash table 文件分配 extents bitmap/table bitmap/extents bitmap/extents bitmap ?</description>
+      <description>贝壳原来一直认为文件系统可以随便选，结果最近吃了两次苦头。一个是btrfs对虚拟机支持不良，另一个是特定情况下xfs性能比ext3高20倍。痛定思痛，打算列一下文件系统选型的方法和依据，欢迎拍砖。
+下面我列一下纳入参考的文件系统，当然，ntfs就不要出来搞基了，玩嵌入式/光盘live之类的朋友也不要来凑热闹了阿。btrfs(简介), ext3, ext4(简介), jfs(简介), reiserfs, xfs，基本涵盖常用文件系统。最下面加入ntfs和zfs对比，实际上不参与选型。以下进制换算为1024，大小依次为KB,MB,GB,TB,PB,EB,ZB。
+文件系统 btrfs ext3 ext4 jfs reiserfs reiser4 xfs ntfs zfs
+最大卷容量 16 EB 32 TB 1 EB (16TB) 32 PB 16 TB ?? 16 EB 256 TB 16 EB
+最大文件容量 16 EB 2 TB 16 TB 4 PB 8TB 8TB 8 EB 16 TB 16 EB
+目录结构 B tree list/tree list/Htree B tree B+ tree dancing B* tree B+ tree B+ tree hash table</description>
     </item>
     
     <item>
@@ -37,7 +35,7 @@
 这个业务情况的核心问题是，对同一个文件，在一段时间内会写多次。正常情况下，这些数据会堆积在系统的Dirty区域，直到dirty_ratio的限制到了，或者dirty_expire_centisecs的限制到了，系统才会开始强制写出。否则每隔dirty_writeback_centisecs的时间，系统会写出部分数据。虽然理论上说，一个磁盘的IOPS应当在每秒600-700次上下，但是实际上并不是只能支撑150个并发的。然而设计的好的文件系统，支撑并发数会比设计的差的文件系统明显高。
 这个测试环境和实际的另一个差异，在于读写平衡上。这个业务和大部分的日志系统是很类似的（其实我们系统的业务就是日志）。但是商业用日志系统的特点是在高散碎文件写的情况下还有高随机读。这点在测试中并没有涉及，测试是单纯的大量文件追加写，请读者自行注意。
 首先是400进程，间隔1秒写出，测试对象是ext3, ext4, ntfs, jfs, xfs, btrfs，基本涵盖常见的linux文件系统。ntfs不属于常见的linux文件系统，本轮只做对比测试。首先可以看到的是ext3糟糕到吐血的表现，磁盘写io只有500上下，400个进程最多有280多个在排队。这货不是坑爹呢么。ext4的结果就正常很多，io在100上下，开始的高开是因为前一个测试的静默时间不足。jfs的结果很搞笑，队列load倒是不高，可是Dirty缓存一路上涨，让人不禁怀疑到底有没有写出。xfs的表现中规中矩，半分钟一次写出，和贝壳机器上的dirty_expire_centisecs相吻合，Dirty也不高。btrfs和jfs的情况类似。
-上一轮中，筛掉ntfs和ext3，其余进行1000进程，间隔1秒写出测试。测试对象是，ext4, [jfs](), xfs, btrfs。这次ext4也表现出了坑爹的一面，Dirty最高250M多，load也明显超过了2，写io大约在700上下，就此出局。btrfs这次的Dirty控制还不错，在25-40M徘徊，写出也不多。看似情况略好，实际上暴露出btrfs一个非常大的弱点，突发响应能力差，服务不稳定。一次集中写出，就能让排队数飞速上涨。jfs虽然曲线类似，但是队列可从没有超过1。综合考虑，后期平均load也明显超过了2，一样出局。xfs还是一样中规中矩的写出，非常低的io和Dirty。jfs依然是高速上涨的Dirty和超级低的io。
+上一轮中，筛掉ntfs和ext3，其余进行1000进程，间隔1秒写出测试。测试对象是，ext4, jfs, xfs, btrfs。这次ext4也表现出了坑爹的一面，Dirty最高250M多，load也明显超过了2，写io大约在700上下，就此出局。btrfs这次的Dirty控制还不错，在25-40M徘徊，写出也不多。看似情况略好，实际上暴露出btrfs一个非常大的弱点，突发响应能力差，服务不稳定。一次集中写出，就能让排队数飞速上涨。jfs虽然曲线类似，但是队列可从没有超过1。综合考虑，后期平均load也明显超过了2，一样出局。xfs还是一样中规中矩的写出，非常低的io和Dirty。jfs依然是高速上涨的Dirty和超级低的io。
 测试到这里，只剩下了jfs和xfs。jfs的特点是大量使用Dirty，平均io很低。xfs的特点是Dirty使用比较低，io输出比较平均。不过我们的服务器内核对xfs的支持比jfs要好一点，所以使用xfs已成定局，下面就是测试两者的极限性能而已。
 第三轮的参数是2000个进程，0.75秒间隔。jfs和xfs表现非常相似，让贝壳差点怀疑自己是测试错了东西。核查之后，确实没有。所以就下狠手，测试了一把高压力的。
 第四轮的参数是3200个进程，0.5秒间隔。从绝对量上，大概是基础测试的16倍。在jfs测试开始后的三分钟内，load上升到了60，宣告出局，因此贝壳这里没有jfs的图像。但是xfs还是完美的顶住了压力。Dirty已经上涨到了80-120M，平均io也到了300。然而平均load只有1左右，最高load也只有1.4。

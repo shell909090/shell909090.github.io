@@ -2,24 +2,23 @@
 <html lang="en-us">
   <head>
     <title>重分区和lvm // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
@@ -32,7 +31,7 @@ if (!doNotTrack) {
 lvm的结构是pv -&gt; pg -&gt; lv，也就是物理卷-&gt;物理组-&gt;逻辑卷。物理的各个分区首先被组织成物理组，再被划分为逻辑卷。这样设计是因为可能有多个磁盘上的空间，被划分为多个逻辑卷。在不改变逻辑的情况下，lvm的默认组织构型是raid0的。不过这对我不是个问题，我只有一个磁盘。
 首先创建pv，使用命令pvcreate，没什么好多说的。然后是产生vg，使用vgcreate main /dev/sda7，之所以需要main，是因为需要一个vg命名。而后我们需要从这个vg中创建出一个lv来，执行指令lvcreate -L150G -nhome main，设定lv的名字叫做main-home，大小150G。此时在/dev/mapper/main-home，就产生了一个设备文件，大小150G，可以当作/dev/sda1之类的设备一样使用。不过，这个设备没有经过任何格式化过程，所以还需要mkfs.ext3 /dev/mapper/main-home。在这个指令后，我很习惯的跟了一个tune2fs -c 0 /dev/mapper/main-home来关闭重启检测。使用blkid，发现这个设备已经成功创立，并且有了ID。把UUID复制进（这时就知道X的好处了，console下面比较绕路）/etc/fstab，并且修改刚刚被注释掉的/home一行，更改UUID和分区格式。贝壳当时光记得复制，忘记改分区格式，导致系统进不去。不过也不困难，修改/etc/fstab后mount -a一下就可以了。
 此时我们已经建立了有效的逻辑卷，并且正确配置。下面要创建一个交换分区，并且挂上去。废话不多说，lvcreate -L6G -nswap main，mkswap /dev/mapper/main-swap。而后一样blkid和vi /etc/fstab。系统就基本配置好了。验证一下看看。
-shell-deb:\~\# pvs PV VG Fmt Attr PSize PFree /dev/sda7 main lvm2 a- 229.19g 73.19g shell-deb:\~\# lvs LV VG Attr LSize Origin Snap% Move Log Copy% Convert home main -wi-ao 150.00g swap main -wi-ao 6.00g  而后就是新系统的启用过程，首先要退出X，注销shell用户的所有进程，然后以root删除/home下的所有数据。如果不删除的话，重启后，这里的数据无法访问，变成垃圾。而后重启，就可以看到正确结果了。不过还不要着急登入shell。首先执行rsync -av /mnt/mdisk/sync/home /home，将备份同步回去。这样我们登入shell的时候就可以看到有效的定制化界面了。另外一点细节是，mdisk使用了ntfs格式，所以导致数据恢复后属性混乱。使用find . -type d -exec chmod 755 {} ;和find ."/>
+shell-deb:\~\# pvs PV VG Fmt Attr PSize PFree /dev/sda7 main lvm2 a- 229.19g 73.19g shell-deb:\~\# lvs LV VG Attr LSize Origin Snap% Move Log Copy% Convert home main -wi-ao 150.00g swap main -wi-ao 6.00g 而后就是新系统的启用过程，首先要退出X，注销shell用户的所有进程，然后以root删除/home下的所有数据。如果不删除的话，重启后，这里的数据无法访问，变成垃圾。而后重启，就可以看到正确结果了。不过还不要着急登入shell。首先执行rsync -av /mnt/mdisk/sync/home /home，将备份同步回去。这样我们登入shell的时候就可以看到有效的定制化界面了。另外一点细节是，mdisk使用了ntfs格式，所以导致数据恢复后属性混乱。使用find . -type d -exec chmod 755 {} ;和find ."/>
 
     <meta property="og:title" content="重分区和lvm" />
 <meta property="og:description" content="上篇btrfs会导致虚拟机慢死的blog都看到了吧？看到了就不多解释。
@@ -42,9 +41,9 @@ shell-deb:\~\# pvs PV VG Fmt Attr PSize PFree /dev/sda7 main lvm2 a- 229.19g 73.
 lvm的结构是pv -&gt; pg -&gt; lv，也就是物理卷-&gt;物理组-&gt;逻辑卷。物理的各个分区首先被组织成物理组，再被划分为逻辑卷。这样设计是因为可能有多个磁盘上的空间，被划分为多个逻辑卷。在不改变逻辑的情况下，lvm的默认组织构型是raid0的。不过这对我不是个问题，我只有一个磁盘。
 首先创建pv，使用命令pvcreate，没什么好多说的。然后是产生vg，使用vgcreate main /dev/sda7，之所以需要main，是因为需要一个vg命名。而后我们需要从这个vg中创建出一个lv来，执行指令lvcreate -L150G -nhome main，设定lv的名字叫做main-home，大小150G。此时在/dev/mapper/main-home，就产生了一个设备文件，大小150G，可以当作/dev/sda1之类的设备一样使用。不过，这个设备没有经过任何格式化过程，所以还需要mkfs.ext3 /dev/mapper/main-home。在这个指令后，我很习惯的跟了一个tune2fs -c 0 /dev/mapper/main-home来关闭重启检测。使用blkid，发现这个设备已经成功创立，并且有了ID。把UUID复制进（这时就知道X的好处了，console下面比较绕路）/etc/fstab，并且修改刚刚被注释掉的/home一行，更改UUID和分区格式。贝壳当时光记得复制，忘记改分区格式，导致系统进不去。不过也不困难，修改/etc/fstab后mount -a一下就可以了。
 此时我们已经建立了有效的逻辑卷，并且正确配置。下面要创建一个交换分区，并且挂上去。废话不多说，lvcreate -L6G -nswap main，mkswap /dev/mapper/main-swap。而后一样blkid和vi /etc/fstab。系统就基本配置好了。验证一下看看。
-shell-deb:\~\# pvs PV VG Fmt Attr PSize PFree /dev/sda7 main lvm2 a- 229.19g 73.19g shell-deb:\~\# lvs LV VG Attr LSize Origin Snap% Move Log Copy% Convert home main -wi-ao 150.00g swap main -wi-ao 6.00g  而后就是新系统的启用过程，首先要退出X，注销shell用户的所有进程，然后以root删除/home下的所有数据。如果不删除的话，重启后，这里的数据无法访问，变成垃圾。而后重启，就可以看到正确结果了。不过还不要着急登入shell。首先执行rsync -av /mnt/mdisk/sync/home /home，将备份同步回去。这样我们登入shell的时候就可以看到有效的定制化界面了。另外一点细节是，mdisk使用了ntfs格式，所以导致数据恢复后属性混乱。使用find . -type d -exec chmod 755 {} ;和find ." />
+shell-deb:\~\# pvs PV VG Fmt Attr PSize PFree /dev/sda7 main lvm2 a- 229.19g 73.19g shell-deb:\~\# lvs LV VG Attr LSize Origin Snap% Move Log Copy% Convert home main -wi-ao 150.00g swap main -wi-ao 6.00g 而后就是新系统的启用过程，首先要退出X，注销shell用户的所有进程，然后以root删除/home下的所有数据。如果不删除的话，重启后，这里的数据无法访问，变成垃圾。而后重启，就可以看到正确结果了。不过还不要着急登入shell。首先执行rsync -av /mnt/mdisk/sync/home /home，将备份同步回去。这样我们登入shell的时候就可以看到有效的定制化界面了。另外一点细节是，mdisk使用了ntfs格式，所以导致数据恢复后属性混乱。使用find . -type d -exec chmod 755 {} ;和find ." />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/1859/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/1859/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2011-07-20T14:15:10+08:00" />
 <meta property="article:modified_time" content="2011-07-20T14:15:10+08:00" />
 
@@ -84,11 +83,8 @@ shell-deb:\~\# pvs PV VG Fmt Attr PSize PFree /dev/sda7 main lvm2 a- 229.19g 73.
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -98,40 +94,37 @@ shell-deb:\~\# pvs PV VG Fmt Attr PSize PFree /dev/sda7 main lvm2 a- 229.19g 73.
       <h1 class ="post-title">重分区和lvm</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Jul 20, 2011
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a><a class="tag" href="//blog.shell909090.org/tags/lvm/">lvm</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a>
+              <a class="tag" href="//blog.shell909090.org/tags/lvm/">lvm</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
       <p>上篇btrfs会导致虚拟机慢死的blog都看到了吧？看到了就不多解释。</p>
-
 <p>首先，删除掉cache数据，还有冗余数据，使得数据可备份化。然后执行<code>rsync -av /home /mnt/mdisk/sync</code>，将数据同步到备份的移动硬盘上。之所以用rsync，是因为我在备份的时候还能看看网页什么的。等第一次备份完成，关闭所有X程序，退出shell这个用户的所有进程，然后再次执行rsync，就可以保证同步。同步完成后，注销/etc/fstab下面的/home和swap项目，重启。</p>
-
 <p>系统启动后，先登入root用户，因为此时/home已经恢复到了/下面，所有shell用户的home路径不存在。建立/home/shell目录，并且复制/etc/skel配置，修改owner后，shell就可以登入了。当然，此时是系统默认环境，并没有定制化。没有关系，我们只需要terminal。在terminal中执行gparted，会出现图形的分区管理工具。当然，理论上说，如果你够熟悉，使用fdisk完成全部操作也是可以的，这免除了初始化shell用户和登入图形界面的麻烦。删除原先的/home所在分区和swap所在分区，切割一个ntfs分区用于将来安装windows(回头可以打游戏)，剩余的全部切割，而后开启lvm标记。当然，这一步贝壳当时不知道，而是创立了一个未知分区，再用fdisk调整分区类型为8E。而后系统会提示你，不能保证内核数据结构更新，需要执行kpartx</p>
-
 <p>/dev/sda。无论如何，此时我们已经有了一个lvm分区。</p>
-
 <p>lvm的结构是pv -&gt; pg -&gt; lv，也就是物理卷-&gt;物理组-&gt;逻辑卷。物理的各个分区首先被组织成物理组，再被划分为逻辑卷。这样设计是因为可能有多个磁盘上的空间，被划分为多个逻辑卷。在不改变逻辑的情况下，lvm的默认组织构型是raid0的。不过这对我不是个问题，我只有一个磁盘。</p>
-
 <p>首先创建pv，使用命令pvcreate，没什么好多说的。然后是产生vg，使用<code>vgcreate main /dev/sda7</code>，之所以需要main，是因为需要一个vg命名。而后我们需要从这个vg中创建出一个lv来，执行指令<code>lvcreate -L150G -nhome main</code>，设定lv的名字叫做main-home，大小150G。此时在/dev/mapper/main-home，就产生了一个设备文件，大小150G，可以当作/dev/sda1之类的设备一样使用。不过，这个设备没有经过任何格式化过程，所以还需要<code>mkfs.ext3 /dev/mapper/main-home</code>。在这个指令后，我很习惯的跟了一个<code>tune2fs -c 0 /dev/mapper/main-home</code>来关闭重启检测。使用blkid，发现这个设备已经成功创立，并且有了ID。把UUID复制进（这时就知道X的好处了，console下面比较绕路）/etc/fstab，并且修改刚刚被注释掉的/home一行，更改UUID和分区格式。贝壳当时光记得复制，忘记改分区格式，导致系统进不去。不过也不困难，修改/etc/fstab后<code>mount -a</code>一下就可以了。</p>
-
 <p>此时我们已经建立了有效的逻辑卷，并且正确配置。下面要创建一个交换分区，并且挂上去。废话不多说，<code>lvcreate -L6G -nswap main</code>，<code>mkswap /dev/mapper/main-swap</code>。而后一样blkid和<code>vi /etc/fstab</code>。系统就基本配置好了。验证一下看看。</p>
-
 <pre><code>shell-deb:\~\# pvs
 PV VG Fmt Attr PSize PFree
 /dev/sda7 main lvm2 a- 229.19g 73.19g
@@ -140,7 +133,6 @@ LV VG Attr LSize Origin Snap% Move Log Copy% Convert
 home main -wi-ao 150.00g
 swap main -wi-ao 6.00g
 </code></pre>
-
 <p>而后就是新系统的启用过程，首先要退出X，注销shell用户的所有进程，然后以root删除/home下的所有数据。如果不删除的话，重启后，这里的数据无法访问，变成垃圾。而后重启，就可以看到正确结果了。不过还不要着急登入shell。首先执行<code>rsync -av /mnt/mdisk/sync/home /home</code>，将备份同步回去。这样我们登入shell的时候就可以看到有效的定制化界面了。另外一点细节是，mdisk使用了ntfs格式，所以导致数据恢复后属性混乱。使用<code>find . -type d -exec chmod 755 {} ;</code>和<code>find . -type f -exec chmod 644 {};</code>可以恢复大部分，少部分例如~/.ssh/authorized_keys和~/.gnupg需要手工调整。</p>
 
     </div>

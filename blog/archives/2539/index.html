@@ -2,61 +2,64 @@
 <html lang="en-us">
   <head>
     <title>在PAM中使用google authentication // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
     <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="在PAM中使用google authentication"/>
 <meta name="twitter:description" content="PAM是linux系统身份验证的核心，在用户登录/ssh身份校验中均有很大用途。但是很少有人想到，其实这个东西还可以用google authentication来进行身份校验。
-安装 sudo apt-get install libpam-google-authenticator  设定 使用前，需要对用户做一个用户级配置，生成配置文件。这个文件就是这个用户的身份验证凭证。配置请使用用户执行google-authenticator。
+安装 sudo apt-get install libpam-google-authenticator 设定 使用前，需要对用户做一个用户级配置，生成配置文件。这个文件就是这个用户的身份验证凭证。配置请使用用户执行google-authenticator。
 上来先会问你是否使用基于时间的验证，肯定选是。但是注意，基于时间的验证要求服务器时间必须精确。更准确的说，是服务器时间和手机时间校准在30秒以内。由于手机一般都采用GSM校时，因此只需要在意服务器时间。建议是使用ntpdate来校准时间。特别注意，linux的时钟是会漂移的，必须按天级校准。
 然后程序会给出一个url，还可能有QR码（真够不容易的，Console级别的QR码。。。）。记住，一定要用url去获得QR码给程序扫描。因为url获得的QR码算法是最新的，而直接生成的有可能不能跑。
 下面是secret key和verification code，一般来说这两个不用关心。但是你需要记住emergency scratch codes。libpam-google-authenticator默认给你生成了5个，一般都够用了。通常用到3个就更新一遍吧。
- 是否生成配置，选是。 是否拒绝使用同一个token的人登录。如果选是，30秒内只能登录一个人。建议选是。 是否放送时间验证，从1分30秒到4分钟。如果选是，允许更大的服务器时间偏差。看你服务器时间是不是够准。 是否防止暴力破解，30秒内尝试不超过3次。建议选是。  OK，你的配置就完成了。如果有多个用户，请多次配置。
+是否生成配置，选是。 是否拒绝使用同一个token的人登录。如果选是，30秒内只能登录一个人。建议选是。 是否放送时间验证，从1分30秒到4分钟。如果选是，允许更大的服务器时间偏差。看你服务器时间是不是够准。 是否防止暴力破解，30秒内尝试不超过3次。建议选是。 OK，你的配置就完成了。如果有多个用户，请多次配置。
 手机app 按照系统安装以下app，下面以android版为例介绍。
- Google Authenticator Android Google Authenticator iOS Authenticator for Windows Phone Blackbarry  选择setup account，然后scan a barcode。程序会要求你使用barcode扫描软件扫描(推荐barcode scanner)。这时去扫描设定一节中访问url显示的那个qr码。
+Google Authenticator Android Google Authenticator iOS Authenticator for Windows Phone Blackbarry 选择setup account，然后scan a barcode。程序会要求你使用barcode扫描软件扫描(推荐barcode scanner)。这时去扫描设定一节中访问url显示的那个qr码。
 pam配置 对于ssh而言，请在/etc/pam.d/sshd的最后一行增加这句。
-auth required pam_google_authenticator.so  注意，这样其实是密码/校验码双重验证。如果你不需要密码请注释掉下面这句。
-@include common-auth  或者其他包含以下这句的地方。
-auth required pam_permit.so  如果你希望增强sudo安全性，也可以把这句加入/etc/pam.d/sudo后面。如果同样不需要密码，请注释上面那句。
+auth required pam_google_authenticator.so 注意，这样其实是密码/校验码双重验证。如果你不需要密码请注释掉下面这句。
+@include common-auth 或者其他包含以下这句的地方。
+auth required pam_permit.so 如果你希望增强sudo安全性，也可以把这句加入/etc/pam.d/sudo后面。如果同样不需要密码，请注释上面那句。
 sshd配置 保证/etc/ssh/sshd_config里面，以下参数都处于正确的配置。
-ChallengeResponseAuthentication yes PasswordAuthentication no UsePAM yes  如果你使用openssh6."/>
+ChallengeResponseAuthentication yes PasswordAuthentication no UsePAM yes 如果你使用openssh6.2以上版本，请额外加入这句以开启publickey和验证同时启用。
+AuthenticationMethods publickey,keyboard-interactive sudo 注意，如果是NOPASSWORD，则没有校验。
+参考和鸣谢 Why enable SSH Two-Factor Authentication on your server?"/>
 
     <meta property="og:title" content="在PAM中使用google authentication" />
 <meta property="og:description" content="PAM是linux系统身份验证的核心，在用户登录/ssh身份校验中均有很大用途。但是很少有人想到，其实这个东西还可以用google authentication来进行身份校验。
-安装 sudo apt-get install libpam-google-authenticator  设定 使用前，需要对用户做一个用户级配置，生成配置文件。这个文件就是这个用户的身份验证凭证。配置请使用用户执行google-authenticator。
+安装 sudo apt-get install libpam-google-authenticator 设定 使用前，需要对用户做一个用户级配置，生成配置文件。这个文件就是这个用户的身份验证凭证。配置请使用用户执行google-authenticator。
 上来先会问你是否使用基于时间的验证，肯定选是。但是注意，基于时间的验证要求服务器时间必须精确。更准确的说，是服务器时间和手机时间校准在30秒以内。由于手机一般都采用GSM校时，因此只需要在意服务器时间。建议是使用ntpdate来校准时间。特别注意，linux的时钟是会漂移的，必须按天级校准。
 然后程序会给出一个url，还可能有QR码（真够不容易的，Console级别的QR码。。。）。记住，一定要用url去获得QR码给程序扫描。因为url获得的QR码算法是最新的，而直接生成的有可能不能跑。
 下面是secret key和verification code，一般来说这两个不用关心。但是你需要记住emergency scratch codes。libpam-google-authenticator默认给你生成了5个，一般都够用了。通常用到3个就更新一遍吧。
- 是否生成配置，选是。 是否拒绝使用同一个token的人登录。如果选是，30秒内只能登录一个人。建议选是。 是否放送时间验证，从1分30秒到4分钟。如果选是，允许更大的服务器时间偏差。看你服务器时间是不是够准。 是否防止暴力破解，30秒内尝试不超过3次。建议选是。  OK，你的配置就完成了。如果有多个用户，请多次配置。
+是否生成配置，选是。 是否拒绝使用同一个token的人登录。如果选是，30秒内只能登录一个人。建议选是。 是否放送时间验证，从1分30秒到4分钟。如果选是，允许更大的服务器时间偏差。看你服务器时间是不是够准。 是否防止暴力破解，30秒内尝试不超过3次。建议选是。 OK，你的配置就完成了。如果有多个用户，请多次配置。
 手机app 按照系统安装以下app，下面以android版为例介绍。
- Google Authenticator Android Google Authenticator iOS Authenticator for Windows Phone Blackbarry  选择setup account，然后scan a barcode。程序会要求你使用barcode扫描软件扫描(推荐barcode scanner)。这时去扫描设定一节中访问url显示的那个qr码。
+Google Authenticator Android Google Authenticator iOS Authenticator for Windows Phone Blackbarry 选择setup account，然后scan a barcode。程序会要求你使用barcode扫描软件扫描(推荐barcode scanner)。这时去扫描设定一节中访问url显示的那个qr码。
 pam配置 对于ssh而言，请在/etc/pam.d/sshd的最后一行增加这句。
-auth required pam_google_authenticator.so  注意，这样其实是密码/校验码双重验证。如果你不需要密码请注释掉下面这句。
-@include common-auth  或者其他包含以下这句的地方。
-auth required pam_permit.so  如果你希望增强sudo安全性，也可以把这句加入/etc/pam.d/sudo后面。如果同样不需要密码，请注释上面那句。
+auth required pam_google_authenticator.so 注意，这样其实是密码/校验码双重验证。如果你不需要密码请注释掉下面这句。
+@include common-auth 或者其他包含以下这句的地方。
+auth required pam_permit.so 如果你希望增强sudo安全性，也可以把这句加入/etc/pam.d/sudo后面。如果同样不需要密码，请注释上面那句。
 sshd配置 保证/etc/ssh/sshd_config里面，以下参数都处于正确的配置。
-ChallengeResponseAuthentication yes PasswordAuthentication no UsePAM yes  如果你使用openssh6." />
+ChallengeResponseAuthentication yes PasswordAuthentication no UsePAM yes 如果你使用openssh6.2以上版本，请额外加入这句以开启publickey和验证同时启用。
+AuthenticationMethods publickey,keyboard-interactive sudo 注意，如果是NOPASSWORD，则没有校验。
+参考和鸣谢 Why enable SSH Two-Factor Authentication on your server?" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2539/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2539/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2014-01-22T13:31:45+08:00" />
 <meta property="article:modified_time" content="2014-01-22T13:31:45+08:00" />
 
@@ -96,11 +99,8 @@ ChallengeResponseAuthentication yes PasswordAuthentication no UsePAM yes  如果
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -110,112 +110,86 @@ ChallengeResponseAuthentication yes PasswordAuthentication no UsePAM yes  如果
       <h1 class ="post-title">在PAM中使用google authentication</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Jan 22, 2014
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/computer/">computer</a><a class="tag" href="//blog.shell909090.org/tags/google/">google</a><a class="tag" href="//blog.shell909090.org/tags/pam/">pam</a><a class="tag" href="//blog.shell909090.org/tags/security/">security</a><a class="tag" href="//blog.shell909090.org/tags/ssh/">ssh</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/computer/">computer</a>
+              <a class="tag" href="//blog.shell909090.org/tags/google/">google</a>
+              <a class="tag" href="//blog.shell909090.org/tags/pam/">pam</a>
+              <a class="tag" href="//blog.shell909090.org/tags/security/">security</a>
+              <a class="tag" href="//blog.shell909090.org/tags/ssh/">ssh</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
-      
-
-<p>PAM是linux系统身份验证的核心，在用户登录/ssh身份校验中均有很大用途。但是很少有人想到，其实这个东西还可以用google authentication来进行身份校验。</p>
-
+      <p>PAM是linux系统身份验证的核心，在用户登录/ssh身份校验中均有很大用途。但是很少有人想到，其实这个东西还可以用google authentication来进行身份校验。</p>
 <h1 id="安装">安装</h1>
-
 <pre><code>sudo apt-get install libpam-google-authenticator
 </code></pre>
-
 <h1 id="设定">设定</h1>
-
 <p>使用前，需要对用户做一个用户级配置，生成配置文件。这个文件就是这个用户的身份验证凭证。配置请使用用户执行<code>google-authenticator</code>。</p>
-
 <p>上来先会问你是否使用基于时间的验证，肯定选是。但是注意，基于时间的验证要求服务器时间必须精确。更准确的说，是服务器时间和手机时间校准在30秒以内。由于手机一般都采用GSM校时，因此只需要在意服务器时间。建议是使用ntpdate来校准时间。特别注意，linux的时钟是会漂移的，必须按天级校准。</p>
-
 <p>然后程序会给出一个url，还可能有QR码（真够不容易的，Console级别的QR码。。。）。记住，一定要用url去获得QR码给程序扫描。因为url获得的QR码算法是最新的，而直接生成的有可能不能跑。</p>
-
 <p>下面是secret key和verification code，一般来说这两个不用关心。但是你需要记住emergency scratch codes。libpam-google-authenticator默认给你生成了5个，一般都够用了。通常用到3个就更新一遍吧。</p>
-
 <ul>
 <li>是否生成配置，选是。</li>
 <li>是否拒绝使用同一个token的人登录。如果选是，30秒内只能登录一个人。建议选是。</li>
 <li>是否放送时间验证，从1分30秒到4分钟。如果选是，允许更大的服务器时间偏差。看你服务器时间是不是够准。</li>
 <li>是否防止暴力破解，30秒内尝试不超过3次。建议选是。</li>
 </ul>
-
 <p>OK，你的配置就完成了。如果有多个用户，请多次配置。</p>
-
 <h1 id="手机app">手机app</h1>
-
 <p>按照系统安装以下app，下面以android版为例介绍。</p>
-
 <ul>
 <li><a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;hl=en_GB">Google Authenticator Android</a></li>
 <li><a href="https://itunes.apple.com/gb/app/google-authenticator/id388497605?mt=8">Google Authenticator iOS</a></li>
 <li><a href="http://www.windowsphone.com/en-gb/store/app/authenticator/e7994dbc-2336-4950-91ba-ca22d653759b">Authenticator for Windows Phone</a></li>
 <li><a href="http://matthill.eu/linux/ssh-two-factor-authentication-google/m.google.com/authenticator">Blackbarry</a></li>
 </ul>
-
 <p>选择setup account，然后scan a barcode。程序会要求你使用barcode扫描软件扫描(推荐barcode scanner)。这时去扫描设定一节中访问url显示的那个qr码。</p>
-
 <h1 id="pam配置">pam配置</h1>
-
 <p>对于ssh而言，请在/etc/pam.d/sshd的最后一行增加这句。</p>
-
 <pre><code>auth required pam_google_authenticator.so
 </code></pre>
-
 <p>注意，这样其实是密码/校验码双重验证。如果你不需要密码请注释掉下面这句。</p>
-
 <pre><code>@include common-auth
 </code></pre>
-
 <p>或者其他包含以下这句的地方。</p>
-
 <pre><code>auth    required            pam_permit.so
 </code></pre>
-
 <p>如果你希望增强sudo安全性，也可以把这句加入/etc/pam.d/sudo后面。如果同样不需要密码，请注释上面那句。</p>
-
 <h1 id="sshd配置">sshd配置</h1>
-
 <p>保证/etc/ssh/sshd_config里面，以下参数都处于正确的配置。</p>
-
 <pre><code>ChallengeResponseAuthentication yes
 PasswordAuthentication no
 UsePAM yes
 </code></pre>
-
 <p>如果你使用openssh6.2以上版本，请额外加入这句以开启publickey和验证同时启用。</p>
-
 <pre><code>AuthenticationMethods publickey,keyboard-interactive
 </code></pre>
-
 <h1 id="sudo">sudo</h1>
-
 <p>注意，如果是NOPASSWORD，则没有校验。</p>
-
 <h1 id="参考和鸣谢">参考和鸣谢</h1>
-
 <ol>
 <li><a href="http://matthill.eu/linux/ssh-two-factor-authentication-google/">Why enable SSH Two-Factor Authentication on your server?</a></li>
 <li><a href="https://scottlinux.com/2013/06/02/use-google-authenticator-for-two-factor-ssh-authentication-in-linux/">Use Google Authenticator For Two-Factor SSH Authentication in Linux</a></li>
 <li><a href="http://www.linux.org/threads/google-authenticator-for-ssh.4590/">Google Authenticator For SSH</a></li>
 </ol>
-
 <p>感谢Scott Miller在引用2中的回答，AuthenticationMethods这个细节在其他文献中没有提及。</p>
 
     </div>

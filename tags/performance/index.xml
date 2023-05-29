@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>performance on Shell&#39;s Home</title>
@@ -7,11 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Wed, 27 Aug 2008 22:18:00 +0800</lastBuildDate>
-    
-	<atom:link href="//blog.shell909090.org/tags/performance/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Wed, 27 Aug 2008 22:18:00 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/performance/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>python的性能问题</title>
       <link>//blog.shell909090.org/blog/archives/31/</link>
@@ -21,8 +17,8 @@
       <description>贝壳最近在一个朋友的网站上看到了关于SICP零钱兑换问题的python求解，使用了记忆机制，然后他给出了代码。然而他的代码计时上有点小问题，也没有用包装器(奇怪的是，有写)，而且python的栈深度有限。因此贝壳做了几个修改的版本，需要测试下性能，下面就是关于性能的几个问题和过程。
 本文详细论述了python语言下和C++语言下使用各种方法测试代码性能的方法，以及粗略的关于两种语言不同算法性能对比。
 原始的python代码是这样的：
-def change_coins(money): first_denomination = { 1: 1, 2: 5, 3: 10, 4: 25, 5: 50, } def cc(amount, kinds_of_coins): if amount == 0: return 1 elif amount &amp;lt; 0 or kinds_of_coins == 0: return 0 else: kind = cc(amount, kinds_of_coins - 1) kind += cc( amount-first_denomination[kinds_of_coins], kinds_of_coins) return kind print(&amp;quot;change_coins return %s&amp;quot; % cc(money, 5)) change_coins(300)  利用记忆原理包装后是这样的：
-def memoiza(fun): cache = {} def proc(*arg): if arg in cache: return cache[arg] else: x = fun(*arg) cache[arg] = x return x return proc def decorator_change_coins(money): first_denomination = { 1: 1, 2: 5, 3: 10, 4: 25, 5: 50, } @memoiza def cc(amount, kinds_of_coins): if amount == 0: return 1 elif amount &amp;lt; 0 or kinds_of_coins == 0: return 0 else: kind = cc(amount, kinds_of_coins - 1) kind += cc( amount - first_denomination[kinds_of_coins], kinds_of_coins) return kind print(&amp;quot;decorator_change_coins return %s&amp;quot; % cc(money, 5)) decorator_change_coins(300)  不记忆，利用栈模拟递归展开是这样的：</description>
+def change_coins(money): first_denomination = { 1: 1, 2: 5, 3: 10, 4: 25, 5: 50, } def cc(amount, kinds_of_coins): if amount == 0: return 1 elif amount &amp;lt; 0 or kinds_of_coins == 0: return 0 else: kind = cc(amount, kinds_of_coins - 1) kind += cc( amount-first_denomination[kinds_of_coins], kinds_of_coins) return kind print(&amp;quot;change_coins return %s&amp;quot; % cc(money, 5)) change_coins(300) 利用记忆原理包装后是这样的：
+def memoiza(fun): cache = {} def proc(*arg): if arg in cache: return cache[arg] else: x = fun(*arg) cache[arg] = x return x return proc def decorator_change_coins(money): first_denomination = { 1: 1, 2: 5, 3: 10, 4: 25, 5: 50, } @memoiza def cc(amount, kinds_of_coins): if amount == 0: return 1 elif amount &amp;lt; 0 or kinds_of_coins == 0: return 0 else: kind = cc(amount, kinds_of_coins - 1) kind += cc( amount - first_denomination[kinds_of_coins], kinds_of_coins) return kind print(&amp;quot;decorator_change_coins return %s&amp;quot; % cc(money, 5)) decorator_change_coins(300) 不记忆，利用栈模拟递归展开是这样的：</description>
     </item>
     
     <item>
@@ -67,8 +63,8 @@ p0f 被动指纹分析工具
 4.2.测试网络IP包传输往返时延(RTT)和IP包时延变化(抖动)
 分主动被动方法，被动方法用wireshark抓包分析。下面主要介绍主动方法：
 运行hping2 www.google.com -p 80。得到
-56 packets transmitted, 56 packets received, 0% packet loss round-trip min/avg/max = 242.5/269.9/381.1 ms  即在主动建立的到www.google.com的TCP连接中(默认为TCP，可以使用UDP，ICMP，IP，具体请看hping2 &amp;ndash;help)，丢包率为0。平均传输延迟为269.9，抖动为138.6。
-注：按照《中华人民共和国信息产业部令第36号》，往返时延平均值≤200毫秒，时延变化平均值≤80毫秒。此处已经超标。但因为测试环境和适用条件不完全吻合，因此无法作为有效证据。
+56 packets transmitted, 56 packets received, 0% packet loss round-trip min/avg/max = 242.5/269.9/381.1 ms 即在主动建立的到www.google.com的TCP连接中(默认为TCP，可以使用UDP，ICMP，IP，具体请看hping2 &amp;ndash;help)，丢包率为0。平均传输延迟为269.9，抖动为138.6。
+注：按照《**中华人民共和国信息产业部令第36号》，**往返时延平均值≤200毫秒，时延变化平均值≤80毫秒。此处已经超标。但因为测试环境和适用条件不完全吻合，因此无法作为有效证据。
 4.3.IP包丢失率(Lost rate)
 也分主动方法和被动方法，主动方法见上。被动方法是用wireshark抓包后，通过tpc.analysis.lost_segment标志分析丢包数量和总体数量。具体为。
 用wireshark抓包。

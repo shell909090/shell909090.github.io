@@ -2,24 +2,23 @@
 <html lang="en-us">
   <head>
     <title>lxc的double NAT模式无法使用dnsmasq的分析 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
@@ -58,7 +57,7 @@ dhcp-4.2.2可以打这个补丁，使得dhcp-client不去校验udp checksum：ht
 网上很多教程能够跑通的原因，大概是因为他们的guest基于08年以后的rh系系统。rh在08年就对dhclient出了一个补丁（4.2.2那个），用于暂时修复这个问题。
 所有基于debian系的系统都无法从offloading不处理的系统上获得dhcp offer。" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2517/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2517/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2013-11-25T16:40:01+08:00" />
 <meta property="article:modified_time" content="2013-11-25T16:40:01+08:00" />
 
@@ -98,11 +97,8 @@ dhcp-4.2.2可以打这个补丁，使得dhcp-client不去校验udp checksum：ht
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -112,54 +108,44 @@ dhcp-4.2.2可以打这个补丁，使得dhcp-client不去校验udp checksum：ht
       <h1 class ="post-title">lxc的double NAT模式无法使用dnsmasq的分析</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Nov 25, 2013
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a><a class="tag" href="//blog.shell909090.org/tags/lxc/">lxc</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a>
+              <a class="tag" href="//blog.shell909090.org/tags/lxc/">lxc</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
       <p>系统debian testing，lxc-0.9。</p>
-
 <p>在笔记本上做lxc，网络是wifi，AP会drop不同MAC发出的报文，所以无法做网桥。一个办法是用ebtables做规则，我嫌麻烦。另一个是配置多头主机，double NAT。当然，还有路由器模式。不过大多数网络环境中我搞不到default gateway的权限来添加子网的路由规则。所以就选了double NAT。</p>
-
 <p>问题出在dnsmasq作为dhcp和dns服务器上。整个网络都搭好了，通的。完了我在host上启动dnsmasq，在guest里就是硬生生无法获得IP。</p>
-
 <p>首先host上vi /var/log/syslog，看到dnsmasq把dhcp offer发出去了。在guest里tcpdump，看到有报文收到。那就奇怪该死的dhclient不工作了。dhclient版本4.2.4，和主系统一致。网桥环境中这个版本可以工作。</p>
-
 <p>所以把网桥环境中的报文也tcpdump了一遍，加上刚刚不成功的dumpout一起看——什么都看不出来。</p>
-
 <p>偶然dhclient -v -d -4 eth0了一下，看到bad udp checksums，顿时一愣。跑到wireshark下面看了一下——还真是没有计算checksum。打开checksum计算可以看到double NAT里的checksum算错了。提示是maybe checksum offload。</p>
-
-<p>我找到这个链接：<a href="http://www.wireshark.org/docs/wsug_html_chunked/ChAdvChecksums.html">http://www.wireshark.org/docs/wsug_html_chunked/ChAdvChecksums.html</a></p>
-
+<p>我找到这个链接：http://www.wireshark.org/docs/wsug_html_chunked/ChAdvChecksums.html</p>
 <p>里面提到，checksum可能是由网卡或驱动计算的。这就难怪——没问题的dhcp offer的udp checksum是由openwrt的网卡发出，而有问题的则是由bridge和virtual ethernet发出。</p>
-
 <p>那见鬼，别人是怎么成功的？</p>
-
-<p>一番搜索，看来lxc还不是第一个中招的：<a href="http://lists.xen.org/archives/html/xen-devel/2011-12/msg01770.html">http://lists.xen.org/archives/html/xen-devel/2011-12/msg01770.html</a></p>
-
-<p>dhcp-4.2.2可以打这个补丁，使得dhcp-client不去校验udp checksum：<a href="http://pkgs.fedoraproject.org/cgit/dhcp.git/plain/dhcp-4.2.2-xen-checksum.patch?id2=HEAD">http://pkgs.fedoraproject.org/cgit/dhcp.git/plain/dhcp-4.2.2-xen-checksum.patch?id2=HEAD</a></p>
-
-<p>当然，也有各种坑爹补丁（例如这个：<a href="http://marc.info/?l=kvm&amp;m=121882968407525&amp;w=2">http://marc.info/?l=kvm&amp;m=121882968407525&amp;w=2</a> ）来修复虚拟驱动上的问题，计算出正确的checksum。</p>
-
-<p>在debian下，他被报为bts671707(<a href="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=671707)。已经报了一年半，尚未处理。">http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=671707)。已经报了一年半，尚未处理。</a></p>
-
+<p>一番搜索，看来lxc还不是第一个中招的：http://lists.xen.org/archives/html/xen-devel/2011-12/msg01770.html</p>
+<p>dhcp-4.2.2可以打这个补丁，使得dhcp-client不去校验udp checksum：http://pkgs.fedoraproject.org/cgit/dhcp.git/plain/dhcp-4.2.2-xen-checksum.patch?id2=HEAD</p>
+<p>当然，也有各种坑爹补丁（例如这个：http://marc.info/?l=kvm&amp;m=121882968407525&amp;w=2 ）来修复虚拟驱动上的问题，计算出正确的checksum。</p>
+<p>在debian下，他被报为bts671707(<a href="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=671707">http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=671707</a>)。已经报了一年半，尚未处理。</p>
 <p>网上很多教程能够跑通的原因，大概是因为他们的guest基于08年以后的rh系系统。rh在08年就对dhclient出了一个补丁（4.2.2那个），用于暂时修复这个问题。</p>
-
 <p>所有基于debian系的系统都无法从offloading不处理的系统上获得dhcp offer。</p>
 
     </div>

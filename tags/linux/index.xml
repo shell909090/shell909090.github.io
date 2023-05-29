@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>linux on Shell&#39;s Home</title>
@@ -7,11 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Thu, 20 Nov 2014 10:38:30 +0800</lastBuildDate>
-    
-	<atom:link href="//blog.shell909090.org/tags/linux/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Thu, 20 Nov 2014 10:38:30 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/linux/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>上下文切换技术</title>
       <link>//blog.shell909090.org/blog/archives/2703/</link>
@@ -38,15 +34,17 @@
 缺点是一个线程出现问题容易将整个系统搞崩溃。
 一个例子 py_http_fork_thread.py
 在这个例子中，线程模式和进程模式可以轻易的互换。
-如何工作的  父进程监听服务端口 在有新连接建立的时候，父进程执行fork，产生一个子进程副本 如果子进程需要的话，可以exec(例如CGI) 父进程执行(理论上应当先执行子进程，因为exec执行的快可以避免COW)到accept后，发生阻塞 上下文调度，内核调度器选择下一个上下文，如无意外，应当就是刚刚派生的子进程 子进程进程进入读取处理状态，阻塞在read调用上，所有上下文均进入睡眠态 随着SYN或者数据报文到来，CPU会唤醒对应fd上阻塞的上下文(wait_queue)，切换到就绪态，并加入调度队列 上下文继续执行到下一个阻塞调用，或者因为时间片耗尽被挂起  关于更多细节，可以看这里。这篇文章里还介绍了epoll的工作细节。
-评价  同步模型，编写自然，每个上下文可以当作其他上下文不存在一样的操作，每次读取数据可以当作必然能读取到。 进程模型自然的隔离了连接。即使程序复杂且易崩溃，也只影响一个连接而不是在整个系统。 生成和释放开销很大(效率测试的进程fork和线程模式开销测试)，需要考虑复用。 进程模式的多客户通讯比较麻烦，尤其在共享大量数据的时候。  C10K问题 描述 当同时连接数在10K左右时，传统模型就不再适用。实际上在效率测试报告的线程切换开销一节可以看到，超过1K后性能就差的一塌糊涂了。
+如何工作的 父进程监听服务端口 在有新连接建立的时候，父进程执行fork，产生一个子进程副本 如果子进程需要的话，可以exec(例如CGI) 父进程执行(理论上应当先执行子进程，因为exec执行的快可以避免COW)到accept后，发生阻塞 上下文调度，内核调度器选择下一个上下文，如无意外，应当就是刚刚派生的子进程 子进程进程进入读取处理状态，阻塞在read调用上，所有上下文均进入睡眠态 随着SYN或者数据报文到来，CPU会唤醒对应fd上阻塞的上下文(wait_queue)，切换到就绪态，并加入调度队列 上下文继续执行到下一个阻塞调用，或者因为时间片耗尽被挂起 关于更多细节，可以看这里。这篇文章里还介绍了epoll的工作细节。
+评价 同步模型，编写自然，每个上下文可以当作其他上下文不存在一样的操作，每次读取数据可以当作必然能读取到。 进程模型自然的隔离了连接。即使程序复杂且易崩溃，也只影响一个连接而不是在整个系统。 生成和释放开销很大(效率测试的进程fork和线程模式开销测试)，需要考虑复用。 进程模式的多客户通讯比较麻烦，尤其在共享大量数据的时候。 C10K问题 描述 当同时连接数在10K左右时，传统模型就不再适用。实际上在效率测试报告的线程切换开销一节可以看到，超过1K后性能就差的一塌糊涂了。
 更细节描述，可以看这里。
 进程模型的问题 在C10K的时候，启动和关闭这么多进程是不可接受的开销。事实上单纯的进程fork模型在C1K时就应当抛弃了。
 Apache的prefork模型，是使用预先分配(pre)的进程池。这些进程是被复用的。但即便是复用，本文所描述的很多问题仍不可避免。
 线程模式的问题 从任何测试都可以表明，线程模式比进程模式更耐久一些，性能更好。但是在面对C10K还是力不从心的。问题是，线程模式的问题出在哪里呢？
 内存？ 有些人可能认为线程模型的失败首先在于内存。如果你这么认为，一定是因为你查阅了非常老的资料，并且没仔细思考过。
 你可能看到资料说，一个线程栈会消耗8M内存(linux默认值，ulimit可以看到)，512个线程栈就会消耗4G内存，而10K个线程就是80G。所以首先要考虑调整栈深度，并考虑爆栈问题。
-听起来很有道理，问题是——linux的栈是通过缺页来分配内存的(How does stack allocation work in Linux?</description>
+听起来很有道理，问题是——linux的栈是通过缺页来分配内存的(How does stack allocation work in Linux?)，不是所有栈地址空间都分配了内存。因此，8M是最大消耗，实际的内存消耗只会略大于实际需要的内存(内部损耗，每个在4k以内)。但是内存一旦被分配，就很难回收(除非线程结束)，这是线程模式的缺陷。
+这个问题提出的前提是，32位下地址空间有限。虽然10K个线程不一定会耗尽内存，但是512个线程一定会耗尽地址空间。然而这个问题对于目前已经成为主流的64位系统来说根本不存在。
+内核陷入开销？ 所谓内核陷入开销，就是指CPU从非特权转向特权，并且做输入检查的一些开销。这些开销在不同的系统上差异很大。</description>
     </item>
     
     <item>
@@ -55,13 +53,13 @@ Apache的prefork模型，是使用预先分配(pre)的进程池。这些进程�
       <pubDate>Tue, 18 Nov 2014 16:15:16 +0800</pubDate>
       
       <guid>//blog.shell909090.org/blog/archives/2700/</guid>
-      <description>效率测试 测试环境  Intel&amp;reg; Pentium&amp;reg; CPU G2030 @ 3.00GHz 8G内存 debian jessie Linux 3.16-2-amd64 2014年10月27日  附注一下，该CPU有2核心，无HT，1ns3个时钟周期。
+      <description>效率测试 测试环境 Intel(R) Pentium(R) CPU G2030 @ 3.00GHz 8G内存 debian jessie Linux 3.16-2-amd64 2014年10月27日 附注一下，该CPU有2核心，无HT，1ns3个时钟周期。
 测试方法 测试代码如下：
-time -f &amp;quot;%e,%S,%c,%r,%s,%K,%P&amp;quot; ./perf_fork  数据的意义分别为: 总时间，内核CPU时间，context switch次数，读/写次数，内存耗用，CPU使用百分比。
+time -f &amp;quot;%e,%S,%c,%r,%s,%K,%P&amp;quot; ./perf_fork 数据的意义分别为: 总时间，内核CPU时间，context switch次数，读/写次数，内存耗用，CPU使用百分比。
 数据处理方法如下：
-import numpy as np p = lambda s: [float(line.strip().split(&#39;,&#39;)[0]) for line in s.splitlines()] q = lambda s: [float(line.strip().split(&#39;,&#39;)[1]) for line in s.splitlines()] np.array(p(s)).mean() np.array(p(s)).var() np.array(q(s)).mean() np.array(q(s)).var()  基础开销测试 函数调用开销 使用s_call来测试性能，循环1G次。
-2.35,0.00,17,0,0,0,99% 2.34,0.00,13,0,0,0,99% 2.34,0.00,10,0,0,0,100% 2.35,0.00,10,0,0,0,99% 2.34,0.00,14,0,0,0,99% 2.34,0.00,6,0,0,0,99%  统计结果如下：
- time mean = 2.</description>
+import numpy as np p = lambda s: [float(line.strip().split(&#39;,&#39;)[0]) for line in s.splitlines()] q = lambda s: [float(line.strip().split(&#39;,&#39;)[1]) for line in s.splitlines()] np.array(p(s)).mean() np.array(p(s)).var() np.array(q(s)).mean() np.array(q(s)).var() 基础开销测试 函数调用开销 使用s_call来测试性能，循环1G次。
+2.35,0.00,17,0,0,0,99% 2.34,0.00,13,0,0,0,99% 2.34,0.00,10,0,0,0,100% 2.35,0.00,10,0,0,0,99% 2.34,0.00,14,0,0,0,99% 2.34,0.00,6,0,0,0,99% 统计结果如下：
+time mean = 2.34 time var = 0.000022 每次call的开销为2.34ns，约7个指令周期。当然，这些并没有考虑调用压栈和数据返回。</description>
     </item>
     
     <item>
@@ -71,8 +69,8 @@ import numpy as np p = lambda s: [float(line.strip().split(&#39;,&#39;)[0]) for 
       
       <guid>//blog.shell909090.org/blog/archives/2693/</guid>
       <description>线程模式开销 使用t_thread程序，循环1M次，重复6次，原始数据如下：
-9.57,8.22,21098,0,0,0,104% 9.77,8.40,29704,0,0,0,104% 9.36,8.17,10390,0,0,0,106% 9.56,8.50,14514,0,0,0,107% 9.35,8.34,7244,0,0,0,108% 9.57,8.43,26351,0,0,0,106%  统计结果如下：
- time mean = 9.53 time var = 0.02 kernel mean = 8.34 kernel var = 0.013  解读数据可以看到，thread模式的开销为9530ns(已经降到纳秒级了)，CPU将为8340ns，精确级别在20ns级别。粗略换算一下每次create的开销大约是30k个时钟周期。简单对比可以看出，thread模式比fork模式大约快了5倍。</description>
+9.57,8.22,21098,0,0,0,104% 9.77,8.40,29704,0,0,0,104% 9.36,8.17,10390,0,0,0,106% 9.56,8.50,14514,0,0,0,107% 9.35,8.34,7244,0,0,0,108% 9.57,8.43,26351,0,0,0,106% 统计结果如下：
+time mean = 9.53 time var = 0.02 kernel mean = 8.34 kernel var = 0.013 解读数据可以看到，thread模式的开销为9530ns(已经降到纳秒级了)，CPU将为8340ns，精确级别在20ns级别。粗略换算一下每次create的开销大约是30k个时钟周期。简单对比可以看出，thread模式比fork模式大约快了5倍。</description>
     </item>
     
     <item>
@@ -81,13 +79,13 @@ import numpy as np p = lambda s: [float(line.strip().split(&#39;,&#39;)[0]) for 
       <pubDate>Tue, 28 Oct 2014 12:57:04 +0800</pubDate>
       
       <guid>//blog.shell909090.org/blog/archives/2682/</guid>
-      <description>测试环境  Intel&amp;reg; Pentium&amp;reg; CPU G2030 @ 3.00GHz 8G内存 debian jessie Linux 3.16-2-amd64 2014年10月27日  附注一下，该CPU有2核心，无HT，1ns3个时钟周期。
+      <description>测试环境 Intel(R) Pentium(R) CPU G2030 @ 3.00GHz 8G内存 debian jessie Linux 3.16-2-amd64 2014年10月27日 附注一下，该CPU有2核心，无HT，1ns3个时钟周期。
 测试方法 测试代码如下：
-time -f &amp;quot;%e,%S,%c,%r,%s,%K,%P&amp;quot; ./perf_fork  数据的意义分别为: 总时间，占用CPU时间，context switch次数，读/写次数，内存耗用，CPU使用百分比。
+time -f &amp;quot;%e,%S,%c,%r,%s,%K,%P&amp;quot; ./perf_fork 数据的意义分别为: 总时间，占用CPU时间，context switch次数，读/写次数，内存耗用，CPU使用百分比。
 数据处理方法如下：
-import numpy as np p = lambda s: [float(line.strip().split(&#39;,&#39;)[0]) for line in s.splitlines()] q = lambda s: [float(line.strip().split(&#39;,&#39;)[1]) for line in s.splitlines()] np.array(p(s)).mean() np.array(p(s)).var() np.array(q(s)).mean() np.array(q(s)).var()  进程fork开销 使用s_fork程序(注释语句关闭模式)，粒度1M次，重复6次，原始数据如下：
-49.04,26.83,29784,0,0,0,55% 51.53,26.38,32057,0,0,0,52% 49.88,26.02,30892,0,0,0,53% 51.39,27.13,37573,0,0,0,54% 52.89,28.12,37924,0,0,0,54% 51.19,27.02,35880,0,0,0,54%  统计结果如下：
- time mean = 50.98 time var = 1.</description>
+import numpy as np p = lambda s: [float(line.strip().split(&#39;,&#39;)[0]) for line in s.splitlines()] q = lambda s: [float(line.strip().split(&#39;,&#39;)[1]) for line in s.splitlines()] np.array(p(s)).mean() np.array(p(s)).var() np.array(q(s)).mean() np.array(q(s)).var() 进程fork开销 使用s_fork程序(注释语句关闭模式)，粒度1M次，重复6次，原始数据如下：
+49.04,26.83,29784,0,0,0,55% 51.53,26.38,32057,0,0,0,52% 49.88,26.02,30892,0,0,0,53% 51.39,27.13,37573,0,0,0,54% 52.89,28.12,37924,0,0,0,54% 51.19,27.02,35880,0,0,0,54% 统计结果如下：
+time mean = 50.98 time var = 1.52 cpu mean = 26.</description>
     </item>
     
     <item>
@@ -101,12 +99,12 @@ CVE-2014-6271 第一个漏洞，编号为CVE-2014-6271。相应的dsa和usn。
 具体的文章可以看这里。
 简单来说，当bash执行时看到有变量定义了一个函数，函数尾部又剩余了部分代码。会直接把剩余代码执行了。导致简单的变量定义动作有机会执行任意代码。
 对于未修补的系统，执行以下代码出现以下提示：
-$ env x=&#39;() { :;}; echo vulnerable&#39; bash -c &amp;quot;echo this is a test&amp;quot; vulnerable this is a test  注意echo vulnerable应当不被执行的。
+$ env x=&#39;() { :;}; echo vulnerable&#39; bash -c &amp;quot;echo this is a test&amp;quot; vulnerable this is a test 注意echo vulnerable应当不被执行的。
 修复的系统则是以下表现：
-$ env x=&#39;() { :;}; echo vulnerable&#39; bash -c &amp;quot;echo this is a test&amp;quot; bash: warning: x: ignoring function definition attempt bash: error importing function definition for `x&#39; this is a test  CVE-2014-7169 第二个漏洞，编号为CVE-2014-7169。
+$ env x=&#39;() { :;}; echo vulnerable&#39; bash -c &amp;quot;echo this is a test&amp;quot; bash: warning: x: ignoring function definition attempt bash: error importing function definition for `x&#39; this is a test CVE-2014-7169 第二个漏洞，编号为CVE-2014-7169。
 这个漏洞是第一个漏洞没有修复完全导致的，最麻烦的是，这个漏洞没有修复，细节却满天飞了。
 表现如下：
-$ env X=&#39;() { (a)=&amp;gt;\&#39; sh -c &amp;quot;echo date&amp;quot;; cat echo sh: X: line 1: syntax error near unexpected token `=&#39; sh: X: line 1: `&#39; sh: error importing function definition for `X&#39; Wed Sep 24 23:25:58 PDT 2014  结论和建议 尽量不要暴露bash，能关就关，不行的自求多福吧。</description>
+$ env X=&#39;() { (a)=&amp;gt;\&#39; sh -c &amp;quot;echo date&amp;quot;; cat echo sh: X: line 1: syntax error near unexpected token `=&#39; sh: X: line 1: `&#39; sh: error importing function definition for `X&#39; Wed Sep 24 23:25:58 PDT 2014 结论和建议 尽量不要暴露bash，能关就关，不行的自求多福吧。</description>
     </item>
     
     <item>
@@ -135,7 +133,7 @@ $ env X=&#39;() { (a)=&amp;gt;\&#39; sh -c &amp;quot;echo date&amp;quot;; cat ec
 怎么办？编译呗。
 这大概就是国内谈到RH必编译的由来。
 可是，我引用文内的一段话。
-如果我今天告诉大家，我要做一个 http 的服务器，我不用 apache 不用 nginx， 为了性能我要用 xxx 为基础重写一套出来。我相信绝大多数人会问同样的问题， “你觉得你写的能比 ng 好么？” 再回头看看那时候你们自己吧。  同样，自己编译的软件，补丁维护速度，能和新系统比么？而且我们还得扔一个人下去搞补丁维护。
+如果我今天告诉大家，我要做一个 http 的服务器，我不用 apache 不用 nginx， 为了性能我要用 xxx 为基础重写一套出来。我相信绝大多数人会问同样的问题， “你觉得你写的能比 ng 好么？” 再回头看看那时候你们自己吧。 同样，自己编译的软件，补丁维护速度，能和新系统比么？而且我们还得扔一个人下去搞补丁维护。
 所以，正解是什么？
 装一套新的，把数据导过去用呗。
 我们的”数据“，都是装载在磁盘上的。而换”系统“并不需要更新这些数据，只要把系统盘擦掉重部署一遍，然后配置好deploy系统就OK。在开发之初，”环境“，”程序“和”数据“分离，就是一项基本原则。而且即使是”数据“，丢掉一台机器上的所有”数据“也不会构成问题。这应当是运维基础中的基础。只有少数几台服务器，既不能直接更换也不能停机。这些机器我们做特别的管理。
@@ -148,7 +146,7 @@ $ env X=&#39;() { (a)=&amp;gt;\&#39; sh -c &amp;quot;echo date&amp;quot;; cat ec
 Debian系的补丁不靠谱么？ 那要看和谁比。这里有HeartBleed事件的统计。虽然不普遍，但是我觉得这种大漏洞比较有代表性。
 CVE-2014-0160 - OpenSSL安全漏洞的非技術事件
 我引用他的重点整理：
-RedHat 修復的速度比 OpenSSL 官方還快。 RedHat 派系的修復時間，除了 RedHat 外都算慢，如 Fedora 及 CentOS、Scentific， 他們都比 RedHat 慢 16 小時以上。 Debian 派系的修復時間，如 Debian 及 Ubuntu，都比 RedHat 慢上至少 12 小時以上。 Scentific 是列表中修復最慢的。 若以資安黃金 6 小時來說，Fedora、CentOS、OpenSUSE、Gentoo 及 Scentific 都不及格。  如果和RH比，Debian的修复速度是不及格，但是和CentOS比。。。怎么说呢？6个小时对10个小时，有种五十步笑百步的味道？</description>
+RedHat 修復的速度比 OpenSSL 官方還快。 RedHat 派系的修復時間，除了 RedHat 外都算慢，如 Fedora 及 CentOS、Scentific， 他們都比 RedHat 慢 16 小時以上。 Debian 派系的修復時間，如 Debian 及 Ubuntu，都比 RedHat 慢上至少 12 小時以上。 Scentific 是列表中修復最慢的。 若以資安黃金 6 小時來說，Fedora、CentOS、OpenSUSE、Gentoo 及 Scentific 都不及格。 如果和RH比，Debian的修复速度是不及格，但是和CentOS比。。。怎么说呢？6个小时对10个小时，有种五十步笑百步的味道？</description>
     </item>
     
     <item>
@@ -157,8 +155,8 @@ RedHat 修復的速度比 OpenSSL 官方還快。 RedHat 派系的修復時間�
       <pubDate>Mon, 30 Jun 2014 12:32:08 +0800</pubDate>
       
       <guid>//blog.shell909090.org/blog/archives/2650/</guid>
-      <description> 从虚拟化的种类和层级说起  cpu虚拟化：可以模拟不同CPU，例如bochs 完全虚拟化：只能模拟同样CPU，但是可以执行不同系统，例如vmware 半虚拟化：guest必须打补丁，例如Xen 硬件虚拟化：可以当作获得硬件加速的完全虚拟化 系统虚拟化：host和guest共享一样的内核，例如Openvz 语言沙盒：只能在语言的范围内使用  虚拟化的级别越偏底层，速度越慢，用户越难察觉到虚拟化的存在。 虚拟化的级别越偏上层，速度越快，用户越容易感知。
- cpu虚拟化和完全虚拟化时，用户几乎可以不察觉到虚拟化的存在 半虚拟化时，guest内核必须存在补丁 系统虚拟化时，用户不能控制自己的内核 语言沙盒时，用户没有使用api的自由  docker的实现结构  docker  lxc namespace: 仅沙盒隔离，不限制资源。 cgroup: 仅限制资源，不沙盒隔离。 aufs image管理   当然，还有很多细节的东西，里面就不一一列举了。例如veth。
+      <description>从虚拟化的种类和层级说起 cpu虚拟化：可以模拟不同CPU，例如bochs 完全虚拟化：只能模拟同样CPU，但是可以执行不同系统，例如vmware 半虚拟化：guest必须打补丁，例如Xen 硬件虚拟化：可以当作获得硬件加速的完全虚拟化 系统虚拟化：host和guest共享一样的内核，例如Openvz 语言沙盒：只能在语言的范围内使用 虚拟化的级别越偏底层，速度越慢，用户越难察觉到虚拟化的存在。 虚拟化的级别越偏上层，速度越快，用户越容易感知。
+cpu虚拟化和完全虚拟化时，用户几乎可以不察觉到虚拟化的存在 半虚拟化时，guest内核必须存在补丁 系统虚拟化时，用户不能控制自己的内核 语言沙盒时，用户没有使用api的自由 docker的实现结构 docker lxc namespace: 仅沙盒隔离，不限制资源。 cgroup: 仅限制资源，不沙盒隔离。 aufs image管理 当然，还有很多细节的东西，里面就不一一列举了。例如veth。
 docker不是虚拟机 docker不是虚拟机，因为lxc已经是虚拟机。如果两者功能一样，那么docker就没有存在的必要。
 你可以把docker当虚拟机用，但是当虚拟机用的话，他的完备程度远远不及现在的种种虚拟机。相比之下，就会觉得很不好用。这不是docker的错，只能说被不正确的使用了。
 docker是什么 docker就是环境。
@@ -167,14 +165,14 @@ docker实际上只做了一件事情——镜像管理。负责将可执行的�
 将这个思路推到极限，就是虚拟机发布。早些年有人发过一些Oracle的linux安装镜像，算的上是先驱。因为Oracle早些年的安装程序很难用，对系统的依赖复杂。公司做测试用装一套Oracle还不够麻烦的。相比起来，下载一个虚拟机直接跑起来就可以用就方便了很多。即使性能差一些，测试而已也不是特别在意。
 docker再进了一步。不但提供一个镜像，可以在系统间方便的迁移。而且连镜像的升级都能做掉。更爽的是，升级只用传输差量数据。当然，有好处就有牺牲。
 docker的镜像是只读的 其实不是，docker的镜像当然可以写入。但是写的时候有几个问题。
- 如果对镜像进行写入，aufs会将原始文件复制一次，再进行写入。这样性能比较低。 更直接的问题是，一旦对镜像做了写入，就无法从docker这里获得更新支持——docker不能将你的写入和上游的更新合并。因此，整个系统就退化成了一个完全的虚拟机。  所以，我个人认为，docker的镜像本身应当是只读的——如同EC2里面一样。数据的写入应当通过远程文件系统或者数据库服务来解决。
+如果对镜像进行写入，aufs会将原始文件复制一次，再进行写入。这样性能比较低。 更直接的问题是，一旦对镜像做了写入，就无法从docker这里获得更新支持——docker不能将你的写入和上游的更新合并。因此，整个系统就退化成了一个完全的虚拟机。 所以，我个人认为，docker的镜像本身应当是只读的——如同EC2里面一样。数据的写入应当通过远程文件系统或者数据库服务来解决。
 vagrant 提到镜像管理，我们可以提一下同样属于镜像管理的一个软件——vagrant。
- 可以将vbox的镜像打包导入导出 提供了一个cloud，允许镜像的分享/更新  为什么vagrant不如docker出名  快，系统级虚拟化使得docker的虚拟化开销降低到百分级别以下。 可以在虚拟机内使用的虚拟机，例如云主机内。 资源调度灵活，不需要将资源预先划定给不同的实例，在不同资源的机器上也不用调整参数。  成功案例 编译系统/打包系统/集成测试环境 典型的搭建一次，执行一次，销毁一次。不需要对image做更改（准确说的需要做更改，但是不需要保存）。
+可以将vbox的镜像打包导入导出 提供了一个cloud，允许镜像的分享/更新 为什么vagrant不如docker出名 快，系统级虚拟化使得docker的虚拟化开销降低到百分级别以下。 可以在虚拟机内使用的虚拟机，例如云主机内。 资源调度灵活，不需要将资源预先划定给不同的实例，在不同资源的机器上也不用调整参数。 成功案例 编译系统/打包系统/集成测试环境 典型的搭建一次，执行一次，销毁一次。不需要对image做更改（准确说的需要做更改，但是不需要保存）。
 公司内部应用 在IaaS的比拼中，以Openvz为代表的系统化虚拟化方案几乎完败于完全虚拟化/半虚拟化系列技术。就我和朋友的讨论，这里面最主要的因素在于。完全虚拟化技术可以比较好的隔离实例和实例间的资源使用，而系统虚拟化技术更偏向于将资源充分利用。这使得系统虚拟化更容易超售。
 然而，在公司内部应用中，这一缺陷就变成了优势。企业的诸多系统，只要在同一个优先级，其可用性应当是一致的。几个联动系统中，一个资源不足陷于濒死的情况下，保持其他几个系统资源充足并无意义。而且总资源是否足够应当是得到充分保证的事情，企业自己“超售”自己的资源，使得业务系统陷入运行缓慢的境地一点意义都没有。
 因此，系统虚拟化可以为企业级云计算提供可以灵活调度的资源，和非常低的额外开销。
 当然，云计算在企业化中原本就面临一些问题。原本提供软-硬件统一解决方案的集成商，需要如何重新组织解决方案。如何协调节约资源和高性能，高可用。云计算在企业级应用中还有很长的路要走。
-短板  太新。目前成功案例还是不足，而且围绕docker的工具链还不完备。 适用范围比较窄。需求需要集中在“环境迁移”领域，而且image本身不应被写入。 生不逢时。rvm和virtualenv已经在前面了。  </description>
+短板 太新。目前成功案例还是不足，而且围绕docker的工具链还不完备。 适用范围比较窄。需求需要集中在“环境迁移”领域，而且image本身不应被写入。 生不逢时。rvm和virtualenv已经在前面了。 </description>
     </item>
     
     <item>
@@ -185,9 +183,9 @@ vagrant 提到镜像管理，我们可以提一下同样属于镜像管理的一
       <guid>//blog.shell909090.org/blog/archives/2642/</guid>
       <description>机器配置 ubuntu 12.04
 内核版本：3.11.0-20-generic
-ulimit的限制效果  ulimit -m 8192 当内存突破8M时，什么事情都没有发生。直到38M都没任何反应。
- ulimit -v 65536 python抛出MemoryError
-  cgroup的限制效果  echo 8388608 &amp;gt; memory.limit_in_bytes  大小不对，cgroup的内存量计算方法和ps/status不一致。因此限制计数需要根据具体情况调整。
+ulimit的限制效果 ulimit -m 8192 当内存突破8M时，什么事情都没有发生。直到38M都没任何反应。
+ulimit -v 65536 python抛出MemoryError
+cgroup的限制效果 echo 8388608 &amp;gt; memory.limit_in_bytes 大小不对，cgroup的内存量计算方法和ps/status不一致。因此限制计数需要根据具体情况调整。
 内核计数 /proc/[pid]/statm size (1) total program size (same as VmSize in /proc/[pid]/status) resident (2) resident set size (same as VmRSS in /proc/[pid]/status) share (3) shared pages (i.e., backed by a file) text (4) text (code) lib (5) library (unused in Linux 2.6) data (6) data + stack dt (7) dirty pages (unused in Linux 2.</description>
     </item>
     
@@ -208,7 +206,7 @@ OK，言归正转。为了解释这个疑惑，我特意的去看了一下内核
 ——问题是咱脑子不清不楚的就没想这差异，而且咱连man proc都没查。。。
 另外顺便说一句，内核也告诉了我们一点东西——load计算的时候是连内核线程一起算的。
 清楚这点差异后，问题的原因也很清楚了——肯定是哪里有很高的D。用ps -e Hl | grep -e R -e D扫了一下，再用wc -l做了一下统计。214个线程在D(或者R，或者只是不小心被grep到，但是实际上大部分都是D)。系统当前的loadavg正好长这样：
-214.12 156.63 82.25 7/4629 10027  7个执行中线程&amp;reg;，207个uninterruptible。
+214.12 156.63 82.25 7/4629 10027 7个执行中线程(R)，207个uninterruptible。
 ——所有的谜都解开了。</description>
     </item>
     
@@ -229,10 +227,10 @@ Mar 11 14:45:34 nb81 kernel: [7352493.081026] swapper/0: page allocation failure
       
       <guid>//blog.shell909090.org/blog/archives/2561/</guid>
       <description>setup Add to /etc/fstab.
-cgroup /sys/fs/cgroup cgroup defaults 0 2  Then sudo mount -a.
+cgroup /sys/fs/cgroup cgroup defaults 0 2 Then sudo mount -a.
 Change directory to /sys/fs/cgroup/. Use mkdir to create a new group, and initalize it like those.
-echo 0-3 &amp;gt;&amp;gt; cpuset.cpus echo 0 &amp;gt; cpuset.mems  Without those two step, next operator will failure.
-echo 0 &amp;gt; memory.swappiness echo 52428800 &amp;gt; memory.limit_in_bytes  Set memory limit 50M, and forbidden swap.
+echo 0-3 &amp;gt;&amp;gt; cpuset.cpus echo 0 &amp;gt; cpuset.mems Without those two step, next operator will failure.
+echo 0 &amp;gt; memory.swappiness echo 52428800 &amp;gt; memory.limit_in_bytes Set memory limit 50M, and forbidden swap.
 python test code import os, sys, time, random, string def main(): l = [] random.</description>
     </item>
     
@@ -242,9 +240,9 @@ python test code import os, sys, time, random, string def main(): l = [] random.
       <pubDate>Fri, 24 Jan 2014 12:33:39 +0800</pubDate>
       
       <guid>//blog.shell909090.org/blog/archives/2545/</guid>
-      <description>client config # base config client dev tun proto udp remote 192.168.1.122 1194 nobind user nobody group nogroup persist-key persist-tun mute-replay-warnings comp-lzo # authentication config ca ca.crt cert shell.crt key shell.key ns-cert-type server tls-auth ta.key 1 auth-user-pass  Group should be nogroup, not nobody in debian.
+      <description>client config # base config client dev tun proto udp remote 192.168.1.122 1194 nobind user nobody group nogroup persist-key persist-tun mute-replay-warnings comp-lzo # authentication config ca ca.crt cert shell.crt key shell.key ns-cert-type server tls-auth ta.key 1 auth-user-pass Group should be nogroup, not nobody in debian.
 auth-user-pass is needed for google auth.
-pam config account [success=2 new_authtok_reqd=done default=ignore] pam_unix.so account [success=1 new_authtok_reqd=done default=ignore] pam_winbind.so account requisite pam_deny.so account required pam_permit.</description>
+pam config account [success=2 new_authtok_reqd=done default=ignore] pam_unix.so account [success=1 new_authtok_reqd=done default=ignore] pam_winbind.so account requisite pam_deny.so account required pam_permit.so auth required pam_google_authenticator.</description>
     </item>
     
     <item>
@@ -256,11 +254,11 @@ pam config account [success=2 new_authtok_reqd=done default=ignore] pam_unix.so 
       <description>说明 测试各种虚拟化系统下的虚拟机性能。
 测试使用sysbench。
 CPU采用如下指令测试。
-sysbench --test=cpu --num-threads=2 --cpu-max-prime=50000 run  文件IO采用如下指令测试。
-sysbench --test=fileio --file-total-size=10G prepare sysbench --test=fileio --file-total-size=10G --file-test-mode=rndrw --init-rng=on --max-time=300 --max-requests=0 run  内存采用如下指令测试。
-sysbench --test=memory --num-threads=2 --memory-access-mode=seq run sysbench --test=memory --num-threads=2 --memory-access-mode=rnd run  线程采用如下指令。
-sysbench --test=threads --num-threads=2 run sysbench --test=mutex --num-threads=2 --mutex-locks=1000000 run  裸硬盘测试采用如下指令。
-hdparm -tT &amp;lt;dev&amp;gt;  物理机上有三个文件系统，ext4/xfs/btrfs，前两者仅做fileio测试以对比性能。
+sysbench --test=cpu --num-threads=2 --cpu-max-prime=50000 run 文件IO采用如下指令测试。
+sysbench --test=fileio --file-total-size=10G prepare sysbench --test=fileio --file-total-size=10G --file-test-mode=rndrw --init-rng=on --max-time=300 --max-requests=0 run 内存采用如下指令测试。
+sysbench --test=memory --num-threads=2 --memory-access-mode=seq run sysbench --test=memory --num-threads=2 --memory-access-mode=rnd run 线程采用如下指令。
+sysbench --test=threads --num-threads=2 run sysbench --test=mutex --num-threads=2 --mutex-locks=1000000 run 裸硬盘测试采用如下指令。
+hdparm -tT &amp;lt;dev&amp;gt; 物理机上有三个文件系统，ext4/xfs/btrfs，前两者仅做fileio测试以对比性能。
 另外做两个特殊文件系统对比，aufs带复制和aufs无复制。前者在只读层上准备好测试文件，而后进行随机读写测试。其中就附带了文件复制开销。后者在aufs建立后初始化测试文件，因此消除了文件复制开销。
 所有测试都是测试数次，取最高者（因为低者可能受到各种干扰）。一般是2-3次。
 物理机是一台DELL Intel 64位桌面系统，支持硬件虚拟化，有4G内存。系统采用debian jessie，测试于2014年1月17日-20日执行，内核3.12.6-2 (2013-12-29) x86_64。
@@ -277,14 +275,15 @@ hdparm -tT &amp;lt;dev&amp;gt;  物理机上有三个文件系统，ext4/xfs/btr
       <guid>//blog.shell909090.org/blog/archives/2533/</guid>
       <description>基本安装 安装lxc包。
 注意修改/bin/sh，链接到/bin/bash。lxc在某些版本上有一个bug，声明为/bin/sh却使用bash语法，导致不如此链接会出现错误。
- lxc on debian wiki  镜像和设定 使用lxc-create -n name -t template生成镜像。
+lxc on debian wiki 镜像和设定 使用lxc-create -n name -t template生成镜像。
 在/usr/share/lxc/templates可以看到可用的模板。
 在/var/cache/lxc/debian会缓存生成过程的临时文件。
 生成的镜像需要在镜像内安装lxc，否则无法使用lxc-execute。
 资源限制 在config文件内，写入cgroup限定规则。注意，使用内存限定的话，需要在内核参数中加入cgroup_enable=memory。
 在debian下，可以修改/etc/default/grub文件，使用update-grub重新生成规则。
-GRUB_CMDLINE_LINUX_DEFAULT=&amp;quot;cgroup_enable=memory quiet&amp;quot;  在config文件中可以如下限定。
-lxc.cgroup.memory.limit_in_bytes = 512M # 限定内存 lxc.cgroup.cpuset.cpus = 0 # 限定可以使用的核 lxc.cgroup.blkio.throttle.read_bps_device = 8:0 100 # 读取速率限定 lxc.cgroup.blkio.throttle.write_bps_device = 8:0 100 # 写入速率限定 lxc.cgroup.blkio.throttle.read_iops_device = 8:0 100 # 读取频率限定 lxc.cgroup.blkio.throttle.write_iops_device = 8:0 100 # 写入频率限定   cgroups blkio-controller cpusets memory  执行 lxc-start -n name /bin/echo hello  还可以用以下指令，在已经启动的container里执行进程。</description>
+GRUB_CMDLINE_LINUX_DEFAULT=&amp;quot;cgroup_enable=memory quiet&amp;quot; 在config文件中可以如下限定。
+lxc.cgroup.memory.limit_in_bytes = 512M # 限定内存 lxc.cgroup.cpuset.cpus = 0 # 限定可以使用的核 lxc.cgroup.blkio.throttle.read_bps_device = 8:0 100 # 读取速率限定 lxc.cgroup.blkio.throttle.write_bps_device = 8:0 100 # 写入速率限定 lxc.cgroup.blkio.throttle.read_iops_device = 8:0 100 # 读取频率限定 lxc.cgroup.blkio.throttle.write_iops_device = 8:0 100 # 写入频率限定 cgroups blkio-controller cpusets memory 执行 lxc-start -n name /bin/echo hello 还可以用以下指令，在已经启动的container里执行进程。
+lxc-attach -n name /bin/echo hello 以下指令是用来在未启动的container里执行进程的。</description>
     </item>
     
     <item>
@@ -326,14 +325,14 @@ nagios页面在nginx上的配置 这个过程比较繁琐，因为apache会自�
 首先，你需要安装php-fpm宿主进程，这个是nginx搭配php执行的最佳宿主。在nagios中有用到php，所以你需要php执行能力。
 其次，安装fcgiwrap这个包。这是cgi执行宿主，以fastcgi协议暴露。这里需要注意。如果你的nginx和nagios的宿主不在同一个设备上（例如像贝壳这样执行了虚拟化的），那么实际上只要在nagios的宿主上执行fcgiwrap即可。php-fpm和nginx可以执行在其他不同设备上，没有关系。只是前者必须有nagios的cgi代码，后两者必须有nagios的网页和php代码。而这三者又都在nagios3-cgi包里面。因此几台机器都需要安装nagios3-cgi包。
 最后，配置nginx。
-location /nagios3 { index index.html index.htm index.php; } location /nagios3/stylesheets { root /etc; }  第一个映射是nagios的基础目录，在根目录中，我其实配置了nagios3 -&amp;gt; /usr/share/nagios3/htdocs/（debian中的链接位置）。第二个映射是样式表配置，我用系统缺省的。
-location ~ ^/nagios3/.*.php$ { include fastcgi_params; fastcgi_pass unix:/var/run/php5-fpm.sock; }  这个是nagios的php解析代码。我的php-fpm执行在同一台机器上，因此直接如此配置即可。
-location /cgi-bin/nagios3 { root /usr/lib; include fastcgi_params; fastcgi_param REMOTE_USER $remote_user; fastcgi_pass dev:port; }  最后是cgi暴露的配置。由于我的nagios宿主并不在web服务器上，因此fastcgi是个远程地址。而且注意REMOTE_USER，传递这个才能让远程认到你的用户basic auth。由于nagios的cgi通过这个工作，因此没有这个会直接导致对方始终认为你是无权限用户。
+location /nagios3 { index index.html index.htm index.php; } location /nagios3/stylesheets { root /etc; } 第一个映射是nagios的基础目录，在根目录中，我其实配置了nagios3 -&amp;gt; /usr/share/nagios3/htdocs/（debian中的链接位置）。第二个映射是样式表配置，我用系统缺省的。
+location ~ ^/nagios3/.*.php$ { include fastcgi_params; fastcgi_pass unix:/var/run/php5-fpm.sock; } 这个是nagios的php解析代码。我的php-fpm执行在同一台机器上，因此直接如此配置即可。
+location /cgi-bin/nagios3 { root /usr/lib; include fastcgi_params; fastcgi_param REMOTE_USER $remote_user; fastcgi_pass dev:port; } 最后是cgi暴露的配置。由于我的nagios宿主并不在web服务器上，因此fastcgi是个远程地址。而且注意REMOTE_USER，传递这个才能让远程认到你的用户basic auth。由于nagios的cgi通过这个工作，因此没有这个会直接导致对方始终认为你是无权限用户。
 nagios的简单配置 我们首先认清一点，nagios并不负责管理机器的维护。他的设计目标是“可用性”。因此目标是否可达，服务是否可用，是nagios的关心重点。至于磁盘，负载，只是顺便监控而已。所以你可以看到，nagios并没有直接的插件来监控CPU或者内存。他只有snmp插件可以查询到这些数据。
 所以，我们开心一点。最低限度，我们将所有需要监控的设备和服务端口加入列表。当这些设备不可达时，nagios会发出告警（有邮件）。而如果运气好，我们是可以监控到这台机器是否有apt包需要升级，磁盘空间是否够的。作为建议，其实你只需要监控load和磁盘空间利用率就够了。其余的东西一般不大需要。当内存或者CPU发生问题的时候，你的query其实也拿不到返回。相对的，目标端口很快失去响应进而引发告警才是我们的预期。
 OK，在这个基础之上，让我们看看有什么可以配置的。
 服务器添加 首先，你可以定义一些机器。localhost_nagios2.cfg里面有例子，大致是这个样子。
-define host{ use generic-host ; Name of host template to use host_name host alias host address IP }  我建议你专门弄个文件来管理这些自己的设备，例如我这里叫hosts.</description>
+define host{ use generic-host ; Name of host template to use host_name host alias host address IP } 我建议你专门弄个文件来管理这些自己的设备，例如我这里叫hosts.</description>
     </item>
     
     <item>
@@ -342,23 +341,23 @@ define host{ use generic-host ; Name of host template to use host_name host alia
       <pubDate>Fri, 24 May 2013 09:25:36 +0800</pubDate>
       
       <guid>//blog.shell909090.org/blog/archives/2404/</guid>
-      <description> 为什么使用路由模式 lxc默认使用的是桥模式，这也是我在家里和公司里部署的模式。在这种模式下，lxc虚拟机可以直接和真实网络中的机器互相访问，就如同一台真的机器一样。路由模式则没有这个便利性。
+      <description>为什么使用路由模式 lxc默认使用的是桥模式，这也是我在家里和公司里部署的模式。在这种模式下，lxc虚拟机可以直接和真实网络中的机器互相访问，就如同一台真的机器一样。路由模式则没有这个便利性。
 但是桥模式有个缺陷，必须能够做出桥来。我们有做不出桥来的时候么？有，如果你用笔记本，大部分AP会拒绝第二个MAC地址的包。导致网桥可以组建，却永远无法正常使用。
 第一种路由模式，双重NAT简版 双重NAT可以用于几乎所有场景，并且不会带来后遗症。然而，双重NAT的问题在于，物理网络不能直接访问虚拟机。对于很多设备来说，这就失去了价值。另外说一点，之所以叫做双重NAT，是因为多数时候物理网络接到外网还需要一次NAT。
 lxc的双重NAT可以视为两步，建立NAT连接的虚拟网络，将lxc连接到虚拟网络。
 第一步比较复杂，我们先从br0的建立开始说起。首先，你需要为虚拟网络分配一个不同的保留内网网段。如果使用同样的内网网段，在ARP查询的时候会从一个端口发出超过一个的MAC回应，这就退回了桥模式。
 然后我们需要建立一个br0网桥作为配置的起点，对这个网桥赋予IP，配置路由和防火墙，并启动dnsmasq以便于dhcp和dns。这个模式之所以叫做简版，是因为我们先不讨论dnsmasq。
 假如你的lxc内网网段是192.168.66.0/24，那么你大致可以如下配置：
-brctl addbr br0 ifconfig br0 192.168.66.1 route add -net 192.168.66.0/24 dev br0 iptables -A INPUT -s 192.168.66.0/24 -j ACCEPT iptables -t nat -A POSTROUTING -s 192.168.66.0/24 -j MASQUERADE  实际上，对于任何一种网口设备，将其配置为NAT的过程都是一样的。
+brctl addbr br0 ifconfig br0 192.168.66.1 route add -net 192.168.66.0/24 dev br0 iptables -A INPUT -s 192.168.66.0/24 -j ACCEPT iptables -t nat -A POSTROUTING -s 192.168.66.0/24 -j MASQUERADE 实际上，对于任何一种网口设备，将其配置为NAT的过程都是一样的。
 第二步非常容易，在lxc的config文件内，指定网桥为br0就OK了。当然，作为略去dnsmasq的代价，你需要手工配置每台机器的IP地址和DNS服务器。
 第二种路由模式，双重NAT 双重NAT的完整版需要在内网网口上启动dns，作为dns缓存代理和dhcp服务器。其余和第一种模式没有区别，只是你不需要手工指定IP和DNS服务器了。
 当然，其实任何一种网口的NAT配置都是一样的。
 第三种路由模式，双边交互路由 第三种路由模式的效果最好，虚拟机和真实机可以互相访问。但是这种模式需要能够修改物理网络网关的路由表。这种模式使用主机作为路由器，中转真实网络和虚拟网络。
 我略去如何创造br以及如何将lxc连接到上面，这些前面有叙述。下面我简述一下双边路由最关键的几点。
- 最重要的重点，就是在真实网络的网关上，将你的真实物理机在外网的IP，配置为虚拟网络的下一跳网关。例如，对于上面的例子，我们应当在网关上如此配置。
+最重要的重点，就是在真实网络的网关上，将你的真实物理机在外网的IP，配置为虚拟网络的下一跳网关。例如，对于上面的例子，我们应当在网关上如此配置。
 route add -net 192.168.66.0/24 gw 192.168.1.4
-  如果不进行如此配置，物理网络所发出的包在到达网关后就不知道应当如何转发了。
- 在物理机上允许双边网络的所有包透过。你的包当然不能被防火墙挡掉。 虚拟网络的dhcp是不会传递到外网的，因此如果打算使用dhcp，还是需要开dnsmasq。  </description>
+如果不进行如此配置，物理网络所发出的包在到达网关后就不知道应当如何转发了。
+在物理机上允许双边网络的所有包透过。你的包当然不能被防火墙挡掉。 虚拟网络的dhcp是不会传递到外网的，因此如果打算使用dhcp，还是需要开dnsmasq。 </description>
     </item>
     
     <item>
@@ -374,9 +373,9 @@ route add -net 192.168.66.0/24 gw 192.168.1.4
 找一个交换机来，把物理设备的网卡用网线连接到上面，把虚拟机的网卡连接到上面，再把外网网线接上去，OK，齐活了。
 brctl创立出来的网桥就是这么工作的。
 你原本的物理网卡，例如eth0，我们直接为他分配IP，进行通讯。结构大概是这个样子的。
-system -- eth0 -- network  接入网桥这个假的交换机后，eth0依然负责向外通讯，但是没有自己的IP了。网桥和宿主所在的机器的连接叫做br0（或者br1，以此类推）。
-system -- br0 -- eth0 -- network  然后，我们可以为这个交换机接入很多的设备。
-system -- br0 -- eth0 -- network | vethXX | virtual -- eth0 /  其中，eth0和vethXX是一对设备。一个在宿主里，一个在虚拟机里。互相连通。
+system -- eth0 -- network 接入网桥这个假的交换机后，eth0依然负责向外通讯，但是没有自己的IP了。网桥和宿主所在的机器的连接叫做br0（或者br1，以此类推）。
+system -- br0 -- eth0 -- network 然后，我们可以为这个交换机接入很多的设备。
+system -- br0 -- eth0 -- network | vethXX | virtual -- eth0 / 其中，eth0和vethXX是一对设备。一个在宿主里，一个在虚拟机里。互相连通。
 所以，当虚拟机发生通讯时，eth0上可以看到数据流，但是br0上看不到。而如果虚拟机和宿主通讯时，eth0看不到数据流，br0上可以。</description>
     </item>
     
@@ -387,10 +386,10 @@ system -- br0 -- eth0 -- network | vethXX | virtual -- eth0 /  其中，eth0和
       
       <guid>//blog.shell909090.org/blog/archives/2334/</guid>
       <description>在lxc中，可以利用mount bind指定guest可以访问某些host的路径。例如：
-lxc.mount.entry = /home/shell /var/lib/lxc/{vmname}/rootfs/home/shell none defaults,bind 0 0  注意，/home/shell是你希望共享的主机路径，/var/lib&amp;hellip;/shell是映射到的目标路径。
+lxc.mount.entry = /home/shell /var/lib/lxc/{vmname}/rootfs/home/shell none defaults,bind 0 0 注意，/home/shell是你希望共享的主机路径，/var/lib&amp;hellip;/shell是映射到的目标路径。
 这个工作的基础原理，是在虚拟机启动的时候，自动执行mount，添加一条bind映射，将host的路径挂到guest可以访问的路径里去。
 由此，我发现了一个lxc在文件共享时的严重bug。
-user@guest:~$ mkdir -p ttt/123 user@guest:~$ cd ttt/123 user@host:~$ mv /var/lib/lxc/{vmname}/rootfs/home/user/ttt/123 . user@guest:~/ttt/123$ cd .. user@guest:(unreachable)/user$ ls -l  好了，现在guest在host的~user/目录下，host上本来不应当被看到的东西全被看光光了。
+user@guest:~$ mkdir -p ttt/123 user@guest:~$ cd ttt/123 user@host:~$ mv /var/lib/lxc/{vmname}/rootfs/home/user/ttt/123 . user@guest:~/ttt/123$ cd .. user@guest:(unreachable)/user$ ls -l 好了，现在guest在host的~user/目录下，host上本来不应当被看到的东西全被看光光了。
 更严重的是，如果此时sudo成root，在host中可以以root的身份做任何事情。
 结论：暂时来说，不要在host和guest之间直接共享任何数据。</description>
     </item>
@@ -402,9 +401,9 @@ user@guest:~$ mkdir -p ttt/123 user@guest:~$ cd ttt/123 user@host:~$ mv /var/lib
       
       <guid>//blog.shell909090.org/blog/archives/2332/</guid>
       <description>问题1 以下代码。
-int main() { fork(); fork(); fork(); printf(&amp;quot;---n&amp;quot;); return 0; }  编译后执行./a.out | wc -l，输出多少？
+int main() { fork(); fork(); fork(); printf(&amp;quot;---n&amp;quot;); return 0; } 编译后执行./a.out | wc -l，输出多少？
 问题2 以下代码。
-int main() { fork(); printf(&amp;quot;b&amp;quot;); if (fork() == 0) { write(1, &amp;quot;a&amp;quot;, 1); }else{ write(1, &amp;quot;c&amp;quot;, 1); } return 0; }  编译后执行./a.out，输出多少？
+int main() { fork(); printf(&amp;quot;b&amp;quot;); if (fork() == 0) { write(1, &amp;quot;a&amp;quot;, 1); }else{ write(1, &amp;quot;c&amp;quot;, 1); } return 0; } 编译后执行./a.out，输出多少？
 答案 第一个是8，因为pipe会继承。
 第二个是cabcbbab，结果不恒定，原因比较复杂。至少应当能看懂2个a2个c4个b，c先出ab后出最后一个是b。</description>
     </item>
@@ -417,12 +416,12 @@ int main() { fork(); printf(&amp;quot;b&amp;quot;); if (fork() == 0) { write(1, 
       <guid>//blog.shell909090.org/blog/archives/2329/</guid>
       <description>目前debian testing里面的lxc是无法运作的。原因是live-debconfig这个包只在sid中存在，而lxc是借助这个包来做系统初始化设定的。没有设定就结束初始化会挂掉系统。
 解决方法如下：
-dget -x http://ftp.de.debian.org/debian/pool/main/l/lxc/lxc_0.9.0~alpha2-4.dsc  可能因为没有key而无法解压，用dpkg-source -x解压开内容即可。
-aptitude install autotools-dev docbook2x libapparmor-dev libcap-dev linux-libc-dev  然后进入目录，dpkg-buildpackage -rfakeroot -d进行编译。
+dget -x http://ftp.de.debian.org/debian/pool/main/l/lxc/lxc_0.9.0~alpha2-4.dsc 可能因为没有key而无法解压，用dpkg-source -x解压开内容即可。
+aptitude install autotools-dev docbook2x libapparmor-dev libcap-dev linux-libc-dev 然后进入目录，dpkg-buildpackage -rfakeroot -d进行编译。
 退出目录，dpkg -i lxc&amp;hellip;进行安装。
 到/usr/share/lxc/packages/，wget http://ftp.cn.debian.org/debian/pool/main/l/live-debconfig/live-debconfig_4.0~a15-1_all.deb。
 然后再执行常规操作。
-lxc-create -n vm0 -t debian lxc-start -n vm0  启动正常了。
+lxc-create -n vm0 -t debian lxc-start -n vm0 启动正常了。
 在debian wheezy 3.2.0-4-686-pae下测试通过。</description>
     </item>
     
@@ -493,21 +492,21 @@ http://code.google.com/p/tunnelblick/
       
       <guid>//blog.shell909090.org/blog/archives/2200/</guid>
       <description>abstract graphite是一个python写的性能监控系统。这个系统是由多个分离的部分组成的。
- graphite-web: 由django写的web界面系统。 carbon: 数据收集的守护进程。 whisper: 一种python写的数据库，类似rrd，便于大量的性能日志数据收集和处理。上两个组件会调用这个库。 collectd: 数据收集守护进程，向carbon中喂数据的数据源。  另外，有一点黑色幽默的就是，graphite的意思是石墨，是炭(carbon)的一种同素异形体。因此在graphite项目中，多次出现carbon这个名字。当然，另两个同素异形体是钻石(diamond)和足球烯(footballene)，你就暂时别指望看到他们的身影了。
+graphite-web: 由django写的web界面系统。 carbon: 数据收集的守护进程。 whisper: 一种python写的数据库，类似rrd，便于大量的性能日志数据收集和处理。上两个组件会调用这个库。 collectd: 数据收集守护进程，向carbon中喂数据的数据源。 另外，有一点黑色幽默的就是，graphite的意思是石墨，是炭(carbon)的一种同素异形体。因此在graphite项目中，多次出现carbon这个名字。当然，另两个同素异形体是钻石(diamond)和足球烯(footballene)，你就暂时别指望看到他们的身影了。
 另一个用python写的，以元素命名的著名软件是mercurial。化学元素中的汞，俗称水银，符号hg。因此mercurial的命令行简写才是hg。
 以上几个的结构大概是这样的：
 collectd(source) -network-&amp;gt; carbon -&amp;gt; writing-&amp;gt; whisper
 database -&amp;gt; reading-&amp;gt; graphite-web
 下文描述了在debian wheezy下，以nginx+uwsgi模式安装graphite的过程。之所以用这个模式，是因为我的大部分系统都是python写的，同样安装在uwsgi下面。一事不烦二主。
 carbon carbon有对应的debian包，可以很简单的安装。
-sudo aptitude install graphite-carbon  默认的数据端口是2003，默认的数据路径是/var/lib/graphite/，这个在下文需要用到。
+sudo aptitude install graphite-carbon 默认的数据端口是2003，默认的数据路径是/var/lib/graphite/，这个在下文需要用到。
 graphite virtual graphite有部分需要安装到系统中，因此最好用virtualenv进行安装。
-cd /var/web/ sudo aptitude install python-virtualenv virtualenv --system-site-packages graphite  我假定你的安装路径是/var/web/graphite，这个在下面要反复用到。
+cd /var/web/ sudo aptitude install python-virtualenv virtualenv --system-site-packages graphite 我假定你的安装路径是/var/web/graphite，这个在下面要反复用到。
 install 在安装路径下，执行以下内容
-source bin/activite pip install graphite-web --install-option=&amp;quot;--prefix=/var/web/graphite&amp;quot; --install-option=&amp;quot;--install-lib=/var/web/graphite/webapp&amp;quot;  注意，/var/web/graphite需要根据上面的设定自行修改，webapp是你的django基础路径。
+source bin/activite pip install graphite-web --install-option=&amp;quot;--prefix=/var/web/graphite&amp;quot; --install-option=&amp;quot;--install-lib=/var/web/graphite/webapp&amp;quot; 注意，/var/web/graphite需要根据上面的设定自行修改，webapp是你的django基础路径。
 configure 在/var/web/graphite/webapp/graphite下面，执行以下内容
-cp local_settings.py.example local_settings.py  然后编辑local_settings.py
-GRAPHITE_ROOT = &#39;/var/web/graphite&#39; WHISPER_DIR = &#39;/var/lib/graphite/whisper&#39; DATABASES = .</description>
+cp local_settings.py.example local_settings.py 然后编辑local_settings.py
+GRAPHITE_ROOT = &#39;/var/web/graphite&#39; WHISPER_DIR = &#39;/var/lib/graphite/whisper&#39; DATABASES = ... 注意databases，不要在settings.</description>
     </item>
     
     <item>
@@ -516,16 +515,16 @@ GRAPHITE_ROOT = &#39;/var/web/graphite&#39; WHISPER_DIR = &#39;/var/lib/graphite
       <pubDate>Mon, 11 Jun 2012 03:19:54 +0800</pubDate>
       
       <guid>//blog.shell909090.org/blog/archives/2192/</guid>
-      <description> 简述 这篇文章说的是如何实现multiseat，必须的条件和步骤等等。
+      <description>简述 这篇文章说的是如何实现multiseat，必须的条件和步骤等等。
 首先简介一下multiseat。multiseat又叫做多座电脑，和瘦客户端(thinclient)一样，是一种降低电脑平均使用成本的方案。基本思路是，买一台稍好的物理机，然后买两个显示器和键盘鼠标，让两个(或者多个)人同时使用一台电脑。和瘦客户端一样，multiseat一般只用于对电脑计算能力要求不高的场合，打游戏的一般就别考虑了。和瘦客户端不同的是，multiseat的处理都在近程，所以在体验上会略好一些，部署时也不依赖于中心化网络。不过这些年网络设备都在改善，相差也不多。
 硬件解说 显示系统 显示系统通常分为显卡和显示器两部分。multiseat至少需要两个显示器，但是两台显示器输出有多种情况。
- 单卡单核心双输出。一块显卡，一块核心，pci上就一个物理设备，但是可以输出到两台显示器上。例如笔记本，一个输出到本子上，一个输出到投影上。大部分机器都是这种情况。 单卡双核心单输出。又叫做单卡双核心交火。交火是一个ati术语，在nv那里叫做sli。是指用两块显卡为同一个显示进行加速，达到比一块显卡更快的情况。这一般是顶级显卡。 单卡双核心双输出。在单卡双核心单输出的卡上，一般都有两个输出。如果接入两个设备，那就是双核心双输出了。 双卡双核心单输出。又叫做双卡交火，在pci上有两个物理设备。同样是为了游戏而生的电脑。 双卡双核心双输出，两个pci-e。在上面的基础上，多接一台显示器。 双卡双核心双输出，一个pci。很少见，一般都是图形工作站。  之所以在这个问题上说这么细，是因为多X方案必须工作在两个以上核心上，每个核心分别输出一路。也就是说，上文中的3, 5, 6三种情况。我们最常见的1是不可以用多X方案的。而方案5, 6，是这么分的。一般的显卡都是pci-e的，而一块主板上只有一个pci-e插槽。所以普通主板是配不上两块普通显卡的。也不要考虑板载显卡和外接显卡的问题，卖电脑的说，大部分主板上都做了自动屏蔽。外接显卡一插上去，板载显卡自动屏蔽。
+单卡单核心双输出。一块显卡，一块核心，pci上就一个物理设备，但是可以输出到两台显示器上。例如笔记本，一个输出到本子上，一个输出到投影上。大部分机器都是这种情况。 单卡双核心单输出。又叫做单卡双核心交火。交火是一个ati术语，在nv那里叫做sli。是指用两块显卡为同一个显示进行加速，达到比一块显卡更快的情况。这一般是顶级显卡。 单卡双核心双输出。在单卡双核心单输出的卡上，一般都有两个输出。如果接入两个设备，那就是双核心双输出了。 双卡双核心单输出。又叫做双卡交火，在pci上有两个物理设备。同样是为了游戏而生的电脑。 双卡双核心双输出，两个pci-e。在上面的基础上，多接一台显示器。 双卡双核心双输出，一个pci。很少见，一般都是图形工作站。 之所以在这个问题上说这么细，是因为多X方案必须工作在两个以上核心上，每个核心分别输出一路。也就是说，上文中的3, 5, 6三种情况。我们最常见的1是不可以用多X方案的。而方案5, 6，是这么分的。一般的显卡都是pci-e的，而一块主板上只有一个pci-e插槽。所以普通主板是配不上两块普通显卡的。也不要考虑板载显卡和外接显卡的问题，卖电脑的说，大部分主板上都做了自动屏蔽。外接显卡一插上去，板载显卡自动屏蔽。
 键盘和鼠标 multiseat至少两套键盘和鼠标，这是常识。
 声音和外设 做的好的multiseat，尤其是搭配硬件卖的商业方案，一般都会做声音和外设隔离。你接上去的u盘不会出现在另一个人的电脑里。不过有些方案的隔离就不是那么完美，有可能只有主座有声音拉，或者是声音不能用拉。或者是自己指定声音输出到哪个设备，然后再抢耳机拉，或者是干脆多装一块声卡拉。这个问题自己留心。
 windows windows下可以用softxpand[2]或者betwin[3]，俗称拖机软件，不过两者的破解都不是很好找，尤其是win7可用的。windows下拖机的后果可能是，D3D加速有问题，两个人同时用的时候CPU使用率升高，其中一个人没有声音等。具体情况你设法下到试试再说。
 linux 以下linux，没特别说明的话都是指debian，默认的发行版本是wheezy。
 多X方案 所谓多X，就是开启两个以上的X，每个显卡一个X。这样形成的multiseat保留了原生的一切能力，包括3D加速。只要你原生显卡支持，都可以做到。多X方案的第一个显卡可以看到console，第二个只能看到图形界面，不能通过C-M-F1切换到console。
-但是多X的条件也非常严格，上面列的情况1是没戏的。大部分人的电脑都被划到了这种情况。即使你有幸，弄到了3, 5, 6三种情况中的一个，也要注意，两块显卡必须是同一厂家，最好是同一型号。这点尤其对pci显卡更需要注意，pci显卡和pci-e显卡显然不能是同一型号，但是*必须是同一厂家*。
+但是多X的条件也非常严格，上面列的情况1是没戏的。大部分人的电脑都被划到了这种情况。即使你有幸，弄到了3, 5, 6三种情况中的一个，也要注意，两块显卡必须是同一厂家，最好是同一型号。这点尤其对pci显卡更需要注意，pci显卡和pci-e显卡显然不能是同一型号，但是必须是同一厂家。
 这个方案最鸡肋的地方在于，3, 5两种情况只有在针对游戏特别配置的电脑上才有效，而这种电脑本身是非常昂贵的。这和降低系统成本的初衷相违背。
 Xephyr方案 Xephry是一个X的模块，他的目的是使用内存作为X的输出设备。因此Xephry做出来的X可以将显示内容再显示到其他地方，例如作为其他X中的一个窗口出现，等等。
 利用这个特点来做multiseat的思路基本是这样的。首先我们将两个显示器合并成一个虚桌面，如同我们常规做的那样，左边的窗口拖一下可以到右边。然后再开两个Xephry，每个里面包含一个标准的X，包括display manager，session，window manager等等。最后每个X分别用一套键盘/鼠标。这样出现的效果和multiseat是完全一样的。
@@ -534,7 +533,7 @@ Xephyr方案 Xephry是一个X的模块，他的目的是使用内存作为X的�
 虚拟化拖机 无论是windows还是linux，都有一个不算方案的方案。安装一套vmware，然后将vmware在其中一个显示器全屏，再把其中一个鼠标和键盘指定给这台虚拟机。这样也可以做到multiseat的效果。使用Virtualbox/Vitrual
 PC也是完全一样的原理。
 vmware中原生是不可以将鼠标/键盘指定给虚拟机的。关于这点，文档[6]给出了完整的解决方案。在.vmx中加入下面一行即可。
-usb.generic.allowHID = &amp;quot;TRUE&amp;quot;  参考  Multiseat Documentation in x.org Softxpand BeTwin Multiseat Display Manager ourbetwin VMware拖机方法  </description>
+usb.generic.allowHID = &amp;quot;TRUE&amp;quot; 参考 Multiseat Documentation in x.org Softxpand BeTwin Multiseat Display Manager ourbetwin VMware拖机方法 </description>
     </item>
     
     <item>
@@ -562,12 +561,13 @@ BSP的主要目的，就是这么一个苦力会。没有挂名，最多只有�
 vim debian默认装的是vim-tiny，很不好用。建议改为vim，改配置的时候让自己舒服点。
 安全部分 iptables-persistent 这是debian内用于iptables规则持久化的工具，你可以编辑/etc/iptables/rules.v4来修改防火墙规则。注意，目前debian stable(squeeze)中的版本还没有4/6区分，你可以弄一个testing(wheezy)中的来装。
 一般来说，你的规则中至少要包含以下内容：
--A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT -A INPUT -i lo -j ACCEPT -A INPUT -i tun+ -j ACCEPT -A INPUT -i ppp+ -j ACCEPT -A INPUT -p tcp -m multiport --dport 22,xxx,xxx,xxx -j ACCEPT -A INPUT -p udp -m multiport --dport xxx,xxx,xxx -j ACCEPT  而且强烈建议，先保存一个没问题的iptables，然后直接修改iptables，再保存。这样的好处是，当你脑残改错了导致你自己都无法管理的时候，只要重启就可以恢复vps工作，而不用更麻烦的动作。
+-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT -A INPUT -i lo -j ACCEPT -A INPUT -i tun+ -j ACCEPT -A INPUT -i ppp+ -j ACCEPT -A INPUT -p tcp -m multiport --dport 22,xxx,xxx,xxx -j ACCEPT -A INPUT -p udp -m multiport --dport xxx,xxx,xxx -j ACCEPT 而且强烈建议，先保存一个没问题的iptables，然后直接修改iptables，再保存。这样的好处是，当你脑残改错了导致你自己都无法管理的时候，只要重启就可以恢复vps工作，而不用更麻烦的动作。
 denyhosts 这是ssh的连接防御进程，用python编写。如果有人试图尝试你的ssh密码，这个程序就会踢掉他的ip。
 如果你已经用了我说的，通过key的连接方式，你可以一次就直接踢掉对方ip。
 管理部分 ifstat ifstat是用于网络流量管理的工具，可以告诉你网络目标的流量是多少。
 dnsutils dnsutils里面包含了不少用于管理dns的工具，包括我们常用的nslookup，还有相对少用的dig。
-mtr-tiny mtr是一个traceroute工具，比后者好用很多。这个工具可以快速跟踪路由。</description>
+mtr-tiny mtr是一个traceroute工具，比后者好用很多。这个工具可以快速跟踪路由。
+vnstat vnstat是用于跟踪网卡流量的工具，尤其对于每个月都有限额的vps，这个工具更有意义。</description>
     </item>
     
     <item>
@@ -600,7 +600,7 @@ mtr-tiny mtr是一个traceroute工具，比后者好用很多。这个工具可�
       <guid>//blog.shell909090.org/blog/archives/2134/</guid>
       <description>说明一下，定位切换的意思，是像chromium那样，用Atl-1-9直接切换tab。而不是用上一个下一个慢慢换。另外，是切换buffer，不是切换frame。
 以下是实现部分：
-;; 全部的buffer都分一组，否则这个修改是没任何意思的 (setq tabbar-buffer-groups-function (lambda () (list &amp;quot;All Buffers&amp;quot;))) ;; 去掉emacs自带的几个buffer (setq tabbar-buffer-list-function (lambda () (remove-if (lambda(buffer) (find (aref (buffer-name buffer) 0) &amp;quot; *&amp;quot;)) (buffer-list)))) ;; 切换到第N个buffer，1为第一个，负数表示从后数，注意0会出错，这里就不处理了 (defun switch-tabbar (num) (let* ((tabs (tabbar-tabs (tabbar-get-tabset &amp;quot;All Buffers&amp;quot;))) (tab (nth (if (&amp;gt; num 0) (- num 1) (+ (length tabs) num)) tabs))) (if tab (switch-to-buffer (car tab))))) ;; 不说废话，绑热键 (global-set-key [(meta 1)] (lambda () (interactive) (switch-tabbar 1))) (global-set-key [(meta 2)] (lambda () (interactive) (switch-tabbar 2))) (global-set-key [(meta 3)] (lambda () (interactive) (switch-tabbar 3))) (global-set-key [(meta 4)] (lambda () (interactive) (switch-tabbar 4))) (global-set-key [(meta 5)] (lambda () (interactive) (switch-tabbar 5))) (global-set-key [(meta 6)] (lambda () (interactive) (switch-tabbar 6))) (global-set-key [(meta 7)] (lambda () (interactive) (switch-tabbar 7))) (global-set-key [(meta 8)] (lambda () (interactive) (switch-tabbar 8))) (global-set-key [(meta 9)] (lambda () (interactive) (switch-tabbar 9))) (global-set-key [(meta )] (lambda () (interactive) (switch-tabbar -1)))  </description>
+;; 全部的buffer都分一组，否则这个修改是没任何意思的 (setq tabbar-buffer-groups-function (lambda () (list &amp;quot;All Buffers&amp;quot;))) ;; 去掉emacs自带的几个buffer (setq tabbar-buffer-list-function (lambda () (remove-if (lambda(buffer) (find (aref (buffer-name buffer) 0) &amp;quot; *&amp;quot;)) (buffer-list)))) ;; 切换到第N个buffer，1为第一个，负数表示从后数，注意0会出错，这里就不处理了 (defun switch-tabbar (num) (let* ((tabs (tabbar-tabs (tabbar-get-tabset &amp;quot;All Buffers&amp;quot;))) (tab (nth (if (&amp;gt; num 0) (- num 1) (+ (length tabs) num)) tabs))) (if tab (switch-to-buffer (car tab))))) ;; 不说废话，绑热键 (global-set-key [(meta 1)] (lambda () (interactive) (switch-tabbar 1))) (global-set-key [(meta 2)] (lambda () (interactive) (switch-tabbar 2))) (global-set-key [(meta 3)] (lambda () (interactive) (switch-tabbar 3))) (global-set-key [(meta 4)] (lambda () (interactive) (switch-tabbar 4))) (global-set-key [(meta 5)] (lambda () (interactive) (switch-tabbar 5))) (global-set-key [(meta 6)] (lambda () (interactive) (switch-tabbar 6))) (global-set-key [(meta 7)] (lambda () (interactive) (switch-tabbar 7))) (global-set-key [(meta 8)] (lambda () (interactive) (switch-tabbar 8))) (global-set-key [(meta 9)] (lambda () (interactive) (switch-tabbar 9))) (global-set-key [(meta )] (lambda () (interactive) (switch-tabbar -1))) </description>
     </item>
     
     <item>
@@ -615,7 +615,7 @@ mtr-tiny mtr是一个traceroute工具，比后者好用很多。这个工具可�
 第一个意见，killall -9 empathy-account，无效。
 第二个意见，需要装CM。
 跑去看看，一个都没装。跟着看说明，应该在recommand里面的。OK，我这里有这个配置。
-shell-deb:\~\# cat /etc/apt/apt.conf.d/20norecommanded APT { Install-Recommends 0; };  这是对付很多无聊包把recommand当作suggest用的，结果这次中标。其实这次的recommand应当放入dep里面的。
+shell-deb:\~\# cat /etc/apt/apt.conf.d/20norecommanded APT { Install-Recommends 0; }; 这是对付很多无聊包把recommand当作suggest用的，结果这次中标。其实这次的recommand应当放入dep里面的。
 OK，完事。
 PS.虽说如此，记得把telepathy重启一下，否则jabber协议看的到但是无效。</description>
     </item>
@@ -669,7 +669,7 @@ aofmode: 62, 63
       
       <guid>//blog.shell909090.org/blog/archives/2098/</guid>
       <description>最近整XEN，出了一个奇怪的错误。
-ERROR (SrvDaemon:355) Exception starting xend((22, &#39;Invalid argument&#39;)) Traceback (most recent call last): File &amp;quot;/usr/lib/xen-4.0/lib/python/xen/xend/server/SrvDaemon.py&amp;quot;, line 335, in run xinfo = xc.xeninfo() Error: (22, &#39;Invalid argument&#39;)  根据网络上的内容，首先排除没有xen模块——有了，然后是/proc/xen目录是否mount——有了，然后是/sys/hypervisor/下面的一堆属性——有了，然后是版本——不对。xen-utils-4.1是4.1.2版本，而xen-tools是4.2版本。不过xen-utils并不依赖xen-tools，没有后者应当也可以运行这些玩意。hypervisor和xen-utils的版本是一致的。那问题是什么？
+ERROR (SrvDaemon:355) Exception starting xend((22, &#39;Invalid argument&#39;)) Traceback (most recent call last): File &amp;quot;/usr/lib/xen-4.0/lib/python/xen/xend/server/SrvDaemon.py&amp;quot;, line 335, in run xinfo = xc.xeninfo() Error: (22, &#39;Invalid argument&#39;) 根据网络上的内容，首先排除没有xen模块——有了，然后是/proc/xen目录是否mount——有了，然后是/sys/hypervisor/下面的一堆属性——有了，然后是版本——不对。xen-utils-4.1是4.1.2版本，而xen-tools是4.2版本。不过xen-utils并不依赖xen-tools，没有后者应当也可以运行这些玩意。hypervisor和xen-utils的版本是一致的。那问题是什么？
 出错的文件是/usr/lib/xen-4.1/lib/python/xen/lowlevel/xc.so里面发生的异常，下载xen的源码检查，这个函数主要是检查属性。属性检查会出什么错？
 正在一头雾水的时候，突然想起一个问题。我安装的是xen-hypervisor-4.1-amd64，因为kernel是linux-image-3.1.0-1-amd64。然而，我这个系统有一个非常大的特殊——在64位CPU上运行的32位系统。因此，实际上xen-utils是32位的。行了行了，下面的事情用膝盖都能想到。
 叹气，这世界上，真的有种错误，叫做太常见了以至于视而不见。不要认为自己不会犯。</description>
@@ -699,9 +699,9 @@ freenas提供以下几种服务，afp，活动目录(AD)，CIFS(windows共享)�
       
       <guid>//blog.shell909090.org/blog/archives/2094/</guid>
       <description>废话不说，上干货。先装一下syslinux，genisoimage，kvm，debootstrap，squashfs-tools。
-$ mkdir debcd $ cd debcd $ mkdir isoroot $ cp/usr/lib/syslinux/isolinux.bin isoroot/ $cat &amp;gt; isoroot/isolinux.cfg &amp;lt;&amp;lt; &amp;quot;EOF&amp;quot; prompt 0 default linux label linux kernel vmlinuz append initrd=initrd.img EOF $ cp /boot/vmlinuz-3.2.0-1-amd64 isoroot/vmlinuz  完成上述步骤后，你就准备好了一个基础的iso镜像文件系统，并有了一个基础的引导模块和内核。现在，我们尝试把这玩意烧到iso上，并且测试一下。
-$genisoimage -o output.iso -b isolinux.bin -c boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table isoroot/ $ sudo kvm -cdrom output.iso -m 512  如果没法装kvm，换成qemu。屏幕会停在内核引导过程中——因为你没有initrd.img，所以在isolinux.cfg中指定的initrd就不正确。下面我们会设法弄一个initrd.img。
-$ cp -a /etc/initramfs-tools/ initramfs $ mkinitramfs -d initramfs -o isoroot/initrd.img $genisoimage -o output.iso -b isolinux.</description>
+$ mkdir debcd $ cd debcd $ mkdir isoroot $ cp/usr/lib/syslinux/isolinux.bin isoroot/ $cat &amp;gt; isoroot/isolinux.cfg &amp;lt;&amp;lt; &amp;quot;EOF&amp;quot; prompt 0 default linux label linux kernel vmlinuz append initrd=initrd.img EOF $ cp /boot/vmlinuz-3.2.0-1-amd64 isoroot/vmlinuz 完成上述步骤后，你就准备好了一个基础的iso镜像文件系统，并有了一个基础的引导模块和内核。现在，我们尝试把这玩意烧到iso上，并且测试一下。
+$genisoimage -o output.iso -b isolinux.bin -c boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table isoroot/ $ sudo kvm -cdrom output.iso -m 512 如果没法装kvm，换成qemu。屏幕会停在内核引导过程中——因为你没有initrd.img，所以在isolinux.cfg中指定的initrd就不正确。下面我们会设法弄一个initrd.img。
+$ cp -a /etc/initramfs-tools/ initramfs $ mkinitramfs -d initramfs -o isoroot/initrd.img $genisoimage -o output.iso -b isolinux.bin -c boot.</description>
     </item>
     
     <item>
@@ -747,7 +747,7 @@ Why people made this dist? Technically, it is no a fully dist. Unlike Ubuntu, th
 8.如果我是你，在chapter5完成的时候会tar czf ~/tools.tar.gz /tools。这样会让你在chapter6中犯错的时候不至于血本无归。
 9.chapter6的流程？用chapter5的编译系统，编译了新系统的编译系统。当然，这个不容易，因为刚刚的编译系统所有指向都是/tools。所以lfs指导你做了不少patch。然后重复chapter5的过程，逐步把源码编译安装到正式系统中。
 10.lfs真TMD的辛苦，连source code的typo都需要在书中指出和fix。。。而且lfs自己还有errata。
-11.lfs的56两章看起来像是两个人写的，风格习惯不一致。chapter5用``，chapter6用\$()。还有gcc-pass2的时候，cp -v XXX{,.tmp}; sed XXX.tmp &amp;hellip; &amp;gt; XXX。而chapter6的binutils则是sed -i.bak。当然，有可能是因为有些系统的sed不支持-i，例如redhat的系统始终不支持netstat -nlp46，I hate it。BTW，我喜欢sed -i。
+11.lfs的56两章看起来像是两个人写的，风格习惯不一致。chapter5用``，chapter6用$()。还有gcc-pass2的时候，cp -v XXX{,.tmp}; sed XXX.tmp &amp;hellip; &amp;gt; XXX。而chapter6的binutils则是sed -i.bak。当然，有可能是因为有些系统的sed不支持-i，例如redhat的系统始终不支持netstat -nlp46，I hate it。BTW，我喜欢sed -i。
 12.编译过程真心傻X，大部分都是解开源码，configure &amp;ndash;prefix=&amp;hellip; &amp;amp;&amp;amp; make &amp;amp;&amp;amp; make check &amp;amp;&amp;amp; make install。这些过程好像可以用一个不知道啥脚本来简化，建议不要手工干这堆事情，没意思的。相反，倒是很多调整有些意思。</description>
     </item>
     
@@ -770,19 +770,18 @@ Why people made this dist? Technically, it is no a fully dist. Unlike Ubuntu, th
       <description>废话不说，上干货。
 首先，禁用arptables。当然，如果你没开这个防火墙，那么没必要。其次，注意你的openwrt必须有udisk，否则空间相差太多，根本没有实现的可能。
 然后，如果你用的是新版的rom，应该在/etc/init.d/dnsmasq里面看到，dnsmasq()这个函数里面有。
-append_parm &amp;quot;$cfg&amp;quot; &amp;quot;tftp_root&amp;quot; &amp;quot;--tftp-root&amp;quot; append_parm &amp;quot;$cfg&amp;quot; &amp;quot;dhcp_boot&amp;quot; &amp;quot;--dhcp-boot&amp;quot;  如果没有，加一下，有的话说明原生支持。下面可以直接修改。
+append_parm &amp;quot;$cfg&amp;quot; &amp;quot;tftp_root&amp;quot; &amp;quot;--tftp-root&amp;quot; append_parm &amp;quot;$cfg&amp;quot; &amp;quot;dhcp_boot&amp;quot; &amp;quot;--dhcp-boot&amp;quot; 如果没有，加一下，有的话说明原生支持。下面可以直接修改。
 dnsmasq是一个dhcp/dns双重服务器，而pxe引导的第一步就是支持bootp协议。这个选项在/etc/config/dhcp里面。config
 dnsmasq一节上，增加。
-option &#39;dhcp_boot&#39; &#39;pxelinux.0&#39;  重启dnsmasq，完成bootp准备。
+option &#39;dhcp_boot&#39; &#39;pxelinux.0&#39; 重启dnsmasq，完成bootp准备。
 然后，安装tftpd-hpa，opkg update，opkg install
 tftpd-hpa。这是一个tftp服务器，默认不启动。如果你打算让pxe引导模式持久化，那么就改为默认启动，同时永久关闭arp防火墙。在/var/tftpd-hpa里面，可以看到tftpd的根路径。从参考3的的连接里面，你可以找到合适的一个下载路径，下载netboot.tar.gz到这个文件。解压后，可以看到pxelinux.0，这个和上面的pxelinux.0相对应。这是pxelinux的组件，隶属于syslinux项目，可以用来完成启动。
 这样，就完成了安装的所有准备工作。你可以找一个设备实验一下，应当可以完成网络安装的步骤。
 另外，如果需要启动选择amd64或者是i386，或者更进一步定制。那么需要下载其他镜像，自己生成pxelinux.cfg这个目录中的内容。
- PXEhttp://wiki.debian.org/PXE
- NetbootPXEhttp://wiki.debian.org/DebianInstaller/NetbootPXE
- netinsthttp://www.debian.org/distrib/netinst
- 配置pxe，安装debian和ubuntuhttp://my.unix-center.net/~whtbie/wordpress/?p=290
-  </description>
+PXEhttp://wiki.debian.org/PXE
+NetbootPXEhttp://wiki.debian.org/DebianInstaller/NetbootPXE
+netinsthttp://www.debian.org/distrib/netinst
+配置pxe，安装debian和ubuntuhttp://my.unix-center.net/~whtbie/wordpress/?p=290</description>
     </item>
     
     <item>
@@ -835,8 +834,8 @@ cifs是用于smb挂载的内核模块，如果内核中有这个东西，你就�
 不过cifs现在用的比较少，因为ES文件管理器有个功能，可以把远程文件转换成一个http流。视频之类可以以http流模式工作的文件就可以直接远程打开。
 tun是一个很重要的内核模块，因为openvpn/anyvpn都需要使用这个东西来工作。没有tun模块，这两个程序将无法工作。
 存储形态问题 任何一个android设备都一定会搭配一块存储。这块存储会被切分为多个区域，模拟成一个硬盘的多个分区来使用。我们来看一个内核的启动参数，以下数据来自我的P81HD。
-console=ttyS1,115200n8n androidboot.console=ttyS1 init=/init initrd=0x62000000,0x800000 mtdparts=rk29xxnand:0x00002000@0x00002000(misc),0x00004000@0x00004000(kernel),0x00008000@0x00008000(boot),0x00008000@0x00010000(recovery),0x00078000@0x00018000(backup),0x0003a000@0x00090000(cache),0x00100000@0x000ca000(userdata),0x00002000@0x001ca000(kpanic),0x00080000@0x001cc000(system),-@0x0024c000(user) bootver=2011-08-05\#2.06 firmware\_ver=0.2.3  能明显看出，存储使用的是nand，编译是针对rk29xx的，所以模块叫做rk29xxnand。mtdparts里面规定了rk29xxnand的分区特性，每组三个数据，第一个是大小，第二个是起始位置，第三个是分区名。其中userdata实际大小256m，表上面写的是1m，因此1相当于256字节。下面可以再看一下mount表。
-/dev/block/mtdblock8 on /system type ext3 (ro,noatime,nodiratime,data=ordered) /dev/block/mtdblock6 on /data type ext3 (rw,nosuid,nodev,noatime,nodiratime,errors=continue,data=ordered) /dev/block/mtdblock5 on /cache type ext3 (rw,nosuid,nodev,noatime,nodiratime,errors=continue,data=ordered)  可以看出存储编号是从0开始的。分区后，存储的内容即是以ext3格式存储。
+console=ttyS1,115200n8n androidboot.console=ttyS1 init=/init initrd=0x62000000,0x800000 mtdparts=rk29xxnand:0x00002000@0x00002000(misc),0x00004000@0x00004000(kernel),0x00008000@0x00008000(boot),0x00008000@0x00010000(recovery),0x00078000@0x00018000(backup),0x0003a000@0x00090000(cache),0x00100000@0x000ca000(userdata),0x00002000@0x001ca000(kpanic),0x00080000@0x001cc000(system),-@0x0024c000(user) bootver=2011-08-05\#2.06 firmware\_ver=0.2.3 能明显看出，存储使用的是nand，编译是针对rk29xx的，所以模块叫做rk29xxnand。mtdparts里面规定了rk29xxnand的分区特性，每组三个数据，第一个是大小，第二个是起始位置，第三个是分区名。其中userdata实际大小256m，表上面写的是1m，因此1相当于256字节。下面可以再看一下mount表。
+/dev/block/mtdblock8 on /system type ext3 (ro,noatime,nodiratime,data=ordered) /dev/block/mtdblock6 on /data type ext3 (rw,nosuid,nodev,noatime,nodiratime,errors=continue,data=ordered) /dev/block/mtdblock5 on /cache type ext3 (rw,nosuid,nodev,noatime,nodiratime,errors=continue,data=ordered) 可以看出存储编号是从0开始的。分区后，存储的内容即是以ext3格式存储。
 系统组织问题 android的系统组织很有意思，并不是按照FHS来组织的，却部分兼容于FHS。
 android最基础的一个分区是system，这个分区被mount到/system。/etc一般都是直接link到了/system/etc下面，由此可见这个分区的重要性。这个分区一般存放所有系统内置的，不能更改的程序和数据。例如系统的内置app，framework，java基础库，so库，系统程序，等等。一般的刷机包里面，都是以zip格式打包了system的新内容。一旦这个内容被替换，系统就有了新特性。一般一个system的大小是200m-500m，不会全部用满，会留出一些方便后续的升级改造。
 data里面是系统内置的存储区域，这个区域常常被误叫为手机内存。实际上内存是ram，这块类似于rom。一般是500m上下，程序安装后就是装到了这个，包括数据也保存在这里。如果这个区域不足，系统就不能安装新程序。因此有些人想出了app2sd的把戏，说白了，就是通过bind，把sd卡上的一块区域映射到这个区域的某个目录下，使得某个app的数据可以存储到sd卡上。当然，这个能够转移过去的只限于数据，代码好像是不能转移的。而且，mount需要时间，sd的读取一般也比rom更加慢和麻烦。因此app2sd后，系统启动速度会变慢，程序运行也会变慢。
@@ -857,8 +856,8 @@ android的wpa_supplicant文件做过一些修改，过滤了adhoc网络的essid�
       
       <guid>//blog.shell909090.org/blog/archives/2016/</guid>
       <description>在debian/rules里面，将这个：
-%: dh $@  改为这个：
-%: dh $@ --with python2  其余看这里。</description>
+%: dh $@ 改为这个：
+%: dh $@ --with python2 其余看这里。</description>
     </item>
     
     <item>
@@ -872,8 +871,8 @@ android的wpa_supplicant文件做过一些修改，过滤了adhoc网络的essid�
 2.3g网卡拨号
 应当使用usb_modeswitch进行编码转换，然后用wvdial拨号。MF190而言，至少我这里modeswitch会自动转换的。后者直接编辑/etc/wvdial.conf，然后输入wvdial开始拨号。wvdial有个包装叫做gnome-ppp，依赖很少，在其他桌面也可以用。我还没有研究出来怎么玩。
 附，MF190使用的usb_modeswitch配置（debian自带）:
-######################################################## # ZTE devices DefaultVendor= 0x19d2 DefaultProduct= 0x2000 TargetVendor= 0x19d2 TargetProductList=&amp;quot;0001,0002,0015,0016,0017,0031,0037,0052,0055,0063,0064,0066,0091,0108,0117,0128,2002&amp;quot; MessageContent=&amp;quot;5553424312345678000000000000061e000000000000000000000000000000&amp;quot; MessageContent2=&amp;quot;5553424312345679000000000000061b000000020000000000000000000000&amp;quot; MessageContent3=&amp;quot;55534243123456702000000080000c85010101180101010101000000000000&amp;quot; NeedResponse=1 CheckSuccess=20  附，MF190可用的wvdial.conf:
-[Dialer Defaults] Modem = /dev/ttyUSB2 Init1 = ATZ Init3 = ATE0V1 Init5 = ATS0=0 Init6 = AT+CGDCONT=1,&amp;quot;IP&amp;quot;,&amp;quot;uninet&amp;quot; Init7 = AT+CFUN=1 Modem Type = USB Modem Baud = 460800 New PPPD = yes ISDN = 0 Phone = *99# Password = any Username = any Stupid Mode = 1  3.</description>
+######################################################## # ZTE devices DefaultVendor= 0x19d2 DefaultProduct= 0x2000 TargetVendor= 0x19d2 TargetProductList=&amp;quot;0001,0002,0015,0016,0017,0031,0037,0052,0055,0063,0064,0066,0091,0108,0117,0128,2002&amp;quot; MessageContent=&amp;quot;5553424312345678000000000000061e000000000000000000000000000000&amp;quot; MessageContent2=&amp;quot;5553424312345679000000000000061b000000020000000000000000000000&amp;quot; MessageContent3=&amp;quot;55534243123456702000000080000c85010101180101010101000000000000&amp;quot; NeedResponse=1 CheckSuccess=20 附，MF190可用的wvdial.conf:
+[Dialer Defaults] Modem = /dev/ttyUSB2 Init1 = ATZ Init3 = ATE0V1 Init5 = ATS0=0 Init6 = AT+CGDCONT=1,&amp;quot;IP&amp;quot;,&amp;quot;uninet&amp;quot; Init7 = AT+CFUN=1 Modem Type = USB Modem Baud = 460800 New PPPD = yes ISDN = 0 Phone = *99# Password = any Username = any Stupid Mode = 1 3.</description>
     </item>
     
     <item>
@@ -883,7 +882,7 @@ android的wpa_supplicant文件做过一些修改，过滤了adhoc网络的essid�
       
       <guid>//blog.shell909090.org/blog/archives/1976/</guid>
       <description>还记得如何配置openvpn么？手工配置有个问题，当我ppp0连接断掉，需要重启路由器的时候，网络会短暂的断开。然后，openvpn就失效了，导致各种混乱后果。为了解决这个问题，我测试了一下，做了以下设置。
------/etc/hotplug.d/iface/30-openvpn----- #!/bin/sh [ &amp;quot;$ACTION&amp;quot; = &amp;quot;ifup&amp;quot; -a &amp;quot;$INTERFACE&amp;quot; = &amp;quot;wan&amp;quot; ] &amp;amp;&amp;amp; [ -z &amp;quot;`/sbin/ifconfig tun0 2&amp;gt;&amp;amp;1 | grep inet`&amp;quot; ] &amp;amp;&amp;amp; { /etc/init.d/openvpn start } [ &amp;quot;$ACTION&amp;quot; = &amp;quot;ifdown&amp;quot; -a &amp;quot;$INTERFACE&amp;quot; = &amp;quot;wan&amp;quot; ] &amp;amp;&amp;amp; [ -n &amp;quot;`/sbin/ifconfig tun0 2&amp;gt;&amp;amp;1 | grep inet`&amp;quot; ] &amp;amp;&amp;amp; { /etc/init.d/openvpn stop } -----end files-----  好了，你重启外网连接的时候，就会自动连接openvpn。
+-----/etc/hotplug.d/iface/30-openvpn----- #!/bin/sh [ &amp;quot;$ACTION&amp;quot; = &amp;quot;ifup&amp;quot; -a &amp;quot;$INTERFACE&amp;quot; = &amp;quot;wan&amp;quot; ] &amp;amp;&amp;amp; [ -z &amp;quot;`/sbin/ifconfig tun0 2&amp;gt;&amp;amp;1 | grep inet`&amp;quot; ] &amp;amp;&amp;amp; { /etc/init.d/openvpn start } [ &amp;quot;$ACTION&amp;quot; = &amp;quot;ifdown&amp;quot; -a &amp;quot;$INTERFACE&amp;quot; = &amp;quot;wan&amp;quot; ] &amp;amp;&amp;amp; [ -n &amp;quot;`/sbin/ifconfig tun0 2&amp;gt;&amp;amp;1 | grep inet`&amp;quot; ] &amp;amp;&amp;amp; { /etc/init.d/openvpn stop } -----end files----- 好了，你重启外网连接的时候，就会自动连接openvpn。
 参考：
 OpenWRT下的动态DNS(用3322.org的服务)</description>
     </item>
@@ -896,21 +895,21 @@ OpenWRT下的动态DNS(用3322.org的服务)</description>
       <guid>//blog.shell909090.org/blog/archives/1969/</guid>
       <description>这次有我的演讲，转一下转一下，大家来捧场。
 &amp;mdash;&amp;mdash;&amp;mdash;- Forwarded message &amp;mdash;&amp;mdash;&amp;mdash;-
-From: ghosTM55 &amp;lt;ghosthomas@gmail.com&amp;gt;
+From: ghosTM55 &amp;laquo;ghosthomas@gmail.com&amp;raquo;
 Date: 2011/11/2
 Subject: [shlug] [公告]SHLUG Summit 2011
-To: shlug &amp;lt;shlug@googlegroups.com&amp;gt;
+To: shlug &amp;laquo;shlug@googlegroups.com&amp;raquo;
 Hi all,我们SHLUG的2011年年度大会来了!
 作为惯例，我们的年会会面向Linux新手以及初学者来进行Linux的宣传与知识普及，这次也不例外 这次我们将会来到松江大学城，在东华大学进行一场200人规模的交流会，欢迎有时间和兴趣的朋友一同前去参加 时间: 2011年11月6日(周日) 下午2点 地点: 东华大学 松江大学城校区 报名: 不需要 入场费用: 不需要 演讲主题:
- 如何成为一名黑客
- Debian GNU/Linux介绍
- 实战Linux网络部署
-  隐藏关卡:
- Ubuntu 11.10 Release Party  和去年一样，在这里我需要:
- 一些朋友能够来帮助到我们运维好本次SHLUG的年会(拍照，摄影，现场话筒传递，入场引导等)
- SHLUG的朋友在参与活动的时候尽可能坐在教室后排并请勿在演讲过程中大声讨论问题
- 大家对于此次活动的线上以及线下的帮忙宣传
-  在这里需要感谢东华大学开源社区的同学们的积极配合与帮助，为我们奔波于松江大学城各高校进行宣传 并且为我们找到了能够容纳200人的教室(具体教室号码尚未确定，我会在列表以及blog中进行更新，请持续关注) 欢迎各位参与本次年会并向我提出建议，谢谢</description>
+如何成为一名黑客
+Debian GNU/Linux介绍
+实战Linux网络部署
+隐藏关卡:
+Ubuntu 11.10 Release Party 和去年一样，在这里我需要:
+一些朋友能够来帮助到我们运维好本次SHLUG的年会(拍照，摄影，现场话筒传递，入场引导等)
+SHLUG的朋友在参与活动的时候尽可能坐在教室后排并请勿在演讲过程中大声讨论问题
+大家对于此次活动的线上以及线下的帮忙宣传
+在这里需要感谢东华大学开源社区的同学们的积极配合与帮助，为我们奔波于松江大学城各高校进行宣传 并且为我们找到了能够容纳200人的教室(具体教室号码尚未确定，我会在列表以及blog中进行更新，请持续关注) 欢迎各位参与本次年会并向我提出建议，谢谢</description>
     </item>
     
     <item>
@@ -1004,10 +1003,12 @@ debian 6.0的安装系统比5.0的好了很多，磁盘分区支持gpt，直接�
       <pubDate>Mon, 15 Aug 2011 10:07:03 +0800</pubDate>
       
       <guid>//blog.shell909090.org/blog/archives/1883/</guid>
-      <description>贝壳原来一直认为文件系统可以随便选，结果最近吃了两次苦头。一个是btrfs对虚拟机支持不良，另一个是特定情况下xfs性能比ext3高20倍。痛定思痛，打算列一下文件系统选型的方法和依据，欢迎拍砖。 
- 下面我列一下纳入参考的文件系统，当然，ntfs就不要出来搞基了，玩嵌入式/光盘live之类的朋友也不要来凑热闹了阿。btrfs(简介), ext3, ext4(简介), jfs(简介), reiserfs, xfs，基本涵盖常用文件系统。最下面加入ntfs和zfs对比，实际上不参与选型。以下进制换算为1024，大小依次为KB,MB,GB,TB,PB,EB,ZB。
-
- --------------- --------- -------------- ---------------- ---------------- ---------------- ------------------ --------- ----------- ------------ 文件系统 btrfs ext3 ext4 jfs reiserfs reiser4 xfs ntfs zfs 最大卷容量 16 EB 32 TB 1 EB (16TB) 32 PB 16 TB ?? 16 EB 256 TB 16 EB 最大文件容量 16 EB 2 TB 16 TB 4 PB 8TB 8TB 8 EB 16 TB 16 EB 目录结构 B tree list/tree list/Htree B tree B+ tree dancing B\* tree B+ tree B+ tree hash table 文件分配 extents bitmap/table bitmap/extents bitmap/extents bitmap ?</description>
+      <description>贝壳原来一直认为文件系统可以随便选，结果最近吃了两次苦头。一个是btrfs对虚拟机支持不良，另一个是特定情况下xfs性能比ext3高20倍。痛定思痛，打算列一下文件系统选型的方法和依据，欢迎拍砖。
+下面我列一下纳入参考的文件系统，当然，ntfs就不要出来搞基了，玩嵌入式/光盘live之类的朋友也不要来凑热闹了阿。btrfs(简介), ext3, ext4(简介), jfs(简介), reiserfs, xfs，基本涵盖常用文件系统。最下面加入ntfs和zfs对比，实际上不参与选型。以下进制换算为1024，大小依次为KB,MB,GB,TB,PB,EB,ZB。
+文件系统 btrfs ext3 ext4 jfs reiserfs reiser4 xfs ntfs zfs
+最大卷容量 16 EB 32 TB 1 EB (16TB) 32 PB 16 TB ?? 16 EB 256 TB 16 EB
+最大文件容量 16 EB 2 TB 16 TB 4 PB 8TB 8TB 8 EB 16 TB 16 EB
+目录结构 B tree list/tree list/Htree B tree B+ tree dancing B* tree B+ tree B+ tree hash table</description>
     </item>
     
     <item>
@@ -1023,7 +1024,7 @@ debian 6.0的安装系统比5.0的好了很多，磁盘分区支持gpt，直接�
 这个业务情况的核心问题是，对同一个文件，在一段时间内会写多次。正常情况下，这些数据会堆积在系统的Dirty区域，直到dirty_ratio的限制到了，或者dirty_expire_centisecs的限制到了，系统才会开始强制写出。否则每隔dirty_writeback_centisecs的时间，系统会写出部分数据。虽然理论上说，一个磁盘的IOPS应当在每秒600-700次上下，但是实际上并不是只能支撑150个并发的。然而设计的好的文件系统，支撑并发数会比设计的差的文件系统明显高。
 这个测试环境和实际的另一个差异，在于读写平衡上。这个业务和大部分的日志系统是很类似的（其实我们系统的业务就是日志）。但是商业用日志系统的特点是在高散碎文件写的情况下还有高随机读。这点在测试中并没有涉及，测试是单纯的大量文件追加写，请读者自行注意。
 首先是400进程，间隔1秒写出，测试对象是ext3, ext4, ntfs, jfs, xfs, btrfs，基本涵盖常见的linux文件系统。ntfs不属于常见的linux文件系统，本轮只做对比测试。首先可以看到的是ext3糟糕到吐血的表现，磁盘写io只有500上下，400个进程最多有280多个在排队。这货不是坑爹呢么。ext4的结果就正常很多，io在100上下，开始的高开是因为前一个测试的静默时间不足。jfs的结果很搞笑，队列load倒是不高，可是Dirty缓存一路上涨，让人不禁怀疑到底有没有写出。xfs的表现中规中矩，半分钟一次写出，和贝壳机器上的dirty_expire_centisecs相吻合，Dirty也不高。btrfs和jfs的情况类似。
-上一轮中，筛掉ntfs和ext3，其余进行1000进程，间隔1秒写出测试。测试对象是，ext4, [jfs](), xfs, btrfs。这次ext4也表现出了坑爹的一面，Dirty最高250M多，load也明显超过了2，写io大约在700上下，就此出局。btrfs这次的Dirty控制还不错，在25-40M徘徊，写出也不多。看似情况略好，实际上暴露出btrfs一个非常大的弱点，突发响应能力差，服务不稳定。一次集中写出，就能让排队数飞速上涨。jfs虽然曲线类似，但是队列可从没有超过1。综合考虑，后期平均load也明显超过了2，一样出局。xfs还是一样中规中矩的写出，非常低的io和Dirty。jfs依然是高速上涨的Dirty和超级低的io。
+上一轮中，筛掉ntfs和ext3，其余进行1000进程，间隔1秒写出测试。测试对象是，ext4, jfs, xfs, btrfs。这次ext4也表现出了坑爹的一面，Dirty最高250M多，load也明显超过了2，写io大约在700上下，就此出局。btrfs这次的Dirty控制还不错，在25-40M徘徊，写出也不多。看似情况略好，实际上暴露出btrfs一个非常大的弱点，突发响应能力差，服务不稳定。一次集中写出，就能让排队数飞速上涨。jfs虽然曲线类似，但是队列可从没有超过1。综合考虑，后期平均load也明显超过了2，一样出局。xfs还是一样中规中矩的写出，非常低的io和Dirty。jfs依然是高速上涨的Dirty和超级低的io。
 测试到这里，只剩下了jfs和xfs。jfs的特点是大量使用Dirty，平均io很低。xfs的特点是Dirty使用比较低，io输出比较平均。不过我们的服务器内核对xfs的支持比jfs要好一点，所以使用xfs已成定局，下面就是测试两者的极限性能而已。
 第三轮的参数是2000个进程，0.75秒间隔。jfs和xfs表现非常相似，让贝壳差点怀疑自己是测试错了东西。核查之后，确实没有。所以就下狠手，测试了一把高压力的。
 第四轮的参数是3200个进程，0.5秒间隔。从绝对量上，大概是基础测试的16倍。在jfs测试开始后的三分钟内，load上升到了60，宣告出局，因此贝壳这里没有jfs的图像。但是xfs还是完美的顶住了压力。Dirty已经上涨到了80-120M，平均io也到了300。然而平均load只有1左右，最高load也只有1.4。
@@ -1046,7 +1047,7 @@ debian 6.0的安装系统比5.0的好了很多，磁盘分区支持gpt，直接�
 lvm的结构是pv -&amp;gt; pg -&amp;gt; lv，也就是物理卷-&amp;gt;物理组-&amp;gt;逻辑卷。物理的各个分区首先被组织成物理组，再被划分为逻辑卷。这样设计是因为可能有多个磁盘上的空间，被划分为多个逻辑卷。在不改变逻辑的情况下，lvm的默认组织构型是raid0的。不过这对我不是个问题，我只有一个磁盘。
 首先创建pv，使用命令pvcreate，没什么好多说的。然后是产生vg，使用vgcreate main /dev/sda7，之所以需要main，是因为需要一个vg命名。而后我们需要从这个vg中创建出一个lv来，执行指令lvcreate -L150G -nhome main，设定lv的名字叫做main-home，大小150G。此时在/dev/mapper/main-home，就产生了一个设备文件，大小150G，可以当作/dev/sda1之类的设备一样使用。不过，这个设备没有经过任何格式化过程，所以还需要mkfs.ext3 /dev/mapper/main-home。在这个指令后，我很习惯的跟了一个tune2fs -c 0 /dev/mapper/main-home来关闭重启检测。使用blkid，发现这个设备已经成功创立，并且有了ID。把UUID复制进（这时就知道X的好处了，console下面比较绕路）/etc/fstab，并且修改刚刚被注释掉的/home一行，更改UUID和分区格式。贝壳当时光记得复制，忘记改分区格式，导致系统进不去。不过也不困难，修改/etc/fstab后mount -a一下就可以了。
 此时我们已经建立了有效的逻辑卷，并且正确配置。下面要创建一个交换分区，并且挂上去。废话不多说，lvcreate -L6G -nswap main，mkswap /dev/mapper/main-swap。而后一样blkid和vi /etc/fstab。系统就基本配置好了。验证一下看看。
-shell-deb:\~\# pvs PV VG Fmt Attr PSize PFree /dev/sda7 main lvm2 a- 229.19g 73.19g shell-deb:\~\# lvs LV VG Attr LSize Origin Snap% Move Log Copy% Convert home main -wi-ao 150.00g swap main -wi-ao 6.00g  而后就是新系统的启用过程，首先要退出X，注销shell用户的所有进程，然后以root删除/home下的所有数据。如果不删除的话，重启后，这里的数据无法访问，变成垃圾。而后重启，就可以看到正确结果了。不过还不要着急登入shell。首先执行rsync -av /mnt/mdisk/sync/home /home，将备份同步回去。这样我们登入shell的时候就可以看到有效的定制化界面了。另外一点细节是，mdisk使用了ntfs格式，所以导致数据恢复后属性混乱。使用find . -type d -exec chmod 755 {} ;和find .</description>
+shell-deb:\~\# pvs PV VG Fmt Attr PSize PFree /dev/sda7 main lvm2 a- 229.19g 73.19g shell-deb:\~\# lvs LV VG Attr LSize Origin Snap% Move Log Copy% Convert home main -wi-ao 150.00g swap main -wi-ao 6.00g 而后就是新系统的启用过程，首先要退出X，注销shell用户的所有进程，然后以root删除/home下的所有数据。如果不删除的话，重启后，这里的数据无法访问，变成垃圾。而后重启，就可以看到正确结果了。不过还不要着急登入shell。首先执行rsync -av /mnt/mdisk/sync/home /home，将备份同步回去。这样我们登入shell的时候就可以看到有效的定制化界面了。另外一点细节是，mdisk使用了ntfs格式，所以导致数据恢复后属性混乱。使用find . -type d -exec chmod 755 {} ;和find .</description>
     </item>
     
     <item>
@@ -1204,7 +1205,7 @@ MSN是老牌IM，不过微软逐步淡化了这个系统。某个版本后居然
       
       <guid>//blog.shell909090.org/blog/archives/1792/</guid>
       <description>专为职业用户介绍，菜鸟就别看了。
- barnacle wifi tether，将手机变成3G无线路由器，紧急的时候可以拿来让普通笔记本上网。当然，如果你3G带宽或者流量不够，就别考虑了。 comicbricks，漫画阅读器，支持从网络上拖一堆漫画离线慢慢看。 connectbot，功能强大的ssh客户端，支持密钥方式连接服务器，可以做简单的操作。适合在车站，想看看服务器状态的时候用。 es文件浏览器，还算不错，支持ftp和smb方式文件共享。很容易使用windows文件共享进行操作。 gtasks，如果你平时使用google calendar的任务列表管理自己的任务，gtasks就是你需要的东西。 keepassdroid，平时各种密码一大堆，是不是记不住？用keepassdroid，支持linux和windows共享密码文件，记忆一个密码就可以到处用。 openvpn settings，不解释，翻墙必备。倒是自带的pptp客户端连接不上去，很奇怪。 QQ影音，虽说腾讯到处抄，但是QQ影音做的确实不错。功能中规中矩，大部分格式都能放，而且程序体积不大。 realcalc，计算器，不解释。 seesmic，twitter客户端，支持api代理，功能强大，不解释。 sshdroid，ssh服务器端。有了这个东西后，你就不需要连接usb连线并且安装adb这个大家伙了。凡是能操作ssh的机器都能登录操作，支持文件上下传(sftp)，支持密码和密钥。 安全隧道，翻墙必备，不过是走ssh代理的。 大众点评，出门吃饭消费必备。我所知的信息最全的LBS。 静读天下，小型阅读器，可堪一用。体积比ireader小，也没那么多花哨的功能。打开文件的时候有点慢，没有别的缺点。 快图浏览，强烈推荐替代android自己的图库。速度如飞一般，图片瞬间出来。不过仔细看的话，从出来到清晰化大约有一秒的间隔，可见底下还是用模糊运算的。 麦当劳优惠券，打折优惠应用。这类应用都差不多，从网络上下载一段时间的某品牌优惠组合，然后统一显示给你，方便你直接挑合适的组合去。严格来说，麦当劳优惠券不算真的优惠券，只能算优惠组合。当然，有些品牌的产品还是需要看一眼优惠券的，这时候这类应用也提供图片的优惠券。总之，在外面混的时候，带上这个应用，不知道什么时候就有点小折扣。 迷你飞信，不介绍了。比较小巧，消息存储在系统信息里面。和系统自身整合做的不错。 墨迹天气，体积比较大，不过支持多个地区天气，预报比较准（有几个预报误差太大），皮肤不错。 淘宝，什么都不说了，在超市里尤其有用。就是家附近的沃尔玛没信号&amp;hellip;&amp;hellip; 天天动听，播放器，支持网络自动搜索，找封面和歌词。 宜搜小说，自动从网络上找最新的小说来看，追连载的利器。用这个软件连找都不必了，上下班直接看就好。  注意，此处comicbricks和宜搜小说有违反版权的问题，请对版权敏感的人不要用。</description>
+barnacle wifi tether，将手机变成3G无线路由器，紧急的时候可以拿来让普通笔记本上网。当然，如果你3G带宽或者流量不够，就别考虑了。 comicbricks，漫画阅读器，支持从网络上拖一堆漫画离线慢慢看。 connectbot，功能强大的ssh客户端，支持密钥方式连接服务器，可以做简单的操作。适合在车站，想看看服务器状态的时候用。 es文件浏览器，还算不错，支持ftp和smb方式文件共享。很容易使用windows文件共享进行操作。 gtasks，如果你平时使用google calendar的任务列表管理自己的任务，gtasks就是你需要的东西。 keepassdroid，平时各种密码一大堆，是不是记不住？用keepassdroid，支持linux和windows共享密码文件，记忆一个密码就可以到处用。 openvpn settings，不解释，翻墙必备。倒是自带的pptp客户端连接不上去，很奇怪。 QQ影音，虽说腾讯到处抄，但是QQ影音做的确实不错。功能中规中矩，大部分格式都能放，而且程序体积不大。 realcalc，计算器，不解释。 seesmic，twitter客户端，支持api代理，功能强大，不解释。 sshdroid，ssh服务器端。有了这个东西后，你就不需要连接usb连线并且安装adb这个大家伙了。凡是能操作ssh的机器都能登录操作，支持文件上下传(sftp)，支持密码和密钥。 安全隧道，翻墙必备，不过是走ssh代理的。 大众点评，出门吃饭消费必备。我所知的信息最全的LBS。 静读天下，小型阅读器，可堪一用。体积比ireader小，也没那么多花哨的功能。打开文件的时候有点慢，没有别的缺点。 快图浏览，强烈推荐替代android自己的图库。速度如飞一般，图片瞬间出来。不过仔细看的话，从出来到清晰化大约有一秒的间隔，可见底下还是用模糊运算的。 麦当劳优惠券，打折优惠应用。这类应用都差不多，从网络上下载一段时间的某品牌优惠组合，然后统一显示给你，方便你直接挑合适的组合去。严格来说，麦当劳优惠券不算真的优惠券，只能算优惠组合。当然，有些品牌的产品还是需要看一眼优惠券的，这时候这类应用也提供图片的优惠券。总之，在外面混的时候，带上这个应用，不知道什么时候就有点小折扣。 迷你飞信，不介绍了。比较小巧，消息存储在系统信息里面。和系统自身整合做的不错。 墨迹天气，体积比较大，不过支持多个地区天气，预报比较准（有几个预报误差太大），皮肤不错。 淘宝，什么都不说了，在超市里尤其有用。就是家附近的沃尔玛没信号&amp;hellip;&amp;hellip; 天天动听，播放器，支持网络自动搜索，找封面和歌词。 宜搜小说，自动从网络上找最新的小说来看，追连载的利器。用这个软件连找都不必了，上下班直接看就好。 注意，此处comicbricks和宜搜小说有违反版权的问题，请对版权敏感的人不要用。</description>
     </item>
     
     <item>
@@ -1220,7 +1221,7 @@ http://blog.shell909090.org/vmware-7.1.2-2.6.38-1-generic.patch.gz
 Source is tested under debian testing, but should work for all dist which use 2.6.38 as kernel. Patch is not tested.
 Here is how to make it.
 #cd /usr/lib/vmware/modules/source
-#for file in *; do tar xvf \$file; done</description>
+#for file in *; do tar xvf $file; done</description>
     </item>
     
     <item>
@@ -1313,15 +1314,15 @@ Aron Xu &amp;lt;happyaron.xu@gmail.com&amp;gt;
 你的操作没有违反权限（否则没权限你无法编辑），但是违反了在社区活动的一条基本准则：做自己的事不要给别人带来麻烦。现在你私自改了东西就给很多人带来了麻烦。
 像项目名称这样重大的决定应该是团队的共同意志，如果你直接不经说明就私自改了，那么你忽略了其他人的意见，这的确是不尊重他人。社区中不是你有权限编辑的地方就可以随意编辑，赋予你权限是对你的信任，相信你能够和其他人好好地合作，共同把项目做好。如果说有了权限就觉得自己什么都可以做，那就辜负了社区对你的信任。
 3、请不要以贡献来论我的对错，这是道德绑架，虽然我对debian目前官方社区的贡献有限，但在其他地方的贡献，请不要在不清楚的情况下肆意抹杀，然后试图以玩道德绑架的方式让我闭嘴。
-何必把这个问题升级到对与错呢（大家都停止说这个对错，\^_\^）。我觉得只是你做事方法不对，现在不应该在这里讨论这个名字如何如何，而是尊重大家的意见暂时不使用它，并且通过主流媒体做出更正。
+何必把这个问题升级到对与错呢（大家都停止说这个对错，^_^）。我觉得只是你做事方法不对，现在不应该在这里讨论这个名字如何如何，而是尊重大家的意见暂时不使用它，并且通过主流媒体做出更正。
 昨天我联系 cnbeta.com 等两三个站点删除了文章，LUPA等社区还发了一些更正。希望大家能到 cnbeta 等地方投稿更正这个事情。
 4、单纯讲翻译问题，debian社区确实太多文档老久了，以至于我都不知道debian中文翻译团队是否活着，这是谁的问题？如果按贡献论，是不是原有社区的人都该被论罪？这显然会激起众怒，如果楼上认为贡献论可行，那么接下来激怒社区的责任楼上要负全责。
 Debian 文档翻译在 Squeeze 周期里没有怎么更新 installation-guide，重译了 maint-guide。网页翻译匆匆地赶出来了一个 release-notes。
 如果你要参与，非常欢迎，这个团队现在可以说基本只有个别人做零星贡献。自由软件社区里，每个人都是自由的，行为上第一条是不给别人捣乱，第二条是交接好工作。翻译上一直没人接手，如果谁愿意来可以到这里先询问一下情况——比如你现在问，这个团队是否活着。
 5、如果debian是世界性的，那么debian就应该容纳得了中文、英文、德文、日本、西班牙文……，而不是只能使用英文。现在这种情况，连个中文名都起不了，还谈什么世界性，简直就是狭隘英文中心主义。
 这种说法有些偏激，和中国中央电视台不能称为CC{T,A}V有一拼了（笑）。当然，Debian和中文名之间并非完全和CCTV那个情况相同。
-Debian不是不能有中文名，而是现在还没有让众人觉得确实最好的名称。过去常说的&amp;rdquo;大便&amp;rdquo;显然不雅，&amp;rdquo;蝶变&amp;rdquo;某种意义上讲是个不错的候选，但还是有很大反对的声音。
-不管好与不好，想出来的都是&amp;rdquo;候选&amp;rdquo;，不能直接改 Wiki 强迫别人接受你的意志，哪怕你解释说只想做个实验。
+Debian不是不能有中文名，而是现在还没有让众人觉得确实最好的名称。过去常说的&amp;quot;大便&amp;quot;显然不雅，&amp;ldquo;蝶变&amp;quot;某种意义上讲是个不错的候选，但还是有很大反对的声音。
+不管好与不好，想出来的都是&amp;quot;候选&amp;rdquo;，不能直接改 Wiki 强迫别人接受你的意志，哪怕你解释说只想做个实验。
 这样的实验是不合适的，就好像说某国核电站出了问题，事后说我只想实验它出了问题能有多大影响，这显然不对。
 6、请不要回避问题，老左躲右闪的，以贡献啊、尊重啊、其他更需要啊之类的来搪塞对问题的真正讨论。要不干脆关闭这个讨论，要不就不要躲躲闪闪，认真对待。
 其实讨论能展开这么久，你回避了最关键的问题。现在是你做得不对，未经讨论滥用了社区赋予的权限，为啥还在说别人呢。
@@ -1347,7 +1348,7 @@ http://zh.wikipedia.org/w/index.php?title=Linux&amp;amp;diff=15963993&amp;amp;ol
       
       <guid>//blog.shell909090.org/blog/archives/1729/</guid>
       <description>最近在debian社区上爆发了关于debian中文名问题的争议，我大致摘录一下，具体可以看debian maillist archive。毕竟这里不是wiki，我就不求全了。
-起因是因为Jobinson在社区未达成一致的前提下，将wiki中debian的中文名称改为了&amp;rdquo;蝶变&amp;rdquo;。而后，wenheping告知了LIDaobing。后者是DD。LIDaobing将wiki还原，并且发起了社区讨论。他们之间的原文贴录如下：
+起因是因为Jobinson在社区未达成一致的前提下，将wiki中debian的中文名称改为了&amp;quot;蝶变&amp;quot;。而后，wenheping告知了LIDaobing。后者是DD。LIDaobing将wiki还原，并且发起了社区讨论。他们之间的原文贴录如下：
 (03:37:51 PM) Atlas Jobinson: 我想问你个问题，你是什么时候知道这维基被改的？通过什么途径知道的？ (03:38:01 PM) LI Daobing (李道兵): 很晚 (03:38:11 PM) LI Daobing (李道兵): 因为我没有 subscribe 那个页面 (03:38:22 PM) LI Daobing (李道兵): wenheping 告知的 (03:38:29 PM) Atlas Jobinson: 你可以看看我最早翻译于什么时候 (03:38:37 PM) LI Daobing (李道兵): 看到了 (03:38:40 PM) Atlas Jobinson: 2011-03-04 (03:38:42 PM) LI Daobing (李道兵): 10天前 (03:38:52 PM) Atlas Jobinson: 那说明什么问题？ (03:39:06 PM) LI Daobing (李道兵): 说明你在没有取得社区共识前 (03:39:09 PM) Atlas Jobinson: 还有，那个wenheping，是我在freebsd上得罪他了 (03:39:12 PM) LI Daobing (李道兵): 就修改了 wiki 页 (03:39:23 PM) Atlas Jobinson: 错，说明debian中文的参与者都不关心 (03:39:30 PM) LI Daobing (李道兵): 罗伯特议事法则 (03:39:34 PM) Atlas Jobinson: 连被人改了都不知道 (03:39:38 PM) LI Daobing (李道兵): 不要追究动机 (03:39:47 PM) LI Daobing (李道兵): 我们关心的是 ibus, fcitx, scim 的 bug (03:39:50 PM) LI Daobing (李道兵): 不是这个 (03:40:04 PM) Atlas Jobinson: 是，我也更关心那些 (03:40:27 PM) Atlas Jobinson: 但实际上，这个修改已经过了十天，才有反应，都快两周了 (03:40:35 PM) Atlas Jobinson: 快成既定事实了都 (03:40:44 PM) LI Daobing (李道兵): Debian 的运作不需要 wiki (03:40:45 PM) Atlas Jobinson: 那假设我在其他地方修改呢？ (03:41:05 PM) Atlas Jobinson: 那你还那么看重维基的修改？ (03:41:08 PM) LI Daobing (李道兵): Debian 的核心在于打包人员, DM, DD, ftp-master (03:41:13 PM) Atlas Jobinson: 我知道 (03:41:15 PM) LI Daobing (李道兵): 那是错的 (03:41:17 PM) LI Daobing (李道兵): 我知道了 (03:41:23 PM) LI Daobing (李道兵): 我去纠正他 (03:41:28 PM) LI Daobing (李道兵): 仅仅如此而已 (03:42:02 PM) Atlas Jobinson: 如果两周是个争议期，恐怕这两天我都不会让你安心的，呵呵 (03:42:42 PM) LI Daobing (李道兵): 我真不知道你能跟谁合作 (03:42:53 PM) Atlas Jobinson: 我仅仅是表达意见 (03:43:21 PM) LI Daobing (李道兵): 你为一个社区做贡献是因为你认同这个社区的理念 (03:43:29 PM) Atlas Jobinson: 而且这手段是合理的，并没有在规则外。 (03:43:56 PM) Atlas Jobinson:但谁能说他认同的观点就是该社区的观点呢？比如说debian不需要炒作？ (03:44:03 PM) Atlas Jobinson: 这是光晕效应 (03:44:14 PM) LI Daobing (李道兵):如果你不认同这个社区的理念，个人建议还是创建自己的社区比较好 (03:44:30 PM) Atlas Jobinson:可能你认同其他观点，但这个观点很可能是你个人观点强加给社区的 (03:44:33 PM) LI Daobing (李道兵): 比如在 维基百科 (03:44:55 PM) LI Daobing (李道兵): 如果这个观点有问题，你可以在 maillist 上讨论啊 (03:44:59 PM) LI Daobing (李道兵): 有何不可 (03:44:59 PM) Atlas Jobinson: 因为我没在debian社区中找到这一条 (03:45:14 PM) Atlas Jobinson: 也没人公开宣称这一条 (03:45:21 PM) LI Daobing (李道兵): 如果这个观点有问题，你可以在 maillist 上讨论啊 (03:45:55 PM) Atlas Jobinson: 那么，此条很可能就是你自己过于想当然的想法。 (03:46:08 PM) Atlas Jobinson: 观点是你的，是你应该发起这个讨论，而不是我 (03:46:21 PM) LI Daobing (李道兵): 好的 (03:46:42 PM) LI Daobing (李道兵): 我直接把这些聊天记录发到 maillist 吧 (03:46:46 PM) Atlas Jobinson: 而你不也是没经过讨论就宣称：debian不需要炒作的么？你这不也首先违规在先了？ (03:46:49 PM) LI Daobing (李道兵): 你订阅了 maillist 么？ (03:46:59 PM) Atlas Jobinson: 我刚刚订了 (03:47:02 PM) LI Daobing (李道兵): OK</description>
     </item>
     
@@ -1359,7 +1360,7 @@ http://zh.wikipedia.org/w/index.php?title=Linux&amp;amp;diff=15963993&amp;amp;ol
       <guid>//blog.shell909090.org/blog/archives/1725/</guid>
       <description>debian是一种重要的linux发行，基于其上有很多衍生，其中最知名的就是ubuntu。debian的包是通过ftp mirrors来进行发布的，因此一个国家的镜像数量，大概能够反映出这个国家debian社区的规模。也大概的，能够说明这个国家开源软件社区的发展。
 debian的所有官方镜像有一个列表，具体在这里（http://www.debian.org/mirrors/list）。我利用wget下载了这个镜像，然后写了一个简单的脚本来处理这个文件。文件发布在这里(http://blog.shell909090.org/debmircnt.py)。以下是结果。
-United States 48 Germany 32 France 28 Taiwan 13 Australia 12 Japan 11 Great Britain 11 Canada 11 Portugal 9 Italy 9 Russia 8 Sweden 8 Spain 8 Czech Republic 8 Brazil 8 Austria 7 Bulgaria 7 Poland 7 Turkey 7 Netherlands 7 Hungary 5 Greece 5 Ukraine 5 Belgium 5 Thailand 5 Croatia 4 Finland 4 Lithuania 4 South Africa 3 Romania 3 Switzerland 3 Denmark 3 China 3 Korea 3 Slovakia 3 Latvia 2 India 2 Mexico 2 New Zealand 2 Indonesia 2 Chile 2 Slovenia 2 Iceland 2 Belarus 2 Israel 2 Argentina 2 Ireland 2 Nicaragua 1 Colombia 1 Uzbekistan 1 Kazakhstan 1 Estonia 1 Luxembourg 1 Moldova 1 New Caledonia 1 Hong Kong 1 Bosnia and Herzegovina 1 Venezuela 1 El Salvador 1 Singapore 1 Algeria 1 Norway 1 French Polynesia 1 Costa Rica 1 Malta 1 Bangladesh 1 360  这个列表有几个有趣的数据。首先是中国的排名，不算太差，三个镜像，在第30名上下，比香港的一个镜像好多了。不过考虑到香港的人口和中国的人口，让人有点笑不起来。其次是俄罗斯的排名，以8个镜像居于11位。这也不难理解，因为俄罗斯不使用英文，所以在俄罗斯流行的不是常见的英文发行版本。德国比法国多出四个镜像居于第二位，美国是debian的发源地，以48个镜像的惊人数量居于第一。世界全部镜像是360个，光是前三位的镜像数量就占了将近三分之一。台湾地区以13个镜像居于第四，这到让人很是意外，居然比日本还多。</description>
+United States 48 Germany 32 France 28 Taiwan 13 Australia 12 Japan 11 Great Britain 11 Canada 11 Portugal 9 Italy 9 Russia 8 Sweden 8 Spain 8 Czech Republic 8 Brazil 8 Austria 7 Bulgaria 7 Poland 7 Turkey 7 Netherlands 7 Hungary 5 Greece 5 Ukraine 5 Belgium 5 Thailand 5 Croatia 4 Finland 4 Lithuania 4 South Africa 3 Romania 3 Switzerland 3 Denmark 3 China 3 Korea 3 Slovakia 3 Latvia 2 India 2 Mexico 2 New Zealand 2 Indonesia 2 Chile 2 Slovenia 2 Iceland 2 Belarus 2 Israel 2 Argentina 2 Ireland 2 Nicaragua 1 Colombia 1 Uzbekistan 1 Kazakhstan 1 Estonia 1 Luxembourg 1 Moldova 1 New Caledonia 1 Hong Kong 1 Bosnia and Herzegovina 1 Venezuela 1 El Salvador 1 Singapore 1 Algeria 1 Norway 1 French Polynesia 1 Costa Rica 1 Malta 1 Bangladesh 1 360 这个列表有几个有趣的数据。首先是中国的排名，不算太差，三个镜像，在第30名上下，比香港的一个镜像好多了。不过考虑到香港的人口和中国的人口，让人有点笑不起来。其次是俄罗斯的排名，以8个镜像居于11位。这也不难理解，因为俄罗斯不使用英文，所以在俄罗斯流行的不是常见的英文发行版本。德国比法国多出四个镜像居于第二位，美国是debian的发源地，以48个镜像的惊人数量居于第一。世界全部镜像是360个，光是前三位的镜像数量就占了将近三分之一。台湾地区以13个镜像居于第四，这到让人很是意外，居然比日本还多。</description>
     </item>
     
     <item>
@@ -1416,9 +1417,9 @@ zigo提供了他的打包代码，比我的功能全多了，大家可以参考�
       <description>贝壳用的是debian testing，xfce。最近买了一个usb耳机，在windows下一切正常，但是linux下只有mplayer能工作。因为mplayer可以指定输出声卡，其他程序都是使用默认声卡的。而由于debian移除了alsaconf，因此连调整一下都不知道该怎么做。也许修改/etc/modprobe.d/alsa*可以解决问题，问题是，谁知道哪些资料是神马时候的呢？我最早甚至找到过01年的资料&amp;hellip;
 后来，在zigo的建议下，我改用了pulse。zigo在linux下玩音频的，又是DD，怎么也算职业人士，推荐果然很给力。当晚我拿着usb耳机，很顺利的听到了youku视频。那一刻我热泪盈眶，感谢国家，感谢ccav，感谢zigo&amp;hellip;
 做法如下：
-# aptitude install pulseaudio pavucontrol $ pavucontrol  在输出设备页面，选择你想要的设备为默认。
+# aptitude install pulseaudio pavucontrol $ pavucontrol 在输出设备页面，选择你想要的设备为默认。
 如果有部分程序还是不认，建立~/.asoundrc或者/etc/asoundrc.conf，内容如下：
-pcm.pulse { type pulse } ctl.pulse { type pulse } pcm.!default { type pulse } ctl.!default { type pulse }  完了。
+pcm.pulse { type pulse } ctl.pulse { type pulse } pcm.!default { type pulse } ctl.!default { type pulse } 完了。
 补充一下，pulse的具体资料就不说了。大致上，pulse是一个linux的混音器。用于将多个音源发出的音频流混合成一个音频流播放。严格来说，音频设备属于独占设备，当一个软件发音的时候，其他软件应当不能发音的。这个有点类似于fifo，当两个进程同时打开fifo写数据的时候，目标只能得到碎片。
 pulse的作用，是产生一个可以被多次使用的音频设备，类似于unix socket。每一个进程的数据被单独的输入，然后混音，再输出到真实的物理设备上去。由此，多个音源同时发音就变成了可能。
 有人也许说，alsa原生也是支持多音源的阿。那是因为alsa内部带了一个很简单的混音器，叫做dmix。当然，pulse比dmix更加专业。</description>
@@ -1446,7 +1447,7 @@ pulse的作用，是产生一个可以被多次使用的音频设备，类似于
       <description>废话不说，上干货，六牙四皂小姐，猫咪退散。
 http://www.openprinting.org/printer/HP/HP-LaserJet_1010
 这是我的机器型号和驱动
-aptitude install cups foomatic-filters smbclient hpijs hplip  访问http://localhost:631/
+aptitude install cups foomatic-filters smbclient hpijs hplip 访问http://localhost:631/
 添加你的设备，并测试。</description>
     </item>
     
@@ -1489,7 +1490,7 @@ kvm是这种技术的代表。当然，vmware workstation，virtualbox等也可�
       <guid>//blog.shell909090.org/blog/archives/1646/</guid>
       <description>翻译文，原文看这里。
 首先，去一个足够好的镜像（有些二级镜像会没有iso等安装文件的镜像的，具体可以看这里）下载debian/dists/lenny/main/installer-i386/current/images/下面的boot.img.gz文件，然后执行：
-zcat boot.img.gz &amp;gt; /dev/sdX  sdX是你的U盘设备。再然后，下一个businesscard文件放到目标盘上，这时候/dev/sdX是一个fat格式的文件系统。重启后，businesscard就会自动运行，如同被刻了一张光盘一样。
+zcat boot.img.gz &amp;gt; /dev/sdX sdX是你的U盘设备。再然后，下一个businesscard文件放到目标盘上，这时候/dev/sdX是一个fat格式的文件系统。重启后，businesscard就会自动运行，如同被刻了一张光盘一样。
 简要说一下businesscard，netinst，和完整光盘的区别。businesscard上没有任何安装包，所以你所需的所有安装包必须从网络上抓。这种安装方式下，没有网络就无法安装。netinst上有最小系统所需的安装包，大概100M上下。在无网络的情况下，可以安装出一个字符界面的可联网系统，用于进一步配置。而完整安装光盘把600M多的软件包全打了上去，即使没有网络，你也可以装出一个标准的图形界面可工作系统。2张DVD的那种安装光盘把i386的所有安装包都打了进去，你要装什么都不用上网了。
 装大量机器的时候，建议使用businesscard加上缓存代理。</description>
     </item>
@@ -1502,12 +1503,12 @@ zcat boot.img.gz &amp;gt; /dev/sdX  sdX是你的U盘设备。再然后，下一�
       <guid>//blog.shell909090.org/blog/archives/1618/</guid>
       <description>我假定你了解hg，了解python，理解nginx或者其他cgi/fcgi的配置过程。现在想用http发布自己的mercurial仓库，而且可能发布一群，怎么操作呢？
 首先，复制模板文件过来，你可以挑选其中之一。以下是debian的文件位置，其他发布请自行查询。
-/usr/share/doc/mercurial-common/examples/hgweb.wsgi /usr/share/doc/mercurial-common/examples/hgweb.fcgi /usr/share/doc/mercurial-common/examples/hgweb.cgi  我使用nginx+fastcgi模式部署，因此复制了hgweb.fcgi。我假定你的仓库在~/hg下面，有很多子仓库。复制hgweb.fcgi到~/hg/下，改名为hgweb.py，并修改以下两行。
-config = &amp;quot;/path/to/you/config&amp;quot; WSGIServer(application, bindAddress=&#39;hgweb.sock&#39;).run()  其中bindAddress为你需要监听的unixsocket路径，没有前缀表示在当前目录生成。而后建立配置文件，大概为以下内容。
-[web] allow_push = someone push_ssl = false [paths] /hg/proj1=/path/to/proj1 /hg/proj2=/path/to/proj2  以上就完成了hgweb的服务配置，/hg/proj1是你的url映射路径，/path/to/proj1是物理路径。someone是允许进行push的人，而push_ssl是允许http推送。而后，启动服务。
-python hgweb.py &amp;amp; chmod 666 hgweb.sock  注意，这里要用screen之类的程序来启动hgweb，否则term关闭后服务进程停止，就没的玩了。修改权限是因为debian下的nginx使用www-data运行，对/home/user/hg没有读写权限，导致无法使用unixsock。
+/usr/share/doc/mercurial-common/examples/hgweb.wsgi /usr/share/doc/mercurial-common/examples/hgweb.fcgi /usr/share/doc/mercurial-common/examples/hgweb.cgi 我使用nginx+fastcgi模式部署，因此复制了hgweb.fcgi。我假定你的仓库在~/hg下面，有很多子仓库。复制hgweb.fcgi到~/hg/下，改名为hgweb.py，并修改以下两行。
+config = &amp;quot;/path/to/you/config&amp;quot; WSGIServer(application, bindAddress=&#39;hgweb.sock&#39;).run() 其中bindAddress为你需要监听的unixsocket路径，没有前缀表示在当前目录生成。而后建立配置文件，大概为以下内容。
+[web] allow_push = someone push_ssl = false [paths] /hg/proj1=/path/to/proj1 /hg/proj2=/path/to/proj2 以上就完成了hgweb的服务配置，/hg/proj1是你的url映射路径，/path/to/proj1是物理路径。someone是允许进行push的人，而push_ssl是允许http推送。而后，启动服务。
+python hgweb.py &amp;amp; chmod 666 hgweb.sock 注意，这里要用screen之类的程序来启动hgweb，否则term关闭后服务进程停止，就没的玩了。修改权限是因为debian下的nginx使用www-data运行，对/home/user/hg没有读写权限，导致无法使用unixsock。
 在nginx中做以下配置。
-location ^~ /hg/ { limit_except GET { auth_basic &amp;quot;Restricted&amp;quot;; auth_basic_user_file /home/user/hg/users; } fastcgi_pass unix:/home/user/hg/hgweb.sock; include fastcgi_params; }  如果你不需要auth，可以自行参照nginx的配置修改。其他web服务器以此类推。重启服务后，http://domains/hg/proj1 就可以访问到proj1了。
+location ^~ /hg/ { limit_except GET { auth_basic &amp;quot;Restricted&amp;quot;; auth_basic_user_file /home/user/hg/users; } fastcgi_pass unix:/home/user/hg/hgweb.sock; include fastcgi_params; } 如果你不需要auth，可以自行参照nginx的配置修改。其他web服务器以此类推。重启服务后，http://domains/hg/proj1 就可以访问到proj1了。
 当然，其实最后还要提一句，如果你不需要web界面，可以直接设定将文件内容直接发出去，这样也是可以做pull/push的。
 参考： http://mercurial.selenic.com/wiki/PublishingRepositories</description>
     </item>
@@ -1519,8 +1520,8 @@ location ^~ /hg/ { limit_except GET { auth_basic &amp;quot;Restricted&amp;quot;;
       
       <guid>//blog.shell909090.org/blog/archives/1604/</guid>
       <description>这两天twip的api不正常，跑上去看看，有个错误。
-**Fatal error**: Cannot redeclare class OAuthException in **/home/shellcom/public\_html/apis/include/OAuth.php** on line **8**  这时候，找到include/OAuth.php，改成这样。
-#class OAuthException extends Exception { # // pass #}  问题就暂时解决了。
+**Fatal error**: Cannot redeclare class OAuthException in **/home/shellcom/public\_html/apis/include/OAuth.php** on line **8** 这时候，找到include/OAuth.php，改成这样。
+#class OAuthException extends Exception { # // pass #} 问题就暂时解决了。
 这是因为主机上新装了什么库，这个库自己也定义了OAuthException（会定义这种异常的，估计是OAuth库）。所以，把这个自定义的异常移除，问题就暂时解决了。</description>
     </item>
     
@@ -1614,8 +1615,7 @@ location ^~ /hg/ { limit_except GET { auth_basic &amp;quot;Restricted&amp;quot;;
       <pubDate>Fri, 02 Apr 2010 03:40:00 +0800</pubDate>
       
       <guid>//blog.shell909090.org/blog/archives/108/</guid>
-      <description>本文系电脑资料，同步到blog上。小黄姐姐不必看了，可以帮我留个言。 nginx性能不错，可惜不支持WebDAV，因此没法拿来作为subversion的http服务。于是考虑开一个nginx作为前端，后端就跑一个apache来作为容器。配置这么写的(节选)： =========/etc/nginx/sites-enabled/default========= server { listen 443; server_name OOXX ssl on; ssl_certificate keys/server.crt; ssl_certificate_key keys/server.key; ssl_session_timeout 5m; ssl_protocols SSLv2 SSLv3 TLSv1; ssl_ciphers ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP; ssl_prefer_server_ciphers on; access_log /var/log/nginx/localhost.access.log; include /etc/nginx/mapping-ssl; error_page 500 502 503 504 /50x.html;
-location = /50x.html { root /var/www/nginx-default; } } 打开了一个https的服务，这是当然的，svn传输的数据使用http很危险。 ===========/etc/nginx/mapping-ssl============= location \^~ /svn { proxy_set_header Destination \$http_destination; proxy_pass http://apache_svr; proxy_set_header Host \$host; proxy_set_header X-Real-IP \$remote_addr; proxy_set_header X-Forwarded-Host \$host; proxy_set_header X-Forwarded-Proto https; proxy_set_header X-Forwarded-Server \$host; proxy_set_header X-Forwarded-For</description>
+      <description>本文系电脑资料，同步到blog上。小黄姐姐不必看了，可以帮我留个言。 nginx性能不错，可惜不支持WebDAV，因此没法拿来作为subversion的http服务。于是考虑开一个nginx作为前端，后端就跑一个apache来作为容器。配置这么写的(节选)： =========/etc/nginx/sites-enabled/default========= server { listen 443; server_name OOXX ssl on; ssl_certificate keys/server.crt; ssl_certificate_key keys/server.key; ssl_session_timeout 5m; ssl_protocols SSLv2 SSLv3 TLSv1; ssl_ciphers ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP; ssl_prefer_server_ciphers on; access_log /var/log/nginx/localhost.access.log; include /etc/nginx/mapping-ssl; error_page 500 502 503 504 /50x.html; location = /50x.html { root /var/www/nginx-default; } } 打开了一个https的服务，这是当然的，svn传输的数据使用http很危险。 ===========/etc/nginx/mapping-ssl============= location ^~ /svn { proxy_set_header Destination $http_destination; proxy_pass http://apache_svr; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-Host $host; proxy_set_header X-Forwarded-Proto https; proxy_set_header X-Forwarded-Server $host; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; } 将/svn下面的所有请求交给apache2。 =====/etc/apache2/mods-enabled/dav_svn.</description>
     </item>
     
     <item>
@@ -1627,11 +1627,11 @@ location = /50x.html { root /var/www/nginx-default; } } 打开了一个https的
       <description>emacs是个超级复杂的程序，尤其在配置问题上。贝壳的emacs要跨越三个环境。环境一，WindowsXP+Emacs23。环境二，Debian Testing + Xfce4。环境三，CentOS + Ssh。而整个的操作方式，个性设定需要保持一致。因此，引出一个问题。配置如何设置，跨平台，同步。
 首先解决配置的同步问题，贝壳建立了一个svn仓库，用于存储该配置系统。然后在各个系统中co出这个仓库，当有需要调整时ci就可以保持同步了。Linux下可以使用ln连接文件，Windows下比较麻烦点，NTFS格式(大多都是NTFS格式了吧)可以去sysinternals下一个叫做junction的工具，以建立目录的工具链接，当然，.emacs文件只能手工拷贝了。
 然后是配置的切分问题，如果只有一个文件，即使使用了版本控制，意义也不大。同时，将配置切割成不同的部分，控制载入过程，也可以跨平台和加速。以下是贝壳的.emacs文件。
-;; .emacs profile, written by shell.xu ;; load other set (add-to-list &#39;load-path &amp;quot;~/.emacs.d/&amp;quot;) (add-to-list &#39;load-path &amp;quot;~/.emacs.d/auto-complete/&amp;quot;) (add-to-list &#39;load-path &amp;quot;~/.emacs.d/plugins/&amp;quot;) (load &amp;quot;emacs-setup&amp;quot;) (load &amp;quot;emacs-redef&amp;quot;) (load &amp;quot;emacs-plugin&amp;quot;) (cond ((not (boundp &#39;initial-window-system)) (load &amp;quot;emacs-console&amp;quot;)) ((memq initial-window-system &#39;(x w32)) (cond ((memq system-type &#39;(windows-nt cygwin)) (load &amp;quot;emacs-win&amp;quot;)) ((memq system-type &#39;(gnu/linux)) (load &amp;quot;emacs-linux&amp;quot;))))) (load &amp;quot;emacs-keymap&amp;quot;)  从上可以看出，我们先设定了.emacs.d作为默认加载路径——大多数文件都是放在这里。plugins是各种第三方程序的安装路径，这样这些程序就无需在各个平台上各自安装一次。而auto-complete单独拆出来纯粹是因为文件太多了。而后，我们加载了setup，这个文件内定义了emacs的基本配置，redef文件内定义了各种自定义函数和变量，plugin内控制了需要加载的各个插件和配置。
+;; .emacs profile, written by shell.xu ;; load other set (add-to-list &#39;load-path &amp;quot;~/.emacs.d/&amp;quot;) (add-to-list &#39;load-path &amp;quot;~/.emacs.d/auto-complete/&amp;quot;) (add-to-list &#39;load-path &amp;quot;~/.emacs.d/plugins/&amp;quot;) (load &amp;quot;emacs-setup&amp;quot;) (load &amp;quot;emacs-redef&amp;quot;) (load &amp;quot;emacs-plugin&amp;quot;) (cond ((not (boundp &#39;initial-window-system)) (load &amp;quot;emacs-console&amp;quot;)) ((memq initial-window-system &#39;(x w32)) (cond ((memq system-type &#39;(windows-nt cygwin)) (load &amp;quot;emacs-win&amp;quot;)) ((memq system-type &#39;(gnu/linux)) (load &amp;quot;emacs-linux&amp;quot;))))) (load &amp;quot;emacs-keymap&amp;quot;) 从上可以看出，我们先设定了.emacs.d作为默认加载路径——大多数文件都是放在这里。plugins是各种第三方程序的安装路径，这样这些程序就无需在各个平台上各自安装一次。而auto-complete单独拆出来纯粹是因为文件太多了。而后，我们加载了setup，这个文件内定义了emacs的基本配置，redef文件内定义了各种自定义函数和变量，plugin内控制了需要加载的各个插件和配置。
 下面就有点复杂，简单来说，设定无Windows系统的时候加载emacs-console文件，有Windows的情况下，在windows下加载emacs-win，在linux下加载emacs-linux。这是实现跨平台设置的核心。
 最后是keymap，经过上面复杂的设定，按键设置是统一的。
 setup文件就不细说了，大家按照自己的习惯设定就好。下面我说几个redef中定义的函数。
-(defun switch-windows-buffer () (interactive) (let ((this-buffer (window-buffer))) (switch-to-buffer (window-buffer (next-window (selected-window)))) (switch-to-buffer-other-window this-buffer) (other-window 1)))  这个函数的目标是用热键交换两个窗口的位置。如果你经常用C-x 3分栏，并且在两者间跳来跳去的话，有的时候往往希望两者的位置换一下。通常都是C-x b切换当前的窗口，然后C-x o切到隔壁去再换。这个太繁琐了。</description>
+(defun switch-windows-buffer () (interactive) (let ((this-buffer (window-buffer))) (switch-to-buffer (window-buffer (next-window (selected-window)))) (switch-to-buffer-other-window this-buffer) (other-window 1))) 这个函数的目标是用热键交换两个窗口的位置。如果你经常用C-x 3分栏，并且在两者间跳来跳去的话，有的时候往往希望两者的位置换一下。通常都是C-x b切换当前的窗口，然后C-x o切到隔壁去再换。这个太繁琐了。</description>
     </item>
     
     <item>
@@ -1648,7 +1648,7 @@ setup文件就不细说了，大家按照自己的习惯设定就好。下面我
 3.信息
 这个是最麻烦的。去信息-&amp;gt;Menu-&amp;gt;设置-&amp;gt;导出短信里面导出。但是别高兴的太早，贝壳发现一个bug。如果你的短信里面有西文引号，会导致xml格式错误，从而无法导入。解决方法是手工删除引号。
 应用，使用xsltproc，将xml转换为html来浏览。贝壳用的xslt比较简单，抄在下面。
-&amp;lt;?xml version=&#39;1.0&#39; encoding=&amp;quot;GBK&amp;quot;?&amp;gt; &amp;lt;xsl:stylesheet version=&amp;quot;1.0&amp;quot; xmlns:xsl=&amp;quot;&amp;lt;http://www.w3.org/1999/XSL/Transform&amp;gt;&amp;quot;&amp;gt; &amp;lt;xsl:template match=&amp;quot;/&amp;quot;&amp;gt; &amp;lt;html&amp;gt; &amp;lt;body&amp;gt; &amp;lt;xsl:for-each select=&amp;quot;//smss/address&amp;quot;&amp;gt; Phone Number:&amp;lt;xsl:value-of select=&amp;quot;@data&amp;quot;/&amp;gt; &amp;lt;br/&amp;gt; &amp;lt;table border=&amp;quot;0&amp;quot; class=&amp;quot;rev_tab&amp;quot; width=&amp;quot;100%&amp;quot;&amp;gt; &amp;lt;xsl:for-each select=&amp;quot;sms&amp;quot;&amp;gt; &amp;lt;tr&amp;gt; &amp;lt;td class=&amp;quot;rev_tab_rev&amp;quot;&amp;gt; &amp;lt;xsl:value-of select=&amp;quot;date/@data&amp;quot;/&amp;gt; &amp;lt;/td&amp;gt; &amp;lt;td class=&amp;quot;rev_tab_rev&amp;quot;&amp;gt; &amp;lt;xsl:choose&amp;gt; &amp;lt;xsl:when test=&amp;quot;read/@data = 1&amp;quot;&amp;gt;read&amp;lt;/xsl:when&amp;gt; &amp;lt;xsl:when test=&amp;quot;read/@data = 0&amp;quot;&amp;gt;unread&amp;lt;/xsl:when&amp;gt; &amp;lt;/xsl:choose&amp;gt; &amp;lt;/td&amp;gt; &amp;lt;td class=&amp;quot;rev_tab_rev&amp;quot;&amp;gt; &amp;lt;xsl:value-of select=&amp;quot;body/@data&amp;quot;/&amp;gt; &amp;lt;/td&amp;gt; &amp;lt;/tr&amp;gt; &amp;lt;/xsl:for-each&amp;gt; &amp;lt;/table&amp;gt; &amp;lt;BR/&amp;gt; &amp;lt;/xsl:for-each&amp;gt; &amp;lt;/body&amp;gt; &amp;lt;/html&amp;gt; &amp;lt;/xsl:template&amp;gt; &amp;lt;/xsl:stylesheet&amp;gt;  为了美观，你还可以修改一下xslt。xsltproc在linux下直接有包，Windows可以来信问贝壳索要移植(其实去官网上就能下到)。</description>
+&amp;lt;?xml version=&#39;1.0&#39; encoding=&amp;quot;GBK&amp;quot;?&amp;gt; &amp;lt;xsl:stylesheet version=&amp;quot;1.0&amp;quot; xmlns:xsl=&amp;quot;&amp;lt;http://www.w3.org/1999/XSL/Transform&amp;gt;&amp;quot;&amp;gt; &amp;lt;xsl:template match=&amp;quot;/&amp;quot;&amp;gt; &amp;lt;html&amp;gt; &amp;lt;body&amp;gt; &amp;lt;xsl:for-each select=&amp;quot;//smss/address&amp;quot;&amp;gt; Phone Number:&amp;lt;xsl:value-of select=&amp;quot;@data&amp;quot;/&amp;gt; &amp;lt;br/&amp;gt; &amp;lt;table border=&amp;quot;0&amp;quot; class=&amp;quot;rev_tab&amp;quot; width=&amp;quot;100%&amp;quot;&amp;gt; &amp;lt;xsl:for-each select=&amp;quot;sms&amp;quot;&amp;gt; &amp;lt;tr&amp;gt; &amp;lt;td class=&amp;quot;rev_tab_rev&amp;quot;&amp;gt; &amp;lt;xsl:value-of select=&amp;quot;date/@data&amp;quot;/&amp;gt; &amp;lt;/td&amp;gt; &amp;lt;td class=&amp;quot;rev_tab_rev&amp;quot;&amp;gt; &amp;lt;xsl:choose&amp;gt; &amp;lt;xsl:when test=&amp;quot;read/@data = 1&amp;quot;&amp;gt;read&amp;lt;/xsl:when&amp;gt; &amp;lt;xsl:when test=&amp;quot;read/@data = 0&amp;quot;&amp;gt;unread&amp;lt;/xsl:when&amp;gt; &amp;lt;/xsl:choose&amp;gt; &amp;lt;/td&amp;gt; &amp;lt;td class=&amp;quot;rev_tab_rev&amp;quot;&amp;gt; &amp;lt;xsl:value-of select=&amp;quot;body/@data&amp;quot;/&amp;gt; &amp;lt;/td&amp;gt; &amp;lt;/tr&amp;gt; &amp;lt;/xsl:for-each&amp;gt; &amp;lt;/table&amp;gt; &amp;lt;BR/&amp;gt; &amp;lt;/xsl:for-each&amp;gt; &amp;lt;/body&amp;gt; &amp;lt;/html&amp;gt; &amp;lt;/xsl:template&amp;gt; &amp;lt;/xsl:stylesheet&amp;gt; 为了美观，你还可以修改一下xslt。xsltproc在linux下直接有包，Windows可以来信问贝壳索要移植(其实去官网上就能下到)。</description>
     </item>
     
     <item>
@@ -1659,10 +1659,10 @@ setup文件就不细说了，大家按照自己的习惯设定就好。下面我
       <guid>//blog.shell909090.org/blog/archives/94/</guid>
       <description>ext3下如果误删除了文件，恢复起来是异常麻烦的。如果是小文件，其实很多时候不用走常规文件恢复的路子，只要能找到内容就好了。基本思路是从磁盘中直接搜索内容，然后设法复制出来。
 恢复条件：
- 文件没有被覆盖。如果被覆盖了，那就绝对没有希望了。 文件不大(通常建议在16K以内)。如果很大，下面一个条件就很难满足。 知晓文件内的特定关键字。条件是，文件每4K内，你必须知道至少一个关键字。因为ext3通常将4K内容连续存放，每知道一个关键字，可以恢复4K内容。如果缺少关键字，那就无法恢复了。 文件保存的版本不太多。  满足以上条件后，使用以下方法进行恢复：
-# grep -abn &amp;quot;id_insert_stmt_param&amp;quot; /dev/xvda1 4799010:713068605:sql_id_insert_stmt_param = &amp;quot;SELECT NEXTVAL  使用grep对/dev/xvda1磁盘进行搜索，需要管理员权限直接访问设备文件，搜索哪个物理磁盘可以用mount来确定。 713068605是相对偏移地址，如果保存了多个版本，可能有多个偏移地址。 他们的选择和确定是个非常麻烦的问题，所以文件保存的版本不能过多。
-$ python &amp;gt;&amp;gt;&amp;gt; (713068605/4096)*4096 713068544 &amp;gt;&amp;gt;&amp;gt; exit ()  以上过程可以在常规权限下操作，使用python(或者其他你高兴的计算器)确定该偏移地址的块首地址。
-# dd if=/dev/xvda1 bs=1 count=4k skip=713068544 &amp;gt; 1.tmp  将这个块的内容复制出来，注意磁盘上必须有足够空间，否则搞不好会将原始内容覆盖。
+文件没有被覆盖。如果被覆盖了，那就绝对没有希望了。 文件不大(通常建议在16K以内)。如果很大，下面一个条件就很难满足。 知晓文件内的特定关键字。条件是，文件每4K内，你必须知道至少一个关键字。因为ext3通常将4K内容连续存放，每知道一个关键字，可以恢复4K内容。如果缺少关键字，那就无法恢复了。 文件保存的版本不太多。 满足以上条件后，使用以下方法进行恢复：
+# grep -abn &amp;quot;id_insert_stmt_param&amp;quot; /dev/xvda1 4799010:713068605:sql_id_insert_stmt_param = &amp;quot;SELECT NEXTVAL 使用grep对/dev/xvda1磁盘进行搜索，需要管理员权限直接访问设备文件，搜索哪个物理磁盘可以用mount来确定。 713068605是相对偏移地址，如果保存了多个版本，可能有多个偏移地址。 他们的选择和确定是个非常麻烦的问题，所以文件保存的版本不能过多。
+$ python &amp;gt;&amp;gt;&amp;gt; (713068605/4096)*4096 713068544 &amp;gt;&amp;gt;&amp;gt; exit () 以上过程可以在常规权限下操作，使用python(或者其他你高兴的计算器)确定该偏移地址的块首地址。
+# dd if=/dev/xvda1 bs=1 count=4k skip=713068544 &amp;gt; 1.tmp 将这个块的内容复制出来，注意磁盘上必须有足够空间，否则搞不好会将原始内容覆盖。
 更严谨的方法是将内容dump到其他磁盘设备的挂载点下，做异地磁盘恢复。
 以上方法可以恢复一个块的内容。手工恢复所有块后，将内容拼接，就是你要恢复的文件。</description>
     </item>
@@ -1675,10 +1675,10 @@ $ python &amp;gt;&amp;gt;&amp;gt; (713068605/4096)*4096 713068544 &amp;gt;&amp;g
       <guid>//blog.shell909090.org/blog/archives/89/</guid>
       <description>贝壳家里开了emule，天天下载，问题是又不能每次都是晚上添加资源。
 怎么办呢？不知道大家知道不知道，emule是可以网络管理的，端口是4711。不过不是https，密码容易泄露。而且贝壳已经有一个nginx服务器了，也懒的再做端口映射，换端口。于是，在nginx中做如下设定。(当然，贝壳是放在https段中的)
-location ^~ /emule/ { rewrite ^/emule/(.*)$ /$1 break; proxy_pass &amp;lt;http://hostip:4711&amp;gt;; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; }  然后，用https://dynname/emule/就可以访问你家里的emule了，记得密码设强点。
+location ^~ /emule/ { rewrite ^/emule/(.*)$ /$1 break; proxy_pass &amp;lt;http://hostip:4711&amp;gt;; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; } 然后，用https://dynname/emule/就可以访问你家里的emule了，记得密码设强点。
 接下来，verycd里面曾经有复制所有连接的选项，现在没了。面对几个链接，也就手工复制一下，面对上百个连接，贝壳就无语了。贝壳试验过几个插件，都无法正确识别ed2k的链接获取。那怎么办呢？这时就要请出我们伟大的Linux。
 需要准备的工具是lynx，请预先装好，然后如下操作。(范例是个动画^_^)
-wget -c &amp;lt;http://www.verycd.com/topics/2779234/&amp;gt; lynx -dump -listonly index.html | grep &amp;quot;ed2k://&amp;quot; | sed &amp;quot;s/.*ed2k/ed2k/g&amp;quot; | grep -v BIG5 &amp;gt; out.txt wc -l out.txt  lynx的-dump选项是将某个网页全部渲染成文本进行展示，这是html2text的好方法，效果还不错哦，不过中文支持好像不是很好。而-listonly则是展示出页面上的所有链接，这就拿到了我们需要的原始数据。
+wget -c &amp;lt;http://www.verycd.com/topics/2779234/&amp;gt; lynx -dump -listonly index.html | grep &amp;quot;ed2k://&amp;quot; | sed &amp;quot;s/.*ed2k/ed2k/g&amp;quot; | grep -v BIG5 &amp;gt; out.txt wc -l out.txt lynx的-dump选项是将某个网页全部渲染成文本进行展示，这是html2text的好方法，效果还不错哦，不过中文支持好像不是很好。而-listonly则是展示出页面上的所有链接，这就拿到了我们需要的原始数据。
 然后，我们取其中的ed2k行，忽略其他链接，再通过sed转换，去除头部的编号和空格，这样就可以得到所有的ed2k链接。
 我在下面是用-v BIG5的参数，忽略了其中繁体中文的资源，然后输出到一个文件中。数数行数，52行，大致和文件个数相当(其中好像有两个v2)。那就是可用资源了，复制到emule的控制页面中——出错？
 这是因为emule的控制页面使用GET方式传递参数，因此有长度限制。你需要将链接10个一批往里面复制——有个几次就OK了。当然，如果还是多，贝壳回头会写一篇文章，介绍如何使用curl自动干这事情——这还不算太难。
@@ -1695,7 +1695,7 @@ wget -c &amp;lt;http://www.verycd.com/topics/2779234/&amp;gt; lynx -dump -liston
 首先，我重建的是oracle数据库，而不是oracle数据库程序。这几天不知道怎么回事，整个数据库的redo log出问题了，我又懒得去找。加上这个数据库做演示的时候乱糟糟的配置做了一堆，也记不请了，干脆重建。
 重建的第一步，需要找到所有程序实例的位置，这个可以看/etc/oraInv什么的一个文件，这里会指向一个目录。这个目录是标准的，里面有各种格式的oracle程序实例的位置。然后，一个程序实例可以运行多个数据库实例，因此，要找出这些数据库实例的配置文件。这个就需要对oracle的数据库基本结构有所了解，这里不赘述oracle数据库的各种基本概念。
 oracle的数据库配置文件在一个很怪的位置，/etc/oratab里面。其中有SID到spfile路径的对应关系，通常而言，这个路径位于$ORACLE_HOME/dbs/init$ORACLE_SID。我们首先不要删除这个对应关系和文件，因为启动中其他文件需要通过这个找到。我们首先通过spfile建立pfile，来读取其中的参数。
-$ export SID=orcl $ sqlplus / as sysdba &amp;gt; create pfile from spfile &amp;gt; exit  OK，这样我们就建立了pfile，现在可以删除$ORACLE_HOME/dbs目录下所有的SID相关的文件，并且删除oratab中的对应关系。完成这步后，数据库就无法启动，也不存在了。但是我们还需要回首数据库相关的文件，主要是收回空间，同时也免除后患。
+$ export SID=orcl $ sqlplus / as sysdba &amp;gt; create pfile from spfile &amp;gt; exit OK，这样我们就建立了pfile，现在可以删除$ORACLE_HOME/dbs目录下所有的SID相关的文件，并且删除oratab中的对应关系。完成这步后，数据库就无法启动，也不存在了。但是我们还需要回首数据库相关的文件，主要是收回空间，同时也免除后患。
 首先，数据库有三个control files，还有一个到多个data files，以及多个redo log。在默认设置中，这些文件一般放在一起，你可以通过查看pfile确认这些文件的路径。找到之后，直接删除，没啥好多说的。在完成数据基础文件的删除后，我们还需要删除flash_recovery文件，这个也可以通过pfile确认，位置一般在data文件上两级(就是通常$ORACLE_BASE的位置)下面，flash什么的一个目录，很好找。
 最后，我们删除admin目录，具体是在$ORACLE_BASE下面的admin下面，以SID命名的，可以通过pfile确认。至此，oracle数据库的删除完成。不过呢——呵呵——让大家失望的是，其实DBCA也可以完成一样的工作&amp;hellip;
 不过，dbca的工作必须通过vnc，绝对不要通过ssh + xming，因为那个会让最后一步执行前的确认无法被确认，导致不能执行。实在是很让人郁闷的一个bug，切记切记。</description>
@@ -1710,7 +1710,7 @@ $ export SID=orcl $ sqlplus / as sysdba &amp;gt; create pfile from spfile &amp;g
       <description>谨以此缅怀那些为了今日软件事业的自由做出贡献的先辈们。(注1:多数人没牺牲，谢谢)(注2: 排名不分先后)(注3: 科普作品，大家别怕)
 我在撰写这篇文章的时候，避免使用自由软件这个词，而改为更普遍意义上的软件自由。因为自由软件是RMS提出的一个专有词语，指软件的开源，复制，协作等
 特质。而我试图通过软件自由这个词，表达人们在使用软件上的自由，以及使用软件来为我们获取自由。我们拥有知道软件一切内幕的自由，我们拥有修改软件的自由，我们拥有思考的自由，我们拥有挑战老系统的自由，我们拥有拒绝通过软件收费的自由，我们拥有通过软件获得信息的自由，我们拥有不受任何人，包括政府监控的自由。为了这种自由而付出的，不仅是自由程序的拥护者，也有商业程序的拥护者。
- Richard Matthew Stallman  大名鼎鼎的RMS，GNU的核心人物，自由软件的布道者。要是在这个列表上没有他的名字，那我不知道还有谁能留在这张表上。具体可以看这里(http://zh.wikipedia.org/zh-cn/%E7%90%86%E6%9F%A5%E5%BE%B7%C2%B7%E6%96%AF%E6%89%98%E6%9B%BC)。简单来说这家伙最大的几个成就：创立了GNU和FSF，为自由软件的传播奠定了基础。制作了emacs，当今黑客世界两大编辑器之一(另一个是VIM)。制作了GCC，世界上使用最广泛的编译器。
+Richard Matthew Stallman 大名鼎鼎的RMS，GNU的核心人物，自由软件的布道者。要是在这个列表上没有他的名字，那我不知道还有谁能留在这张表上。具体可以看这里(http://zh.wikipedia.org/zh-cn/%E7%90%86%E6%9F%A5%E5%BE%B7%C2%B7%E6%96%AF%E6%89%98%E6%9B%BC)。简单来说这家伙最大的几个成就：创立了GNU和FSF，为自由软件的传播奠定了基础。制作了emacs，当今黑客世界两大编辑器之一(另一个是VIM)。制作了GCC，世界上使用最广泛的编译器。
 RMS的核心想法是，因为软件而收费是罪恶的，这种人是撒旦(当然，Bill Gates是其中最大的那个)。他认为软件应当自由分享，程序员从中收取的应当是服务费。今天，RedHat正是继承了这一模式。通过免费的软件和收费的服务来进行持续的开发。
 2.Linus Benedict Torvalds
 常常和RMS并提的一个家伙，具体在这里(http://zh.wikipedia.org/zh-cn/%E6%9E%97%E7%BA%B3%E6%96%AF%C2%B7%E6%89%98%E7%93%A6%E5%85%B9)。
@@ -1744,7 +1744,9 @@ Linux世界有所谓三大发行，四大包管理系统之说。其中三大发
 在上个世纪，美国政府有一种观点，他们需要能随时随地的窃听任何一个人和其他人的通讯。同时，作为延伸，他们制定了国家安全出口法案，将密码产品作为军用管制品，限制出口。这其实是很荒谬和不合逻辑的，任何公开的算法都可以被多个人独立的实现。只要算法是公开的，即使产品不允许出口，国外也可以没有任何阻碍的实现出来。而如果算法是不公开的，则会出现两个弊端。一个是阻碍密码学的交流和进步，更麻烦的是，根据密码学的内在逻辑，这样的系统，由于验证不完全，因此比公开的系统更加不安全。
 在1991年前后，PZ制作了PGP软件，用于保障当时备受争议的电子邮件的安全(小常识:电子邮件默认是明文的，安全程度和你写在明信片背面寄给你父母的句子差不多)。这个软件使用了1980年以来提出的现代密码系统几大密码系统，实现了签名安全和秘密安全。这里我们小小的讲解一下电子邮件的两大安全系统，对此无爱的人自行跳到下一段。签名安全就是指，你收到一个邮件的时候，能够确信，这个信的内容是原始发件人的真实意思表示，而不是被篡改过的。秘密安全就是指，当你收到一个信的时候，你能够确信，除了你没有别人能够偷看到内容。对此，一般采用公钥系统来实现两者的安全。所谓公钥系统是这样一种系统，用公钥加密必须用私钥解密，用私钥加密必须用公钥解密，私钥很容易计算出公钥，公钥非常难计算出私钥。当你要签名安全的时候，将邮件内容用自己的私钥加密再发送一次(实际是将内容hash了再加密的)，接收者解密后对比。由于篡改者只有公钥，因此虽然可以拦截和修改内容，但是无法伪造出一对匹配的内容，用公钥解密后刚好一致。而秘密安全则是用对方的公钥加密。对于更高层级的要求，你的公钥不仅要求公布，而且必须在国家认可的部门公布，这样就由国家认定了你的公钥和你的身份的一致性。当你对一个内容签署的时候，只要能用公钥验证签名，就可以认定内容是你的真实意思表述，并被法律所承认。
 当时的PGP当然还没有这么复杂，但是对于当时缺乏任何安全性特征(当时连TLS都没有)的电子邮件来说，是非常必要的补充。可是我们上文说了，美国禁止出口这些产品。于是，PZ免费的将软件的最初版本散发给同事和其他人使用，而这些人又可以免费的分发出去——这和自由模式非常的吻合，除了我找不到具体信息标明当时PZ是否从授权上同意他们做这个事情。法律上说，PZ并没有“出口”密码产品，但是实际上，是他实现并且向全世界推广了高强度的电子邮件安全系统。从某种意义上说，PZ可以说是叛国者。非法散布军用管制品，危害美国的国家安全(这还不像中国那种含糊不清的指控，这里的军用管制品定义是明确的，并且是由国会制定的)。于是，PZ受到了三年的官司和五年的调查，直到96年的时候，克林顿签署了新的法案，放松了密码产品的出口限制。其实也没松多少，从40位到56位——大概就是从5个字符到7个字符的区别。反之，我们改变观点，从世界的角度说，由于他的勇气和决心，我们每个人从中受益匪浅。
-EDIT 2016-09-08: 按照我听到的更新消息，PZ当时实际上是出版了一本书，这个书里面就是完整的源码。他虽然没有“出口”这些源码，但是实际上任何人都可以在书店里买一本，然后带去海外，照着源码keyin一遍。美国政府虽然希望禁止这本书的出版，但是禁止个人出版图书违反宪法第一修正案——言论自由。当时政府还不能因为国家安全因素就随意禁止公民出版书籍（这都是911之后的事了），所以只能用官司和调查来整PZ。</description>
+EDIT 2016-09-08: 按照我听到的更新消息，PZ当时实际上是出版了一本书，这个书里面就是完整的源码。他虽然没有“出口”这些源码，但是实际上任何人都可以在书店里买一本，然后带去海外，照着源码keyin一遍。美国政府虽然希望禁止这本书的出版，但是禁止个人出版图书违反宪法第一修正案——言论自由。当时政府还不能因为国家安全因素就随意禁止公民出版书籍（这都是911之后的事了），所以只能用官司和调查来整PZ。
+必须得说，其实这一改变很大程度上并不是PZ个人努力或者公民运动的结果，其中有巨大的商业力量。IBM，微软和Lotus之类的跨国软件巨头在出口产品的时候，由于受到出口限制，因此在海外产品上的安全性一直很成问题。很多时候他们因为这个问题受到了巨大的挑战。在这一问题上，他们有足够的理由去游说白宫，改变出口限制的要求。关于这个案件的其他资料，可以参考这里(http://cyberlaw.stanford.edu/~prz/ZH/faq/index.html和这里(http://www.techcn.com.cn/index.php?doc-view-130949)。
+在今日，PGP仍旧是一个非常强大的加密系统，并且是开源的——理所当然，如果不开源，我们会担心其中是否有漏洞和后门继续危害我们的安全。并且，从密码学内在的逻辑来说，不公开的系统是不安全的。不过他仍旧受限于美国国家安全出口管制条例，原因是因为由于今日强大的计算能力，因此密钥通常的长度是1024，2048，4096位长的——远远超过美国国家限制数十倍。因此这一软件的强密钥版本只有英文版，因为不用考虑出口。对于海外人士来说，我们更推荐OpenPGP，同样是开源的，而且基于开源模式开发的GNU自由软件。能够充分保证你的信息安全。</description>
     </item>
     
     <item>
@@ -1772,7 +1774,7 @@ EDIT 2016-09-08: 按照我听到的更新消息，PZ当时实际上是出版了�
       
       <guid>//blog.shell909090.org/blog/archives/71/</guid>
       <description>不多说了，上脚本。
------------/etc/init.d/sshtunnel------------ #!/bin/bash PATH=/bin:/sbin:/usr/bin:/usr/sbin CONF=&amp;quot;/etc/default/sshtunnel&amp;quot; source $CONF if ! [ -x /usr/bin/ssh ]; then exit 0 fi start () { echo -n &amp;quot;Starting tunnel..&amp;quot; ssh -CNq -D &amp;quot;$PROXYPORT&amp;quot; &amp;quot;$USERNAME@$SSHHOST&amp;quot; -p $SSHPORT -o ServerAliveInterval=30 &amp;amp; echo &amp;quot;done.&amp;quot; } stop () { echo -n &amp;quot;Stopping tunnel..&amp;quot; PID=$(netstat -nlp -4 | grep &amp;quot;:$PROXYPORT&amp;quot;) PID=$(echo $PID | sed &amp;quot;s/.*LISTENs*(.*)/1/&amp;quot; | cut -f1 -d/) kill -9 $PID echo &amp;quot;done.&amp;quot; } case &amp;quot;$1&amp;quot; in start|restart) start ;; stop) stop ;; restart) stop start ;; *) echo &amp;quot;Usage: $0 {start|stop|restart|clear}&amp;quot; exit 1 ;; esac exit 0 -----------------end of file------------------ ---------/etc/default/sshtunnel---------- PROXYPORT=7777 USERNAME=abc SSHHOST=abc SSHPORT=22 -----------------end of file------------------  首先准备一个远程服务器，获得域名端口，用户名密码。而后将上述脚本放置于指定位置，修改/etc/default/sshtunnel的值，即完成配置。但是上述脚本并没有解决自动登录问题，因此，请生成一个没有密码的密钥，将公钥导入远程服务器。</description>
+-----------/etc/init.d/sshtunnel------------ #!/bin/bash PATH=/bin:/sbin:/usr/bin:/usr/sbin CONF=&amp;quot;/etc/default/sshtunnel&amp;quot; source $CONF if ! [ -x /usr/bin/ssh ]; then exit 0 fi start () { echo -n &amp;quot;Starting tunnel..&amp;quot; ssh -CNq -D &amp;quot;$PROXYPORT&amp;quot; &amp;quot;$USERNAME@$SSHHOST&amp;quot; -p $SSHPORT -o ServerAliveInterval=30 &amp;amp; echo &amp;quot;done.&amp;quot; } stop () { echo -n &amp;quot;Stopping tunnel..&amp;quot; PID=$(netstat -nlp -4 | grep &amp;quot;:$PROXYPORT&amp;quot;) PID=$(echo $PID | sed &amp;quot;s/.*LISTENs*(.*)/1/&amp;quot; | cut -f1 -d/) kill -9 $PID echo &amp;quot;done.&amp;quot; } case &amp;quot;$1&amp;quot; in start|restart) start ;; stop) stop ;; restart) stop start ;; *) echo &amp;quot;Usage: $0 {start|stop|restart|clear}&amp;quot; exit 1 ;; esac exit 0 -----------------end of file------------------ ---------/etc/default/sshtunnel---------- PROXYPORT=7777 USERNAME=abc SSHHOST=abc SSHPORT=22 -----------------end of file------------------ 首先准备一个远程服务器，获得域名端口，用户名密码。而后将上述脚本放置于指定位置，修改/etc/default/sshtunnel的值，即完成配置。但是上述脚本并没有解决自动登录问题，因此，请生成一个没有密码的密钥，将公钥导入远程服务器。</description>
     </item>
     
     <item>
@@ -1838,7 +1840,7 @@ EDIT 2016-09-08: 按照我听到的更新消息，PZ当时实际上是出版了�
       <description>贝壳经过N个人的宣传，决定试用一下传说中的Ibus，下面是试用安装手记。文章参考了后面的参考1，特此鸣谢。
 apt-get install git-core python-gtk2-dev cvs libtool automake python-enchant libgtk2.0-dev libdbus-1-dev libdbus-glib-1-dev python-xdg
 在安装以上依赖后，运行。
-# 安装ibus git clone git://github.com/phuang/ibus.git ibus cd ibus ./autogen.sh chmod +x debian/rules dpkg-buildpackage # 安装ibus-pinyin git clone git://github.com/phuang/ibus-pinyin.git ibus-pinyin cd ibus-pinyin ./autogen.sh chmod +x debian/rules dpkg-buildpackage  而后，在根目录会生成两个文件。贝壳的是ibus_0.1.1.20080908-1_amd64.deb ibus-pinyin_0.1.1.20080901-1_amd64.deb。名字比较旧，但是查看git log的话，是2009年4月8日的版本。先安装前者，再安装后者(顺序不要弄错)。而后就是设定部分。
+# 安装ibus git clone git://github.com/phuang/ibus.git ibus cd ibus ./autogen.sh chmod +x debian/rules dpkg-buildpackage # 安装ibus-pinyin git clone git://github.com/phuang/ibus-pinyin.git ibus-pinyin cd ibus-pinyin ./autogen.sh chmod +x debian/rules dpkg-buildpackage 而后，在根目录会生成两个文件。贝壳的是ibus_0.1.1.20080908-1_amd64.deb ibus-pinyin_0.1.1.20080901-1_amd64.deb。名字比较旧，但是查看git log的话，是2009年4月8日的版本。先安装前者，再安装后者(顺序不要弄错)。而后就是设定部分。
 设定的话，请不要按照参考文去设定。这是贝壳血的教训，足足弄了4个小时。正确的做法是用root用户im-switch -c。而后选择ibus作为输入法。
 而后，稍等，先不要着急重启。在两个包里面还有个bug？？
 在ibus包中，有这么一个文件。 /usr/etc/xdg/autostart/ibus.desktop在debian testing中，这个位置的自启动是无效的！ 正确的做法是，cp /usr/etc/xdg/autostart/ibus.desktop /etc/xdg/autostart/ibus.desktop
@@ -1941,16 +1943,16 @@ KST的2GU盘读写速度是5/1.5，貌似用来启动个30多M的系统也够了
       <guid>//blog.shell909090.org/blog/archives/435/</guid>
       <description>在linux下和windows下共享同样配置/插件。这个很简单，上面的blog中有篇文章说到thnunderbird在双系统下共享同样邮件的问题，firefox也一样解决。能用linux的人不会查不出配置目录位置吧。
 节约内存技巧。
-firefox虽然号称小巧，然而很多时候我们发现他的内存消耗也非常惊人。在贝壳的机器上，有的时候会高达150M，基本等于普通编辑器/播放器的10倍。事实上，不是firefox浪费内存，而是默认的内存配置是针对&amp;rdquo;机器上只开firefox&amp;rdquo;设计的。如果你机器内存小，或者需要同时开其他程序，最好自己配置一下firefox。
-首先就是fasterfox，关闭其中的&amp;rdquo;增强预读&amp;rdquo;，这东西很消耗内存。然后是内存缓存，调整到32M吧。一般一个网页上所有文件差不多1M-2M，32M够把20个网页的所有内容缓存起来，再多就不大正常了。根据贝壳自己的猜测，渲染动作应当是动态进行的，否则内存根本顶不住长文本的渲染。这样在浏览的时候，从后台抓取内容，动态渲染的速度就非常重要，因此强烈推荐不要小于8M。否则连5个页面的内容都不在内存中命中，还玩个P阿～
-还有渲染中的&amp;rdquo;启用快速返回&amp;rdquo;，将内存中的保留页面数调整小，贝壳用的是3。当然，这个只适用于firefox1.5。
-其次是session manager，将&amp;rdquo;撤销关闭&amp;rdquo;尽量减小。反正贝壳减小到了1个窗口3个页面。这些页面在关闭后还是继续消耗系统的内存，因此越小越好。当然，小到多少是要看你的具体需要了。
+firefox虽然号称小巧，然而很多时候我们发现他的内存消耗也非常惊人。在贝壳的机器上，有的时候会高达150M，基本等于普通编辑器/播放器的10倍。事实上，不是firefox浪费内存，而是默认的内存配置是针对&amp;quot;机器上只开firefox&amp;quot;设计的。如果你机器内存小，或者需要同时开其他程序，最好自己配置一下firefox。
+首先就是fasterfox，关闭其中的&amp;quot;增强预读&amp;quot;，这东西很消耗内存。然后是内存缓存，调整到32M吧。一般一个网页上所有文件差不多1M-2M，32M够把20个网页的所有内容缓存起来，再多就不大正常了。根据贝壳自己的猜测，渲染动作应当是动态进行的，否则内存根本顶不住长文本的渲染。这样在浏览的时候，从后台抓取内容，动态渲染的速度就非常重要，因此强烈推荐不要小于8M。否则连5个页面的内容都不在内存中命中，还玩个P阿～
+还有渲染中的&amp;quot;启用快速返回&amp;quot;，将内存中的保留页面数调整小，贝壳用的是3。当然，这个只适用于firefox1.5。
+其次是session manager，将&amp;quot;撤销关闭&amp;quot;尽量减小。反正贝壳减小到了1个窗口3个页面。这些页面在关闭后还是继续消耗系统的内存，因此越小越好。当然，小到多少是要看你的具体需要了。
 最后，少用插件，少启用插件，除非你真的需要。长期不需要的就禁用，或者干脆卸载。
 内存回收技巧。
 很简单，觉得不够了，关了再开。反正有session manager，正在浏览的网页根本不会有影响。
 同时打开大批网页技巧。
-最好使用Tree Style Tab，这样方便。另外，如果需要打开一个页面的所有连接，可以这样做。先察看页面信息，选择&amp;rdquo;链接&amp;rdquo;-&amp;gt;&amp;ldquo;全部选择&amp;rdquo;-&amp;gt;&amp;ldquo;复制&amp;rdquo;，然后开一个文本文件，把内容粘贴进去。可以看到内容其实是一堆的页面链接。当然，如果页面内有js做的链接指向，可以试试用Convert javascript or onclick to normal links这个greasemonkey脚本转换成目标链接。然后，把这个文本文件改名成htm，打开。通常情况下应该是一堆无法点击的文字，不过你可以用Linkify ting来把文字转换成一堆链接。然后……一个个点过去吧。
-上面是使用greasemonkey解决的方法，当然，也有更简单的方法。你可以安装flashgot，然后新增一个下载管理器，名字叫做firefox。路径就指向firefox的执行文件路径，参数不用动。平时用你喜欢的管理器，需要打开全部链接的时候，更改为firefox，然后&amp;rdquo;使用flashgot下载全部链接&amp;rdquo;。当然，缺点是对付不了js脚本，除非你加载Convert javascript or onclick to normal。
+最好使用Tree Style Tab，这样方便。另外，如果需要打开一个页面的所有连接，可以这样做。先察看页面信息，选择&amp;quot;链接&amp;quot;-&amp;gt;&amp;ldquo;全部选择&amp;rdquo;-&amp;gt;&amp;ldquo;复制&amp;rdquo;，然后开一个文本文件，把内容粘贴进去。可以看到内容其实是一堆的页面链接。当然，如果页面内有js做的链接指向，可以试试用Convert javascript or onclick to normal links这个greasemonkey脚本转换成目标链接。然后，把这个文本文件改名成htm，打开。通常情况下应该是一堆无法点击的文字，不过你可以用Linkify ting来把文字转换成一堆链接。然后……一个个点过去吧。
+上面是使用greasemonkey解决的方法，当然，也有更简单的方法。你可以安装flashgot，然后新增一个下载管理器，名字叫做firefox。路径就指向firefox的执行文件路径，参数不用动。平时用你喜欢的管理器，需要打开全部链接的时候，更改为firefox，然后&amp;quot;使用flashgot下载全部链接&amp;quot;。当然，缺点是对付不了js脚本，除非你加载Convert javascript or onclick to normal。
 不过鉴于内存状态考虑，建议不要同时打开大量页面。维持在10-20个上下最好。</description>
     </item>
     
@@ -1977,7 +1979,7 @@ firefox虽然号称小巧，然而很多时候我们发现他的内存消耗也�
 windows下最难办的恐怕就是邮件了，到不是说不能收。只是windows下一个邮件状况，Linux下一个。未免讨厌了点。就算有导入导出可以转换，你想转换多少次呢？
 下面贝壳就说一种方法来对付这种状况。
 首先你的系统盘应当是ntfs，否则这方法不能用。然后在windows下安装ext2ifs来读取linux的home目录，假定是d:\username.mozilla-thunderbird。windows下安装类似版本的thunderbird，然后看看你的C:\Document and Setting\username\Application Data\Thunderbird下面，是否有一个profile.ini？有就对了。删除这个目录(我没说错)，然后去下一个叫做junction的软件，微软出的。这个软件可以将ntfs的某个目录映射到一个目标上去，对这个目录的访问就等同于对这个目标的访问，就好像linux下面的符号链接一样。下面知道我要做什么了么？
-junction &amp;quot;C:\Document and Setting\username\Application Data\Thunderbird&amp;quot; d:\username\.mozilla-thunderbird  然后启动thunderbird，他首先会检查你系统中插件的版本可用性。然后你的Linux下邮件就可以用了。
+junction &amp;quot;C:\Document and Setting\username\Application Data\Thunderbird&amp;quot; d:\username\.mozilla-thunderbird 然后启动thunderbird，他首先会检查你系统中插件的版本可用性。然后你的Linux下邮件就可以用了。
 简单吧？</description>
     </item>
     
@@ -1993,10 +1995,9 @@ wget是*nix时代出名的下载软件，以稳定和通用出名。主要针对
 wget不支持多线程下载，但是支持断点续传。最常用的用法是wget -c [URL]。如果没有文件就直接下载，有文件就尝试续传。如果没有文件重试次数的指定，几乎就是无限制的下载。下载非常稳定，就算每小时下载10字节都不会断线。
 和今天的GUI多线程，甚至带P2P的下载软件相比，wget无疑是非常单薄的。然而由于是基于命令行的，而且非常稳定，因此经常被用于脚本语言中。例如bash或者python，用于下载网络文件后的处理。windows中的很多脚本也可以用这个软件来下载网络文件，非常方便。
 Reference:
- GNU Wget: http://www.gnu.org/software/wget/
- Wget for Windows: http://gnuwin32.sourceforge.net/packages/wget.htm
- GNU Wget Manual: http://www.gnu.org/software/wget/manual
-  </description>
+GNU Wget: http://www.gnu.org/software/wget/
+Wget for Windows: http://gnuwin32.sourceforge.net/packages/wget.htm
+GNU Wget Manual: http://www.gnu.org/software/wget/manual</description>
     </item>
     
     <item>
@@ -2082,7 +2083,7 @@ X GL SDL问题
 最后一个是声卡问题，音量不能调节。
 贝壳曾经问过很多人，还在gg上疯狂找了几天。最后在此人的homepage上找到了正确答案(之所以说正确是因为有人曾经告诉贝壳，需要删除alsa1.0.13，使用1.0.14。当然，结果是无用的)。
 首先删除/var/lib/alsa/asound.state，而后重新加载驱动。
-#rmmod snd_hda_intel #modprobe snd_hda_intel  而后就可以正常使用了。
+#rmmod snd_hda_intel #modprobe snd_hda_intel 而后就可以正常使用了。
 所有有类似设备，发现alsamixer: function snd_mixer_load failed: Invalid argument错误的朋友们可以试试。</description>
     </item>
     
@@ -2093,13 +2094,13 @@ X GL SDL问题
       
       <guid>//blog.shell909090.org/blog/archives/348/</guid>
       <description>算是介绍一个奇淫巧技吧。查找重复的文件，这个应该有很多软件都可以做的。不过在Linux里面，利用系统工具，一句语句查找应该就比较少见了。
-$find . -name &amp;quot;*&amp;quot; -type f -size +0 -exec md5sum {} ; | sort | uniq -d -w 32  原理是这样的，先用find查找当前所有文件。我们加上限定类型必须是文件，目录不要。限定大小不为0，空文件不要。然后对所有满足条件的执行md5sum，获得md5和文件的列表。然后排序，再针对md5的部分做唯一限定。就得到了所有md5相同的文件的列表。
+$find . -name &amp;quot;*&amp;quot; -type f -size +0 -exec md5sum {} ; | sort | uniq -d -w 32 原理是这样的，先用find查找当前所有文件。我们加上限定类型必须是文件，目录不要。限定大小不为0，空文件不要。然后对所有满足条件的执行md5sum，获得md5和文件的列表。然后排序，再针对md5的部分做唯一限定。就得到了所有md5相同的文件的列表。
 问题是，这时候我们得到的还只是一堆重复的文件的md5。我们可以把以上步骤拆开来获得完整的输出。
-$find . -name &amp;quot;*&amp;quot; -type f -size +0 -exec md5sum {} ; | sort &amp;gt; file_md5 $cat file_md5 | uniq -d -w 32 $grep &amp;quot;...&amp;quot; file_md5  相信大家都看出是怎么回事情了，就不赘言了。
+$find . -name &amp;quot;*&amp;quot; -type f -size +0 -exec md5sum {} ; | sort &amp;gt; file_md5 $cat file_md5 | uniq -d -w 32 $grep &amp;quot;...&amp;quot; file_md5 相信大家都看出是怎么回事情了，就不赘言了。
 Windows下以前我总是执行不出，原因在于要这么写。
-find . -type f -size +0 -exec md5sum {} ; | sort &amp;gt; report.txt  差一个转义，因为不需要。
+find . -type f -size +0 -exec md5sum {} ; | sort &amp;gt; report.txt 差一个转义，因为不需要。
 总结一下，我们可以用一个脚本来处理这些问题。
---------------------------fine_rep------------------------------ find $1 -type f -size +0 -exec md5sum {} ; | sort &amp;gt; &amp;quot;file_md5&amp;quot; cat &amp;quot;file_md5&amp;quot; | uniq -d -w 32 | cut -d&amp;quot; &amp;quot; -f1 | while read x do grep &amp;quot;$x&amp;quot; file_md5 echo &amp;quot;&amp;quot; done echo &amp;quot;done&amp;quot; rm &amp;quot;file_md5&amp;quot; ------------------------------------------------------------  </description>
+--------------------------fine_rep------------------------------ find $1 -type f -size +0 -exec md5sum {} ; | sort &amp;gt; &amp;quot;file_md5&amp;quot; cat &amp;quot;file_md5&amp;quot; | uniq -d -w 32 | cut -d&amp;quot; &amp;quot; -f1 | while read x do grep &amp;quot;$x&amp;quot; file_md5 echo &amp;quot;&amp;quot; done echo &amp;quot;done&amp;quot; rm &amp;quot;file_md5&amp;quot; ------------------------------------------------------------ </description>
     </item>
     
     <item>
@@ -2121,7 +2122,8 @@ find . -type f -size +0 -exec md5sum {} ; | sort &amp;gt; report.txt  差一个�
       <pubDate>Tue, 17 Oct 2006 19:42:02 +0800</pubDate>
       
       <guid>//blog.shell909090.org/blog/archives/327/</guid>
-      <description>+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;ndash;+ | {width=&amp;ldquo;181&amp;rdquo; height=&amp;ldquo;80&amp;rdquo;} | | 在您准备接受LPI认证考试前,必须在 LPI | | 官方网站上进行注册登记,注册后系统会发送一个LPI | | | | ID到您的邮箱中，同时登陆会员区也可查看 LPI | | ID。 | | | | 如果您在注册中遇到困难,请致电: 010-62670579,或发邮件到 | | candy@lpi-china.org 或 bai@lpi-china.org, | | 我们有考试官员为您服务，所有注册都是免费的。 | +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;ndash;+ | {width=&amp;ldquo;183&amp;rdquo; height=&amp;ldquo;80&amp;rdquo;} | | 拿到您的LPI | | ID后，您可持本人身份证到LPI中国办公室、LPI授权培训中心及Prometric考试中心报名，同时一次性交纳考试费￥1300元，然后您会得到一个准考证，持准考证及身份证到指定的考场去参加考试。 | | | | | | 注：考生在报名时，请选择对应的考试级别和中、英文试题：LPIC-1 | | | | 和 LPIC-2。 | | | | &amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;- | | &amp;ndash; | | LPIC-1 | | 101 | | | | 102 | | | | LPIC-2 | | 201 | | | | 202 | | &amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;- | | &amp;ndash; | | | | 以任何顺序通过 101 和 102,可以获得 LPIC-1 证书,只有获得了 LPIC-1 | | 证书,又获得 201 和 202 考试的专业人士才能获得 LPIC-2 证书。 | +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;ndash;+ | {width=&amp;ldquo;181&amp;rdquo; height=&amp;ldquo;80&amp;rdquo;} | | 在附近的 Prometric | | 考试中心预定考试时间,接受考试,成绩会立即出来,证书要等 7 | | 个工作日,从加 | +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;ndash;+</description>
+      <description>+&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;ndash;+ | {width=&amp;ldquo;181&amp;rdquo; height=&amp;ldquo;80&amp;rdquo;} | | 在您准备接受LPI认证考试前,必须在 LPI | | 官方网站上进行注册登记,注册后系统会发送一个LPI | | | | ID到您的邮箱中，同时登陆会员区也可查看 LPI | | ID。 | | | | 如果您在注册中遇到困难,请致电: 010-62670579,或发邮件到 | | candy@lpi-china.org 或 bai@lpi-china.org, | | 我们有考试官员为您服务，所有注册都是免费的。 | +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;ndash;+ | {width=&amp;ldquo;183&amp;rdquo; height=&amp;ldquo;80&amp;rdquo;} | | 拿到您的LPI | | ID后，您可持本人身份证到LPI中国办公室、LPI授权培训中心及[Prometric](http://www.prometric.com.cn/ | | )考试中心报名，同时一次性交纳考试费￥1300元，然后您会得到一个准考证，持准考证及身份证到指定的考场去参加考试。 | | | | | | 注：考生在报名时，请选择对应的考试级别和中、英文试题：LPIC-1 | | | | 和 LPIC-2。 |
+&amp;ndash; LPIC-1 101 102 LPIC-2 201 202 &amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;- &amp;ndash; 以任何顺序通过 101 和 102,可以获得 LPIC-1 证书,只有获得了 LPIC-1 证书,又获得 201 和 202 考试的专业人士才能获得 LPIC-2 证书。 +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;ndash;+ {width=&amp;ldquo;181&amp;rdquo; height=&amp;ldquo;80&amp;rdquo;} 在附近的 Prometric 考试中心预定考试时间,接受考试,成绩会立即出来,证书要等 7 个工作日,从加 +&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;ndash;+ http://www.</description>
     </item>
     
     <item>
@@ -2161,7 +2163,7 @@ xserverrc内容仅为启动X。xinitrc会执行/etc/X11/Xsession，而后进入s
 /etc/X11/Xsession和/etc/init.d/rc很类似，是用来循环依次启动其他脚本的控制脚本。他负责启动/etc/X11/Xsession.d/下的所有文件。其中50xfree86-common_determine-startup文件会依次检测以下3个文件，并且设置到STARTUP变量中。x-session-manager;x-window-manager;x-terminal-emulator;最后99xfree86-common_start文件会执行exec $STARTUP;完成整个系统的启动过程。
 3.gdm
 gdm服务被/etc/init.d/gdm启动，而后读取/etc/gdm/gdm.conf配置自身。后面是基于理论分析，没有加以验证。
-|-gdm---gdm-+-Xorg | `-x-session-manag-+-scim | `-ssh-agent  上面是pstree的结果，第1个gdm是/etc/init.d/gdm，第2个gdm是/usr/bin/gdm。gdm先启动一个X作为服务端，否则自身也无法以图形方式显示登录界面。而后gdm成为此X界面的唯一用户，显示登录系统。在用户登录后，gdm启动/etc/gdm/Xsession。这个脚本的内容和/etc/X11/Xsession非常类似，我怀疑为什么他们不用链接的方式(可能是因为包的关系？)。这时整个启动活动就结束了。</description>
+|-gdm---gdm-+-Xorg | `-x-session-manag-+-scim | `-ssh-agent 上面是pstree的结果，第1个gdm是/etc/init.d/gdm，第2个gdm是/usr/bin/gdm。gdm先启动一个X作为服务端，否则自身也无法以图形方式显示登录界面。而后gdm成为此X界面的唯一用户，显示登录系统。在用户登录后，gdm启动/etc/gdm/Xsession。这个脚本的内容和/etc/X11/Xsession非常类似，我怀疑为什么他们不用链接的方式(可能是因为包的关系？)。这时整个启动活动就结束了。</description>
     </item>
     
     <item>
@@ -2243,7 +2245,7 @@ wav文件又叫做PCM编码格式。这是一切音乐的基础。无论你是�
 1.7.iso
 iso也不是音乐文件，但是和音乐的关系非常密切。大家都知道iso是光盘的镜像，其实说的还不确切。iso本身就是光盘内容严格1字节比1字节复制的结果。至于有的为什么有其他格式。那就涉及光驱设备工作和数据流／加解密的问题了。
 另外说一个iso的问题，大家知道linux下面挂载iso的指令是
-# mount -t iso9660 -o loop file /mnt  这其实是两个步骤，一个是</description>
+# mount -t iso9660 -o loop file /mnt 这其实是两个步骤，一个是</description>
     </item>
     
     <item>
@@ -2335,9 +2337,9 @@ cd \~ mkdir initrd #关于initrd的原理生成和使用后面讲 mkdir root #�
 /etc/environment:LANG=zh_CN #这个是登录进入X后的设置，你运行的所有程序基本都是使用这个
 dpkg-reconfigure locales的默认语言设定修改的是/etc/default/locale，所以对X登录进去后的程序不一定起作用。一般情况下这zh_CN的设定就通吃了，不过有的时候有点小BUG，例如term下面vi后退出，就变成看不懂的乱马了。这个时候要重设屏幕才可以恢复。而且在输入的时候没有——的，很多东西也看不到。所以我改成了zh_CN.GBK，然后出现了两个问题。
 一个是gvim不运行了，这个看了看别人，这么解决。
-----------------------\~/.gvimrc----------------------- set encoding=gb2312 set langmenu=zh_CN.GB2312 set imcmdline source $VIMRUNTIME/delmenu.vim source $VIMRUNTIME/menu.vim ---------------------------------------------------------  保证这个文件里面有这些内容就可以了。
+----------------------\~/.gvimrc----------------------- set encoding=gb2312 set langmenu=zh_CN.GB2312 set imcmdline source $VIMRUNTIME/delmenu.vim source $VIMRUNTIME/menu.vim --------------------------------------------------------- 保证这个文件里面有这些内容就可以了。
 然后是gtk1.X的程序都不正常了，主要是xmms和audacity。这个看了人家忽悠半天，最后这么解决的。
------------------/usr/bin/env_zh_CN--------------- #!/bin/bash LANG=zh_CN exec $@ ----------------------------------------------------------  然后chmod a+x /usr/bin/env_zh_CN
+-----------------/usr/bin/env_zh_CN--------------- #!/bin/bash LANG=zh_CN exec $@ ---------------------------------------------------------- 然后chmod a+x /usr/bin/env_zh_CN
 再修改所有运行语句成env_zh_CN xmms
 我修改了两处。
 世界基本就清静了。</description>
@@ -2355,14 +2357,14 @@ firefox gaim lumaqq azureus xmule xmms office eclipse
 firefox：著名的浏览器，功能强劲方便安全
 1.aptitude里面找，安不上的纯粹RPWT。
 2.debian里面firefox的最新版本是1.0.2,不过网络上面出到1.5了，而且还是比较稳定的。如果要自行升级的请看下面流程，当然，首先先下个firefox的包。
-tar -zxvf OOXX.tar.gz chmod -R 755 firefox/ mv firefox /usr/share gedit /usr/share/applications/firefox [Desktop Entry] Encoding=UTF-8 Name=firefox Exec=/usr/share/firefox/firefox Icon=/usr/share/firefox/..#你自己看什么合适吧 Terminal=false Type=Application Categories=Application;Network; StartupNotify=true  gaim：聊天程序，要上msn/icq的找他
+tar -zxvf OOXX.tar.gz chmod -R 755 firefox/ mv firefox /usr/share gedit /usr/share/applications/firefox [Desktop Entry] Encoding=UTF-8 Name=firefox Exec=/usr/share/firefox/firefox Icon=/usr/share/firefox/..#你自己看什么合适吧 Terminal=false Type=Application Categories=Application;Network; StartupNotify=true gaim：聊天程序，要上msn/icq的找他
 aptitude里面找，安不上的纯粹RPWT。
 lumaqq：聊天程序，上QQ4linux的
 安装比较麻烦，首先要安装java4linux。下面我要装eclipse，所以用的是jdk，用jre的也差不多处理。
 xmms：音频播放，linux下面的winamp
 aptitude里面找，安不上的纯粹RPWT。
 PS，gnome的菜单包是menu-xdg，放置位置/usr/share/applications，模版如下
-[Desktop Entry] Encoding=UTF-8 Name=程序名称 Exec=执行代码 Icon=图标 Terminal=false Type=Application Categories=Application;Network;Develope; StartupNotify=true  根据需要修改添加就可以了。
+[Desktop Entry] Encoding=UTF-8 Name=程序名称 Exec=执行代码 Icon=图标 Terminal=false Type=Application Categories=Application;Network;Develope; StartupNotify=true 根据需要修改添加就可以了。
 PS，其实还有两个，realplay和mplayer，不过这两个程序正常debian用的话有点小问题，所以放到下篇说了。</description>
     </item>
     
@@ -2376,7 +2378,7 @@ PS，其实还有两个，realplay和mplayer，不过这两个程序正常debian
 问题出在一个系统核心的更新上，如果默认安装的话就全部都会失败。所以应该在安装的时候中断所有安装更新动作，不安装任何桌面和服务，直接完成安装进入系统。然后更改/etc/apt/source.list加入所有你想要的源（这样安装的速度会比原来快很多），然后运行aptitude -o APT::Force-LoopBreak=1。update一下，有什么可以更新的全部更新上，再选中最新的合适使用的内核和源码（对stable和testing来说，debian的最新发布内核已经没有什么瑕疵可能存在了），然后安装。这个过程大约要下载70-100M的东西，端看你什么时候跑的安装。我这里大约是三刻钟就跑完了下载安装。重启下，用最新内核启动，然后卸载旧内核（不重启的话会非常罗嗦，而且不安全）。这样整个可用系统的最小版本就出来了，装机大约是一个钟头。
 然后是桌面环境了，在aptitude里面，选择以下包vim gnome mc x-system-core im-switch gaim选中，然后再选择所有中文桌面和环境（不要用的输入法可以去掉点），这样大约有350M上下的文件需要下载，整个过程约会持续三个钟头。其中设置就不具体说了，不过系统还需要做以下更改。
 首先在/etc/X11/xorg.conf里面将mouse类型改成ImPS/2，模拟三键去了。然后修改/etc/X11/xinit/xinput.d/default文件，加入以下内容。
-GTK_IM_MODULE=SCIM XIM=SCIM XIM_PROGRAM=&amp;quot;/usr/bin/scim&amp;quot; XIM_ARGS=&#39;-d&#39;  这样基本来说系统就ok了。</description>
+GTK_IM_MODULE=SCIM XIM=SCIM XIM_PROGRAM=&amp;quot;/usr/bin/scim&amp;quot; XIM_ARGS=&#39;-d&#39; 这样基本来说系统就ok了。</description>
     </item>
     
     <item>
@@ -2386,10 +2388,10 @@ GTK_IM_MODULE=SCIM XIM=SCIM XIM_PROGRAM=&amp;quot;/usr/bin/scim&amp;quot; XIM_AR
       
       <guid>//blog.shell909090.org/blog/archives/273/</guid>
       <description>这次讲的是贝壳的一次比较顺利的经历，安装linux2.6.14-3内核。并且在其上使用iptables时出现问题和解决的方法。
-cd /usr/src tar -zxvf linux... ln -s linux... linux cd linux make mrproper make menuconfig make dep make bzImage make modules make modules_install mkinitrd initrd-2.6.14-3.img 2.6.14.3 cp initrd-2.6.14-3.img /boot cp System.map /boot/System.map-2.6.14-3 cp arch/i386/boot/bzImage /boot/vmlinuz-2.6.14-3 cp .config /boot/config-2.6.14-3 cd /boot vi grub/menu.lst  以上就完成了内核编译的工作，按照经典流程走的，没有啥问题，问题在后面。
+cd /usr/src tar -zxvf linux... ln -s linux... linux cd linux make mrproper make menuconfig make dep make bzImage make modules make modules_install mkinitrd initrd-2.6.14-3.img 2.6.14.3 cp initrd-2.6.14-3.img /boot cp System.map /boot/System.map-2.6.14-3 cp arch/i386/boot/bzImage /boot/vmlinuz-2.6.14-3 cp .config /boot/config-2.6.14-3 cd /boot vi grub/menu.lst 以上就完成了内核编译的工作，按照经典流程走的，没有啥问题，问题在后面。
 重启，然后运行到iptables的时候报错。所以升级两个东西，iptables-1.3.4和module-init-tools-3.2.2。然后发现还是有问题。然后我打入lsmod。发现什么模块也没有，这样不出错才见鬼了呢。多试验几次，可以发现要加载iptable_filter模块。而他又依赖于ip_tables模块。OK，用modprobe加载。再启动，还是报错。
 仔细看看设置，是在REJECT行报错，所以应该是加载REJECT模块，ipt_REJECT。成功，加载的具体方法是在/etc/init.d/iptables里面添加。
-/usr/local/sbin/modprobe -a ip_tables iptable_filter ipt_REJECT  很简单吧。</description>
+/usr/local/sbin/modprobe -a ip_tables iptable_filter ipt_REJECT 很简单吧。</description>
     </item>
     
     <item>
@@ -2399,11 +2401,12 @@ cd /usr/src tar -zxvf linux... ln -s linux... linux cd linux make mrproper make 
       
       <guid>//blog.shell909090.org/blog/archives/272/</guid>
       <description>首先为 CA 创建一个 RSA 私用密钥
-openssl genrsa -des3 -out ca.key 1024  利用 CA 的 RSA 密钥创建一个自签署的 CA 证书（X.509结构）
-openssl req -new -x509 -days 3650 -key ca.key -out ca.crt  首先为你的 Apache 创建一个 RSA 私用密钥
-openssl genrsa -des3 -out server.key 1024  用 server.key 生成证书签署请求 CSR
-openssl req -new -key server.key -out server.csr  签署证书
-openssl x509 -md5 -days 3560 -req -signkey server.key -CAcreateserial -CAserial ca.crt -in server.csr -out server.crt  最后apache设置，将下面的参数改为</description>
+openssl genrsa -des3 -out ca.key 1024 利用 CA 的 RSA 密钥创建一个自签署的 CA 证书（X.509结构）
+openssl req -new -x509 -days 3650 -key ca.key -out ca.crt 首先为你的 Apache 创建一个 RSA 私用密钥
+openssl genrsa -des3 -out server.key 1024 用 server.key 生成证书签署请求 CSR
+openssl req -new -key server.key -out server.csr 签署证书
+openssl x509 -md5 -days 3560 -req -signkey server.key -CAcreateserial -CAserial ca.crt -in server.csr -out server.crt 最后apache设置，将下面的参数改为
+SSLCertificateFILE /usr/local/apache/conf/server.crt SSLCertificateKeyFile /usr/local/apache/conf/server.</description>
     </item>
     
     <item>
@@ -2414,8 +2417,8 @@ openssl x509 -md5 -days 3560 -req -signkey server.key -CAcreateserial -CAserial 
       <guid>//blog.shell909090.org/blog/archives/270/</guid>
       <description>make不通过
 出错如下
-clude/linux -I../common -DCPU=&amp;quot;i386&amp;quot; -DOS= -c -o ssl.o ssl.c In file included from /usr/include/openssl/ssl.h:179, from ssl.c:62: /usr/include/openssl/kssl.h:72:18: krb5.h: No such file or directory In file included from /usr/include/openssl/ssl.h:179, from ssl.c:62:  解决方法：
-export LOCALDEFS=&amp;quot;-DOPENSSL_NO_KRB5&amp;quot; export C_INCLUDE_PATH=&amp;quot;/usr/kerberos/include&amp;quot;  引用自http://www.thinkjam.org/meteor/archives/2005/04/as3resin.html</description>
+clude/linux -I../common -DCPU=&amp;quot;i386&amp;quot; -DOS= -c -o ssl.o ssl.c In file included from /usr/include/openssl/ssl.h:179, from ssl.c:62: /usr/include/openssl/kssl.h:72:18: krb5.h: No such file or directory In file included from /usr/include/openssl/ssl.h:179, from ssl.c:62: 解决方法：
+export LOCALDEFS=&amp;quot;-DOPENSSL_NO_KRB5&amp;quot; export C_INCLUDE_PATH=&amp;quot;/usr/kerberos/include&amp;quot; 引用自http://www.thinkjam.org/meteor/archives/2005/04/as3resin.html</description>
     </item>
     
     <item>
@@ -2428,10 +2431,10 @@ export LOCALDEFS=&amp;quot;-DOPENSSL_NO_KRB5&amp;quot; export C_INCLUDE_PATH=&am
 拿到resin，放在目标目录下面，然后tar -jxvf。完成后用ln -s做一个链接上去，使用resin的名字，这样可以方便的替换版本。然后在主目录下面运行./configure，make一下。一般来说，会出不少错误，最后生成一个libresin.so放到libexec下面，并且更新了resin的主执行程序。这个so很具有迷惑性，开始贝壳就被他骗了。这个so貌似是resin在本地平台下的加速程序，而不是嵌入到apache系列服务器中的整合插件。其中最大的差异是没有caucho_module导出符号，在apache加载的时候肯定会失败。
 跑到src/c/plugins/apache2下面运行make。可能会报错，可能没有。贝壳这里报了错，不过贝壳运行configure的时候没有加任何参数，也许加了参数就正常了。如果不正常，出错的代码可能分别是httpd.h找不到或者apr_time.h找不到。运行vi Makefile，看到有INCLUDE的目录吗？那里面要包含/usr/include/apache2和/usr/include/apr-0两个目录，没有就肯定出错。好了，修改然后重新make。得到的文件是mod_caucho.so。将它cp到$RESIN_HOME/libexec下面，这个动态库导出了caucho_module符号。
 在/etc/apache2/httpd.conf里面编辑一下，添加这个内容。
-LoadModule caucho_module /usr/resin/libexec/mod_caucho.so &amp;lt;IfModule mod_caucho.c&amp;gt; CauchoConfigFile ......../resin.conf &amp;lt;Location /caucho-status&amp;gt; SetHandler caucho-status &amp;lt;/Location&amp;gt; &amp;lt;/IfModule&amp;gt;  在/usr/resin/conf/resin.conf里面，添加这些内容。
-&amp;lt;doc-dir&amp;gt;/var/www/htdocs&amp;lt;/doc-dir&amp;gt; &amp;lt;war-dir id=&#39;/var/www/htdocs&#39;/&amp;gt;  在/etc/apache2/sites-available/default中可能要修改如下配置。
-DocumentRoot /var/www/htdocs/ &amp;lt;Directory /var/www/htdocs/&amp;gt;  然后注销
-RedirectMatch ^/$ /apache2-default/  OK，这样就基本完成了整个系统的整合配置。</description>
+LoadModule caucho_module /usr/resin/libexec/mod_caucho.so &amp;lt;IfModule mod_caucho.c&amp;gt; CauchoConfigFile ......../resin.conf &amp;lt;Location /caucho-status&amp;gt; SetHandler caucho-status &amp;lt;/Location&amp;gt; &amp;lt;/IfModule&amp;gt; 在/usr/resin/conf/resin.conf里面，添加这些内容。
+&amp;lt;doc-dir&amp;gt;/var/www/htdocs&amp;lt;/doc-dir&amp;gt; &amp;lt;war-dir id=&#39;/var/www/htdocs&#39;/&amp;gt; 在/etc/apache2/sites-available/default中可能要修改如下配置。
+DocumentRoot /var/www/htdocs/ &amp;lt;Directory /var/www/htdocs/&amp;gt; 然后注销
+RedirectMatch ^/$ /apache2-default/ OK，这样就基本完成了整个系统的整合配置。</description>
     </item>
     
     <item>
@@ -2514,9 +2517,9 @@ VC++中工程引入的时候不要加入linux.cpp。
       
       <guid>//blog.shell909090.org/blog/archives/256/</guid>
       <description>如果这个代码出现在linux内核里面，你们怎么想？
-subtypes[n].parse(state, bdev, START_SECT(p)*sector_size, NR_SECTS(p)*sector_size, slot);  很像是对象数组调用方法吧，很多人可能甚至会猜想这个东西是虚函数。问题是，大家记得吗？linux内核，是C的！
+subtypes[n].parse(state, bdev, START_SECT(p)*sector_size, NR_SECTS(p)*sector_size, slot); 很像是对象数组调用方法吧，很多人可能甚至会猜想这个东西是虚函数。问题是，大家记得吗？linux内核，是C的！
 事实上，这是声明。
-static struct { unsigned char id; void (*parse)(struct parsed_partitions *, struct block_device*, u32, u32, int); };  怎么想？这个是方法映射。技术上讲，和虚函数属于同种类的应用（dymanic binding）。当然，数据结构有差异。虚函数要先根据n确定对象位置，根据v_ptr确定虚函数表，根据虚函数表定位了函数入口。而这里是根据n定位了对象，然后直接找到了函数入口。
+static struct { unsigned char id; void (*parse)(struct parsed_partitions *, struct block_device*, u32, u32, int); }; 怎么想？这个是方法映射。技术上讲，和虚函数属于同种类的应用（dymanic binding）。当然，数据结构有差异。虚函数要先根据n确定对象位置，根据v_ptr确定虚函数表，根据虚函数表定位了函数入口。而这里是根据n定位了对象，然后直接找到了函数入口。
 可是，还是被骗了……
 PS.谨以此纪念首次在GNU/GPL下引用Linux内核源码用于程序开发，因为分区系统资料该死的不清楚！</description>
     </item>
@@ -2555,7 +2558,7 @@ debian上面装别的问题不大，但是装oracle的时候头痛的要死。�
       
       <guid>//blog.shell909090.org/blog/archives/190/</guid>
       <description>最近在开linux系统，找找发现资料那个叫……哎。到不是说少，linux号称开放源码，想要什么没有阿。问题是精论系统结构和意义的很少，一般都是讨论某个技术点如何如何的。没有大略的瞻观（当然，也有可能是英文，贝壳的E文水平看了等于没看到）。而一般系统中要做某个应用，除了经验，就是根据系统的运作方法、构架、原理等等去模拟。例如了解了file
-HANDLE这种东西后，自然会就如何将一个HiddenConsole的Output转Dump到一个windows的text中产生想法。或者了解了[\.]()系列文件后，自然会想到如何制作的ISO。当然，其实还有ATAPI的方法。如果了解了winsock的层实现流程，自然会知道防火墙如何实现。所以了解一个系统，无须了解内核的每句代码（对于windows，根本无法了解。即使是linux，了解了全部也要数年。届时你了解的也该淘汰了。）。系统主要了解其构架和思想，关键部分才了解实现。
+HANDLE这种东西后，自然会就如何将一个HiddenConsole的Output转Dump到一个windows的text中产生想法。或者了解了\.系列文件后，自然会想到如何制作的ISO。当然，其实还有ATAPI的方法。如果了解了winsock的层实现流程，自然会知道防火墙如何实现。所以了解一个系统，无须了解内核的每句代码（对于windows，根本无法了解。即使是linux，了解了全部也要数年。届时你了解的也该淘汰了。）。系统主要了解其构架和思想，关键部分才了解实现。
 现在看linux系统，犹如隔纱而望。当然，系统的命令我了解了不少（其实了解了ls和man已经差不多了）。但是每个命令是哪里的？系统的目录如何设置？什么配置应该看什么地方。linux载入进程是如何实现的。（估计这个是ELF的范畴，不过肯定要先啃过内核在看的懂。否则就如同我当年不知道NativeAPI的时候看NE和PE一样）
 所以现在写一个windows系统引论，希望抛砖引玉。毕竟windows的资料全，了解时间长。所以难保还有哪位大大也写过类似文章，大家姑且看之吧。</description>
     </item>

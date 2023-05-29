@@ -2,24 +2,23 @@
 <html lang="en-us">
   <head>
     <title>openssl证书相关 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
@@ -34,7 +33,7 @@ In this article (I mean the one you are reading currently), I don&rsquo;t copy o
 First of all, I wanna say thank you to Ivan Ristić. I got a lot of help from this book. You can buy one if you want, or read it personally (it&rsquo;s public). This is really a good book.
 In this article (I mean the one you are reading currently), I don&rsquo;t copy or reference directly from that book. So as far as I know, it shouldn&rsquo;t have any copyright problem." />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2863/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2863/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2018-05-12T11:19:23+08:00" />
 <meta property="article:modified_time" content="2018-05-12T11:19:23+08:00" />
 
@@ -74,11 +73,8 @@ In this article (I mean the one you are reading currently), I don&rsquo;t copy o
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -88,104 +84,66 @@ In this article (I mean the one you are reading currently), I don&rsquo;t copy o
       <h1 class ="post-title">openssl证书相关</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           May 12, 2018
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           3 min read
-        </div></div>
+        </div>
+      </div>
     </header>
     <div class="post-content">
-      
-
-<h1 id="鸣谢和前言">鸣谢和前言</h1>
-
+      <h1 id="鸣谢和前言">鸣谢和前言</h1>
 <p>首先感谢Ivan Ristić。本篇很多内容可以从他的<a href="https://www.feistyduck.com/library/openssl%2dcookbook/online/ch-openssl.html">这本书</a>里读到。大家如果有钱，可以买来支持一下。没钱但是英文好的话，也可以直接读一下(这本书在网上是公开的)。本文没有直接复制，引用，或是完全写成读书笔记。所以原则上是不受书的版权限制的。不过如果作者有异议的话，我愿意下线这篇文章。</p>
-
 <p>First of all, I wanna say thank you to Ivan Ristić. I got a lot of help from <a href="https://www.feistyduck.com/library/openssl%2dcookbook/online/ch-openssl.html">this book</a>. You can buy one if you want, or read it personally (it&rsquo;s public). This is really a good book.</p>
-
 <p>In this article (I mean the one you are reading currently), I don&rsquo;t copy or reference directly from that book. So as far as I know, it shouldn&rsquo;t have any copyright problem. But if the author (Ivan Ristić) have any problem, I&rsquo;m willing to take this article down.</p>
-
 <h1 id="pki证书体系结构">PKI证书体系结构</h1>
-
 <h2 id="公钥体系的问题">公钥体系的问题</h2>
-
 <p>在介绍证书体系之前，我们首先先回顾一下公钥体系解决了什么问题，又引入了什么问题。</p>
-
 <p>在公钥体系之前，为了和某人安全的通讯，我们需要预先共享一个公共的秘密x。而且对每个通讯组合，都需要一个独立的x。如果你偷懒，在A-C里复用了A-B的x，那么C就有能力截听甚至篡改A-B通讯。那么，随着通讯组合的上升，独立的秘密x就会暴涨(数学很容易求出，一般期望是C(n, 2)，复杂度是O(n^2))。这么大的数据量，存储和使用都很困难。公钥体系引入后，每个人只要保留自己的私钥，而通过公钥和别人握手。Eva即使能听到内容，也无法获得公共的秘密x。在这个模式下，只要每人一个公私钥对就行，数据量大大减少。</p>
-
 <p>然而，这也引入了主动攻击者Mallory可以通过MITM攻击的可能性。因此，不仅需要给予对方公钥，更需要给予对方可信的公钥。这就是公钥体系需要解决的首要问题。</p>
-
 <p>当然，可信给予公钥的最简单方法，就是离线向对方交付。但是你可以想象你要上所有网站，都需要物理的到他们店里，获取一份公钥的情况么？而且还要定期更新。这种模式在大多数场景下都无法工作，只能小范围内用于调试。</p>
-
 <h2 id="私钥-公钥-证书">私钥-公钥-证书</h2>
-
 <p>前面我们已经唠叨了不少了，私钥签署公钥验证，这是基本模式。那么我们能不能通过对公钥进行签署来解决这个问题呢？发送公钥的时候同时发送签名，对方验证签名，就知道这个公钥是否被伪造了。</p>
-
 <p>也行，也不行。如果对方要验证你的公钥，那么他就需要有签署者的公钥。而签署者的公钥又如何给你呢？这时线下模型就不是一个不可能的选项了。毕竟公司千千万，但是签署者不会太多。</p>
-
 <p>但是仅签署公钥并不解决问题。毕竟如果不绑定到身份，那么攻击者也完全可以签署一份出来。好比A向CA申请签署了一个公钥，B也这么干了。C在获得公钥的时候无法分辨谁是谁，因为都是合法的签名。那么怎么办呢？于是在签署里，除了你的公钥，签名，还需要附加你的身份信息(尤其是域名——如果用于https通讯的话)。这样，虽然攻击者能签署出另一本证书，但是由于身份不符，所以无法发起MITM。而整个身份数据，公钥，各种元信息，加上整体签署，合起来就叫证书。</p>
-
 <p>目前PKI方案，基本就是三级签署制。你的系统(或浏览器)里安装RootCA，RootCA签署Intermediate，Intermediate签署你的证书。这三层都是一个上级可以签署多个下级，从而形成一颗树。你可以查看一下Firefox的设置，安全，证书。里面会有所有的预装证书和部分的其他来源证书(如果有的话)。</p>
-
 <p>之所以是三级方案，是因为根证书可能存在系统里长期不换。这种情况下万一泄漏了很麻烦。所以RootCA都是签署出一些中间证书，然后就把RootCA干掉，key放在冷存储里，扔保险柜里安全存放。然后用中间证书签署各种实际证书。这样万一中间证书泄漏，可以很容易的吊销。</p>
-
 <h2 id="证书和证书链">证书和证书链</h2>
-
 <p>既然证书有签署顺序，验证就有验证顺序。</p>
-
 <p>在大部分系统里，存在着信任根证书域，其中保存着所有的信任根。在使用的时候，对方会提供他的证书。在验证时，你会发现，啊咧，还差着Intermediate呢。</p>
-
 <p>所以，在配置证书时，除了证书本身外，很重要的一点就是配置证书链(cert chain)。证书链里保存了多本证书，一般是从最上面一本根证书到最下面一本自己手里的证书，完整的一个链条。</p>
-
 <p>以PEM格式而言(具体下面会说)，证书链的做法就是把自己的Cert放在最上面，然后是Intermediate，最后是rootCA。后面的每一本证书都要能证明前面的证书，根证书可要可不要。分行复制进去，仅此而已。具体可以查看<a href="https://tools.ietf.org/html/rfc5246#section-7.4.2">这里</a>。</p>
-
 <h2 id="证书的申请-验证-发行">证书的申请-验证-发行</h2>
-
 <p>那么，既然有签署机构，我们如何申请证书，这些机构又如何来认证你的身份呢？</p>
-
 <p>首先，你需要找代理机构。是的，这些签署机构一般都不会亲自来办理全套业务，一般都是找代理商做商业运作。等你找到代理商，你需要做的第二件事情就是——交钱。毕竟这么大一堆机构，养人很花钱的呐。</p>
-
 <p>等交了钱了，你就是他们的客户，有权找他们申请证书了。正常来说，申请证书的第一步是——自己生成一份私钥。是的，既然签署者只需要你的公钥，那么私钥他就不需要接触。很多非正规代理商是他们帮你生成的，请干掉这些代理商，换一家靠谱点的。第二步是将公钥和你的身份信息写入一个req文件，可靠的发送给代理商。第三步是代理商验证你的身份和你写在req里的身份是否一致。如果一致，他们会把你这个req发到一个特别的机器上进行签署。这个机器只能用于签署，上面的私钥是无法拷走的。最后，他们会把签署好的crt文件发给你——其实这步不发给你也行，crt文件是可以公开给全世界看的。只要丢到一个所有人都能拿到的地方，那也算是完成了签署。当然，发给你个人更像是一种交付。</p>
-
 <p>可能有人看出来了，这里的核心就是“供应商如何验证你的身份”。一般我们用于通讯的证书都是用在HTTPS上的，有三种验证方式。</p>
-
 <ul>
 <li><a href="https://en.wikipedia.org/wiki/Domain-validated_certificate">DV</a>: 只要验证域名。对应的方法就是，给域名whois信息里写的邮箱发邮件，让你确认。或者是让你写入一个TXT的域名记录，以证明对域名有控制权。或者你已经配置了http服务的情况下，给特定的URL放一个特定的文件也行。</li>
 <li><a href="https://en.wikipedia.org/wiki/Public_key_certificate#Organization_validation">OV</a>: 验证项目要多一点，要提供工商营业执照。</li>
 <li><a href="https://en.wikipedia.org/wiki/Extended_Validation_Certificate">EV</a>: 验证项目比OV还要多一点，一般要求企业提供<a href="https://en.wikipedia.org/wiki/Data_Universal_Numbering_System">DUNS</a>。偶尔甚至有要求律师函或电话验证的。</li>
 </ul>
-
 <h1 id="申请流程">申请流程</h1>
-
 <h2 id="构造req">构造req</h2>
-
 <p>使用以下指令生成req</p>
-
 <pre><code>openssl req -new -key rsa.key -out shell.csr
 </code></pre>
-
 <p>基本来说，需要你填几个参数。国家，省份，城市，组织名(公司名)，Unit名字(部门)，Common Name，Email，最后还有一个可选的password。其中Comman Name是最重要的一个参数，这里填写的是你身份有关的数据，例如你申请的证书对应的域名。</p>
-
 <p>生成req之后，你就可以发送给代理商了。当然，如果你要再看一眼，也可以举一反三类比办理。</p>
-
 <pre><code>openssl req -text -in shell.csr -noout
 </code></pre>
-
 <p>req除了能直接构造外，还能从现有证书直接构造。这对于续签证书很方便。</p>
-
 <pre><code>openssl x509 -x509toreq -in shell.crt -out shell_new.csr -signkey rsa.key
 </code></pre>
-
 <p>另外，req构造也可以用配置文件来进行。将以下内容存入req.cnf，再执行<code>openssl req -new -config req.cnf -key rsa.key -out shell.csr</code>，其他没有区别。CN对应上面的Common Name，emailAddress对应Email，O对应Organization Name，L对应Locality Name，C对应Country Name，都很好猜。如果你想要看详细解说的话，可以看<a href="https://linux.die.net/man/5/x509v3_config">这份文档</a>。</p>
-
 <pre><code>[req]
 prompt = no
 distinguished_name = dn
@@ -202,63 +160,37 @@ C = GB
 [ext]
 subjectAltName = DNS:www.feistyduck.com,DNS:feistyduck.com
 </code></pre>
-
 <p>注意最后的subjectAltName，这个是用于签署多个域名的。一本证书可以签多个域名，在正常的req -new构造里，是看不到这个选项的。</p>
-
 <h1 id="签署">签署</h1>
-
 <h2 id="自签证书">自签证书</h2>
-
 <p>几乎所有讲openssl签署的文章，第一课都是自签证书。自签证书的基本指令大概是这样的：</p>
-
 <pre><code>openssl x509 -req -days 365 -in shell.csr -signkey rsa.key -out shell.crt
 </code></pre>
-
 <p>开关中，-req指定输入可以是一个csr（否则按照x509的默认假定，会出错）。shell.csr是上面构造出来的那个证书申请。注意-days，这个参数在这里出现（而不是在证书申请中），说明证书有效期是由签署者现场指定的。在req指令中是可以加入-days参数的，但是其意义为，在指定-x509参数的情况下（下文说明），一同指定天数。实际上还是签署时指定有效期。</p>
-
 <p>如果你打算一行中完成整个签署流程，可以这么做。</p>
-
 <pre><code>openssl req -new -x509 -days 365 -key rsa.key -out shell.crt
 </code></pre>
-
 <p>或者是更简短的形式</p>
-
 <pre><code>openssl req -new -x509 -days 365 -key rsa.key -out shell.crt -subj '/C=CN/L=SH/O=home/CN=*.shell.org/emailAddress=shell@shell.org'
 </code></pre>
-
 <p>其中-x509指定生成一个自签证书，而不是证书申请。-subj是证书的subject部分，在x509 -text看证书时能看到的。格式照上面抄就行。注意-subj对req也有效。</p>
-
 <h2 id="alternative-name">alternative name</h2>
-
 <p>建立一个文件shell.ext，内容如下：</p>
-
 <pre><code>subjectAltName = DNS:*.facebook.com, DNS:facebook.com
 </code></pre>
-
 <p>然后将这个文件加入到签署指令中去：</p>
-
 <pre><code>openssl x509 -req -days 365 -in shell.csr -signkey rsa.key -out shell.crt -extfile shell.ext
 </code></pre>
-
 <p>你就可以得到一个带有alternative name的cert：</p>
-
 <pre><code>openssl x509 -in shell.crt -text -noout
 </code></pre>
-
 <p>注意，extfile指令对req不生效。req要增加alternative name，只能用config文件。</p>
-
 <h2 id="扩展属性">扩展属性</h2>
-
 <p>// TODO: 将来有空再写吧</p>
-
 <h1 id="多种证书格式转换">多种证书格式转换</h1>
-
 <p>这节我也不是很擅长，所以基本就是抄的cookbook。</p>
-
 <h2 id="证书格式">证书格式</h2>
-
 <p>证书格式比较复杂，常见证书格式有以下几种：</p>
-
 <ul>
 <li>DER cert: 二进制格式，DER ASN.1编码。</li>
 <li>PEM cert: 平文本格式，base64过的DER数据，以&mdash;&ndash;BEGIN CERTIFICATE&mdash;&ndash;开头(openssl的很多文件都有类似的boundary)。</li>
@@ -267,210 +199,119 @@ subjectAltName = DNS:www.feistyduck.com,DNS:feistyduck.com
 <li>PKCS7: RFC2315定义，一般叫做.p7b或者p7c文件。</li>
 <li>PKCS12: 可以同时在文件内存入证书链和私钥，一般叫.p12或者.pfx。</li>
 </ul>
-
 <h2 id="pem和der互相转换">PEM和DER互相转换</h2>
-
 <p>不就是base64互转么。基本思路是这样。</p>
-
 <pre><code>openssl x509 -inform PEM -in shell.crt -outform DER -out shell.der
 </code></pre>
-
 <p>原理很简单，自己看看就行。</p>
-
 <h2 id="pkcs12">PKCS12</h2>
-
 <p>这个就比较复杂了。首先给出PEM的cert和key转换为p12的代码。</p>
-
 <pre><code>openssl pkcs12 -export -name shell -out shell.p12 -inkey rsa.key -in shell.crt -certfile shell.crt
 </code></pre>
-
 <p>上面打包了三个文件，一个key，一个crt，一个上位证书。我的上级证书就是自己（自签的）。导出的时候需要输入一个密码。</p>
-
 <p>反过来就比较麻烦了。如你所见，反过来比较类似于解压。如果要把所有内容塞到一个文件里去，可以这么做。</p>
-
 <pre><code>openssl pkcs12 -in shell.p12 -out shell.pem -nodes
 </code></pre>
-
 <p>开关-nodes的意思是no-des，不要给key做加密的意思，不是node-s。</p>
-
 <p>如果你要分别解开，需要用-nocerts，-nokeys -clcerts，-nokeys -cacerts三个开关。三次输入密码，回车。</p>
-
 <pre><code>openssl pkcs12 -in shell.p12 -nocerts -out shell.key -nodes
 openssl pkcs12 -in shell.p12 -nokeys -clcerts -out shell.crt
 openssl pkcs12 -in shell.p12 -nokeys -cacerts -out shell-ca.crt
 </code></pre>
-
 <p>我所熟知的范围内，需要用到PKCS12转换技巧的地方，只有Debian的SSO方案。那是一个用户端证书方案，是由Debian生成一张证书，然后由用户自己导入浏览器内部的。生成的证书是PEM格式，连同key一起，转换为p12文件，手工导入chrome里。</p>
-
 <h2 id="pkcs7">PKCS7</h2>
-
 <p>从来没用过，不花时间了，直接抄指令。</p>
-
 <pre><code>openssl crl2pkcs7 -nocrl -out fd.p7b -certfile fd.crt -certfile fd-chain.crt
 openssl pkcs7 -in fd.p7b -print_certs -out fd.pem
 </code></pre>
-
 <h1 id="算法选择和tls配置加固">算法选择和TLS配置加固</h1>
-
 <p>前面讲了一堆算法，可以想见，在TLS中用的不会是某个固定算法，而是在多个算法中选择一个。那么理所当然，为了兼容旧的系统，OpenSSL中可能带有很多旧算法（甚至还在使用）。那么这些旧的算法就可能成为一个漏洞。例如MITM时强制降级到旧的算法，用已知的漏洞去攻击。因此，OpenSSL允许用户自行选择算法族。更大的算法族提供更好的兼容性，但是安全性上就有不足。禁用老式算法可以提供额外的安全保证，但是可能老的系统就无法连接。</p>
-
 <h2 id="查看系统中的所有算法">查看系统中的所有算法</h2>
-
 <p>用这个指令查看系统中所有算法：</p>
-
 <pre><code>openssl ciphers -v
 </code></pre>
-
 <p>上面的指令可以跟关键字来做查询。当然，如果只是查找的话，我一般习惯是用grep。上面的指令一个关键用途是，对下面给出的算法最佳配置列出当前系统中的可用算法组合。</p>
-
 <p>列出一堆算法，抓几个关键点。Kx是密钥交换(Key eXchange)，Au是验证(Authentication)，Enc是加密(Encryption)，Mac是消息签名。每一个名字，其实都是几种算法的组合。其中还要排除掉一些冲突无法组合或者无需组合的情况。例如AESGCM就没有MAC，因为GCM是AEAD的，带有验证功能。</p>
-
 <p>要知道更细节的意义，可以看<a href="https://www.feistyduck.com/library/openssl%2dcookbook/online/ch-openssl.html#openssl-cipher-suite-keywords">cookbook的对应章节</a>。cookbook里也有很多东西没有，例如CHACHA20系列算法，在cookbook里只在下面配置的注释里面提到了。不过大家既然都看过加密相关的章节了，这部分内容想想就应该能明白，所以不赘述了。</p>
-
 <h2 id="算法配置的最佳实践">算法配置的最佳实践</h2>
-
 <p>关于openssl配置的最佳实践，我建议还是读<a href="https://github.com/ssllabs/research/wiki/SSL-and-TLS-Deployment-Best-Practices">ssllabs的指南</a>和<a href="https://raymii.org/s/tutorials/Strong_SSL_Security_On_nginx.html">nginx的ssl配置</a>。全文读一读。</p>
-
-<p>简单来说，TLS的配置分为两个部分，协议(protocol)和算法(cipher)。协议分为SSLv2/SSLv3和TLS1.0/1.<sup>1</sup>&frasl;<sub>1</sub>.2。TLSv1.3最近才发布(1.2发布于2008年，1.3于2018年)，所以暂时略去不提。在这些协议中，SSLv2绝对不可用(DROWN attack)，SSLv3建议不要用(POODLE attack)。TLS1.0也有弱点(BEAST attack)，但是由于客户端仍然广为使用，需要做兼容的同学可以开启。TLSv1.1和TLSv1.2是安全的，但是1.2提供了更多的现代密码算法(主要是AEAD类)。</p>
-
+<p>简单来说，TLS的配置分为两个部分，协议(protocol)和算法(cipher)。协议分为SSLv2/SSLv3和TLS1.0/1.1/1.2。TLSv1.3最近才发布(1.2发布于2008年，1.3于2018年)，所以暂时略去不提。在这些协议中，SSLv2绝对不可用(DROWN attack)，SSLv3建议不要用(POODLE attack)。TLS1.0也有弱点(BEAST attack)，但是由于客户端仍然广为使用，需要做兼容的同学可以开启。TLSv1.1和TLSv1.2是安全的，但是1.2提供了更多的现代密码算法(主要是AEAD类)。</p>
 <p>顺便一提，我看到的1.3最大的好处，一个是握手的轮数减少了。传统TLS握手需要两次往返。1.3只要一轮。去除了一些不安全的算法(Camellia居然也是不安全的？好吧，大家还是用aes128好了)。大家要知道具体细节的话，可以看<a href="https://www.owasp.org/images/9/91/OWASPLondon20180125_TLSv1.3_Andy_Brodie.pdf">这里</a>。</p>
-
 <p>算法的选择就比较复杂。你首先需要考量对以前版本的兼容性。例如BEAST attack还是RC4 attack。这个问题的细节可以看<a href="https://raymii.org/s/tutorials/Strong_SSL_Security_On_nginx.html">nginx的ssl配置</a>中，The BEAST attack and RC4一节。也可以看<a href="https://blog.qualys.com/ssllabs/2013/08/05/configuring-apache-nginx-and-openssl-for-forward-secrecy">这份文档</a>。个人觉得还是后面这份写的明白点。简单来说，两个坑你总要中一个。趋势上，更多的人中RC4问题。如果你要追求安全，还可以同时关闭TLSv1.0和RC4。当然，缺点就是兼容性问题。</p>
-
 <p><a href="https://raymii.org/s/tutorials/Strong_SSL_Security_On_nginx.html">nginx的ssl配置</a>给出了很实用的算法选择指南。简单版本中，算法选择只有四类：EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH。也就是说，Kx算法中只有两个安全的，EECDH和EDH。Enc算法中也只有两个安全的，AESGCM和AES256。</p>
-
 <p>根据我们前面的密码学知识，我们知道EECDH和EDH分别是前向安全的Kx协议中，对应DLP和ECDLP问题的两个实现。最前面的E表示这个实现的参数每次都是临时产生(严格来说只有带E的算法才是前向安全的)。AESGCM是AEAD算法，AES256是非AEAD算法。之所以有后者还是考虑了兼容性问题的。然而如果你在最新的openssl上执行这个设定，你会看到Mac中有个东西跳出来，SHA1。</p>
-
 <p>这是因为这个配置写在2015年，还没有考虑到<a href="https://security.googleblog.com/2017/02/announcing-first-sha1-collision.html">Google的SHA1碰撞实例</a>。而且即便是Google的例子中，要碰撞一个实例也是非常费力的。所以从实证角度讲，我不觉得有人能在TLS流程中构造出一个可行的Mac碰撞。但是既然有替代品，去掉SHA1的成本很低，没必要继续使用。所以在近代，要用这个配置的话，需要写成这个样子。</p>
-
 <pre><code>ssl_ciphers 'EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH:!SHA1';
 </code></pre>
-
 <p>可用算法总计16种。</p>
-
-<p>复杂版本是这个样子的：EECDH+AESGCM:EDH+AESGCM:ECDHE-RSA-AES128-GCM-SHA256:AES256+EECDH:DHE-RSA-AES128-GCM-SHA256:AES256+EDH:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES128-SHA256:DHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:AES256-SHA:AES128-SHA:DES-CBC3-SHA:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!MD5:!PSK:!RC4。注意，如果你要在bash中执行这个配置，必须使用&rdquo;，而不是&rdquo;&ldquo;。因为有!的存在。</p>
-
+<p>复杂版本是这个样子的：EECDH+AESGCM:EDH+AESGCM:ECDHE-RSA-AES128-GCM-SHA256:AES256+EECDH:DHE-RSA-AES128-GCM-SHA256:AES256+EDH:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES128-SHA256:DHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:AES256-SHA:AES128-SHA:DES-CBC3-SHA:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!MD5:!PSK:!RC4。注意，如果你要在bash中执行这个配置，必须使用&rsquo;&rsquo;，而不是&quot;&quot;。因为有!的存在。</p>
 <p>根据我们的密码学知识，我们知道这个配置禁用了几个不安全的算法。DES，MD5，PSK，RC4(上面有说)。但是这个配置还漏了不少东西，SHA1，RSA(as Kx, not aRSA)。然而这个配置却不能简单的干掉SHA1，因为SSLv3的所有Mac算法都是SHA1的。如果你干掉SHA1，等于禁用SSLv3(虽然强烈建议这么做)。至于RSA，是因为不满足前向安全性，好像是今年新出的提示。所以复杂版本至少要长这样：</p>
-
 <pre><code>ssl_ciphers 'EECDH+AESGCM:EDH+AESGCM:ECDHE-RSA-AES128-GCM-SHA256:AES256+EECDH:DHE-RSA-AES128-GCM-SHA256:AES256+EDH:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES128-SHA256:DHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:AES256-SHA:AES128-SHA:DES-CBC3-SHA:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!MD5:!PSK:!RC4:!RSA';
 </code></pre>
-
 <p>我这里是53个组合。如果更进一步关掉SHA1，则只剩下35个组合。</p>
-
 <p>另外需要说明的一点(网上搜到的大多数教程都不会说)，在OpenSSL v1.1的某些版本里，支持了CHACHA20。理论来说，你可以将CHACHA20的支持加入到你的配置里去。这个算法更快(尤其是对CPU不支持AESNI的系统，例如很多手机)。</p>
-
 <pre><code>ssl_ciphers 'EECDH+CHACHA20:EDH+CHACHA20:EECDH+AESGCM:EDH+AESGCM:EECDH+AES256:EDH+AES256:!SHA1';
 </code></pre>
-
 <p>我的版本是1.1.0f，CHACHA20在里面总共有7种算法组合。其中只有三种是新的算法族合用的。所以如果没问题的话，上面的配置应该有19种算法组合，而且CHACHA20优先。</p>
-
 <p>如果你觉得配置OK了，可以去<a href="https://www.ssllabs.com/">这个网站</a>检测一下自己网站的安全性。如果你的配置正确，上面的ciphers应该不会出现任何ciphers方面的问题。不过整体得分可能并不高，ciphers只是长征的第一步。</p>
-
 <h2 id="其他安全加固">其他安全加固</h2>
-
 <p>首先是最重要的，SSL一定要升级到最高版本，能多高多高。现在都2018年了，我还能在线上看到heartbleed漏洞。如果还有这种级别的漏洞，就不要提什么安全加固了，OK？</p>
-
 <p>然后，保证在nginx里有这两行配置：</p>
-
 <pre><code>ssl_prefer_server_ciphers on;
 ssl_session_cache shared:SSL:10m;
 </code></pre>
-
 <p><a href="https://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_session_cache">session cache</a>听起来是一个提升性能的配置。</p>
-
 <p>第三点是打开HSTS。一般浏览器会在输入域名的时候自动补全<code>http://</code>，服务器会在http的80端口上收到请求，然后301到https上继续访问。一般来说这样没什么问题。但是攻击者可以MITM之前的http过程，使其不定向到https，而是定向到攻击者Mallory。Mallory用https向上游访问。在这个过程里，客户根本不知道服务器有TLS保护。</p>
-
 <p>HSTS通过特定配置挫败这个攻击。在用户首次访问网站的时候，HSTS会增加一个Header: Strict-Transport-Security。这个Header指明当前网站多久内不应用http去访问。在nginx里，可以这么配置。</p>
-
 <pre><code>add_header Strict-Transport-Security &quot;max-age=31536000; includeSubDomains&quot;;
 </code></pre>
-
 <p>在用户首次访问网站过后，浏览器就会缓存这个设定。再次访问的时候就不会被MITM了。当然，这个防御并不能应付首次攻击。</p>
-
 <p>第四点是增加DH的复杂度。OpenSSL的默认复杂度是1024，我们至少应该增加到2048，推荐4096。因此需要先生成dh参数：</p>
-
 <pre><code>openssl dhparam -out dhparam.pem 4096
 </code></pre>
-
 <p>随后在nginx中加入这行：</p>
-
 <pre><code>ssl_dhparam /etc/ssl/certs/dhparam.pem;
 </code></pre>
-
 <p>最后一点就是，有条件的话，开启OCSP stagling。</p>
-
 <pre><code>ssl_stapling on;
 ssl_stapling_verify on;
 resolver 8.8.8.8 8.8.4.4 valid=300s;
 resolver_timeout 5s;
 </code></pre>
-
 <p>这条之所以在最后，是因为这条是性能优化，不是安全加固。</p>
-
 <h1 id="自建ca">自建CA</h1>
-
 <p>所谓自建CA，就是自行建立一个CA根，为下属签署证书。比较简单的自建CA模型往往是CA-cert，复杂的甚至可以做到CA-Intermediate-cert(和目前各大证书代理机构结构相同)。</p>
-
 <p>自建CA，最简单的方法是使用easy-rsa项目。</p>
-
 <h2 id="setup">setup</h2>
-
 <p>首先你需要获得一份easy-rsa，我用的是Debian stretch中自带的2.2.2-2。你也可以直接去<a href="https://github.com/OpenVPN/easy-rsa">上游</a>下载一份，我看到的最新版本是3.0.4。获得后，复制文件到一个临时目录，而后的生成之类行为都是基于这个目录的。你需要妥善保管整个目录(主要是保管keys目录，vars文件丢了可以重新编辑)，保证不丢失和不泄密。</p>
-
 <p>在完成复制后，首先需要设定一些环境变量。编辑vars文件，你可以看到一个bash脚本，里面有很多环境变量。一般来说，你只需要修改最下面&rsquo;KEY_COUNTRY&rsquo;开始的那些内容，包括国家，地区，城市，组织，邮件地址之类的。随后<code>source vars</code>引用文件，使得变量生效。后续所有操作都是假定变量生效的，就不一一重复了。</p>
-
 <p>在引用文件后，你会看到提示。一个是openssl.cnf文件找不到。你可以看一下，目录里有<code>openssl-0.9.6.cnf openssl-0.9.8.cnf openssl-1.0.0.cnf</code>三份文件。随便链接一份到openssl.cnf就行。这种情况下，正常人都会链接openssl-1.0.0.cnf吧。另一个提示是，如果执行<code>./clean-all</code>，会清除全部文件。实际上，由于我们什么都没建立，因此不用担心，大胆执行。执行完成后，可以看到生成了一个keys目录，带有几个文件。后续所有的私钥和证书生成都是在这里完成。</p>
-
 <p>准备的最后一步，是生成一份CA。执行<code>./build-ca</code>，你可以看到keys目录下出现了一份crt和key。其中crt是rootCA，可以用于分发。key需要谨慎保护。如果这份key泄漏了，那么攻击者就可以任意签署证书了。crl并不能解决这个问题，唯一的补救措施是干掉整个CA树，重新生成CA，并为所有人重签署证书。近代PKI体系中为了规避这个问题，采用的是CA-Intermediate-cert结构。</p>
-
 <h2 id="sign">sign</h2>
-
 <p>很简单，<code>./build-key common_name</code>。如果是域名，照写域名就行，但是泛域名最好不要直接写进去，在输入CN时修改一下。因为cn同时会作为文件名，文件名里带有*会比较麻烦。如果没问题的话，最后可以看到问你要challenge password。这个东西，根据我查到的资料，应该是在吊销时需要的。然而我吊销时也用不上，貌似是个废物。不要设定就好了。最后是两个y，确认签署。</p>
-
 <p>签署完成后，在keys目录中就可以看到很多新东西。*.old是备份，不用管。test1.*是刚刚生成的证书，crt是证书，csr是req，key是私钥。build-key这个脚本，其实就是自动生成key，根据你的要求生成csr，最后自动用ca签掉你的csr。但是注意，这里生成的crt，头部包含了-text的全部输出。在作为crt使用的时候建议删除，并把ca.crt合并进去(具体解释见后)。</p>
-
 <p>如果你有印象的话，会发现目录里会多出几个东西来，这些基本都是和序列号有关的。PKI要求，同一个CA必须为签署的每本证书配备一个对应的序列号(Serial Number)，序列号必须唯一。你用x509指令看一下刚刚生成的crt文件，可以看到sn为1。此时查看serial文件，可以看到内容为02。serial文件就是下一个可用的sn。</p>
-
 <p>理解了serial，index.txt也简单了。这就是一个签署记录表，记录了当前CA签署的每个crt的sn，subject，还有当前状态什么的。有了这些数据，未来才能进行对应的吊销。最后就是01.pem，这个是基于序列号的命名，内容和crt一致。</p>
-
 <p>附带讲解一下，build-key-pass可以生成一份带密码的私钥，build-key-server可以生成服务器端证书，build-key-pkcs12可以生成pkcs12证书。这些比较简单，就不罗嗦了。</p>
-
 <h2 id="sign-with-req">sign with req</h2>
-
 <p>还记得我们说过标准CA的过程是，签署过程中不应该帮你生成私钥。那么我们来模拟一遍客户自己生成私钥的过程吧。</p>
-
 <p>客户自行生成私钥和req的细节可以看上面，也可以直接使用easy-rsa的build-req脚本。同比，使用<code>./build-req cn</code>，经过类似过程，会生成一些文件。但是你仔细看的话，只有key和csr，并没有crt。这是因为这步是在客户手里做的，csr会被发送给服务方签署。</p>
-
 <p>服务器端也很简单，拿到文件后，用<code>./sign-req cn</code>来签署。把crt发还给客户就行。</p>
-
 <h2 id="revoke">revoke</h2>
-
 <p>这个也不难，<code>./revoke-full cn</code>就行了。例如我吊销test1，完成后看一下index.txt，01那行被改成了R。<code>openssl crl -in keys/crl.pem -text -noout</code>(其实直接<code>./list-crl</code>就行)看一下，吊销是成功的。再吊销test2，结果一样。</p>
-
 <p>关键是crl的生效方式。吊销颁发给客户的证书，crl需要被放到服务器上读取。吊销服务器证书，crl需要发给所有客户。一般而言，后者在技术上不具有可行性。所以往往会为证书里签上一个CRL URL，把CRL放在某个URL里完事。</p>
-
 <p>但是这又带来另一个问题。随着PKI体系和https的推行，大量的公司签署服务器证书，也有大量公司被吊销证书。客户端获得CRL的时候，需要获得完整文件，庞大的问题造成了严重的性能问题。因此才酝酿了OCSP。OCSP每次只获得一条记录。</p>
-
 <h2 id="intermediate">intermediate</h2>
-
 <p>这是我用的最少的一个功能，一般用easy-rsa的人根本不会搞什么intermediate。</p>
-
 <p>签署没任何困难，<code>./build-inter cn</code>就完了。然后我们用<code>openssl x509 -in keys/int1.crt -text -noout</code>仔细看一下证书，你会发现，这本证书的X509v3 Basic Constraints很有趣，是CA:TRUE。</p>
-
 <p>然后要怎么用呢？</p>
-
 <p>首先，你要再搞一个easy-rsa目录，重新编辑vars文件(内容可以一样，也可以不一样)，重新source生效，用clean-all生成基础环境。这些都和setup没区别，但是后面不要build-ca，用<code>./inherit-inter ../easy-rsa/keys/ int1</code>，其中<code>../easy-rsa/keys/</code>是前面你签署证书的keys目录，int1是前面刚刚签署出来的intermediate证书。</p>
-
 <p>完成后，前面一个证书体系签署的intermediate就会变成你新目录的ca，而前面的crt和当前的crt会合并成一个export-ca.crt。这是你的证书链文件，发布的时候使用这本。其他和正常的PKI体系没有任何区别。</p>
-
 <h1 id="证书购买中的一些细节">证书购买中的一些细节</h1>
-
 <ul>
 <li>EV没有泛域证书: 虽然是常识，但是还是有人不知道。</li>
 </ul>
-
 <h1 id="修正和鸣谢">修正和鸣谢</h1>
-
 <ul>
 <li>感谢jason提醒关于证书链顺序的问题。</li>
 </ul>

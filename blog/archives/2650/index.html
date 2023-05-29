@@ -2,31 +2,30 @@
 <html lang="en-us">
   <head>
     <title>docker的原理和类比 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
     <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="docker的原理和类比"/>
-<meta name="twitter:description" content=" 从虚拟化的种类和层级说起  cpu虚拟化：可以模拟不同CPU，例如bochs 完全虚拟化：只能模拟同样CPU，但是可以执行不同系统，例如vmware 半虚拟化：guest必须打补丁，例如Xen 硬件虚拟化：可以当作获得硬件加速的完全虚拟化 系统虚拟化：host和guest共享一样的内核，例如Openvz 语言沙盒：只能在语言的范围内使用  虚拟化的级别越偏底层，速度越慢，用户越难察觉到虚拟化的存在。 虚拟化的级别越偏上层，速度越快，用户越容易感知。
- cpu虚拟化和完全虚拟化时，用户几乎可以不察觉到虚拟化的存在 半虚拟化时，guest内核必须存在补丁 系统虚拟化时，用户不能控制自己的内核 语言沙盒时，用户没有使用api的自由  docker的实现结构  docker  lxc namespace: 仅沙盒隔离，不限制资源。 cgroup: 仅限制资源，不沙盒隔离。 aufs image管理   当然，还有很多细节的东西，里面就不一一列举了。例如veth。
+<meta name="twitter:description" content="从虚拟化的种类和层级说起 cpu虚拟化：可以模拟不同CPU，例如bochs 完全虚拟化：只能模拟同样CPU，但是可以执行不同系统，例如vmware 半虚拟化：guest必须打补丁，例如Xen 硬件虚拟化：可以当作获得硬件加速的完全虚拟化 系统虚拟化：host和guest共享一样的内核，例如Openvz 语言沙盒：只能在语言的范围内使用 虚拟化的级别越偏底层，速度越慢，用户越难察觉到虚拟化的存在。 虚拟化的级别越偏上层，速度越快，用户越容易感知。
+cpu虚拟化和完全虚拟化时，用户几乎可以不察觉到虚拟化的存在 半虚拟化时，guest内核必须存在补丁 系统虚拟化时，用户不能控制自己的内核 语言沙盒时，用户没有使用api的自由 docker的实现结构 docker lxc namespace: 仅沙盒隔离，不限制资源。 cgroup: 仅限制资源，不沙盒隔离。 aufs image管理 当然，还有很多细节的东西，里面就不一一列举了。例如veth。
 docker不是虚拟机 docker不是虚拟机，因为lxc已经是虚拟机。如果两者功能一样，那么docker就没有存在的必要。
 你可以把docker当虚拟机用，但是当虚拟机用的话，他的完备程度远远不及现在的种种虚拟机。相比之下，就会觉得很不好用。这不是docker的错，只能说被不正确的使用了。
 docker是什么 docker就是环境。
@@ -35,18 +34,18 @@ docker实际上只做了一件事情——镜像管理。负责将可执行的�
 将这个思路推到极限，就是虚拟机发布。早些年有人发过一些Oracle的linux安装镜像，算的上是先驱。因为Oracle早些年的安装程序很难用，对系统的依赖复杂。公司做测试用装一套Oracle还不够麻烦的。相比起来，下载一个虚拟机直接跑起来就可以用就方便了很多。即使性能差一些，测试而已也不是特别在意。
 docker再进了一步。不但提供一个镜像，可以在系统间方便的迁移。而且连镜像的升级都能做掉。更爽的是，升级只用传输差量数据。当然，有好处就有牺牲。
 docker的镜像是只读的 其实不是，docker的镜像当然可以写入。但是写的时候有几个问题。
- 如果对镜像进行写入，aufs会将原始文件复制一次，再进行写入。这样性能比较低。 更直接的问题是，一旦对镜像做了写入，就无法从docker这里获得更新支持——docker不能将你的写入和上游的更新合并。因此，整个系统就退化成了一个完全的虚拟机。  所以，我个人认为，docker的镜像本身应当是只读的——如同EC2里面一样。数据的写入应当通过远程文件系统或者数据库服务来解决。
+如果对镜像进行写入，aufs会将原始文件复制一次，再进行写入。这样性能比较低。 更直接的问题是，一旦对镜像做了写入，就无法从docker这里获得更新支持——docker不能将你的写入和上游的更新合并。因此，整个系统就退化成了一个完全的虚拟机。 所以，我个人认为，docker的镜像本身应当是只读的——如同EC2里面一样。数据的写入应当通过远程文件系统或者数据库服务来解决。
 vagrant 提到镜像管理，我们可以提一下同样属于镜像管理的一个软件——vagrant。
- 可以将vbox的镜像打包导入导出 提供了一个cloud，允许镜像的分享/更新  为什么vagrant不如docker出名  快，系统级虚拟化使得docker的虚拟化开销降低到百分级别以下。 可以在虚拟机内使用的虚拟机，例如云主机内。 资源调度灵活，不需要将资源预先划定给不同的实例，在不同资源的机器上也不用调整参数。  成功案例 编译系统/打包系统/集成测试环境 典型的搭建一次，执行一次，销毁一次。不需要对image做更改（准确说的需要做更改，但是不需要保存）。
+可以将vbox的镜像打包导入导出 提供了一个cloud，允许镜像的分享/更新 为什么vagrant不如docker出名 快，系统级虚拟化使得docker的虚拟化开销降低到百分级别以下。 可以在虚拟机内使用的虚拟机，例如云主机内。 资源调度灵活，不需要将资源预先划定给不同的实例，在不同资源的机器上也不用调整参数。 成功案例 编译系统/打包系统/集成测试环境 典型的搭建一次，执行一次，销毁一次。不需要对image做更改（准确说的需要做更改，但是不需要保存）。
 公司内部应用 在IaaS的比拼中，以Openvz为代表的系统化虚拟化方案几乎完败于完全虚拟化/半虚拟化系列技术。就我和朋友的讨论，这里面最主要的因素在于。完全虚拟化技术可以比较好的隔离实例和实例间的资源使用，而系统虚拟化技术更偏向于将资源充分利用。这使得系统虚拟化更容易超售。
 然而，在公司内部应用中，这一缺陷就变成了优势。企业的诸多系统，只要在同一个优先级，其可用性应当是一致的。几个联动系统中，一个资源不足陷于濒死的情况下，保持其他几个系统资源充足并无意义。而且总资源是否足够应当是得到充分保证的事情，企业自己“超售”自己的资源，使得业务系统陷入运行缓慢的境地一点意义都没有。
 因此，系统虚拟化可以为企业级云计算提供可以灵活调度的资源，和非常低的额外开销。
 当然，云计算在企业化中原本就面临一些问题。原本提供软-硬件统一解决方案的集成商，需要如何重新组织解决方案。如何协调节约资源和高性能，高可用。云计算在企业级应用中还有很长的路要走。
-短板  太新。目前成功案例还是不足，而且围绕docker的工具链还不完备。 适用范围比较窄。需求需要集中在“环境迁移”领域，而且image本身不应被写入。 生不逢时。rvm和virtualenv已经在前面了。  "/>
+短板 太新。目前成功案例还是不足，而且围绕docker的工具链还不完备。 适用范围比较窄。需求需要集中在“环境迁移”领域，而且image本身不应被写入。 生不逢时。rvm和virtualenv已经在前面了。 "/>
 
     <meta property="og:title" content="docker的原理和类比" />
-<meta property="og:description" content=" 从虚拟化的种类和层级说起  cpu虚拟化：可以模拟不同CPU，例如bochs 完全虚拟化：只能模拟同样CPU，但是可以执行不同系统，例如vmware 半虚拟化：guest必须打补丁，例如Xen 硬件虚拟化：可以当作获得硬件加速的完全虚拟化 系统虚拟化：host和guest共享一样的内核，例如Openvz 语言沙盒：只能在语言的范围内使用  虚拟化的级别越偏底层，速度越慢，用户越难察觉到虚拟化的存在。 虚拟化的级别越偏上层，速度越快，用户越容易感知。
- cpu虚拟化和完全虚拟化时，用户几乎可以不察觉到虚拟化的存在 半虚拟化时，guest内核必须存在补丁 系统虚拟化时，用户不能控制自己的内核 语言沙盒时，用户没有使用api的自由  docker的实现结构  docker  lxc namespace: 仅沙盒隔离，不限制资源。 cgroup: 仅限制资源，不沙盒隔离。 aufs image管理   当然，还有很多细节的东西，里面就不一一列举了。例如veth。
+<meta property="og:description" content="从虚拟化的种类和层级说起 cpu虚拟化：可以模拟不同CPU，例如bochs 完全虚拟化：只能模拟同样CPU，但是可以执行不同系统，例如vmware 半虚拟化：guest必须打补丁，例如Xen 硬件虚拟化：可以当作获得硬件加速的完全虚拟化 系统虚拟化：host和guest共享一样的内核，例如Openvz 语言沙盒：只能在语言的范围内使用 虚拟化的级别越偏底层，速度越慢，用户越难察觉到虚拟化的存在。 虚拟化的级别越偏上层，速度越快，用户越容易感知。
+cpu虚拟化和完全虚拟化时，用户几乎可以不察觉到虚拟化的存在 半虚拟化时，guest内核必须存在补丁 系统虚拟化时，用户不能控制自己的内核 语言沙盒时，用户没有使用api的自由 docker的实现结构 docker lxc namespace: 仅沙盒隔离，不限制资源。 cgroup: 仅限制资源，不沙盒隔离。 aufs image管理 当然，还有很多细节的东西，里面就不一一列举了。例如veth。
 docker不是虚拟机 docker不是虚拟机，因为lxc已经是虚拟机。如果两者功能一样，那么docker就没有存在的必要。
 你可以把docker当虚拟机用，但是当虚拟机用的话，他的完备程度远远不及现在的种种虚拟机。相比之下，就会觉得很不好用。这不是docker的错，只能说被不正确的使用了。
 docker是什么 docker就是环境。
@@ -55,16 +54,16 @@ docker实际上只做了一件事情——镜像管理。负责将可执行的�
 将这个思路推到极限，就是虚拟机发布。早些年有人发过一些Oracle的linux安装镜像，算的上是先驱。因为Oracle早些年的安装程序很难用，对系统的依赖复杂。公司做测试用装一套Oracle还不够麻烦的。相比起来，下载一个虚拟机直接跑起来就可以用就方便了很多。即使性能差一些，测试而已也不是特别在意。
 docker再进了一步。不但提供一个镜像，可以在系统间方便的迁移。而且连镜像的升级都能做掉。更爽的是，升级只用传输差量数据。当然，有好处就有牺牲。
 docker的镜像是只读的 其实不是，docker的镜像当然可以写入。但是写的时候有几个问题。
- 如果对镜像进行写入，aufs会将原始文件复制一次，再进行写入。这样性能比较低。 更直接的问题是，一旦对镜像做了写入，就无法从docker这里获得更新支持——docker不能将你的写入和上游的更新合并。因此，整个系统就退化成了一个完全的虚拟机。  所以，我个人认为，docker的镜像本身应当是只读的——如同EC2里面一样。数据的写入应当通过远程文件系统或者数据库服务来解决。
+如果对镜像进行写入，aufs会将原始文件复制一次，再进行写入。这样性能比较低。 更直接的问题是，一旦对镜像做了写入，就无法从docker这里获得更新支持——docker不能将你的写入和上游的更新合并。因此，整个系统就退化成了一个完全的虚拟机。 所以，我个人认为，docker的镜像本身应当是只读的——如同EC2里面一样。数据的写入应当通过远程文件系统或者数据库服务来解决。
 vagrant 提到镜像管理，我们可以提一下同样属于镜像管理的一个软件——vagrant。
- 可以将vbox的镜像打包导入导出 提供了一个cloud，允许镜像的分享/更新  为什么vagrant不如docker出名  快，系统级虚拟化使得docker的虚拟化开销降低到百分级别以下。 可以在虚拟机内使用的虚拟机，例如云主机内。 资源调度灵活，不需要将资源预先划定给不同的实例，在不同资源的机器上也不用调整参数。  成功案例 编译系统/打包系统/集成测试环境 典型的搭建一次，执行一次，销毁一次。不需要对image做更改（准确说的需要做更改，但是不需要保存）。
+可以将vbox的镜像打包导入导出 提供了一个cloud，允许镜像的分享/更新 为什么vagrant不如docker出名 快，系统级虚拟化使得docker的虚拟化开销降低到百分级别以下。 可以在虚拟机内使用的虚拟机，例如云主机内。 资源调度灵活，不需要将资源预先划定给不同的实例，在不同资源的机器上也不用调整参数。 成功案例 编译系统/打包系统/集成测试环境 典型的搭建一次，执行一次，销毁一次。不需要对image做更改（准确说的需要做更改，但是不需要保存）。
 公司内部应用 在IaaS的比拼中，以Openvz为代表的系统化虚拟化方案几乎完败于完全虚拟化/半虚拟化系列技术。就我和朋友的讨论，这里面最主要的因素在于。完全虚拟化技术可以比较好的隔离实例和实例间的资源使用，而系统虚拟化技术更偏向于将资源充分利用。这使得系统虚拟化更容易超售。
 然而，在公司内部应用中，这一缺陷就变成了优势。企业的诸多系统，只要在同一个优先级，其可用性应当是一致的。几个联动系统中，一个资源不足陷于濒死的情况下，保持其他几个系统资源充足并无意义。而且总资源是否足够应当是得到充分保证的事情，企业自己“超售”自己的资源，使得业务系统陷入运行缓慢的境地一点意义都没有。
 因此，系统虚拟化可以为企业级云计算提供可以灵活调度的资源，和非常低的额外开销。
 当然，云计算在企业化中原本就面临一些问题。原本提供软-硬件统一解决方案的集成商，需要如何重新组织解决方案。如何协调节约资源和高性能，高可用。云计算在企业级应用中还有很长的路要走。
-短板  太新。目前成功案例还是不足，而且围绕docker的工具链还不完备。 适用范围比较窄。需求需要集中在“环境迁移”领域，而且image本身不应被写入。 生不逢时。rvm和virtualenv已经在前面了。  " />
+短板 太新。目前成功案例还是不足，而且围绕docker的工具链还不完备。 适用范围比较窄。需求需要集中在“环境迁移”领域，而且image本身不应被写入。 生不逢时。rvm和virtualenv已经在前面了。 " />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2650/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2650/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2014-06-30T12:32:08+08:00" />
 <meta property="article:modified_time" content="2014-06-30T12:32:08+08:00" />
 
@@ -104,11 +103,8 @@ vagrant 提到镜像管理，我们可以提一下同样属于镜像管理的一
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -118,30 +114,32 @@ vagrant 提到镜像管理，我们可以提一下同样属于镜像管理的一
       <h1 class ="post-title">docker的原理和类比</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Jun 30, 2014
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/docker/">docker</a><a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a><a class="tag" href="//blog.shell909090.org/tags/lxc/">lxc</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/docker/">docker</a>
+              <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a>
+              <a class="tag" href="//blog.shell909090.org/tags/lxc/">lxc</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
-      
-
-<h1 id="从虚拟化的种类和层级说起">从虚拟化的种类和层级说起</h1>
-
+      <h1 id="从虚拟化的种类和层级说起">从虚拟化的种类和层级说起</h1>
 <ul>
 <li>cpu虚拟化：可以模拟不同CPU，例如bochs</li>
 <li>完全虚拟化：只能模拟同样CPU，但是可以执行不同系统，例如vmware</li>
@@ -150,99 +148,65 @@ vagrant 提到镜像管理，我们可以提一下同样属于镜像管理的一
 <li>系统虚拟化：host和guest共享一样的内核，例如Openvz</li>
 <li>语言沙盒：只能在语言的范围内使用</li>
 </ul>
-
-<hr />
-
+<hr>
 <p>虚拟化的级别越偏底层，速度越慢，用户越难察觉到虚拟化的存在。
 虚拟化的级别越偏上层，速度越快，用户越容易感知。</p>
-
 <ul>
 <li>cpu虚拟化和完全虚拟化时，用户几乎可以不察觉到虚拟化的存在</li>
 <li>半虚拟化时，guest内核必须存在补丁</li>
 <li>系统虚拟化时，用户不能控制自己的内核</li>
 <li>语言沙盒时，用户没有使用api的自由</li>
 </ul>
-
 <h1 id="docker的实现结构">docker的实现结构</h1>
-
 <ul>
 <li>docker
-
 <ul>
 <li>lxc</li>
 <li>namespace: 仅沙盒隔离，不限制资源。</li>
 <li>cgroup: 仅限制资源，不沙盒隔离。</li>
 <li>aufs</li>
 <li>image管理</li>
-</ul></li>
 </ul>
-
+</li>
+</ul>
 <p>当然，还有很多细节的东西，里面就不一一列举了。例如veth。</p>
-
 <h2 id="docker不是虚拟机">docker不是虚拟机</h2>
-
 <p>docker不是虚拟机，因为lxc已经是虚拟机。如果两者功能一样，那么docker就没有存在的必要。</p>
-
 <p>你可以把docker当虚拟机用，但是当虚拟机用的话，他的完备程度远远不及现在的种种虚拟机。相比之下，就会觉得很不好用。这不是docker的错，只能说被不正确的使用了。</p>
-
 <h2 id="docker是什么">docker是什么</h2>
-
 <p>docker就是环境。</p>
-
 <p>docker实际上只做了一件事情——镜像管理。负责将可执行的镜像导入导出，在不同设备上迁移。</p>
-
 <p>原本我们发布软件有两种方法，源码发布和二进制发布。二进制发布又有两种方案，静态链接和动态链接。最早的时候，我们发布软件都喜欢动态链接，因为小。但是随着网络和存储的升级，软件越来越喜欢静态链接，或者把动态库打包到发布里。因为系统情况越来越复杂，依赖关系一旦出错，系统就无法启动。</p>
-
 <p>将这个思路推到极限，就是虚拟机发布。早些年有人发过一些Oracle的linux安装镜像，算的上是先驱。因为Oracle早些年的安装程序很难用，对系统的依赖复杂。公司做测试用装一套Oracle还不够麻烦的。相比起来，下载一个虚拟机直接跑起来就可以用就方便了很多。即使性能差一些，测试而已也不是特别在意。</p>
-
 <p>docker再进了一步。不但提供一个镜像，可以在系统间方便的迁移。而且连镜像的升级都能做掉。更爽的是，升级只用传输差量数据。当然，有好处就有牺牲。</p>
-
 <h2 id="docker的镜像是只读的">docker的镜像是只读的</h2>
-
 <p>其实不是，docker的镜像当然可以写入。但是写的时候有几个问题。</p>
-
 <ol>
 <li>如果对镜像进行写入，aufs会将原始文件复制一次，再进行写入。这样性能比较低。</li>
 <li>更直接的问题是，一旦对镜像做了写入，就无法从docker这里获得更新支持——docker不能将你的写入和上游的更新合并。因此，整个系统就退化成了一个完全的虚拟机。</li>
 </ol>
-
 <p>所以，我个人认为，docker的镜像本身应当是只读的——如同EC2里面一样。数据的写入应当通过远程文件系统或者数据库服务来解决。</p>
-
 <h1 id="vagrant">vagrant</h1>
-
 <p>提到镜像管理，我们可以提一下同样属于镜像管理的一个软件——vagrant。</p>
-
 <ul>
 <li>可以将vbox的镜像打包导入导出</li>
 <li>提供了一个cloud，允许镜像的分享/更新</li>
 </ul>
-
 <h2 id="为什么vagrant不如docker出名">为什么vagrant不如docker出名</h2>
-
 <ul>
 <li>快，系统级虚拟化使得docker的虚拟化开销降低到百分级别以下。</li>
 <li>可以在虚拟机内使用的虚拟机，例如云主机内。</li>
 <li>资源调度灵活，不需要将资源预先划定给不同的实例，在不同资源的机器上也不用调整参数。</li>
 </ul>
-
 <h1 id="成功案例">成功案例</h1>
-
-<h2 id="编译系统-打包系统-集成测试环境">编译系统/打包系统/集成测试环境</h2>
-
+<h2 id="编译系统打包系统集成测试环境">编译系统/打包系统/集成测试环境</h2>
 <p>典型的搭建一次，执行一次，销毁一次。不需要对image做更改（准确说的需要做更改，但是不需要保存）。</p>
-
 <h2 id="公司内部应用">公司内部应用</h2>
-
 <p>在IaaS的比拼中，以Openvz为代表的系统化虚拟化方案几乎完败于完全虚拟化/半虚拟化系列技术。就我和朋友的讨论，这里面最主要的因素在于。完全虚拟化技术可以比较好的隔离实例和实例间的资源使用，而系统虚拟化技术更偏向于将资源充分利用。这使得系统虚拟化更容易超售。</p>
-
 <p>然而，在公司内部应用中，这一缺陷就变成了优势。企业的诸多系统，只要在同一个优先级，其可用性应当是一致的。几个联动系统中，一个资源不足陷于濒死的情况下，保持其他几个系统资源充足并无意义。而且总资源是否足够应当是得到充分保证的事情，企业自己“超售”自己的资源，使得业务系统陷入运行缓慢的境地一点意义都没有。</p>
-
 <p>因此，系统虚拟化可以为企业级云计算提供可以灵活调度的资源，和非常低的额外开销。</p>
-
 <p>当然，云计算在企业化中原本就面临一些问题。原本提供软-硬件统一解决方案的集成商，需要如何重新组织解决方案。如何协调节约资源和高性能，高可用。云计算在企业级应用中还有很长的路要走。</p>
-
 <h1 id="短板">短板</h1>
-
 <ol>
 <li>太新。目前成功案例还是不足，而且围绕docker的工具链还不完备。</li>
 <li>适用范围比较窄。需求需要集中在“环境迁移”领域，而且image本身不应被写入。</li>

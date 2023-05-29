@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>go on Shell&#39;s Home</title>
@@ -7,11 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Fri, 18 May 2012 07:14:24 +0800</lastBuildDate>
-    
-	<atom:link href="//blog.shell909090.org/tags/go/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Fri, 18 May 2012 07:14:24 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/go/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>语言的效率差异2</title>
       <link>//blog.shell909090.org/blog/archives/2174/</link>
@@ -21,8 +17,8 @@
       <description>问题 为了更深入的测试语言，我做了一个经典问题——24点。
 这个问题主要是测试递归，循环效率，还有数组和树的复制性能。
 为了简化问题，方便测试，我的问题是这样描述的：
-有一个数组，里面有多个正整数。有一个操作数组，其中每个都是双目操作符。找出以两者构成算式，其值等于给定值的所有表达式组合。 要求不得遗漏，可以有少量重复。例如可交换算符的交换同构暂不做排重。  实际运行的时候，取+-*/和3 4 6 8，运行100次，查看时间消耗。正确的单次输出结果应当是这样的。
-(((8 + 4) / 3) * 6) = 24 (6 / (3 / (8 + 4))) = 24 (((8 + 4) * 6) / 3) = 24 (((8 / 4) + 6) * 3) = 24 (((8 - 6) * 3) * 4) = 24 (((8 - 6) * 4) * 3) = 24 (((3 * 4) - 8) * 6) = 24 ((8 - (6 / 3)) * 4) = 24 (((4 + 8) / 3) * 6) = 24 (6 / (3 / (4 + 8))) = 24 (((4 + 8) * 6) / 3) = 24 (((8 / 4) + 6) * 3) = 24 (((4 * 3) - 8) * 6) = 24 (((8 - 6) * 3) * 4) = 24 (((8 - 6) * 4) * 3) = 24 ((8 - (6 / 3)) * 4) = 24  python python的解很复杂，长达31行，以下是我写的解。当然，还有更简单的版本，我可以用eval来干这个事情，代码只有24行，但是确实给人很evil的感觉。</description>
+有一个数组，里面有多个正整数。有一个操作数组，其中每个都是双目操作符。找出以两者构成算式，其值等于给定值的所有表达式组合。 要求不得遗漏，可以有少量重复。例如可交换算符的交换同构暂不做排重。 实际运行的时候，取+-*/和3 4 6 8，运行100次，查看时间消耗。正确的单次输出结果应当是这样的。
+(((8 + 4) / 3) * 6) = 24 (6 / (3 / (8 + 4))) = 24 (((8 + 4) * 6) / 3) = 24 (((8 / 4) + 6) * 3) = 24 (((8 - 6) * 3) * 4) = 24 (((8 - 6) * 4) * 3) = 24 (((3 * 4) - 8) * 6) = 24 ((8 - (6 / 3)) * 4) = 24 (((4 + 8) / 3) * 6) = 24 (6 / (3 / (4 + 8))) = 24 (((4 + 8) * 6) / 3) = 24 (((8 / 4) + 6) * 3) = 24 (((4 * 3) - 8) * 6) = 24 (((8 - 6) * 3) * 4) = 24 (((8 - 6) * 4) * 3) = 24 ((8 - (6 / 3)) * 4) = 24 python python的解很复杂，长达31行，以下是我写的解。当然，还有更简单的版本，我可以用eval来干这个事情，代码只有24行，但是确实给人很evil的感觉。</description>
     </item>
     
     <item>
@@ -34,13 +30,13 @@
       <description>问题 为了测试语言的效率，做一个正则解析。
 预先说好，正则解析的问题是老板正在做的一个实际问题，我把其他和效率无关的部分去了。因此我接受“用法不正确”这样的反驳理由，但是不接受“这不是典型用例”的理由。我欢迎你指正我的用法错误，或者对语言不了解导致的效率低下，但是别来和我吵吵这种例子太特殊。另外，在调整代码和评估速度的时候，顺便注意一下代码行数。我知道用汇编逐行写和优化会很优秀，但是这对实际工作基本没有帮助。
 问题是这样的：
- 有一个文本文件，每行两个数，要求解析出来这两个数。
- 我用python生成了数据，代码是这样的
-with open(sys.argv[1], &#39;w&#39;) as fo: for i in xrange(500000): fo.write(&#39;%d %dn&#39; % (i, random.randint(0, 10000)))  正则分析速率，是个典型的CPU密集操作。对于非编译型语言而言(这里的编译是指正则表达式的解析预编译，实际上除了lisp还真没有编译型的，即使是go也是现场拿到正则进行解析的)，这主要是看正则库的实现效率。很多时候，语言的效率问题并不取决于语言本身，还取决于语言的库的实现。大部分情况下我们都不可能砍掉系统的库重新来一个，那还不如换一门语言。
+有一个文本文件，每行两个数，要求解析出来这两个数。
+我用python生成了数据，代码是这样的
+with open(sys.argv[1], &#39;w&#39;) as fo: for i in xrange(500000): fo.write(&#39;%d %dn&#39; % (i, random.randint(0, 10000))) 正则分析速率，是个典型的CPU密集操作。对于非编译型语言而言(这里的编译是指正则表达式的解析预编译，实际上除了lisp还真没有编译型的，即使是go也是现场拿到正则进行解析的)，这主要是看正则库的实现效率。很多时候，语言的效率问题并不取决于语言本身，还取决于语言的库的实现。大部分情况下我们都不可能砍掉系统的库重新来一个，那还不如换一门语言。
 python 我首先贴出python语言的解答。
-reline = re.compile(&#39;(d+) (d+)&#39;) def main(): with open(sys.argv[1], &#39;r&#39;) as fi: for line in fi: reline.match(line).groups()  这是性能
-real 0m0.466s user 0m0.436s sys 0m0.012s  common lisp 我找了N个正则包，实际能用的只有ppcre。有些包号称很快，实际测试下来还不如ppcre。
-(require :cl-ppcre) (defun grepfile (filename) (let* ((cl-ppcre:*use-bmh-matchers* t) (cl-ppcre:*regex-char-code-limit* 256) (scanner (cl-ppcre:create-scanner &amp;quot;d+ d+&amp;quot;))) (with-open-file (in filename) (loop for line = (read-line in nil) while line do (cl-ppcre:split scanner line)))))  代码在slime里面测试(time (grepfile &amp;ldquo;data.</description>
+reline = re.compile(&#39;(d+) (d+)&#39;) def main(): with open(sys.argv[1], &#39;r&#39;) as fi: for line in fi: reline.match(line).groups() 这是性能
+real 0m0.466s user 0m0.436s sys 0m0.012s common lisp 我找了N个正则包，实际能用的只有ppcre。有些包号称很快，实际测试下来还不如ppcre。
+(require :cl-ppcre) (defun grepfile (filename) (let* ((cl-ppcre:*use-bmh-matchers* t) (cl-ppcre:*regex-char-code-limit* 256) (scanner (cl-ppcre:create-scanner &amp;quot;d+ d+&amp;quot;))) (with-open-file (in filename) (loop for line = (read-line in nil) while line do (cl-ppcre:split scanner line))))) 代码在slime里面测试(time (grepfile &amp;ldquo;data.</description>
     </item>
     
   </channel>

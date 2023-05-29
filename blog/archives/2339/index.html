@@ -2,34 +2,33 @@
 <html lang="en-us">
   <head>
     <title>vpn转代理 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
     <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="vpn转代理"/>
 <meta name="twitter:description" content="背景 贝壳自己的vps蒙难，不能正常工作了。所以贝壳买了一个vpn。是pptp/l2tp系列的。用起来很好用，但是这类ip-based vpn有几个不便。
- 不能自动设定客户端路由表，实现智能翻墙选择。 每个需要翻墙的设备均需要拨号，而目标设备有容量极限。 不能实现非侵入式翻墙，打开之后连p2p都翻了。  与此相反，代理式翻墙可以比较有效的解决这些问题。一个点拨号，其他点可以共享代理。不需要翻墙的直接访问不设定代理就好。唯路由表没有办法。实际上，为了使得代理可以使用路由表选择，贝壳还是花了一番功夫做了antigfw项目的。
+不能自动设定客户端路由表，实现智能翻墙选择。 每个需要翻墙的设备均需要拨号，而目标设备有容量极限。 不能实现非侵入式翻墙，打开之后连p2p都翻了。 与此相反，代理式翻墙可以比较有效的解决这些问题。一个点拨号，其他点可以共享代理。不需要翻墙的直接访问不设定代理就好。唯路由表没有办法。实际上，为了使得代理可以使用路由表选择，贝壳还是花了一番功夫做了antigfw项目的。
 闲话少说。这次贝壳就展示一下如何在debian下设定pptp vpn，并且利用代理无缝共享的。
 linux下的vpn设定 安装pptp-linux这个包，然后按照说明使用即可。
-pptpsetup --create &lt;TUNNEL&gt; --server &lt;SERVER&gt; [--domain &lt;DOMAIN&gt;] --username &lt;USERNAME&gt; [--password &lt;PASSWORD&gt;] [--encrypt] [--start]  自己填充用户名密码服务器，就会在/etc/ppp/peers/下面生成对应的文件。使用pon tunnelname就可以拨号了。
+pptpsetup --create &lt;TUNNEL&gt; --server &lt;SERVER&gt; [--domain &lt;DOMAIN&gt;] --username &lt;USERNAME&gt; [--password &lt;PASSWORD&gt;] [--encrypt] [--start] 自己填充用户名密码服务器，就会在/etc/ppp/peers/下面生成对应的文件。使用pon tunnelname就可以拨号了。
 路由设定 初始设定好的vpn不具有智能路由，因此必须添加一些内容。
 首先使用chnroutes.py这个程序，得到ovpn下常规用的路由表。当然，我们可以用linux下的路由表，但是他的old gateway存放在了/tmp下面，对此我并不是很喜欢。所以我只用了他的路由 表信息，其余自己处理。如果你不确定自己执行时的默认路由，理论上也应当需要下面的一些配置。
 使用下面这个topptp.sh，可以将输出的routes.txt转换为pptpup和pptpdown两个文件。
@@ -37,16 +36,16 @@ pptpsetup --create &lt;TUNNEL&gt; --server &lt;SERVER&gt; [--domain &lt;DOMAIN&g
 
     <meta property="og:title" content="vpn转代理" />
 <meta property="og:description" content="背景 贝壳自己的vps蒙难，不能正常工作了。所以贝壳买了一个vpn。是pptp/l2tp系列的。用起来很好用，但是这类ip-based vpn有几个不便。
- 不能自动设定客户端路由表，实现智能翻墙选择。 每个需要翻墙的设备均需要拨号，而目标设备有容量极限。 不能实现非侵入式翻墙，打开之后连p2p都翻了。  与此相反，代理式翻墙可以比较有效的解决这些问题。一个点拨号，其他点可以共享代理。不需要翻墙的直接访问不设定代理就好。唯路由表没有办法。实际上，为了使得代理可以使用路由表选择，贝壳还是花了一番功夫做了antigfw项目的。
+不能自动设定客户端路由表，实现智能翻墙选择。 每个需要翻墙的设备均需要拨号，而目标设备有容量极限。 不能实现非侵入式翻墙，打开之后连p2p都翻了。 与此相反，代理式翻墙可以比较有效的解决这些问题。一个点拨号，其他点可以共享代理。不需要翻墙的直接访问不设定代理就好。唯路由表没有办法。实际上，为了使得代理可以使用路由表选择，贝壳还是花了一番功夫做了antigfw项目的。
 闲话少说。这次贝壳就展示一下如何在debian下设定pptp vpn，并且利用代理无缝共享的。
 linux下的vpn设定 安装pptp-linux这个包，然后按照说明使用即可。
-pptpsetup --create &lt;TUNNEL&gt; --server &lt;SERVER&gt; [--domain &lt;DOMAIN&gt;] --username &lt;USERNAME&gt; [--password &lt;PASSWORD&gt;] [--encrypt] [--start]  自己填充用户名密码服务器，就会在/etc/ppp/peers/下面生成对应的文件。使用pon tunnelname就可以拨号了。
+pptpsetup --create &lt;TUNNEL&gt; --server &lt;SERVER&gt; [--domain &lt;DOMAIN&gt;] --username &lt;USERNAME&gt; [--password &lt;PASSWORD&gt;] [--encrypt] [--start] 自己填充用户名密码服务器，就会在/etc/ppp/peers/下面生成对应的文件。使用pon tunnelname就可以拨号了。
 路由设定 初始设定好的vpn不具有智能路由，因此必须添加一些内容。
 首先使用chnroutes.py这个程序，得到ovpn下常规用的路由表。当然，我们可以用linux下的路由表，但是他的old gateway存放在了/tmp下面，对此我并不是很喜欢。所以我只用了他的路由 表信息，其余自己处理。如果你不确定自己执行时的默认路由，理论上也应当需要下面的一些配置。
 使用下面这个topptp.sh，可以将输出的routes.txt转换为pptpup和pptpdown两个文件。
 #!/bin/bash ETHGW=192.168.1.1 cat &gt; pptpup &lt;&lt;EOF #!/bin/bash export PATH=&quot;/bin:/sbin:/usr/sbin:/usr/bin&quot; EOF cat &gt; pptpdown &lt;&lt;EOF #!/bin/bash export PATH=&quot;/bin:/sbin:/usr/sbin:/usr/bin&quot; EOF sed &quot;s:route (S*) (S*) net_gateway 5:route add -net 1 netmask 2 gw $ETHGW:g&quot; routes.txt &gt;&gt; pptpup sed &quot;s:route (S*) (S*) net_gateway 5:route del -net 1 netmask 2:g&quot; routes." />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2339/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2339/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2013-03-19T10:54:59+08:00" />
 <meta property="article:modified_time" content="2013-03-19T10:54:59+08:00" />
 
@@ -86,11 +85,8 @@ pptpsetup --create &lt;TUNNEL&gt; --server &lt;SERVER&gt; [--domain &lt;DOMAIN&g
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -100,64 +96,53 @@ pptpsetup --create &lt;TUNNEL&gt; --server &lt;SERVER&gt; [--domain &lt;DOMAIN&g
       <h1 class ="post-title">vpn转代理</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Mar 19, 2013
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/computer/">computer</a><a class="tag" href="//blog.shell909090.org/tags/vpn/">vpn</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/computer/">computer</a>
+              <a class="tag" href="//blog.shell909090.org/tags/vpn/">vpn</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
-      
-
-<h1 id="背景">背景</h1>
-
+      <h1 id="背景">背景</h1>
 <p>贝壳自己的vps蒙难，不能正常工作了。所以贝壳买了一个vpn。是pptp/l2tp系列的。用起来很好用，但是这类ip-based
 vpn有几个不便。</p>
-
 <ul>
 <li>不能自动设定客户端路由表，实现智能翻墙选择。</li>
 <li>每个需要翻墙的设备均需要拨号，而目标设备有容量极限。</li>
 <li>不能实现非侵入式翻墙，打开之后连p2p都翻了。</li>
 </ul>
-
 <p>与此相反，代理式翻墙可以比较有效的解决这些问题。一个点拨号，其他点可以共享代理。不需要翻墙的直接访问不设定代理就好。唯路由表没有办法。实际上，为了使得代理可以使用路由表选择，贝壳还是花了一番功夫做了antigfw项目的。</p>
-
 <p>闲话少说。这次贝壳就展示一下如何在debian下设定pptp
 vpn，并且利用代理无缝共享的。</p>
-
 <h1 id="linux下的vpn设定">linux下的vpn设定</h1>
-
 <p>安装pptp-linux这个包，然后按照说明使用即可。</p>
-
 <pre><code>pptpsetup --create &lt;TUNNEL&gt; --server &lt;SERVER&gt; [--domain &lt;DOMAIN&gt;] --username &lt;USERNAME&gt; [--password &lt;PASSWORD&gt;] [--encrypt] [--start]
 </code></pre>
-
 <p>自己填充用户名密码服务器，就会在/etc/ppp/peers/下面生成对应的文件。使用pon
 tunnelname就可以拨号了。</p>
-
 <h1 id="路由设定">路由设定</h1>
-
 <p>初始设定好的vpn不具有智能路由，因此必须添加一些内容。</p>
-
 <p>首先使用<a href="https://github.com/fivesheep/chnroutes">chnroutes.py</a>这个程序，得到ovpn下常规用的路由表。当然，我们可以用linux下的路由表，但是他的old
 gateway存放在了/tmp下面，对此我并不是很喜欢。所以我只用了他的路由
 表信息，其余自己处理。如果你不确定自己执行时的默认路由，理论上也应当需要下面的一些配置。</p>
-
 <p>使用下面这个topptp.sh，可以将输出的routes.txt转换为pptpup和pptpdown两个文件。</p>
-
 <pre><code>#!/bin/bash
 
 ETHGW=192.168.1.1
@@ -179,33 +164,22 @@ sed &quot;s:route (S*) (S*) net_gateway 5:route del -net 1 netmask 2:g&quot; rou
 
 chmod 755 pptpup pptpdown
 </code></pre>
-
 <p>再将这两个文件复制到/etc/ppp下面，然后将如下内容添加到/etc/ppp/peers/xxx文件，具体就是你刚刚生成的配置。</p>
-
 <pre><code>defaultroute
 replacedefaultroute
 connect /etc/ppp/pptpup
 disconnect /etc/ppp/pptpdown
 </code></pre>
-
 <p>第一二行，配置了替代默认路由。三四行，配置了启动时某些路由表项使用直连。</p>
-
 <h1 id="代理">代理</h1>
-
 <p>什么废话都不用多说，直接在设备上安装polipo。然后加入以下两行，赋予其他用户访问权限。</p>
-
 <pre><code>proxyAddress = &quot;0.0.0.0&quot; # IPv4 only
 allowedClients = 192.168.1.0/24
 </code></pre>
-
 <p>这就齐活了。</p>
-
 <p>如果你开了防火墙，不要忘记打开8123端口。</p>
-
 <h1 id="效果">效果</h1>
-
 <p>在其他设备上，设定代理，然后直接访问，发现是不是国内外的网站都可以直接使用了？</p>
-
 <p>当然，这个的缺陷就是需要一台机器始终开启翻墙，而且这台机器不能用做p2p下载了。因为上面的流量会被翻掉。</p>
 
     </div>

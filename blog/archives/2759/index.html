@@ -2,24 +2,23 @@
 <html lang="en-us">
   <head>
     <title>list.append的性能分析 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
@@ -46,7 +45,7 @@ if (!doNotTrack) {
 但是这里就有一个疑惑。难道python现在删除了复杂的内存层，将mm管理直接用系统的来支持么？我记忆中python源码解析里讲过python有一个巨复杂无比的内存控制系统。难道全用系统管理了么？对此我查了一下 2.6 / 2.7 的python mm文档。里面倒是明确提到不要同时使用系统api和python api来管理内存。但是并没有明确说明如何处理的实现。但是我在系统里并没有找到第二个实现（debug不算），唯一的实现在Python-2.7.5/Include/pymem.h:76，是直接转到realloc上去的。
 貌似在新证据出现前，我得认为python使用的glibc api来处理的mm问题。" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2759/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2759/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2015-06-17T00:00:00+00:00" />
 <meta property="article:modified_time" content="2015-06-17T00:00:00+00:00" />
 
@@ -86,11 +85,8 @@ if (!doNotTrack) {
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -100,40 +96,33 @@ if (!doNotTrack) {
       <h1 class ="post-title">list.append的性能分析</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Jun 17, 2015
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div></div>
+        </div>
+      </div>
     </header>
     <div class="post-content">
       <p>在python2.7.5的源码中，list的append操作最终调用的是Python-2.7.5/Objects/listobject.c:266这里的app1（请帮我复核一下，Python的源码有很多隐藏的手脚不容易看见）。</p>
-
 <p>在app1里，使用了list_resize来进行resize，而list_resize间接用到了PyMem_RESIZE。按照我的阅读，这个应该是层层转到realloc上的。</p>
-
 <p>下面就是查glibc源码的事了。我看到的应该是glibc-2.19/malloc/malloc.c:2951这里的__libc_realloc函数。这个函数很长，我大致读了一下。这里分了两个分支。一个是2992行的chunk_is_mmapped。如果我没理解错的话，我们的内存块不可能没有mapped。那么另一个就是2996行的HAVE_MREMAP，这个是编译时宏，我也不知道我的系统上是不是打开的。如果没打开的话，肯定是走alloc，copy，free的流程。</p>
-
 <p>所以我就用strace跟踪了一下，结果确实调用了mremap。</p>
-
 <p>这个函数在linux内核中。我使用的源码是linux-3.2，结果在linux-3.2/mm/mremap.c:535这里。</p>
-
 <p>大致看了一下函数实现。首先试图处理缩小，如果不行的话试图在扩展到最大(vma_to_resize)，如果这样还是不行，先试试看能不能追加映射(vma_expandable/vma_adjust)。如果都不行，他还是用的创建并移动的方法。(We weren’t able to just expand or shrink the area, we need to create a new one and move it..)。</p>
-
 <p>所以，总体来说，list.append的复杂度还是O(n)级。但是由于remap的内核实现，因此比直接搬数据应该会快一些。具体表现可能要以测试为准了。</p>
-
 <p>但是这里就有一个疑惑。难道python现在删除了复杂的内存层，将mm管理直接用系统的来支持么？我记忆中python源码解析里讲过python有一个巨复杂无比的内存控制系统。难道全用系统管理了么？对此我查了一下
 <a href="https://docs.python.org/2.6/c-api/memory.html">2.6</a> /
 <a href="https://docs.python.org/2/c-api/memory.html">2.7</a> 的python
 mm文档。里面倒是明确提到不要同时使用系统api和python api来管理内存。但是并没有明确说明如何处理的实现。但是我在系统里并没有找到第二个实现（debug不算），唯一的实现在Python-2.7.5/Include/pymem.h:76，是直接转到realloc上去的。</p>
-
 <p>貌似在新证据出现前，我得认为python使用的glibc api来处理的mm问题。</p>
 
     </div>

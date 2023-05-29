@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>gnupg on Shell&#39;s Home</title>
@@ -7,11 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Wed, 07 Sep 2011 10:52:29 +0800</lastBuildDate>
-    
-	<atom:link href="//blog.shell909090.org/tags/gnupg/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Wed, 07 Sep 2011 10:52:29 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/gnupg/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>gnupg密钥签署原理和过程</title>
       <link>//blog.shell909090.org/blog/archives/1903/</link>
@@ -25,12 +21,12 @@ gnupg的密码体系和PKI类似，又有区别。PKI密码体系有数个根节
 好吧，为了解决这个问题，gnupg设计了互相签署机制。当我签署了某个人的公钥，并且将我的签署上传到公钥服务器（或者发送回给本人）的时候，我就为这个人的真实性做出了背书。例如，当我为thomas做了公钥签署，然后上传到了公钥服务器。然后thomas向某个他并不直接认识的我的朋友发送了一封邮件——例如发送给了julia。julia收到信的时候，会从服务器上下载thomas的公钥，然后看到我的背书。如果julia相信(trust)我，那么gnupg就会自动完成验证。当然，将公钥上传到服务器会略微降低安全性，所以如果限于安全考虑，我没有上传到公钥服务器，而是传回给本人。那么thomas就必须在给julia发送邮件的时候，附上公钥。julia一样能看到公钥上我的签名。
 下面是如何操作。
 首先你必须获得公钥，以下是从公钥服务器上下载的方法。
-gpg --keyserver &amp;lt;keyserver&amp;gt; --recv-keys &amp;lt;Key\_ID&amp;gt;  而后，你需要看到这个公钥的fingerprint。
-gpg --fingerprint &amp;lt;Key\_ID&amp;gt;  再然后，就是比较困难的部分。你需要和这个公钥的拥有者碰头，找个地方喝个咖啡，或者一起出来玩什么的。然后，查看他的有效证件，和本人对照，并且取得他本人认可的fingerprint。
+gpg --keyserver &amp;lt;keyserver&amp;gt; --recv-keys &amp;lt;Key\_ID&amp;gt; 而后，你需要看到这个公钥的fingerprint。
+gpg --fingerprint &amp;lt;Key\_ID&amp;gt; 再然后，就是比较困难的部分。你需要和这个公钥的拥有者碰头，找个地方喝个咖啡，或者一起出来玩什么的。然后，查看他的有效证件，和本人对照，并且取得他本人认可的fingerprint。
 这点非常重要，不要轻易的使用线上fingerprint交换来替代这个过程，也不要随意的为别人进行签署。你必须*确定*你签署了本人的密钥，线上获得的key，是完全可能被修改的，这是对所有信任你的人的负责。
 再然后，就是简单的签署。
-gpg --default-key &amp;lt;Key\_to\_use&amp;gt; --sign-key &amp;lt;Key\_ID&amp;gt;  最后，上传公钥，或者传回给本人。以下例子是上传到服务器的，不过记得先征求对方同意——除非你原本也是从服务器上取得的公钥。
-gpg --keyserver &amp;lt;keyserver&amp;gt; --send-key &amp;lt;Key\_ID&amp;gt;  至于revoke什么的，暂且就不说了。
+gpg --default-key &amp;lt;Key\_to\_use&amp;gt; --sign-key &amp;lt;Key\_ID&amp;gt; 最后，上传公钥，或者传回给本人。以下例子是上传到服务器的，不过记得先征求对方同意——除非你原本也是从服务器上取得的公钥。
+gpg --keyserver &amp;lt;keyserver&amp;gt; --send-key &amp;lt;Key\_ID&amp;gt; 至于revoke什么的，暂且就不说了。
 其中最麻烦的，就是上述过程中，两个人碰头的部分。为了简化这个部分，gnupg使用者经常有种gnupg
 keysigning party[2]的聚会，互相交换和签署密钥。
 reference:

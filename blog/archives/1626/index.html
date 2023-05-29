@@ -2,31 +2,30 @@
 <html lang="en-us">
   <head>
     <title>重载造成的隐蔽错误 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
     <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="重载造成的隐蔽错误"/>
 <meta name="twitter:description" content="大家看看下面的代码在什么情况下才会出错？情况很特殊，想自己思考的不要先看第二段。
-if ton in self.ftol: self.ftol.remove(ton)  ftol是一个list，报出的错误是ValueError。经过上文的打印，赫然发现——self.ftol中真的没有ton！
+if ton in self.ftol: self.ftol.remove(ton) ftol是一个list，报出的错误是ValueError。经过上文的打印，赫然发现——self.ftol中真的没有ton！
 好吧，我们揭秘谜底。
 ton是TimeoutObject类型，这种类型的对象通常放在一个list中进行堆排序，来确定最早的一个timeout对象。为了实现堆排序，我使用了heapq。而为了heapq是没有key或者是cmp参数的，因此我重载了TimeoutObject.__cmp__对象。然而根据python源码，list对象在进行in计算，以及基于in的remove计算的时候，__cmp__先于内置算法，内置算法先于id相同。因此，in函数在进行对象是否在列表中的计算的时候，实际上使用的是一个比较函数&hellip;这肯定无疑的会导致乱糟糟的结果。
 为了解决这个问题，我又重载了__eq__函数，定义为self is o。问题立刻解决了。
@@ -34,13 +33,13 @@ ton是TimeoutObject类型，这种类型的对象通常放在一个list中进行
 
     <meta property="og:title" content="重载造成的隐蔽错误" />
 <meta property="og:description" content="大家看看下面的代码在什么情况下才会出错？情况很特殊，想自己思考的不要先看第二段。
-if ton in self.ftol: self.ftol.remove(ton)  ftol是一个list，报出的错误是ValueError。经过上文的打印，赫然发现——self.ftol中真的没有ton！
+if ton in self.ftol: self.ftol.remove(ton) ftol是一个list，报出的错误是ValueError。经过上文的打印，赫然发现——self.ftol中真的没有ton！
 好吧，我们揭秘谜底。
 ton是TimeoutObject类型，这种类型的对象通常放在一个list中进行堆排序，来确定最早的一个timeout对象。为了实现堆排序，我使用了heapq。而为了heapq是没有key或者是cmp参数的，因此我重载了TimeoutObject.__cmp__对象。然而根据python源码，list对象在进行in计算，以及基于in的remove计算的时候，__cmp__先于内置算法，内置算法先于id相同。因此，in函数在进行对象是否在列表中的计算的时候，实际上使用的是一个比较函数&hellip;这肯定无疑的会导致乱糟糟的结果。
 为了解决这个问题，我又重载了__eq__函数，定义为self is o。问题立刻解决了。
 之所以python内置的算法，会定义__cmp__先于内置算法，内置算法先于id相同，是因为有很多对象需要人工定义比较算法。如果id相同优先，那么这种自定义的能力将无法实现。然而为了in算符中为何会调用__cmp__，只能说是一个不解之谜。" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/1626/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/1626/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2010-12-01T10:03:00+08:00" />
 <meta property="article:modified_time" content="2010-12-01T10:03:00+08:00" />
 
@@ -80,11 +79,8 @@ ton是TimeoutObject类型，这种类型的对象通常放在一个list中进行
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -94,40 +90,38 @@ ton是TimeoutObject类型，这种类型的对象通常放在一个list中进行
       <h1 class ="post-title">重载造成的隐蔽错误</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Dec 1, 2010
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/program/">program</a><a class="tag" href="//blog.shell909090.org/tags/python/">python</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/program/">program</a>
+              <a class="tag" href="//blog.shell909090.org/tags/python/">python</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
       <p>大家看看下面的代码在什么情况下才会出错？情况很特殊，想自己思考的不要先看第二段。</p>
-
 <pre><code>if ton in self.ftol:
-    self.ftol.remove(ton)
+	self.ftol.remove(ton)
 </code></pre>
-
 <p>ftol是一个list，报出的错误是ValueError。经过上文的打印，赫然发现——self.ftol中真的没有ton！</p>
-
 <p>好吧，我们揭秘谜底。</p>
-
 <p>ton是TimeoutObject类型，这种类型的对象通常放在一个list中进行堆排序，来确定最早的一个timeout对象。为了实现堆排序，我使用了heapq。而为了heapq是没有key或者是cmp参数的，因此我重载了TimeoutObject.__cmp__对象。然而根据python源码，list对象在进行in计算，以及基于in的remove计算的时候，__cmp__先于内置算法，内置算法先于id相同。因此，in函数在进行对象是否在列表中的计算的时候，实际上使用的是一个比较函数&hellip;这肯定无疑的会导致乱糟糟的结果。</p>
-
 <p>为了解决这个问题，我又重载了__eq__函数，定义为self is o。问题立刻解决了。</p>
-
 <p>之所以python内置的算法，会定义__cmp__先于内置算法，内置算法先于id相同，是因为有很多对象需要人工定义比较算法。如果id相同优先，那么这种自定义的能力将无法实现。然而为了in算符中为何会调用__cmp__，只能说是一个不解之谜。</p>
 
     </div>

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>oracle on Shell&#39;s Home</title>
@@ -7,11 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Fri, 08 Apr 2011 15:17:59 +0800</lastBuildDate>
-    
-	<atom:link href="//blog.shell909090.org/tags/oracle/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Fri, 08 Apr 2011 15:17:59 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/oracle/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>为什么我觉得拿版权较真的人都在扯淡</title>
       <link>//blog.shell909090.org/blog/archives/1770/</link>
@@ -36,7 +32,7 @@
 首先，我重建的是oracle数据库，而不是oracle数据库程序。这几天不知道怎么回事，整个数据库的redo log出问题了，我又懒得去找。加上这个数据库做演示的时候乱糟糟的配置做了一堆，也记不请了，干脆重建。
 重建的第一步，需要找到所有程序实例的位置，这个可以看/etc/oraInv什么的一个文件，这里会指向一个目录。这个目录是标准的，里面有各种格式的oracle程序实例的位置。然后，一个程序实例可以运行多个数据库实例，因此，要找出这些数据库实例的配置文件。这个就需要对oracle的数据库基本结构有所了解，这里不赘述oracle数据库的各种基本概念。
 oracle的数据库配置文件在一个很怪的位置，/etc/oratab里面。其中有SID到spfile路径的对应关系，通常而言，这个路径位于$ORACLE_HOME/dbs/init$ORACLE_SID。我们首先不要删除这个对应关系和文件，因为启动中其他文件需要通过这个找到。我们首先通过spfile建立pfile，来读取其中的参数。
-$ export SID=orcl $ sqlplus / as sysdba &amp;gt; create pfile from spfile &amp;gt; exit  OK，这样我们就建立了pfile，现在可以删除$ORACLE_HOME/dbs目录下所有的SID相关的文件，并且删除oratab中的对应关系。完成这步后，数据库就无法启动，也不存在了。但是我们还需要回首数据库相关的文件，主要是收回空间，同时也免除后患。
+$ export SID=orcl $ sqlplus / as sysdba &amp;gt; create pfile from spfile &amp;gt; exit OK，这样我们就建立了pfile，现在可以删除$ORACLE_HOME/dbs目录下所有的SID相关的文件，并且删除oratab中的对应关系。完成这步后，数据库就无法启动，也不存在了。但是我们还需要回首数据库相关的文件，主要是收回空间，同时也免除后患。
 首先，数据库有三个control files，还有一个到多个data files，以及多个redo log。在默认设置中，这些文件一般放在一起，你可以通过查看pfile确认这些文件的路径。找到之后，直接删除，没啥好多说的。在完成数据基础文件的删除后，我们还需要删除flash_recovery文件，这个也可以通过pfile确认，位置一般在data文件上两级(就是通常$ORACLE_BASE的位置)下面，flash什么的一个目录，很好找。
 最后，我们删除admin目录，具体是在$ORACLE_BASE下面的admin下面，以SID命名的，可以通过pfile确认。至此，oracle数据库的删除完成。不过呢——呵呵——让大家失望的是，其实DBCA也可以完成一样的工作&amp;hellip;
 不过，dbca的工作必须通过vnc，绝对不要通过ssh + xming，因为那个会让最后一步执行前的确认无法被确认，导致不能执行。实在是很让人郁闷的一个bug，切记切记。</description>
@@ -49,7 +45,7 @@ $ export SID=orcl $ sqlplus / as sysdba &amp;gt; create pfile from spfile &amp;g
       
       <guid>//blog.shell909090.org/blog/archives/36/</guid>
       <description>贝壳周四的时候收到消息，烟台的系统崩溃，于是在24小时之内走了一趟天堂和地狱间的旅行。
-开始的时候，贝壳在查一些业务有关的资料。期间和一个同事开了几句玩笑，但是发现他一脸便秘的样子，和我说没空。贝壳很郁闷，怎么这么没面子？过了几分钟，事情就发展成贝壳也一脸便秘的没胆子了，原因是烟台的系统崩溃。由于远程无法连接，只能让客户去机房重起整个系统。可重起后也没有反应。于是贝壳怕了，马上通知了老板。老板马上做了决定，要我们当时飞去烟台，并且在几分钟内给我们搞定了机票。于是在贝壳头处理紧急问题的时候，就受到了&amp;rdquo;飞机-出租- 零反应&amp;rdquo;的待遇。
+开始的时候，贝壳在查一些业务有关的资料。期间和一个同事开了几句玩笑，但是发现他一脸便秘的样子，和我说没空。贝壳很郁闷，怎么这么没面子？过了几分钟，事情就发展成贝壳也一脸便秘的没胆子了，原因是烟台的系统崩溃。由于远程无法连接，只能让客户去机房重起整个系统。可重起后也没有反应。于是贝壳怕了，马上通知了老板。老板马上做了决定，要我们当时飞去烟台，并且在几分钟内给我们搞定了机票。于是在贝壳头处理紧急问题的时候，就受到了&amp;quot;飞机-出租- 零反应&amp;quot;的待遇。
 中间首先要感谢一下给我们做Oracle技术支持的纪锋老师，这次如果不是他的大力协助，恐怕问题不会这么快解决。我们在零时间往烟台赶的时候，纪老师也马上打车往机场走。我们是五点接到的问题通告，五点半就联络好了各种问题，乘公司的车子往机场走(主要怕下班高峰不好打车)。六点多点的时候，我们拿到了登机牌，去做安检，然后顺便讨论起问题原因。当时认为基本不可能是软件问题，因为软件问题重起后基本都可以解决，也不会弄的机器停机(这个最终被检验是正确的)。可能是维护问题或者硬件问题。按照机器安装时间来计算，硬件问题的可能居多(系统才刚刚交付几个月)。
 飞机是8点50在烟台落的地，落地后我们心急火燎地坐出租往报社赶。车刚出机场，收到一个消息，问题消失了。我们顿时安心很多，要是问题继续出现导致更严重问题，怕我们全都吃不了兜着走。现在，虽然我们还要去找出根本原因，可总比被客户拷问着检查系统来的好的多。到了报业后，我们先检查了系统。第一个被发现的问题是备份机已经满了，怎么会这样？系统的设计容量是三年500G，按照现在的数据量估计，最高不会超过30G，可备份机上足足有100G的空间！我们倒推了数据，发现备份要用140G以上的空间。怎么会这样呢？
 原因我们没有找到，不过按照纪老师给出的原因，是备份的时候大量的归档日志造成了数据量暴增。但是备份暴增怎么会造成系统不能访问呢？贝壳陷入了奇怪的感觉中。虽然直觉上觉得就是这个理由，但是实际上却无法确定。按照我和同事说的话，如果用这个理由来说服我，是无法说服的。但是如果在目前让我给出一个理由，恐怕只有这个了。当天比较晚了，因此没有进一步分析，只是让纪老师调整了备份策略就去睡觉了。

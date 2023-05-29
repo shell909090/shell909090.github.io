@@ -2,37 +2,36 @@
 <html lang="en-us">
   <head>
     <title>google authenticator的特性 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
     <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="google authenticator的特性"/>
-<meta name="twitter:description" content=" 算法  双方预先共享一对密码。 时间对30秒求整，用密码unbase64后HMAC签署。 如果当前时间前后一定时间内（几个误差）的值和用户提供值一致，就验证通过。  攻击者获得了数个时间和序列对，但是根据HMAC特性，他无法反向出密码。
-因此  gauth不需要联网。但是双方时间必须同步。 gauth的优势在于，即使有人可以获得一次密码(例如keylogger)，只要不在1分30秒内登录，获得的输入就无法使用。 对于可以取得gauth共享密码的人，gauth不能提供安全性加强。例如sudo，验证的是自己的身份。而用户密码只要登录即可读，因此没有提供加强的安全性。 对于ssh，在登录后也可以获得密码。因此只要给别人获得了一次登录权限，后续gauth不能保护你。反之，如果能保证对方一次登录都不会成功，则可以作为辅助。因此用于ssh上必须加上一个token只能使用一次，以确保对方获得了token也是作废的。 如果有人可以从手机中读取应用的信息，就可以一直冒充用户。因此越狱和root肯定会降低系统安全性。这就是为什么很多TOTP使用硬件来做这个事情。系统单纯，而且没有读取API。 缓慢的重试，每次命中概率都是1/1000000。持续试1000000次，也不能肯定猜中。实际上只有63.2%的概率猜中。如果30秒内连续重试1000000次，肯定破解了。合每秒重试3万多次，不算多。所以必须防止暴力破解。 如果没有紧急密码，安全性大约是20bit。但是数个紧急密码为破解提供了帮助。因此紧急密码一般是7位数字，综合复杂度一般评估为20bit上下。 以复杂度而言，不足以作为身份验证工具，只能作为身份验证辅助。所以gauth叫做two-factor-authentication。  "/>
+<meta name="twitter:description" content="算法 双方预先共享一对密码。 时间对30秒求整，用密码unbase64后HMAC签署。 如果当前时间前后一定时间内（几个误差）的值和用户提供值一致，就验证通过。 攻击者获得了数个时间和序列对，但是根据HMAC特性，他无法反向出密码。
+因此 gauth不需要联网。但是双方时间必须同步。 gauth的优势在于，即使有人可以获得一次密码(例如keylogger)，只要不在1分30秒内登录，获得的输入就无法使用。 对于可以取得gauth共享密码的人，gauth不能提供安全性加强。例如sudo，验证的是自己的身份。而用户密码只要登录即可读，因此没有提供加强的安全性。 对于ssh，在登录后也可以获得密码。因此只要给别人获得了一次登录权限，后续gauth不能保护你。反之，如果能保证对方一次登录都不会成功，则可以作为辅助。因此用于ssh上必须加上一个token只能使用一次，以确保对方获得了token也是作废的。 如果有人可以从手机中读取应用的信息，就可以一直冒充用户。因此越狱和root肯定会降低系统安全性。这就是为什么很多TOTP使用硬件来做这个事情。系统单纯，而且没有读取API。 缓慢的重试，每次命中概率都是1/1000000。持续试1000000次，也不能肯定猜中。实际上只有63.2%的概率猜中。如果30秒内连续重试1000000次，肯定破解了。合每秒重试3万多次，不算多。所以必须防止暴力破解。 如果没有紧急密码，安全性大约是20bit。但是数个紧急密码为破解提供了帮助。因此紧急密码一般是7位数字，综合复杂度一般评估为20bit上下。 以复杂度而言，不足以作为身份验证工具，只能作为身份验证辅助。所以gauth叫做two-factor-authentication。 "/>
 
     <meta property="og:title" content="google authenticator的特性" />
-<meta property="og:description" content=" 算法  双方预先共享一对密码。 时间对30秒求整，用密码unbase64后HMAC签署。 如果当前时间前后一定时间内（几个误差）的值和用户提供值一致，就验证通过。  攻击者获得了数个时间和序列对，但是根据HMAC特性，他无法反向出密码。
-因此  gauth不需要联网。但是双方时间必须同步。 gauth的优势在于，即使有人可以获得一次密码(例如keylogger)，只要不在1分30秒内登录，获得的输入就无法使用。 对于可以取得gauth共享密码的人，gauth不能提供安全性加强。例如sudo，验证的是自己的身份。而用户密码只要登录即可读，因此没有提供加强的安全性。 对于ssh，在登录后也可以获得密码。因此只要给别人获得了一次登录权限，后续gauth不能保护你。反之，如果能保证对方一次登录都不会成功，则可以作为辅助。因此用于ssh上必须加上一个token只能使用一次，以确保对方获得了token也是作废的。 如果有人可以从手机中读取应用的信息，就可以一直冒充用户。因此越狱和root肯定会降低系统安全性。这就是为什么很多TOTP使用硬件来做这个事情。系统单纯，而且没有读取API。 缓慢的重试，每次命中概率都是1/1000000。持续试1000000次，也不能肯定猜中。实际上只有63.2%的概率猜中。如果30秒内连续重试1000000次，肯定破解了。合每秒重试3万多次，不算多。所以必须防止暴力破解。 如果没有紧急密码，安全性大约是20bit。但是数个紧急密码为破解提供了帮助。因此紧急密码一般是7位数字，综合复杂度一般评估为20bit上下。 以复杂度而言，不足以作为身份验证工具，只能作为身份验证辅助。所以gauth叫做two-factor-authentication。  " />
+<meta property="og:description" content="算法 双方预先共享一对密码。 时间对30秒求整，用密码unbase64后HMAC签署。 如果当前时间前后一定时间内（几个误差）的值和用户提供值一致，就验证通过。 攻击者获得了数个时间和序列对，但是根据HMAC特性，他无法反向出密码。
+因此 gauth不需要联网。但是双方时间必须同步。 gauth的优势在于，即使有人可以获得一次密码(例如keylogger)，只要不在1分30秒内登录，获得的输入就无法使用。 对于可以取得gauth共享密码的人，gauth不能提供安全性加强。例如sudo，验证的是自己的身份。而用户密码只要登录即可读，因此没有提供加强的安全性。 对于ssh，在登录后也可以获得密码。因此只要给别人获得了一次登录权限，后续gauth不能保护你。反之，如果能保证对方一次登录都不会成功，则可以作为辅助。因此用于ssh上必须加上一个token只能使用一次，以确保对方获得了token也是作废的。 如果有人可以从手机中读取应用的信息，就可以一直冒充用户。因此越狱和root肯定会降低系统安全性。这就是为什么很多TOTP使用硬件来做这个事情。系统单纯，而且没有读取API。 缓慢的重试，每次命中概率都是1/1000000。持续试1000000次，也不能肯定猜中。实际上只有63.2%的概率猜中。如果30秒内连续重试1000000次，肯定破解了。合每秒重试3万多次，不算多。所以必须防止暴力破解。 如果没有紧急密码，安全性大约是20bit。但是数个紧急密码为破解提供了帮助。因此紧急密码一般是7位数字，综合复杂度一般评估为20bit上下。 以复杂度而言，不足以作为身份验证工具，只能作为身份验证辅助。所以gauth叫做two-factor-authentication。 " />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2549/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2549/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2014-01-28T13:08:45+08:00" />
 <meta property="article:modified_time" content="2014-01-28T13:08:45+08:00" />
 
@@ -72,11 +71,8 @@ if (!doNotTrack) {
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -86,40 +82,40 @@ if (!doNotTrack) {
       <h1 class ="post-title">google authenticator的特性</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Jan 28, 2014
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/authenticator/">authenticator</a><a class="tag" href="//blog.shell909090.org/tags/computer/">computer</a><a class="tag" href="//blog.shell909090.org/tags/google/">google</a><a class="tag" href="//blog.shell909090.org/tags/security/">security</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/authenticator/">authenticator</a>
+              <a class="tag" href="//blog.shell909090.org/tags/computer/">computer</a>
+              <a class="tag" href="//blog.shell909090.org/tags/google/">google</a>
+              <a class="tag" href="//blog.shell909090.org/tags/security/">security</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
-      
-
-<h1 id="算法">算法</h1>
-
+      <h1 id="算法">算法</h1>
 <ol>
 <li>双方预先共享一对密码。</li>
 <li>时间对30秒求整，用密码unbase64后HMAC签署。</li>
 <li>如果当前时间前后一定时间内（几个误差）的值和用户提供值一致，就验证通过。</li>
 </ol>
-
 <p>攻击者获得了数个时间和序列对，但是根据HMAC特性，他无法反向出密码。</p>
-
 <h1 id="因此">因此</h1>
-
 <ol>
 <li>gauth不需要联网。但是双方时间必须同步。</li>
 <li>gauth的优势在于，即使有人可以获得一次密码(例如keylogger)，只要不在1分30秒内登录，获得的输入就无法使用。</li>

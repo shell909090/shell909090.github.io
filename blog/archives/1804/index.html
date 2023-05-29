@@ -2,24 +2,23 @@
 <html lang="en-us">
   <head>
     <title>组合翻墙方法——细节 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
@@ -29,22 +28,26 @@ if (!doNotTrack) {
 现在教大家一招，基本能够永久套上翻墙。理论上你就没有中招的可能，尤其适用于公司使用。
 首先是squid，这个是流量分离和缓存的关键部件。你可以用pac替代，但是这只局限于某台具体的机器，并且代理用户支持pac。squid的好处是，任何http访问都可以分流，而且无须客户端支持。甚至如果你精通squid配置，你可以配置成透明代理（cache拦截），从而避免在每台机器上修改代理配置。当然，cache拦截是有技术问题的，具体请参考这篇（http://home.arcor.de/pangj/squid/chap09.html#a6）。
 squid的配置如下：
-include /etc/squid3/gfw.conf acl localnet src [192.168.0.0/16](http://192.168.0.0/16) http\_access allow localnet http\_access allow localhost cache\_peer 127.0.0.1 parent 8123 0 no-delay no-query cache\_peer\_access 127.0.0.1 allow gfw always\_direct deny gfw never\_direct allow gfw  以上配置是允许192.168.0.0的C类内部子网访问本机，所有gfw规则的域名必须通过8123端口的上层代理，而其他的直接访问。注意以上不是完整配置，不保证可以独立运行，只保证在debian的标准配置文件的基础上，修改以上内容就可以工作。独立配置你可能还需要加入以下两句。
-http\_access deny all http\_port 3128  配置中的gfw.conf是gfw这个规则的定义文件，这个文件是由程序生成的，程序如下。注意，你系统上的python版本应当在2.5以上。
-#!/usr/bin/python from \_\_future\_\_ import with\_statement with open(&#39;gfw&#39;, &#39;r&#39;) as fi: for line in fi: print &#39;acl gfw dstdomain .%s&#39; % line.strip()  以上内容，保存为平文本，赋予执行权限后，直接执行即可。同目录下必须有一个gfw文件，平文本，里面一行保存一个域名。域名不以.开头，可以使用泛域名（例如google.com匹配www.google.com）。执行后打印出内容，所以你还需要重定向。./gfw2squid &gt; /etc/squid3/gfw.conf。当每次gfw文件升级时，你都需要重新生成，并且迫使squid加载。方法是squid -k reconfigure。
-OK，现在你有一台配置了分流的squid，然后你需要一个可以翻墙的代理。由于我的目标是看youtube，所以我采取了一个非常复杂而高性能高可靠的方案。"/>
+include /etc/squid3/gfw.conf acl localnet src [192.168.0.0/16](http://192.168.0.0/16) http\_access allow localnet http\_access allow localhost cache\_peer 127.0.0.1 parent 8123 0 no-delay no-query cache\_peer\_access 127.0.0.1 allow gfw always\_direct deny gfw never\_direct allow gfw 以上配置是允许192.168.0.0的C类内部子网访问本机，所有gfw规则的域名必须通过8123端口的上层代理，而其他的直接访问。注意以上不是完整配置，不保证可以独立运行，只保证在debian的标准配置文件的基础上，修改以上内容就可以工作。独立配置你可能还需要加入以下两句。
+http\_access deny all http\_port 3128 配置中的gfw.conf是gfw这个规则的定义文件，这个文件是由程序生成的，程序如下。注意，你系统上的python版本应当在2.5以上。
+#!/usr/bin/python from \_\_future\_\_ import with\_statement with open(&#39;gfw&#39;, &#39;r&#39;) as fi: for line in fi: print &#39;acl gfw dstdomain .%s&#39; % line.strip() 以上内容，保存为平文本，赋予执行权限后，直接执行即可。同目录下必须有一个gfw文件，平文本，里面一行保存一个域名。域名不以.开头，可以使用泛域名（例如google.com匹配www.google.com）。执行后打印出内容，所以你还需要重定向。./gfw2squid &gt; /etc/squid3/gfw.conf。当每次gfw文件升级时，你都需要重新生成，并且迫使squid加载。方法是squid -k reconfigure。
+OK，现在你有一台配置了分流的squid，然后你需要一个可以翻墙的代理。由于我的目标是看youtube，所以我采取了一个非常复杂而高性能高可靠的方案。
+我配置了一台polipo作为http socks5协议转换。由于squid的特性，不能直接使用socks5，因此还是做了一重转换的。polipo这个代理的性能和稳定性也相当不错，用来做缓存代理也是可以的。不过我们用了更强大的squid，就没必要用polipo了。因此启用以下几句来减少polipo的性能消耗，同时，将本地8123端口的http代理服务转向到7777端口的socks5代理。
+socksParentProxy = &quot;localhost:7777&quot; socksProxyType = socks5 chunkHighMark = 819200 objectHighMark = 128 diskCacheRoot = &quot;&quot; 在polipo之后的，是一个负载均衡系统。http是一种无状态协议，对不对？所以同一个session可以分布在不同的服务器上处理。也是同样理由，我们可以把后端的socks5连接分布到多个socks5服务器上。以下是haproxy."/>
 
     <meta property="og:title" content="组合翻墙方法——细节" />
 <meta property="og:description" content="中国这网络，越来越没法上了。现在你访问国外禁网，就会中断连接10分钟。问题是我也不知道哪个网是禁止的&hellip;
 现在教大家一招，基本能够永久套上翻墙。理论上你就没有中招的可能，尤其适用于公司使用。
 首先是squid，这个是流量分离和缓存的关键部件。你可以用pac替代，但是这只局限于某台具体的机器，并且代理用户支持pac。squid的好处是，任何http访问都可以分流，而且无须客户端支持。甚至如果你精通squid配置，你可以配置成透明代理（cache拦截），从而避免在每台机器上修改代理配置。当然，cache拦截是有技术问题的，具体请参考这篇（http://home.arcor.de/pangj/squid/chap09.html#a6）。
 squid的配置如下：
-include /etc/squid3/gfw.conf acl localnet src [192.168.0.0/16](http://192.168.0.0/16) http\_access allow localnet http\_access allow localhost cache\_peer 127.0.0.1 parent 8123 0 no-delay no-query cache\_peer\_access 127.0.0.1 allow gfw always\_direct deny gfw never\_direct allow gfw  以上配置是允许192.168.0.0的C类内部子网访问本机，所有gfw规则的域名必须通过8123端口的上层代理，而其他的直接访问。注意以上不是完整配置，不保证可以独立运行，只保证在debian的标准配置文件的基础上，修改以上内容就可以工作。独立配置你可能还需要加入以下两句。
-http\_access deny all http\_port 3128  配置中的gfw.conf是gfw这个规则的定义文件，这个文件是由程序生成的，程序如下。注意，你系统上的python版本应当在2.5以上。
-#!/usr/bin/python from \_\_future\_\_ import with\_statement with open(&#39;gfw&#39;, &#39;r&#39;) as fi: for line in fi: print &#39;acl gfw dstdomain .%s&#39; % line.strip()  以上内容，保存为平文本，赋予执行权限后，直接执行即可。同目录下必须有一个gfw文件，平文本，里面一行保存一个域名。域名不以.开头，可以使用泛域名（例如google.com匹配www.google.com）。执行后打印出内容，所以你还需要重定向。./gfw2squid &gt; /etc/squid3/gfw.conf。当每次gfw文件升级时，你都需要重新生成，并且迫使squid加载。方法是squid -k reconfigure。
-OK，现在你有一台配置了分流的squid，然后你需要一个可以翻墙的代理。由于我的目标是看youtube，所以我采取了一个非常复杂而高性能高可靠的方案。" />
+include /etc/squid3/gfw.conf acl localnet src [192.168.0.0/16](http://192.168.0.0/16) http\_access allow localnet http\_access allow localhost cache\_peer 127.0.0.1 parent 8123 0 no-delay no-query cache\_peer\_access 127.0.0.1 allow gfw always\_direct deny gfw never\_direct allow gfw 以上配置是允许192.168.0.0的C类内部子网访问本机，所有gfw规则的域名必须通过8123端口的上层代理，而其他的直接访问。注意以上不是完整配置，不保证可以独立运行，只保证在debian的标准配置文件的基础上，修改以上内容就可以工作。独立配置你可能还需要加入以下两句。
+http\_access deny all http\_port 3128 配置中的gfw.conf是gfw这个规则的定义文件，这个文件是由程序生成的，程序如下。注意，你系统上的python版本应当在2.5以上。
+#!/usr/bin/python from \_\_future\_\_ import with\_statement with open(&#39;gfw&#39;, &#39;r&#39;) as fi: for line in fi: print &#39;acl gfw dstdomain .%s&#39; % line.strip() 以上内容，保存为平文本，赋予执行权限后，直接执行即可。同目录下必须有一个gfw文件，平文本，里面一行保存一个域名。域名不以.开头，可以使用泛域名（例如google.com匹配www.google.com）。执行后打印出内容，所以你还需要重定向。./gfw2squid &gt; /etc/squid3/gfw.conf。当每次gfw文件升级时，你都需要重新生成，并且迫使squid加载。方法是squid -k reconfigure。
+OK，现在你有一台配置了分流的squid，然后你需要一个可以翻墙的代理。由于我的目标是看youtube，所以我采取了一个非常复杂而高性能高可靠的方案。
+我配置了一台polipo作为http socks5协议转换。由于squid的特性，不能直接使用socks5，因此还是做了一重转换的。polipo这个代理的性能和稳定性也相当不错，用来做缓存代理也是可以的。不过我们用了更强大的squid，就没必要用polipo了。因此启用以下几句来减少polipo的性能消耗，同时，将本地8123端口的http代理服务转向到7777端口的socks5代理。
+socksParentProxy = &quot;localhost:7777&quot; socksProxyType = socks5 chunkHighMark = 819200 objectHighMark = 128 diskCacheRoot = &quot;&quot; 在polipo之后的，是一个负载均衡系统。http是一种无状态协议，对不对？所以同一个session可以分布在不同的服务器上处理。也是同样理由，我们可以把后端的socks5连接分布到多个socks5服务器上。以下是haproxy." />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/1804/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/1804/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2011-05-18T09:53:48+08:00" />
 <meta property="article:modified_time" content="2011-05-18T09:53:48+08:00" />
 
@@ -84,11 +87,8 @@ OK，现在你有一台配置了分流的squid，然后你需要一个可以翻�
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -98,34 +98,36 @@ OK，现在你有一台配置了分流的squid，然后你需要一个可以翻�
       <h1 class ="post-title">组合翻墙方法——细节</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           May 18, 2011
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/antigfw/">antigfw</a><a class="tag" href="//blog.shell909090.org/tags/gfw/">gfw</a><a class="tag" href="//blog.shell909090.org/tags/program/">program</a><a class="tag" href="//blog.shell909090.org/tags/proxy/">proxy</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/antigfw/">antigfw</a>
+              <a class="tag" href="//blog.shell909090.org/tags/gfw/">gfw</a>
+              <a class="tag" href="//blog.shell909090.org/tags/program/">program</a>
+              <a class="tag" href="//blog.shell909090.org/tags/proxy/">proxy</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
       <p>中国这网络，越来越没法上了。现在你访问国外禁网，就会中断连接10分钟。问题是我也不知道哪个网是禁止的&hellip;</p>
-
 <p>现在教大家一招，基本能够永久套上翻墙。理论上你就没有中招的可能，尤其适用于公司使用。</p>
-
 <p>首先是squid，这个是流量分离和缓存的关键部件。你可以用pac替代，但是这只局限于某台具体的机器，并且代理用户支持pac。squid的好处是，任何http访问都可以分流，而且无须客户端支持。甚至如果你精通squid配置，你可以配置成透明代理（cache拦截），从而避免在每台机器上修改代理配置。当然，cache拦截是有技术问题的，具体请参考这篇（<a href="http://home.arcor.de/pangj/squid/chap09.html#a6">http://home.arcor.de/pangj/squid/chap09.html#a6</a>）。</p>
-
 <p>squid的配置如下：</p>
-
 <pre><code>include /etc/squid3/gfw.conf
 acl localnet src [192.168.0.0/16](http://192.168.0.0/16)
 http\_access allow localnet
@@ -135,36 +137,26 @@ cache\_peer\_access 127.0.0.1 allow gfw
 always\_direct deny gfw
 never\_direct allow gfw
 </code></pre>
-
 <p>以上配置是允许192.168.0.0的C类内部子网访问本机，所有gfw规则的域名必须通过8123端口的上层代理，而其他的直接访问。注意以上不是完整配置，不保证可以独立运行，只保证在debian的标准配置文件的基础上，修改以上内容就可以工作。独立配置你可能还需要加入以下两句。</p>
-
 <pre><code>http\_access deny all
 http\_port 3128
 </code></pre>
-
 <p>配置中的gfw.conf是gfw这个规则的定义文件，这个文件是由程序生成的，程序如下。注意，你系统上的python版本应当在2.5以上。</p>
-
 <pre><code>#!/usr/bin/python
 from \_\_future\_\_ import with\_statement
 with open('gfw', 'r') as fi:
-    for line in fi: print 'acl gfw dstdomain .%s' % line.strip()
+	for line in fi: print 'acl gfw dstdomain .%s' % line.strip()
 </code></pre>
-
 <p>以上内容，保存为平文本，赋予执行权限后，直接执行即可。同目录下必须有一个gfw文件，平文本，里面一行保存一个域名。域名不以.开头，可以使用泛域名（例如<a href="http://google.com">google.com</a>匹配<a href="http://www.google.com">www.google.com</a>）。执行后打印出内容，所以你还需要重定向。<code>./gfw2squid &gt; /etc/squid3/gfw.conf</code>。当每次gfw文件升级时，你都需要重新生成，并且迫使squid加载。方法是<code>squid -k reconfigure</code>。</p>
-
 <p>OK，现在你有一台配置了分流的squid，然后你需要一个可以翻墙的代理。由于我的目标是看youtube，所以我采取了一个非常复杂而高性能高可靠的方案。</p>
-
 <p>我配置了一台polipo作为http socks5协议转换。由于squid的特性，不能直接使用socks5，因此还是做了一重转换的。polipo这个代理的性能和稳定性也相当不错，用来做缓存代理也是可以的。不过我们用了更强大的squid，就没必要用polipo了。因此启用以下几句来减少polipo的性能消耗，同时，将本地8123端口的http代理服务转向到7777端口的socks5代理。</p>
-
 <pre><code>socksParentProxy = &quot;localhost:7777&quot;
 socksProxyType = socks5
 chunkHighMark = 819200
 objectHighMark = 128
 diskCacheRoot = &quot;&quot;
 </code></pre>
-
 <p>在polipo之后的，是一个负载均衡系统。http是一种无状态协议，对不对？所以同一个session可以分布在不同的服务器上处理。也是同样理由，我们可以把后端的socks5连接分布到多个socks5服务器上。以下是haproxy.cfg的简单配置，由于提取出时做了部分删节，我不保证一定能在所有系统上跑通，但是同样的，debian问题应当不大。</p>
-
 <pre><code>global
 log 127.0.0.1   local0
 log 127.0.0.1   local1 notice
@@ -183,11 +175,8 @@ server  ssh2 [0.0.0.0:7779](http://0.0.0.0:7779) maxconn 10
 weight 10
 srvtimeout      20000
 </code></pre>
-
 <p>最后是一个核心问题，7778和7779是真实的socks5翻墙代理服务器，具体是什么呢？很简单，多台ssh服务器。当然，如果你用别的方案，只要是提供socks5的，都可以混用。</p>
-
 <p>整个系统运转起来后，一个公司内十多号人的访问可以全部通过这个系统。具体需要多少个ssh，多少性能够用要看翻墙的频率。但是由于做了负载均衡和本地缓存，所以性能是相当可以的。单人使用的时候可以看youtube，十多人同时使用的时候还能正常的访问google搜索，邮箱服务等。而且不翻墙没有ssh压力，节约流量，也方便使用。后端的方案可以做其他变化，例如如果你是多台vps，你可以在上面部署polipo，然后用ssh做端口转发，本地用haproxy做负载均衡。同理，如果你使用别的方案，只要是提供http代理的，也可以省去polipo，用haproxy群集。</p>
-
 <p>至于另一个核心问题，gfwlist的获得，你可以从autoproxy中提取一个，自己处理，过程很是繁琐哦。贝壳已经处理好了一个，做了签名压缩，你可以找我要。</p>
 
     </div>

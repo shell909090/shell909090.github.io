@@ -2,24 +2,23 @@
 <html lang="en-us">
   <head>
     <title>再论openvpn的搭建 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
@@ -52,7 +51,7 @@ if (!doNotTrack) {
 在配置文件中，有ca certkey三项，这三项分别对应不同作用。cert和key是用于向客户端验证服务器身份的。客户端那里有一个ca.crt，服务器这里的cert和key必须是那个ca.crt签署过的。这样，客户端就可以验证服务器是否是可信任的。而服务器这里的ca则是验证客户端身份的，客户端那里同样也有cert和key，必须由服务器端的ca.crt签署过。通常，我们用同一套ca.key签署两个cert，分别部署在服务器端和客户端，就可以工作了。
 另外一点需要注意的是，ns-cert-typeserver这个参数。在debian的默认系统中有这个参数，一旦指定，openvpn就会检验服务器证书上是否有server的选项。对于easy-rsa签署的证书，这个肯定是有的。但是如果自己用openssl签署，就要记得做ext，否则检验不通过会报错。" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/1797/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/1797/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2011-05-12T10:22:55+08:00" />
 <meta property="article:modified_time" content="2011-05-12T10:22:55+08:00" />
 
@@ -92,11 +91,8 @@ if (!doNotTrack) {
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -106,48 +102,42 @@ if (!doNotTrack) {
       <h1 class ="post-title">再论openvpn的搭建</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           May 12, 2011
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/computer/">computer</a><a class="tag" href="//blog.shell909090.org/tags/network/">network</a><a class="tag" href="//blog.shell909090.org/tags/vpn/">vpn</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/computer/">computer</a>
+              <a class="tag" href="//blog.shell909090.org/tags/network/">network</a>
+              <a class="tag" href="//blog.shell909090.org/tags/vpn/">vpn</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
       <p>从概念上说，openvpn类似于一根网线，或者一台交换机。你拨上vpn，差不多相当于给自己的机器装一个虚拟的网卡，从上面拉一根线到服务器的虚拟网卡上。所以，vpn的配置大概和网络配置差不多，分为几个大类。</p>
-
 <p>一类是第二层交换，即虚拟网卡和真实网卡组成网桥。这样可以把虚拟网络上的设备引入真实网络，让虚拟网卡获得真实网络的地址，或者反之。坏处是配置复杂，稳定性差。</p>
-
 <p>例如你家里是<a href="http://192.168.0.0/24">192.168.0.0/24</a>网络段，你决定用tap配置一个网桥，就需要新建一个br0设备，将eth0和tap0设备加入网桥。这样，一台IP为192.168.0.10的家庭机器，在访问IP为192.168.0.110的远程机器的时候，所发出的ARP请求会被转发到远端，然后ARP响应转发到本地。通过这种方式，10就会直接把MAC报文发送到中转机上，然后再转发远端。可以看出，由于ARP请求往来非常费时，在子网内机器多的时候，会消耗不少时间和带宽进行ARP转包，以及各种链路级开销。所以通常除了两个安全封闭子网因为管理理由必须这么玩，并且两者间又都有服务器和高速链接的时候，其他时候我不推荐这种玩法。</p>
-
 <p>更何况，在debian系统下配置网桥需要额外脚本，不如路由那样，可以使用默认脚本启动，然后动态修改路由表。</p>
-
 <p>大部分是三层交换，即将服务器作为路由器使用。这又分为两种情况，网络地址转换，和网关互通。</p>
-
 <p>网络地址转换是最常见的情况，这个又叫做NAT。网关在转发你的包的同时，会将地址转换成自己的地址。从而避免修改路由的行为。</p>
-
 <p>同样是<a href="http://192.168.0.0/24">192.168.0.0/24</a>举例，远程网络假如叫做<a href="http://192.168.1.0/24%E3%80%82">192.168.1.0/24</a>。当你拨号上远程网络时，你就拥有了一个远程IP和一个本地IP。你可以配置路由表，让哪些IP从远程走（这就是地址段选择翻墙的原理）。大多数情况下，会被配置为默认都从远程IP走，除了几个特定地址（例如VPN服务器地址，这个也走虚拟网络会引起循环的）。而远程的网关，假定是192.168.1.1，开启了NAT。这时候你的所有网络流量就都从远程的VPN服务器上发出和接收了，如同你正坐在远程服务器后面的小网络内一样。</p>
-
 <p>网关互通是更复杂的一类情况，通常是小型企业为了多个连通多个地点办公子网而设计的。理论上说大型企业也适用，但是大型企业有钱，IT部为了防范责任问题，通常会直接采购Cisco之类大公司的产品直接使用。基本概念是将虚拟网络和真实网络配置成两个子网，两个子网可以互相访问。</p>
-
 <p>还是192.168.0.0的例子，我们假定另外有一个子网叫做<a href="http://192.168.1.0/24%E3%80%82">192.168.1.0/24</a>。现在我们需要连通两个子网，或者，更进一步，多个子网。</p>
-
 <p>我们首先配置一个虚拟子网叫做192.168.254.0，然后架设一台共用服务器。这是比较简单的模型。更复杂的可以将其中一个子网的某个服务器映射出去作为核心，配置就更加复杂，不过可以依照同样原理推导。架设好共用服务器后，我们需要在每个子网的网关上下手，否则就无法做到透明路由。修改这个网关的路由表，将<a href="http://192.168.0.0/16">192.168.0.0/16</a>全部转发到虚拟网关（即共用服务器的虚拟IP）上去（当然，除去本网段不转发）。在OpenVPN上面可以配置，当某条链路拨接上来后，就在服务器上加入一条路由，将其后面的网段加入网关路由表。于是，当192.168.0.100的某台服务器希望直接访问192.168.1.100。首先这台主机会检查自己的路由表，发现这个需要由网关192.168.0.1转发，就先转到了192.168.0.1。192.168.0.1检查路由表，发现192.168.1.100需要被转发到虚拟网关，即192.168.254.1。于是通过虚拟网络，该网关做出转发。当192.168.254.1接收到后，他会依照上面的路由表，检查到这条链路是否已经拨接上来，拨接上的话对应的虚拟IP是多少，然后转发过去。最后是目标网关，192.168.1.1，转发给192.168.1.100的过程。整个过程复杂无比，不过实现起来都是自动化的。</p>
-
 <p>在配置文件中，有ca certkey三项，这三项分别对应不同作用。cert和key是用于向客户端验证服务器身份的。客户端那里有一个ca.crt，服务器这里的cert和key必须是那个ca.crt签署过的。这样，客户端就可以验证服务器是否是可信任的。而服务器这里的ca则是验证客户端身份的，客户端那里同样也有cert和key，必须由服务器端的ca.crt签署过。通常，我们用同一套ca.key签署两个cert，分别部署在服务器端和客户端，就可以工作了。</p>
-
 <p>另外一点需要注意的是，ns-cert-typeserver这个参数。在debian的默认系统中有这个参数，一旦指定，openvpn就会检验服务器证书上是否有server的选项。对于easy-rsa签署的证书，这个肯定是有的。但是如果自己用openssl签署，就要记得做ext，否则检验不通过会报错。</p>
 
     </div>

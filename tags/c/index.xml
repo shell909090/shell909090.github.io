@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>c on Shell&#39;s Home</title>
@@ -7,11 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Tue, 30 Oct 2012 16:42:25 +0800</lastBuildDate>
-    
-	<atom:link href="//blog.shell909090.org/tags/c/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Tue, 30 Oct 2012 16:42:25 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/c/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>异常之殇</title>
       <link>//blog.shell909090.org/blog/archives/2266/</link>
@@ -46,7 +42,7 @@ C++中有一类特殊的优化，叫做对象返回优化。当编译器察觉�
       <guid>//blog.shell909090.org/blog/archives/2265/</guid>
       <description>继承之殇 讲继承问题，我们首先得定义什么是继承(inherit)，他是用来干吗的。
 所谓继承，就是当两种实体，满足其中一种必然全部都满足另一种的定义(is a)。一旦构成继承，可以带来以下好处（简单起见，我们直接就管这俩实体一个叫派生类一个叫父类）：
- 派生类具备父类所有已经实现的方法，毋须再实现一遍——除非需要重写(override)。 派生类可以当作父类使用，凡是使用父类的地方给与派生类也对。  继承的最主要作用，是用于复用(reuse)。
+派生类具备父类所有已经实现的方法，毋须再实现一遍——除非需要重写(override)。 派生类可以当作父类使用，凡是使用父类的地方给与派生类也对。 继承的最主要作用，是用于复用(reuse)。
 内涵和外延 形式逻辑里面有一句话，内涵越大，外延越小。在继承上，如果我们严格按照定义来做，会发生很反人类的事情。因为类的定义是依赖于内涵的，
 我们还是看平行四边形，长方形和正方形的例子。我们用两边长度，夹角来定义平行四边形。然后如何定义长方形？夹角为pi/2。然后如何定义正方形？两边长度相当。
 不知道你是否看出了问题。是的，按照正统来定义，数据的约束只会越来越多。因为派生类必须是(ISA)父类，因此父类的约束必须全部满足。我们接着上面的例子，我们为平行四边形定义一个方法，设定夹角大小。那么在长方形中，这个方法如何处理？一旦用户调用方法设定夹角大小，必然会破坏长方形定义，因此这个方法只能重写抛错。
@@ -62,10 +58,10 @@ C++中有一类特殊的优化，叫做对象返回优化。当编译器察觉�
 既然我们说，只要一种满足ISA谓词判定，就可以认为是继承。那么理论上，我们就不能否决双重继承。例如我们定义了平行四边形，又定义了中心对称图形。那么长方形就同时是(ISA)这两者。从逻辑关系上，我们说长方形可以合法的继承两者。
 但是如果我们真的在程序内设定将长方形继承两者，马上会引起一连串的问题。
 当多重继承发生冲突时 首先第一个是继承冲突。即当两个父类都具备同一个方法的时候，对派生类做方法调用会发生什么行为？
- 肯定不能只调用一个，这会因此另一个父类的方法间发生内在不一致。这违背了继承的好处2。 也不能两个都调用。两者的先后次序可能引发逻辑问题，因此先调用谁都是错误的。而且函数还有返回值问题——你返回谁的返回值呢？如果多值返回合并，这和函数原始的定义又发生了悖离，从而又违背了继承的好处2。 因此，我们只能宣布这是个错误。 既然是个错误，鉴于类间函数可能存在的内在联系，其他继承的函数也未必能够正常使用。  你看，明明是合法的多重继承，居然造成了不可复用的结果。这就是继承冲突。
+肯定不能只调用一个，这会因此另一个父类的方法间发生内在不一致。这违背了继承的好处2。 也不能两个都调用。两者的先后次序可能引发逻辑问题，因此先调用谁都是错误的。而且函数还有返回值问题——你返回谁的返回值呢？如果多值返回合并，这和函数原始的定义又发生了悖离，从而又违背了继承的好处2。 因此，我们只能宣布这是个错误。 既然是个错误，鉴于类间函数可能存在的内在联系，其他继承的函数也未必能够正常使用。 你看，明明是合法的多重继承，居然造成了不可复用的结果。这就是继承冲突。
 菱形继承 如果说继承冲突还是一个比较好考虑的问题的话，菱形继承就是一个让人吐血的东西了。
 所谓菱形继承，就是两个父类继承同一个基类。在这种情况下，对父类的调用会间接转到基类上。那么，基类的函数会调用几次呢？
-继承冲突的几种解法  所有冲突的函数，父类必须都无实现。 不得多重继承。这是很扯淡的，不过也是大多数时候的做法。我的编程指南之一就是——在C++中，任何时候都不要使用多重继承。 使用其中一者。python是个典型的使用其中一者的例子，具体使用的按照继承编写顺序展开成MRO次序决定。然而这直接违背了继承类是(ISA)父类的定义。因此不要以为在python中，继承后总是没问题的。有的时候可能会出现继承后不能正常工作的情况。 强制用户解决。要求用户必须人工定义函数，解决继承冲突的问题。从逻辑上说，如果用户定义的函数可以同时兼容于两个父类，就可以彻底化解多重继承冲突问题。然而杯具的是，很多时候在逻辑上，继承冲突是无解的。  区分接口和继承 父类没有实现冲突的函数，那么派生类中就不必纠结于调用谁的问题了。但是这引发了另一个问题——这就无法复用了。作为这一解法的极限，java不允许多重继承——除非继承的父类都是没有实现的类。这其实不是继承，而是实现(implement)接口(interface)。
+继承冲突的几种解法 所有冲突的函数，父类必须都无实现。 不得多重继承。这是很扯淡的，不过也是大多数时候的做法。我的编程指南之一就是——在C++中，任何时候都不要使用多重继承。 使用其中一者。python是个典型的使用其中一者的例子，具体使用的按照继承编写顺序展开成MRO次序决定。然而这直接违背了继承类是(ISA)父类的定义。因此不要以为在python中，继承后总是没问题的。有的时候可能会出现继承后不能正常工作的情况。 强制用户解决。要求用户必须人工定义函数，解决继承冲突的问题。从逻辑上说，如果用户定义的函数可以同时兼容于两个父类，就可以彻底化解多重继承冲突问题。然而杯具的是，很多时候在逻辑上，继承冲突是无解的。 区分接口和继承 父类没有实现冲突的函数，那么派生类中就不必纠结于调用谁的问题了。但是这引发了另一个问题——这就无法复用了。作为这一解法的极限，java不允许多重继承——除非继承的父类都是没有实现的类。这其实不是继承，而是实现(implement)接口(interface)。
 接口编程是一个很有道理的东西，COM里面大量着重于接口。但是接口也有自己扯淡的地方——接口是一个编写期的东西，他最大的用途就是编译期类型检查。接口并不能复用(reuse)代码。如果你有一个接口，叫做平行四边形。里面有个方法，用于计算平行四边形面积。然后你实现了长方形和正方形——那么杯具来了，你需要在两个里面通通实现一遍这个方法，即使他们基本没区别。
 当然，接口本身的好坏各有评价。你看，接口的唯一作用，就是声明类提供了某些函数。当我们对方法传入一个新的类的时候，我们必须将新的类也实现一下接口——哪怕这个类其实已经实现了这些方法。只要不实现接口，方法就不认可。这是强制编译器类型检查(静态类型语言)的基础。因此一般来说，静态类型语言，使用接口。动态类型语言，duck typing。</description>
     </item>
@@ -143,17 +139,17 @@ Pyrex 我知道douban的python-libmemcached是使用这个来包装的，不过�
       <description>辨析语言的微妙差异，使得语言精密的符合目的语义，此为程序员基本功的最高要求。对精密语义的追求，应当凌驾于排版美观，代码美感，代码简化之上，也凌驾于运行时效率之上。除非为特定目的小幅的修正，否则不应破坏此原则。
 以此为指导，我们看几个if。
 if a in python 以下代码的目标语义是，如果a不为None，就运行代码。
-if a: do something  有什么问题？
+if a: do something 有什么问题？
 有没有考虑a=0的情况？a=[]呢？
-if a is not None: do something  这样才是严密表达。
+if a is not None: do something 这样才是严密表达。
 if a in C 以下代码的目标语义是，a是一个int数，对a!=0的情况下，执行代码。
-if (a) do something  有什么问题？
+if (a) do something 有什么问题？
 没问题，因为C是静态语言，这限定了a的使用。除了代码并没有体现a!=0的条件，没有太大问题。但是鉴于语言表达语义，最好改为以下代码。
-if (a != 0)  相对的，如果a是bool型，就可以直接用了。
-if (a)  如果a是char*形，那么合适的语义表达应当是。
-if (a != NULL)  他们生成的汇编代码都没有差异。
+if (a != 0) 相对的，如果a是bool型，就可以直接用了。
+if (a) 如果a是char*形，那么合适的语义表达应当是。
+if (a != NULL) 他们生成的汇编代码都没有差异。
 if a in C++ 概念上同C，不过a是一个复杂对象。
-if (a) do something  有什么问题？
+if (a) do something 有什么问题？
 问题大了去了，和python一样，C++可以重载行为。谁知道type(a)::opreator bool(const type(a) &amp;amp;a)函数被定义为什么鬼逻辑。这就是为什么我憎恨默认行为重载的原因——因为他们对精密语义表达有破坏作用。</description>
     </item>
     
@@ -164,13 +160,13 @@ if (a) do something  有什么问题？
       
       <guid>//blog.shell909090.org/blog/archives/2146/</guid>
       <description>好吧，这是常识，我说快点。
-C * c = get_c();  这是指针返回。
-C c = get_c():  这是值返回。
+C * c = get_c(); 这是指针返回。
+C c = get_c(): 这是值返回。
 指针返回的缺点是，你必须检测返回指针的有效性，也就是NULL。并且，你需要手工管理指针释放。而优点则是避免了值拷贝，还有可以返回空值，即通过返回NULL表示没有值的情况。
 而引用返回最大的优势在于，变量的生存周期和作用域相同，你无需管理释放问题。然而缺陷就是庞大的拷贝开销。
 在get_c返回的时候，会return一个对象。这个对象是子函数作用域对象(sub function scope)，会随着子函数退出而失效。因此，在返回值的时候会引发拷贝。这种拷贝有两种可能。
- 拷贝构造  当返回值被用于某个对象的声明时，会触发拷贝构造函数。被返回的对象会作为拷贝构造参数传递(引用传递)，而拷贝出的对象就是被生成对象。
- 赋值算子  即operator =。当对某个已经声明对象进行赋值时，会发生这种现象。
+拷贝构造 当返回值被用于某个对象的声明时，会触发拷贝构造函数。被返回的对象会作为拷贝构造参数传递(引用传递)，而拷贝出的对象就是被生成对象。
+赋值算子 即operator =。当对某个已经声明对象进行赋值时，会发生这种现象。
 当然，近代编译器对于“在返回时进行构造用于返回后的构造”这种情况做了优化，通称RVO优化。例如上文，如果get_c中使用return C(a, b);进行返回，实际上只有C::C(a, b)的调用，而没有C::C(const C &amp;amp;
 c)的调用。</description>
     </item>
@@ -211,7 +207,7 @@ python下还有一个更坑爹的事情，也是大部分内存不释放的根�
       
       <guid>//blog.shell909090.org/blog/archives/1875/</guid>
       <description>最近在看C++的设计和演化，里面讲到算符重载。关于这个，Effactive C++里面明确说明，不要试图重载&amp;amp;&amp;amp;和||算符。因为这个重载造成的结果和默认不符(Not same with the default)。
-&amp;amp;&amp;amp;和||有什么特殊？熟悉C的朋友考虑这么一个问题。if(i &amp;amp;&amp;amp; ++i)的作用是什么？基本来说，这个语句是判断i是否为0或者-1的，并且有个额外效果就是对i进行自增。但是，如果i == 0，则不进行自增，这就是&amp;amp;&amp;amp;的短路求值原则。这个原则产生了一系列写法，例如sh中常见的[ -z &amp;ldquo;\$ABC&amp;rdquo; ] &amp;amp;&amp;amp; { &amp;hellip; }。
+&amp;amp;&amp;amp;和||有什么特殊？熟悉C的朋友考虑这么一个问题。if(i &amp;amp;&amp;amp; ++i)的作用是什么？基本来说，这个语句是判断i是否为0或者-1的，并且有个额外效果就是对i进行自增。但是，如果i == 0，则不进行自增，这就是&amp;amp;&amp;amp;的短路求值原则。这个原则产生了一系列写法，例如sh中常见的[ -z &amp;ldquo;$ABC&amp;rdquo; ] &amp;amp;&amp;amp; { &amp;hellip; }。
 不过当重载了&amp;amp;&amp;amp;或者||后，就破坏了短路求值原则。因为C系列语言是应用序语言，参数先求值。所以后参数*一定*会被求值，无论前参数的值是多少。
 更加悲崔的是，这个破坏了最小惊讶原则，或者叫做知识内隐原则。当你使用一个知识的时候，你会根据自己的经验对这个知识做内隐的预期。例如，虽然螺丝有左螺纹也有右螺纹，然而你在拧螺丝的时候，多数预期是顺时针拧紧。不论其理由，这个已经成为常态。同样，有下压把手的门是扇页门，画着杯子的店家是咖啡店和茶馆，画着裙子的厕所是女厕，这些都是你对知识内隐的预期。破坏这个预期，相当于把螺丝改为反向，下压把手的门改成移门，画着杯子的店家是古董店，男厕画裙子一样，会让人感到不知所措。大家会莫名其妙的绕出去，确认门上画的确实是裙子，走进去再看到男厕，感到世界莫名其妙。
 同样的道理，如果一个对象使用了&amp;amp;&amp;amp;重载，程序员唯一能够快速发现的机会就是在调试时单步了&amp;amp;&amp;amp;的语句。如果他运气不好，可能在数个小时内都找不到理由，直到反汇编目标代码为止。
@@ -225,16 +221,16 @@ python下还有一个更坑爹的事情，也是大部分内存不释放的根�
       
       <guid>//blog.shell909090.org/blog/archives/1824/</guid>
       <description>其实严格说来，纯C是门好语言，我很欣赏纯C。但是作为程序设计，C用起来让人觉得很不方便。
- 在标准C规范中，变量必须在块的头部声明。当然，在近代C编译器中已经取消了这个限制。
- 我提到过的，C中缺乏高级数据结构支持，导致一些简单问题的实现变得异常复杂。例如我需要解析表达式，生成lisp样子的前缀表达式。这在很多高级语言中是个很简答的事情，但是C中，你不得不自行管理内存和结构，虽然这并不算复杂。
-  还有一些缺点不能尽述，但是经过时间的考验，C无疑是强大而具有生命力的一种语言。
+在标准C规范中，变量必须在块的头部声明。当然，在近代C编译器中已经取消了这个限制。
+我提到过的，C中缺乏高级数据结构支持，导致一些简单问题的实现变得异常复杂。例如我需要解析表达式，生成lisp样子的前缀表达式。这在很多高级语言中是个很简答的事情，但是C中，你不得不自行管理内存和结构，虽然这并不算复杂。
+还有一些缺点不能尽述，但是经过时间的考验，C无疑是强大而具有生命力的一种语言。
 C++就比较搞笑了，纯C++是一个非常糟糕的东西。我们列举其缺点：
- 函数指针是C中常用的概念，在C++中应当使用抽象接口-实现的方式，或者使用仿函。从技术上说，在C++中使用函数指针是一个落后而没有C++特色的行为。然而无论使用哪种，生成一个新的函数就必须生成一个新的类。你当自己是java么？
- 太多internal操作，导致代码隐性错误和思考心智负荷大幅上升。例如某个类可以定义一个单参的构造函数，constructor(int c);这等于定义了一个隐性转换函数，允许将int转换为类。或者使用T operator T();算符函数，将类转换到T。如果此时错误的将类实例当作int来操作，就会产生编译通过但是运行时出错的问题。更严重的是，转换函数严重的消耗性能。在这种情况下，编译和运行都不会出错，只是莫名其妙的性能很差。要避免这个问题，可以用explicit关键字。具体可以看这里（http://www.cnblogs.com/cutepig/archive/2009/01/14/1375917.html）。但是这就需要额外的知识，和随时关心自己是否会犯下这个错误的小心。
- 强大到啰嗦的模板系统。那位有信心看懂所有stl编译时报错的？反正effactive C++的作者举过一个缺陷，打印了1500个左右的字符。大部分都是符号，望之犹如天书。
- 为了支持多重继承，导致指针类型转换可能导致指针地址变换。这是一个很扯淡的缺陷，转换指针类型不会引发指针的地址转换是一个C中的基础常识。然而C++为了支持多重继承，导致这个常识被破坏。
- thiscall和non-thiscall指针无法转换。类成员函数和普通函数指针是无法转换的。这个破坏了所有代码都可获得地址的常识。
-  其实C++的致命缺陷，就是过度设计。每一步都是很必要很有道理的改进，在最后就组合成了让人望之生畏的复杂系统。
+函数指针是C中常用的概念，在C++中应当使用抽象接口-实现的方式，或者使用仿函。从技术上说，在C++中使用函数指针是一个落后而没有C++特色的行为。然而无论使用哪种，生成一个新的函数就必须生成一个新的类。你当自己是java么？
+太多internal操作，导致代码隐性错误和思考心智负荷大幅上升。例如某个类可以定义一个单参的构造函数，constructor(int c);这等于定义了一个隐性转换函数，允许将int转换为类。或者使用T operator T();算符函数，将类转换到T。如果此时错误的将类实例当作int来操作，就会产生编译通过但是运行时出错的问题。更严重的是，转换函数严重的消耗性能。在这种情况下，编译和运行都不会出错，只是莫名其妙的性能很差。要避免这个问题，可以用explicit关键字。具体可以看这里（http://www.cnblogs.com/cutepig/archive/2009/01/14/1375917.html）。但是这就需要额外的知识，和随时关心自己是否会犯下这个错误的小心。
+强大到啰嗦的模板系统。那位有信心看懂所有stl编译时报错的？反正effactive C++的作者举过一个缺陷，打印了1500个左右的字符。大部分都是符号，望之犹如天书。
+为了支持多重继承，导致指针类型转换可能导致指针地址变换。这是一个很扯淡的缺陷，转换指针类型不会引发指针的地址转换是一个C中的基础常识。然而C++为了支持多重继承，导致这个常识被破坏。
+thiscall和non-thiscall指针无法转换。类成员函数和普通函数指针是无法转换的。这个破坏了所有代码都可获得地址的常识。
+其实C++的致命缺陷，就是过度设计。每一步都是很必要很有道理的改进，在最后就组合成了让人望之生畏的复杂系统。
 要使用C++，关键就是克制自己的过度设计欲望。C++可以很容易的使用类，模板，友元系统写的很强大，而且看起来很自然。例如你可以定义自己的BioTree，使用+做合并，可以使用|运算符做输出等。然而到最后，就会变成另一种语法。并且，如果合并上大数运算库之类的库，做一个BioTree，其中元素是大数的结构。当这个结构内发生错误的时候，你觉得你能够在里面找到正确的调试方向么？
 要克制自己觉得很自然的想法，使用传统C中的一些做法，哪怕他们看起来很古怪，但是这是有道理的。</description>
     </item>
@@ -312,7 +308,7 @@ B：你确定他找出了你的*所有*bug么？
       <description>谨以此缅怀那些为了今日软件事业的自由做出贡献的先辈们。(注1:多数人没牺牲，谢谢)(注2: 排名不分先后)(注3: 科普作品，大家别怕)
 我在撰写这篇文章的时候，避免使用自由软件这个词，而改为更普遍意义上的软件自由。因为自由软件是RMS提出的一个专有词语，指软件的开源，复制，协作等
 特质。而我试图通过软件自由这个词，表达人们在使用软件上的自由，以及使用软件来为我们获取自由。我们拥有知道软件一切内幕的自由，我们拥有修改软件的自由，我们拥有思考的自由，我们拥有挑战老系统的自由，我们拥有拒绝通过软件收费的自由，我们拥有通过软件获得信息的自由，我们拥有不受任何人，包括政府监控的自由。为了这种自由而付出的，不仅是自由程序的拥护者，也有商业程序的拥护者。
- Richard Matthew Stallman  大名鼎鼎的RMS，GNU的核心人物，自由软件的布道者。要是在这个列表上没有他的名字，那我不知道还有谁能留在这张表上。具体可以看这里(http://zh.wikipedia.org/zh-cn/%E7%90%86%E6%9F%A5%E5%BE%B7%C2%B7%E6%96%AF%E6%89%98%E6%9B%BC)。简单来说这家伙最大的几个成就：创立了GNU和FSF，为自由软件的传播奠定了基础。制作了emacs，当今黑客世界两大编辑器之一(另一个是VIM)。制作了GCC，世界上使用最广泛的编译器。
+Richard Matthew Stallman 大名鼎鼎的RMS，GNU的核心人物，自由软件的布道者。要是在这个列表上没有他的名字，那我不知道还有谁能留在这张表上。具体可以看这里(http://zh.wikipedia.org/zh-cn/%E7%90%86%E6%9F%A5%E5%BE%B7%C2%B7%E6%96%AF%E6%89%98%E6%9B%BC)。简单来说这家伙最大的几个成就：创立了GNU和FSF，为自由软件的传播奠定了基础。制作了emacs，当今黑客世界两大编辑器之一(另一个是VIM)。制作了GCC，世界上使用最广泛的编译器。
 RMS的核心想法是，因为软件而收费是罪恶的，这种人是撒旦(当然，Bill Gates是其中最大的那个)。他认为软件应当自由分享，程序员从中收取的应当是服务费。今天，RedHat正是继承了这一模式。通过免费的软件和收费的服务来进行持续的开发。
 2.Linus Benedict Torvalds
 常常和RMS并提的一个家伙，具体在这里(http://zh.wikipedia.org/zh-cn/%E6%9E%97%E7%BA%B3%E6%96%AF%C2%B7%E6%89%98%E7%93%A6%E5%85%B9)。
@@ -346,7 +342,9 @@ Linux世界有所谓三大发行，四大包管理系统之说。其中三大发
 在上个世纪，美国政府有一种观点，他们需要能随时随地的窃听任何一个人和其他人的通讯。同时，作为延伸，他们制定了国家安全出口法案，将密码产品作为军用管制品，限制出口。这其实是很荒谬和不合逻辑的，任何公开的算法都可以被多个人独立的实现。只要算法是公开的，即使产品不允许出口，国外也可以没有任何阻碍的实现出来。而如果算法是不公开的，则会出现两个弊端。一个是阻碍密码学的交流和进步，更麻烦的是，根据密码学的内在逻辑，这样的系统，由于验证不完全，因此比公开的系统更加不安全。
 在1991年前后，PZ制作了PGP软件，用于保障当时备受争议的电子邮件的安全(小常识:电子邮件默认是明文的，安全程度和你写在明信片背面寄给你父母的句子差不多)。这个软件使用了1980年以来提出的现代密码系统几大密码系统，实现了签名安全和秘密安全。这里我们小小的讲解一下电子邮件的两大安全系统，对此无爱的人自行跳到下一段。签名安全就是指，你收到一个邮件的时候，能够确信，这个信的内容是原始发件人的真实意思表示，而不是被篡改过的。秘密安全就是指，当你收到一个信的时候，你能够确信，除了你没有别人能够偷看到内容。对此，一般采用公钥系统来实现两者的安全。所谓公钥系统是这样一种系统，用公钥加密必须用私钥解密，用私钥加密必须用公钥解密，私钥很容易计算出公钥，公钥非常难计算出私钥。当你要签名安全的时候，将邮件内容用自己的私钥加密再发送一次(实际是将内容hash了再加密的)，接收者解密后对比。由于篡改者只有公钥，因此虽然可以拦截和修改内容，但是无法伪造出一对匹配的内容，用公钥解密后刚好一致。而秘密安全则是用对方的公钥加密。对于更高层级的要求，你的公钥不仅要求公布，而且必须在国家认可的部门公布，这样就由国家认定了你的公钥和你的身份的一致性。当你对一个内容签署的时候，只要能用公钥验证签名，就可以认定内容是你的真实意思表述，并被法律所承认。
 当时的PGP当然还没有这么复杂，但是对于当时缺乏任何安全性特征(当时连TLS都没有)的电子邮件来说，是非常必要的补充。可是我们上文说了，美国禁止出口这些产品。于是，PZ免费的将软件的最初版本散发给同事和其他人使用，而这些人又可以免费的分发出去——这和自由模式非常的吻合，除了我找不到具体信息标明当时PZ是否从授权上同意他们做这个事情。法律上说，PZ并没有“出口”密码产品，但是实际上，是他实现并且向全世界推广了高强度的电子邮件安全系统。从某种意义上说，PZ可以说是叛国者。非法散布军用管制品，危害美国的国家安全(这还不像中国那种含糊不清的指控，这里的军用管制品定义是明确的，并且是由国会制定的)。于是，PZ受到了三年的官司和五年的调查，直到96年的时候，克林顿签署了新的法案，放松了密码产品的出口限制。其实也没松多少，从40位到56位——大概就是从5个字符到7个字符的区别。反之，我们改变观点，从世界的角度说，由于他的勇气和决心，我们每个人从中受益匪浅。
-EDIT 2016-09-08: 按照我听到的更新消息，PZ当时实际上是出版了一本书，这个书里面就是完整的源码。他虽然没有“出口”这些源码，但是实际上任何人都可以在书店里买一本，然后带去海外，照着源码keyin一遍。美国政府虽然希望禁止这本书的出版，但是禁止个人出版图书违反宪法第一修正案——言论自由。当时政府还不能因为国家安全因素就随意禁止公民出版书籍（这都是911之后的事了），所以只能用官司和调查来整PZ。</description>
+EDIT 2016-09-08: 按照我听到的更新消息，PZ当时实际上是出版了一本书，这个书里面就是完整的源码。他虽然没有“出口”这些源码，但是实际上任何人都可以在书店里买一本，然后带去海外，照着源码keyin一遍。美国政府虽然希望禁止这本书的出版，但是禁止个人出版图书违反宪法第一修正案——言论自由。当时政府还不能因为国家安全因素就随意禁止公民出版书籍（这都是911之后的事了），所以只能用官司和调查来整PZ。
+必须得说，其实这一改变很大程度上并不是PZ个人努力或者公民运动的结果，其中有巨大的商业力量。IBM，微软和Lotus之类的跨国软件巨头在出口产品的时候，由于受到出口限制，因此在海外产品上的安全性一直很成问题。很多时候他们因为这个问题受到了巨大的挑战。在这一问题上，他们有足够的理由去游说白宫，改变出口限制的要求。关于这个案件的其他资料，可以参考这里(http://cyberlaw.stanford.edu/~prz/ZH/faq/index.html和这里(http://www.techcn.com.cn/index.php?doc-view-130949)。
+在今日，PGP仍旧是一个非常强大的加密系统，并且是开源的——理所当然，如果不开源，我们会担心其中是否有漏洞和后门继续危害我们的安全。并且，从密码学内在的逻辑来说，不公开的系统是不安全的。不过他仍旧受限于美国国家安全出口管制条例，原因是因为由于今日强大的计算能力，因此密钥通常的长度是1024，2048，4096位长的——远远超过美国国家限制数十倍。因此这一软件的强密钥版本只有英文版，因为不用考虑出口。对于海外人士来说，我们更推荐OpenPGP，同样是开源的，而且基于开源模式开发的GNU自由软件。能够充分保证你的信息安全。</description>
     </item>
     
     <item>
@@ -355,10 +353,10 @@ EDIT 2016-09-08: 按照我听到的更新消息，PZ当时实际上是出版了�
       <pubDate>Sat, 06 Sep 2008 22:50:00 +0800</pubDate>
       
       <guid>//blog.shell909090.org/blog/archives/32/</guid>
-      <description>所谓C++语言，是一种强类型语言。即是说，C++种的某个变量，在使用时类型是已经确定的。这个并不是设计者的喜好或者是偏心，而是C++中的变量都会被翻译成准确的内存地址和大小，如果类型不确定是不可能处理的。但是在事实中，我们经常要处理一种&amp;rdquo;变类型&amp;rdquo;。例如，我们可能需要解析表达式，这个时候我们可能用一个或者两个栈来解决这个问题。可栈里面塞的东西就精彩了，对象，函数，数据，都在里面。这时候，如果是python，我们可以直接用list，他是弱类型的。但是C++怎么办？
+      <description>所谓C++语言，是一种强类型语言。即是说，C++种的某个变量，在使用时类型是已经确定的。这个并不是设计者的喜好或者是偏心，而是C++中的变量都会被翻译成准确的内存地址和大小，如果类型不确定是不可能处理的。但是在事实中，我们经常要处理一种&amp;quot;变类型&amp;quot;。例如，我们可能需要解析表达式，这个时候我们可能用一个或者两个栈来解决这个问题。可栈里面塞的东西就精彩了，对象，函数，数据，都在里面。这时候，如果是python，我们可以直接用list，他是弱类型的。但是C++怎么办？
 一般来说，我们会使用Variant类型来解决这个问题。这是C++面对对象机制和算子机制所派生出来的产物，能够让用户自行定义对象的行为。如果一个对象，可以表现的像这个又像那个，那不就解决问题了？因此在COM中就有一个variant。不过贝壳看过机制，是一堆东西的集合，非常的不美丽。今天贝壳又看到一个variant的实现，漂亮多了。
 废话少说，上代码。
-#include using namespace std; #include using namespace boost; int _tmain(int argc, _TCHAR* argv[]) { any a; a = 10; printf (&amp;quot;%s: %dn&amp;quot;, a.type ().name (), any_cast(a)); a = 10.5; printf (&amp;quot;%s: %fn&amp;quot;, a.type ().name (), any_cast(a)); a = string (&amp;quot;str&amp;quot;); printf (&amp;quot;%s: %sn&amp;quot;, a.type ().name (), any_cast(a).c_str ()); return 0; }  当类型错误时，出现bad_cast exception。</description>
+#include using namespace std; #include using namespace boost; int _tmain(int argc, _TCHAR* argv[]) { any a; a = 10; printf (&amp;quot;%s: %dn&amp;quot;, a.type ().name (), any_cast(a)); a = 10.5; printf (&amp;quot;%s: %fn&amp;quot;, a.type ().name (), any_cast(a)); a = string (&amp;quot;str&amp;quot;); printf (&amp;quot;%s: %sn&amp;quot;, a.type ().name (), any_cast(a).c_str ()); return 0; } 当类型错误时，出现bad_cast exception。</description>
     </item>
     
     <item>
@@ -370,8 +368,8 @@ EDIT 2016-09-08: 按照我听到的更新消息，PZ当时实际上是出版了�
       <description>贝壳最近在一个朋友的网站上看到了关于SICP零钱兑换问题的python求解，使用了记忆机制，然后他给出了代码。然而他的代码计时上有点小问题，也没有用包装器(奇怪的是，有写)，而且python的栈深度有限。因此贝壳做了几个修改的版本，需要测试下性能，下面就是关于性能的几个问题和过程。
 本文详细论述了python语言下和C++语言下使用各种方法测试代码性能的方法，以及粗略的关于两种语言不同算法性能对比。
 原始的python代码是这样的：
-def change_coins(money): first_denomination = { 1: 1, 2: 5, 3: 10, 4: 25, 5: 50, } def cc(amount, kinds_of_coins): if amount == 0: return 1 elif amount &amp;lt; 0 or kinds_of_coins == 0: return 0 else: kind = cc(amount, kinds_of_coins - 1) kind += cc( amount-first_denomination[kinds_of_coins], kinds_of_coins) return kind print(&amp;quot;change_coins return %s&amp;quot; % cc(money, 5)) change_coins(300)  利用记忆原理包装后是这样的：
-def memoiza(fun): cache = {} def proc(*arg): if arg in cache: return cache[arg] else: x = fun(*arg) cache[arg] = x return x return proc def decorator_change_coins(money): first_denomination = { 1: 1, 2: 5, 3: 10, 4: 25, 5: 50, } @memoiza def cc(amount, kinds_of_coins): if amount == 0: return 1 elif amount &amp;lt; 0 or kinds_of_coins == 0: return 0 else: kind = cc(amount, kinds_of_coins - 1) kind += cc( amount - first_denomination[kinds_of_coins], kinds_of_coins) return kind print(&amp;quot;decorator_change_coins return %s&amp;quot; % cc(money, 5)) decorator_change_coins(300)  不记忆，利用栈模拟递归展开是这样的：</description>
+def change_coins(money): first_denomination = { 1: 1, 2: 5, 3: 10, 4: 25, 5: 50, } def cc(amount, kinds_of_coins): if amount == 0: return 1 elif amount &amp;lt; 0 or kinds_of_coins == 0: return 0 else: kind = cc(amount, kinds_of_coins - 1) kind += cc( amount-first_denomination[kinds_of_coins], kinds_of_coins) return kind print(&amp;quot;change_coins return %s&amp;quot; % cc(money, 5)) change_coins(300) 利用记忆原理包装后是这样的：
+def memoiza(fun): cache = {} def proc(*arg): if arg in cache: return cache[arg] else: x = fun(*arg) cache[arg] = x return x return proc def decorator_change_coins(money): first_denomination = { 1: 1, 2: 5, 3: 10, 4: 25, 5: 50, } @memoiza def cc(amount, kinds_of_coins): if amount == 0: return 1 elif amount &amp;lt; 0 or kinds_of_coins == 0: return 0 else: kind = cc(amount, kinds_of_coins - 1) kind += cc( amount - first_denomination[kinds_of_coins], kinds_of_coins) return kind print(&amp;quot;decorator_change_coins return %s&amp;quot; % cc(money, 5)) decorator_change_coins(300) 不记忆，利用栈模拟递归展开是这样的：</description>
     </item>
     
     <item>
@@ -382,7 +380,7 @@ def memoiza(fun): cache = {} def proc(*arg): if arg in cache: return cache[arg] 
       <guid>//blog.shell909090.org/blog/archives/16/</guid>
       <description>所谓反射，其实就是在运行时可以获得代码数据的技术，算是面对对象编程语言的专利。从这个意义上说，反射可以分为三个类型。
 头一类是RTTI，其实这根本不算反射，本质上只能说多态。RTTI是一种鉴别某个对象是否为某个类的派生实例的技术，在C++中就有实现。简单的方法就是实现一个特定的虚函数，将当前对象所属的类虚函数表和所属父类的虚函数表一一返回。这样对比某个类的虚函数表，就可以知道是否为派生实例了。支持RTTI，程序才算真正支持了面对对象，而反射则是更高一层的技术。
-第二类就是在C#和Java中盛行的反射技术，这种技术的核心在于可以通过名称寻找到对象。例如，我们可以寻找到一个叫做abc的对象，枚举其中的成员和方法，并且执行调用，这才是反射最大的意义。当我们遇到不同的数据输入时，我们可以调用不同的方法来处理这个数据，并且这个过程是动态配置的。而在C++中，我们无法通过编译器支持这个能力，必须手工的建立一个名称和一个对象的关联关系表，在合适的时候通过这个表，获得某个名称的函数入口指针。其实C#和Java中实现的方法和VM息息相关，他们的代码在目标文件中还保持着命名空间-类-对象的结构，Java还进一步的保留了源码(只是被翻译为了更快的P代码)，而C#只保留了IL代码。这样VM在执行的时候自然可以很轻松的找到对应的函数，并且获得函数签名。而C类语言的特征是汇编时代的&amp;rdquo;符号链接&amp;rdquo;方式，编译的时候保有符号，完成链接就没了。
+第二类就是在C#和Java中盛行的反射技术，这种技术的核心在于可以通过名称寻找到对象。例如，我们可以寻找到一个叫做abc的对象，枚举其中的成员和方法，并且执行调用，这才是反射最大的意义。当我们遇到不同的数据输入时，我们可以调用不同的方法来处理这个数据，并且这个过程是动态配置的。而在C++中，我们无法通过编译器支持这个能力，必须手工的建立一个名称和一个对象的关联关系表，在合适的时候通过这个表，获得某个名称的函数入口指针。其实C#和Java中实现的方法和VM息息相关，他们的代码在目标文件中还保持着命名空间-类-对象的结构，Java还进一步的保留了源码(只是被翻译为了更快的P代码)，而C#只保留了IL代码。这样VM在执行的时候自然可以很轻松的找到对应的函数，并且获得函数签名。而C类语言的特征是汇编时代的&amp;quot;符号链接&amp;quot;方式，编译的时候保有符号，完成链接就没了。
 中间插一句，其实我们完全可以写一个只支持高阶语言的系统。这样的系统未必高效，可一定方便阿。
 最后一种则是python中的系统，当用户调用一个类中的函数的时候，使用一个专门的函数来决定调用哪个。因此当对付SOAP这种东西的时候，python可以直接上。而C#，Java，C++都要通过工具生成代理方法。再用代理方法去调用公共函数库，实现调用。因为python直接将调用定向到了一个统一的函数上，所以压根不需要这步。不过这步的代价是严重的性能问题，因为每次函数调用都要去检查调用目标。python是纯脚本语言，占了这点便宜，所以才能这么干。</description>
     </item>
@@ -394,7 +392,7 @@ def memoiza(fun): cache = {} def proc(*arg): if arg in cache: return cache[arg] 
       
       <guid>//blog.shell909090.org/blog/archives/15/</guid>
       <description>以下讨论的东西都是在VS2005下跑出来的，如果想知道别的编译器规则，请照跑一遍。以下是类定义，函数内容为打印出当前函数名称，所以就不再贴了。
-class Base { public: Base(); Base(const Base &amp;amp;amp; o); virtual ~Base(); virtual Base &amp;amp;amp; operator = (const Base &amp;amp;amp; o); void function1(); virtual void function2(); void function3(); virtual void function4(); //virtual void function5(); virtual void function6(); }; class Derive : public Base { public: Derive(); Derive(const Derive &amp;amp;amp; o); virtual ~Derive(); virtual Derive &amp;amp;amp; operator = (const Derive &amp;amp;amp; o); void function1(); virtual void function2(); virtual void function3(); void function4(); //compiler error //int function5(); protected: virtual void function6(); public: };  首先我们讨论继承下的构造/析构顺序。</description>
+class Base { public: Base(); Base(const Base &amp;amp;amp; o); virtual ~Base(); virtual Base &amp;amp;amp; operator = (const Base &amp;amp;amp; o); void function1(); virtual void function2(); void function3(); virtual void function4(); //virtual void function5(); virtual void function6(); }; class Derive : public Base { public: Derive(); Derive(const Derive &amp;amp;amp; o); virtual ~Derive(); virtual Derive &amp;amp;amp; operator = (const Derive &amp;amp;amp; o); void function1(); virtual void function2(); virtual void function3(); void function4(); //compiler error //int function5(); protected: virtual void function6(); public: }; 首先我们讨论继承下的构造/析构顺序。</description>
     </item>
     
     <item>
@@ -403,7 +401,7 @@ class Base { public: Base(); Base(const Base &amp;amp;amp; o); virtual ~Base(); 
       <pubDate>Tue, 01 Apr 2008 10:47:00 +0800</pubDate>
       
       <guid>//blog.shell909090.org/blog/archives/9/</guid>
-      <description>void main(){char* a=&amp;quot;void main(){char* a=%c%s%c;printf (a,34,a,34);}&amp;quot;;printf(a,34,a,34);}  核心是使用printf(a,a)来代换显示，并且用34来规避转换。当然，完整的要带include，稍微有点区别。</description>
+      <description>void main(){char* a=&amp;quot;void main(){char* a=%c%s%c;printf (a,34,a,34);}&amp;quot;;printf(a,34,a,34);} 核心是使用printf(a,a)来代换显示，并且用34来规避转换。当然，完整的要带include，稍微有点区别。</description>
     </item>
     
     <item>
@@ -415,7 +413,7 @@ class Base { public: Base(); Base(const Base &amp;amp;amp; o); virtual ~Base(); 
       <description>从基类继承一个子类，基类有一个拷贝构造函数，子类重载了一个。那么在子类拷贝构造的时候会自动调用基类的拷贝构造函数吗？
 答案是不会，自动调用的是基类的构造函数。
 子类中如果需要调用基类的拷贝构造函数，需要这样用。
-D (const D &amp;amp; o): B (o){...}  </description>
+D (const D &amp;amp; o): B (o){...} </description>
     </item>
     
     <item>
@@ -427,7 +425,7 @@ D (const D &amp;amp; o): B (o){...}  </description>
       <description>libxml2是gnome做的一个xml的库，支持SAX和DOM。
 在解析xml的时候，libxml2会将xml中不属于标签的部分作为text节点插入。如果是属性，则添加一个属性节点到父节点上，一个文字节点到属性节点下。那么整个xml就变成了一颗单纯的树。
 支持多语言的问题上，libxml2的内核只支持UTF-8。但是可以通过注册编码句柄来添加语言支持，一般是配合iconv[2]使用的，因为libxml2的编译依赖就是iconv。下面是代码。
-iconv_t iconv_utf8_gbk; iconv_t iconv_gbk_utf8; int gbk_input (unsigned char *out, int *outlen, const unsigned char *in, int *inlen) { char *outbuf = (char *) out; char *inbuf = (char *) in; size_t rslt; rslt = iconv (iconv_utf8_gbk, (const char **) &amp;amp;inbuf, (size_t *) inlen, &amp;amp;outbuf, (size_t *) outlen); if (rslt &amp;lt; 0) return rslt; *outlen = ((unsigned char *) outbuf - out); *inlen = ((unsigned char *) inbuf - in); return *outlen; } int gbk_output (unsigned char *out, int *outlen, const unsigned char *in, int *inlen) { char *outbuf = (char *) out; char *inbuf = (char *) in; size_t rslt; rslt = iconv (iconv_gbk_utf8, (const char **) &amp;amp;inbuf, (size_t *) inlen, &amp;amp;outbuf, (size_t *) outlen); if (rslt &amp;lt; 0) return rslt; *outlen = ((unsigned char *) outbuf - out); *inlen = ((unsigned char *) inbuf - in); return *outlen; } static void print_element_names (xmlDocPtr doc, xmlNode * a_node, int n) { xmlNode *cur_node = NULL; xmlAttr *cur_attr = NULL; xmlChar *key; for (cur_node = a_node; cur_node; cur_node = cur_node-&amp;gt;next) { for (int i = 0; i &amp;lt; n; ++i) printf (&amp;quot; &amp;quot;); // key = xmlNodeListGetString(doc, cur_node-&amp;gt;xmlChildrenNode, 1); printf (&amp;quot;node %d: %s = %sn&amp;quot;, cur_node-&amp;gt;type, cur_node-&amp;gt;name, cur_node-&amp;gt;content); if (cur_node-&amp;gt;properties !</description>
+iconv_t iconv_utf8_gbk; iconv_t iconv_gbk_utf8; int gbk_input (unsigned char *out, int *outlen, const unsigned char *in, int *inlen) { char *outbuf = (char *) out; char *inbuf = (char *) in; size_t rslt; rslt =	iconv (iconv_utf8_gbk, (const char **) &amp;amp;inbuf, (size_t *) inlen, &amp;amp;outbuf, (size_t *) outlen); if (rslt &amp;lt; 0) return rslt; *outlen = ((unsigned char *) outbuf - out); *inlen = ((unsigned char *) inbuf - in); return *outlen; } int gbk_output (unsigned char *out, int *outlen, const unsigned char *in, int *inlen) { char *outbuf = (char *) out; char *inbuf = (char *) in; size_t rslt; rslt =	iconv (iconv_gbk_utf8, (const char **) &amp;amp;inbuf, (size_t *) inlen, &amp;amp;outbuf, (size_t *) outlen); if (rslt &amp;lt; 0) return rslt; *outlen = ((unsigned char *) outbuf - out); *inlen = ((unsigned char *) inbuf - in); return *outlen; } static void print_element_names (xmlDocPtr doc, xmlNode * a_node, int n) { xmlNode *cur_node = NULL; xmlAttr *cur_attr = NULL; xmlChar *key; for (cur_node = a_node; cur_node; cur_node = cur_node-&amp;gt;next) { for (int i = 0; i &amp;lt; n; ++i) printf (&amp;quot; &amp;quot;); // key = xmlNodeListGetString(doc, cur_node-&amp;gt;xmlChildrenNode, 1); printf (&amp;quot;node %d: %s = %sn&amp;quot;, cur_node-&amp;gt;type, cur_node-&amp;gt;name, cur_node-&amp;gt;content); if (cur_node-&amp;gt;properties !</description>
     </item>
     
     <item>
@@ -448,7 +446,7 @@ iconv_t iconv_utf8_gbk; iconv_t iconv_gbk_utf8; int gbk_input (unsigned char *ou
       <guid>//blog.shell909090.org/blog/archives/357/</guid>
       <description>其实这个标题不准确，准确的说，应该是继承类拥有自己的基类静态对象。
 我们知道，类中的静态对象本质上是全局变量，不过名字在类命名空间里面。如果类B有静态对象S，D继承了B(先按照public继承讨论，其他其实也一样)。那么在D里面访问S的时候，其实是访问的B命名空间里面的静态对象S。验证代码如下：
-class B { protected: static int S; }; int B::S = 0; class D:public B { public: void print () { printf (&amp;quot;%dn&amp;quot;, S); }; }; class E:public B { public: static void rewrite () { S = 1; }; }; int _tmain (int argc, _TCHAR * argv[]){ D d; d.print (); E::rewrite (); d.print (); return 0; }  上例中可以看到，两个继承类，其实都是将父类的命名空间导入而已。假定我们要使得每类专有一个静态成员，例如我们要计算每个类的生成对象个数，怎么办呢？
+class B { protected: static int S; }; int B::S = 0; class D:public B { public: void print () { printf (&amp;quot;%dn&amp;quot;, S); }; }; class E:public B { public: static void rewrite () { S = 1; }; }; int _tmain (int argc, _TCHAR * argv[]){ D d; d.print (); E::rewrite (); d.print (); return 0; } 上例中可以看到，两个继承类，其实都是将父类的命名空间导入而已。假定我们要使得每类专有一个静态成员，例如我们要计算每个类的生成对象个数，怎么办呢？
 如果不用继承，我们可以在每个类里面加一个静态成员。然后在构造函数中加1，析构中减1。但是如果我们想把这个功能放到基类中，事情就麻烦了。因为所有类从同一个基类派生，我们算出来的其实是所有从基类继承的类的总对象生成个数。
 当然，我们可以用实现的方法来做。把所需要的功能抽离出来，放到一个单独的计数类中。然后构造的时候调用加1，析构的时候减1。听起来很蠢，那是因为例子容易的关系。比较复杂的时候，这样抽象相对简单的。计数类可以用于多个类，实现了代码重用。但是仍旧没有解决关键问题，怎么让继承类特化基类的静态对象？(虚拟化和特化的意思差不多，就是针对具体对象使用具体方法)
 答案最后被我在More Effective C++中找到了，正确的方法不是寻找一个特化的方法，而是继承不同的基类，使用同一套代码。既然是不同基类，怎么具备同一套代码呢？想到了吧，模版。
@@ -495,7 +493,7 @@ class TIFF2JPEG { public: static void newInstance (tstring &amp;amp; strFilepath
       <guid>//blog.shell909090.org/blog/archives/350/</guid>
       <description>大家写代码的时候，假如写了一个组件，自身需要开一个线程的。那么多数是在初始化代码中直接写开线程的。如果要求这个类不在初始化代码中添加函数，怎么做？
 MSDN中有个例子，不是解决这个问题的，但是可以用。
-class DialogWindow{ public: static short GetTextHeight(){ return 1; }; private: static short nTextHeight; }; short DialogWindow :: nTextHeight = GetTextHeight(); int main(){}  在这里，把GetTextHeight里面添加上你需要的代码就可以了。
+class DialogWindow{ public: static short GetTextHeight(){ return 1; }; private: static short nTextHeight; }; short DialogWindow :: nTextHeight = GetTextHeight(); int main(){} 在这里，把GetTextHeight里面添加上你需要的代码就可以了。
 但是注意，这些代码的运行时间要早于main(准确的说，是在wmainCRTStartup里面运行的_c_init函数)。所以很多自然而然就有的初始化没做，你自己在main里面调用的初始化(例如WSAStartup啦，GDI+初始化啦)更是没做。所以必须严格测试。</description>
     </item>
     
@@ -510,7 +508,7 @@ class DialogWindow{ public: static short GetTextHeight(){ return 1; }; private: 
 那么，如果在一个基类的某个成员里面调用这个类的另外一个虚函数，调用的是哪个呢？
 任何正常人来说，都应该说是，按照这个类的构造类型来确定。基本上没错，不过有一个函数例外。
 那么先看一个问题。
-class B { public: B(){test ();} virtual void test (){printf (&amp;quot;parentn&amp;quot;);} void out (){test ();} }; class D:public B { public: virtual void test (){printf (&amp;quot;childn&amp;quot;);} }; int _tmain(int argc, _TCHAR* argv[]){ D d; d.out(); return 0; }  想像下输出，再运行下。想想为什么，再看下面。想通了就不用看了。
+class B { public: B(){test ();} virtual void test (){printf (&amp;quot;parentn&amp;quot;);} void out (){test ();} }; class D:public B { public: virtual void test (){printf (&amp;quot;childn&amp;quot;);} }; int _tmain(int argc, _TCHAR* argv[]){ D d; d.out(); return 0; } 想像下输出，再运行下。想想为什么，再看下面。想通了就不用看了。
 &amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;我是无敌的分割线&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;ndash;
 C++标准规定，任何一个带有虚函数的类都有一个_v_ptr成员，这个成员必须存放在这个类内存地址中头部。这个成员指向了这个类的虚函数表。于是，调用虚函数的时候，我们首先确定这个是虚函数。(按照这个逻辑，如果父类不声明为虚函数，子类重载为虚函数，还是没用的)然后，我们确定这是第几个虚函数(严格来说，这并不符合面对对象的设计规范，应该是按照函数名字查表的，_v_ptr也不应该仅仅指向虚函数表，而应该是类形态表)。最后，我们去虚函数表中取得入口地址进行调用。
 那么为什么在构造函数中调用就无法调用子类的虚函数呢？问题在于_v_ptr的初始化时间上。某个类的构造函数启动前，这个类的_v_ptr才能完成初始化。如果是多重继承，那么首先调用最初类的，然后是次类的，最后是子类的。_v_ptr首先指向基类的，再是继承类，最后是子类。我们在父类构造函数中，_v_ptr指针还指向了父类的虚函数表，所以调用不到子类的虚函数。
@@ -567,7 +565,7 @@ BYTE getBit (PBYTE lpInData, int bit) { bit*=n; BYTE rslt; rslt = lpInData[bit /
 然后，下载一个boost的库源代码，解压安装，没有一点困难。好的很。
 接下来，请在PATH里面确认添加C:\Program Files\Microsoft Visual Studio .NET 2003\Vc7\bin;C:\Program Files\Microsoft Visual Studio .NET 2003\Common7\IDE;或者等效路径，关键是要能将cl.exe，link.exe，vcvars32.bat，mspdb71.dll纳入搜索路径。然后切换到boost的目录boost_1_33_1libs\regex\build，运行vcvars32.bat，再运行nmake -f vc71.mak，或者等效的指令(其实就是71还是70 80)。再运行nmake -f vc71.mak install，向VC的lib目录里面添加库。至此boost库的regex组件库算是编译好了能用，如果你不用正则表达式，抱歉，上面的话在耍你。
 然后是用法，倒不难。
-cmatch what; regex reg(&amp;quot;^abc$); if(regex_search(str.c_str(), what, reg)){ .... }  what里面会保存从正则表达式里面匹配出来的东西。
+cmatch what; regex reg(&amp;quot;^abc$); if(regex_search(str.c_str(), what, reg)){ .... } what里面会保存从正则表达式里面匹配出来的东西。
 利用这个库可以很好的做字符串拆分，验证的操作，弥补了C++没有正则表达式的缺憾。
 我写了一个类，可以从流里面获得每行，然后做匹配，然后派发到相应函数里面去。有需要的可以联系我。</description>
     </item>
@@ -610,7 +608,16 @@ VC++中工程引入的时候不要加入linux.cpp。
       <pubDate>Thu, 10 Nov 2005 19:35:19 +0800</pubDate>
       
       <guid>//blog.shell909090.org/blog/archives/257/</guid>
-      <description>近两天要用JIN做数据加密系统，所以特别写了这篇。省得以后忘记，顺便造福大家。   下面是核心编码：   //CTX.java   public abstract class CTX {\ protected byte\[\] state = new byte\[20\];   protected long count;   protected byte\[\] buffer = new byte\[0\]; /\* input buffer \*/   protected byte\[\] PADDING = { -128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,\ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,\ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,\ 0, 0, 0, 0, 0, 0 };   // 大端点序\ protected static void putChar(byte\[\] b, int off, char val) ;   // 大端点序\ protected static void putLong(byte\[\] b, int off, long val) ;   static {\ System.</description>
+      <description>近两天要用JIN做数据加密系统，所以特别写了这篇。省得以后忘记，顺便造福大家。
+下面是核心编码：
+//CTX.java
+public abstract class CTX {
+protected byte[] state = new byte[20];
+protected long count;
+protected byte[] buffer = new byte[0]; /* input buffer */
+protected byte[] PADDING = { -128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,</description>
     </item>
     
   </channel>

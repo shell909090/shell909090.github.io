@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>ntfs on Shell&#39;s Home</title>
@@ -7,23 +7,19 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Sun, 03 Jul 2005 23:04:20 +0800</lastBuildDate>
-    
-	<atom:link href="//blog.shell909090.org/tags/ntfs/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Sun, 03 Jul 2005 23:04:20 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/ntfs/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>实践NTFS格式解析</title>
       <link>//blog.shell909090.org/blog/archives/185/</link>
       <pubDate>Sun, 03 Jul 2005 23:04:20 +0800</pubDate>
       
       <guid>//blog.shell909090.org/blog/archives/185/</guid>
-      <description>刚刚在想NTFS格式的问题，感叹没有个实例拿来看看。然后在看小说的时候不知道怎么回事，想到点子上了。不由骂自己白痴，这个问题其实早就解决了阿。直接用CreateFile去读[\.c]():文件不就好了……
+      <description>刚刚在想NTFS格式的问题，感叹没有个实例拿来看看。然后在看小说的时候不知道怎么回事，想到点子上了。不由骂自己白痴，这个问题其实早就解决了阿。直接用CreateFile去读\.c:文件不就好了……
 OK，明天写个程序看看NTFS的实质……也许还有别的用途，再说了。
 另外写个想法，也许NTFS中很多MFT表项没有被某个目录引用成为文件，而其引用计数大于一（这样会被chkdsk查出来吗？等于0会吗？会删除吗？表问咯，偶都不知道……）。这样就会造成系统空间的神秘减少。例如上次系统文件复制时候空出来的硬盘，上面全空，但是使用了400M多的空间。估计就是这么搞出来的。具体要察看chkdsk的机理才知道，因为偶的硬盘经常chkdsk的。如果是属于能查的出来的错误，肯定就不会延迟到换硬盘才发现。可能是chkdsk不检查这个……
 另外回头准备看看内核的机制，试试记录或者反木马能不能提前挂在内核态上……嘿嘿，里席必争，咏春的要诀……
 这次仔细看了MFT的格式。有点心得，先写下来。
-首先是从MBR定位到每个BOOT区的BPB，这样才可以获得BPB中的\$MFT和\$MFTMirr的LCN。并且会获得卷因子（多数都是0x08吧，4k的簇）。\$MFT的LCN多数是4，定位就是32(0x20)。而后就会定位到MFT表上去。
+首先是从MBR定位到每个BOOT区的BPB，这样才可以获得BPB中的$MFT和$MFTMirr的LCN。并且会获得卷因子（多数都是0x08吧，4k的簇）。$MFT的LCN多数是4，定位就是32(0x20)。而后就会定位到MFT表上去。
 MFT的表项分析起来是遵循链式结构的，不过为什么有那么好的性能和抗崩溃能力呢？可能在于USN和LSN吧。每个表项有个头部（详细看linux的ntfs/layout.h去），指明了大小，关联了相关MFT表项和上下MFT表项，以及这个MFT表项的全局属性。由其中可以引出首个属性的相对偏移。
 每个属性都有个公用的属性头部，这个头部说明了属性的类型和大小，还有属性是否直接存储，如何存储等等信息。由上个属性可以推知下个属性偏移，所以属性应该是链式存储的。不知道这里是否具有超长链溢出的问题（长度超过最大值的一半）。
 另外，在文件名称属性中具有引用目录项目，所以上面猜测的可能无法成立。不过引用目录和硬连接是违背的阿……下次再分析好了，困了困了……

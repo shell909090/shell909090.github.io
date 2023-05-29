@@ -2,24 +2,23 @@
 <html lang="en-us">
   <head>
     <title>debian上配置基于apache2的resin // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
@@ -29,22 +28,22 @@ if (!doNotTrack) {
 拿到resin，放在目标目录下面，然后tar -jxvf。完成后用ln -s做一个链接上去，使用resin的名字，这样可以方便的替换版本。然后在主目录下面运行./configure，make一下。一般来说，会出不少错误，最后生成一个libresin.so放到libexec下面，并且更新了resin的主执行程序。这个so很具有迷惑性，开始贝壳就被他骗了。这个so貌似是resin在本地平台下的加速程序，而不是嵌入到apache系列服务器中的整合插件。其中最大的差异是没有caucho_module导出符号，在apache加载的时候肯定会失败。
 跑到src/c/plugins/apache2下面运行make。可能会报错，可能没有。贝壳这里报了错，不过贝壳运行configure的时候没有加任何参数，也许加了参数就正常了。如果不正常，出错的代码可能分别是httpd.h找不到或者apr_time.h找不到。运行vi Makefile，看到有INCLUDE的目录吗？那里面要包含/usr/include/apache2和/usr/include/apr-0两个目录，没有就肯定出错。好了，修改然后重新make。得到的文件是mod_caucho.so。将它cp到$RESIN_HOME/libexec下面，这个动态库导出了caucho_module符号。
 在/etc/apache2/httpd.conf里面编辑一下，添加这个内容。
-LoadModule caucho_module /usr/resin/libexec/mod_caucho.so &lt;IfModule mod_caucho.c&gt; CauchoConfigFile ......../resin.conf &lt;Location /caucho-status&gt; SetHandler caucho-status &lt;/Location&gt; &lt;/IfModule&gt;  在/usr/resin/conf/resin.conf里面，添加这些内容。
-&lt;doc-dir&gt;/var/www/htdocs&lt;/doc-dir&gt; &lt;war-dir id=&#39;/var/www/htdocs&#39;/&gt;  在/etc/apache2/sites-available/default中可能要修改如下配置。
-DocumentRoot /var/www/htdocs/ &lt;Directory /var/www/htdocs/&gt;  然后注销
-RedirectMatch ^/$ /apache2-default/  OK，这样就基本完成了整个系统的整合配置。"/>
+LoadModule caucho_module /usr/resin/libexec/mod_caucho.so &lt;IfModule mod_caucho.c&gt; CauchoConfigFile ......../resin.conf &lt;Location /caucho-status&gt; SetHandler caucho-status &lt;/Location&gt; &lt;/IfModule&gt; 在/usr/resin/conf/resin.conf里面，添加这些内容。
+&lt;doc-dir&gt;/var/www/htdocs&lt;/doc-dir&gt; &lt;war-dir id=&#39;/var/www/htdocs&#39;/&gt; 在/etc/apache2/sites-available/default中可能要修改如下配置。
+DocumentRoot /var/www/htdocs/ &lt;Directory /var/www/htdocs/&gt; 然后注销
+RedirectMatch ^/$ /apache2-default/ OK，这样就基本完成了整个系统的整合配置。"/>
 
     <meta property="og:title" content="debian上配置基于apache2的resin" />
 <meta property="og:description" content="别的不说了，先用debian自带的apt安装apache2,记得安装dev部分，还有libapr0,libapr-dev,libapr0-dev。千万别忘记安装后面的部分，否则你在下面编译的时候就要出现问题。
 拿到resin，放在目标目录下面，然后tar -jxvf。完成后用ln -s做一个链接上去，使用resin的名字，这样可以方便的替换版本。然后在主目录下面运行./configure，make一下。一般来说，会出不少错误，最后生成一个libresin.so放到libexec下面，并且更新了resin的主执行程序。这个so很具有迷惑性，开始贝壳就被他骗了。这个so貌似是resin在本地平台下的加速程序，而不是嵌入到apache系列服务器中的整合插件。其中最大的差异是没有caucho_module导出符号，在apache加载的时候肯定会失败。
 跑到src/c/plugins/apache2下面运行make。可能会报错，可能没有。贝壳这里报了错，不过贝壳运行configure的时候没有加任何参数，也许加了参数就正常了。如果不正常，出错的代码可能分别是httpd.h找不到或者apr_time.h找不到。运行vi Makefile，看到有INCLUDE的目录吗？那里面要包含/usr/include/apache2和/usr/include/apr-0两个目录，没有就肯定出错。好了，修改然后重新make。得到的文件是mod_caucho.so。将它cp到$RESIN_HOME/libexec下面，这个动态库导出了caucho_module符号。
 在/etc/apache2/httpd.conf里面编辑一下，添加这个内容。
-LoadModule caucho_module /usr/resin/libexec/mod_caucho.so &lt;IfModule mod_caucho.c&gt; CauchoConfigFile ......../resin.conf &lt;Location /caucho-status&gt; SetHandler caucho-status &lt;/Location&gt; &lt;/IfModule&gt;  在/usr/resin/conf/resin.conf里面，添加这些内容。
-&lt;doc-dir&gt;/var/www/htdocs&lt;/doc-dir&gt; &lt;war-dir id=&#39;/var/www/htdocs&#39;/&gt;  在/etc/apache2/sites-available/default中可能要修改如下配置。
-DocumentRoot /var/www/htdocs/ &lt;Directory /var/www/htdocs/&gt;  然后注销
-RedirectMatch ^/$ /apache2-default/  OK，这样就基本完成了整个系统的整合配置。" />
+LoadModule caucho_module /usr/resin/libexec/mod_caucho.so &lt;IfModule mod_caucho.c&gt; CauchoConfigFile ......../resin.conf &lt;Location /caucho-status&gt; SetHandler caucho-status &lt;/Location&gt; &lt;/IfModule&gt; 在/usr/resin/conf/resin.conf里面，添加这些内容。
+&lt;doc-dir&gt;/var/www/htdocs&lt;/doc-dir&gt; &lt;war-dir id=&#39;/var/www/htdocs&#39;/&gt; 在/etc/apache2/sites-available/default中可能要修改如下配置。
+DocumentRoot /var/www/htdocs/ &lt;Directory /var/www/htdocs/&gt; 然后注销
+RedirectMatch ^/$ /apache2-default/ OK，这样就基本完成了整个系统的整合配置。" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/266/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/266/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2005-11-29T00:26:52+08:00" />
 <meta property="article:modified_time" content="2005-11-29T00:26:52+08:00" />
 
@@ -84,11 +83,8 @@ RedirectMatch ^/$ /apache2-default/  OK，这样就基本完成了整个系统�
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -98,60 +94,56 @@ RedirectMatch ^/$ /apache2-default/  OK，这样就基本完成了整个系统�
       <h1 class ="post-title">debian上配置基于apache2的resin</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Nov 29, 2005
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/apache/">apache</a><a class="tag" href="//blog.shell909090.org/tags/debian/">debian</a><a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a><a class="tag" href="//blog.shell909090.org/tags/resin/">resin</a><a class="tag" href="//blog.shell909090.org/tags/webserver/">webserver</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/apache/">apache</a>
+              <a class="tag" href="//blog.shell909090.org/tags/debian/">debian</a>
+              <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a>
+              <a class="tag" href="//blog.shell909090.org/tags/resin/">resin</a>
+              <a class="tag" href="//blog.shell909090.org/tags/webserver/">webserver</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
       <p>别的不说了，先用debian自带的apt安装apache2,记得安装dev部分，还有libapr0,libapr-dev,libapr0-dev。千万别忘记安装后面的部分，否则你在下面编译的时候就要出现问题。</p>
-
 <p>拿到resin，放在目标目录下面，然后tar -jxvf。完成后用ln -s做一个链接上去，使用resin的名字，这样可以方便的替换版本。然后在主目录下面运行./configure，make一下。一般来说，会出不少错误，最后生成一个libresin.so放到libexec下面，并且更新了resin的主执行程序。这个so很具有迷惑性，开始贝壳就被他骗了。这个so貌似是resin在本地平台下的加速程序，而不是嵌入到apache系列服务器中的整合插件。其中最大的差异是没有caucho_module导出符号，在apache加载的时候肯定会失败。</p>
-
 <p>跑到src/c/plugins/apache2下面运行make。可能会报错，可能没有。贝壳这里报了错，不过贝壳运行configure的时候没有加任何参数，也许加了参数就正常了。如果不正常，出错的代码可能分别是httpd.h找不到或者apr_time.h找不到。运行vi Makefile，看到有INCLUDE的目录吗？那里面要包含/usr/include/apache2和/usr/include/apr-0两个目录，没有就肯定出错。好了，修改然后重新make。得到的文件是mod_caucho.so。将它cp到$RESIN_HOME/libexec下面，这个动态库导出了caucho_module符号。</p>
-
 <p>在/etc/apache2/httpd.conf里面编辑一下，添加这个内容。</p>
-
 <pre><code>LoadModule caucho_module /usr/resin/libexec/mod_caucho.so
 &lt;IfModule mod_caucho.c&gt;
-    CauchoConfigFile ......../resin.conf
-    &lt;Location /caucho-status&gt;
-        SetHandler caucho-status
-    &lt;/Location&gt;
+	CauchoConfigFile ......../resin.conf
+	&lt;Location /caucho-status&gt;
+		SetHandler caucho-status
+	&lt;/Location&gt;
 &lt;/IfModule&gt;
 </code></pre>
-
 <p>在/usr/resin/conf/resin.conf里面，添加这些内容。</p>
-
 <pre><code>&lt;doc-dir&gt;/var/www/htdocs&lt;/doc-dir&gt;
 &lt;war-dir id='/var/www/htdocs'/&gt;
 </code></pre>
-
 <p>在/etc/apache2/sites-available/default中可能要修改如下配置。</p>
-
 <pre><code>DocumentRoot /var/www/htdocs/
 &lt;Directory /var/www/htdocs/&gt;
 </code></pre>
-
 <p>然后注销</p>
-
 <pre><code>RedirectMatch ^/$ /apache2-default/
 </code></pre>
-
 <p>OK，这样就基本完成了整个系统的整合配置。</p>
 
     </div>

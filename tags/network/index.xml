@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>network on Shell&#39;s Home</title>
@@ -7,11 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Mon, 08 Apr 2013 11:18:57 +0800</lastBuildDate>
-    
-	<atom:link href="//blog.shell909090.org/tags/network/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Mon, 08 Apr 2013 11:18:57 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/network/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>什么叫做网桥</title>
       <link>//blog.shell909090.org/blog/archives/2362/</link>
@@ -25,9 +21,9 @@
 找一个交换机来，把物理设备的网卡用网线连接到上面，把虚拟机的网卡连接到上面，再把外网网线接上去，OK，齐活了。
 brctl创立出来的网桥就是这么工作的。
 你原本的物理网卡，例如eth0，我们直接为他分配IP，进行通讯。结构大概是这个样子的。
-system -- eth0 -- network  接入网桥这个假的交换机后，eth0依然负责向外通讯，但是没有自己的IP了。网桥和宿主所在的机器的连接叫做br0（或者br1，以此类推）。
-system -- br0 -- eth0 -- network  然后，我们可以为这个交换机接入很多的设备。
-system -- br0 -- eth0 -- network | vethXX | virtual -- eth0 /  其中，eth0和vethXX是一对设备。一个在宿主里，一个在虚拟机里。互相连通。
+system -- eth0 -- network 接入网桥这个假的交换机后，eth0依然负责向外通讯，但是没有自己的IP了。网桥和宿主所在的机器的连接叫做br0（或者br1，以此类推）。
+system -- br0 -- eth0 -- network 然后，我们可以为这个交换机接入很多的设备。
+system -- br0 -- eth0 -- network | vethXX | virtual -- eth0 / 其中，eth0和vethXX是一对设备。一个在宿主里，一个在虚拟机里。互相连通。
 所以，当虚拟机发生通讯时，eth0上可以看到数据流，但是br0上看不到。而如果虚拟机和宿主通讯时，eth0看不到数据流，br0上可以。</description>
     </item>
     
@@ -39,15 +35,19 @@ system -- br0 -- eth0 -- network | vethXX | virtual -- eth0 /  其中，eth0和
       <guid>//blog.shell909090.org/blog/archives/2142/</guid>
       <description>4月12日上午, 大约北京时间10点(UTC02:00前后),
 中国大部分地区发生了一次断网. 这次断网我有幸正好在使用网络, 因此跟踪调试了整个过程.
- 网络开始中断  当时我在公司里面用ssh调整一台国外的机器, 同时用另一台机器作为ssh跳板访问google. 问题发生的时候, 很多国外网站都无法打开, ssh指令不能工作. 我的第一反应就是, GFW针对ssh做了拦截.
+网络开始中断 当时我在公司里面用ssh调整一台国外的机器, 同时用另一台机器作为ssh跳板访问google. 问题发生的时候, 很多国外网站都无法打开, ssh指令不能工作. 我的第一反应就是, GFW针对ssh做了拦截.
 鉴于其他可能, 我登录回了家中, 从家里的机器直接ssh到国外的跳板, 一切正常. 莫非只是我这里的ssh发生了断路? 我正在这么猜测的时候, 家里的ssh也随即断开. 我kill了当前进程, 重新连接后, 恢复了对家里服务器的控制, 但是境外的ssh跳板已经不能连接.
 至此, 可以确定中国出国网络逐步发生中断, 针对什么协议, 机制如何尚不清楚.
 但是, 我同时用同一台机器打开了openvpn, openvpn会提供一个内网接口.
 我偶然的用这个内网iface访问了一下, 一切正常. 再尝试了一下, openvpn上网正常. 这说明问题可能局限在ssh上.
- 这不是一个个例, 这是大规模断网  既然我对境外服务器还有控制能力, 我就更换了一个ssh端口, 但是问题并没有解决. 这似乎说明封锁不是针对端口(port), 而是针对协议(protocol)的. 为了确证这点, 我对通讯过程做了抓包, 但是结果出乎我的意料. 问题并不出现在ssh握手的时候, 而是tcp第二步的syn-ack回包彻底消失. 这表明封锁并不针对ssh协议, 而是tcp协议栈!
+这不是一个个例, 这是大规模断网 既然我对境外服务器还有控制能力, 我就更换了一个ssh端口, 但是问题并没有解决. 这似乎说明封锁不是针对端口(port), 而是针对协议(protocol)的. 为了确证这点, 我对通讯过程做了抓包, 但是结果出乎我的意料. 问题并不出现在ssh握手的时候, 而是tcp第二步的syn-ack回包彻底消失. 这表明封锁并不针对ssh协议, 而是tcp协议栈!
 这非常疯狂, 如果是这样的话, 大部分基于tcp的网络协议将无法工作, 包括境外大部分网站的http协议. 我从twitter上看到, 很多人的各种工具都相继失效, 并且境外很多的http(而非https)确实无法访问, 这和我的判断相一致. 这是针对tcp协议栈的大规模拦截.
- 为什么特殊  通常而言, GFW有三个常见工作模式.
- dns污染</description>
+为什么特殊 通常而言, GFW有三个常见工作模式.
+dns污染
+ip封锁
+深度包过滤(关键字拦截)
+其中dns封锁只对域名有效, ip封锁只对ip有效, 只有深度包过滤才是最麻烦的.
+但是通常深度包过滤是使用旁路过滤的方式, 在连接出现问题时发出rst包干扰tcp工作. 而本次的模式是将境外向境内的tcp包直接丢弃, 而非rst.</description>
     </item>
     
     <item>
@@ -84,7 +84,7 @@ tcp的fin机制，其实是要解决这么一个问题。当你说“再见”�
       <pubDate>Mon, 12 Dec 2011 10:24:48 +0800</pubDate>
       
       <guid>//blog.shell909090.org/blog/archives/2012/</guid>
-      <description>Sunny Sunny&amp;lt;sunnyboyme@gmail.com&amp;gt;:
+      <description>Sunny Sunny&amp;laquo;sunnyboyme@gmail.com&amp;raquo;:
 要做一个关于home gateway的论文，讨论不同服务下的 Service Level Agreement （SLA），带宽，延时，数据包 schedule 策略 等等。不知大家有什么好的 想法/Question/Hypothesis，或者 以往的使用体验。
 希望来个 头脑风暴，呵呵 ～～
 shell:
@@ -95,15 +95,15 @@ shell:
 其余设备都走了网线或者无线，最近考虑装一个网络电话。
 电视是三星的，上面集成了一个简单的android，就是app market是专用的，里面没有vnc/rdp客户端，否则我连atom都不需要登录就可以直接访问各种服务器了，更方便。
 电话，电视，网络，全部走在了ethernet上面，不知道算不算三网融合。不过我吐槽过一篇文章，这年头不知道要电视和电话干吗用。给我视频网站和手机就能很high了。
- 在 11-12-11，Sunny Sunny&amp;lt;sunnyboyme@gmail.com&amp;gt; 写道：
- 哇咔咔,不错不错,可以拿来当模板用~~
- 不知道你的电视和电话走网路时候用的是什么协议?或者说,用的哪家公司的服务?
+在 11-12-11，Sunny Sunny&amp;laquo;sunnyboyme@gmail.com&amp;raquo; 写道：
+哇咔咔,不错不错,可以拿来当模板用~~
+不知道你的电视和电话走网路时候用的是什么协议?或者说,用的哪家公司的服务?
 电视走网络(IPTV?)会带来巨大流量,相比普通电视/数字电视有什么优势?
-   在 2011年12月12日 上午9:16，Stone Zhang&amp;lt;kelxzhang@gmail.com&amp;gt;写道：
- 其实，我感觉三网融合现在最大的问题是，在三层没有连上的时候，如果可以打电话。
+在 2011年12月12日 上午9:16，Stone Zhang&amp;laquo;kelxzhang@gmail.com&amp;raquo;写道：
+其实，我感觉三网融合现在最大的问题是，在三层没有连上的时候，如果可以打电话。
 就是说，在断网时（就是物理连上，但拿不到IP
 ）普通用户如何能够打电话。 还是就是收费问题。
- 何必走专用协议呢？现在中国没有一家服务是大到可以称为标准协议的。
+何必走专用协议呢？现在中国没有一家服务是大到可以称为标准协议的。
 电话我还在考虑，用SIP还是skype。前者有很多现成的网关，也很容易和普通电话通话。后者看样子也不差。反正我手头有atom服务器，用skype长期开机也是没什么问题的。
 电视更简单，直接上youku/tudou/verycd搜索就好。其实你本心的想一想，我们到底是为了解决问题而发明标准还是为了制造问题而发明标准？使用目前已经存在的服务能解决需求就好了。这些点播唯一的缺陷是还缺少一些连续播放的视频DJ/选材制作，我在吃饭的时候看节目往往还要自己挑。所以目前我吃饭的时候都在看电影，atom机器一天能下N部高清下来，就是我怕现在的导演们没那么多时间去拍。。。
 视频走网络有什么好处？论广播能力，格式兼容性，不如RF。论节目，也比电视台差了很多。但是电视走网络胜在制式可以几乎无限上升，目前我看1024x768已经觉得不够清楚了。你觉得目前的IPTV，就算加上数字电视机顶盒，能够到多少分辨率？
@@ -129,8 +129,8 @@ shell:
 2.3g网卡拨号
 应当使用usb_modeswitch进行编码转换，然后用wvdial拨号。MF190而言，至少我这里modeswitch会自动转换的。后者直接编辑/etc/wvdial.conf，然后输入wvdial开始拨号。wvdial有个包装叫做gnome-ppp，依赖很少，在其他桌面也可以用。我还没有研究出来怎么玩。
 附，MF190使用的usb_modeswitch配置（debian自带）:
-######################################################## # ZTE devices DefaultVendor= 0x19d2 DefaultProduct= 0x2000 TargetVendor= 0x19d2 TargetProductList=&amp;quot;0001,0002,0015,0016,0017,0031,0037,0052,0055,0063,0064,0066,0091,0108,0117,0128,2002&amp;quot; MessageContent=&amp;quot;5553424312345678000000000000061e000000000000000000000000000000&amp;quot; MessageContent2=&amp;quot;5553424312345679000000000000061b000000020000000000000000000000&amp;quot; MessageContent3=&amp;quot;55534243123456702000000080000c85010101180101010101000000000000&amp;quot; NeedResponse=1 CheckSuccess=20  附，MF190可用的wvdial.conf:
-[Dialer Defaults] Modem = /dev/ttyUSB2 Init1 = ATZ Init3 = ATE0V1 Init5 = ATS0=0 Init6 = AT+CGDCONT=1,&amp;quot;IP&amp;quot;,&amp;quot;uninet&amp;quot; Init7 = AT+CFUN=1 Modem Type = USB Modem Baud = 460800 New PPPD = yes ISDN = 0 Phone = *99# Password = any Username = any Stupid Mode = 1  3.</description>
+######################################################## # ZTE devices DefaultVendor= 0x19d2 DefaultProduct= 0x2000 TargetVendor= 0x19d2 TargetProductList=&amp;quot;0001,0002,0015,0016,0017,0031,0037,0052,0055,0063,0064,0066,0091,0108,0117,0128,2002&amp;quot; MessageContent=&amp;quot;5553424312345678000000000000061e000000000000000000000000000000&amp;quot; MessageContent2=&amp;quot;5553424312345679000000000000061b000000020000000000000000000000&amp;quot; MessageContent3=&amp;quot;55534243123456702000000080000c85010101180101010101000000000000&amp;quot; NeedResponse=1 CheckSuccess=20 附，MF190可用的wvdial.conf:
+[Dialer Defaults] Modem = /dev/ttyUSB2 Init1 = ATZ Init3 = ATE0V1 Init5 = ATS0=0 Init6 = AT+CGDCONT=1,&amp;quot;IP&amp;quot;,&amp;quot;uninet&amp;quot; Init7 = AT+CFUN=1 Modem Type = USB Modem Baud = 460800 New PPPD = yes ISDN = 0 Phone = *99# Password = any Username = any Stupid Mode = 1 3.</description>
     </item>
     
     <item>
@@ -163,7 +163,7 @@ wifi管理者比较怕的问题，主要就是有人使用wifi下载比较大的
 5.根据具体情况配置。
 WEP比较节约资源，所以我们开始配置的是WEP信号。但是测试下来，苹果系统对WEP的支持非常差，基本接不上去。所以就不要节约了，使用WPA/WPA2。
 运营商的接入情况比较多变，而且很难控制。这次运营商给我们的是一个内网IP，192.168.1.2。他们已经有了一个路由器在前面。我使用了双重NAT方案，而且避开192.168.1.x网段，来避免修改它们的路由器（我们无权控制）。
-这次我们使用的是192.168.0.1&amp;frasl;24网段，三台AP的连接模式是一主多桥。一个主router负责DHCP和NAT，其余的全部当单纯的AP使用。从1到3分别分配0.1-3的IP，2/3的DHCP关闭，1的DHCP从20开始分配起，直到254，共计最高容纳234人在线。20以前的IP让组委的人作为静态IP预留。如果还要多，建议使用192.168.2.0/23网段，最高可以容纳500人不到，足够大部分的会展使用。如果再不够——你们考虑10网段吧。
+这次我们使用的是192.168.0.1/24网段，三台AP的连接模式是一主多桥。一个主router负责DHCP和NAT，其余的全部当单纯的AP使用。从1到3分别分配0.1-3的IP，2/3的DHCP关闭，1的DHCP从20开始分配起，直到254，共计最高容纳234人在线。20以前的IP让组委的人作为静态IP预留。如果还要多，建议使用192.168.2.0/23网段，最高可以容纳500人不到，足够大部分的会展使用。如果再不够——你们考虑10网段吧。
 最后的经验总结。
 1.会前勘察真的很重要，尤其是会场平面结构，承重墙位置，会场部署，电源插座位置，一定要提前至少三天确认。提前一天的时候要配好所有AP，备件和网线到会场部署，然后测试信号。
 2.会场带宽一定要大，万一实在不够大，想办法ban掉debian/ubuntu的镜像，然后做qos或者squid。
@@ -280,8 +280,8 @@ p0f 被动指纹分析工具
 4.2.测试网络IP包传输往返时延(RTT)和IP包时延变化(抖动)
 分主动被动方法，被动方法用wireshark抓包分析。下面主要介绍主动方法：
 运行hping2 www.google.com -p 80。得到
-56 packets transmitted, 56 packets received, 0% packet loss round-trip min/avg/max = 242.5/269.9/381.1 ms  即在主动建立的到www.google.com的TCP连接中(默认为TCP，可以使用UDP，ICMP，IP，具体请看hping2 &amp;ndash;help)，丢包率为0。平均传输延迟为269.9，抖动为138.6。
-注：按照《中华人民共和国信息产业部令第36号》，往返时延平均值≤200毫秒，时延变化平均值≤80毫秒。此处已经超标。但因为测试环境和适用条件不完全吻合，因此无法作为有效证据。
+56 packets transmitted, 56 packets received, 0% packet loss round-trip min/avg/max = 242.5/269.9/381.1 ms 即在主动建立的到www.google.com的TCP连接中(默认为TCP，可以使用UDP，ICMP，IP，具体请看hping2 &amp;ndash;help)，丢包率为0。平均传输延迟为269.9，抖动为138.6。
+注：按照《**中华人民共和国信息产业部令第36号》，**往返时延平均值≤200毫秒，时延变化平均值≤80毫秒。此处已经超标。但因为测试环境和适用条件不完全吻合，因此无法作为有效证据。
 4.3.IP包丢失率(Lost rate)
 也分主动方法和被动方法，主动方法见上。被动方法是用wireshark抓包后，通过tpc.analysis.lost_segment标志分析丢包数量和总体数量。具体为。
 用wireshark抓包。

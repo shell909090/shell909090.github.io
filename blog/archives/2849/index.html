@@ -2,51 +2,50 @@
 <html lang="en-us">
   <head>
     <title>模拟网络丢包延迟和TC的使用 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
     <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="模拟网络丢包延迟和TC的使用"/>
 <meta name="twitter:description" content="iptables方案 这个方案纯基于iptables，不需要内核模块，对容器更加友好一些。
-iptables -A OUTPUT -d xx.xx.xx.xx -m statistic --mode random --probability 0.1 -j DROP  但是这个方案有个副作用。ping的时候，能看到错误“不允许的操作”。
+iptables -A OUTPUT -d xx.xx.xx.xx -m statistic --mode random --probability 0.1 -j DROP 但是这个方案有个副作用。ping的时候，能看到错误“不允许的操作”。
 tc方案 tc方案相对比较复杂。我们先不说这些复杂的事情，先说结果。
-tc qd add dev wlan0 root netem delay 100ms tc qd change dev wlan0 root netem loss 50%  一个是延迟一个是丢包，一个是设定一个是修改。netem还允许你做乱序和重复。方法就不细写了。删除是这么干。
-tc qd del dev wlan0 root netem  你再用tc qd show看看是不是规则已经没了？
+tc qd add dev wlan0 root netem delay 100ms tc qd change dev wlan0 root netem loss 50% 一个是延迟一个是丢包，一个是设定一个是修改。netem还允许你做乱序和重复。方法就不细写了。删除是这么干。
+tc qd del dev wlan0 root netem 你再用tc qd show看看是不是规则已经没了？
 tc简述 tc是linux下面用来控制网络发包（注意是发包）的一套系统。基本的设计目标是确定优先级，限流，也有测试性的丢包之类的策略。可以配合iptables和route协同工作。
 基本原理 包从进入tc开始，分为多个qd(qdisc)。每个qd可以包含多个子qd，qd彼此连接形成一颗树。每个qd上可以附加filter，选择进入哪个child。如果都没命中，那就看本身规则。
 我们先从最简单的例子开始。将root qd改为prio。
-sudo tc qdisc add dev eth0 root handle 1: prio  使用tc qd show查看变化。完成后使用sudo tc qdisc del dev eth root删除变化，还原为默认的pfifo_fast。"/>
+sudo tc qdisc add dev eth0 root handle 1: prio 使用tc qd show查看变化。完成后使用sudo tc qdisc del dev eth root删除变化，还原为默认的pfifo_fast。"/>
 
     <meta property="og:title" content="模拟网络丢包延迟和TC的使用" />
 <meta property="og:description" content="iptables方案 这个方案纯基于iptables，不需要内核模块，对容器更加友好一些。
-iptables -A OUTPUT -d xx.xx.xx.xx -m statistic --mode random --probability 0.1 -j DROP  但是这个方案有个副作用。ping的时候，能看到错误“不允许的操作”。
+iptables -A OUTPUT -d xx.xx.xx.xx -m statistic --mode random --probability 0.1 -j DROP 但是这个方案有个副作用。ping的时候，能看到错误“不允许的操作”。
 tc方案 tc方案相对比较复杂。我们先不说这些复杂的事情，先说结果。
-tc qd add dev wlan0 root netem delay 100ms tc qd change dev wlan0 root netem loss 50%  一个是延迟一个是丢包，一个是设定一个是修改。netem还允许你做乱序和重复。方法就不细写了。删除是这么干。
-tc qd del dev wlan0 root netem  你再用tc qd show看看是不是规则已经没了？
+tc qd add dev wlan0 root netem delay 100ms tc qd change dev wlan0 root netem loss 50% 一个是延迟一个是丢包，一个是设定一个是修改。netem还允许你做乱序和重复。方法就不细写了。删除是这么干。
+tc qd del dev wlan0 root netem 你再用tc qd show看看是不是规则已经没了？
 tc简述 tc是linux下面用来控制网络发包（注意是发包）的一套系统。基本的设计目标是确定优先级，限流，也有测试性的丢包之类的策略。可以配合iptables和route协同工作。
 基本原理 包从进入tc开始，分为多个qd(qdisc)。每个qd可以包含多个子qd，qd彼此连接形成一颗树。每个qd上可以附加filter，选择进入哪个child。如果都没命中，那就看本身规则。
 我们先从最简单的例子开始。将root qd改为prio。
-sudo tc qdisc add dev eth0 root handle 1: prio  使用tc qd show查看变化。完成后使用sudo tc qdisc del dev eth root删除变化，还原为默认的pfifo_fast。" />
+sudo tc qdisc add dev eth0 root handle 1: prio 使用tc qd show查看变化。完成后使用sudo tc qdisc del dev eth root删除变化，还原为默认的pfifo_fast。" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2849/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2849/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2017-03-02T12:55:37+08:00" />
 <meta property="article:modified_time" content="2017-03-02T12:55:37+08:00" />
 
@@ -86,11 +85,8 @@ sudo tc qdisc add dev eth0 root handle 1: prio  使用tc qd show查看变化。�
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -100,106 +96,75 @@ sudo tc qdisc add dev eth0 root handle 1: prio  使用tc qd show查看变化。�
       <h1 class ="post-title">模拟网络丢包延迟和TC的使用</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Mar 2, 2017
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           4 min read
-        </div></div>
+        </div>
+      </div>
     </header>
     <div class="post-content">
-      
-
-<h1 id="iptables方案">iptables方案</h1>
-
+      <h1 id="iptables方案">iptables方案</h1>
 <p>这个方案纯基于iptables，不需要内核模块，对容器更加友好一些。</p>
-
 <pre><code>iptables -A OUTPUT -d xx.xx.xx.xx -m statistic --mode random --probability 0.1 -j DROP
 </code></pre>
-
 <p>但是这个方案有个副作用。ping的时候，能看到错误“不允许的操作”。</p>
-
 <h1 id="tc方案">tc方案</h1>
-
 <p>tc方案相对比较复杂。我们先不说这些复杂的事情，先说结果。</p>
-
 <pre><code>tc qd add dev wlan0 root netem delay 100ms
 tc qd change dev wlan0 root netem loss 50%
 </code></pre>
-
 <p>一个是延迟一个是丢包，一个是设定一个是修改。netem还允许你做乱序和重复。方法就不细写了。删除是这么干。</p>
-
 <pre><code>tc qd del dev wlan0 root netem
 </code></pre>
-
 <p>你再用<code>tc qd show</code>看看是不是规则已经没了？</p>
-
 <h1 id="tc简述">tc简述</h1>
-
 <p>tc是linux下面用来控制网络发包（注意是发包）的一套系统。基本的设计目标是确定优先级，限流，也有测试性的丢包之类的策略。可以配合iptables和route协同工作。</p>
-
 <h1 id="基本原理">基本原理</h1>
-
 <p>包从进入tc开始，分为多个qd(qdisc)。每个qd可以包含多个子qd，qd彼此连接形成一颗树。每个qd上可以附加filter，选择进入哪个child。如果都没命中，那就看本身规则。</p>
-
 <p>我们先从最简单的例子开始。将root qd改为prio。</p>
-
 <pre><code>sudo tc qdisc add dev eth0 root handle 1: prio
 </code></pre>
-
 <p>使用<code>tc qd show</code>查看变化。完成后使用<code>sudo tc qdisc del dev eth root</code>删除变化，还原为默认的pfifo_fast。</p>
-
 <h1 id="使用filter来分类">使用filter来分类</h1>
-
 <p>要分类，最低是两类。一类父，一类子。具体进入哪个sub-class可以用filter来设定。filter可以用<code>sudo tc filter show dev eth0</code>来查看。注意，这里必须附加dev。</p>
-
 <pre><code>sudo tc qdisc del dev eth0 root
 sudo tc qdisc add dev eth0 root handle 1: prio
 sudo tc qdisc add dev eth0 parent 1:1 handle 10: netem delay 1s loss 2%
 sudo tc filter del dev eth0
 sudo tc filter add dev eth0 protocol ip parent 1: prio 1 u32 match ip dst 192.168.33.1 flowid 1:1
 </code></pre>
-
 <p>完成后，192.168.33.1被延迟，192.168.33.2无效果。</p>
-
 <p>注意prio的默认bands是3，因此直接插入parent 1:4会报错。</p>
-
 <pre><code>sudo tc qdisc del dev eth0 root
 sudo tc qdisc add dev eth0 root handle 1: prio
 sudo tc qdisc add dev eth0 parent 1:3 handle 30: netem delay 1s loss 2%
 sudo tc qdisc add dev eth0 parent 1:4 handle 40: sfq
 </code></pre>
-
 <p>将bands改为5问题消失。</p>
-
 <pre><code>sudo tc qdisc del dev eth0 root
 sudo tc qdisc add dev eth0 root handle 1: prio bands 5
 sudo tc qdisc add dev eth0 parent 1:3 handle 30: netem delay 1s loss 2%
 sudo tc qdisc add dev eth0 parent 1:4 handle 40: sfq
 </code></pre>
-
 <p>将flowid更换为classid将会导致不起作用。</p>
-
 <pre><code>sudo tc qdisc del dev eth0 root
 sudo tc qdisc add dev eth0 root handle 1: prio
 sudo tc qdisc add dev eth0 parent 1:1 handle 10: netem delay 1s loss 2%
 sudo tc filter del dev eth0
 sudo tc filter add dev eth0 protocol ip parent 1: prio 1 u32 match ip dst 192.168.33.1 flowid 20:
 </code></pre>
-
 <p>此时ping 192.168.33.1，结果没有延迟。</p>
-
 <h1 id="多个sub-class的例子">多个sub-class的例子</h1>
-
 <p>更复杂的例子。在prio下面分了多个sub-class。命中IP的进入延迟，未命中IP的按照prio的规则走。在prio里，使用priomap将prio映射到不同的sub-class。测试下来，ICMP报文的默认规则将是1:2。</p>
-
 <pre><code>sudo tc qdisc del dev eth0 root
 sudo tc qdisc add dev eth0 root handle 1: prio
 sudo tc qdisc add dev eth0 parent 1:1 handle 10: netem delay 1s loss 2%
@@ -210,13 +175,9 @@ sudo tc filter add dev eth0 protocol ip parent 1: prio 1 u32 match ip dst 192.16
 sudo tc filter add dev eth0 protocol ip parent 1: prio 1 u32 match ip dst 192.168.33.2 flowid 1:2
 sudo tc filter add dev eth0 protocol ip parent 1: prio 1 u32 match ip dst 192.168.33.3 flowid 1:3
 </code></pre>
-
 <p>测试ping 192.168.33.4，结果是延迟2s。</p>
-
-<h1 id="tc-filter方案">tc+filter方案</h1>
-
+<h1 id="tcfilter方案">tc+filter方案</h1>
 <p>运用&rsquo;多个sub-class的例子&rsquo;的同类方法可以用于将特定IP延迟丢包，其他走默认的pfifo_fast。</p>
-
 <pre><code>sudo tc qdisc del dev eth0 root
 sudo tc qdisc add dev eth0 root handle 1: prio
 sudo tc qdisc add dev eth0 parent 1:1 handle 10: netem delay 1s loss 2%
@@ -225,11 +186,8 @@ sudo tc filter del dev eth0
 sudo tc filter add dev eth0 protocol ip parent 1: prio 1 u32 match ip dst 192.168.33.1 flowid 1:1
 sudo tc filter add dev eth0 protocol ip parent 1: prio 1 u32 match ip dst 192.168.33.2 flowid 1:1
 </code></pre>
-
-<h1 id="tc-iptables方案">tc+iptables方案</h1>
-
+<h1 id="tciptables方案">tc+iptables方案</h1>
 <p>我们也可以不用内置的u32 filter来做流量分离，而是先用iptables做mark，然后根据mark来做流量分离。</p>
-
 <pre><code>sudo tc qdisc del dev eth0 root
 sudo tc qdisc add dev eth0 root handle 1: prio
 sudo tc qdisc add dev eth0 parent 1:1 handle 10: netem delay 1s
@@ -241,22 +199,15 @@ sudo iptables -F OUTPUT -t mangle
 sudo iptables -A OUTPUT -t mangle -p icmp -d 192.168.33.1 -j MARK --set-mark 5
 sudo iptables -A OUTPUT -t mangle -p icmp -d 192.168.33.2 -j MARK --set-mark 6
 </code></pre>
-
 <p>这个方案和filter方案没有什么本质性区别，但是使用iptables完成，个人觉得更加灵活一些。</p>
-
 <h1 id="清除和持久化">清除和持久化</h1>
-
 <p>刚刚把脚本全部跑了的同学，别忘了执行一下语句清理环境。不然残留各种垃圾配置的话，上网的时候会很慢哦。</p>
-
 <pre><code>sudo iptables -F OUTPUT -t mangle
 sudo tc filter del dev eth0
 sudo tc qdisc del dev eth0 root
 </code></pre>
-
 <p>如果希望效果持久，可以将语句添加到rc.local里。但是实话说，我还没见过谁希望自己的系统一开机就变慢呢。QoS倒是有可能。</p>
-
 <h1 id="参考">参考</h1>
-
 <ol>
 <li><a href="http://www.voidcn.com/blog/deyangliu/article/p-632719.html">网络模拟：丢包，延迟，乱序</a></li>
 <li><a href="http://blog.csdn.net/weiweicao0429/article/details/17578011">linux 下使用 tc 模拟网络延迟和丢包</a></li>

@@ -2,24 +2,23 @@
 <html lang="en-us">
   <head>
     <title>语言的效率差异2 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
@@ -28,17 +27,17 @@ if (!doNotTrack) {
 <meta name="twitter:description" content="问题 为了更深入的测试语言，我做了一个经典问题——24点。
 这个问题主要是测试递归，循环效率，还有数组和树的复制性能。
 为了简化问题，方便测试，我的问题是这样描述的：
-有一个数组，里面有多个正整数。有一个操作数组，其中每个都是双目操作符。找出以两者构成算式，其值等于给定值的所有表达式组合。 要求不得遗漏，可以有少量重复。例如可交换算符的交换同构暂不做排重。  实际运行的时候，取&#43;-*/和3 4 6 8，运行100次，查看时间消耗。正确的单次输出结果应当是这样的。
-(((8 &#43; 4) / 3) * 6) = 24 (6 / (3 / (8 &#43; 4))) = 24 (((8 &#43; 4) * 6) / 3) = 24 (((8 / 4) &#43; 6) * 3) = 24 (((8 - 6) * 3) * 4) = 24 (((8 - 6) * 4) * 3) = 24 (((3 * 4) - 8) * 6) = 24 ((8 - (6 / 3)) * 4) = 24 (((4 &#43; 8) / 3) * 6) = 24 (6 / (3 / (4 &#43; 8))) = 24 (((4 &#43; 8) * 6) / 3) = 24 (((8 / 4) &#43; 6) * 3) = 24 (((4 * 3) - 8) * 6) = 24 (((8 - 6) * 3) * 4) = 24 (((8 - 6) * 4) * 3) = 24 ((8 - (6 / 3)) * 4) = 24  python python的解很复杂，长达31行，以下是我写的解。当然，还有更简单的版本，我可以用eval来干这个事情，代码只有24行，但是确实给人很evil的感觉。"/>
+有一个数组，里面有多个正整数。有一个操作数组，其中每个都是双目操作符。找出以两者构成算式，其值等于给定值的所有表达式组合。 要求不得遗漏，可以有少量重复。例如可交换算符的交换同构暂不做排重。 实际运行的时候，取&#43;-*/和3 4 6 8，运行100次，查看时间消耗。正确的单次输出结果应当是这样的。
+(((8 &#43; 4) / 3) * 6) = 24 (6 / (3 / (8 &#43; 4))) = 24 (((8 &#43; 4) * 6) / 3) = 24 (((8 / 4) &#43; 6) * 3) = 24 (((8 - 6) * 3) * 4) = 24 (((8 - 6) * 4) * 3) = 24 (((3 * 4) - 8) * 6) = 24 ((8 - (6 / 3)) * 4) = 24 (((4 &#43; 8) / 3) * 6) = 24 (6 / (3 / (4 &#43; 8))) = 24 (((4 &#43; 8) * 6) / 3) = 24 (((8 / 4) &#43; 6) * 3) = 24 (((4 * 3) - 8) * 6) = 24 (((8 - 6) * 3) * 4) = 24 (((8 - 6) * 4) * 3) = 24 ((8 - (6 / 3)) * 4) = 24 python python的解很复杂，长达31行，以下是我写的解。当然，还有更简单的版本，我可以用eval来干这个事情，代码只有24行，但是确实给人很evil的感觉。"/>
 
     <meta property="og:title" content="语言的效率差异2" />
 <meta property="og:description" content="问题 为了更深入的测试语言，我做了一个经典问题——24点。
 这个问题主要是测试递归，循环效率，还有数组和树的复制性能。
 为了简化问题，方便测试，我的问题是这样描述的：
-有一个数组，里面有多个正整数。有一个操作数组，其中每个都是双目操作符。找出以两者构成算式，其值等于给定值的所有表达式组合。 要求不得遗漏，可以有少量重复。例如可交换算符的交换同构暂不做排重。  实际运行的时候，取&#43;-*/和3 4 6 8，运行100次，查看时间消耗。正确的单次输出结果应当是这样的。
-(((8 &#43; 4) / 3) * 6) = 24 (6 / (3 / (8 &#43; 4))) = 24 (((8 &#43; 4) * 6) / 3) = 24 (((8 / 4) &#43; 6) * 3) = 24 (((8 - 6) * 3) * 4) = 24 (((8 - 6) * 4) * 3) = 24 (((3 * 4) - 8) * 6) = 24 ((8 - (6 / 3)) * 4) = 24 (((4 &#43; 8) / 3) * 6) = 24 (6 / (3 / (4 &#43; 8))) = 24 (((4 &#43; 8) * 6) / 3) = 24 (((8 / 4) &#43; 6) * 3) = 24 (((4 * 3) - 8) * 6) = 24 (((8 - 6) * 3) * 4) = 24 (((8 - 6) * 4) * 3) = 24 ((8 - (6 / 3)) * 4) = 24  python python的解很复杂，长达31行，以下是我写的解。当然，还有更简单的版本，我可以用eval来干这个事情，代码只有24行，但是确实给人很evil的感觉。" />
+有一个数组，里面有多个正整数。有一个操作数组，其中每个都是双目操作符。找出以两者构成算式，其值等于给定值的所有表达式组合。 要求不得遗漏，可以有少量重复。例如可交换算符的交换同构暂不做排重。 实际运行的时候，取&#43;-*/和3 4 6 8，运行100次，查看时间消耗。正确的单次输出结果应当是这样的。
+(((8 &#43; 4) / 3) * 6) = 24 (6 / (3 / (8 &#43; 4))) = 24 (((8 &#43; 4) * 6) / 3) = 24 (((8 / 4) &#43; 6) * 3) = 24 (((8 - 6) * 3) * 4) = 24 (((8 - 6) * 4) * 3) = 24 (((3 * 4) - 8) * 6) = 24 ((8 - (6 / 3)) * 4) = 24 (((4 &#43; 8) / 3) * 6) = 24 (6 / (3 / (4 &#43; 8))) = 24 (((4 &#43; 8) * 6) / 3) = 24 (((8 / 4) &#43; 6) * 3) = 24 (((4 * 3) - 8) * 6) = 24 (((8 - 6) * 3) * 4) = 24 (((8 - 6) * 4) * 3) = 24 ((8 - (6 / 3)) * 4) = 24 python python的解很复杂，长达31行，以下是我写的解。当然，还有更简单的版本，我可以用eval来干这个事情，代码只有24行，但是确实给人很evil的感觉。" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2174/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2174/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2012-05-18T07:14:24+08:00" />
 <meta property="article:modified_time" content="2012-05-18T07:14:24+08:00" />
 
@@ -78,11 +77,8 @@ if (!doNotTrack) {
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -92,42 +88,41 @@ if (!doNotTrack) {
       <h1 class ="post-title">语言的效率差异2</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           May 18, 2012
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           4 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/go/">go</a><a class="tag" href="//blog.shell909090.org/tags/lisp/">lisp</a><a class="tag" href="//blog.shell909090.org/tags/lua/">lua</a><a class="tag" href="//blog.shell909090.org/tags/program/">program</a><a class="tag" href="//blog.shell909090.org/tags/python/">python</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/go/">go</a>
+              <a class="tag" href="//blog.shell909090.org/tags/lisp/">lisp</a>
+              <a class="tag" href="//blog.shell909090.org/tags/lua/">lua</a>
+              <a class="tag" href="//blog.shell909090.org/tags/program/">program</a>
+              <a class="tag" href="//blog.shell909090.org/tags/python/">python</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
-      
-
-<h1 id="问题">问题</h1>
-
+      <h1 id="问题">问题</h1>
 <p>为了更深入的测试语言，我做了一个经典问题——24点。</p>
-
 <p>这个问题主要是测试递归，循环效率，还有数组和树的复制性能。</p>
-
 <p>为了简化问题，方便测试，我的问题是这样描述的：</p>
-
 <pre><code>有一个数组，里面有多个正整数。有一个操作数组，其中每个都是双目操作符。找出以两者构成算式，其值等于给定值的所有表达式组合。
 要求不得遗漏，可以有少量重复。例如可交换算符的交换同构暂不做排重。
 </code></pre>
-
 <p>实际运行的时候，取+-*/和3 4 6 8，运行100次，查看时间消耗。正确的单次输出结果应当是这样的。</p>
-
 <pre><code>(((8 + 4) / 3) * 6) = 24
 (6 / (3 / (8 + 4))) = 24
 (((8 + 4) * 6) / 3) = 24
@@ -145,99 +140,89 @@ if (!doNotTrack) {
 (((8 - 6) * 4) * 3) = 24
 ((8 - (6 / 3)) * 4) = 24
 </code></pre>
-
 <h1 id="python">python</h1>
-
 <p>python的解很复杂，长达31行，以下是我写的解。当然，还有更简单的版本，我可以用eval来干这个事情，代码只有24行，但是确实给人很evil的感觉。</p>
-
 <pre><code>from itertools import combinations
 
 class opt(object):
 
-    def __init__(self, name, func, ex=True):
-        self.name, self.func, self.exchangable = name, func, ex
+	def __init__(self, name, func, ex=True):
+		self.name, self.func, self.exchangable = name, func, ex
 
-    def __str__(self): return self.name
+	def __str__(self): return self.name
 
-    def __call__(self, l, r): return self.func(l, r)
+	def __call__(self, l, r): return self.func(l, r)
 
-    def fmt(self, l, r):
-        return '(%s %s %s)' % (fmt_exp(l), str(self), fmt_exp(r))
+	def fmt(self, l, r):
+		return '(%s %s %s)' % (fmt_exp(l), str(self), fmt_exp(r))
 
-    def eval_exp(e):
-        if not isinstance(e, tuple): return e
-        try:
-            return e[0](eval_exp(e[1]), eval_exp(e[2]))
-        except:
-            return None
+	def eval_exp(e):
+		if not isinstance(e, tuple): return e
+		try:
+			return e[0](eval_exp(e[1]), eval_exp(e[2]))
+		except:
+			return None
 
-    def fmt_exp(e): return e[0].fmt(e[1], e[2]) if isinstance(e, tuple) else str(e)
+	def fmt_exp(e): return e[0].fmt(e[1], e[2]) if isinstance(e, tuple) else str(e)
 
-    def print_exp(e): print fmt_exp(e), eval_exp(e)
+	def print_exp(e): print fmt_exp(e), eval_exp(e)
 
-    def chkexp(target):
-        def do_exp(e):
-            if abs(eval_exp(e) - target) &lt; 0.001: print fmt_exp(e), '=', target
-            return
-        do_exp
+	def chkexp(target):
+		def do_exp(e):
+			if abs(eval_exp(e) - target) &lt; 0.001: print fmt_exp(e), '=', target
+			return
+		do_exp
 
-    def iter_all_exp(f, ops, ns, e=None):
-        if not ns: return f(e)
-        for r in set(ns):
-            ns.remove(r)
-        if e is None: iter_all_exp(f, ops, ns, r)
-        else:
-            for op in ops:
-                iter_all_exp(f, ops, ns, (op, e, r))
-        if not op.exchangable:
-            iter_all_exp(f, ops, ns, (op, r, e))
-        ns.append(r)
+	def iter_all_exp(f, ops, ns, e=None):
+		if not ns: return f(e)
+		for r in set(ns):
+			ns.remove(r)
+		if e is None: iter_all_exp(f, ops, ns, r)
+		else:
+			for op in ops:
+				iter_all_exp(f, ops, ns, (op, e, r))
+		if not op.exchangable:
+			iter_all_exp(f, ops, ns, (op, r, e))
+		ns.append(r)
 
 opts = [
-    opt('+', lambda x, y: x+y),
-    opt('-', lambda x, y: x-y, False),
-    opt('*', lambda x, y: x*y),
-    opt('/', lambda x, y: float(x)/y, False),]
+	opt('+', lambda x, y: x+y),
+	opt('-', lambda x, y: x-y, False),
+	opt('*', lambda x, y: x*y),
+	opt('/', lambda x, y: float(x)/y, False),]
 
 if __name__ == '__main__':
 for i in xrange(100): iter_all_exp(chkexp(24), opts, [3, 4, 6, 8])
 </code></pre>
-
 <p>以下是100次的时间：</p>
-
 <pre><code>real 0m2.259s
 user 0m2.248s
 sys  0m0.004s
 </code></pre>
-
 <h1 id="common-lisp">common lisp</h1>
-
 <p>lisp来解这个问题简直是作弊，难怪被叫做人工智能语言。</p>
-
 <pre><code>(defun chkexp (target)
   (lambda (e)
-    (if (equal (ignore-errors (eval e)) target) (print e))))
+	(if (equal (ignore-errors (eval e)) target) (print e))))
 
 (defun exchangeable (op)
   (not (member op '(- /))))
 
 (defun iter-all-exp (f ops ns &amp;optional e)
   (cond
-    ((not ns) (funcall f e))
-    ((not e) (dolist (r (remove-duplicates ns))
-           (iter-all-exp f ops (remove r ns :count 1) r)))
-    (t (dolist (r (remove-duplicates ns))
-     (let ((nss (remove r ns :count 1)))
-       (dolist (op ops)
-         (iter-all-exp f ops nss `(,op ,e ,r))
-         (if (not (exchangeable op))
-         (iter-all-exp f ops nss `(,op ,r ,e)))))))))
+	((not ns) (funcall f e))
+	((not e) (dolist (r (remove-duplicates ns))
+		   (iter-all-exp f ops (remove r ns :count 1) r)))
+	(t (dolist (r (remove-duplicates ns))
+	 (let ((nss (remove r ns :count 1)))
+	   (dolist (op ops)
+		 (iter-all-exp f ops nss `(,op ,e ,r))
+		 (if (not (exchangeable op))
+		 (iter-all-exp f ops nss `(,op ,r ,e)))))))))
 
 (iter-all-exp (chkexp 24) `(+ - * /) `(3 4 6 8))
 </code></pre>
-
 <p>只有短短17行。原因在于，lisp本身的ast即是用数据结构表示的，因此根本不需要我做eval函数，也不需要画蛇添足的弄自定义算符，直接用系统算符上。显示，打印，都是现成的。需要写的只有主体逻辑。结果也很特别：</p>
-
 <pre><code>(* (- (* 3 4) 8) 6)
 (* (- 8 (/ 6 3)) 4)
 (* (- (* 4 3) 8) 6)
@@ -255,93 +240,84 @@ sys  0m0.004s
 (* (* (- 8 6) 3) 4)
 (* (* (- 8 6) 4) 3)
 </code></pre>
-
 <p>不但行数只有一半，速度也很让人吐血，比python快了近一倍，这是100次的结果。</p>
-
 <p>Evaluation</p>
-
 <p>took: 1.379 seconds of real time 1.372086 seconds of total run time (1.372086 user, 0.000000 system)
 [ Run times consist of 0.012 seconds GC time, and 1.361 seconds non-GC time. ]
 99.49% CPU 3,628,800 forms interpreted 4,127,047,350 processor cycles 102,577,080 bytes consed</p>
-
 <h1 id="go">go</h1>
-
 <h1 id="lua">lua</h1>
-
 <p>lua的代码是所有语言中最罗嗦的，足足长达60行，超过python许多。</p>
-
 <pre><code>function find_item(tbl, obj)
-    for i, v in pairs(tbl) do
-        if v == obj then return i end
-    end
-    return nil
+	for i, v in pairs(tbl) do
+		if v == obj then return i end
+	end
+	return nil
 end
 
 function remove_duplicates (tbl)
-    local newtbl = {}
-    for i, v in pairs(tbl) do
-        if find_item(newtbl, v) == nil then
-       table.insert(newtbl, v)
-    end
-    end
-    return newtbl
+	local newtbl = {}
+	for i, v in pairs(tbl) do
+		if find_item(newtbl, v) == nil then
+	   table.insert(newtbl, v)
+	end
+	end
+	return newtbl
 end
 
 function fmt_exp (e)
-    if type(e) \~= 'table' then
-       return tostring(e)
-    else
-    return '(' .. fmt_exp(e[3]) .. e[1] .. fmt_exp(e[4]) .. ')'
-    end
+	if type(e) \~= 'table' then
+	   return tostring(e)
+	else
+	return '(' .. fmt_exp(e[3]) .. e[1] .. fmt_exp(e[4]) .. ')'
+	end
 end
 
 function eval_exp (e)
-    if type(e) \~= 'table' then
-       return tonumber(e)
-    else
-    return e[2](eval_exp(e[3]), eval_exp(e[4]))
-    end
+	if type(e) \~= 'table' then
+	   return tonumber(e)
+	else
+	return e[2](eval_exp(e[3]), eval_exp(e[4]))
+	end
 end
 
 function chkexp (target)
-    return function (e)
-        if eval_exp(e) == target then
-        print(fmt_exp(e))
-    end
-    end
+	return function (e)
+		if eval_exp(e) == target then
+		print(fmt_exp(e))
+	end
+	end
 end
 
 function iter_all_exp (f, ops, ns, e)
-    if table.maxn(ns) == 0 then return f(e) end
-    for i, r in pairs(remove_duplicates(ns)) do
-        table.remove(ns, find_item(ns, r))
-    if e == nil then
-        iter_all_exp(f, ops, ns, r)
-    else
-        for op, fp in pairs(ops) do
-            iter_all_exp(f, ops, ns, {op, fp, e, r})
-        if find_item(exchangable, op) == nil then
-            iter_all_exp(f, ops, ns, {op, fp, r, e})
-        end
-        end
-    end
-    table.insert(ns, r)
-    end
+	if table.maxn(ns) == 0 then return f(e) end
+	for i, r in pairs(remove_duplicates(ns)) do
+		table.remove(ns, find_item(ns, r))
+	if e == nil then
+		iter_all_exp(f, ops, ns, r)
+	else
+		for op, fp in pairs(ops) do
+			iter_all_exp(f, ops, ns, {op, fp, e, r})
+		if find_item(exchangable, op) == nil then
+			iter_all_exp(f, ops, ns, {op, fp, r, e})
+		end
+		end
+	end
+	table.insert(ns, r)
+	end
 end
 
 exchangable = {'+', '*'}
 opts = {
-     ['+'] = function (a, b) return a + b end,
-     ['-'] = function (a, b) return a - b end,
-     ['*'] = function (a, b) return a * b end,
-     ['/'] = function (a, b) return a / b end,
+	 ['+'] = function (a, b) return a + b end,
+	 ['-'] = function (a, b) return a - b end,
+	 ['*'] = function (a, b) return a * b end,
+	 ['/'] = function (a, b) return a / b end,
 }
 
 iter_all_exp(chkexp(24), opts, {3, 4, 6, 8})
 </code></pre>
-
 <p>其实lua的代码很好看，自然语言风格，语言写出来后都能看懂。然而lua秉持了最小化内核的方针，死活不提供一些很常用的函数。我上来近15行全在写常用函数，查找某个值在表中的位置，还有除去表中的重复元素。实现下来，效率也不是特别高，基本和python相当。</p>
-
 <pre><code>real 0m2.222s
 user 0m2.184s
 sys  0m0.000s

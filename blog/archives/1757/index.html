@@ -2,35 +2,64 @@
 <html lang="en-us">
   <head>
     <title>python源码解析读书笔记（二）——函数特性 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
     <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="python源码解析读书笔记（二）——函数特性"/>
-<meta name="twitter:description" content="1.函数的性质    &gt;&gt;&gt; def outer(o1, o2):   ... def inner(i1 = 10, i2 = \[\]):   ... return i1&#43;o1&#43;o2   ... return inner   ...   &gt;&gt;&gt; a1 = outer(50, 30)   &gt;&gt;&gt; a2 = outer(50, 30)   &gt;&gt;&gt; a1.func\_closure   (&lt;cell at 0xb75454f4: int object at 0x8455ddc&gt;, &lt;cell at 0xb7545524: int object at 0x8455cec&gt;)   &gt;&gt;&gt; a2.func\_closure   (&lt;cell at 0xb754541c: int object at 0x8455ddc&gt;, &lt;cell at 0xb75453a4: int object at 0x8455cec&gt;)   两次生成的函数对象拥有不同的闭包空间。    &gt;&gt;&gt; a1."/>
+<meta name="twitter:description" content="1.函数的性质
+&gt;&gt;&gt; def outer(o1, o2):
+&hellip; def inner(i1 = 10, i2 = []):
+&hellip; return i1&#43;o1&#43;o2
+&hellip; return inner
+&hellip;
+&gt;&gt;&gt; a1 = outer(50, 30)
+&gt;&gt;&gt; a2 = outer(50, 30)
+&gt;&gt;&gt; a1.func_closure
+(&lt;cell at 0xb75454f4: int object at 0x8455ddc&gt;, &lt;cell at 0xb7545524: int object at 0x8455cec&gt;)
+&gt;&gt;&gt; a2.func_closure
+(&lt;cell at 0xb754541c: int object at 0x8455ddc&gt;, &lt;cell at 0xb75453a4: int object at 0x8455cec&gt;)
+两次生成的函数对象拥有不同的闭包空间。
+&gt;&gt;&gt; a1.func_defaults
+(10, [])
+&gt;&gt;&gt; a2.func_defaults"/>
 
     <meta property="og:title" content="python源码解析读书笔记（二）——函数特性" />
-<meta property="og:description" content="1.函数的性质    &gt;&gt;&gt; def outer(o1, o2):   ... def inner(i1 = 10, i2 = \[\]):   ... return i1&#43;o1&#43;o2   ... return inner   ...   &gt;&gt;&gt; a1 = outer(50, 30)   &gt;&gt;&gt; a2 = outer(50, 30)   &gt;&gt;&gt; a1.func\_closure   (&lt;cell at 0xb75454f4: int object at 0x8455ddc&gt;, &lt;cell at 0xb7545524: int object at 0x8455cec&gt;)   &gt;&gt;&gt; a2.func\_closure   (&lt;cell at 0xb754541c: int object at 0x8455ddc&gt;, &lt;cell at 0xb75453a4: int object at 0x8455cec&gt;)   两次生成的函数对象拥有不同的闭包空间。    &gt;&gt;&gt; a1." />
+<meta property="og:description" content="1.函数的性质
+&gt;&gt;&gt; def outer(o1, o2):
+&hellip; def inner(i1 = 10, i2 = []):
+&hellip; return i1&#43;o1&#43;o2
+&hellip; return inner
+&hellip;
+&gt;&gt;&gt; a1 = outer(50, 30)
+&gt;&gt;&gt; a2 = outer(50, 30)
+&gt;&gt;&gt; a1.func_closure
+(&lt;cell at 0xb75454f4: int object at 0x8455ddc&gt;, &lt;cell at 0xb7545524: int object at 0x8455cec&gt;)
+&gt;&gt;&gt; a2.func_closure
+(&lt;cell at 0xb754541c: int object at 0x8455ddc&gt;, &lt;cell at 0xb75453a4: int object at 0x8455cec&gt;)
+两次生成的函数对象拥有不同的闭包空间。
+&gt;&gt;&gt; a1.func_defaults
+(10, [])
+&gt;&gt;&gt; a2.func_defaults" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/1757/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/1757/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2011-03-29T10:55:21+08:00" />
 <meta property="article:modified_time" content="2011-03-29T10:55:21+08:00" />
 
@@ -70,11 +99,8 @@ if (!doNotTrack) {
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -84,490 +110,268 @@ if (!doNotTrack) {
       <h1 class ="post-title">python源码解析读书笔记（二）——函数特性</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Mar 29, 2011
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           2 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/program/">program</a><a class="tag" href="//blog.shell909090.org/tags/python/">python</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/program/">program</a>
+              <a class="tag" href="//blog.shell909090.org/tags/python/">python</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
-      <div>
-
-1.函数的性质
-
-</div>
-
-<div>
-
-<div>
-
-&gt;&gt;&gt; def outer(o1, o2):
-
-</div>
-
-<div>
-
-...     def inner(i1 = 10, i2 = \[\]):
-
-</div>
-
-<div>
-
-...             return i1+o1+o2
-
-</div>
-
-<div>
-
-...     return inner
-
-</div>
-
-<div>
-
-...
-
-</div>
-
-<div>
-
-&gt;&gt;&gt; a1 = outer(50, 30)
-
-</div>
-
-<div>
-
-&gt;&gt;&gt; a2 = outer(50, 30)
-
-</div>
-
-<div>
-
-&gt;&gt;&gt; a1.func\_closure
-
-</div>
-
-<div>
-
-(&lt;cell at 0xb75454f4: int object at 0x8455ddc&gt;, &lt;cell at
-0xb7545524: int object at 0x8455cec&gt;)
-
-</div>
-
-<div>
-
-&gt;&gt;&gt; a2.func\_closure
-
-</div>
-
-<div>
-
-(&lt;cell at 0xb754541c: int object at 0x8455ddc&gt;, &lt;cell at
-0xb75453a4: int object at 0x8455cec&gt;)
-
-</div>
-
-<div>
-
-两次生成的函数对象拥有不同的闭包空间。
-
-</div>
-
-<div>
-
-<div>
-
-&gt;&gt;&gt; a1.func\_defaults
-
-</div>
-
-<div>
-
-(10, \[\])
-
-</div>
-
-<div>
-
-&gt;&gt;&gt; a2.func\_defaults
-
-</div>
-
-<div>
-
-(10, \[\])
-
-</div>
-
-<div>
-
-&gt;&gt;&gt; a1.func\_defaults\[1\].append(10)
-
-</div>
-
-<div>
-
-&gt;&gt;&gt; a1.func\_defaults
-
-</div>
-
-<div>
-
-(10, \[10\])
-
-</div>
-
-<div>
-
-&gt;&gt;&gt; a2.func\_defaults
-
-</div>
-
-<div>
-
-(10, \[\])
-
-</div>
-
-<div>
-
-也拥有不同的默认值空间。
-
-</div>
-
-<div>
-
-<div>
-
-&gt;&gt;&gt; def default\_test(d = \[\]):
-
-</div>
-
-<div>
-
-...     print d
-
-</div>
-
-<div>
-
-...
-
-</div>
-
-<div>
-
-&gt;&gt;&gt; default\_test.func\_defaults
-
-</div>
-
-<div>
-
-(\[\],)
-
-</div>
-
-<div>
-
-&gt;&gt;&gt; default\_test.func\_defaults\[0\].append(10)
-
-</div>
-
-<div>
-
-&gt;&gt;&gt; default\_test()
-
-</div>
-
-<div>
-
-\[10\]
-
-</div>
-
-<div>
-
-然而同一次生成的默认值空间是共享的，哪怕多次运行。\
-\
-
-</div>
-
-<div>
-
-<div>
-
-</div>
-
-<div>
-
-2.参数传递
-
-</div>
-
-<div>
-
-<div>
-
-&gt;&gt;&gt; def f(a,b,c,d): return a,b,c,d
-
-</div>
-
-<div>
-
-...
-
-</div>
-
-<div>
-
-&gt;&gt;&gt; f(1,2,3,4)
-
-</div>
-
-<div>
-
-(1, 2, 3, 4)
-
-</div>
-
-<div>
-
-&gt;&gt;&gt; f(1,2,a=3,b=4)
-
-</div>
-
-<div>
-
-Traceback (most recent call last):
-
-</div>
-
-<div>
-
-  File "&lt;stdin&gt;", line 1, in &lt;module&gt;
-
-</div>
-
-<div>
-
-TypeError: f() got multiple values for keyword argument 'a'
-
-</div>
-
-<div>
-
-<div>
-
-&gt;&gt;&gt; f(1,2,c=3,d=4)
-
-</div>
-
-<div>
-
-(1, 2, 3, 4)
-
-</div>
-
-<div>
-
-参数分两种，位置参数和键值参数。具体如何传递是由调用时决定而非编译时。调用时参数必须先以位置参方式传递，再以键值参方式传递。一旦出现键值传递，再出现位置传递即出现编译时非法。调用时会先入栈所有参数，一个位置参占一个对象，一个键值参占两个对象（这是当然）。
-
-</div>
-
-<div>
-
-解析的时候按照先位置后键值的方式赋值，先将所有位置参依次赋值给所有参数名。如果位置参有多，而没有扩展位置参来接收，则报错TypeError:
+      <!-- raw HTML omitted -->
+<p>1.函数的性质</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; def outer(o1, o2):</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&hellip;     def inner(i1 = 10, i2 = []):</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&hellip;             return i1+o1+o2</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&hellip;     return inner</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&hellip;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; a1 = outer(50, 30)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; a2 = outer(50, 30)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; a1.func_closure</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>(&lt;cell at 0xb75454f4: int object at 0x8455ddc&gt;, &lt;cell at
+0xb7545524: int object at 0x8455cec&gt;)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; a2.func_closure</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>(&lt;cell at 0xb754541c: int object at 0x8455ddc&gt;, &lt;cell at
+0xb75453a4: int object at 0x8455cec&gt;)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>两次生成的函数对象拥有不同的闭包空间。</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; a1.func_defaults</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>(10, [])</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; a2.func_defaults</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>(10, [])</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; a1.func_defaults[1].append(10)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; a1.func_defaults</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>(10, [10])</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; a2.func_defaults</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>(10, [])</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>也拥有不同的默认值空间。</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; def default_test(d = []):</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&hellip;     print d</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&hellip;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; default_test.func_defaults</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>([],)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; default_test.func_defaults[0].append(10)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; default_test()</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>[10]</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>然而同一次生成的默认值空间是共享的，哪怕多次运行。<br>
+\</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>2.参数传递</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; def f(a,b,c,d): return a,b,c,d</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&hellip;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; f(1,2,3,4)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>(1, 2, 3, 4)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; f(1,2,a=3,b=4)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>Traceback (most recent call last):</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>  File &ldquo;&lt;stdin&gt;&rdquo;, line 1, in &lt;module&gt;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>TypeError: f() got multiple values for keyword argument &lsquo;a&rsquo;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; f(1,2,c=3,d=4)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>(1, 2, 3, 4)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>参数分两种，位置参数和键值参数。具体如何传递是由调用时决定而非编译时。调用时参数必须先以位置参方式传递，再以键值参方式传递。一旦出现键值传递，再出现位置传递即出现编译时非法。调用时会先入栈所有参数，一个位置参占一个对象，一个键值参占两个对象（这是当然）。</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>解析的时候按照先位置后键值的方式赋值，先将所有位置参依次赋值给所有参数名。如果位置参有多，而没有扩展位置参来接收，则报错TypeError:
 %s expected at %s %d arguments, got
-%d。而后将所有键值参赋值给未赋值的参数，如果这个参数名已经赋值，则如上文，报错。如果键值参数有多，又没有扩展键值参来接受，也报错。
-
-</div>
-
-<div>
-
-最后，如果有参数名尚未赋值，查看这些参数名是否有默认值。如果没有，报错。
-
-</div>
-
-<div>
-
-另外，在字节码中访问本地（locals）命名空间的时候，是不通过命名空间查询的方式进行的。因为编译时可以明确一个名称是否在locals空间中，而不用理会代码段在名称空间中的位置结构。而一旦明确其在locals命名空间中，则可以直接堆栈访问位置，这样使得locals名称查询速度远高于普通名称空间。对于一个函数内频繁使用的符号，建议做一次赋值，将其引入locals命名空间。\
-\
-
-</div>
-
-<div>
-
-3.调用堆栈
-
-</div>
-
-<div>
-
-  
- python的调用堆栈是通过PyFrameObject来实现的，每一次调用，python会产生一个新的PyFrameObject加入到栈中。而每个PyFrameObject自带一个小数据区域，用于接收参数，处理局部变量。python字节码指令中的LOAD\_FAST，STORE\_FAST就是操作的这个区域。\
-\
-
-</div>
-
-<div>
-
-<div>
-
-4.层级闭包的实现
-
-</div>
-
-<div>
-
-<div>
-
-&gt;&gt;&gt; def f1():
-
-</div>
-
-<div>
-
-...     def f2(): return i
-
-</div>
-
-<div>
-
-...     i = 10
-
-</div>
-
-<div>
-
-...     return f2
-
-</div>
-
-<div>
-
-...
-
-</div>
-
-<div>
-
-&gt;&gt;&gt; a = f1()
-
-</div>
-
-<div>
-
-&gt;&gt;&gt; a()
-
-</div>
-
-<div>
-
-10
-
-</div>
-
-<div>
-
-实现的还是不错的。通过计算当时名称-值的方法就无法获得i。
-
-</div>
-
-<div>
-
-<div>
-
-&gt;&gt;&gt; def f1():
-
-</div>
-
-<div>
-
-...     def f2():
-
-</div>
-
-<div>
-
-...             return inet\_aton
-
-</div>
-
-<div>
-
-...     from socket import \*
-
-</div>
-
-<div>
-
-...     return f2
-
-</div>
-
-<div>
-
-...
-
-</div>
-
-<div>
-
-&lt;stdin&gt;:1: SyntaxWarning: import \* only allowed at module level
-
-</div>
-
-<div>
-
-  File "&lt;stdin&gt;", line 4
-
-</div>
-
-<div>
-
-SyntaxError: import \* is not allowed in function 'f1' because it is
-contains a nested function with free variables
-
-</div>
-
-<div>
-
-这主要是因为闭包的实现是通过函数编译时名称层状传递。例子1在编译时，f2知道上层作用域中有一个名叫i的变量，于是f2的freevars属性就为i。而当f1操作i时，f2保持了一个对结果的引用。当f1返回f2函数对象时，自身的PyFrameObject消失了没错，但是f2中对结果的引用还保存在了func\_closure中。当from
+%d。而后将所有键值参赋值给未赋值的参数，如果这个参数名已经赋值，则如上文，报错。如果键值参数有多，又没有扩展键值参来接受，也报错。</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>最后，如果有参数名尚未赋值，查看这些参数名是否有默认值。如果没有，报错。</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>另外，在字节码中访问本地（locals）命名空间的时候，是不通过命名空间查询的方式进行的。因为编译时可以明确一个名称是否在locals空间中，而不用理会代码段在名称空间中的位置结构。而一旦明确其在locals命名空间中，则可以直接堆栈访问位置，这样使得locals名称查询速度远高于普通名称空间。对于一个函数内频繁使用的符号，建议做一次赋值，将其引入locals命名空间。<br>
+\</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>3.调用堆栈</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>  
+ python的调用堆栈是通过PyFrameObject来实现的，每一次调用，python会产生一个新的PyFrameObject加入到栈中。而每个PyFrameObject自带一个小数据区域，用于接收参数，处理局部变量。python字节码指令中的LOAD_FAST，STORE_FAST就是操作的这个区域。<br>
+\</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>4.层级闭包的实现</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; def f1():</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&hellip;     def f2(): return i</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&hellip;     i = 10</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&hellip;     return f2</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&hellip;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; a = f1()</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; a()</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>10</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>实现的还是不错的。通过计算当时名称-值的方法就无法获得i。</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; def f1():</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&hellip;     def f2():</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&hellip;             return inet_aton</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&hellip;     from socket import *</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&hellip;     return f2</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&hellip;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&lt;stdin&gt;:1: SyntaxWarning: import * only allowed at module level</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>  File &ldquo;&lt;stdin&gt;&rdquo;, line 4</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>SyntaxError: import * is not allowed in function &lsquo;f1&rsquo; because it is
+contains a nested function with free variables</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>这主要是因为闭包的实现是通过函数编译时名称层状传递。例子1在编译时，f2知道上层作用域中有一个名叫i的变量，于是f2的freevars属性就为i。而当f1操作i时，f2保持了一个对结果的引用。当f1返回f2函数对象时，自身的PyFrameObject消失了没错，但是f2中对结果的引用还保存在了func_closure中。当from
 socket import
-\*的时候，当前locals空间名称会发生变化，从而导致动态引入的名称无法在f2中生效。
-
-</div>
-
-<p></div></p>
-
-<p></div></p>
-
-<p></div></p>
-
-<p></div></p>
-
-<p></div></p>
-
-<p></div></p>
-
-<p></div></p>
-
-<p></div></p>
-
-<p></div></p>
+*的时候，当前locals空间名称会发生变化，从而导致动态引入的名称无法在f2中生效。</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
 
     </div>
     <div class="post-footer">

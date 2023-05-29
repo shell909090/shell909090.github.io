@@ -2,37 +2,36 @@
 <html lang="en-us">
   <head>
     <title>ssh翻墙服务 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
     <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="ssh翻墙服务"/>
 <meta name="twitter:description" content="不多说了，上脚本。
------------/etc/init.d/sshtunnel------------ #!/bin/bash PATH=/bin:/sbin:/usr/bin:/usr/sbin CONF=&quot;/etc/default/sshtunnel&quot; source $CONF if ! [ -x /usr/bin/ssh ]; then exit 0 fi start () { echo -n &quot;Starting tunnel..&quot; ssh -CNq -D &quot;$PROXYPORT&quot; &quot;$USERNAME@$SSHHOST&quot; -p $SSHPORT -o ServerAliveInterval=30 &amp; echo &quot;done.&quot; } stop () { echo -n &quot;Stopping tunnel..&quot; PID=$(netstat -nlp -4 | grep &quot;:$PROXYPORT&quot;) PID=$(echo $PID | sed &quot;s/.*LISTENs*(.*)/1/&quot; | cut -f1 -d/) kill -9 $PID echo &quot;done.&quot; } case &quot;$1&quot; in start|restart) start ;; stop) stop ;; restart) stop start ;; *) echo &quot;Usage: $0 {start|stop|restart|clear}&quot; exit 1 ;; esac exit 0 -----------------end of file------------------ ---------/etc/default/sshtunnel---------- PROXYPORT=7777 USERNAME=abc SSHHOST=abc SSHPORT=22 -----------------end of file------------------  首先准备一个远程服务器，获得域名端口，用户名密码。而后将上述脚本放置于指定位置，修改/etc/default/sshtunnel的值，即完成配置。但是上述脚本并没有解决自动登录问题，因此，请生成一个没有密码的密钥，将公钥导入远程服务器。"/>
+-----------/etc/init.d/sshtunnel------------ #!/bin/bash PATH=/bin:/sbin:/usr/bin:/usr/sbin CONF=&quot;/etc/default/sshtunnel&quot; source $CONF if ! [ -x /usr/bin/ssh ]; then exit 0 fi start () { echo -n &quot;Starting tunnel..&quot; ssh -CNq -D &quot;$PROXYPORT&quot; &quot;$USERNAME@$SSHHOST&quot; -p $SSHPORT -o ServerAliveInterval=30 &amp; echo &quot;done.&quot; } stop () { echo -n &quot;Stopping tunnel..&quot; PID=$(netstat -nlp -4 | grep &quot;:$PROXYPORT&quot;) PID=$(echo $PID | sed &quot;s/.*LISTENs*(.*)/1/&quot; | cut -f1 -d/) kill -9 $PID echo &quot;done.&quot; } case &quot;$1&quot; in start|restart) start ;; stop) stop ;; restart) stop start ;; *) echo &quot;Usage: $0 {start|stop|restart|clear}&quot; exit 1 ;; esac exit 0 -----------------end of file------------------ ---------/etc/default/sshtunnel---------- PROXYPORT=7777 USERNAME=abc SSHHOST=abc SSHPORT=22 -----------------end of file------------------ 首先准备一个远程服务器，获得域名端口，用户名密码。而后将上述脚本放置于指定位置，修改/etc/default/sshtunnel的值，即完成配置。但是上述脚本并没有解决自动登录问题，因此，请生成一个没有密码的密钥，将公钥导入远程服务器。"/>
 
     <meta property="og:title" content="ssh翻墙服务" />
 <meta property="og:description" content="不多说了，上脚本。
------------/etc/init.d/sshtunnel------------ #!/bin/bash PATH=/bin:/sbin:/usr/bin:/usr/sbin CONF=&quot;/etc/default/sshtunnel&quot; source $CONF if ! [ -x /usr/bin/ssh ]; then exit 0 fi start () { echo -n &quot;Starting tunnel..&quot; ssh -CNq -D &quot;$PROXYPORT&quot; &quot;$USERNAME@$SSHHOST&quot; -p $SSHPORT -o ServerAliveInterval=30 &amp; echo &quot;done.&quot; } stop () { echo -n &quot;Stopping tunnel..&quot; PID=$(netstat -nlp -4 | grep &quot;:$PROXYPORT&quot;) PID=$(echo $PID | sed &quot;s/.*LISTENs*(.*)/1/&quot; | cut -f1 -d/) kill -9 $PID echo &quot;done.&quot; } case &quot;$1&quot; in start|restart) start ;; stop) stop ;; restart) stop start ;; *) echo &quot;Usage: $0 {start|stop|restart|clear}&quot; exit 1 ;; esac exit 0 -----------------end of file------------------ ---------/etc/default/sshtunnel---------- PROXYPORT=7777 USERNAME=abc SSHHOST=abc SSHPORT=22 -----------------end of file------------------  首先准备一个远程服务器，获得域名端口，用户名密码。而后将上述脚本放置于指定位置，修改/etc/default/sshtunnel的值，即完成配置。但是上述脚本并没有解决自动登录问题，因此，请生成一个没有密码的密钥，将公钥导入远程服务器。" />
+-----------/etc/init.d/sshtunnel------------ #!/bin/bash PATH=/bin:/sbin:/usr/bin:/usr/sbin CONF=&quot;/etc/default/sshtunnel&quot; source $CONF if ! [ -x /usr/bin/ssh ]; then exit 0 fi start () { echo -n &quot;Starting tunnel..&quot; ssh -CNq -D &quot;$PROXYPORT&quot; &quot;$USERNAME@$SSHHOST&quot; -p $SSHPORT -o ServerAliveInterval=30 &amp; echo &quot;done.&quot; } stop () { echo -n &quot;Stopping tunnel..&quot; PID=$(netstat -nlp -4 | grep &quot;:$PROXYPORT&quot;) PID=$(echo $PID | sed &quot;s/.*LISTENs*(.*)/1/&quot; | cut -f1 -d/) kill -9 $PID echo &quot;done.&quot; } case &quot;$1&quot; in start|restart) start ;; stop) stop ;; restart) stop start ;; *) echo &quot;Usage: $0 {start|stop|restart|clear}&quot; exit 1 ;; esac exit 0 -----------------end of file------------------ ---------/etc/default/sshtunnel---------- PROXYPORT=7777 USERNAME=abc SSHHOST=abc SSHPORT=22 -----------------end of file------------------ 首先准备一个远程服务器，获得域名端口，用户名密码。而后将上述脚本放置于指定位置，修改/etc/default/sshtunnel的值，即完成配置。但是上述脚本并没有解决自动登录问题，因此，请生成一个没有密码的密钥，将公钥导入远程服务器。" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/71/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/71/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2009-07-07T22:48:00+08:00" />
 <meta property="article:modified_time" content="2009-07-07T22:48:00+08:00" />
 
@@ -72,11 +71,8 @@ if (!doNotTrack) {
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -86,28 +82,32 @@ if (!doNotTrack) {
       <h1 class ="post-title">ssh翻墙服务</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Jul 7, 2009
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/gfw/">gfw</a><a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a><a class="tag" href="//blog.shell909090.org/tags/ssh/">ssh</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/gfw/">gfw</a>
+              <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a>
+              <a class="tag" href="//blog.shell909090.org/tags/ssh/">ssh</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
       <p>不多说了，上脚本。</p>
-
 <pre><code>-----------/etc/init.d/sshtunnel------------
 
 #!/bin/bash
@@ -122,35 +122,35 @@ fi
 
 start ()
 {
-    echo -n &quot;Starting tunnel..&quot;
-    ssh -CNq -D &quot;$PROXYPORT&quot; &quot;$USERNAME@$SSHHOST&quot; -p $SSHPORT -o ServerAliveInterval=30 &amp;
-    echo &quot;done.&quot;
+	echo -n &quot;Starting tunnel..&quot;
+	ssh -CNq -D &quot;$PROXYPORT&quot; &quot;$USERNAME@$SSHHOST&quot; -p $SSHPORT -o ServerAliveInterval=30 &amp;
+	echo &quot;done.&quot;
 }
 
 stop ()
 {
-    echo -n &quot;Stopping tunnel..&quot;
-    PID=$(netstat -nlp -4 | grep &quot;:$PROXYPORT&quot;)
-    PID=$(echo $PID | sed &quot;s/.*LISTENs*(.*)/1/&quot; | cut -f1 -d/)
-    kill -9 $PID
-    echo &quot;done.&quot;
+	echo -n &quot;Stopping tunnel..&quot;
+	PID=$(netstat -nlp -4 | grep &quot;:$PROXYPORT&quot;)
+	PID=$(echo $PID | sed &quot;s/.*LISTENs*(.*)/1/&quot; | cut -f1 -d/)
+	kill -9 $PID
+	echo &quot;done.&quot;
 }
 
 case &quot;$1&quot; in
-    start|restart)
-        start
-        ;;
-    stop)
-        stop
-        ;;
-    restart)
-        stop
-        start
-        ;;
-    *)
-        echo &quot;Usage: $0 {start|stop|restart|clear}&quot;
-        exit 1
-        ;;
+	start|restart)
+		start
+		;;
+	stop)
+		stop
+		;;
+	restart)
+		stop
+		start
+		;;
+	*)
+		echo &quot;Usage: $0 {start|stop|restart|clear}&quot;
+		exit 1
+		;;
 esac
 exit 0
 
@@ -164,11 +164,8 @@ SSHHOST=abc
 SSHPORT=22
 -----------------end of file------------------
 </code></pre>
-
 <p>首先准备一个远程服务器，获得域名端口，用户名密码。而后将上述脚本放置于指定位置，修改/etc/default/sshtunnel的值，即完成配置。但是上述脚本并没有解决自动登录问题，因此，请生成一个没有密码的密钥，将公钥导入远程服务器。</p>
-
 <p>在完成配置后，可用update-rc.d sshtunnel start 90 2 .进行自动启动服务的安装，其中的2请替换成服务器的默认启动级别。如果不知道可以用以下方法查询。</p>
-
 <pre><code># cat inittab | grep ^id
 id:2:initdefault:
 </code></pre>

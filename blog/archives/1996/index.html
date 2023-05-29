@@ -2,24 +2,23 @@
 <html lang="en-us">
   <head>
     <title>python中dict的插入复杂度估算和排重复杂度估算 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
@@ -30,9 +29,9 @@ if (!doNotTrack) {
 7.dict对象的索引方案
 dict对象的索引方案使用的是哈希表，而且是开放地址法的哈希表。当装载率达到一定规模后，会新申请一块内存，将有效数据复制过去。最小的表空间为8个对象，当装载率超过2/3时，会扩大规模到当前active的4倍（超过50000个对象为2倍）。目前为止，在对象被删除后，其表空间并不释放。因此曾经增长的非常大的dict对象，可以定期复制以回收空间。
 最初的表项空间为6个以内，满了之后，会自动扩张到24个，有效16个。从大致来说，如果要放下N个表项，大概就要扩张T次，他们满足以下关系。
-A0*(8/3)^(T-1)&lt;N&lt;A0*(8/3)^T  而每次扩张，就要进行全表项复制，因此复杂度大约是O(N)量级。当扩张到放下N个表项时，就需要进行的复制的总数是：
-sum(i, 0, T-1){A0*(8/3)^i}  这是一个典型的等比数列求和问题，我们知道问题的答案应当是：
-A0*3*((8/3)^T-1)/5=A0*(3/5)*(8/3)^T-(3/5)*A0  因此，(3/5)(N-A0)&lt;O&lt;(3/5)\*((8/3)\*N-A0)。如果只考虑数量级的话，插入的复杂度量级为O(n)，即哈希表的平均插入复杂度为n级。
+A0*(8/3)^(T-1)&lt;N&lt;A0*(8/3)^T 而每次扩张，就要进行全表项复制，因此复杂度大约是O(N)量级。当扩张到放下N个表项时，就需要进行的复制的总数是：
+sum(i, 0, T-1){A0*(8/3)^i} 这是一个典型的等比数列求和问题，我们知道问题的答案应当是：
+A0*3*((8/3)^T-1)/5=A0*(3/5)*(8/3)^T-(3/5)*A0 因此，(3/5)(N-A0)&lt;O&lt;(3/5)\*((8/3)\*N-A0)。如果只考虑数量级的话，插入的复杂度量级为O(n)，即哈希表的平均插入复杂度为n级。
 也许有人奇怪，哈希表的插入复杂度为1级阿，怎么得到n级的结论的？看上面，都说是放下N个表项时的总复杂度了。
 我们可以和红黑树对比一下，红黑树的平均插入复杂度为logn级，平均查找复杂度为logn级。哈希表的平均插入复杂度为1级，查找复杂度为1级。但是红黑树在一点上比hash优秀——他的插入时间基本稳定，hash table的插入时间有可能会暴长。
 于是，当我们有N个元素，需要进行排重的时候，我们可以set化。假定set和dict基于一样原理运作，我们的时间复杂度为O(n&#43;m)级，m为排重后元素个数。其实按照最差情况来说，也可以认为是O(n)级。"/>
@@ -43,14 +42,14 @@ A0*3*((8/3)^T-1)/5=A0*(3/5)*(8/3)^T-(3/5)*A0  因此，(3/5)(N-A0)&lt;O&lt;(3/5)
 7.dict对象的索引方案
 dict对象的索引方案使用的是哈希表，而且是开放地址法的哈希表。当装载率达到一定规模后，会新申请一块内存，将有效数据复制过去。最小的表空间为8个对象，当装载率超过2/3时，会扩大规模到当前active的4倍（超过50000个对象为2倍）。目前为止，在对象被删除后，其表空间并不释放。因此曾经增长的非常大的dict对象，可以定期复制以回收空间。
 最初的表项空间为6个以内，满了之后，会自动扩张到24个，有效16个。从大致来说，如果要放下N个表项，大概就要扩张T次，他们满足以下关系。
-A0*(8/3)^(T-1)&lt;N&lt;A0*(8/3)^T  而每次扩张，就要进行全表项复制，因此复杂度大约是O(N)量级。当扩张到放下N个表项时，就需要进行的复制的总数是：
-sum(i, 0, T-1){A0*(8/3)^i}  这是一个典型的等比数列求和问题，我们知道问题的答案应当是：
-A0*3*((8/3)^T-1)/5=A0*(3/5)*(8/3)^T-(3/5)*A0  因此，(3/5)(N-A0)&lt;O&lt;(3/5)\*((8/3)\*N-A0)。如果只考虑数量级的话，插入的复杂度量级为O(n)，即哈希表的平均插入复杂度为n级。
+A0*(8/3)^(T-1)&lt;N&lt;A0*(8/3)^T 而每次扩张，就要进行全表项复制，因此复杂度大约是O(N)量级。当扩张到放下N个表项时，就需要进行的复制的总数是：
+sum(i, 0, T-1){A0*(8/3)^i} 这是一个典型的等比数列求和问题，我们知道问题的答案应当是：
+A0*3*((8/3)^T-1)/5=A0*(3/5)*(8/3)^T-(3/5)*A0 因此，(3/5)(N-A0)&lt;O&lt;(3/5)\*((8/3)\*N-A0)。如果只考虑数量级的话，插入的复杂度量级为O(n)，即哈希表的平均插入复杂度为n级。
 也许有人奇怪，哈希表的插入复杂度为1级阿，怎么得到n级的结论的？看上面，都说是放下N个表项时的总复杂度了。
 我们可以和红黑树对比一下，红黑树的平均插入复杂度为logn级，平均查找复杂度为logn级。哈希表的平均插入复杂度为1级，查找复杂度为1级。但是红黑树在一点上比hash优秀——他的插入时间基本稳定，hash table的插入时间有可能会暴长。
 于是，当我们有N个元素，需要进行排重的时候，我们可以set化。假定set和dict基于一样原理运作，我们的时间复杂度为O(n&#43;m)级，m为排重后元素个数。其实按照最差情况来说，也可以认为是O(n)级。" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/1996/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/1996/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2011-11-28T10:22:43+08:00" />
 <meta property="article:modified_time" content="2011-11-28T10:22:43+08:00" />
 
@@ -90,11 +89,8 @@ A0*3*((8/3)^T-1)/5=A0*(3/5)*(8/3)^T-(3/5)*A0  因此，(3/5)(N-A0)&lt;O&lt;(3/5)
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -104,55 +100,47 @@ A0*3*((8/3)^T-1)/5=A0*(3/5)*(8/3)^T-(3/5)*A0  因此，(3/5)(N-A0)&lt;O&lt;(3/5)
       <h1 class ="post-title">python中dict的插入复杂度估算和排重复杂度估算</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Nov 28, 2011
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/algorithm/">algorithm</a><a class="tag" href="//blog.shell909090.org/tags/python/">python</a><a class="tag" href="//blog.shell909090.org/tags/others/">others</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/algorithm/">algorithm</a>
+              <a class="tag" href="//blog.shell909090.org/tags/python/">python</a>
+              <a class="tag" href="//blog.shell909090.org/tags/others/">others</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
       <p>在做分词核心词典数据结构分析的时候需要，就先写一篇吧。</p>
-
 <p>具体可以参考<a href="http://blog.shell909090.org/blog/archives/1756/">python源码解析读书笔记（一）——内置对象</a>，这里面有说：</p>
-
 <p>7.dict对象的索引方案</p>
-
 <p>dict对象的索引方案使用的是哈希表，而且是开放地址法的哈希表。当装载率达到一定规模后，会新申请一块内存，将有效数据复制过去。最小的表空间为8个对象，当装载率超过2/3时，会扩大规模到当前active的4倍（超过50000个对象为2倍）。目前为止，在对象被删除后，其表空间并不释放。因此曾经增长的非常大的dict对象，可以定期复制以回收空间。</p>
-
 <p>最初的表项空间为6个以内，满了之后，会自动扩张到24个，有效16个。从大致来说，如果要放下N个表项，大概就要扩张T次，他们满足以下关系。</p>
-
 <pre><code>A0*(8/3)^(T-1)&lt;N&lt;A0*(8/3)^T
 </code></pre>
-
 <p>而每次扩张，就要进行全表项复制，因此复杂度大约是O(N)量级。当扩张到放下N个表项时，就需要进行的复制的总数是：</p>
-
 <pre><code>sum(i, 0, T-1){A0*(8/3)^i}
 </code></pre>
-
 <p>这是一个典型的等比数列求和问题，我们知道问题的答案应当是：</p>
-
 <pre><code>A0*3*((8/3)^T-1)/5=A0*(3/5)*(8/3)^T-(3/5)*A0
 </code></pre>
-
 <p>因此，<code>(3/5)(N-A0)&lt;O&lt;(3/5)\*((8/3)\*N-A0)</code>。如果只考虑数量级的话，插入的复杂度量级为O(n)，即哈希表的平均插入复杂度为n级。</p>
-
 <p>也许有人奇怪，哈希表的插入复杂度为1级阿，怎么得到n级的结论的？看上面，都说是放下N个表项时的总复杂度了。</p>
-
 <p>我们可以和红黑树对比一下，红黑树的平均插入复杂度为logn级，平均查找复杂度为logn级。哈希表的平均插入复杂度为1级，查找复杂度为1级。但是红黑树在一点上比hash优秀——他的插入时间基本稳定，hash table的插入时间有可能会暴长。</p>
-
 <p>于是，当我们有N个元素，需要进行排重的时候，我们可以set化。假定set和dict基于一样原理运作，我们的时间复杂度为O(n+m)级，m为排重后元素个数。其实按照最差情况来说，也可以认为是O(n)级。</p>
 
     </div>

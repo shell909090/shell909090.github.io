@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>grep on Shell&#39;s Home</title>
@@ -7,11 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Sun, 21 Feb 2010 10:20:00 +0800</lastBuildDate>
-    
-	<atom:link href="//blog.shell909090.org/tags/grep/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Sun, 21 Feb 2010 10:20:00 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/grep/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>ext3下小文件的恢复</title>
       <link>//blog.shell909090.org/blog/archives/94/</link>
@@ -20,10 +16,10 @@
       <guid>//blog.shell909090.org/blog/archives/94/</guid>
       <description>ext3下如果误删除了文件，恢复起来是异常麻烦的。如果是小文件，其实很多时候不用走常规文件恢复的路子，只要能找到内容就好了。基本思路是从磁盘中直接搜索内容，然后设法复制出来。
 恢复条件：
- 文件没有被覆盖。如果被覆盖了，那就绝对没有希望了。 文件不大(通常建议在16K以内)。如果很大，下面一个条件就很难满足。 知晓文件内的特定关键字。条件是，文件每4K内，你必须知道至少一个关键字。因为ext3通常将4K内容连续存放，每知道一个关键字，可以恢复4K内容。如果缺少关键字，那就无法恢复了。 文件保存的版本不太多。  满足以上条件后，使用以下方法进行恢复：
-# grep -abn &amp;quot;id_insert_stmt_param&amp;quot; /dev/xvda1 4799010:713068605:sql_id_insert_stmt_param = &amp;quot;SELECT NEXTVAL  使用grep对/dev/xvda1磁盘进行搜索，需要管理员权限直接访问设备文件，搜索哪个物理磁盘可以用mount来确定。 713068605是相对偏移地址，如果保存了多个版本，可能有多个偏移地址。 他们的选择和确定是个非常麻烦的问题，所以文件保存的版本不能过多。
-$ python &amp;gt;&amp;gt;&amp;gt; (713068605/4096)*4096 713068544 &amp;gt;&amp;gt;&amp;gt; exit ()  以上过程可以在常规权限下操作，使用python(或者其他你高兴的计算器)确定该偏移地址的块首地址。
-# dd if=/dev/xvda1 bs=1 count=4k skip=713068544 &amp;gt; 1.tmp  将这个块的内容复制出来，注意磁盘上必须有足够空间，否则搞不好会将原始内容覆盖。
+文件没有被覆盖。如果被覆盖了，那就绝对没有希望了。 文件不大(通常建议在16K以内)。如果很大，下面一个条件就很难满足。 知晓文件内的特定关键字。条件是，文件每4K内，你必须知道至少一个关键字。因为ext3通常将4K内容连续存放，每知道一个关键字，可以恢复4K内容。如果缺少关键字，那就无法恢复了。 文件保存的版本不太多。 满足以上条件后，使用以下方法进行恢复：
+# grep -abn &amp;quot;id_insert_stmt_param&amp;quot; /dev/xvda1 4799010:713068605:sql_id_insert_stmt_param = &amp;quot;SELECT NEXTVAL 使用grep对/dev/xvda1磁盘进行搜索，需要管理员权限直接访问设备文件，搜索哪个物理磁盘可以用mount来确定。 713068605是相对偏移地址，如果保存了多个版本，可能有多个偏移地址。 他们的选择和确定是个非常麻烦的问题，所以文件保存的版本不能过多。
+$ python &amp;gt;&amp;gt;&amp;gt; (713068605/4096)*4096 713068544 &amp;gt;&amp;gt;&amp;gt; exit () 以上过程可以在常规权限下操作，使用python(或者其他你高兴的计算器)确定该偏移地址的块首地址。
+# dd if=/dev/xvda1 bs=1 count=4k skip=713068544 &amp;gt; 1.tmp 将这个块的内容复制出来，注意磁盘上必须有足够空间，否则搞不好会将原始内容覆盖。
 更严谨的方法是将内容dump到其他磁盘设备的挂载点下，做异地磁盘恢复。
 以上方法可以恢复一个块的内容。手工恢复所有块后，将内容拼接，就是你要恢复的文件。</description>
     </item>

@@ -2,24 +2,23 @@
 <html lang="en-us">
   <head>
     <title>铁道部的扯淡排队系统 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
@@ -28,29 +27,29 @@ if (!doNotTrack) {
 <meta name="twitter:description" content="缘起 这两天同事都在讨论12306的订票机制，据说要排队了。我不买火车票，所以只是大概听同事讲解了一下机制。如果不正确，希望大家告知我。我听到的机制大概是这样的。
 首先，是每个人进去，正常购票。当碰到热门线路，在提交时进入不定时的排队。等排队结束，成功与否给与提示。铁道部称，这是为了能够减轻并发压力。
 问题 如同老板说的那样，这个机制P都没解决。问题的关键在于系统的每秒负载能力，即每秒能够完成多少个transaction。只要来的人比能完成的transaction多。那只有几个结局：
- 刷爆网站，这是原来的结局。 堆在队列上，有人买不到票。  如果铁道部宣称的目的是真的的话，那他们一定用错了机制。
+刷爆网站，这是原来的结局。 堆在队列上，有人买不到票。 如果铁道部宣称的目的是真的的话，那他们一定用错了机制。
 原因 铁道部这个系统的核心想法，是将并发的业务改为串行业务。即，前置一个订单系统，减轻核心的交易数据库的压力。实话说，这一定是没在互联网上混过的领导想出来的馊主意。
 在通常业务系统里面，如果我们说一个核心交易组件有压力，那么最常用的办法就是排队。然而在互联网上却不能这么干，尤其是很多“非买不可”的系统里面，更不能让用户玩“排队”。因为对于互联网上的人，“分身”是再容易不过的事情了。使用多个浏览器，甚至开多虚拟机，普通人可以轻易的做到4-5个不同的会话。就算普通人做不到，看网络教程学是可以学出来的。每个会话订不同班次的火车。多开会话的结果，就是让队列的长度比原本会长上很多。这是一种级联效应。由于购票组件的处理速度有限，所以压力向前堆积，最终前面的排队系统也会被汹涌的客户（比原来大N倍）玩死。
 机制 对此其实我很难想明白，为什么铁道部的核心交易系统有这么差的效率。有网友曾经说，系统要检查很多东西，要上锁——这都是假的。作为铁道部的核心交易系统，和铁道部内部的资讯检查有什么关系？他唯一要做的事情，就是检查是否真的有票，座位多少，有的话锁定一张（这个过程要排他）。
 也许你会觉得，既然要排他，那么就需要用事务型数据库。目前数据库平均性能都是1k/s（我们就按照我们在普通台式机上的数据计算好了），而全国每秒成交的数量远大于这个值。这里出的问题？
 这是不可能的。傻想也知道，每趟车和另一趟车没有耦合关系。按照车次做哈希，分布在多台服务器上交易就行了。这是典型的可并行系统，效率可以直接用单台机器性能乘以服务器数。在交换机允许的范围内，根本不会有交易性能压力。我们仔细审查铁路系统的结构，会发现，这东西天生就是分布交易的好材料。
- 部署一组服务器，每一台都部署同一套东西，接口按照REST开放。 将车次哈希后映射到具体的服务器上，所有的余票查询/订购，都向这台机器做请求。而核心服务器只要返回静态页面和车次信息就好。 单个服务器上的每秒transaction要求就不可能太高。  阴谋论 也许有些人会想，这个系统莫非是铁道部给内部留票做的？这又错了。要做内部留票，最简单的方法就是开打内部提前售票限制。只要这个限制一开，他们想留多少留多少，你一点脾气都没有。
+部署一组服务器，每一台都部署同一套东西，接口按照REST开放。 将车次哈希后映射到具体的服务器上，所有的余票查询/订购，都向这台机器做请求。而核心服务器只要返回静态页面和车次信息就好。 单个服务器上的每秒transaction要求就不可能太高。 阴谋论 也许有些人会想，这个系统莫非是铁道部给内部留票做的？这又错了。要做内部留票，最简单的方法就是开打内部提前售票限制。只要这个限制一开，他们想留多少留多少，你一点脾气都没有。
 结论 我只能归因于国有垄断企业在解决这类问题上的扯淡了，和私有企业没法比阿。建议对铁道部实行拆分。"/>
 
     <meta property="og:title" content="铁道部的扯淡排队系统" />
 <meta property="og:description" content="缘起 这两天同事都在讨论12306的订票机制，据说要排队了。我不买火车票，所以只是大概听同事讲解了一下机制。如果不正确，希望大家告知我。我听到的机制大概是这样的。
 首先，是每个人进去，正常购票。当碰到热门线路，在提交时进入不定时的排队。等排队结束，成功与否给与提示。铁道部称，这是为了能够减轻并发压力。
 问题 如同老板说的那样，这个机制P都没解决。问题的关键在于系统的每秒负载能力，即每秒能够完成多少个transaction。只要来的人比能完成的transaction多。那只有几个结局：
- 刷爆网站，这是原来的结局。 堆在队列上，有人买不到票。  如果铁道部宣称的目的是真的的话，那他们一定用错了机制。
+刷爆网站，这是原来的结局。 堆在队列上，有人买不到票。 如果铁道部宣称的目的是真的的话，那他们一定用错了机制。
 原因 铁道部这个系统的核心想法，是将并发的业务改为串行业务。即，前置一个订单系统，减轻核心的交易数据库的压力。实话说，这一定是没在互联网上混过的领导想出来的馊主意。
 在通常业务系统里面，如果我们说一个核心交易组件有压力，那么最常用的办法就是排队。然而在互联网上却不能这么干，尤其是很多“非买不可”的系统里面，更不能让用户玩“排队”。因为对于互联网上的人，“分身”是再容易不过的事情了。使用多个浏览器，甚至开多虚拟机，普通人可以轻易的做到4-5个不同的会话。就算普通人做不到，看网络教程学是可以学出来的。每个会话订不同班次的火车。多开会话的结果，就是让队列的长度比原本会长上很多。这是一种级联效应。由于购票组件的处理速度有限，所以压力向前堆积，最终前面的排队系统也会被汹涌的客户（比原来大N倍）玩死。
 机制 对此其实我很难想明白，为什么铁道部的核心交易系统有这么差的效率。有网友曾经说，系统要检查很多东西，要上锁——这都是假的。作为铁道部的核心交易系统，和铁道部内部的资讯检查有什么关系？他唯一要做的事情，就是检查是否真的有票，座位多少，有的话锁定一张（这个过程要排他）。
 也许你会觉得，既然要排他，那么就需要用事务型数据库。目前数据库平均性能都是1k/s（我们就按照我们在普通台式机上的数据计算好了），而全国每秒成交的数量远大于这个值。这里出的问题？
 这是不可能的。傻想也知道，每趟车和另一趟车没有耦合关系。按照车次做哈希，分布在多台服务器上交易就行了。这是典型的可并行系统，效率可以直接用单台机器性能乘以服务器数。在交换机允许的范围内，根本不会有交易性能压力。我们仔细审查铁路系统的结构，会发现，这东西天生就是分布交易的好材料。
- 部署一组服务器，每一台都部署同一套东西，接口按照REST开放。 将车次哈希后映射到具体的服务器上，所有的余票查询/订购，都向这台机器做请求。而核心服务器只要返回静态页面和车次信息就好。 单个服务器上的每秒transaction要求就不可能太高。  阴谋论 也许有些人会想，这个系统莫非是铁道部给内部留票做的？这又错了。要做内部留票，最简单的方法就是开打内部提前售票限制。只要这个限制一开，他们想留多少留多少，你一点脾气都没有。
+部署一组服务器，每一台都部署同一套东西，接口按照REST开放。 将车次哈希后映射到具体的服务器上，所有的余票查询/订购，都向这台机器做请求。而核心服务器只要返回静态页面和车次信息就好。 单个服务器上的每秒transaction要求就不可能太高。 阴谋论 也许有些人会想，这个系统莫非是铁道部给内部留票做的？这又错了。要做内部留票，最简单的方法就是开打内部提前售票限制。只要这个限制一开，他们想留多少留多少，你一点脾气都没有。
 结论 我只能归因于国有垄断企业在解决这类问题上的扯淡了，和私有企业没法比阿。建议对铁道部实行拆分。" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2241/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2241/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2012-09-19T16:08:57+08:00" />
 <meta property="article:modified_time" content="2012-09-19T16:08:57+08:00" />
 
@@ -90,11 +89,8 @@ if (!doNotTrack) {
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -104,71 +100,54 @@ if (!doNotTrack) {
       <h1 class ="post-title">铁道部的扯淡排队系统</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Sep 19, 2012
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/program/">program</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/program/">program</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
-      
-
-<h1 id="缘起">缘起</h1>
-
+      <h1 id="缘起">缘起</h1>
 <p>这两天同事都在讨论12306的订票机制，据说要排队了。我不买火车票，所以只是大概听同事讲解了一下机制。如果不正确，希望大家告知我。我听到的机制大概是这样的。</p>
-
 <p>首先，是每个人进去，正常购票。当碰到热门线路，在提交时进入不定时的排队。等排队结束，成功与否给与提示。铁道部称，这是为了能够减轻并发压力。</p>
-
 <h1 id="问题">问题</h1>
-
 <p>如同老板说的那样，这个机制P都没解决。问题的关键在于系统的每秒负载能力，即每秒能够完成多少个transaction。只要来的人比能完成的transaction多。那只有几个结局：</p>
-
 <ol>
 <li>刷爆网站，这是原来的结局。</li>
 <li>堆在队列上，有人买不到票。</li>
 </ol>
-
 <p>如果铁道部宣称的目的是真的的话，那他们一定用错了机制。</p>
-
 <h1 id="原因">原因</h1>
-
 <p>铁道部这个系统的核心想法，是将并发的业务改为串行业务。即，前置一个订单系统，减轻核心的交易数据库的压力。实话说，这一定是没在互联网上混过的领导想出来的馊主意。</p>
-
 <p>在通常业务系统里面，如果我们说一个核心交易组件有压力，那么最常用的办法就是排队。然而在互联网上却不能这么干，尤其是很多“非买不可”的系统里面，更不能让用户玩“排队”。因为对于互联网上的人，“分身”是再容易不过的事情了。使用多个浏览器，甚至开多虚拟机，普通人可以轻易的做到4-5个不同的会话。就算普通人做不到，看网络教程学是可以学出来的。每个会话订不同班次的火车。多开会话的结果，就是让队列的长度比原本会长上很多。这是一种级联效应。由于购票组件的处理速度有限，所以压力向前堆积，最终前面的排队系统也会被汹涌的客户（比原来大N倍）玩死。</p>
-
 <h1 id="机制">机制</h1>
-
 <p>对此其实我很难想明白，为什么铁道部的核心交易系统有这么差的效率。有网友曾经说，系统要检查很多东西，要上锁——这都是假的。作为铁道部的核心交易系统，和铁道部内部的资讯检查有什么关系？他唯一要做的事情，就是检查是否真的有票，座位多少，有的话锁定一张（这个过程要排他）。</p>
-
 <p>也许你会觉得，既然要排他，那么就需要用事务型数据库。目前数据库平均性能都是1k/s（我们就按照我们在普通台式机上的数据计算好了），而全国每秒成交的数量远大于这个值。这里出的问题？</p>
-
 <p>这是不可能的。傻想也知道，每趟车和另一趟车没有耦合关系。按照车次做哈希，分布在多台服务器上交易就行了。这是典型的可并行系统，效率可以直接用单台机器性能乘以服务器数。在交换机允许的范围内，根本不会有交易性能压力。我们仔细审查铁路系统的结构，会发现，这东西天生就是分布交易的好材料。</p>
-
 <ol>
 <li>部署一组服务器，每一台都部署同一套东西，接口按照REST开放。</li>
 <li>将车次哈希后映射到具体的服务器上，所有的余票查询/订购，都向这台机器做请求。而核心服务器只要返回静态页面和车次信息就好。</li>
 <li>单个服务器上的每秒transaction要求就不可能太高。</li>
 </ol>
-
 <h1 id="阴谋论">阴谋论</h1>
-
 <p>也许有些人会想，这个系统莫非是铁道部给内部留票做的？这又错了。要做内部留票，最简单的方法就是开打内部提前售票限制。只要这个限制一开，他们想留多少留多少，你一点脾气都没有。</p>
-
 <h1 id="结论">结论</h1>
-
 <p>我只能归因于国有垄断企业在解决这类问题上的扯淡了，和私有企业没法比阿。建议对铁道部实行拆分。</p>
 
     </div>

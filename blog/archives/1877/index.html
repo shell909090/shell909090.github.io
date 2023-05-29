@@ -2,24 +2,23 @@
 <html lang="en-us">
   <head>
     <title>linux下多种文件系统在小规模追加写下的性能 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
@@ -32,7 +31,7 @@ if (!doNotTrack) {
 这个业务情况的核心问题是，对同一个文件，在一段时间内会写多次。正常情况下，这些数据会堆积在系统的Dirty区域，直到dirty_ratio的限制到了，或者dirty_expire_centisecs的限制到了，系统才会开始强制写出。否则每隔dirty_writeback_centisecs的时间，系统会写出部分数据。虽然理论上说，一个磁盘的IOPS应当在每秒600-700次上下，但是实际上并不是只能支撑150个并发的。然而设计的好的文件系统，支撑并发数会比设计的差的文件系统明显高。
 这个测试环境和实际的另一个差异，在于读写平衡上。这个业务和大部分的日志系统是很类似的（其实我们系统的业务就是日志）。但是商业用日志系统的特点是在高散碎文件写的情况下还有高随机读。这点在测试中并没有涉及，测试是单纯的大量文件追加写，请读者自行注意。
 首先是400进程，间隔1秒写出，测试对象是ext3, ext4, ntfs, jfs, xfs, btrfs，基本涵盖常见的linux文件系统。ntfs不属于常见的linux文件系统，本轮只做对比测试。首先可以看到的是ext3糟糕到吐血的表现，磁盘写io只有500上下，400个进程最多有280多个在排队。这货不是坑爹呢么。ext4的结果就正常很多，io在100上下，开始的高开是因为前一个测试的静默时间不足。jfs的结果很搞笑，队列load倒是不高，可是Dirty缓存一路上涨，让人不禁怀疑到底有没有写出。xfs的表现中规中矩，半分钟一次写出，和贝壳机器上的dirty_expire_centisecs相吻合，Dirty也不高。btrfs和jfs的情况类似。
-上一轮中，筛掉ntfs和ext3，其余进行1000进程，间隔1秒写出测试。测试对象是，ext4, [jfs](), xfs, btrfs。这次ext4也表现出了坑爹的一面，Dirty最高250M多，load也明显超过了2，写io大约在700上下，就此出局。btrfs这次的Dirty控制还不错，在25-40M徘徊，写出也不多。看似情况略好，实际上暴露出btrfs一个非常大的弱点，突发响应能力差，服务不稳定。一次集中写出，就能让排队数飞速上涨。jfs虽然曲线类似，但是队列可从没有超过1。综合考虑，后期平均load也明显超过了2，一样出局。xfs还是一样中规中矩的写出，非常低的io和Dirty。jfs依然是高速上涨的Dirty和超级低的io。
+上一轮中，筛掉ntfs和ext3，其余进行1000进程，间隔1秒写出测试。测试对象是，ext4, jfs, xfs, btrfs。这次ext4也表现出了坑爹的一面，Dirty最高250M多，load也明显超过了2，写io大约在700上下，就此出局。btrfs这次的Dirty控制还不错，在25-40M徘徊，写出也不多。看似情况略好，实际上暴露出btrfs一个非常大的弱点，突发响应能力差，服务不稳定。一次集中写出，就能让排队数飞速上涨。jfs虽然曲线类似，但是队列可从没有超过1。综合考虑，后期平均load也明显超过了2，一样出局。xfs还是一样中规中矩的写出，非常低的io和Dirty。jfs依然是高速上涨的Dirty和超级低的io。
 测试到这里，只剩下了jfs和xfs。jfs的特点是大量使用Dirty，平均io很低。xfs的特点是Dirty使用比较低，io输出比较平均。不过我们的服务器内核对xfs的支持比jfs要好一点，所以使用xfs已成定局，下面就是测试两者的极限性能而已。
 第三轮的参数是2000个进程，0.75秒间隔。jfs和xfs表现非常相似，让贝壳差点怀疑自己是测试错了东西。核查之后，确实没有。所以就下狠手，测试了一把高压力的。
 第四轮的参数是3200个进程，0.5秒间隔。从绝对量上，大概是基础测试的16倍。在jfs测试开始后的三分钟内，load上升到了60，宣告出局，因此贝壳这里没有jfs的图像。但是xfs还是完美的顶住了压力。Dirty已经上涨到了80-120M，平均io也到了300。然而平均load只有1左右，最高load也只有1.4。
@@ -49,7 +48,7 @@ if (!doNotTrack) {
 这个业务情况的核心问题是，对同一个文件，在一段时间内会写多次。正常情况下，这些数据会堆积在系统的Dirty区域，直到dirty_ratio的限制到了，或者dirty_expire_centisecs的限制到了，系统才会开始强制写出。否则每隔dirty_writeback_centisecs的时间，系统会写出部分数据。虽然理论上说，一个磁盘的IOPS应当在每秒600-700次上下，但是实际上并不是只能支撑150个并发的。然而设计的好的文件系统，支撑并发数会比设计的差的文件系统明显高。
 这个测试环境和实际的另一个差异，在于读写平衡上。这个业务和大部分的日志系统是很类似的（其实我们系统的业务就是日志）。但是商业用日志系统的特点是在高散碎文件写的情况下还有高随机读。这点在测试中并没有涉及，测试是单纯的大量文件追加写，请读者自行注意。
 首先是400进程，间隔1秒写出，测试对象是ext3, ext4, ntfs, jfs, xfs, btrfs，基本涵盖常见的linux文件系统。ntfs不属于常见的linux文件系统，本轮只做对比测试。首先可以看到的是ext3糟糕到吐血的表现，磁盘写io只有500上下，400个进程最多有280多个在排队。这货不是坑爹呢么。ext4的结果就正常很多，io在100上下，开始的高开是因为前一个测试的静默时间不足。jfs的结果很搞笑，队列load倒是不高，可是Dirty缓存一路上涨，让人不禁怀疑到底有没有写出。xfs的表现中规中矩，半分钟一次写出，和贝壳机器上的dirty_expire_centisecs相吻合，Dirty也不高。btrfs和jfs的情况类似。
-上一轮中，筛掉ntfs和ext3，其余进行1000进程，间隔1秒写出测试。测试对象是，ext4, [jfs](), xfs, btrfs。这次ext4也表现出了坑爹的一面，Dirty最高250M多，load也明显超过了2，写io大约在700上下，就此出局。btrfs这次的Dirty控制还不错，在25-40M徘徊，写出也不多。看似情况略好，实际上暴露出btrfs一个非常大的弱点，突发响应能力差，服务不稳定。一次集中写出，就能让排队数飞速上涨。jfs虽然曲线类似，但是队列可从没有超过1。综合考虑，后期平均load也明显超过了2，一样出局。xfs还是一样中规中矩的写出，非常低的io和Dirty。jfs依然是高速上涨的Dirty和超级低的io。
+上一轮中，筛掉ntfs和ext3，其余进行1000进程，间隔1秒写出测试。测试对象是，ext4, jfs, xfs, btrfs。这次ext4也表现出了坑爹的一面，Dirty最高250M多，load也明显超过了2，写io大约在700上下，就此出局。btrfs这次的Dirty控制还不错，在25-40M徘徊，写出也不多。看似情况略好，实际上暴露出btrfs一个非常大的弱点，突发响应能力差，服务不稳定。一次集中写出，就能让排队数飞速上涨。jfs虽然曲线类似，但是队列可从没有超过1。综合考虑，后期平均load也明显超过了2，一样出局。xfs还是一样中规中矩的写出，非常低的io和Dirty。jfs依然是高速上涨的Dirty和超级低的io。
 测试到这里，只剩下了jfs和xfs。jfs的特点是大量使用Dirty，平均io很低。xfs的特点是Dirty使用比较低，io输出比较平均。不过我们的服务器内核对xfs的支持比jfs要好一点，所以使用xfs已成定局，下面就是测试两者的极限性能而已。
 第三轮的参数是2000个进程，0.75秒间隔。jfs和xfs表现非常相似，让贝壳差点怀疑自己是测试错了东西。核查之后，确实没有。所以就下狠手，测试了一把高压力的。
 第四轮的参数是3200个进程，0.5秒间隔。从绝对量上，大概是基础测试的16倍。在jfs测试开始后的三分钟内，load上升到了60，宣告出局，因此贝壳这里没有jfs的图像。但是xfs还是完美的顶住了压力。Dirty已经上涨到了80-120M，平均io也到了300。然而平均load只有1左右，最高load也只有1.4。
@@ -58,7 +57,7 @@ if (!doNotTrack) {
 从最终结论上说，我们确定了xfs比ext3的巨大提升（20倍以上），并准备对xfs进行可用性测试。如果您有什么经验，欢迎和我联系。
 -------------draw.plot------------- set terminal png size 1920,1080 set output &quot;out.png&quot; set xdata time set timefmt &quot;%H:%M:%S&quot; set y2tics set origin 0,0 set size 1,1 set multiplot set origin 0,0.5 set size 1,0.5 plot &#39;out.dat&#39; using 1:2 with lines title &#39;Buffer&#39;, &#39;out.dat&#39; using 1:3 with lines title &#39;Cached&#39;, &#39;out." />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/1877/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/1877/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2011-08-09T16:56:06+08:00" />
 <meta property="article:modified_time" content="2011-08-09T16:56:06+08:00" />
 
@@ -98,11 +97,8 @@ if (!doNotTrack) {
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -112,54 +108,44 @@ if (!doNotTrack) {
       <h1 class ="post-title">linux下多种文件系统在小规模追加写下的性能</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Aug 9, 2011
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/filesystem/">filesystem</a><a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/filesystem/">filesystem</a>
+              <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
       <p>因为公司需要，所以贝壳最近做了一个比较。多种文件系统，在小规模写下的性能。</p>
-
 <p>首先要说明的一点是，贝壳的blog为了保持便于传播，因此惯例是不贴图。这次的图，全部在blog同空间的相册上，通过引用方式放原始连接，可以保持原味查看。我知道中国不少站长复制粘帖大法厉害，不过大家手下留情，可以的话自己找个图床，贝壳可以提供所有原始图片。万一相册过载，blog也会跟着挂掉，谢谢谢谢。</p>
-
 <p>这次的内容，对于有些类型的应用很有价值，具体哪些——懂行的自然了解，就不多嘴了。测试的目标，是测试在同样的环境下，不同文件系统对于散碎的写文件的支撑能力。测试方法如下。</p>
-
 <p>首先，贝壳写了一个程序，可以开N个子进程。每个进程打开4个文件，分别写出16, 32, 64, 256字节大小的块。间隔m秒写一次。当磁盘吞吐耗尽的时候，大量的线程会排队在iowait上，因此造成iowait和loadavg快速上升。当loadavg明显超过CPU数时，宣告文件系统压力达到极限。具体测试方法，使用自己设计的压力系统对磁盘造成压力，然后通过压力读取系统读取系统参数，输出到文件。通过一个filter重新组织文件，计算移动平均数等。最后通过gnuplot输出图像。由于具体有些涉及公司业务，贝壳避嫌，就不贴出源码了。draw.plot的代码在最后。</p>
-
 <p>这个业务情况的核心问题是，对同一个文件，在一段时间内会写多次。正常情况下，这些数据会堆积在系统的Dirty区域，直到dirty_ratio的限制到了，或者dirty_expire_centisecs的限制到了，系统才会开始强制写出。否则每隔dirty_writeback_centisecs的时间，系统会写出部分数据。虽然理论上说，一个磁盘的IOPS应当在每秒600-700次上下，但是实际上并不是只能支撑150个并发的。然而设计的好的文件系统，支撑并发数会比设计的差的文件系统明显高。</p>
-
 <p>这个测试环境和实际的另一个差异，在于读写平衡上。这个业务和大部分的日志系统是很类似的（其实我们系统的业务就是日志）。但是商业用日志系统的特点是在高散碎文件写的情况下还有高随机读。这点在测试中并没有涉及，测试是单纯的大量文件追加写，请读者自行注意。</p>
-
 <p>首先是400进程，间隔1秒写出，测试对象是<a href="http://blog.shell909090.org/album/main.php?g2_itemId=1635">ext3</a>, <a href="http://blog.shell909090.org/album/main.php?g2_itemId=1641">ext4</a>, <a href="http://blog.shell909090.org/album/main.php?g2_itemId=1653">ntfs</a>, <a href="http://blog.shell909090.org/album/main.php?g2_itemId=1650">jfs</a>, <a href="http://blog.shell909090.org/album/main.php?g2_itemId=1665">xfs</a>, <a href="http://blog.shell909090.org/album/main.php?g2_itemId=1632">btrfs</a>，基本涵盖常见的linux文件系统。ntfs不属于常见的linux文件系统，本轮只做对比测试。首先可以看到的是ext3糟糕到吐血的表现，磁盘写io只有500上下，400个进程最多有280多个在排队。这货不是坑爹呢么。ext4的结果就正常很多，io在100上下，开始的高开是因为前一个测试的静默时间不足。jfs的结果很搞笑，队列load倒是不高，可是Dirty缓存一路上涨，让人不禁怀疑到底有没有写出。xfs的表现中规中矩，半分钟一次写出，和贝壳机器上的dirty_expire_centisecs相吻合，Dirty也不高。btrfs和jfs的情况类似。</p>
-
-<p>上一轮中，筛掉ntfs和ext3，其余进行1000进程，间隔1秒写出测试。测试对象是，<a href="http://blog.shell909090.org/album/main.php?g2_itemId=1638">ext4</a>, [jfs](), <a href="http://blog.shell909090.org/album/main.php?g2_itemId=1656">xfs</a>, <a href="http://blog.shell909090.org/album/main.php?g2_itemId=1628">btrfs</a>。这次ext4也表现出了坑爹的一面，Dirty最高250M多，load也明显超过了2，写io大约在700上下，就此出局。btrfs这次的Dirty控制还不错，在25-40M徘徊，写出也不多。看似情况略好，实际上暴露出btrfs一个非常大的弱点，突发响应能力差，服务不稳定。一次集中写出，就能让排队数飞速上涨。jfs虽然曲线类似，但是队列可从没有超过1。综合考虑，后期平均load也明显超过了2，一样出局。xfs还是一样中规中矩的写出，非常低的io和Dirty。jfs依然是高速上涨的Dirty和超级低的io。</p>
-
+<p>上一轮中，筛掉ntfs和ext3，其余进行1000进程，间隔1秒写出测试。测试对象是，<a href="http://blog.shell909090.org/album/main.php?g2_itemId=1638">ext4</a>, <a href="">jfs</a>, <a href="http://blog.shell909090.org/album/main.php?g2_itemId=1656">xfs</a>, <a href="http://blog.shell909090.org/album/main.php?g2_itemId=1628">btrfs</a>。这次ext4也表现出了坑爹的一面，Dirty最高250M多，load也明显超过了2，写io大约在700上下，就此出局。btrfs这次的Dirty控制还不错，在25-40M徘徊，写出也不多。看似情况略好，实际上暴露出btrfs一个非常大的弱点，突发响应能力差，服务不稳定。一次集中写出，就能让排队数飞速上涨。jfs虽然曲线类似，但是队列可从没有超过1。综合考虑，后期平均load也明显超过了2，一样出局。xfs还是一样中规中矩的写出，非常低的io和Dirty。jfs依然是高速上涨的Dirty和超级低的io。</p>
 <p>测试到这里，只剩下了jfs和xfs。jfs的特点是大量使用Dirty，平均io很低。xfs的特点是Dirty使用比较低，io输出比较平均。不过我们的服务器内核对xfs的支持比jfs要好一点，所以使用xfs已成定局，下面就是测试两者的极限性能而已。</p>
-
 <p>第三轮的参数是2000个进程，0.75秒间隔。<a href="http://blog.shell909090.org/album/main.php?g2_itemId=1647">jfs</a>和<a href="http://blog.shell909090.org/album/main.php?g2_itemId=1659">xfs</a>表现非常相似，让贝壳差点怀疑自己是测试错了东西。核查之后，确实没有。所以就下狠手，测试了一把高压力的。</p>
-
 <p>第四轮的参数是3200个进程，0.5秒间隔。从绝对量上，大概是基础测试的16倍。在jfs测试开始后的三分钟内，load上升到了60，宣告出局，因此贝壳这里没有jfs的图像。但是<a href="http://blog.shell909090.org/album/main.php?g2_itemId=1662">xfs</a>还是完美的顶住了压力。Dirty已经上涨到了80-120M，平均io也到了300。然而平均load只有1左右，最高load也只有1.4。</p>
-
 <p>最终测试的参数是4000个进程，0.5秒间隔，基础测试的20倍。xfs的表现万分惊艳，平均io300-400，Dirty100-160M，平均load大约是1，最高也只有2。也就是说，到最后贝壳还是没有测试出xfs的最高压力。</p>
-
 <p>另外，贝壳也通过iozone对两者进行了测试，结论是，xfs在读写性能上比ext3高一些，但是在随机读写上大幅低于ext3。无论哪个数据，都无法出现这种20倍以上差距的现象。因此贝壳又对文件系统选择发生了兴趣，具体写在下一篇blog上。</p>
-
 <p>从最终结论上说，我们确定了xfs比ext3的巨大提升（20倍以上），并准备对xfs进行可用性测试。如果您有什么经验，欢迎和我联系。</p>
-
 <pre><code>-------------draw.plot-------------
 
 set terminal png size 1920,1080

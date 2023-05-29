@@ -2,24 +2,23 @@
 <html lang="en-us">
   <head>
     <title>vps上应当装什么 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
@@ -30,12 +29,13 @@ if (!doNotTrack) {
 vim debian默认装的是vim-tiny，很不好用。建议改为vim，改配置的时候让自己舒服点。
 安全部分 iptables-persistent 这是debian内用于iptables规则持久化的工具，你可以编辑/etc/iptables/rules.v4来修改防火墙规则。注意，目前debian stable(squeeze)中的版本还没有4/6区分，你可以弄一个testing(wheezy)中的来装。
 一般来说，你的规则中至少要包含以下内容：
--A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT -A INPUT -i lo -j ACCEPT -A INPUT -i tun&#43; -j ACCEPT -A INPUT -i ppp&#43; -j ACCEPT -A INPUT -p tcp -m multiport --dport 22,xxx,xxx,xxx -j ACCEPT -A INPUT -p udp -m multiport --dport xxx,xxx,xxx -j ACCEPT  而且强烈建议，先保存一个没问题的iptables，然后直接修改iptables，再保存。这样的好处是，当你脑残改错了导致你自己都无法管理的时候，只要重启就可以恢复vps工作，而不用更麻烦的动作。
+-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT -A INPUT -i lo -j ACCEPT -A INPUT -i tun&#43; -j ACCEPT -A INPUT -i ppp&#43; -j ACCEPT -A INPUT -p tcp -m multiport --dport 22,xxx,xxx,xxx -j ACCEPT -A INPUT -p udp -m multiport --dport xxx,xxx,xxx -j ACCEPT 而且强烈建议，先保存一个没问题的iptables，然后直接修改iptables，再保存。这样的好处是，当你脑残改错了导致你自己都无法管理的时候，只要重启就可以恢复vps工作，而不用更麻烦的动作。
 denyhosts 这是ssh的连接防御进程，用python编写。如果有人试图尝试你的ssh密码，这个程序就会踢掉他的ip。
 如果你已经用了我说的，通过key的连接方式，你可以一次就直接踢掉对方ip。
 管理部分 ifstat ifstat是用于网络流量管理的工具，可以告诉你网络目标的流量是多少。
 dnsutils dnsutils里面包含了不少用于管理dns的工具，包括我们常用的nslookup，还有相对少用的dig。
-mtr-tiny mtr是一个traceroute工具，比后者好用很多。这个工具可以快速跟踪路由。"/>
+mtr-tiny mtr是一个traceroute工具，比后者好用很多。这个工具可以快速跟踪路由。
+vnstat vnstat是用于跟踪网卡流量的工具，尤其对于每个月都有限额的vps，这个工具更有意义。"/>
 
     <meta property="og:title" content="vps上应当装什么" />
 <meta property="og:description" content="假定你有一台debian vps，上面需要装一些东西来——你懂。你应该装一些什么呢？
@@ -43,14 +43,15 @@ mtr-tiny mtr是一个traceroute工具，比后者好用很多。这个工具可�
 vim debian默认装的是vim-tiny，很不好用。建议改为vim，改配置的时候让自己舒服点。
 安全部分 iptables-persistent 这是debian内用于iptables规则持久化的工具，你可以编辑/etc/iptables/rules.v4来修改防火墙规则。注意，目前debian stable(squeeze)中的版本还没有4/6区分，你可以弄一个testing(wheezy)中的来装。
 一般来说，你的规则中至少要包含以下内容：
--A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT -A INPUT -i lo -j ACCEPT -A INPUT -i tun&#43; -j ACCEPT -A INPUT -i ppp&#43; -j ACCEPT -A INPUT -p tcp -m multiport --dport 22,xxx,xxx,xxx -j ACCEPT -A INPUT -p udp -m multiport --dport xxx,xxx,xxx -j ACCEPT  而且强烈建议，先保存一个没问题的iptables，然后直接修改iptables，再保存。这样的好处是，当你脑残改错了导致你自己都无法管理的时候，只要重启就可以恢复vps工作，而不用更麻烦的动作。
+-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT -A INPUT -i lo -j ACCEPT -A INPUT -i tun&#43; -j ACCEPT -A INPUT -i ppp&#43; -j ACCEPT -A INPUT -p tcp -m multiport --dport 22,xxx,xxx,xxx -j ACCEPT -A INPUT -p udp -m multiport --dport xxx,xxx,xxx -j ACCEPT 而且强烈建议，先保存一个没问题的iptables，然后直接修改iptables，再保存。这样的好处是，当你脑残改错了导致你自己都无法管理的时候，只要重启就可以恢复vps工作，而不用更麻烦的动作。
 denyhosts 这是ssh的连接防御进程，用python编写。如果有人试图尝试你的ssh密码，这个程序就会踢掉他的ip。
 如果你已经用了我说的，通过key的连接方式，你可以一次就直接踢掉对方ip。
 管理部分 ifstat ifstat是用于网络流量管理的工具，可以告诉你网络目标的流量是多少。
 dnsutils dnsutils里面包含了不少用于管理dns的工具，包括我们常用的nslookup，还有相对少用的dig。
-mtr-tiny mtr是一个traceroute工具，比后者好用很多。这个工具可以快速跟踪路由。" />
+mtr-tiny mtr是一个traceroute工具，比后者好用很多。这个工具可以快速跟踪路由。
+vnstat vnstat是用于跟踪网卡流量的工具，尤其对于每个月都有限额的vps，这个工具更有意义。" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2144/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2144/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2012-04-17T07:00:21+08:00" />
 <meta property="article:modified_time" content="2012-04-17T07:00:21+08:00" />
 
@@ -90,11 +91,8 @@ mtr-tiny mtr是一个traceroute工具，比后者好用很多。这个工具可�
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -104,48 +102,42 @@ mtr-tiny mtr是一个traceroute工具，比后者好用很多。这个工具可�
       <h1 class ="post-title">vps上应当装什么</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Apr 17, 2012
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/debian/">debian</a><a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a><a class="tag" href="//blog.shell909090.org/tags/vpn/">vpn</a><a class="tag" href="//blog.shell909090.org/tags/vps/">vps</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/debian/">debian</a>
+              <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a>
+              <a class="tag" href="//blog.shell909090.org/tags/vpn/">vpn</a>
+              <a class="tag" href="//blog.shell909090.org/tags/vps/">vps</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
-      
-
-<p>假定你有一台debian vps，上面需要装一些东西来——你懂。你应该装一些什么呢？</p>
-
+      <p>假定你有一台debian vps，上面需要装一些东西来——你懂。你应该装一些什么呢？</p>
 <h1 id="基础部分">基础部分</h1>
-
 <h2 id="ssh">ssh</h2>
-
 <p>没啥好多说，没有ssh，你甚至无法管理机器。不过注意，安全的ssh方式应当只允许使用key登录，禁止一切密码登录。而且对于没必要登录的某些用户，需要在/etc/passwd中将shell改为/bin/false。至于端口改不改，这个不重要，看你心情。</p>
-
 <h2 id="vim">vim</h2>
-
 <p>debian默认装的是vim-tiny，很不好用。建议改为vim，改配置的时候让自己舒服点。</p>
-
 <h2 id="安全部分">安全部分</h2>
-
 <h2 id="iptables-persistent">iptables-persistent</h2>
-
 <p>这是debian内用于iptables规则持久化的工具，你可以编辑/etc/iptables/rules.v4来修改防火墙规则。注意，目前debian stable(squeeze)中的版本还没有4/6区分，你可以弄一个testing(wheezy)中的来装。</p>
-
 <p>一般来说，你的规则中至少要包含以下内容：</p>
-
 <pre><code>-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
 -A INPUT -i lo -j ACCEPT
 -A INPUT -i tun+ -j ACCEPT
@@ -153,75 +145,40 @@ mtr-tiny mtr是一个traceroute工具，比后者好用很多。这个工具可�
 -A INPUT -p tcp -m multiport --dport 22,xxx,xxx,xxx -j ACCEPT
 -A INPUT -p udp -m multiport --dport xxx,xxx,xxx -j ACCEPT
 </code></pre>
-
 <p>而且强烈建议，先保存一个没问题的iptables，然后直接修改iptables，再保存。这样的好处是，当你脑残改错了导致你自己都无法管理的时候，只要重启就可以恢复vps工作，而不用更麻烦的动作。</p>
-
 <h2 id="denyhosts">denyhosts</h2>
-
 <p>这是ssh的连接防御进程，用python编写。如果有人试图尝试你的ssh密码，这个程序就会踢掉他的ip。</p>
-
 <p>如果你已经用了我说的，通过key的连接方式，你可以一次就直接踢掉对方ip。</p>
-
 <h1 id="管理部分">管理部分</h1>
-
 <h2 id="ifstat">ifstat</h2>
-
 <p>ifstat是用于网络流量管理的工具，可以告诉你网络目标的流量是多少。</p>
-
 <h2 id="dnsutils">dnsutils</h2>
-
 <p>dnsutils里面包含了不少用于管理dns的工具，包括我们常用的nslookup，还有相对少用的dig。</p>
-
 <h2 id="mtr-tiny">mtr-tiny</h2>
-
 <p>mtr是一个traceroute工具，比后者好用很多。这个工具可以快速跟踪路由。</p>
-
 <h2 id="vnstat">vnstat</h2>
-
 <p>vnstat是用于跟踪网卡流量的工具，尤其对于每个月都有限额的vps，这个工具更有意义。</p>
-
 <p>注意安装完成后需要初始化每个网卡，然后重启服务，而不是马上能够工作。</p>
-
 <h1 id="网络部分">网络部分</h1>
-
 <h2 id="pptp">pptp</h2>
-
 <p>pptp是一个经典的vpn服务，直接安装pptpd就好。注意，部分手机不支持128bit的mppe，关闭后可以连接。但是windows只支持128bit的mppe，关掉就无法连接。So，自己权衡。</p>
-
 <h2 id="openvpn">openvpn</h2>
-
 <p>openpn是一个非常稳定而强大的vpn程序，他使用udp作为连接协议。其实openvpn有tcp协议模式，但是速度比udp慢很多。</p>
-
 <p>openvpn的配置很长，我也写过，就不赘述了，可以参考这三篇文章(1. <a href="http://blog.shell909090.org/blog/archives/76/">搭建家用的OpenVPN服务器</a>, 2. <a href="http://blog.shell909090.org/blog/archives/1772/">说说x509证书链</a>, 3. <a href="http://blog.shell909090.org/blog/archives/1797/">再论openvpn的搭建</a> )。</p>
-
 <h2 id="l2tp">l2tp</h2>
-
 <p>l2tp的配置比openvpn更加繁琐，我配置过多次，始终在部分的设备上可以访问，部分不可以。因此等全部搞定后，会专门写一篇确认一下。</p>
-
 <h2 id="iodine">iodine</h2>
-
 <p>iodine是一个dns vpn。</p>
-
 <h2 id="ssh-1">ssh</h2>
-
-<p>ssh用于翻墙常见两种模式，固定端口转发和动态端口转发。前者使用-R将远程的某个端口映射到本地。通常而言，映射的都是squid或者polipo(推荐后者，内存消耗更小，更好配置)。这样相当于在本地可以访问远程的代理，从而达到翻墙的效果。这个的命令行是<code>ssh -L port:localhost:port ...</code>而动态端口转发则是使用ssh -D port &hellip;，将本地的port端口变成一个支持socks5协议的代理服务器。</p>
-
+<p>ssh用于翻墙常见两种模式，固定端口转发和动态端口转发。前者使用-R将远程的某个端口映射到本地。通常而言，映射的都是squid或者polipo(推荐后者，内存消耗更小，更好配置)。这样相当于在本地可以访问远程的代理，从而达到翻墙的效果。这个的命令行是<code>ssh -L port:localhost:port ... </code>而动态端口转发则是使用ssh -D port &hellip;，将本地的port端口变成一个支持socks5协议的代理服务器。</p>
 <p>相比而言，-D模式更加灵活，提供了全协议的访问，本地可以通过polipo转换为http代理。而-L模式则不能提供socks5代理功能(除非远程的端口上是socks5代理服务，但是这样就回到了-D模式，反而多开了一个服务)。但是有些时候(例如android的ssh翻墙软件)只支持后者的模式。</p>
-
 <p>另外，不要用日常管理帐号翻墙。新开一个翻墙帐号，并且设定独立的key。然后禁用shell，在ssh的时候，使用参数-CNq，这个参数可以不打开shell。如果网络不稳定，可以加上-o ServerAliveInterval 30。</p>
-
 <h2 id="stunnel">stunnel</h2>
-
 <p>stunnel本身没有任何功效，他只是将你的普通连接转换为ssl连接而已。当这个程序搭配其他程序，例如polipo，就可以实现一个ssl级别的代理。</p>
-
 <h2 id="httptunnel">httptunnel</h2>
-
 <p>这是一个服务软件，服务器端运行一个httptunnel，客户端运行一个。而后客户端就可以获得一个到服务器端的tcp连接，不受限的。</p>
-
 <h2 id="polipo">polipo</h2>
-
 <p>polipo常见有两种模式，端口转发模式和ssl模式。两者都在前文有说。端口转发模式配合ssh用，ssl模式配合stunnel用。</p>
-
 <p>以上的服务看似很多，实际上，在128M内存的实例上完全可以运行其中大部分的服务。你可以在一台服务器上运行其中多个，以保证全天候的服务。</p>
 
     </div>

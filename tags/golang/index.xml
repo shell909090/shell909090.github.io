@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>golang on Shell&#39;s Home</title>
@@ -7,11 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Thu, 08 May 2014 16:41:25 +0800</lastBuildDate>
-    
-	<atom:link href="//blog.shell909090.org/tags/golang/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Thu, 08 May 2014 16:41:25 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/golang/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>goproxy和msocks简介</title>
       <link>//blog.shell909090.org/blog/archives/2627/</link>
@@ -27,7 +23,7 @@ shadowsocks的基本原理 shadowsocks的基本概念，就是利用某种不同
 但是还是有一点无法避免的问题。如果你看到某个服务器上有一个端口，频繁的被一个或多个IP链接。每个链接都不长，每次都是客户端吐一堆数据，服务器返回一堆，然后关闭链接。尽管协议无法破解，但是基本可以肯定这就是shadowsocks。根据这个特性，可以有效的阻挡服务——这也是我最近碰到的问题。
 而且每个链接都需要验证和TCP握手太慢了。
 msocks的改进 所以，我参考SPDY协议，做了msocks。msocks的核心思路和qsocks很类似，主要修改是以下两点：
- 使用一个可靠链接（这里是经过加密的TCP），在这个链接里面封装多对传输。 每个链接只要一次验证。  这样做，首先减少了一次TCP握手和一次身份验证，工作速度更加快。其次多个传输叠加在一个流里面，流特征更加变化莫测。最后，无论是服务器端还是客户端的开销都小了很多。
+使用一个可靠链接（这里是经过加密的TCP），在这个链接里面封装多对传输。 每个链接只要一次验证。 这样做，首先减少了一次TCP握手和一次身份验证，工作速度更加快。其次多个传输叠加在一个流里面，流特征更加变化莫测。最后，无论是服务器端还是客户端的开销都小了很多。
 当然，这也带来不少问题。例如TCP原本的拥塞控制窗口是为了一对传输序列设计的。当很多传输序列在一对TCP上传递的时候，丢报文造成的影响会作用作用在全体传输序列上。包括丢了一个报文重传的时候，所有序列都必须阻塞。还有基础的TCP被施加了丢包，导致全体序列共享5k带宽。当然，经过评估后，我觉得这些问题比频繁握手更加轻，所以就设计了msocks协议。
 协议设计的时候，有几个细节问题。
 多对复用 我采用了一个map，来记录某个id是否对应到了一个控制结构。这个映射只能被客户端更改，并且有个专门的函数负责查找空闲的id，每次生成的id都是递增的，如果碰到最大值则绕回。
@@ -42,7 +38,9 @@ id的大小是16位，足够容纳65536对同时链接。其实不修改内核�
 不过幸好，TCP本身是可靠传输协议，所以我不用担心丢包重发之类的问题。我需要做的，就是把对方读取的字节数传递回来，减在控制器上，即可。
 不过，我没有做对应于silly window syndrome的优化，在每次读取小数据量后，这个读取造成的window扩张都会被传回。当然，这么设计是有原因的。我默认采用了8K的buffer进行fd间拷贝，所以一般碰不到SWS。
 为了解决tcp链接复用造成的单连接带宽问题，我强烈的建议你做以下的设定：
-net.ipv4.tcp_congestion_control = htcp net.core.rmem_default = 2621440 net.core.rmem_max = 16777216 net.core.wmem_default = 655360 net.core.wmem_max = 16777216 net.ipv4.tcp_rmem = 4096 2621440 16777216 net.ipv4.tcp_wmem = 4096 655360 16777216  ip选择算法和DNS 在goproxy中，我沿用了一个做法。通过DNS获得请求的目标IP，和中国IP范围核对。如果在国内则直接访问，否则透过代理。这个方法能够极快的加速访问，而且几乎不依赖于需要更新的列表（中国IP列表相对来说固定）。</description>
+net.ipv4.tcp_congestion_control = htcp net.core.rmem_default = 2621440 net.core.rmem_max = 16777216 net.core.wmem_default = 655360 net.core.wmem_max = 16777216 net.ipv4.tcp_rmem = 4096 2621440 16777216 net.ipv4.tcp_wmem = 4096 655360 16777216 ip选择算法和DNS 在goproxy中，我沿用了一个做法。通过DNS获得请求的目标IP，和中国IP范围核对。如果在国内则直接访问，否则透过代理。这个方法能够极快的加速访问，而且几乎不依赖于需要更新的列表（中国IP列表相对来说固定）。
+问题是DNS解析过程。msocks内置了DNS能力，可以帮助做DNS。但是实践下来发现这样做效果并不很好。而原本是采用直接DNS，丢弃特定的报文。这样可以过滤防火墙污染。
+原因很简单。原本的模式会让DNS服务器感知到查询者位于中国，于是给出中国可以访问的最快地址。而新的模式则会将DNS请求者搬到美国——这无故加重了代理的负担。例如www.qq.com，原本只需要请求得到一台深圳的服务器即可，现在则需要让DNS绕出去，再回来。如果不幸，QQ有一台位于美国的服务器，那么我的访问都会通过这台服务器——这可比深圳的服务器慢多了。</description>
     </item>
     
     <item>
@@ -52,11 +50,11 @@ net.ipv4.tcp_congestion_control = htcp net.core.rmem_default = 2621440 net.core.
       
       <guid>//blog.shell909090.org/blog/archives/2536/</guid>
       <description>说明 测试都是ab做的，中等并发量，统一采用10000并发，100000个请求。都是本机请求本机，避免公司内网IDS的干扰。
-机器是一台双核CPU的DELL：Intel&amp;reg; Pentium&amp;reg; CPU G2030 @ 3.00GHz。配4G内存。
+机器是一台双核CPU的DELL：Intel(R) Pentium(R) CPU G2030 @ 3.00GHz。配4G内存。
 第一组数据是ab测试nginx，nginx的配置如下：
-worker_processes 4; pid /run/nginx.pid; worker_rlimit_nofile 30000; events { worker_connections 20000; multi_accept on; } http { sendfile on; tcp_nopush on; tcp_nodelay on; ... }  第二组是ab测试golang，返回固定是个OK。
+worker_processes 4; pid /run/nginx.pid; worker_rlimit_nofile 30000; events { worker_connections 20000; multi_accept on; } http { sendfile on; tcp_nopush on; tcp_nodelay on; ... } 第二组是ab测试golang，返回固定是个OK。
 第三组是ab测试golang，返回某个目录或文件。
-err := http.ListenAndServe(&amp;quot;:8080&amp;quot;, http.FileServer(http.Dir(&amp;quot;/home/shell/photo&amp;quot;)))  nginx Concurrency Level: 10000 Time taken for tests: 5.720 seconds Complete requests: 100000 Failed requests: 0 Write errors: 0 Total transferred: 172100000 bytes HTML transferred: 160000000 bytes Requests per second: 17482.</description>
+err := http.ListenAndServe(&amp;quot;:8080&amp;quot;, http.FileServer(http.Dir(&amp;quot;/home/shell/photo&amp;quot;))) nginx Concurrency Level: 10000 Time taken for tests: 5.720 seconds Complete requests: 100000 Failed requests: 0 Write errors: 0 Total transferred: 172100000 bytes HTML transferred: 160000000 bytes Requests per second: 17482.47 [#/sec] (mean) Time per request: 572.</description>
     </item>
     
   </channel>

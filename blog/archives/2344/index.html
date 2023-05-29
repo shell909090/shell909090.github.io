@@ -2,24 +2,23 @@
 <html lang="en-us">
   <head>
     <title>python插件技巧 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
@@ -27,42 +26,48 @@ if (!doNotTrack) {
 <meta name="twitter:title" content="python插件技巧"/>
 <meta name="twitter:description" content="简述和通则 何谓插件。
 在实现某个功能时，经常需要对一个功能提供多种实现。例如短信网关接口各异，但是对系统而言，发送代码是一样的。 通过一套特定的机制，在成型的产品中，增加一个独立的文件，即可实现定制化实现。这套机制被称为插件机制。插件必须满足下面几个要求。
- 对于已经发出去的产品，插件机制可以通过增加文件，并少量修改（一般1-3行）产品源码，即可为产品添加新的功能。 对于产品主分支，带有插件不会影响主分支的正常工作。  插件机制的以上两个特性对产品定制非常有帮助。因为使用插件进行定制开发的项目，不需要独立建立分支。只需要在主分支上添加几个文件即可。分发补丁时也格外容易。
- 禁止在python主目录下直接放置插件，所有插件必须在python下级目录下存放。 插件的命名必须使用前缀师命名规则，所有同类型插件，要么在一个目录下独立存放（目录下没有其他代码），要么在一个目录下拥有同样的前缀（其他代码不得使用这个前缀）。  替换型插件 最简单的插件手法，就是某个文件提供提供某些函数，在变更功能时用另一个同样实现这些函数的文件替换掉原始文件。这甚至称不上一个插件手法，只能算打补丁。
+对于已经发出去的产品，插件机制可以通过增加文件，并少量修改（一般1-3行）产品源码，即可为产品添加新的功能。 对于产品主分支，带有插件不会影响主分支的正常工作。 插件机制的以上两个特性对产品定制非常有帮助。因为使用插件进行定制开发的项目，不需要独立建立分支。只需要在主分支上添加几个文件即可。分发补丁时也格外容易。
+禁止在python主目录下直接放置插件，所有插件必须在python下级目录下存放。 插件的命名必须使用前缀师命名规则，所有同类型插件，要么在一个目录下独立存放（目录下没有其他代码），要么在一个目录下拥有同样的前缀（其他代码不得使用这个前缀）。 替换型插件 最简单的插件手法，就是某个文件提供提供某些函数，在变更功能时用另一个同样实现这些函数的文件替换掉原始文件。这甚至称不上一个插件手法，只能算打补丁。
 替换型插件的提升，就是在文件中不直接提供函数，而是从某个其他文件载入这些函数。例如以下代码：
-from abc import *  原始是从abc文件中取得所有符号。当有新的文件abc2提供时，将原始文件替换为abc2，补上去，即可改变代码。注意这行代码一般不在一个大的文件中的某一行，而一般存放于一个独立文件。因为大文件相对容易修改，不能用新的代码替换。而独立文件相对固定，在打补丁时可以用新的代码直接替换。
+from abc import * 原始是从abc文件中取得所有符号。当有新的文件abc2提供时，将原始文件替换为abc2，补上去，即可改变代码。注意这行代码一般不在一个大的文件中的某一行，而一般存放于一个独立文件。因为大文件相对容易修改，不能用新的代码替换。而独立文件相对固定，在打补丁时可以用新的代码直接替换。
 替换型插件适用于，对于某个客户而言，只需要在多组实现中静态的选择一组的情况。替换型插件的优点是工作原理简单直观，排查容易。缺点是对于一个功能不能提供复数组实现。
 配置型插件 另一种插件手法基于文件或配置。在某个目录中，放置某个功能的多个实现。在加载时，载入全部插件。在使用时，根据配置动态选择。这种手法被称为配置型插件。
 配置型插件是一种非常重要的编程技巧，他为程序提供了非常优良的可扩展性。
 例如下面的例子，简述了一种配置型插件的实现：
-funcmap = {} def register_func(name): def _inner(func): funcmap[name] = func return func return _inner 在具体实现中 @register_func(name) def func1(....): pass  在__init__.py中，import一下新的文件。在原本的funcmap中，即可出现新的name和func的对应。
+funcmap = {} def register_func(name): def _inner(func): funcmap[name] = func return func return _inner 在具体实现中 @register_func(name) def func1(....): pass 在__init__.py中，import一下新的文件。在原本的funcmap中，即可出现新的name和func的对应。
 配置型插件适用于大多数场景，其优点是工作原理简单，可以为一个功能提供复数组实现。缺点是使用上限制比较大，必须和逻辑结合，思考困难。
 动态加载 动态加载插件是一种插件技巧，并不特定用于替换型或配置型插件。
 当需要加载插件时，通过python代码访问文件系统，枚举出特定文件并加载的技巧，称为动态加载。以下代码是配合上面的配置型插件的例子，实现动态加载的例子。
-def load_plugins(): for filename in os.listdir(&#39;plugins&#39;): if filename.endswith(&#39;py&#39;): __import__(filename[:-3]) if filename.endswith(&#39;pyc&#39;): __import__(filename[:-4])  动态加载的优点是，可以通过放置文件来增加/修改功能，而不需要修改代码。缺点是，由于需要访问文件系统，因此效率并不高。如果每次加载都需要动态查询，那么系统效率会大幅下降。
+def load_plugins(): for filename in os.listdir(&#39;plugins&#39;): if filename.endswith(&#39;py&#39;): __import__(filename[:-3]) if filename.endswith(&#39;pyc&#39;): __import__(filename[:-4]) 动态加载的优点是，可以通过放置文件来增加/修改功能，而不需要修改代码。缺点是，由于需要访问文件系统，因此效率并不高。如果每次加载都需要动态查询，那么系统效率会大幅下降。
 热加载插件 热加载是一种比较高级的技巧。在程序执行中，不退出进程而动态的将最新的组件加载进来的能力，被称为热加载。
-简单的热加载就是在每次执行功能的时候，检查是否有新的组件。由于这样会带来很高的系统负载，因此除非必要，否则不要滥用热加载。"/>
+简单的热加载就是在每次执行功能的时候，检查是否有新的组件。由于这样会带来很高的系统负载，因此除非必要，否则不要滥用热加载。
+更复杂一些的热加载，需要用新的实现替换原有实现。这涉及几个编程上的限制。
+热加载有几个限制，必须严格遵循：
+在所有访问前，必须检查文件。 如果要进行热替换，不得将原有文件的导出符号作为值使用。即，无论是文件的导出数据，导出函数，都不得作为其他对象的赋值内容。 热替换内，不得保存私有数据。所有数据必须在上下文中，或者全局中存放。 "/>
 
     <meta property="og:title" content="python插件技巧" />
 <meta property="og:description" content="简述和通则 何谓插件。
 在实现某个功能时，经常需要对一个功能提供多种实现。例如短信网关接口各异，但是对系统而言，发送代码是一样的。 通过一套特定的机制，在成型的产品中，增加一个独立的文件，即可实现定制化实现。这套机制被称为插件机制。插件必须满足下面几个要求。
- 对于已经发出去的产品，插件机制可以通过增加文件，并少量修改（一般1-3行）产品源码，即可为产品添加新的功能。 对于产品主分支，带有插件不会影响主分支的正常工作。  插件机制的以上两个特性对产品定制非常有帮助。因为使用插件进行定制开发的项目，不需要独立建立分支。只需要在主分支上添加几个文件即可。分发补丁时也格外容易。
- 禁止在python主目录下直接放置插件，所有插件必须在python下级目录下存放。 插件的命名必须使用前缀师命名规则，所有同类型插件，要么在一个目录下独立存放（目录下没有其他代码），要么在一个目录下拥有同样的前缀（其他代码不得使用这个前缀）。  替换型插件 最简单的插件手法，就是某个文件提供提供某些函数，在变更功能时用另一个同样实现这些函数的文件替换掉原始文件。这甚至称不上一个插件手法，只能算打补丁。
+对于已经发出去的产品，插件机制可以通过增加文件，并少量修改（一般1-3行）产品源码，即可为产品添加新的功能。 对于产品主分支，带有插件不会影响主分支的正常工作。 插件机制的以上两个特性对产品定制非常有帮助。因为使用插件进行定制开发的项目，不需要独立建立分支。只需要在主分支上添加几个文件即可。分发补丁时也格外容易。
+禁止在python主目录下直接放置插件，所有插件必须在python下级目录下存放。 插件的命名必须使用前缀师命名规则，所有同类型插件，要么在一个目录下独立存放（目录下没有其他代码），要么在一个目录下拥有同样的前缀（其他代码不得使用这个前缀）。 替换型插件 最简单的插件手法，就是某个文件提供提供某些函数，在变更功能时用另一个同样实现这些函数的文件替换掉原始文件。这甚至称不上一个插件手法，只能算打补丁。
 替换型插件的提升，就是在文件中不直接提供函数，而是从某个其他文件载入这些函数。例如以下代码：
-from abc import *  原始是从abc文件中取得所有符号。当有新的文件abc2提供时，将原始文件替换为abc2，补上去，即可改变代码。注意这行代码一般不在一个大的文件中的某一行，而一般存放于一个独立文件。因为大文件相对容易修改，不能用新的代码替换。而独立文件相对固定，在打补丁时可以用新的代码直接替换。
+from abc import * 原始是从abc文件中取得所有符号。当有新的文件abc2提供时，将原始文件替换为abc2，补上去，即可改变代码。注意这行代码一般不在一个大的文件中的某一行，而一般存放于一个独立文件。因为大文件相对容易修改，不能用新的代码替换。而独立文件相对固定，在打补丁时可以用新的代码直接替换。
 替换型插件适用于，对于某个客户而言，只需要在多组实现中静态的选择一组的情况。替换型插件的优点是工作原理简单直观，排查容易。缺点是对于一个功能不能提供复数组实现。
 配置型插件 另一种插件手法基于文件或配置。在某个目录中，放置某个功能的多个实现。在加载时，载入全部插件。在使用时，根据配置动态选择。这种手法被称为配置型插件。
 配置型插件是一种非常重要的编程技巧，他为程序提供了非常优良的可扩展性。
 例如下面的例子，简述了一种配置型插件的实现：
-funcmap = {} def register_func(name): def _inner(func): funcmap[name] = func return func return _inner 在具体实现中 @register_func(name) def func1(....): pass  在__init__.py中，import一下新的文件。在原本的funcmap中，即可出现新的name和func的对应。
+funcmap = {} def register_func(name): def _inner(func): funcmap[name] = func return func return _inner 在具体实现中 @register_func(name) def func1(....): pass 在__init__.py中，import一下新的文件。在原本的funcmap中，即可出现新的name和func的对应。
 配置型插件适用于大多数场景，其优点是工作原理简单，可以为一个功能提供复数组实现。缺点是使用上限制比较大，必须和逻辑结合，思考困难。
 动态加载 动态加载插件是一种插件技巧，并不特定用于替换型或配置型插件。
 当需要加载插件时，通过python代码访问文件系统，枚举出特定文件并加载的技巧，称为动态加载。以下代码是配合上面的配置型插件的例子，实现动态加载的例子。
-def load_plugins(): for filename in os.listdir(&#39;plugins&#39;): if filename.endswith(&#39;py&#39;): __import__(filename[:-3]) if filename.endswith(&#39;pyc&#39;): __import__(filename[:-4])  动态加载的优点是，可以通过放置文件来增加/修改功能，而不需要修改代码。缺点是，由于需要访问文件系统，因此效率并不高。如果每次加载都需要动态查询，那么系统效率会大幅下降。
+def load_plugins(): for filename in os.listdir(&#39;plugins&#39;): if filename.endswith(&#39;py&#39;): __import__(filename[:-3]) if filename.endswith(&#39;pyc&#39;): __import__(filename[:-4]) 动态加载的优点是，可以通过放置文件来增加/修改功能，而不需要修改代码。缺点是，由于需要访问文件系统，因此效率并不高。如果每次加载都需要动态查询，那么系统效率会大幅下降。
 热加载插件 热加载是一种比较高级的技巧。在程序执行中，不退出进程而动态的将最新的组件加载进来的能力，被称为热加载。
-简单的热加载就是在每次执行功能的时候，检查是否有新的组件。由于这样会带来很高的系统负载，因此除非必要，否则不要滥用热加载。" />
+简单的热加载就是在每次执行功能的时候，检查是否有新的组件。由于这样会带来很高的系统负载，因此除非必要，否则不要滥用热加载。
+更复杂一些的热加载，需要用新的实现替换原有实现。这涉及几个编程上的限制。
+热加载有几个限制，必须严格遵循：
+在所有访问前，必须检查文件。 如果要进行热替换，不得将原有文件的导出符号作为值使用。即，无论是文件的导出数据，导出函数，都不得作为其他对象的赋值内容。 热替换内，不得保存私有数据。所有数据必须在上下文中，或者全局中存放。 " />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2344/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2344/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2013-03-20T11:18:03+08:00" />
 <meta property="article:modified_time" content="2013-03-20T11:18:03+08:00" />
 
@@ -102,11 +107,8 @@ def load_plugins(): for filename in os.listdir(&#39;plugins&#39;): if filename.e
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -116,68 +118,54 @@ def load_plugins(): for filename in os.listdir(&#39;plugins&#39;): if filename.e
       <h1 class ="post-title">python插件技巧</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Mar 20, 2013
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/program/">program</a><a class="tag" href="//blog.shell909090.org/tags/python/">python</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/program/">program</a>
+              <a class="tag" href="//blog.shell909090.org/tags/python/">python</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
-      
-
-<h1 id="简述和通则">简述和通则</h1>
-
+      <h1 id="简述和通则">简述和通则</h1>
 <p>何谓插件。</p>
-
 <p>在实现某个功能时，经常需要对一个功能提供多种实现。例如短信网关接口各异，但是对系统而言，发送代码是一样的。
 通过一套特定的机制，在成型的产品中，增加一个独立的文件，即可实现定制化实现。这套机制被称为插件机制。插件必须满足下面几个要求。</p>
-
 <ol>
 <li>对于已经发出去的产品，插件机制可以通过增加文件，并少量修改（一般1-3行）产品源码，即可为产品添加新的功能。</li>
 <li>对于产品主分支，带有插件不会影响主分支的正常工作。</li>
 </ol>
-
 <p>插件机制的以上两个特性对产品定制非常有帮助。因为使用插件进行定制开发的项目，不需要独立建立分支。只需要在主分支上添加几个文件即可。分发补丁时也格外容易。</p>
-
 <ol>
 <li>禁止在python主目录下直接放置插件，所有插件必须在python下级目录下存放。</li>
 <li>插件的命名必须使用前缀师命名规则，所有同类型插件，要么在一个目录下独立存放（目录下没有其他代码），要么在一个目录下拥有同样的前缀（其他代码不得使用这个前缀）。</li>
 </ol>
-
 <h1 id="替换型插件">替换型插件</h1>
-
 <p>最简单的插件手法，就是某个文件提供提供某些函数，在变更功能时用另一个同样实现这些函数的文件替换掉原始文件。这甚至称不上一个插件手法，只能算打补丁。</p>
-
 <p>替换型插件的提升，就是在文件中不直接提供函数，而是从某个其他文件载入这些函数。例如以下代码：</p>
-
 <pre><code>from abc import *
 </code></pre>
-
 <p>原始是从abc文件中取得所有符号。当有新的文件abc2提供时，将原始文件替换为abc2，补上去，即可改变代码。注意这行代码一般不在一个大的文件中的某一行，而一般存放于一个独立文件。因为大文件相对容易修改，不能用新的代码替换。而独立文件相对固定，在打补丁时可以用新的代码直接替换。</p>
-
 <p>替换型插件适用于，对于某个客户而言，只需要在多组实现中静态的选择一组的情况。替换型插件的优点是工作原理简单直观，排查容易。缺点是对于一个功能不能提供复数组实现。</p>
-
 <h1 id="配置型插件">配置型插件</h1>
-
 <p>另一种插件手法基于文件或配置。在某个目录中，放置某个功能的多个实现。在加载时，载入全部插件。在使用时，根据配置动态选择。这种手法被称为配置型插件。</p>
-
 <p>配置型插件是一种非常重要的编程技巧，他为程序提供了非常优良的可扩展性。</p>
-
 <p>例如下面的例子，简述了一种配置型插件的实现：</p>
-
 <pre><code>funcmap = {}
 
 def register_func(name):
@@ -192,35 +180,22 @@ def register_func(name):
 def func1(....):
     pass
 </code></pre>
-
 <p>在__init__.py中，import一下新的文件。在原本的funcmap中，即可出现新的name和func的对应。</p>
-
 <p>配置型插件适用于大多数场景，其优点是工作原理简单，可以为一个功能提供复数组实现。缺点是使用上限制比较大，必须和逻辑结合，思考困难。</p>
-
 <h1 id="动态加载">动态加载</h1>
-
 <p>动态加载插件是一种插件技巧，并不特定用于替换型或配置型插件。</p>
-
 <p>当需要加载插件时，通过python代码访问文件系统，枚举出特定文件并加载的技巧，称为动态加载。以下代码是配合上面的配置型插件的例子，实现动态加载的例子。</p>
-
 <pre><code>def load_plugins():
     for filename in os.listdir('plugins'):
         if filename.endswith('py'): __import__(filename[:-3])
         if filename.endswith('pyc'): __import__(filename[:-4])
 </code></pre>
-
 <p>动态加载的优点是，可以通过放置文件来增加/修改功能，而不需要修改代码。缺点是，由于需要访问文件系统，因此效率并不高。如果每次加载都需要动态查询，那么系统效率会大幅下降。</p>
-
 <h1 id="热加载插件">热加载插件</h1>
-
 <p>热加载是一种比较高级的技巧。在程序执行中，不退出进程而动态的将最新的组件加载进来的能力，被称为热加载。</p>
-
 <p>简单的热加载就是在每次执行功能的时候，检查是否有新的组件。由于这样会带来很高的系统负载，因此除非必要，否则不要滥用热加载。</p>
-
 <p>更复杂一些的热加载，需要用新的实现替换原有实现。这涉及几个编程上的限制。</p>
-
 <p>热加载有几个限制，必须严格遵循：</p>
-
 <ol>
 <li>在所有访问前，必须检查文件。</li>
 <li>如果要进行热替换，不得将原有文件的导出符号作为值使用。即，无论是文件的导出数据，导出函数，都不得作为其他对象的赋值内容。</li>

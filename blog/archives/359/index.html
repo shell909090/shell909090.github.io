@@ -2,24 +2,23 @@
 <html lang="en-us">
   <head>
     <title>内存泄露检测简说 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
@@ -32,7 +31,7 @@ if (!doNotTrack) {
 <meta property="og:description" content="我们首先从一段代码说起。
 #define _CRTDBG_MAP_ALLOC #include #include class test { public: test () { lpBuffer = new char[0x1000]; }; \~test () { delete lpBuffer; }; void *operator new (size_t s) { return malloc (s); }; void operator delete (void *pvMem) { if (pvMem != NULL) free (pvMem); }; void *operator new[] (size_t s) { return malloc (s); }; void operator delete[] (void *pvMem) { if (pvMem != NULL) free (pvMem); }; char *lpBuffer; }; test &amp; tt () { static test t; return t; } //test t; void process () { test tf; // _CrtDumpMemoryLeaks (); } int _tmain (int argc, _TCHAR * argv[]) { // test tf; test* tp=new test(); _CrtSetReportMode (_CRT_WARN, _CRTDBG_MODE_FILE); _CrtSetReportFile (_CRT_WARN, _CRTDBG_FILE_STDERR); _CrtSetDbgFlag (_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF); process (); // printf(&quot;hello, world." />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/359/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/359/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2007-02-07T22:48:13+08:00" />
 <meta property="article:modified_time" content="2007-02-07T22:48:13+08:00" />
 
@@ -72,11 +71,8 @@ if (!doNotTrack) {
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -86,146 +82,136 @@ if (!doNotTrack) {
       <h1 class ="post-title">内存泄露检测简说</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Feb 7, 2007
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           2 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/c/">c</a><a class="tag" href="//blog.shell909090.org/tags/memory-leak/">memory-leak</a><a class="tag" href="//blog.shell909090.org/tags/program/">program</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/c/">c</a>
+              <a class="tag" href="//blog.shell909090.org/tags/memory-leak/">memory-leak</a>
+              <a class="tag" href="//blog.shell909090.org/tags/program/">program</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
       <p>我们首先从一段代码说起。</p>
-
 <pre><code>#define _CRTDBG_MAP_ALLOC
 #include
 #include
 
 class test {
 public:
-    test () {
-        lpBuffer = new char[0x1000];
-    };
-    \~test () {
-        delete lpBuffer;
-    };
-    void *operator new (size_t s) {
-        return malloc (s);
-    };
-    void operator delete (void *pvMem) {
-        if (pvMem != NULL)
-            free (pvMem);
-    };
-    void *operator new[] (size_t s) {
-        return malloc (s);
-    };
-    void operator delete[] (void *pvMem) {
-        if (pvMem != NULL)
-            free (pvMem);
-    };
-    char *lpBuffer;
+	test () {
+		lpBuffer = new char[0x1000];
+	};
+	\~test () {
+		delete lpBuffer;
+	};
+	void *operator new (size_t s) {
+		return malloc (s);
+	};
+	void operator delete (void *pvMem) {
+		if (pvMem != NULL)
+			free (pvMem);
+	};
+	void *operator new[] (size_t s) {
+		return malloc (s);
+	};
+	void operator delete[] (void *pvMem) {
+		if (pvMem != NULL)
+			free (pvMem);
+	};
+	char *lpBuffer;
 };
 
 test &amp; tt ()
 {
-    static test t;
-    return t;
+	static test t;
+	return t;
 }
 
 //test t;
 void process ()
 {
-    test tf;
+	test tf;
 // _CrtDumpMemoryLeaks ();
 }
 
 int _tmain (int argc, _TCHAR * argv[])
 {
 // test tf;
-    test* tp=new test();
-    _CrtSetReportMode (_CRT_WARN, _CRTDBG_MODE_FILE);
-    _CrtSetReportFile (_CRT_WARN, _CRTDBG_FILE_STDERR);
-    _CrtSetDbgFlag (_CRTDBG_ALLOC_MEM_DF |
-            _CRTDBG_LEAK_CHECK_DF);
-    process ();
+	test* tp=new test();
+	_CrtSetReportMode (_CRT_WARN, _CRTDBG_MODE_FILE);
+	_CrtSetReportFile (_CRT_WARN, _CRTDBG_FILE_STDERR);
+	_CrtSetDbgFlag (_CRTDBG_ALLOC_MEM_DF |
+			_CRTDBG_LEAK_CHECK_DF);
+	process ();
 // printf(&quot;hello, world.n&quot;, t.lpBuffer);
-    printf (&quot;hello, world.n&quot;, tt ().lpBuffer);
+	printf (&quot;hello, world.n&quot;, tt ().lpBuffer);
 // _CrtDumpMemoryLeaks ();
 // printf(&quot;hello, world.n&quot;, t.lpBuffer);
-    return 0;
+	return 0;
 }
 </code></pre>
-
 <p>以上代码，大家可以分别注释不同位置，来查看不同效果。不过我们还是从最基础的如何检测开始说起吧。</p>
-
 <p>首先在头中引入。</p>
-
 <pre><code>#define _CRTDBG_MAP_ALLOC
 #include
 #include
 </code></pre>
-
 <p>在引入后，程序结束的时候调用_CrtDumpMemoryLeaks ();就可以打印出来内存泄露的情况。不过有几个问题，首先，打印出来的位置是在调试中。也就是说，如果不使用调试信息查看工具，是看不到信息的。这个问题不难解决。我们可以在程序开始的时候设定。</p>
-
 <pre><code>_CrtSetReportMode (_CRT_WARN, _CRTDBG_MODE_FILE);
 _CrtSetReportFile (_CRT_WARN, _CRTDBG_FILE_STDERR);
 </code></pre>
-
 <p>将出错信息打印到Console输出中。当然如果程序是BCB或者是MFC，也大可打印到文件中。</p>
-
 <p>其次，打印出来的出错信息可能是这样的。</p>
-
 <dl>
+<dt>Detected memory leaks!</dt>
+<dt>Dumping objects -&gt;</dt>
 <dt>c:program filesmicrosoft visual studio .net 2003vc7includecrtdbg.h(692)</dt>
 <dd>{44} normal block at 0x00342A28, 4096 bytes long.
 Data: &lt; &gt; CD CD CD CD CD CD CD CD CD CD CD CD CD
 CD CD CD
 Object dump complete.</dd>
 </dl>
-
-<p>CD CD CD
-CD CD CD
-Object dump complete.</p>
-
 <p>很好用没错，不过为什么文件上面写的是crtdbg.h呢？其实这个是crtdbg.h所插入的operator new，用来创建内存区域的。malloc在其中被调用，因此所有用new的地方出现的泄露都会是这个位置。</p>
-
 <p>解决这个问题稍微有些烦琐，需要持续的将operator new重载出来。</p>
-
 <pre><code>void *operator new (size_t s) {
-    return malloc (s);
+	return malloc (s);
 };
 
 void operator delete (void *pvMem) {
-    if (pvMem != NULL)
-        free (pvMem);
+	if (pvMem != NULL)
+		free (pvMem);
 };
 
 void *operator new[] (size_t s) {
-    return malloc (s);
+	return malloc (s);
 };
 
 void operator delete[] (void *pvMem) {
-    if (pvMem != NULL)
-        free (pvMem);
+	if (pvMem != NULL)
+		free (pvMem);
 };
 </code></pre>
-
 <p>当然，理论上我们可以使用多继承，简单的使得某个类具备这个特性。不过遗憾的是多继承往往容易出错，不如手写安全。其次是如果对象并不构建在堆中(更准确的表述是没有使用malloc来分配空间)，那么就不会调用operator</p>
-
 <p>new。当然，这时候多数情况下都是栈对象和临时对象，会被系统自动析构。这样我们一般可以得到更好的输出。</p>
-
 <dl>
+<dt>Detected memory leaks!</dt>
+<dt>Dumping objects -&gt;</dt>
 <dt>c:program filesmicrosoft visual studio .net 2003vc7includecrtdbg.h(692)</dt>
 <dd>{44} normal block at 0x00342A28, 4096 bytes long.
 Data: &lt; &gt; CD CD CD CD CD CD CD CD CD CD CD CD CD
@@ -235,27 +221,15 @@ d:my documentsvisual studio projectstest_memleaktest_memleak.cpp(18) :
 Data: &lt;(*4 &gt; 28 2A 34 00
 Object dump complete.</dd>
 </dl>
-
-<p>&lt;(*4 &gt; 28 2A 34 00
-Object dump complete.</p>
-
 <p>以上有两个泄露，一个是char test::*lpBuffer;的，另外一个是所分配的空间的。test_memleak.cpp已经被指出了，相信再查不出就是个人水平问题了。(提示，不行可以对operator new下断点)</p>
-
 <p>最后一个，就是退出的时间。我们在调用_CrtDumpMemoryLeaks ();的时候，会打印出当前没有释放的内存占用。如果在退出时打印，就可以得到泄露的内存。这是抓内存泄露的基础。但是有的时候有多个退出点，这个时候，我们就必须使用如下办法。</p>
-
 <pre><code>_CrtSetDbgFlag (_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 </code></pre>
-
 <p>这样会在退出的时候自动调用_CrtDumpMemoryLeaks ();。当然，这个办法也不是万能的。如果程序中出现exit(-1);，那么会打印内存泄露然后退出。如果出现ExitProcess(-1);那就啥都没了。不过这个时候打出来的东西肯定也是废物了。中途退出，没有释放掉东西是正常的很的事情。</p>
-
 <p>另外两者还有一点区别，当使用_CrtDumpMemoryLeaks ();的时候，我们认为是程序结束了，实际上并没有。在调用exit(-1);的时候其实执行了C/C++的退出步骤，这个在Crt里面有源码的。大致来说有以下几个区别。</p>
-
 <p>一，main函数中构造对象的析构函数未调用。</p>
-
 <p>二，全局变量未析构。</p>
-
 <p>三，局部静态变量未析构。</p>
-
 <p>很多时候我们在最后打印出来发现有泄露，找半天又找不出。很可能就是以上问题，尤其是第三个问题。</p>
 
     </div>

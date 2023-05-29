@@ -2,37 +2,34 @@
 <html lang="en-us">
   <head>
     <title>以nginx作为subversion前端的一些细节 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
     <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="以nginx作为subversion前端的一些细节"/>
-<meta name="twitter:description" content="本文系电脑资料，同步到blog上。小黄姐姐不必看了，可以帮我留个言。 nginx性能不错，可惜不支持WebDAV，因此没法拿来作为subversion的http服务。于是考虑开一个nginx作为前端，后端就跑一个apache来作为容器。配置这么写的(节选)： =========/etc/nginx/sites-enabled/default========= server { listen 443; server_name OOXX ssl on; ssl_certificate keys/server.crt; ssl_certificate_key keys/server.key; ssl_session_timeout 5m; ssl_protocols SSLv2 SSLv3 TLSv1; ssl_ciphers ALL:!ADH:!EXPORT56:RC4&#43;RSA:&#43;HIGH:&#43;MEDIUM:&#43;LOW:&#43;SSLv2:&#43;EXP; ssl_prefer_server_ciphers on; access_log /var/log/nginx/localhost.access.log; include /etc/nginx/mapping-ssl; error_page 500 502 503 504 /50x.html;
-location = /50x.html { root /var/www/nginx-default; } } 打开了一个https的服务，这是当然的，svn传输的数据使用http很危险。 ===========/etc/nginx/mapping-ssl============= location \^~ /svn { proxy_set_header Destination \$http_destination; proxy_pass http://apache_svr; proxy_set_header Host \$host; proxy_set_header X-Real-IP \$remote_addr; proxy_set_header X-Forwarded-Host \$host; proxy_set_header X-Forwarded-Proto https; proxy_set_header X-Forwarded-Server \$host; proxy_set_header X-Forwarded-For"/>
+<meta name="twitter:description" content="本文系电脑资料，同步到blog上。小黄姐姐不必看了，可以帮我留个言。 nginx性能不错，可惜不支持WebDAV，因此没法拿来作为subversion的http服务。于是考虑开一个nginx作为前端，后端就跑一个apache来作为容器。配置这么写的(节选)： =========/etc/nginx/sites-enabled/default========= server { listen 443; server_name OOXX ssl on; ssl_certificate keys/server.crt; ssl_certificate_key keys/server.key; ssl_session_timeout 5m; ssl_protocols SSLv2 SSLv3 TLSv1; ssl_ciphers ALL:!ADH:!EXPORT56:RC4&#43;RSA:&#43;HIGH:&#43;MEDIUM:&#43;LOW:&#43;SSLv2:&#43;EXP; ssl_prefer_server_ciphers on; access_log /var/log/nginx/localhost.access.log; include /etc/nginx/mapping-ssl; error_page 500 502 503 504 /50x.html; location = /50x.html { root /var/www/nginx-default; } } 打开了一个https的服务，这是当然的，svn传输的数据使用http很危险。 ===========/etc/nginx/mapping-ssl============= location ^~ /svn { proxy_set_header Destination $http_destination; proxy_pass http://apache_svr; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-Host $host; proxy_set_header X-Forwarded-Proto https; proxy_set_header X-Forwarded-Server $host; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; } 将/svn下面的所有请求交给apache2。 =====/etc/apache2/mods-enabled/dav_svn."/>
 
     <meta property="og:title" content="以nginx作为subversion前端的一些细节" />
-<meta property="og:description" content="本文系电脑资料，同步到blog上。小黄姐姐不必看了，可以帮我留个言。 nginx性能不错，可惜不支持WebDAV，因此没法拿来作为subversion的http服务。于是考虑开一个nginx作为前端，后端就跑一个apache来作为容器。配置这么写的(节选)： =========/etc/nginx/sites-enabled/default========= server { listen 443; server_name OOXX ssl on; ssl_certificate keys/server.crt; ssl_certificate_key keys/server.key; ssl_session_timeout 5m; ssl_protocols SSLv2 SSLv3 TLSv1; ssl_ciphers ALL:!ADH:!EXPORT56:RC4&#43;RSA:&#43;HIGH:&#43;MEDIUM:&#43;LOW:&#43;SSLv2:&#43;EXP; ssl_prefer_server_ciphers on; access_log /var/log/nginx/localhost.access.log; include /etc/nginx/mapping-ssl; error_page 500 502 503 504 /50x.html;
-location = /50x.html { root /var/www/nginx-default; } } 打开了一个https的服务，这是当然的，svn传输的数据使用http很危险。 ===========/etc/nginx/mapping-ssl============= location \^~ /svn { proxy_set_header Destination \$http_destination; proxy_pass http://apache_svr; proxy_set_header Host \$host; proxy_set_header X-Real-IP \$remote_addr; proxy_set_header X-Forwarded-Host \$host; proxy_set_header X-Forwarded-Proto https; proxy_set_header X-Forwarded-Server \$host; proxy_set_header X-Forwarded-For" />
+<meta property="og:description" content="本文系电脑资料，同步到blog上。小黄姐姐不必看了，可以帮我留个言。 nginx性能不错，可惜不支持WebDAV，因此没法拿来作为subversion的http服务。于是考虑开一个nginx作为前端，后端就跑一个apache来作为容器。配置这么写的(节选)： =========/etc/nginx/sites-enabled/default========= server { listen 443; server_name OOXX ssl on; ssl_certificate keys/server.crt; ssl_certificate_key keys/server.key; ssl_session_timeout 5m; ssl_protocols SSLv2 SSLv3 TLSv1; ssl_ciphers ALL:!ADH:!EXPORT56:RC4&#43;RSA:&#43;HIGH:&#43;MEDIUM:&#43;LOW:&#43;SSLv2:&#43;EXP; ssl_prefer_server_ciphers on; access_log /var/log/nginx/localhost.access.log; include /etc/nginx/mapping-ssl; error_page 500 502 503 504 /50x.html; location = /50x.html { root /var/www/nginx-default; } } 打开了一个https的服务，这是当然的，svn传输的数据使用http很危险。 ===========/etc/nginx/mapping-ssl============= location ^~ /svn { proxy_set_header Destination $http_destination; proxy_pass http://apache_svr; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-Host $host; proxy_set_header X-Forwarded-Proto https; proxy_set_header X-Forwarded-Server $host; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; } 将/svn下面的所有请求交给apache2。 =====/etc/apache2/mods-enabled/dav_svn." />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/108/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/108/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2010-04-02T03:40:00+08:00" />
 <meta property="article:modified_time" content="2010-04-02T03:40:00+08:00" />
 
@@ -72,11 +69,8 @@ location = /50x.html { root /var/www/nginx-default; } } 打开了一个https的
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -86,29 +80,35 @@ location = /50x.html { root /var/www/nginx-default; } } 打开了一个https的
       <h1 class ="post-title">以nginx作为subversion前端的一些细节</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Apr 2, 2010
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/apache/">apache</a><a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a><a class="tag" href="//blog.shell909090.org/tags/nginx/">nginx</a><a class="tag" href="//blog.shell909090.org/tags/subversion/">subversion</a><a class="tag" href="//blog.shell909090.org/tags/versioncontrol/">versioncontrol</a><a class="tag" href="//blog.shell909090.org/tags/webserver/">webserver</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/apache/">apache</a>
+              <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a>
+              <a class="tag" href="//blog.shell909090.org/tags/nginx/">nginx</a>
+              <a class="tag" href="//blog.shell909090.org/tags/subversion/">subversion</a>
+              <a class="tag" href="//blog.shell909090.org/tags/versioncontrol/">versioncontrol</a>
+              <a class="tag" href="//blog.shell909090.org/tags/webserver/">webserver</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
-      
-
-<p>本文系电脑资料，同步到blog上。小黄姐姐不必看了，可以帮我留个言。
+      <h1 id="location--50xhtml--root-varwwwnginx-default--">本文系电脑资料，同步到blog上。小黄姐姐不必看了，可以帮我留个言。
 nginx性能不错，可惜不支持WebDAV，因此没法拿来作为subversion的http服务。于是考虑开一个nginx作为前端，后端就跑一个apache来作为容器。配置这么写的(节选)：
 =========/etc/nginx/sites-enabled/default========= server { listen  
 443; server_name  OOXX ssl  on; ssl_certificate  keys/server.crt;
@@ -117,41 +117,33 @@ ssl_protocols  SSLv2 SSLv3 TLSv1; ssl_ciphers 
 ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP;
 ssl_prefer_server_ciphers   on; access_log 
 /var/log/nginx/localhost.access.log; include            
-/etc/nginx/mapping-ssl; error_page   500 502 503 504  /50x.html;</p>
-
-<h1 id="location-50x-html-root-var-www-nginx-default">location = /50x.html { root   /var/www/nginx-default; } }</h1>
-
-<p>打开了一个https的服务，这是当然的，svn传输的数据使用http很危险。
-===========/etc/nginx/mapping-ssl============= location \^~ /svn {
-proxy_set_header    Destination \$http_destination;
+/etc/nginx/mapping-ssl; error_page   500 502 503 504  /50x.html;
+location = /50x.html { root   /var/www/nginx-default; } }</h1>
+<h1 id="proxy_add_x_forwarded_for-">打开了一个https的服务，这是当然的，svn传输的数据使用http很危险。
+===========/etc/nginx/mapping-ssl============= location ^~ /svn {
+proxy_set_header    Destination $http_destination;
 proxy_pass          <a href="http://apache_svr">http://apache_svr</a>; proxy_set_header   
-Host            \$host; proxy_set_header    X-Real-IP      
-\$remote_addr; proxy_set_header    X-Forwarded-Host \$host;
+Host            $host; proxy_set_header    X-Real-IP      
+$remote_addr; proxy_set_header    X-Forwarded-Host $host;
 proxy_set_header    X-Forwarded-Proto https; proxy_set_header   
-X-Forwarded-Server \$host; proxy_set_header    X-Forwarded-For</p>
-
-<h1 id="proxy-add-x-forwarded-for">\$proxy_add_x_forwarded_for; }</h1>
-
-<p>将/svn下面的所有请求交给apache2。
+X-Forwarded-Server $host; proxy_set_header    X-Forwarded-For
+$proxy_add_x_forwarded_for; }</h1>
+<h1 id="varwebsvnmainconfauthz-ltlocationgt">将/svn下面的所有请求交给apache2。
 =====/etc/apache2/mods-enabled/dav_svn.conf===== &lt;Location
 /svn/main&gt; DAV svn SVNPath /var/web/svn/main AuthType Basic AuthName
 &ldquo;Subversion Repository&rdquo; Require valid-user AuthUserFile
-/var/web/svn/main/conf/passwd AuthzSVNAccessFile</p>
-
-<h1 id="var-web-svn-main-conf-authz-lt-location-gt">/var/web/svn/main/conf/authz &lt;/Location&gt;</h1>
-
-<p>看起来很美，但是在使用中会发生502错误，原因是来自文件移动后，svn会使用COPY作为Verb去请求服务器端，这时候发生了这样一条日志：
+/var/web/svn/main/conf/passwd AuthzSVNAccessFile
+/var/web/svn/main/conf/authz &lt;/Location&gt;</h1>
+<h1 id="svn154-r33841tortoisesvn-15514361-neon0283">看起来很美，但是在使用中会发生502错误，原因是来自文件移动后，svn会使用COPY作为Verb去请求服务器端，这时候发生了这样一条日志：
 ==========/var/log/apache2/access.log========== 127.0.0.1 - {user}
-[02/Apr/2010:11:07:31 +0800] &ldquo;COPY {path} HTTP/1.0&rdquo; 502 546 &ldquo;-&rdquo;</p>
-
-<h1 id="svn-1-5-4-r33841-tortoisesvn-1-5-5-14361-neon-0-28-3">&ldquo;SVN/1.5.4 (r33841)/TortoiseSVN-1.5.5.14361 neon/0.28.3&rdquo;</h1>
-
+[02/Apr/2010:11:07:31 +0800] &ldquo;COPY {path} HTTP/1.0&rdquo; 502 546 &ldquo;-&rdquo;
+&ldquo;SVN/1.5.4 (r33841)/TortoiseSVN-1.5.5.14361 neon/0.28.3&rdquo;</h1>
 <p>搜索了一下，这是因为使用https作为http服务的前端造成的，这里(<a href="https://secure.bonkabonka.com/blog/2008/01/04/nginx_fronting_for_subversion.html)">https://secure.bonkabonka.com/blog/2008/01/04/nginx_fronting_for_subversion.html)</a>提到了解决方案，而它又引用了另一个网页(<a href="http://silmor.de/49)">http://silmor.de/49)</a>解释细节。不幸的是，这个细节是错误的。关键在于这句上
 LoadModule headers_module /usr/lib/apache2/modules/mod_headers_too.so
 仔细看一下就会发现，mod_headers_too应当是mod_headers。在debian下，应当执行这几条指令。
 cd /etc/apache2/mods-enabled ln -s ../mods-available/headers.load
 headers.load 然后，在/etc/apache2/httpd.conf中写入以下内容：
-RequestHeader edit Destination \^https http early 问题解决，Q.E.D。</p>
+RequestHeader edit Destination ^https http early 问题解决，Q.E.D。</p>
 
     </div>
     <div class="post-footer">

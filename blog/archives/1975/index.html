@@ -2,43 +2,108 @@
 <html lang="en-us">
   <head>
     <title>几个模板系统的性能对比 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
     <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="几个模板系统的性能对比"/>
-<meta name="twitter:description" content="对比目标，jinja2，cheetah，mako，webpy，bottle，tornado，django的性能。 
- 方法，随机生成一个二维数组，第一列是自增数据，第二列是长度为100的随机字符串，然后生成html，比较一次生成的时间。
-
- 说明，如果模板有编译缓存，打开。有其他方法加速，打开。生成缓存，关闭。不计算随机数据生成时间，一次生成后一直使用。   以下是文件有效内容，没用的都略去了。最后的顺序是因为我根据结果整理了一下调用次序。   -----testcheetah.tmpl-----    &lt;table&gt;   \#for \$i in \$l   &lt;tr&gt;   &lt;td&gt;\$i\[0\]&lt;/td&gt;   &lt;td&gt;\$i\[1\]&lt;/td&gt;   &lt;/tr&gt;   \#end for   &lt;/table&gt;  
- -----testdjango.html-----    &lt;table&gt;   {% for i in l %}   &lt;tr&gt;   &lt;td&gt;{{ i.0 }}&lt;/td&gt;   &lt;td&gt;{{ i."/>
+<meta name="twitter:description" content="对比目标，jinja2，cheetah，mako，webpy，bottle，tornado，django的性能。
+方法，随机生成一个二维数组，第一列是自增数据，第二列是长度为100的随机字符串，然后生成html，比较一次生成的时间。
+说明，如果模板有编译缓存，打开。有其他方法加速，打开。生成缓存，关闭。不计算随机数据生成时间，一次生成后一直使用。
+以下是文件有效内容，没用的都略去了。最后的顺序是因为我根据结果整理了一下调用次序。
+&mdash;&ndash;testcheetah.tmpl&mdash;&ndash;
+&lt;table&gt;
+#for $i in $l
+&lt;tr&gt;
+&lt;td&gt;$i[0]&lt;/td&gt;
+&lt;td&gt;$i[1]&lt;/td&gt;
+&lt;/tr&gt;
+#end for
+&lt;/table&gt;
+&mdash;&ndash;testdjango.html&mdash;&ndash;
+&lt;table&gt;
+{% for i in l %}
+&lt;tr&gt;
+&lt;td&gt;{{ i.0 }}&lt;/td&gt;
+&lt;td&gt;{{ i.1 }}&lt;/td&gt;
+&lt;/tr&gt;
+{% endfor %}
+&lt;/table&gt;
+&mdash;&ndash;testjinja2.html&mdash;&ndash;
+&lt;table&gt;
+{% for i in l %}
+&lt;tr&gt;
+&lt;td&gt;{{ i[0] }}&lt;/td&gt;
+&lt;td&gt;{{ i[1] }}&lt;/td&gt;
+&lt;/tr&gt;
+{% endfor %}
+&lt;/table&gt;
+&mdash;&ndash;testmako.html&mdash;&ndash;
+&lt;table&gt;
+% for i in l:
+&lt;tr&gt;
+&lt;/tr&gt;
+% endfor
+&lt;/table&gt;"/>
 
     <meta property="og:title" content="几个模板系统的性能对比" />
-<meta property="og:description" content="对比目标，jinja2，cheetah，mako，webpy，bottle，tornado，django的性能。 
- 方法，随机生成一个二维数组，第一列是自增数据，第二列是长度为100的随机字符串，然后生成html，比较一次生成的时间。
-
- 说明，如果模板有编译缓存，打开。有其他方法加速，打开。生成缓存，关闭。不计算随机数据生成时间，一次生成后一直使用。   以下是文件有效内容，没用的都略去了。最后的顺序是因为我根据结果整理了一下调用次序。   -----testcheetah.tmpl-----    &lt;table&gt;   \#for \$i in \$l   &lt;tr&gt;   &lt;td&gt;\$i\[0\]&lt;/td&gt;   &lt;td&gt;\$i\[1\]&lt;/td&gt;   &lt;/tr&gt;   \#end for   &lt;/table&gt;  
- -----testdjango.html-----    &lt;table&gt;   {% for i in l %}   &lt;tr&gt;   &lt;td&gt;{{ i.0 }}&lt;/td&gt;   &lt;td&gt;{{ i." />
+<meta property="og:description" content="对比目标，jinja2，cheetah，mako，webpy，bottle，tornado，django的性能。
+方法，随机生成一个二维数组，第一列是自增数据，第二列是长度为100的随机字符串，然后生成html，比较一次生成的时间。
+说明，如果模板有编译缓存，打开。有其他方法加速，打开。生成缓存，关闭。不计算随机数据生成时间，一次生成后一直使用。
+以下是文件有效内容，没用的都略去了。最后的顺序是因为我根据结果整理了一下调用次序。
+&mdash;&ndash;testcheetah.tmpl&mdash;&ndash;
+&lt;table&gt;
+#for $i in $l
+&lt;tr&gt;
+&lt;td&gt;$i[0]&lt;/td&gt;
+&lt;td&gt;$i[1]&lt;/td&gt;
+&lt;/tr&gt;
+#end for
+&lt;/table&gt;
+&mdash;&ndash;testdjango.html&mdash;&ndash;
+&lt;table&gt;
+{% for i in l %}
+&lt;tr&gt;
+&lt;td&gt;{{ i.0 }}&lt;/td&gt;
+&lt;td&gt;{{ i.1 }}&lt;/td&gt;
+&lt;/tr&gt;
+{% endfor %}
+&lt;/table&gt;
+&mdash;&ndash;testjinja2.html&mdash;&ndash;
+&lt;table&gt;
+{% for i in l %}
+&lt;tr&gt;
+&lt;td&gt;{{ i[0] }}&lt;/td&gt;
+&lt;td&gt;{{ i[1] }}&lt;/td&gt;
+&lt;/tr&gt;
+{% endfor %}
+&lt;/table&gt;
+&mdash;&ndash;testmako.html&mdash;&ndash;
+&lt;table&gt;
+% for i in l:
+&lt;tr&gt;
+&lt;/tr&gt;
+% endfor
+&lt;/table&gt;" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/1975/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/1975/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2011-11-09T14:52:47+08:00" />
 <meta property="article:modified_time" content="2011-11-09T14:52:47+08:00" />
 
@@ -78,11 +143,8 @@ if (!doNotTrack) {
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -92,894 +154,474 @@ if (!doNotTrack) {
       <h1 class ="post-title">几个模板系统的性能对比</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Nov 9, 2011
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           2 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/program/">program</a><a class="tag" href="//blog.shell909090.org/tags/python/">python</a><a class="tag" href="//blog.shell909090.org/tags/template/">template</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/program/">program</a>
+              <a class="tag" href="//blog.shell909090.org/tags/python/">python</a>
+              <a class="tag" href="//blog.shell909090.org/tags/template/">template</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
       <p>   
-对比目标，jinja2，cheetah，mako，webpy，bottle，tornado，django的性能。
-<div></p>
-
+对比目标，jinja2，cheetah，mako，webpy，bottle，tornado，django的性能。</p>
+<!-- raw HTML omitted -->
 <p>   
 方法，随机生成一个二维数组，第一列是自增数据，第二列是长度为100的随机字符串，然后生成html，比较一次生成的时间。</p>
-
-<p></div></p>
-
-<div>
-
-   
-说明，如果模板有编译缓存，打开。有其他方法加速，打开。生成缓存，关闭。不计算随机数据生成时间，一次生成后一直使用。
-
-</div>
-
-<div>
-
-   
-以下是文件有效内容，没用的都略去了。最后的顺序是因为我根据结果整理了一下调用次序。
-
-</div>
-
-<div>
-
------testcheetah.tmpl-----
-
-</div>
-
-<div>
-
-<div>
-
-    &lt;table&gt;
-
-</div>
-
-<div>
-
-      \#for \$i in \$l
-
-</div>
-
-<div>
-
-      &lt;tr&gt;
-
-</div>
-
-<div>
-
-<span style="white-space:pre-wrap"> </span>&lt;td&gt;\$i\[0\]&lt;/td&gt;
-
-</div>
-
-<div>
-
-<span style="white-space:pre-wrap"> </span>&lt;td&gt;\$i\[1\]&lt;/td&gt;
-
-</div>
-
-<div>
-
-      &lt;/tr&gt;
-
-</div>
-
-<div>
-
-      \#end for
-
-</div>
-
-<div>
-
-    &lt;/table&gt;
-
-</div>
-
-<p></div></p>
-
-<div>
-
------testdjango.html-----
-
-</div>
-
-<div>
-
-<div>
-
-    &lt;table&gt;
-
-</div>
-
-<div>
-
-      {% for i in l %}
-
-</div>
-
-<div>
-
-      &lt;tr&gt;
-
-</div>
-
-<div>
-
-<span style="white-space:pre-wrap"> </span>&lt;td&gt;{{ i.0
-}}&lt;/td&gt;
-
-</div>
-
-<div>
-
-<span style="white-space:pre-wrap"> </span>&lt;td&gt;{{ i.1
-}}&lt;/td&gt;
-
-</div>
-
-<div>
-
-      &lt;/tr&gt;
-
-</div>
-
-<div>
-
-      {% endfor %}
-
-</div>
-
-<div>
-
-    &lt;/table&gt;
-
-</div>
-
-<p></div></p>
-
-<div>
-
------testjinja2.html-----
-
-</div>
-
-<div>
-
-<div>
-
-    &lt;table&gt;
-
-</div>
-
-<div>
-
-      {% for i in l %}
-
-</div>
-
-<div>
-
-      &lt;tr&gt;
-
-</div>
-
-<div>
-
-<span style="white-space:pre-wrap"> </span>&lt;td&gt;{{ i\[0\]
-}}&lt;/td&gt;
-
-</div>
-
-<div>
-
-<span style="white-space:pre-wrap"> </span>&lt;td&gt;{{ i\[1\]
-}}&lt;/td&gt;
-
-</div>
-
-<div>
-
-      &lt;/tr&gt;
-
-</div>
-
-<div>
-
-      {% endfor %}
-
-</div>
-
-<div>
-
-    &lt;/table&gt;
-
-</div>
-
-<p></div></p>
-
-<div>
-
------testmako.html-----
-
-</div>
-
-<div>
-
-<div>
-
-    &lt;table&gt;
-
-</div>
-
-<div>
-
-      % for i in l:
-
-</div>
-
-<div>
-
-      &lt;tr&gt;
-
-</div>
-
-<div>
-
-<span style="white-space:pre-wrap">
-</span>&lt;td&gt;\${i\[0\]}&lt;/td&gt;
-
-</div>
-
-<div>
-
-<span style="white-space:pre-wrap">
-</span>&lt;td&gt;\${i\[1\]}&lt;/td&gt;
-
-</div>
-
-<div>
-
-      &lt;/tr&gt;
-
-</div>
-
-<div>
-
-      % endfor
-
-</div>
-
-<div>
-
-    &lt;/table&gt;
-
-</div>
-
-<p></div></p>
-
-<div>
-
------testwebpy.html-----
-
-</div>
-
-<div>
-
-\$def with(l)
-
-</div>
-
-<div>
-
-<div>
-
-    &lt;table&gt;
-
-</div>
-
-<div>
-
-      \$for i in l:
-
-</div>
-
-<div>
-
-      &lt;tr&gt;
-
-</div>
-
-<div>
-
-<span style="white-space:pre-wrap"> </span>&lt;td&gt;\$i\[0\]&lt;/td&gt;
-
-</div>
-
-<div>
-
-<span style="white-space:pre-wrap"> </span>&lt;td&gt;\$i\[1\]&lt;/td&gt;
-
-</div>
-
-<div>
-
-      &lt;/tr&gt;
-
-</div>
-
-<div>
-
-    &lt;/table&gt;
-
-</div>
-
-<p></div></p>
-
-<div>
-
------tmpl.py-----
-
-</div>
-
-<div>
-
-<div>
-
-\#!/usr/bin/python
-
-</div>
-
-<div>
-
-\# -\*- coding: utf-8 -\*-
-
-</div>
-
-<div>
-
-'''
-
-</div>
-
-<div>
-
-@date: 2011-11-03
-
-</div>
-
-<div>
-
-@author: shell.xu
-
-</div>
-
-<div>
-
-'''
-
-</div>
-
-<div>
-
-import os, random, string, timeit
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-testdata = \[\]
-
-</div>
-
-<div>
-
-def init\_testdata():
-
-</div>
-
-<div>
-
-    for i in xrange(1000):
-
-</div>
-
-<div>
-
-        s = ''.join(\[random.choice(string.letters) for j in
-xrange(100)\])
-
-</div>
-
-<div>
-
-        testdata.append((i, s))
-
-</div>
-
-<div>
-
-init\_testdata()
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-\# --------webpy--------
-
-</div>
-
-<div>
-
-import web
-
-</div>
-
-<div>
-
-render = web.template.render('./')
-
-</div>
-
-<div>
-
-def render\_webpy():
-
-</div>
-
-<div>
-
-    return render.testwebpy(testdata)
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-\# --------jinja2--------
-
-</div>
-
-<div>
-
-from jinja2 import Environment, FileSystemLoader,
-FileSystemBytecodeCache
-
-</div>
-
-<div>
-
-env = Environment(loader = FileSystemLoader('./'),
-
-</div>
-
-<div>
-
-                  bytecode\_cache = FileSystemBytecodeCache('./',
-'%s.cache'))
-
-</div>
-
-<div>
-
-tmpl\_jinja = env.get\_template('testjinja2.html')
-
-</div>
-
-<div>
-
-def render\_jinja2():
-
-</div>
-
-<div>
-
-    return tmpl\_jinja.render(l = testdata)
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-\# --------cheetah--------
-
-</div>
-
-<div>
-
-from testcheetah import testcheetah
-
-</div>
-
-<div>
-
-def render\_cheetah():
-
-</div>
-
-<div>
-
-    return testcheetah(searchList = \[{'l': testdata},\])
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-\# --------mako--------
-
-</div>
-
-<div>
-
-from mako.template import Template as makotmpl
-
-</div>
-
-<div>
-
-tmpl\_mako = makotmpl(filename = './testmako.html')
-
-</div>
-
-<div>
-
-def render\_mako():
-
-</div>
-
-<div>
-
-    return tmpl\_mako.render(l = testdata)
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-\# --------django--------
-
-</div>
-
-<div>
-
-from django.template import Template as djangotmpl
-
-</div>
-
-<div>
-
-from django.template import Context
-
-</div>
-
-<div>
-
-from django.conf import settings
-
-</div>
-
-<div>
-
-settings.configure()
-
-</div>
-
-<div>
-
-with open('testdjango.html', 'r') as fi: tmpl\_django =
-djangotmpl(fi.read())
-
-</div>
-
-<div>
-
-def render\_django():
-
-</div>
-
-<div>
-
-    return tmpl\_django.render(Context({'l': testdata}))
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-<div>
-
-\# --------bottle--------
-
-</div>
-
-<div>
-
-from bottle import SimpleTemplate
-
-</div>
-
-<div>
-
-with open('testbottle.html', 'r') as fi: tmpl\_bottle =
-SimpleTemplate(fi.read())
-
-</div>
-
-<div>
-
-def render\_bottle():
-
-</div>
-
-<div>
-
-    return tmpl\_bottle.render(l = testdata)
-
-</div>
-
-<p></div></p>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-<div>
-
-\# --------tornado--------
-
-</div>
-
-<div>
-
-from tornado import template as tornado\_tmpl
-
-</div>
-
-<div>
-
-with open('testtornado.html', 'r') as fi: tmpl\_tornado =
-tornado\_tmpl.Template(fi.read())
-
-</div>
-
-<div>
-
-def render\_tornado():
-
-</div>
-
-<div>
-
-    return tmpl\_tornado.generate(l = testdata)
-
-</div>
-
-<p></div></p>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-def testfunc(funcname, times = 10000):
-
-</div>
-
-<div>
-
-    from timeit import Timer
-
-</div>
-
-<div>
-
-    t = Timer("%s()" % funcname, "from \_\_main\_\_ import \*")
-
-</div>
-
-<div>
-
-    print 'funcname: %s used %f' % (funcname, t.timeit(times) / times)
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-if \_\_name\_\_ == '\_\_main\_\_':
-
-</div>
-
-<div>
-
-    testfunc('render\_django', times = 1000)
-
-</div>
-
-<div>
-
-    testfunc('render\_webpy', times = 1000)
-
-</div>
-
-<div>
-
-    testfunc('render\_bottle', times = 10000)
-
-</div>
-
-<div>
-
-<div>
-
-    testfunc('render\_tornado', times = 10000)
-
-</div>
-
-<p></div></p>
-
-<div>
-
-    testfunc('render\_jinja2', times = 10000)
-
-</div>
-
-<div>
-
-    testfunc('render\_mako', times = 10000)
-
-</div>
-
-<div>
-
-    testfunc('render\_cheetah', times = 100000)
-
-</div>
-
-<p></div></p>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-    以下是运行结果。
-
-</div>
-
-<div>
-
-<div>
-
-funcname: render\_django used 0.071762
-
-</div>
-
-<p></div></p>
-
-<div>
-
-<div>
-
-funcname: render\_webpy used 0.015729
-
-</div>
-
-<div>
-
-funcname: render\_bottle used 0.008752
-
-</div>
-
-<div>
-
-funcname: render\_tornado used 0.005675
-
-</div>
-
-<div>
-
-funcname: render\_jinja2 used 0.002073
-
-</div>
-
-<div>
-
-funcname: render\_mako used 0.001627
-
-</div>
-
-<div>
-
-funcname: render\_cheetah used 0.000014
-
-</div>
-
-<p></div></p>
-
-<div>
-
-   
-点评一下吧。django就是个渣，不多废话了。webpy的代码很简洁，可惜速度太慢了。bottle看起来快一点，不过也没有多出彩。tornado本身速度很快，不过模板——也就是如此吧。真的值得一用的，只有jinja2，mako，cheetah三个。速度都小于了5ms，单核每秒可以生成200个页面，16核机器上大概就能跑到3000req/s，性能比较高。jinja2的速度比较折衷，配置灵活，语法类似django是他的优点。而且不得不说，jinja2的文档真的很不错。mako的速度比jinja2略快，模板写起来也很舒服。文档略凌乱，可以接受。cheetah的速度——已经不像是模板了好吧。
-
-</div>
-
-<div>
-
-   
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>   
+说明，如果模板有编译缓存，打开。有其他方法加速，打开。生成缓存，关闭。不计算随机数据生成时间，一次生成后一直使用。</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>   
+以下是文件有效内容，没用的都略去了。最后的顺序是因为我根据结果整理了一下调用次序。</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&mdash;&ndash;testcheetah.tmpl&mdash;&ndash;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    &lt;table&gt;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>      #for $i in $l</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>      &lt;tr&gt;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p><!-- raw HTML omitted --> <!-- raw HTML omitted -->&lt;td&gt;$i[0]&lt;/td&gt;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p><!-- raw HTML omitted --> <!-- raw HTML omitted -->&lt;td&gt;$i[1]&lt;/td&gt;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>      &lt;/tr&gt;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>      #end for</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    &lt;/table&gt;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&mdash;&ndash;testdjango.html&mdash;&ndash;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    &lt;table&gt;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>      {% for i in l %}</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>      &lt;tr&gt;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p><!-- raw HTML omitted --> <!-- raw HTML omitted -->&lt;td&gt;{{ i.0
+}}&lt;/td&gt;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p><!-- raw HTML omitted --> <!-- raw HTML omitted -->&lt;td&gt;{{ i.1
+}}&lt;/td&gt;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>      &lt;/tr&gt;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>      {% endfor %}</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    &lt;/table&gt;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&mdash;&ndash;testjinja2.html&mdash;&ndash;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    &lt;table&gt;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>      {% for i in l %}</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>      &lt;tr&gt;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p><!-- raw HTML omitted --> <!-- raw HTML omitted -->&lt;td&gt;{{ i[0]
+}}&lt;/td&gt;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p><!-- raw HTML omitted --> <!-- raw HTML omitted -->&lt;td&gt;{{ i[1]
+}}&lt;/td&gt;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>      &lt;/tr&gt;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>      {% endfor %}</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    &lt;/table&gt;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&mdash;&ndash;testmako.html&mdash;&ndash;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    &lt;table&gt;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>      % for i in l:</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>      &lt;tr&gt;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>      &lt;/tr&gt;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>      % endfor</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    &lt;/table&gt;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&mdash;&ndash;testwebpy.html&mdash;&ndash;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>$def with(l)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    &lt;table&gt;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>      $for i in l:</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>      &lt;tr&gt;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p><!-- raw HTML omitted --> <!-- raw HTML omitted -->&lt;td&gt;$i[0]&lt;/td&gt;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p><!-- raw HTML omitted --> <!-- raw HTML omitted -->&lt;td&gt;$i[1]&lt;/td&gt;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>      &lt;/tr&gt;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    &lt;/table&gt;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&mdash;&ndash;tmpl.py&mdash;&ndash;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>#!/usr/bin/python</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p># -*- coding: utf-8 -*-</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&rsquo;''</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>@date: 2011-11-03</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>@author: shell.xu</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&rsquo;''</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>import os, random, string, timeit</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>\</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>testdata = []</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>def init_testdata():</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    for i in xrange(1000):</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>        s = &lsquo;&rsquo;.join([random.choice(string.letters) for j in
+xrange(100)])</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>        testdata.append((i, s))</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>init_testdata()</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>\</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p># &mdash;&mdash;&ndash;webpy&mdash;&mdash;&ndash;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>import web</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>render = web.template.render(&rsquo;./&rsquo;)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>def render_webpy():</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    return render.testwebpy(testdata)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>\</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p># &mdash;&mdash;&ndash;jinja2&mdash;&mdash;&ndash;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>from jinja2 import Environment, FileSystemLoader,
+FileSystemBytecodeCache</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>env = Environment(loader = FileSystemLoader(&rsquo;./&rsquo;),</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>                  bytecode_cache = FileSystemBytecodeCache(&rsquo;./&rsquo;,
+&lsquo;%s.cache&rsquo;))</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>tmpl_jinja = env.get_template(&rsquo;testjinja2.html&rsquo;)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>def render_jinja2():</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    return tmpl_jinja.render(l = testdata)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>\</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p># &mdash;&mdash;&ndash;cheetah&mdash;&mdash;&ndash;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>from testcheetah import testcheetah</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>def render_cheetah():</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    return testcheetah(searchList = [{&rsquo;l&rsquo;: testdata},])</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>\</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p># &mdash;&mdash;&ndash;mako&mdash;&mdash;&ndash;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>from mako.template import Template as makotmpl</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>tmpl_mako = makotmpl(filename = &lsquo;./testmako.html&rsquo;)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>def render_mako():</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    return tmpl_mako.render(l = testdata)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>\</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p># &mdash;&mdash;&ndash;django&mdash;&mdash;&ndash;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>from django.template import Template as djangotmpl</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>from django.template import Context</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>from django.conf import settings</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>settings.configure()</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>with open(&rsquo;testdjango.html&rsquo;, &lsquo;r&rsquo;) as fi: tmpl_django =
+djangotmpl(fi.read())</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>def render_django():</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    return tmpl_django.render(Context({&rsquo;l&rsquo;: testdata}))</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>\</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p># &mdash;&mdash;&ndash;bottle&mdash;&mdash;&ndash;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>from bottle import SimpleTemplate</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>with open(&rsquo;testbottle.html&rsquo;, &lsquo;r&rsquo;) as fi: tmpl_bottle =
+SimpleTemplate(fi.read())</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>def render_bottle():</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    return tmpl_bottle.render(l = testdata)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>\</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p># &mdash;&mdash;&ndash;tornado&mdash;&mdash;&ndash;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>from tornado import template as tornado_tmpl</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>with open(&rsquo;testtornado.html&rsquo;, &lsquo;r&rsquo;) as fi: tmpl_tornado =
+tornado_tmpl.Template(fi.read())</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>def render_tornado():</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    return tmpl_tornado.generate(l = testdata)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>\</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>def testfunc(funcname, times = 10000):</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    from timeit import Timer</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    t = Timer(&quot;%s()&quot; % funcname, &ldquo;from __main__ import *&rdquo;)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    print &lsquo;funcname: %s used %f&rsquo; % (funcname, t.timeit(times) / times)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>\</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>if __name__ == &lsquo;__main__&rsquo;:</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    testfunc(&lsquo;render_django&rsquo;, times = 1000)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    testfunc(&lsquo;render_webpy&rsquo;, times = 1000)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    testfunc(&lsquo;render_bottle&rsquo;, times = 10000)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    testfunc(&lsquo;render_tornado&rsquo;, times = 10000)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    testfunc(&lsquo;render_jinja2&rsquo;, times = 10000)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    testfunc(&lsquo;render_mako&rsquo;, times = 10000)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    testfunc(&lsquo;render_cheetah&rsquo;, times = 100000)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>\</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    以下是运行结果。</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>funcname: render_django used 0.071762</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>funcname: render_webpy used 0.015729</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>funcname: render_bottle used 0.008752</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>funcname: render_tornado used 0.005675</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>funcname: render_jinja2 used 0.002073</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>funcname: render_mako used 0.001627</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>funcname: render_cheetah used 0.000014</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>   
+点评一下吧。django就是个渣，不多废话了。webpy的代码很简洁，可惜速度太慢了。bottle看起来快一点，不过也没有多出彩。tornado本身速度很快，不过模板——也就是如此吧。真的值得一用的，只有jinja2，mako，cheetah三个。速度都小于了5ms，单核每秒可以生成200个页面，16核机器上大概就能跑到3000req/s，性能比较高。jinja2的速度比较折衷，配置灵活，语法类似django是他的优点。而且不得不说，jinja2的文档真的很不错。mako的速度比jinja2略快，模板写起来也很舒服。文档略凌乱，可以接受。cheetah的速度——已经不像是模板了好吧。</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>   
 这个东西是使用编译器将模板编译为py文件，然后再通过python编译为pyc，从而获得如此高的性能的。如果python可以执行加速（例如psyco,
 pypy什么的），相信速度还要快。但是不得不说，语法实在是太严格了一点。我在for前面多了一个空格，居然直接报错，而且还是一个无关错误。找起问题来相当困难。不过，对于习惯了python格式的格式控来说，cheetah还是有相当价值的。cheetah加速后的速度，单核上每秒可以生成7W多个页面，16核的普通服务器，每秒可以承载100W
-req/s。看在效率的份上，我可以原谅他大多数的问题。
-
-</div>
+req/s。看在效率的份上，我可以原谅他大多数的问题。</p>
+<!-- raw HTML omitted -->
 
     </div>
     <div class="post-footer">

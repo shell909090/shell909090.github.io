@@ -2,41 +2,44 @@
 <html lang="en-us">
   <head>
     <title>linux下的文件系统选型 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
     <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="linux下的文件系统选型"/>
-<meta name="twitter:description" content="贝壳原来一直认为文件系统可以随便选，结果最近吃了两次苦头。一个是btrfs对虚拟机支持不良，另一个是特定情况下xfs性能比ext3高20倍。痛定思痛，打算列一下文件系统选型的方法和依据，欢迎拍砖。 
- 下面我列一下纳入参考的文件系统，当然，ntfs就不要出来搞基了，玩嵌入式/光盘live之类的朋友也不要来凑热闹了阿。btrfs(简介), ext3, ext4(简介), jfs(简介), reiserfs, xfs，基本涵盖常用文件系统。最下面加入ntfs和zfs对比，实际上不参与选型。以下进制换算为1024，大小依次为KB,MB,GB,TB,PB,EB,ZB。
-
- --------------- --------- -------------- ---------------- ---------------- ---------------- ------------------ --------- ----------- ------------ 文件系统 btrfs ext3 ext4 jfs reiserfs reiser4 xfs ntfs zfs 最大卷容量 16 EB 32 TB 1 EB (16TB) 32 PB 16 TB ?? 16 EB 256 TB 16 EB 最大文件容量 16 EB 2 TB 16 TB 4 PB 8TB 8TB 8 EB 16 TB 16 EB 目录结构 B tree list/tree list/Htree B tree B&#43; tree dancing B\* tree B&#43; tree B&#43; tree hash table 文件分配 extents bitmap/table bitmap/extents bitmap/extents bitmap ?"/>
+<meta name="twitter:description" content="贝壳原来一直认为文件系统可以随便选，结果最近吃了两次苦头。一个是btrfs对虚拟机支持不良，另一个是特定情况下xfs性能比ext3高20倍。痛定思痛，打算列一下文件系统选型的方法和依据，欢迎拍砖。
+下面我列一下纳入参考的文件系统，当然，ntfs就不要出来搞基了，玩嵌入式/光盘live之类的朋友也不要来凑热闹了阿。btrfs(简介), ext3, ext4(简介), jfs(简介), reiserfs, xfs，基本涵盖常用文件系统。最下面加入ntfs和zfs对比，实际上不参与选型。以下进制换算为1024，大小依次为KB,MB,GB,TB,PB,EB,ZB。
+文件系统 btrfs ext3 ext4 jfs reiserfs reiser4 xfs ntfs zfs
+最大卷容量 16 EB 32 TB 1 EB (16TB) 32 PB 16 TB ?? 16 EB 256 TB 16 EB
+最大文件容量 16 EB 2 TB 16 TB 4 PB 8TB 8TB 8 EB 16 TB 16 EB
+目录结构 B tree list/tree list/Htree B tree B&#43; tree dancing B* tree B&#43; tree B&#43; tree hash table"/>
 
     <meta property="og:title" content="linux下的文件系统选型" />
-<meta property="og:description" content="贝壳原来一直认为文件系统可以随便选，结果最近吃了两次苦头。一个是btrfs对虚拟机支持不良，另一个是特定情况下xfs性能比ext3高20倍。痛定思痛，打算列一下文件系统选型的方法和依据，欢迎拍砖。 
- 下面我列一下纳入参考的文件系统，当然，ntfs就不要出来搞基了，玩嵌入式/光盘live之类的朋友也不要来凑热闹了阿。btrfs(简介), ext3, ext4(简介), jfs(简介), reiserfs, xfs，基本涵盖常用文件系统。最下面加入ntfs和zfs对比，实际上不参与选型。以下进制换算为1024，大小依次为KB,MB,GB,TB,PB,EB,ZB。
-
- --------------- --------- -------------- ---------------- ---------------- ---------------- ------------------ --------- ----------- ------------ 文件系统 btrfs ext3 ext4 jfs reiserfs reiser4 xfs ntfs zfs 最大卷容量 16 EB 32 TB 1 EB (16TB) 32 PB 16 TB ?? 16 EB 256 TB 16 EB 最大文件容量 16 EB 2 TB 16 TB 4 PB 8TB 8TB 8 EB 16 TB 16 EB 目录结构 B tree list/tree list/Htree B tree B&#43; tree dancing B\* tree B&#43; tree B&#43; tree hash table 文件分配 extents bitmap/table bitmap/extents bitmap/extents bitmap ?" />
+<meta property="og:description" content="贝壳原来一直认为文件系统可以随便选，结果最近吃了两次苦头。一个是btrfs对虚拟机支持不良，另一个是特定情况下xfs性能比ext3高20倍。痛定思痛，打算列一下文件系统选型的方法和依据，欢迎拍砖。
+下面我列一下纳入参考的文件系统，当然，ntfs就不要出来搞基了，玩嵌入式/光盘live之类的朋友也不要来凑热闹了阿。btrfs(简介), ext3, ext4(简介), jfs(简介), reiserfs, xfs，基本涵盖常用文件系统。最下面加入ntfs和zfs对比，实际上不参与选型。以下进制换算为1024，大小依次为KB,MB,GB,TB,PB,EB,ZB。
+文件系统 btrfs ext3 ext4 jfs reiserfs reiser4 xfs ntfs zfs
+最大卷容量 16 EB 32 TB 1 EB (16TB) 32 PB 16 TB ?? 16 EB 256 TB 16 EB
+最大文件容量 16 EB 2 TB 16 TB 4 PB 8TB 8TB 8 EB 16 TB 16 EB
+目录结构 B tree list/tree list/Htree B tree B&#43; tree dancing B* tree B&#43; tree B&#43; tree hash table" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/1883/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/1883/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2011-08-15T10:07:03+08:00" />
 <meta property="article:modified_time" content="2011-08-15T10:07:03+08:00" />
 
@@ -76,11 +79,8 @@ if (!doNotTrack) {
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -90,99 +90,79 @@ if (!doNotTrack) {
       <h1 class ="post-title">linux下的文件系统选型</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Aug 15, 2011
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           2 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/btrfs/">btrfs</a><a class="tag" href="//blog.shell909090.org/tags/ext3/">ext3</a><a class="tag" href="//blog.shell909090.org/tags/ext4/">ext4</a><a class="tag" href="//blog.shell909090.org/tags/filesystem/">filesystem</a><a class="tag" href="//blog.shell909090.org/tags/jfs/">jfs</a><a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a><a class="tag" href="//blog.shell909090.org/tags/reiserfs/">reiserfs</a><a class="tag" href="//blog.shell909090.org/tags/xfs/">xfs</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/btrfs/">btrfs</a>
+              <a class="tag" href="//blog.shell909090.org/tags/ext3/">ext3</a>
+              <a class="tag" href="//blog.shell909090.org/tags/ext4/">ext4</a>
+              <a class="tag" href="//blog.shell909090.org/tags/filesystem/">filesystem</a>
+              <a class="tag" href="//blog.shell909090.org/tags/jfs/">jfs</a>
+              <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a>
+              <a class="tag" href="//blog.shell909090.org/tags/reiserfs/">reiserfs</a>
+              <a class="tag" href="//blog.shell909090.org/tags/xfs/">xfs</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
       <p>   
-贝壳原来一直认为文件系统可以随便选，结果最近吃了两次苦头。一个是btrfs对虚拟机支持不良，另一个是特定情况下xfs性能比ext3高20倍。痛定思痛，打算列一下文件系统选型的方法和依据，欢迎拍砖。
-<div></p>
-
+贝壳原来一直认为文件系统可以随便选，结果最近吃了两次苦头。一个是btrfs对虚拟机支持不良，另一个是特定情况下xfs性能比ext3高20倍。痛定思痛，打算列一下文件系统选型的方法和依据，欢迎拍砖。</p>
+<!-- raw HTML omitted -->
 <p>   
 下面我列一下纳入参考的文件系统，当然，ntfs就不要出来搞基了，玩嵌入式/光盘live之类的朋友也不要来凑热闹了阿。<a href="http://zh.wikipedia.org/wiki/Btrfs">btrfs</a>(<a href="http://www.ibm.com/developerworks/cn/linux/l-cn-btrfs/">简介</a>), <a href="http://zh.wikipedia.org/wiki/Ext3">ext3</a>, <a href="http://zh.wikipedia.org/wiki/Ext4">ext4</a>(<a href="http://www.ibm.com/developerworks/cn/linux/l-anatomy-ext4/">简介</a>), <a href="http://en.wikipedia.org/wiki/JFS_(file_system)">jfs</a>(<a href="http://www.ibm.com/developerworks/cn/linux/filesystem/jfs/jfs/">简介</a>), <a href="http://zh.wikipedia.org/wiki/ReiserFS">reiserfs</a>, <a href="http://zh.wikipedia.org/wiki/XFS">xfs</a>，基本涵盖常用文件系统。最下面加入ntfs和zfs对比，实际上不参与选型。以下进制换算为1024，大小依次为KB,MB,GB,TB,PB,EB,ZB。</p>
-
-<p></div></p>
-
-<div>
-
-  --------------- --------- -------------- ---------------- ---------------- ---------------- ------------------ --------- ----------- ------------
-  文件系统        btrfs     ext3           ext4             jfs              reiserfs         reiser4            xfs       ntfs        zfs
-
-  最大卷容量      16 EB     32 TB          1 EB (16TB)      32 PB            16 TB            ??                 16 EB     256 TB      16 EB
-
-  最大文件容量    16 EB     2 TB           16 TB            4 PB             8TB              8TB                8 EB      16 TB       16 EB
-
-  目录结构        B tree    list/tree      list/Htree       B tree           B+ tree          dancing B\* tree   B+ tree   B+ tree     hash table
-
-  文件分配        extents   bitmap/table   bitmap/extents   bitmap/extents   bitmap           ??                 extents   bitmap      ??
-
-  ACLS            Yes       Yes            Yes              Yes              No               No                 Yes       ACLS only   Yes
-
-  checksum        Yes       No             journal          No               No               No                 No        No          Yes
-
-  透明压缩        Yes       No             No               No               No               Plugin             No        Yes         Yes
-
-  透明加密        No        No             No               No               No               Plugin             No        Yes         Yes
-
-  online defrag   Yes       No             Yes              Yes              No               Yes                Yes       Yes         Yes
-
-  shrink          Yes       Yes            Yes              No               Offline resize   Offline            No        Yes         No
-
-  特性            SSD       \              \                \                \                \                  \         Stream      \
-                                                                                                                                       
-  --------------- --------- -------------- ---------------- ---------------- ---------------- ------------------ --------- ----------- ------------
-
-<div>
-
-   
-首先，文件系统选择上要考虑现实性和支持情况。如果你希望得到广泛的支持，在移动硬盘上被多个系统挂载，应用于老内核，或者不使用/boot分区，那么可选项目基本只有ext3。作为老牌文件系统，ext3的支持是最广泛的，工具组也相对全面。无论其他文件系统拥有多大的优势，在现实情况考虑下往往会败给ext3，基本就是因为广泛的使用和支持。另外，btrfs我所知还没有fsck工具，出了问题全看RP，而且在上面使用虚拟机速度特别慢。reiser4作者目前在监狱中，出了问题能否获得支持全靠RP。jfs用的人相对xfs少一些，也比较不活跃。这些虽然并不出现在数据上，但是最好特别注意。
-
-</div>
-
-<div>
-
-   
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<hr>
+<p>文件系统        btrfs     ext3           ext4             jfs              reiserfs         reiser4            xfs       ntfs        zfs</p>
+<p>最大卷容量      16 EB     32 TB          1 EB (16TB)      32 PB            16 TB            ??                 16 EB     256 TB      16 EB</p>
+<p>最大文件容量    16 EB     2 TB           16 TB            4 PB             8TB              8TB                8 EB      16 TB       16 EB</p>
+<p>目录结构        B tree    list/tree      list/Htree       B tree           B+ tree          dancing B* tree   B+ tree   B+ tree     hash table</p>
+<p>文件分配        extents   bitmap/table   bitmap/extents   bitmap/extents   bitmap           ??                 extents   bitmap      ??</p>
+<p>ACLS            Yes       Yes            Yes              Yes              No               No                 Yes       ACLS only   Yes</p>
+<p>checksum        Yes       No             journal          No               No               No                 No        No          Yes</p>
+<p>透明压缩        Yes       No             No               No               No               Plugin             No        Yes         Yes</p>
+<p>透明加密        No        No             No               No               No               Plugin             No        Yes         Yes</p>
+<p>online defrag   Yes       No             Yes              Yes              No               Yes                Yes       Yes         Yes</p>
+<p>shrink          Yes       Yes            Yes              No               Offline resize   Offline            No        Yes         No</p>
+<p>特性            SSD       \              \                \                \                \                  \         Stream      \</p>
+<hr>
+<!-- raw HTML omitted -->
+<p>   
+首先，文件系统选择上要考虑现实性和支持情况。如果你希望得到广泛的支持，在移动硬盘上被多个系统挂载，应用于老内核，或者不使用/boot分区，那么可选项目基本只有ext3。作为老牌文件系统，ext3的支持是最广泛的，工具组也相对全面。无论其他文件系统拥有多大的优势，在现实情况考虑下往往会败给ext3，基本就是因为广泛的使用和支持。另外，btrfs我所知还没有fsck工具，出了问题全看RP，而且在上面使用虚拟机速度特别慢。reiser4作者目前在监狱中，出了问题能否获得支持全靠RP。jfs用的人相对xfs少一些，也比较不活跃。这些虽然并不出现在数据上，但是最好特别注意。</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>   
 其次，文件系统的选择要考虑必要特性。例如如果你希望使用SSD支持，你可选的项目就只有btrfs。如果需要透明加密，那只有reiser4。当然，在决定必要特性前，请仔细考虑，自己是否真的必须使用这些特性。为了一个不必须的特性选用一个不合适的文件系统会付出极大代价。linux下文件系统还是比较单调和弱小了点，基本不支持透明压缩，全部不支持透明加密，ext两兄弟更是没有完全实现Btree目录结构（ext4其实有用Htree，一种改过的Btree，不过为了兼容ext3，好像升级来的目录不使用）。不过好佳在，大部分都支持online
 defrag/growing，否则不如一头撞死算了。ext3/4,
 btrfs是支持shrink的，但是jfs, xfs只支持growing，reiser4必须offline
 shrink。xfs的growing在1T（一说2T）以上有点问题，非64位内核在1T以上可能无法创建inode。本来是会在1T内创建inode，使用高位空间。但是growing的时候可能地位空间已经满了，会报没有空间的错误。解决方案是将老文件移出再移回，或者看看用inode64参数是否解决。如果你确定需要shrink，最佳选项是使用ext4。另外补充一点，ntfs的online
-shrink也不是完美无缺，他只能shrink到未被使用的地方。也就是说，如果有不可移动文件，有可能就无法shrink到以下内容。
-
-</div>
-
-<div>
-
- 
- 第三个要确定的问题，是你的系统服务的数据大小。即使是表里面最小的ext3，一次也可以使用2T的卷。贝壳全部数据加起来大概2T多一点，家用绝对不成问题。然而作为商业用途，动辄数百T的数据正常到不能再正常，ext3就可以直接出局了，同理reiser4也直接出局。jfs是唯一没有达到EB级别的文件系统，不过32PB也可堪一用，大部分商业系统都到不了这个量级。在管理大型卷的时候，bitmap比extents会消耗更大的空间进行管理。因此不支持bitmap的文件系统可以少考虑，ext3/4虽说支持extents，但是ext3中默认不开启，必须手工指定挂载参数。ext4中一旦启用extents，就无法兼容于ext3。
-
-</div>
-
-<div>
-
-   
-最后是性能考量。在贝壳在公司的测试中，xfs会性能高于ext3达20倍。因为根据[这篇文章](http://www.evanhoffman.com/evan/2011/07/22/benchmarking-disk-io-on-ext3-vs-ext4-with-fio/)，xfs的随机写性能比ext兄弟差很多，但是顺序写的性能比ext要强上无数倍。我们的业务大部分情况下是顺序写，因此差异非常明显。所以，当你的特性要求差不多的时候，性能和稳定性是另一个考量因素。
-
-</div>
-
-<div>
-
-文件系统
+shrink也不是完美无缺，他只能shrink到未被使用的地方。也就是说，如果有不可移动文件，有可能就无法shrink到以下内容。</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p> 
+ 第三个要确定的问题，是你的系统服务的数据大小。即使是表里面最小的ext3，一次也可以使用2T的卷。贝壳全部数据加起来大概2T多一点，家用绝对不成问题。然而作为商业用途，动辄数百T的数据正常到不能再正常，ext3就可以直接出局了，同理reiser4也直接出局。jfs是唯一没有达到EB级别的文件系统，不过32PB也可堪一用，大部分商业系统都到不了这个量级。在管理大型卷的时候，bitmap比extents会消耗更大的空间进行管理。因此不支持bitmap的文件系统可以少考虑，ext3/4虽说支持extents，但是ext3中默认不开启，必须手工指定挂载参数。ext4中一旦启用extents，就无法兼容于ext3。</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>   
+最后是性能考量。在贝壳在公司的测试中，xfs会性能高于ext3达20倍。因为根据<a href="http://www.evanhoffman.com/evan/2011/07/22/benchmarking-disk-io-on-ext3-vs-ext4-with-fio/">这篇文章</a>，xfs的随机写性能比ext兄弟差很多，但是顺序写的性能比ext要强上无数倍。我们的业务大部分情况下是顺序写，因此差异非常明显。所以，当你的特性要求差不多的时候，性能和稳定性是另一个考量因素。</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>文件系统
 btrfs
 ext3
 ext4
@@ -300,64 +280,37 @@ WD3200AAKS-75L9A0。系统是debian
 testing，内核2.6.39-2-amd64。全填充是用time dd if=/dev/zero
 of=abc来测试填满一个分区的速度和容量。大文件是四个ISO文件，共1.3G，从tmpfs上复制到目标设备上的时间平均值，三次平均。小文件是pypy/python2.7/linux
 kernel2.6.39所有源码，总计49242个文件，629M。从tmpfs上复制到目标设备的时间平均值，三次平均。循环列文件是通过time
-find .测试效率。下面测试单位为bytes/sec，是iozone测试结果。
-
-</div>
-
-<div>
-
-   
-首先是文件利用率，btrfs/ext3/ext4会消耗10%左右的空间作为系统消耗。如果你需要比较高的磁盘利用率，请不要考虑这三种系统。也许你会认为，放文件又不会放满，必须空出部分来才能减少文件碎片。实际上，被消耗掉的空间也并不是白白消耗，你的所有数据，都会增加10%的系统消耗空间。因此ntfs的防碎片阀值（为了防止碎片化，磁盘使用率不应当高于）大约是85%，而ext3就只有75%-80%。
-
-</div>
-
-<div>
-
-   
-其次是大文件效率，除了ext3不予考虑外，其余系统都过的去。btrfs/ext4在删除大文件的时候耗时略多，大概是和管理特性有关。
-
-</div>
-
-<div>
-
-   
-第三是小文件效率。如果你需要用小文件，千万不要考虑jfs，慢到我无法相信。ext4比btrfs和xfs快了四倍左右，非常适合操作大量小文件。例如源码编译，有blog说ext4比xfs快数倍。
-
-</div>
-
-<div>
-
-    最后是循环列文件效率，同样，ext4一枝独秀，其余水准相去不远。
-
-</div>
-
-<div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-    综合以上几个考量，linux中比较推荐的文件系统是ext4,
-xfs两种。大量文件存储用xfs，小规模文件密集使用用ext4。在特定情况下，可以使用btrfs（它的特性非常全）或者jfs（小文件操作慢，但是随机读写快）。兼容考量下，可以用ext3。不推荐使用reiser4。
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-参考：
-
-</div>
-
+find .测试效率。下面测试单位为bytes/sec，是iozone测试结果。</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>   
+首先是文件利用率，btrfs/ext3/ext4会消耗10%左右的空间作为系统消耗。如果你需要比较高的磁盘利用率，请不要考虑这三种系统。也许你会认为，放文件又不会放满，必须空出部分来才能减少文件碎片。实际上，被消耗掉的空间也并不是白白消耗，你的所有数据，都会增加10%的系统消耗空间。因此ntfs的防碎片阀值（为了防止碎片化，磁盘使用率不应当高于）大约是85%，而ext3就只有75%-80%。</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>   
+其次是大文件效率，除了ext3不予考虑外，其余系统都过的去。btrfs/ext4在删除大文件的时候耗时略多，大概是和管理特性有关。</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>   
+第三是小文件效率。如果你需要用小文件，千万不要考虑jfs，慢到我无法相信。ext4比btrfs和xfs快了四倍左右，非常适合操作大量小文件。例如源码编译，有blog说ext4比xfs快数倍。</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    最后是循环列文件效率，同样，ext4一枝独秀，其余水准相去不远。</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>\</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    综合以上几个考量，linux中比较推荐的文件系统是ext4,
+xfs两种。大量文件存储用xfs，小规模文件密集使用用ext4。在特定情况下，可以使用btrfs（它的特性非常全）或者jfs（小文件操作慢，但是随机读写快）。兼容考量下，可以用ext3。不推荐使用reiser4。</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>\</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>参考：</p>
+<!-- raw HTML omitted -->
 <ol>
 <li><a href="http://www.ilsistemista.net/index.php/linux-a-unix/6-linux-filesystems-benchmarked-ext3-vs-ext4-vs-xfs-vs-btrfs.html">Linux filesystems benchmarked: EXT3 vs EXT4 vs XFS vs BTRFS -
 Bonnie++ random seeks and file
@@ -366,17 +319,14 @@ handling</a></li>
 等7种文件系统性能比拼</a></li>
 <li><a href="http://www.debian-administration.org/articles/388">Filesystems (ext3, reiser, xfs, jfs) comparison on Debian
 Etch</a></li>
-<li><span
-style="font-family:Verdana, 'Lucida Grande', 'Lucida Sans Unicode', Tahoma, Arial, sans-serif;font-size:12px;line-height:19px;background-color:rgb(244, 244, 238)"><a href="http://lists.mysql.com/benchmarks/131">XFS,
+<li><!-- raw HTML omitted --><a href="http://lists.mysql.com/benchmarks/131">XFS,
 Reiser, JFS &amp; ext3 performance on Suse 9
-Enterprise</a></span></li>
+Enterprise</a><!-- raw HTML omitted --></li>
 <li><a href="https://securfox.wordpress.com/tag/filesystem-jfs-xfs-ext3/">Filesystems (jfs, xfs, ext3) comparison
 on Debian</a></li>
 </ol>
-
-<p></div></p>
-
-<p></div></p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
 
     </div>
     <div class="post-footer">

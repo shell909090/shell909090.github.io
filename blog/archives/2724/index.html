@@ -2,24 +2,23 @@
 <html lang="en-us">
   <head>
     <title>openvpn的几种基本模式 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
@@ -30,15 +29,16 @@ if (!doNotTrack) {
 虽然openvpn在科学上网上是废了，但是在不出国的网络上用来保护通讯，还是非常好用的。
 tap模式 tap模式的特点是二层打通。典型场景是从外部打一条隧道到本地网络。进来的机器就像本地的机器一样参与通讯，你分毫看不出这些机器是在远程。
 优点：
- 配置简单。 不需要在所有机器上配置或者动网关。  缺点：
- tap在部分设备上不支持(例如移动设备)。 wlan加入网桥后不一定可以工作。 广播包会散发到虚拟网络中，可能极大消耗流量。  特别解说一下wlan。部分AP对一个客户只接受一个MAC地址，因此无法做网桥。这应该是wifi网络的常规问题了。解决方法是换AP，或者做mac-nat。
+配置简单。 不需要在所有机器上配置或者动网关。 缺点：
+tap在部分设备上不支持(例如移动设备)。 wlan加入网桥后不一定可以工作。 广播包会散发到虚拟网络中，可能极大消耗流量。 特别解说一下wlan。部分AP对一个客户只接受一个MAC地址，因此无法做网桥。这应该是wifi网络的常规问题了。解决方法是换AP，或者做mac-nat。
 操作方法：
 你需要先在当前网络中，为vpn预留一些地址。这些地址应该足够拨入用户使用，不应和dhcp撞车，不应有其他人使用。
 而后，建立一个br，将当前工作的eth迁移过去。(具体细节就不说了，每个系统小有差别)再建立一个tap vpn，在启动脚本中指定加入这个br。
 example 假定内网地址为172.19.0.0/24，其中保留172.19.0.16-172.19.0.31供vpn使用。
 服务器配置:
-port [port num] proto udp ; 参考我上一篇[vpn不要走tcp协议](http://blog.shell909090.org/blog/archives/2722) dev tap ca ca.crt cert server.crt key server.key server-bridge 172.19.0.16 255.255.255.0 172.19.0.17 172.19.0.31 ; 或者可以采用这句 ; server 172.19.0.16 255.255.255.240 ; 注意掩码实际上等于/28，做掩码运算后，这段地址和上面的保留地址重合 script-security 2 up vpn-start ; 建议使用绝对路径，避免版本坑 down vpn-stop  vpn-start:
-brctl add br0 $dev  vpn-stop:"/>
+port [port num] proto udp ; 参考我上一篇[vpn不要走tcp协议](http://blog.shell909090.org/blog/archives/2722) dev tap ca ca.crt cert server.crt key server.key server-bridge 172.19.0.16 255.255.255.0 172.19.0.17 172.19.0.31 ; 或者可以采用这句 ; server 172.19.0.16 255.255.255.240 ; 注意掩码实际上等于/28，做掩码运算后，这段地址和上面的保留地址重合 script-security 2 up vpn-start ; 建议使用绝对路径，避免版本坑 down vpn-stop vpn-start:
+brctl add br0 $dev vpn-stop:
+brctl del br0 $dev 客户端配置:"/>
 
     <meta property="og:title" content="openvpn的几种基本模式" />
 <meta property="og:description" content="vpn的原始模式 vpn的最简模型，相当于在两台机器上插一块虚拟网卡，然后中间连一根虚拟网线连通。因此vpn才得名vpn(virtual private network)。
@@ -46,17 +46,18 @@ brctl add br0 $dev  vpn-stop:"/>
 虽然openvpn在科学上网上是废了，但是在不出国的网络上用来保护通讯，还是非常好用的。
 tap模式 tap模式的特点是二层打通。典型场景是从外部打一条隧道到本地网络。进来的机器就像本地的机器一样参与通讯，你分毫看不出这些机器是在远程。
 优点：
- 配置简单。 不需要在所有机器上配置或者动网关。  缺点：
- tap在部分设备上不支持(例如移动设备)。 wlan加入网桥后不一定可以工作。 广播包会散发到虚拟网络中，可能极大消耗流量。  特别解说一下wlan。部分AP对一个客户只接受一个MAC地址，因此无法做网桥。这应该是wifi网络的常规问题了。解决方法是换AP，或者做mac-nat。
+配置简单。 不需要在所有机器上配置或者动网关。 缺点：
+tap在部分设备上不支持(例如移动设备)。 wlan加入网桥后不一定可以工作。 广播包会散发到虚拟网络中，可能极大消耗流量。 特别解说一下wlan。部分AP对一个客户只接受一个MAC地址，因此无法做网桥。这应该是wifi网络的常规问题了。解决方法是换AP，或者做mac-nat。
 操作方法：
 你需要先在当前网络中，为vpn预留一些地址。这些地址应该足够拨入用户使用，不应和dhcp撞车，不应有其他人使用。
 而后，建立一个br，将当前工作的eth迁移过去。(具体细节就不说了，每个系统小有差别)再建立一个tap vpn，在启动脚本中指定加入这个br。
 example 假定内网地址为172.19.0.0/24，其中保留172.19.0.16-172.19.0.31供vpn使用。
 服务器配置:
-port [port num] proto udp ; 参考我上一篇[vpn不要走tcp协议](http://blog.shell909090.org/blog/archives/2722) dev tap ca ca.crt cert server.crt key server.key server-bridge 172.19.0.16 255.255.255.0 172.19.0.17 172.19.0.31 ; 或者可以采用这句 ; server 172.19.0.16 255.255.255.240 ; 注意掩码实际上等于/28，做掩码运算后，这段地址和上面的保留地址重合 script-security 2 up vpn-start ; 建议使用绝对路径，避免版本坑 down vpn-stop  vpn-start:
-brctl add br0 $dev  vpn-stop:" />
+port [port num] proto udp ; 参考我上一篇[vpn不要走tcp协议](http://blog.shell909090.org/blog/archives/2722) dev tap ca ca.crt cert server.crt key server.key server-bridge 172.19.0.16 255.255.255.0 172.19.0.17 172.19.0.31 ; 或者可以采用这句 ; server 172.19.0.16 255.255.255.240 ; 注意掩码实际上等于/28，做掩码运算后，这段地址和上面的保留地址重合 script-security 2 up vpn-start ; 建议使用绝对路径，避免版本坑 down vpn-stop vpn-start:
+brctl add br0 $dev vpn-stop:
+brctl del br0 $dev 客户端配置:" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2724/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2724/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2015-02-04T15:07:42+08:00" />
 <meta property="article:modified_time" content="2015-02-04T15:07:42+08:00" />
 
@@ -96,11 +97,8 @@ brctl add br0 $dev  vpn-stop:" />
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -110,70 +108,56 @@ brctl add br0 $dev  vpn-stop:" />
       <h1 class ="post-title">openvpn的几种基本模式</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Feb 4, 2015
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/computer/">computer</a><a class="tag" href="//blog.shell909090.org/tags/openvpn/">openvpn</a><a class="tag" href="//blog.shell909090.org/tags/vpn/">vpn</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/computer/">computer</a>
+              <a class="tag" href="//blog.shell909090.org/tags/openvpn/">openvpn</a>
+              <a class="tag" href="//blog.shell909090.org/tags/vpn/">vpn</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
-      
-
-<h1 id="vpn的原始模式">vpn的原始模式</h1>
-
+      <h1 id="vpn的原始模式">vpn的原始模式</h1>
 <p>vpn的最简模型，相当于在两台机器上插一块虚拟网卡，然后中间连一根虚拟网线连通。因此vpn才得名vpn(virtual private network)。</p>
-
 <p>其复杂之处在于，这块虚拟网卡如何配置网络，和别的网卡是什么关系。再加上多个节点间如何通讯。种种都够新手喝一壶。</p>
-
 <p>虽然openvpn在科学上网上是废了，但是在不出国的网络上用来保护通讯，还是非常好用的。</p>
-
 <h1 id="tap模式">tap模式</h1>
-
 <p>tap模式的特点是二层打通。典型场景是从外部打一条隧道到本地网络。进来的机器就像本地的机器一样参与通讯，你分毫看不出这些机器是在远程。</p>
-
 <p>优点：</p>
-
 <ul>
 <li>配置简单。</li>
 <li>不需要在所有机器上配置或者动网关。</li>
 </ul>
-
 <p>缺点：</p>
-
 <ul>
 <li>tap在部分设备上不支持(例如移动设备)。</li>
 <li>wlan加入网桥后不一定可以工作。</li>
 <li>广播包会散发到虚拟网络中，可能极大消耗流量。</li>
 </ul>
-
 <p>特别解说一下wlan。部分AP对一个客户只接受一个MAC地址，因此无法做网桥。这应该是wifi网络的常规问题了。解决方法是换AP，或者做mac-nat。</p>
-
 <p>操作方法：</p>
-
 <p>你需要先在当前网络中，为vpn预留一些地址。这些地址应该足够拨入用户使用，不应和dhcp撞车，不应有其他人使用。</p>
-
 <p>而后，建立一个br，将当前工作的eth迁移过去。(具体细节就不说了，每个系统小有差别)再建立一个tap
 vpn，在启动脚本中指定加入这个br。</p>
-
 <h2 id="example">example</h2>
-
 <p>假定内网地址为172.19.0.0/24，其中保留172.19.0.16-172.19.0.31供vpn使用。</p>
-
 <p>服务器配置:</p>
-
 <pre><code>port [port num]
 proto udp
 ; 参考我上一篇[vpn不要走tcp协议](http://blog.shell909090.org/blog/archives/2722)
@@ -190,19 +174,13 @@ up vpn-start
 ; 建议使用绝对路径，避免版本坑 down
 vpn-stop
 </code></pre>
-
 <p>vpn-start:</p>
-
 <pre><code>brctl add br0 $dev
 </code></pre>
-
 <p>vpn-stop:</p>
-
 <pre><code>brctl del br0 $dev
 </code></pre>
-
 <p>客户端配置:</p>
-
 <pre><code>client
 dev tap
 proto udp
@@ -211,53 +189,32 @@ ca ca.crt
 cert client.crt
 key client.key
 </code></pre>
-
 <p>测试:</p>
-
 <p>直接ping任何一台机器，通了就是通了。没通在网关上抓包，看看断哪了。注意关闭防火墙。</p>
-
 <p>PS:</p>
-
 <p>上面的配置我配过，但是没有经过实际测试，所以可能有问题。有问题请联系我，我马上改。</p>
-
 <p>dh和tls-auth可以配，个人每次都是配的。但是懒的话也可以不搞。</p>
-
 <p>user nobody和group nobody强烈建议配，注意debian上是nogroup。这个配置可以将openvpn的执行权搞低，如果openssl再出什么执行任意代码漏洞，那么问题就不是立刻致命。</p>
-
 <p>注意使用了user和group后，要配置persist-key和persist-tun，避免出错。</p>
-
 <h1 id="tun模式">tun模式</h1>
-
 <p>tun模式的特征是三层打通，你可以当作没有二层数据。因此从拨入用户那里去问内网IP的mac是多少，根本没人理你。你必须将包发到vpn网关上，交由网关转交。目标服务器还得知道回这个数据的时候，网关是vpn网关，而不是默认网关。当然，有的时候两者其实是一个，例如vpn网关在默认网关上。或者不修改每台机器配置，直接在网关上做第二跳指向。</p>
-
 <p>典型场景是多个网段打通(所以才叫tun——tunnel)。</p>
-
 <p>优点：</p>
-
 <ul>
 <li>基本在所有设备上都支持。</li>
 <li>可以透过wlan。</li>
 <li>不会在所有网段上广播报文(广播风暴不过网关，这应该是常识了)。</li>
 </ul>
-
 <p>缺点：</p>
-
 <ul>
 <li>需要修改每台机器，或者网关。</li>
 </ul>
-
 <p>操作方法：</p>
-
 <p>非常灵活，几乎无法总结。简单说说从外网拨入内网，打通两者间互访的配法吧。</p>
-
 <p>配置一个tun vpn，连接到vpn网关上。配置中下发内网网段，走vpn。内网下发vpn路由，指向vpn网关。</p>
-
 <h2 id="example-1">example</h2>
-
 <p>假定内网地址为172.19.0.0/24，其中vpn网关在内网的地址为172.19.0.100。虚拟网络为172.19.1.0/24，其中vpn网管在虚拟网络的地址为172.19.0.1(默认)。</p>
-
 <p>服务器配置:</p>
-
 <pre><code>port [port num]
 proto udp
 dev tun
@@ -267,24 +224,16 @@ key server.key
 server 172.19.1.0 255.255.255.0
 push &quot;route 172.19.0.0 255.255.255.0&quot;
 </code></pre>
-
 <p>在服务器上一定要打开:</p>
-
 <pre><code>sysctl -w 'net.ipv4.ip_forward=1'
 </code></pre>
-
 <p>在所有服务器上执行/在网关上执行:</p>
-
 <pre><code>ip route add 172.19.1.0/24 via 172.19.0.100
 </code></pre>
-
 <p>或</p>
-
 <pre><code>route add -net 172.19.1.0 netmask 255.255.255.0 gateway 172.19.0.100
 </code></pre>
-
 <p>客户端配置:</p>
-
 <pre><code>client
 dev tun
 proto udp
@@ -293,20 +242,13 @@ ca ca.crt
 cert client.crt
 key client.key
 </code></pre>
-
 <p>测试:</p>
-
 <p>在拨入设备上，使用mtr 172.19.0.1(内网网关)，来查看是否通过172.19.1.1和172.19.0.1。如果都到了，说明整个配置成功。否则看是否到vpn网关，再在网关上抓包。</p>
-
 <h1 id="多节点通过虚拟骨干网打通">多节点通过虚拟骨干网打通</h1>
-
 <p>这个模式在很多地方很有用，例如多个办公室互通，多个机房互通，等等。当然，这也是有前提的，这些节点的网段不能出现互相重叠，不然路由表这一段该指给谁？</p>
-
 <p>另一点细节在于，最好每个节点都在网关上做。不然如上面所说，在每台服务器上做一次配置，非常复杂。</p>
-
 <p>方案基本和tun方案一致，但是在不同的客户端上，将其他节点的网段全部上行到vpn骨干网，分别交由这个内网对应的网关去路由。做这点在客户端配置上做可能会有麻烦，可以考虑使用ccd(client-config-dir
 ccd)。这样可以在服务器上设定，在客户端拨入的时候下发部分网络配置。</p>
-
 <p>更详细可以看<a href="https://community.openvpn.net/openvpn/wiki/RoutedLans">这篇文档</a>。</p>
 
     </div>

@@ -2,24 +2,23 @@
 <html lang="en-us">
   <head>
     <title>IE内嵌对象提取方法 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
@@ -36,7 +35,7 @@ if (!doNotTrack) {
 贝壳首先想到的是COM分析和跟踪，跟踪COM的dll载入过程和接口参数。这样当然可以获得对象，问题是成本太高了。然后贝壳又设想了文件钩子，在向缓存区域写入特定文件的时候hook到。然后导出这个文件。但是文件确定的问题太困难了，假如同时有1000个内嵌的mid，这个方法等于没用。这个还不是最严重的问题，最严重的问题是这个解决方案可不比特种sniffer简单。
 后来贝壳在用ProcExp（www.sysinternal.com出品）的时候发现这个软件可以跟踪进程的句柄。这样的话IE内嵌对象必定在缓存区缓存，COM在打开的时候肯定使用了句柄。我们只要跟踪所有文件句柄，其中不会有很多的。（其实这个方法和前面的方法一样，要确定文件名是个困难的事情。）然后将文件的路径复制到console里面，运行下copy指令，文件就出来了。这个是我想的到的最简单的IE内嵌对象提取方法了。" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/237/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/237/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2005-10-19T03:49:29+08:00" />
 <meta property="article:modified_time" content="2005-10-19T03:49:29+08:00" />
 
@@ -76,11 +75,8 @@ if (!doNotTrack) {
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -90,32 +86,32 @@ if (!doNotTrack) {
       <h1 class ="post-title">IE内嵌对象提取方法</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Oct 19, 2005
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/computer/">computer</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/computer/">computer</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
       <p>我发现很多MM喜欢在blog里面嵌入各种对象，例如flash或者music。例如光MM的光良的歌，功MM的如果的事。一般来说要将这些内嵌对象保存下来是比较麻烦的。因为内嵌对象直接播放，没有引用和连接，那么用连接跟踪器就分析不出结果。</p>
-
 <p>通常来说URL是通过阅读代码来获得的，但是有的时候网页是通过javascript来引用的。这个时候代码分析和代码分析器（例如Mozilla内嵌的那个）就无效了。一般来说是用sniffer来解决问题的，贝壳以前用的是iris。后来出现了种种的特种sniffer分析器（其实分析cap抓包文件就好了），所以这个问题看似就解决了。但是恶搞是没有境界的，还有别的解决方法吗？</p>
-
 <p>贝壳首先想到的是COM分析和跟踪，跟踪COM的dll载入过程和接口参数。这样当然可以获得对象，问题是成本太高了。然后贝壳又设想了文件钩子，在向缓存区域写入特定文件的时候hook到。然后导出这个文件。但是文件确定的问题太困难了，假如同时有1000个内嵌的mid，这个方法等于没用。这个还不是最严重的问题，最严重的问题是这个解决方案可不比特种sniffer简单。</p>
-
 <p>后来贝壳在用ProcExp（<a href="http://www.sysinternal.com">www.sysinternal.com</a>出品）的时候发现这个软件可以跟踪进程的句柄。这样的话IE内嵌对象必定在缓存区缓存，COM在打开的时候肯定使用了句柄。我们只要跟踪所有文件句柄，其中不会有很多的。（其实这个方法和前面的方法一样，要确定文件名是个困难的事情。）然后将文件的路径复制到console里面，运行下copy指令，文件就出来了。这个是我想的到的最简单的IE内嵌对象提取方法了。</p>
 
     </div>

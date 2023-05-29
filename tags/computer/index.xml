@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>computer on Shell&#39;s Home</title>
@@ -7,11 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Wed, 04 Feb 2015 15:07:42 +0800</lastBuildDate>
-    
-	<atom:link href="//blog.shell909090.org/tags/computer/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Wed, 04 Feb 2015 15:07:42 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/computer/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>openvpn的几种基本模式</title>
       <link>//blog.shell909090.org/blog/archives/2724/</link>
@@ -23,15 +19,16 @@
 虽然openvpn在科学上网上是废了，但是在不出国的网络上用来保护通讯，还是非常好用的。
 tap模式 tap模式的特点是二层打通。典型场景是从外部打一条隧道到本地网络。进来的机器就像本地的机器一样参与通讯，你分毫看不出这些机器是在远程。
 优点：
- 配置简单。 不需要在所有机器上配置或者动网关。  缺点：
- tap在部分设备上不支持(例如移动设备)。 wlan加入网桥后不一定可以工作。 广播包会散发到虚拟网络中，可能极大消耗流量。  特别解说一下wlan。部分AP对一个客户只接受一个MAC地址，因此无法做网桥。这应该是wifi网络的常规问题了。解决方法是换AP，或者做mac-nat。
+配置简单。 不需要在所有机器上配置或者动网关。 缺点：
+tap在部分设备上不支持(例如移动设备)。 wlan加入网桥后不一定可以工作。 广播包会散发到虚拟网络中，可能极大消耗流量。 特别解说一下wlan。部分AP对一个客户只接受一个MAC地址，因此无法做网桥。这应该是wifi网络的常规问题了。解决方法是换AP，或者做mac-nat。
 操作方法：
 你需要先在当前网络中，为vpn预留一些地址。这些地址应该足够拨入用户使用，不应和dhcp撞车，不应有其他人使用。
 而后，建立一个br，将当前工作的eth迁移过去。(具体细节就不说了，每个系统小有差别)再建立一个tap vpn，在启动脚本中指定加入这个br。
 example 假定内网地址为172.19.0.0/24，其中保留172.19.0.16-172.19.0.31供vpn使用。
 服务器配置:
-port [port num] proto udp ; 参考我上一篇[vpn不要走tcp协议](http://blog.shell909090.org/blog/archives/2722) dev tap ca ca.crt cert server.crt key server.key server-bridge 172.19.0.16 255.255.255.0 172.19.0.17 172.19.0.31 ; 或者可以采用这句 ; server 172.19.0.16 255.255.255.240 ; 注意掩码实际上等于/28，做掩码运算后，这段地址和上面的保留地址重合 script-security 2 up vpn-start ; 建议使用绝对路径，避免版本坑 down vpn-stop  vpn-start:
-brctl add br0 $dev  vpn-stop:</description>
+port [port num] proto udp ; 参考我上一篇[vpn不要走tcp协议](http://blog.shell909090.org/blog/archives/2722) dev tap ca ca.crt cert server.crt key server.key server-bridge 172.19.0.16 255.255.255.0 172.19.0.17 172.19.0.31 ; 或者可以采用这句 ; server 172.19.0.16 255.255.255.240 ; 注意掩码实际上等于/28，做掩码运算后，这段地址和上面的保留地址重合 script-security 2 up vpn-start ; 建议使用绝对路径，避免版本坑 down vpn-stop vpn-start:
+brctl add br0 $dev vpn-stop:
+brctl del br0 $dev 客户端配置:</description>
     </item>
     
     <item>
@@ -51,23 +48,25 @@ CAO，这种网站给的支付宝，鬼知道打进去会发生什么。。。
 第二家网站 百度上排名很高的是这家http://www.yuyutrip.net/和这家http://www.yoyotrip.net/。两家的页面很像，但是又明显有区别，不知道是竞争对手还是什么。
 老规矩。
 whois域名的结果是这个：
-Registrant State/Province:Shanghai Registrant Name:shxg shxg  注册地上海？
+Registrant State/Province:Shanghai Registrant Name:shxg shxg 注册地上海？
 dig了更好玩。这两个域名的IP指向是同一个。121.52.217.137。再whois发现是这个：
-netname: TopnewNET descr: Beijing Topnew Info&amp;amp;Tech co., LTD.  没听说过。
+netname: TopnewNET descr: Beijing Topnew Info&amp;amp;Tech co., LTD. 没听说过。
 ICP倒是有：
-北京博通天下网络技术有限公司 U旅商旅网 2013-06-09  咳咳，漏底了吧。虽然号称国旅，但是是一家北京公司在上海注册的域名。
+北京博通天下网络技术有限公司 U旅商旅网 2013-06-09 咳咳，漏底了吧。虽然号称国旅，但是是一家北京公司在上海注册的域名。
 好玩的是，这家网站上面给出的地址，是真的（具体后面会说）。但是电话却不对。
 真的国旅 google出手，马上就有。结果是这个http://www.cits.com.cn。
 老规矩。
 whois域名可以看到这个：
-Registrant: 中国国际旅行社总社有限公司  注册者看着就很NB。
+Registrant: 中国国际旅行社总社有限公司 注册者看着就很NB。
 dig一下，发现IP是这个，219.143.192.35。这个IP可牛逼了。whois一下：
-inetnum: 219.143.192.0 - 219.143.192.255 netname: CITS  我擦，专属C类IP段！
+inetnum: 219.143.192.0 - 219.143.192.255 netname: CITS 我擦，专属C类IP段！
 ICP查询后结果是这样的：
-中国国际旅行社总社有限公司 国旅在线 www.cits.com.cn 2014-07-23 www.cits.net 2012-11-29  这个网站上有400电话，打过去说新疆只有团体游。不过人家给了正确的地址和电话，和第二家网站的地址一致，电话却不一样。
+中国国际旅行社总社有限公司 国旅在线 www.cits.com.cn 2014-07-23 www.cits.net 2012-11-29 这个网站上有400电话，打过去说新疆只有团体游。不过人家给了正确的地址和电话，和第二家网站的地址一致，电话却不一样。
 事情到这里，我的基本判断是。和第二家网站做生意还是有点谱的，ICP是真的，地址国旅也认。最低限度，他至少是一家合法的旅行社——虽然不保证是国旅下属。第一家么，谁爱信谁信。
 上海国旅 后面有点更好玩的事情。国旅在线上有上海，而google查询结果上也有不少上海国旅。那么谁是真的呢？
-上海国旅1 例如这家http://www.scits.com/。</description>
+上海国旅1 例如这家http://www.scits.com/。
+域名的whois是这样的：
+Registrant Organization: SHANGHAI CHINA INTERNATIONAL TRAVEL SERVICE CO.</description>
     </item>
     
     <item>
@@ -76,10 +75,10 @@ ICP查询后结果是这样的：
       <pubDate>Tue, 08 Apr 2014 18:03:33 +0800</pubDate>
       
       <guid>//blog.shell909090.org/blog/archives/2618/</guid>
-      <description> 描述 openssl 1.0.1系列中，1.0.1f以前的版本在实现上存在漏洞，未正确处理Heartbeat扩展，导致攻击者可以窃取服务器端敏感数据。
-对应  请立刻升级openssl到1.0.1g版以上，并重启整个系统，以保证不会遗漏某些已经启动的进程。 如果有自行编译的程序使用了openssl。当这些程序静态链接或链接了自定义的openssl时，需要重新编译。 在有问题的设备上使用过的key，需要升级私钥。 openssh不受影响，openvpn受影响。  作为证明，请执行以下语句自行检查。
-ldd /usr/sbin/sshd | grep ssl ldd /usr/sbin/openvpn | grep ssl ldd /usr/sbin/nginx | grep ssl for i in $(ps aux | awk &#39;{print $2}&#39;); do echo $i; ldd /proc/$i/exe | grep ssl; done  其他 根据昨晚看到的信息，这个漏洞会泄漏服务器端的通讯数据。因此请将所有session清空，在受影响期间使用过的用户名和密码请务必在3-5天后再修改一次(具体看服务商什么时候补掉漏洞)。
-参考  nvd debian ubuntu openssl Is OpenSSH affected by this as well?  </description>
+      <description>描述 openssl 1.0.1系列中，1.0.1f以前的版本在实现上存在漏洞，未正确处理Heartbeat扩展，导致攻击者可以窃取服务器端敏感数据。
+对应 请立刻升级openssl到1.0.1g版以上，并重启整个系统，以保证不会遗漏某些已经启动的进程。 如果有自行编译的程序使用了openssl。当这些程序静态链接或链接了自定义的openssl时，需要重新编译。 在有问题的设备上使用过的key，需要升级私钥。 openssh不受影响，openvpn受影响。 作为证明，请执行以下语句自行检查。
+ldd /usr/sbin/sshd | grep ssl ldd /usr/sbin/openvpn | grep ssl ldd /usr/sbin/nginx | grep ssl for i in $(ps aux | awk &#39;{print $2}&#39;); do echo $i; ldd /proc/$i/exe | grep ssl; done 其他 根据昨晚看到的信息，这个漏洞会泄漏服务器端的通讯数据。因此请将所有session清空，在受影响期间使用过的用户名和密码请务必在3-5天后再修改一次(具体看服务商什么时候补掉漏洞)。
+参考 nvd debian ubuntu openssl Is OpenSSH affected by this as well? </description>
     </item>
     
     <item>
@@ -91,23 +90,23 @@ ldd /usr/sbin/sshd | grep ssl ldd /usr/sbin/openvpn | grep ssl ldd /usr/sbin/ngi
       <description>这篇文章谨献给某些特殊环境下奋斗的人士。其他人参考使用。
 物理设备 物理设备上存储着相当多的个人资讯，所以所有的机密资讯要保密这是常识。
 物理设备上可能拥有的机密资料：
- 各大站点的session token。借助这些，虽然不能抢走帐号，但是可以仿冒身份，发出假消息，或者诈骗。 浏览器启用了“保存密码”选项后，所有的密码都半明文存储在硬盘上。这些信息可以被用来抢走帐号。 个人的文档，照片，私密视频。万一笔电丢失就够倒霉了，再变陈老师岂不更痛苦？ 浏览某些特别站点的记录。咳咳，大家懂。  之所以要设备加密，是因为有一种破解方法是将你的设备存储拆下来，接到独立的读写设备上，直接读取数据。无论系统密码设定多强，也无法防范。
+各大站点的session token。借助这些，虽然不能抢走帐号，但是可以仿冒身份，发出假消息，或者诈骗。 浏览器启用了“保存密码”选项后，所有的密码都半明文存储在硬盘上。这些信息可以被用来抢走帐号。 个人的文档，照片，私密视频。万一笔电丢失就够倒霉了，再变陈老师岂不更痛苦？ 浏览某些特别站点的记录。咳咳，大家懂。 之所以要设备加密，是因为有一种破解方法是将你的设备存储拆下来，接到独立的读写设备上，直接读取数据。无论系统密码设定多强，也无法防范。
 如果是mac，有一个选项叫做全盘加密。ubuntu有home分区加密的选项。启用这两项可以有效加密你的电脑。windows也有个类似的功能叫做EFS，但是据说不少国家级单位有解密权限。
- Windows Mac Linux  android上有加密系统的选项。但是要注意，如果启用会消耗大量电力，而且必须擦除整个设备才能解除。iphone我没用过，据一位挺熟悉的朋友说，只要设定了pin码，整个手机就会被加密。
+Windows Mac Linux android上有加密系统的选项。但是要注意，如果启用会消耗大量电力，而且必须擦除整个设备才能解除。iphone我没用过，据一位挺熟悉的朋友说，只要设定了pin码，整个手机就会被加密。
 加密只是第一步。对于经常保持开机的系统，如果能够轻易的进入系统，那么磁盘加密也形同虚设。所以，请给你的系统加上一个足够强的登录密码。
 最低强度：
 磁盘加密8位以上，系统登录6位以上，包含小写和数字。
 推荐强度：
 磁盘加密10位以上，系统登录8位以上，包含大小写和数字。
 网络安全 首先，请把系统的防火墙开到最大：
- Windows Linux Mac  基本原则是，只许出不许进。如果需要可以开放特定端口。
+Windows Linux Mac 基本原则是，只许出不许进。如果需要可以开放特定端口。
 然后，如果在不安全的环境下使用网络，请使用vpn。这里请允许我广告一把朋友的网站云梯。一般是用来大陆翻墙的，不过要用来绕过不安全的环境也可以。
 有时间有条件的朋友可以自行架设vpn服务器，这里给出linux下架设pptp vpn的方法。客户端使用方法可以参考云梯的说明。
- How to Setup a VPN (PPTP) Server on Debian Linux PPTP Server linux pptp vpn服务器的架设 Debian系统快速搭建pptp VPN  注意加密一定要使用128位，不要使用56位。
+How to Setup a VPN (PPTP) Server on Debian Linux PPTP Server linux pptp vpn服务器的架设 Debian系统快速搭建pptp VPN 注意加密一定要使用128位，不要使用56位。
 网站访问 如果可以选择，尽量使用https。下面有一些插件，使你可以尽可能的使用https访问站点。当然，如果站点没有https则无效。
- Chromium Firefox  在https访问的时候，如果跳出证书是伪造的之类的警告，请千万不要确定。这是有人在man-in-middle的信号。正确的做法是使用vpn，看看问题是否消失。如果消失，上报给工程师。如果没有消失，请找可信的工程师来排查。千万不要轻易认可未经鉴定的证书(实际上不建议自行接受任何证书——除非那是你自己配出来的)。
+Chromium Firefox 在https访问的时候，如果跳出证书是伪造的之类的警告，请千万不要确定。这是有人在man-in-middle的信号。正确的做法是使用vpn，看看问题是否消失。如果消失，上报给工程师。如果没有消失，请找可信的工程师来排查。千万不要轻易认可未经鉴定的证书(实际上不建议自行接受任何证书——除非那是你自己配出来的)。
 另外，请关注证书的签署者。在我这里看到的信息如下：
- google的证书签署者是GeoTrust facebook的签署者是VeriSign twitter的签署者是VeriSign  如果签署者有异，请上报工程师。这可能是有人获得了某个根证书机构的密钥来做的签署(例如CNNIC之类)。原则上这样的man-in-middle可以攻击任何网站。</description>
+google的证书签署者是GeoTrust facebook的签署者是VeriSign twitter的签署者是VeriSign 如果签署者有异，请上报工程师。这可能是有人获得了某个根证书机构的密钥来做的签署(例如CNNIC之类)。原则上这样的man-in-middle可以攻击任何网站。</description>
     </item>
     
     <item>
@@ -116,8 +115,8 @@ ldd /usr/sbin/sshd | grep ssl ldd /usr/sbin/openvpn | grep ssl ldd /usr/sbin/ngi
       <pubDate>Tue, 28 Jan 2014 13:08:45 +0800</pubDate>
       
       <guid>//blog.shell909090.org/blog/archives/2549/</guid>
-      <description> 算法  双方预先共享一对密码。 时间对30秒求整，用密码unbase64后HMAC签署。 如果当前时间前后一定时间内（几个误差）的值和用户提供值一致，就验证通过。  攻击者获得了数个时间和序列对，但是根据HMAC特性，他无法反向出密码。
-因此  gauth不需要联网。但是双方时间必须同步。 gauth的优势在于，即使有人可以获得一次密码(例如keylogger)，只要不在1分30秒内登录，获得的输入就无法使用。 对于可以取得gauth共享密码的人，gauth不能提供安全性加强。例如sudo，验证的是自己的身份。而用户密码只要登录即可读，因此没有提供加强的安全性。 对于ssh，在登录后也可以获得密码。因此只要给别人获得了一次登录权限，后续gauth不能保护你。反之，如果能保证对方一次登录都不会成功，则可以作为辅助。因此用于ssh上必须加上一个token只能使用一次，以确保对方获得了token也是作废的。 如果有人可以从手机中读取应用的信息，就可以一直冒充用户。因此越狱和root肯定会降低系统安全性。这就是为什么很多TOTP使用硬件来做这个事情。系统单纯，而且没有读取API。 缓慢的重试，每次命中概率都是1/1000000。持续试1000000次，也不能肯定猜中。实际上只有63.2%的概率猜中。如果30秒内连续重试1000000次，肯定破解了。合每秒重试3万多次，不算多。所以必须防止暴力破解。 如果没有紧急密码，安全性大约是20bit。但是数个紧急密码为破解提供了帮助。因此紧急密码一般是7位数字，综合复杂度一般评估为20bit上下。 以复杂度而言，不足以作为身份验证工具，只能作为身份验证辅助。所以gauth叫做two-factor-authentication。  </description>
+      <description>算法 双方预先共享一对密码。 时间对30秒求整，用密码unbase64后HMAC签署。 如果当前时间前后一定时间内（几个误差）的值和用户提供值一致，就验证通过。 攻击者获得了数个时间和序列对，但是根据HMAC特性，他无法反向出密码。
+因此 gauth不需要联网。但是双方时间必须同步。 gauth的优势在于，即使有人可以获得一次密码(例如keylogger)，只要不在1分30秒内登录，获得的输入就无法使用。 对于可以取得gauth共享密码的人，gauth不能提供安全性加强。例如sudo，验证的是自己的身份。而用户密码只要登录即可读，因此没有提供加强的安全性。 对于ssh，在登录后也可以获得密码。因此只要给别人获得了一次登录权限，后续gauth不能保护你。反之，如果能保证对方一次登录都不会成功，则可以作为辅助。因此用于ssh上必须加上一个token只能使用一次，以确保对方获得了token也是作废的。 如果有人可以从手机中读取应用的信息，就可以一直冒充用户。因此越狱和root肯定会降低系统安全性。这就是为什么很多TOTP使用硬件来做这个事情。系统单纯，而且没有读取API。 缓慢的重试，每次命中概率都是1/1000000。持续试1000000次，也不能肯定猜中。实际上只有63.2%的概率猜中。如果30秒内连续重试1000000次，肯定破解了。合每秒重试3万多次，不算多。所以必须防止暴力破解。 如果没有紧急密码，安全性大约是20bit。但是数个紧急密码为破解提供了帮助。因此紧急密码一般是7位数字，综合复杂度一般评估为20bit上下。 以复杂度而言，不足以作为身份验证工具，只能作为身份验证辅助。所以gauth叫做two-factor-authentication。 </description>
     </item>
     
     <item>
@@ -127,19 +126,21 @@ ldd /usr/sbin/sshd | grep ssl ldd /usr/sbin/openvpn | grep ssl ldd /usr/sbin/ngi
       
       <guid>//blog.shell909090.org/blog/archives/2539/</guid>
       <description>PAM是linux系统身份验证的核心，在用户登录/ssh身份校验中均有很大用途。但是很少有人想到，其实这个东西还可以用google authentication来进行身份校验。
-安装 sudo apt-get install libpam-google-authenticator  设定 使用前，需要对用户做一个用户级配置，生成配置文件。这个文件就是这个用户的身份验证凭证。配置请使用用户执行google-authenticator。
+安装 sudo apt-get install libpam-google-authenticator 设定 使用前，需要对用户做一个用户级配置，生成配置文件。这个文件就是这个用户的身份验证凭证。配置请使用用户执行google-authenticator。
 上来先会问你是否使用基于时间的验证，肯定选是。但是注意，基于时间的验证要求服务器时间必须精确。更准确的说，是服务器时间和手机时间校准在30秒以内。由于手机一般都采用GSM校时，因此只需要在意服务器时间。建议是使用ntpdate来校准时间。特别注意，linux的时钟是会漂移的，必须按天级校准。
 然后程序会给出一个url，还可能有QR码（真够不容易的，Console级别的QR码。。。）。记住，一定要用url去获得QR码给程序扫描。因为url获得的QR码算法是最新的，而直接生成的有可能不能跑。
 下面是secret key和verification code，一般来说这两个不用关心。但是你需要记住emergency scratch codes。libpam-google-authenticator默认给你生成了5个，一般都够用了。通常用到3个就更新一遍吧。
- 是否生成配置，选是。 是否拒绝使用同一个token的人登录。如果选是，30秒内只能登录一个人。建议选是。 是否放送时间验证，从1分30秒到4分钟。如果选是，允许更大的服务器时间偏差。看你服务器时间是不是够准。 是否防止暴力破解，30秒内尝试不超过3次。建议选是。  OK，你的配置就完成了。如果有多个用户，请多次配置。
+是否生成配置，选是。 是否拒绝使用同一个token的人登录。如果选是，30秒内只能登录一个人。建议选是。 是否放送时间验证，从1分30秒到4分钟。如果选是，允许更大的服务器时间偏差。看你服务器时间是不是够准。 是否防止暴力破解，30秒内尝试不超过3次。建议选是。 OK，你的配置就完成了。如果有多个用户，请多次配置。
 手机app 按照系统安装以下app，下面以android版为例介绍。
- Google Authenticator Android Google Authenticator iOS Authenticator for Windows Phone Blackbarry  选择setup account，然后scan a barcode。程序会要求你使用barcode扫描软件扫描(推荐barcode scanner)。这时去扫描设定一节中访问url显示的那个qr码。
+Google Authenticator Android Google Authenticator iOS Authenticator for Windows Phone Blackbarry 选择setup account，然后scan a barcode。程序会要求你使用barcode扫描软件扫描(推荐barcode scanner)。这时去扫描设定一节中访问url显示的那个qr码。
 pam配置 对于ssh而言，请在/etc/pam.d/sshd的最后一行增加这句。
-auth required pam_google_authenticator.so  注意，这样其实是密码/校验码双重验证。如果你不需要密码请注释掉下面这句。
-@include common-auth  或者其他包含以下这句的地方。
-auth required pam_permit.so  如果你希望增强sudo安全性，也可以把这句加入/etc/pam.d/sudo后面。如果同样不需要密码，请注释上面那句。
+auth required pam_google_authenticator.so 注意，这样其实是密码/校验码双重验证。如果你不需要密码请注释掉下面这句。
+@include common-auth 或者其他包含以下这句的地方。
+auth required pam_permit.so 如果你希望增强sudo安全性，也可以把这句加入/etc/pam.d/sudo后面。如果同样不需要密码，请注释上面那句。
 sshd配置 保证/etc/ssh/sshd_config里面，以下参数都处于正确的配置。
-ChallengeResponseAuthentication yes PasswordAuthentication no UsePAM yes  如果你使用openssh6.</description>
+ChallengeResponseAuthentication yes PasswordAuthentication no UsePAM yes 如果你使用openssh6.2以上版本，请额外加入这句以开启publickey和验证同时启用。
+AuthenticationMethods publickey,keyboard-interactive sudo 注意，如果是NOPASSWORD，则没有校验。
+参考和鸣谢 Why enable SSH Two-Factor Authentication on your server?</description>
     </item>
     
     <item>
@@ -149,11 +150,11 @@ ChallengeResponseAuthentication yes PasswordAuthentication no UsePAM yes  如果
       
       <guid>//blog.shell909090.org/blog/archives/2536/</guid>
       <description>说明 测试都是ab做的，中等并发量，统一采用10000并发，100000个请求。都是本机请求本机，避免公司内网IDS的干扰。
-机器是一台双核CPU的DELL：Intel&amp;reg; Pentium&amp;reg; CPU G2030 @ 3.00GHz。配4G内存。
+机器是一台双核CPU的DELL：Intel(R) Pentium(R) CPU G2030 @ 3.00GHz。配4G内存。
 第一组数据是ab测试nginx，nginx的配置如下：
-worker_processes 4; pid /run/nginx.pid; worker_rlimit_nofile 30000; events { worker_connections 20000; multi_accept on; } http { sendfile on; tcp_nopush on; tcp_nodelay on; ... }  第二组是ab测试golang，返回固定是个OK。
+worker_processes 4; pid /run/nginx.pid; worker_rlimit_nofile 30000; events { worker_connections 20000; multi_accept on; } http { sendfile on; tcp_nopush on; tcp_nodelay on; ... } 第二组是ab测试golang，返回固定是个OK。
 第三组是ab测试golang，返回某个目录或文件。
-err := http.ListenAndServe(&amp;quot;:8080&amp;quot;, http.FileServer(http.Dir(&amp;quot;/home/shell/photo&amp;quot;)))  nginx Concurrency Level: 10000 Time taken for tests: 5.720 seconds Complete requests: 100000 Failed requests: 0 Write errors: 0 Total transferred: 172100000 bytes HTML transferred: 160000000 bytes Requests per second: 17482.</description>
+err := http.ListenAndServe(&amp;quot;:8080&amp;quot;, http.FileServer(http.Dir(&amp;quot;/home/shell/photo&amp;quot;))) nginx Concurrency Level: 10000 Time taken for tests: 5.720 seconds Complete requests: 100000 Failed requests: 0 Write errors: 0 Total transferred: 172100000 bytes HTML transferred: 160000000 bytes Requests per second: 17482.47 [#/sec] (mean) Time per request: 572.</description>
     </item>
     
     <item>
@@ -209,12 +210,12 @@ AP连接数就是每个设备算一个。
 废话，当然要。这么好的服务，为什么不用？
 只是随着google reader的事，在用gmail的时候也得留个心眼。平时数据勤备份，不要所有的内容都绑定到这个邮箱上，否则有得你哭的。
 安装和配置 getmail是一个用于将远程数据取到本地的系统，和fetchmail是一类东西。废话不多说，先装getmail。
-sudo aptitude install getmail4  之所以用getmail不用fetchmail，是因为fetchmail我搞不定。而且getmail比较容易备份到指定地点。要是输出能gzip掉就更好了。
+sudo aptitude install getmail4 之所以用getmail不用fetchmail，是因为fetchmail我搞不定。而且getmail比较容易备份到指定地点。要是输出能gzip掉就更好了。
 建立~/.getmail目录，下面放一个文件，例如gmail
-[retriever] type = SimpleIMAPSSLRetriever server = imap.gmail.com username = [username] password = [password] mailboxes = (&amp;quot;[Gmail]/所有邮件&amp;quot;,) [destination] type = Mboxrd path = ~/shell/gmail.mbox [options] read_all = false delivered_to = false received = false verbose = 2 message_log = ~/.getmail/gmail.log  username填你自己的用户名，普通用户不需要@gmail.com，企业用户需要@你的域名。password填密码，两次认证的需要分配一个Application-specific passwords。mailboxes里面不要照网络上的填写[Gmail]/All Mail，那是英文环境用的。
+[retriever] type = SimpleIMAPSSLRetriever server = imap.gmail.com username = [username] password = [password] mailboxes = (&amp;quot;[Gmail]/所有邮件&amp;quot;,) [destination] type = Mboxrd path = ~/shell/gmail.mbox [options] read_all = false delivered_to = false received = false verbose = 2 message_log = ~/.getmail/gmail.log username填你自己的用户名，普通用户不需要@gmail.com，企业用户需要@你的域名。password填密码，两次认证的需要分配一个Application-specific passwords。mailboxes里面不要照网络上的填写[Gmail]/All Mail，那是英文环境用的。
 ~/shell/gmail.mbox是目标文件，你需要先touch出来。~/.getmail/gmail.log是log，建议和配置文件同名。
 执行 把下面的gmail替换为你的配置文件名，注意不需要写.getmail/的前缀。
-getmail -r gmail  系统就会开始备份你的数据。像贝壳的gmail这种数据，量比较大，时间也会比较长。
+getmail -r gmail 系统就会开始备份你的数据。像贝壳的gmail这种数据，量比较大，时间也会比较长。
 问题 getmail是python写的，备份数据比较大的时候，内存消耗会很惊人。而且当处理巨量数目的文件时。在启动时会将目录全部下载到本地，然后计算一阵。这个耗时，网络消耗和CPU都比较大。要有点耐性。</description>
     </item>
     
@@ -225,15 +226,15 @@ getmail -r gmail  系统就会开始备份你的数据。像贝壳的gmail这种
       
       <guid>//blog.shell909090.org/blog/archives/2430/</guid>
       <description>用户友好的密码 何谓用户友好的密码？我是指在密码中尽量不给自己找麻烦，又能正常使用。
- 不包含空白字符。否则你会烦恼有哪个空白字符，有几个的问题。 不包含特殊字符。否则会烦恼怎么输入。 不使用容易混淆的字母。不容易输入错误。 方便手机输入。  尽量少包含大写字母。 只包含容易在手机上输入的符号，或者不输入。   手机上容易输入的符号 在android上，以下符号可以在google输入法中直接输入。
-@*+-=/#()&#39;&amp;quot;:?!~  总计15个。估计加上iphone后会更少。如果要用符号，建议从这些里面取，会减少你很多密码输入的烦恼。
-容易混淆的字母  Il1 0O 连续的mn 连续的wv  强度规范 我把密码管理规范里面的结论总结一下，略去推导，凑凑数，把密码级别排列成以下几个：
- 弱密码：不希望别人看到，然而别人看到并没有直接损失的内容。熵应当在20bit以上，五年修改一次。 中密码：不希望别人看到，别人看到会对你产生损失的内容。熵应当在33bit以上，两年修改一次。 强密码：有价内容。熵应当在45bit以上，一年修改一次。同时作为弱本地密码规范， 本地密码：熵应当在58bit以上。  每个级别之间大约差12bit的熵。初始熵强度至少20bit，低于这个水平就很难说这是一个密码了。
+不包含空白字符。否则你会烦恼有哪个空白字符，有几个的问题。 不包含特殊字符。否则会烦恼怎么输入。 不使用容易混淆的字母。不容易输入错误。 方便手机输入。 尽量少包含大写字母。 只包含容易在手机上输入的符号，或者不输入。 手机上容易输入的符号 在android上，以下符号可以在google输入法中直接输入。
+@*+-=/#()&#39;&amp;quot;:?!~ 总计15个。估计加上iphone后会更少。如果要用符号，建议从这些里面取，会减少你很多密码输入的烦恼。
+容易混淆的字母 Il1 0O 连续的mn 连续的wv 强度规范 我把密码管理规范里面的结论总结一下，略去推导，凑凑数，把密码级别排列成以下几个：
+弱密码：不希望别人看到，然而别人看到并没有直接损失的内容。熵应当在20bit以上，五年修改一次。 中密码：不希望别人看到，别人看到会对你产生损失的内容。熵应当在33bit以上，两年修改一次。 强密码：有价内容。熵应当在45bit以上，一年修改一次。同时作为弱本地密码规范， 本地密码：熵应当在58bit以上。 每个级别之间大约差12bit的熵。初始熵强度至少20bit，低于这个水平就很难说这是一个密码了。
 强度估计 以最容易使用的密码计算，符号应当最多包含26个字母+10个数字，排除l10这3个。每一位有33种可能，熵大约是5多一点。
- 弱密码：至少4位。 中密码：至少7位。 强密码：至少9位。 本地密码：至少12位。  更强一些的密码可以用52个大小写字幕+10个数字，排除Il10O这5个。每一位有57种可能，熵大约是5.8。
- 弱密码：至少4位。 中密码：至少6位。 强密码：至少8位。 本地密码：至少10位。  建议 网络：
- 弱密码：4位小写字母+数字，5年修改一次。 中密码：7位小写字母+数字，2年修改一次。用于保护大部分内容。 强密码：8位大小写字母+数字，1年修改一次。保护重要内容。  本地：
- 低：8位大小写字母+数字。 高：10位大小写字母+数字。  注意避开Il1O0，以及其他可能的混淆方式。</description>
+弱密码：至少4位。 中密码：至少7位。 强密码：至少9位。 本地密码：至少12位。 更强一些的密码可以用52个大小写字幕+10个数字，排除Il10O这5个。每一位有57种可能，熵大约是5.8。
+弱密码：至少4位。 中密码：至少6位。 强密码：至少8位。 本地密码：至少10位。 建议 网络：
+弱密码：4位小写字母+数字，5年修改一次。 中密码：7位小写字母+数字，2年修改一次。用于保护大部分内容。 强密码：8位大小写字母+数字，1年修改一次。保护重要内容。 本地：
+低：8位大小写字母+数字。 高：10位大小写字母+数字。 注意避开Il1O0，以及其他可能的混淆方式。</description>
     </item>
     
     <item>
@@ -243,10 +244,10 @@ getmail -r gmail  系统就会开始备份你的数据。像贝壳的gmail这种
       
       <guid>//blog.shell909090.org/blog/archives/2339/</guid>
       <description>背景 贝壳自己的vps蒙难，不能正常工作了。所以贝壳买了一个vpn。是pptp/l2tp系列的。用起来很好用，但是这类ip-based vpn有几个不便。
- 不能自动设定客户端路由表，实现智能翻墙选择。 每个需要翻墙的设备均需要拨号，而目标设备有容量极限。 不能实现非侵入式翻墙，打开之后连p2p都翻了。  与此相反，代理式翻墙可以比较有效的解决这些问题。一个点拨号，其他点可以共享代理。不需要翻墙的直接访问不设定代理就好。唯路由表没有办法。实际上，为了使得代理可以使用路由表选择，贝壳还是花了一番功夫做了antigfw项目的。
+不能自动设定客户端路由表，实现智能翻墙选择。 每个需要翻墙的设备均需要拨号，而目标设备有容量极限。 不能实现非侵入式翻墙，打开之后连p2p都翻了。 与此相反，代理式翻墙可以比较有效的解决这些问题。一个点拨号，其他点可以共享代理。不需要翻墙的直接访问不设定代理就好。唯路由表没有办法。实际上，为了使得代理可以使用路由表选择，贝壳还是花了一番功夫做了antigfw项目的。
 闲话少说。这次贝壳就展示一下如何在debian下设定pptp vpn，并且利用代理无缝共享的。
 linux下的vpn设定 安装pptp-linux这个包，然后按照说明使用即可。
-pptpsetup --create &amp;lt;TUNNEL&amp;gt; --server &amp;lt;SERVER&amp;gt; [--domain &amp;lt;DOMAIN&amp;gt;] --username &amp;lt;USERNAME&amp;gt; [--password &amp;lt;PASSWORD&amp;gt;] [--encrypt] [--start]  自己填充用户名密码服务器，就会在/etc/ppp/peers/下面生成对应的文件。使用pon tunnelname就可以拨号了。
+pptpsetup --create &amp;lt;TUNNEL&amp;gt; --server &amp;lt;SERVER&amp;gt; [--domain &amp;lt;DOMAIN&amp;gt;] --username &amp;lt;USERNAME&amp;gt; [--password &amp;lt;PASSWORD&amp;gt;] [--encrypt] [--start] 自己填充用户名密码服务器，就会在/etc/ppp/peers/下面生成对应的文件。使用pon tunnelname就可以拨号了。
 路由设定 初始设定好的vpn不具有智能路由，因此必须添加一些内容。
 首先使用chnroutes.py这个程序，得到ovpn下常规用的路由表。当然，我们可以用linux下的路由表，但是他的old gateway存放在了/tmp下面，对此我并不是很喜欢。所以我只用了他的路由 表信息，其余自己处理。如果你不确定自己执行时的默认路由，理论上也应当需要下面的一些配置。
 使用下面这个topptp.sh，可以将输出的routes.txt转换为pptpup和pptpdown两个文件。
@@ -275,9 +276,9 @@ pptpsetup --create &amp;lt;TUNNEL&amp;gt; --server &amp;lt;SERVER&amp;gt; [--dom
 答案是不动点算子。
 高阶抽象函数的不动点 我们先不继续讨论不动点算子，让我们先讨论一下抽象函数。上面，我们的f都是具体的演算规则，x是一个数（例如x），或者一个矩阵（例如ABO，也可以当作一种数来考虑）。如果x是一个函数会如何？
 我们先看一个递归的阶乘计算函数：
-(define fact (lambda (n) (if (&amp;lt; n 2) 1 (* n (fact (- n 1))))))  这是一个典型的阶乘计算函数，没错。问题是，我们在lambda里面调用了fact。从语言层面上说，这样做合法。然而从语言的研究角度说，这难免会带来一个问题。函数的名字，到底是一个可有可无的别名，还是一个在递归中必须的东西。如果是前者，我们可以完全用lambda构造递归函数。而如果是后者，我们无论如何努力，也无法仅仅使用lambda来构造一个递归。
+(define fact (lambda (n) (if (&amp;lt; n 2) 1 (* n (fact (- n 1)))))) 这是一个典型的阶乘计算函数，没错。问题是，我们在lambda里面调用了fact。从语言层面上说，这样做合法。然而从语言的研究角度说，这难免会带来一个问题。函数的名字，到底是一个可有可无的别名，还是一个在递归中必须的东西。如果是前者，我们可以完全用lambda构造递归函数。而如果是后者，我们无论如何努力，也无法仅仅使用lambda来构造一个递归。
 OK，这和不动点有什么关系？这时，我们先假定函数f，是真正的阶乘计算函数。即f(n) = n!。那么对于以下函数，((F f) n) = (f n)。
-F = (lambda (h) (lambda (n) (if (&amp;lt; n 2) 1 (* n (h (- n 1))))))  看不懂为什么？这是一个柯里化函数。当我们传递真正的阶乘函数f给F的时候，在函数体内，他叫做h。而按照f(n-1)的定义，我们得到的值和(f n)没有区别。因此，我们有(F f) = f，你也可以写作F(f) = f。
+F = (lambda (h) (lambda (n) (if (&amp;lt; n 2) 1 (* n (h (- n 1)))))) 看不懂为什么？这是一个柯里化函数。当我们传递真正的阶乘函数f给F的时候，在函数体内，他叫做h。而按照f(n-1)的定义，我们得到的值和(f n)没有区别。因此，我们有(F f) = f，你也可以写作F(f) = f。
 是不是觉得眼熟？是的，f是函数F的一个不动点。要获得真正的阶乘函数f，我们只要对F计算不动点即可。
 Y算子 Y算子(或者叫做Y组合子)是另一种高阶函数，用于计算任意函数的不动点。
 假定对于函数f，存在不动点x，有f(x) = x，那么Y(f) = x，这是Y算子的基础。按照上文代入，我们可以得到f(Y(f)) = Y(f)，或者可以写作scheme格式：(f (Y f)) = (Y f)，这就是Y算子。</description>
@@ -364,15 +365,19 @@ google drive是什么 从表现上看，还是基于文件的管理。我不能�
       <guid>//blog.shell909090.org/blog/archives/2142/</guid>
       <description>4月12日上午, 大约北京时间10点(UTC02:00前后),
 中国大部分地区发生了一次断网. 这次断网我有幸正好在使用网络, 因此跟踪调试了整个过程.
- 网络开始中断  当时我在公司里面用ssh调整一台国外的机器, 同时用另一台机器作为ssh跳板访问google. 问题发生的时候, 很多国外网站都无法打开, ssh指令不能工作. 我的第一反应就是, GFW针对ssh做了拦截.
+网络开始中断 当时我在公司里面用ssh调整一台国外的机器, 同时用另一台机器作为ssh跳板访问google. 问题发生的时候, 很多国外网站都无法打开, ssh指令不能工作. 我的第一反应就是, GFW针对ssh做了拦截.
 鉴于其他可能, 我登录回了家中, 从家里的机器直接ssh到国外的跳板, 一切正常. 莫非只是我这里的ssh发生了断路? 我正在这么猜测的时候, 家里的ssh也随即断开. 我kill了当前进程, 重新连接后, 恢复了对家里服务器的控制, 但是境外的ssh跳板已经不能连接.
 至此, 可以确定中国出国网络逐步发生中断, 针对什么协议, 机制如何尚不清楚.
 但是, 我同时用同一台机器打开了openvpn, openvpn会提供一个内网接口.
 我偶然的用这个内网iface访问了一下, 一切正常. 再尝试了一下, openvpn上网正常. 这说明问题可能局限在ssh上.
- 这不是一个个例, 这是大规模断网  既然我对境外服务器还有控制能力, 我就更换了一个ssh端口, 但是问题并没有解决. 这似乎说明封锁不是针对端口(port), 而是针对协议(protocol)的. 为了确证这点, 我对通讯过程做了抓包, 但是结果出乎我的意料. 问题并不出现在ssh握手的时候, 而是tcp第二步的syn-ack回包彻底消失. 这表明封锁并不针对ssh协议, 而是tcp协议栈!
+这不是一个个例, 这是大规模断网 既然我对境外服务器还有控制能力, 我就更换了一个ssh端口, 但是问题并没有解决. 这似乎说明封锁不是针对端口(port), 而是针对协议(protocol)的. 为了确证这点, 我对通讯过程做了抓包, 但是结果出乎我的意料. 问题并不出现在ssh握手的时候, 而是tcp第二步的syn-ack回包彻底消失. 这表明封锁并不针对ssh协议, 而是tcp协议栈!
 这非常疯狂, 如果是这样的话, 大部分基于tcp的网络协议将无法工作, 包括境外大部分网站的http协议. 我从twitter上看到, 很多人的各种工具都相继失效, 并且境外很多的http(而非https)确实无法访问, 这和我的判断相一致. 这是针对tcp协议栈的大规模拦截.
- 为什么特殊  通常而言, GFW有三个常见工作模式.
- dns污染</description>
+为什么特殊 通常而言, GFW有三个常见工作模式.
+dns污染
+ip封锁
+深度包过滤(关键字拦截)
+其中dns封锁只对域名有效, ip封锁只对ip有效, 只有深度包过滤才是最麻烦的.
+但是通常深度包过滤是使用旁路过滤的方式, 在连接出现问题时发出rst包干扰tcp工作. 而本次的模式是将境外向境内的tcp包直接丢弃, 而非rst.</description>
     </item>
     
     <item>
@@ -456,11 +461,11 @@ tcp的fin机制，其实是要解决这么一个问题。当你说“再见”�
 所谓开链，就是指对所有同余hash，将他们挂到一个hash表项上，形成一个链表。而所谓二次探测，就是在第一次hash冲突后，再进行一次hash，作为第二地址。
 开链法对碰撞冲突是有先天缺陷的，因为同余碰撞的构造远比hash碰撞的构造简单。假定hash
 table有11个表项，那么平均11次尝试就可以得到一个元素，和原始元素hash同余。如果选用这样的恶意key序列，在执行构造的时候，hash
-table就退化为了链表。链表的插入复杂度是O(n\^2)级的。而作为攻击者，为了获得n个hash同余对象，所需消耗的复杂度做如下估量。首先考虑hash table length和n同阶，因此以n作为hash table长度。这样每n次尝试就可以获得一个恶意元素，获得n个元素的复杂度为O(n\^2)级。
+table就退化为了链表。链表的插入复杂度是O(n^2)级的。而作为攻击者，为了获得n个hash同余对象，所需消耗的复杂度做如下估量。首先考虑hash table length和n同阶，因此以n作为hash table长度。这样每n次尝试就可以获得一个恶意元素，获得n个元素的复杂度为O(n^2)级。
 也就是说，即使是sha256这样强的hash算法，只要保证哈希函数特性，对同样的值得到同样的哈希，就无法保证开链法的安全。
-而二次探测法对这个是有先天抵抗的，二次探测法的第一次碰撞并不难构造，但是第二次哈希后依然保持同余的构造难度就由n增加到了n\^2，多次碰撞的构造难度以此类推。虽然我没有完整的计算过这个值，但是猜测难度量级应当是O(n*n\^n)级别的。这个级别基本就不用玩了——前提是哈希算法必须是安全的。
+而二次探测法对这个是有先天抵抗的，二次探测法的第一次碰撞并不难构造，但是第二次哈希后依然保持同余的构造难度就由n增加到了n^2，多次碰撞的构造难度以此类推。虽然我没有完整的计算过这个值，但是猜测难度量级应当是O(n*n^n)级别的。这个级别基本就不用玩了——前提是哈希算法必须是安全的。
 由于为了节约计算过程，因此python和php的hash算法都没有采用md5之类的高散列算法，而是一个很简单的算法。我摘抄一下Python2.7.2中的这段代码。python_string_hash.c
-static long string_hash(PyStringObject *a) { register Py_ssize_t len; register unsigned char *p; register long x; if (a-&amp;gt;ob_shash != -1) return a-&amp;gt;ob_shash; len = Py_SIZE(a); p = (unsigned char *) a-&amp;gt;ob_sval; x = *p &amp;lt;&amp;lt; 7; while (--len &amp;gt;= 0) x = (1000003*x) ^ *p++; x ^= Py_SIZE(a); if (x == -1) x = -2; a-&amp;gt;ob_shash = x; return x; }  按照&amp;lt;python.</description>
+static long string_hash(PyStringObject *a) { register Py_ssize_t len; register unsigned char *p; register long x; if (a-&amp;gt;ob_shash != -1) return a-&amp;gt;ob_shash; len = Py_SIZE(a); p = (unsigned char *) a-&amp;gt;ob_sval; x = *p &amp;lt;&amp;lt; 7; while (--len &amp;gt;= 0) x = (1000003*x) ^ *p++; x ^= Py_SIZE(a); if (x == -1) x = -2; a-&amp;gt;ob_shash = x; return x; } 按照&amp;laquo;python.</description>
     </item>
     
     <item>
@@ -470,16 +475,16 @@ static long string_hash(PyStringObject *a) { register Py_ssize_t len; register u
       
       <guid>//blog.shell909090.org/blog/archives/2050/</guid>
       <description>7寸以下宽屏，原因，可以一手拿住。
- 300g以内，原因，可以一手拿住。
- 厚度1cm以内，原因，拿得舒服。
- 10小时续航，原因，一天可以只充电一次。
- 3g支持，原因，不支持3g的不叫理想的平板。
- IPS/PLS屏幕，原因，普屏的视角的却有的时候很不爽。
- usb可充电，原因，外部电源续航方便，充电方便。
- 支持TF卡，原因，方便。
- USB OTG，原因，可以拖U盘和键盘。
- GPS支持，原因，地图是很重要的。
-  好吧，我们合并要求起来看看。300g以内10小时续航，目前芯片和屏幕的功耗连电池重量都不够。所以这个无形就要求更加节能和强劲的芯片，还有更加节能的屏幕。同时，这个屏幕还不能比IPS视角差。
+300g以内，原因，可以一手拿住。
+厚度1cm以内，原因，拿得舒服。
+10小时续航，原因，一天可以只充电一次。
+3g支持，原因，不支持3g的不叫理想的平板。
+IPS/PLS屏幕，原因，普屏的视角的却有的时候很不爽。
+usb可充电，原因，外部电源续航方便，充电方便。
+支持TF卡，原因，方便。
+USB OTG，原因，可以拖U盘和键盘。
+GPS支持，原因，地图是很重要的。
+好吧，我们合并要求起来看看。300g以内10小时续航，目前芯片和屏幕的功耗连电池重量都不够。所以这个无形就要求更加节能和强劲的芯片，还有更加节能的屏幕。同时，这个屏幕还不能比IPS视角差。
 继续等吧。</description>
     </item>
     
@@ -623,7 +628,7 @@ wifi管理者比较怕的问题，主要就是有人使用wifi下载比较大的
 5.根据具体情况配置。
 WEP比较节约资源，所以我们开始配置的是WEP信号。但是测试下来，苹果系统对WEP的支持非常差，基本接不上去。所以就不要节约了，使用WPA/WPA2。
 运营商的接入情况比较多变，而且很难控制。这次运营商给我们的是一个内网IP，192.168.1.2。他们已经有了一个路由器在前面。我使用了双重NAT方案，而且避开192.168.1.x网段，来避免修改它们的路由器（我们无权控制）。
-这次我们使用的是192.168.0.1&amp;frasl;24网段，三台AP的连接模式是一主多桥。一个主router负责DHCP和NAT，其余的全部当单纯的AP使用。从1到3分别分配0.1-3的IP，2/3的DHCP关闭，1的DHCP从20开始分配起，直到254，共计最高容纳234人在线。20以前的IP让组委的人作为静态IP预留。如果还要多，建议使用192.168.2.0/23网段，最高可以容纳500人不到，足够大部分的会展使用。如果再不够——你们考虑10网段吧。
+这次我们使用的是192.168.0.1/24网段，三台AP的连接模式是一主多桥。一个主router负责DHCP和NAT，其余的全部当单纯的AP使用。从1到3分别分配0.1-3的IP，2/3的DHCP关闭，1的DHCP从20开始分配起，直到254，共计最高容纳234人在线。20以前的IP让组委的人作为静态IP预留。如果还要多，建议使用192.168.2.0/23网段，最高可以容纳500人不到，足够大部分的会展使用。如果再不够——你们考虑10网段吧。
 最后的经验总结。
 1.会前勘察真的很重要，尤其是会场平面结构，承重墙位置，会场部署，电源插座位置，一定要提前至少三天确认。提前一天的时候要配好所有AP，备件和网线到会场部署，然后测试信号。
 2.会场带宽一定要大，万一实在不够大，想办法ban掉debian/ubuntu的镜像，然后做qos或者squid。
@@ -638,8 +643,8 @@ WEP比较节约资源，所以我们开始配置的是WEP信号。但是测试�
       
       <guid>//blog.shell909090.org/blog/archives/2000/</guid>
       <description>没啥好多说的，从verycd中爬所有的ed2k链接。
-lynx -dump -listonly -nonumbers &amp;lt;http://www.verycd.com/topics/XXX/&amp;gt; | grep ed2k &amp;gt;&amp;gt; ed2k.txt  要看到ed2k未转码的内容也不难。
-import sys, urllib with open(sys.argv\[1\], &#39;r&#39;) as fi: print urllib.unquote(fi.read())  </description>
+lynx -dump -listonly -nonumbers &amp;lt;http://www.verycd.com/topics/XXX/&amp;gt; | grep ed2k &amp;gt;&amp;gt; ed2k.txt 要看到ed2k未转码的内容也不难。
+import sys, urllib with open(sys.argv\[1\], &#39;r&#39;) as fi: print urllib.unquote(fi.read()) </description>
     </item>
     
     <item>
@@ -660,7 +665,7 @@ DIR-825用户，把你的第二AP设定成和第一AP不同的频率。如果两
       
       <guid>//blog.shell909090.org/blog/archives/1973/</guid>
       <description>让其他人的设备无法使用网络。
-opkg install arptables --------/etc/init.d/arptables-------- \#!/bin/sh /etc/rc.common start (){ arptables -F INPUT arptables -A INPUT --src-mac aaa -j ACCEPT arptables -P INPUT DROP } stop (){ arptables -F INPUT arptables -P INPUT ACCEPT } --------end files--------  注意，千万把自己的mac地址写对了，否则一个/etc/init.d/arptables restart下去，你自己的机器就断线连不上了。不过一般来说，重启后arp限制会失效，因此可以重启来去掉限制。实在不行也可以拔下U盘，在电脑上进行mount和修改，然后再插回去启动设备。根据测试结果，内网还是可以访问的，不过路由器无法访问了。有一个链叫做FORWARD，也许改这个可以解决。但是我没有找到相关资料，因此没有下手。</description>
+opkg install arptables --------/etc/init.d/arptables-------- \#!/bin/sh /etc/rc.common start (){ arptables -F INPUT arptables -A INPUT --src-mac aaa -j ACCEPT arptables -P INPUT DROP } stop (){ arptables -F INPUT arptables -P INPUT ACCEPT } --------end files-------- 注意，千万把自己的mac地址写对了，否则一个/etc/init.d/arptables restart下去，你自己的机器就断线连不上了。不过一般来说，重启后arp限制会失效，因此可以重启来去掉限制。实在不行也可以拔下U盘，在电脑上进行mount和修改，然后再插回去启动设备。根据测试结果，内网还是可以访问的，不过路由器无法访问了。有一个链叫做FORWARD，也许改这个可以解决。但是我没有找到相关资料，因此没有下手。</description>
     </item>
     
     <item>
@@ -671,7 +676,7 @@ opkg install arptables --------/etc/init.d/arptables-------- \#!/bin/sh /etc/rc.
       <guid>//blog.shell909090.org/blog/archives/1971/</guid>
       <description>你还在为使用openwrt路由器无法使用pptp客户端而烦恼么？请看这个页面。按照他的说法，输入以下句子就可以解决你的烦恼。
 If you use a pptp client behind an openwrt router, and pptp tunnel not work, look at thispage.
-opkg update opkg install kmod-ipt-nathelper-extra  这个方法不仅对路由器内使用一个pptp有效，而且对多个pptp也有效。
+opkg update opkg install kmod-ipt-nathelper-extra 这个方法不仅对路由器内使用一个pptp有效，而且对多个pptp也有效。
 It&amp;rsquo;s work for both single pptp tunnel and for multi pptp tunnels.
 然后，记得重启。
 Remember to reboot router.</description>
@@ -733,7 +738,7 @@ PS：个人希望，如果有买了小米手机量产版本的小白鼠，能够
 2.充电问题 这是P81HD历来反应的第一问题，其实P81HD充电问题不一定和root有关，我没root的时候也碰到过。主要是这样的。你插入充电器，看到充电符号的时候，其实充电器不一定工作。只有你看到电量上升，才代表充电器工作正常。而且，当线被动过后，也可能会变成假充电状态。有充电符号没有实际充电。 设备不支持USB充电，但是很幸运的，充电电压是5V，电流0.5-2.5A。所以你可以买一条USB2DC线路，将USB的5V电压直接充上去。原装的线也太短，不爽。
 3.不支持联系人/日历同步，没有gtalk的问题 默认的rom里面没有，你可以从这里下载到合适的apk文件。这些是从我手机（htc magic chock4 2.2 rom）中提取出来，2.2用的。安装后可以正常工作。 本地下载链接（请不要盗链）：GoogleCalendarSyncAdapter.apkGoogleContactsSyncAdapter.apkgtalk.apk
 4.不支持的程序 不要用flash11，至少到目前为止不行。用flash 10.3就好了。链接在这里。
-5.wifi channel 12&amp;frasl;13 中国设备规范中都不支持这两个频道，不要想了，在中国你就不应当使用这两个频道。
+5.wifi channel 12/13 中国设备规范中都不支持这两个频道，不要想了，在中国你就不应当使用这两个频道。
 6.wifi tether 默认机器是不可以adhoc的，不但不能接入其他设备（例如手机）开的adhoc，而且连自己设定里面做的wifi共享3G的功能都不能用，用之会死机，必须捅菊花。不过你可以用barnacle这个程序。这个程序很牛，可以绕过wpa_supplicant工作，直接将wifi置于adhoc模式。这样其他机器能看到这个共享点。但是注意，由于android无法连接到adhoc，所以，你手机做出来的wifi热点电脑能用，P81HD不能。P81HD做出来的，电脑能用，手机不能。
 不能解决的问题 1.adhoc连接问题 android设备无法连接到adhoc网络。据说这个特性是wpa_supplicant过滤了adhoc模式的所有网络所致。如果我闲的蛋疼，会去研究一下怎么绕过这个机制。直接使用网络上的补丁会导致网络无法连接。
 2.vpn问题 默认没有额外的kernel modules支持，没有openvpn文件，没有busybox工具。busybox可以安装busybox installer来进行安装，openvpn可以安装openvpn installer来进行安装。但是即使完整安装工具链，也没有办法加载tun模块，使用openvpn连接。cifs没有测试过。 pptp/l2tp测试无法连接，服务器日志表明连接后马上断开，原因未知。 安全隧道测试无法连接，原因未知。</description>
@@ -746,10 +751,10 @@ PS：个人希望，如果有买了小米手机量产版本的小白鼠，能够
       
       <guid>//blog.shell909090.org/blog/archives/1925/</guid>
       <description>vnc可以调整分辨率，这个很简单。
-vncserver -geometry HxV  就可以设定纵横分辨率了。
+vncserver -geometry HxV 就可以设定纵横分辨率了。
 但是vnc怎么动态调整分辨率呢？RDP可以根据连接时参数来调整分辨率，vnc好像没有这个功能吧？
 最近贝壳需要在电脑上和上网本上同时使用一个桌面，于是碰到了这个问题。经过寻找，这个问题的答案是这样的。
-vncserver -geometry 1600x1000 -geometry 1440x900 -geometry 1024x600  然后，在进入系统后，输入xrandr，可以看到你启动时设定的多个分辨率。再用xrandr -s N，就可以选择合适的分辨率了。
+vncserver -geometry 1600x1000 -geometry 1440x900 -geometry 1024x600 然后，在进入系统后，输入xrandr，可以看到你启动时设定的多个分辨率。再用xrandr -s N，就可以选择合适的分辨率了。
 这个是X的randr扩展，需要vncserver版本在4以上。我的环境是debian testing，vnc4.1.1。欢迎大家测试。</description>
     </item>
     
@@ -784,28 +789,36 @@ S的数据包会被NAT两次再发到互联网上，要进行端口转发也必�
       <guid>//blog.shell909090.org/blog/archives/1915/</guid>
       <description>下面是贝壳自己总结的密码管理规范，大家可以参考一下。
 概念解说
- 网络密码和本地密码。网络密码通常很难暴力攻击，尝试速度受到网络限制，而且尝试一定次数后还可能被管理员发现。而本地密码则相对比较容易攻击，我假定本地密码攻击可以达到每秒测试2\^30个密码。
- 密码长度推定使用如下计算方式。使用年数乘以攻击频率，得出攻击者在密钥使用期限内能尝试的最大次数。为了安全起见，尝试范围不应当超过总体密码空间的一定比例。以此推算出密码空间大小，进而推算出信息位数，然后还原为密码位数。
- 数字密码，字母密码，数字字母混合密码，大小写数字混合密码。数字密码的信息量是3.3bit/位，字母为4.7bit/位，混合为5.17bit/位，全混合5.96bit/位。
-  密码原则
- 一次一密。除了零级密码，不要为多个系统设定一样的密码。有些系统并不像我们想像的安全，一旦这个系统出问题，被还原原始密码，就会牵连到其他系统。
- 定期更换。没有什么密码能用一辈子。
- 写下来。因为一次一密，所以我们会有大量的散碎密码。不写下来是不保险的，写下来是不安全的。折衷一下，还是写下来，保存好吧。推荐用高级密码加密低级密码的方法，例如keepass。
- 生成型密码。用一个特定字符串+网站名，做sha-1然后取最后8位。这样的密码满足一次一密，不容易破解，不需要写下来，唯一的问题是你要现算&amp;hellip;
-  零级密码
- 零级密码是有些不需要保护的情况下，又非设定密码不可。对于这种情况，你只能设定一个不算密码的密码。例如常用机器的用户密码。这些密码可以通过livecd/liveusb轻易修改，因此没有一点保密价值。
- 零级密码不需要安全性和保密性，因此好记就行。例如111，222，选一个常用的，爱用多久用多久。
-  低级密码
- 低级密码是用于保护一些你不希望别人看到，然而别人看到并没有直接损失的内容。例如家里机器的性能数据，普通相册的访问密码。这些内容被别人看到不会产生伤害，然而无成本的放出这些内容有潜在的风险，或是你自己主观意愿希望保护，内容安全性要求又不特别高。
- 我假定低级密码在网络上会受到100次/年的攻击，本地密码会受到1小时/年的攻击，可用时间五年，穷举空间不超过总密码空间的1/1000。
- 网络密码的攻击信息量为log2(100 * 5 * 1000) =
-  18.93bit。使用数字密码应在6位以上，字母，混合，全混合应在4位以上。
- 本地密码的攻击信息量为log2(2\^30 * 3600 * 5 * 1000) =  54.10bit。使用数字密码在17位以上，字母在12位以上，混合在11位以上，全混合在9位以上。
- 结论，低等级的密码长度小，使用数字也并不难记。推荐使用4位以上字母（反正混合使用长度也没有下降），不要使用常见组合还有单词。推荐方式是将自己喜欢的一句英文首字母简写前后颠倒使用。例如：I  will be back，对应密码bbwi。
+网络密码和本地密码。网络密码通常很难暴力攻击，尝试速度受到网络限制，而且尝试一定次数后还可能被管理员发现。而本地密码则相对比较容易攻击，我假定本地密码攻击可以达到每秒测试2^30个密码。
+密码长度推定使用如下计算方式。使用年数乘以攻击频率，得出攻击者在密钥使用期限内能尝试的最大次数。为了安全起见，尝试范围不应当超过总体密码空间的一定比例。以此推算出密码空间大小，进而推算出信息位数，然后还原为密码位数。
+数字密码，字母密码，数字字母混合密码，大小写数字混合密码。数字密码的信息量是3.3bit/位，字母为4.7bit/位，混合为5.17bit/位，全混合5.96bit/位。
+密码原则
+一次一密。除了零级密码，不要为多个系统设定一样的密码。有些系统并不像我们想像的安全，一旦这个系统出问题，被还原原始密码，就会牵连到其他系统。
+定期更换。没有什么密码能用一辈子。
+写下来。因为一次一密，所以我们会有大量的散碎密码。不写下来是不保险的，写下来是不安全的。折衷一下，还是写下来，保存好吧。推荐用高级密码加密低级密码的方法，例如keepass。
+生成型密码。用一个特定字符串+网站名，做sha-1然后取最后8位。这样的密码满足一次一密，不容易破解，不需要写下来，唯一的问题是你要现算&amp;hellip;
+零级密码
+零级密码是有些不需要保护的情况下，又非设定密码不可。对于这种情况，你只能设定一个不算密码的密码。例如常用机器的用户密码。这些密码可以通过livecd/liveusb轻易修改，因此没有一点保密价值。
+零级密码不需要安全性和保密性，因此好记就行。例如111，222，选一个常用的，爱用多久用多久。
+低级密码
+低级密码是用于保护一些你不希望别人看到，然而别人看到并没有直接损失的内容。例如家里机器的性能数据，普通相册的访问密码。这些内容被别人看到不会产生伤害，然而无成本的放出这些内容有潜在的风险，或是你自己主观意愿希望保护，内容安全性要求又不特别高。
+我假定低级密码在网络上会受到100次/年的攻击，本地密码会受到1小时/年的攻击，可用时间五年，穷举空间不超过总密码空间的1/1000。
+网络密码的攻击信息量为log2(100 * 5 * 1000) =
+18.93bit。使用数字密码应在6位以上，字母，混合，全混合应在4位以上。
+本地密码的攻击信息量为log2(2^30 * 3600 * 5 * 1000) = 54.10bit。使用数字密码在17位以上，字母在12位以上，混合在11位以上，全混合在9位以上。
+结论，低等级的密码长度小，使用数字也并不难记。推荐使用4位以上字母（反正混合使用长度也没有下降），不要使用常见组合还有单词。推荐方式是将自己喜欢的一句英文首字母简写前后颠倒使用。例如：I will be back，对应密码bbwi。
 中级密码
- 中级密码用于保护一些你不希望别人看到，别人看到会对你产生损失的内容。例如你的帐薄，日记等等。中级密码使用时，最主要的风险已经不来自于密码本身，而是使用密码的环境。包括电脑是否安全，中途网络是否安全，旁边人的肩窥攻击。
- 我假定中级密码在网络上可能会受到10000次/年的攻击，本地密码会受到100小时/年的攻击，可用时间1年，穷举空间不超过总密码空间的1/100000。
- 网络密码的攻击信息量为log2(10000 * 1 *100000) =</description>
+中级密码用于保护一些你不希望别人看到，别人看到会对你产生损失的内容。例如你的帐薄，日记等等。中级密码使用时，最主要的风险已经不来自于密码本身，而是使用密码的环境。包括电脑是否安全，中途网络是否安全，旁边人的肩窥攻击。
+我假定中级密码在网络上可能会受到10000次/年的攻击，本地密码会受到100小时/年的攻击，可用时间1年，穷举空间不超过总密码空间的1/100000。
+网络密码的攻击信息量为log2(10000 * 1 *100000) =
+29.90bit。使用数字密码应在9位以上，字母在7位以上，混合应在6位以上，全混合应当在4位以上。
+本地密码的攻击信息量为log2(2^30 * 3600 * 100 * 1 *100000) = 65.07。使用数字密码在20位以上，字母在14位以上，混合在13位以上，全混合应当在11位以上。
+结论，中级密码开始，数字密码的位数就太长了，人类记忆很难记得。推荐使用8位以上字母密码，产生方式同上。 高级密码
+高级密码用于保护一些有价内容，例如公司标书，银行账户。高级密码要注意更换，最长不要超过半年。
+我假定中级密码在网络上可能受到1000000次/年的攻击，本地密码会受到8700小时/年的攻击，可用时间0.5年，穷举空间不超过总密码空间的1/10000000。
+网络密码的攻击信息量为log2(1000000* 0.5 *10000000) =
+42.19bit。使用数字密码应在12位以上，字母和混合应在9位以上上，全混合应当在8位以上。
+本地密码的攻击信息量为log2(2^30 * 3600 *8700* 0.5 *10000000) =</description>
     </item>
     
     <item>
@@ -837,12 +850,12 @@ gnupg的密码体系和PKI类似，又有区别。PKI密码体系有数个根节
 好吧，为了解决这个问题，gnupg设计了互相签署机制。当我签署了某个人的公钥，并且将我的签署上传到公钥服务器（或者发送回给本人）的时候，我就为这个人的真实性做出了背书。例如，当我为thomas做了公钥签署，然后上传到了公钥服务器。然后thomas向某个他并不直接认识的我的朋友发送了一封邮件——例如发送给了julia。julia收到信的时候，会从服务器上下载thomas的公钥，然后看到我的背书。如果julia相信(trust)我，那么gnupg就会自动完成验证。当然，将公钥上传到服务器会略微降低安全性，所以如果限于安全考虑，我没有上传到公钥服务器，而是传回给本人。那么thomas就必须在给julia发送邮件的时候，附上公钥。julia一样能看到公钥上我的签名。
 下面是如何操作。
 首先你必须获得公钥，以下是从公钥服务器上下载的方法。
-gpg --keyserver &amp;lt;keyserver&amp;gt; --recv-keys &amp;lt;Key\_ID&amp;gt;  而后，你需要看到这个公钥的fingerprint。
-gpg --fingerprint &amp;lt;Key\_ID&amp;gt;  再然后，就是比较困难的部分。你需要和这个公钥的拥有者碰头，找个地方喝个咖啡，或者一起出来玩什么的。然后，查看他的有效证件，和本人对照，并且取得他本人认可的fingerprint。
+gpg --keyserver &amp;lt;keyserver&amp;gt; --recv-keys &amp;lt;Key\_ID&amp;gt; 而后，你需要看到这个公钥的fingerprint。
+gpg --fingerprint &amp;lt;Key\_ID&amp;gt; 再然后，就是比较困难的部分。你需要和这个公钥的拥有者碰头，找个地方喝个咖啡，或者一起出来玩什么的。然后，查看他的有效证件，和本人对照，并且取得他本人认可的fingerprint。
 这点非常重要，不要轻易的使用线上fingerprint交换来替代这个过程，也不要随意的为别人进行签署。你必须*确定*你签署了本人的密钥，线上获得的key，是完全可能被修改的，这是对所有信任你的人的负责。
 再然后，就是简单的签署。
-gpg --default-key &amp;lt;Key\_to\_use&amp;gt; --sign-key &amp;lt;Key\_ID&amp;gt;  最后，上传公钥，或者传回给本人。以下例子是上传到服务器的，不过记得先征求对方同意——除非你原本也是从服务器上取得的公钥。
-gpg --keyserver &amp;lt;keyserver&amp;gt; --send-key &amp;lt;Key\_ID&amp;gt;  至于revoke什么的，暂且就不说了。
+gpg --default-key &amp;lt;Key\_to\_use&amp;gt; --sign-key &amp;lt;Key\_ID&amp;gt; 最后，上传公钥，或者传回给本人。以下例子是上传到服务器的，不过记得先征求对方同意——除非你原本也是从服务器上取得的公钥。
+gpg --keyserver &amp;lt;keyserver&amp;gt; --send-key &amp;lt;Key\_ID&amp;gt; 至于revoke什么的，暂且就不说了。
 其中最麻烦的，就是上述过程中，两个人碰头的部分。为了简化这个部分，gnupg使用者经常有种gnupg
 keysigning party[2]的聚会，互相交换和签署密钥。
 reference:
@@ -887,7 +900,7 @@ This article said that ACC is a tech will make AMD X3 work like X4 byunlock core
 底座支持两种接口，usb2.0和esata。前者的速率是480bps，后者速率是3.0Gbps，合前者最高60M/s，后者最高375M/s。一块民用硬盘的突发速率往往高达150M/s，usb对于普通台式机而言显然是远远不足了。而且esata直接挂入硬盘控制设备下面，而USB则是挂入USB控制器链，效率上说差了一点不说，而且esata是作为普通硬盘对等管理的。
 贝壳本次的方案，是通过一根sata 2
 esata接线，将mini-itx主板上的一路未使用的sata引出机箱，连接到底座上。但是linux下要支持esata，必须在BIOS中将SATA设备模式改为AHCI，而后重启进入系统，可以看到设备变了。当然，这个改变对于windows系统来说是个灾难，但是linux系统完全不在乎这个事情。
-debox:\~\# lspci | grep -i sata 00:1f.2 SATA controller: Intel Corporation N10/ICH7 Family SATA AHCI Controller (rev 01) debox:\~\# lsmod | grep ahci ahci 25089 2 libahci 22767 1 ahci libata 149043 2 ahci,libahci  这次更改造成的一个额外效果就是，机器上的普通sata硬盘速度也上升了。从原来的71M/s到了115M/s，提升相当惊人。</description>
+debox:\~\# lspci | grep -i sata 00:1f.2 SATA controller: Intel Corporation N10/ICH7 Family SATA AHCI Controller (rev 01) debox:\~\# lsmod | grep ahci ahci 25089 2 libahci 22767 1 ahci libata 149043 2 ahci,libahci 这次更改造成的一个额外效果就是，机器上的普通sata硬盘速度也上升了。从原来的71M/s到了115M/s，提升相当惊人。</description>
     </item>
     
     <item>
@@ -910,10 +923,10 @@ debox:\~\# lspci | grep -i sata 00:1f.2 SATA controller: Intel Corporation N10/I
       
       <guid>//blog.shell909090.org/blog/archives/1836/</guid>
       <description>如果说路由规则还能讲讲，iptables防火墙规则就彻底没法讲。简直是千变万化无所不能。下面就简单说一下，对于新增的tun0设备如何设定防火墙规则。
-----------config/network---------- config &#39;interface&#39; &#39;tun&#39; option &#39;ifname&#39; &#39;tun+&#39; option &#39;proto&#39; &#39;none&#39; ** ----------config/firewall---------- config &#39;zone&#39; option &#39;name&#39; &#39;tun&#39; option &#39;input&#39; &#39;ACCEPT&#39; option &#39;output&#39; &#39;ACCEPT&#39; option &#39;forward&#39; &#39;REJECT&#39; config &#39;forwarding&#39; option &#39;src&#39; &#39;lan&#39; option &#39;dest&#39; &#39;tun&#39; option &#39;mtu\_fix&#39; &#39;0&#39; config &#39;forwarding&#39; option &#39;src&#39; &#39;tun&#39; option &#39;dest&#39; &#39;lan&#39; option &#39;mtu\_fix&#39; &#39;0&#39;  好了，新增了一个网口，叫做tun，处理所有tun+（就是任何tun设备）的吞吐。默认规则是可以收发，拒绝转发。转发规则是可以和lan互相转发。
-/etc/init.d/network restart /etc/init.d/firewall restart  然后你看看你的配置是否正确。
-iptables -L -v  另外，这个配置方法有个bug。由于你的网口是tun+，所以在启动时，无法自动启用这个接口。在路由器重启后必须/etc/init.d/network restart才能工作。对我来说，每次路由器重启后都是手工开启openvpn的，问题不大。但是对于某些人就比较麻烦。对此推荐这些人直接修改/etc/firewall.user，直接加入以下指令。
-iptables -I INPUT -i tun+ -j ACCEPT iptables -I OUTPUT -o tun+ -j ACCEPT iptables -I FORWARD -i tun+ -j ACCEPT iptables -I FORWARD -o tun+ -j ACCEPT  使用interface配置的最终效果也差不多，不过比较简单整齐好理解。</description>
+----------config/network---------- config &#39;interface&#39; &#39;tun&#39; option &#39;ifname&#39; &#39;tun+&#39; option &#39;proto&#39; &#39;none&#39; ** ----------config/firewall---------- config &#39;zone&#39; option &#39;name&#39; &#39;tun&#39; option &#39;input&#39; &#39;ACCEPT&#39; option &#39;output&#39; &#39;ACCEPT&#39; option &#39;forward&#39; &#39;REJECT&#39; config &#39;forwarding&#39; option &#39;src&#39; &#39;lan&#39; option &#39;dest&#39; &#39;tun&#39; option &#39;mtu\_fix&#39; &#39;0&#39; config &#39;forwarding&#39; option &#39;src&#39; &#39;tun&#39; option &#39;dest&#39; &#39;lan&#39; option &#39;mtu\_fix&#39; &#39;0&#39; 好了，新增了一个网口，叫做tun，处理所有tun+（就是任何tun设备）的吞吐。默认规则是可以收发，拒绝转发。转发规则是可以和lan互相转发。
+/etc/init.d/network restart /etc/init.d/firewall restart 然后你看看你的配置是否正确。
+iptables -L -v 另外，这个配置方法有个bug。由于你的网口是tun+，所以在启动时，无法自动启用这个接口。在路由器重启后必须/etc/init.d/network restart才能工作。对我来说，每次路由器重启后都是手工开启openvpn的，问题不大。但是对于某些人就比较麻烦。对此推荐这些人直接修改/etc/firewall.user，直接加入以下指令。
+iptables -I INPUT -i tun+ -j ACCEPT iptables -I OUTPUT -o tun+ -j ACCEPT iptables -I FORWARD -i tun+ -j ACCEPT iptables -I FORWARD -o tun+ -j ACCEPT 使用interface配置的最终效果也差不多，不过比较简单整齐好理解。</description>
     </item>
     
     <item>
@@ -928,7 +941,7 @@ iptables -I INPUT -i tun+ -j ACCEPT iptables -I OUTPUT -o tun+ -j ACCEPT iptable
 当然，根据上面的解释我们可以知道，路由表只管发出报文。如果目标设备需要返回一个报文，他必须保证返回路由的正确。因此在下面的openvpn讲解中，你在vps也必须配置路由。很幸运，这个问题openvpn已经帮我们做好了。
 通常而言，我们拨号上网后应当有三条路由规则，第一条不解释。第二条通常是内网IP通过内网端口发出——这是当然的，否则内网包就暴露了。第三条通常是其他IP通过外网发出。当内网需要向外网发送数据的时候，会设定路由器作为网关。路由器会转发内网的包到他的上级路由器上。而当外网有数据要发送给内网的时候，情况则正好相反。注意，实际中一般是要进行NAT的，不是这么直接收发。
 如果当你使用了openvpn的routed模式，那么你就有了两个内网——常规内网和虚拟内网。我们可以想像，首先需要配置的是两个内网的互通问题。在你本地的网关上，需要配置虚拟网络段发送到tun0设备上。而在远程，需要配置常规内网段发送到拨号上来的这个IP上。大致要配置这些东西。
------------------vps-server.conf------------------- client-config-dir /etc/openvpn/ccd route 192.168.x.0 255.255.255.0 --------------------ccd/openwrt--------------------- iroute 192.168.x.0 255.255.255.0  这样，当openwrt这个用户拨号上来后，vps上就会添加一条路由，192.168.1.0网段通过刚刚拨号的地址来转发。
+-----------------vps-server.conf------------------- client-config-dir /etc/openvpn/ccd route 192.168.x.0 255.255.255.0 --------------------ccd/openwrt--------------------- iroute 192.168.x.0 255.255.255.0 这样，当openwrt这个用户拨号上来后，vps上就会添加一条路由，192.168.1.0网段通过刚刚拨号的地址来转发。
 其次，哪些数据发送到拨号网络，哪些需要通过虚拟内网呢？这规则通常由你来定。不过千万注意，不要用tun0这个设备来发送到服务器的数据——这会引发循环。这个问题一个不是那么明显的例子是，你设定使用tun0来发送default，但是又没有特别指定vps的地址使用ppp0发送。</description>
     </item>
     
@@ -940,11 +953,11 @@ iptables -I INPUT -i tun+ -j ACCEPT iptables -I OUTPUT -o tun+ -j ACCEPT iptable
       <guid>//blog.shell909090.org/blog/archives/1833/</guid>
       <description>在openwrt下面配置openvpn是非常简单的事情，当然我假定你有linux下面配置openvpn的经验。
 首先，将配置文件，证书等等复制到/etc/openvpn下面。我的配置大概是这样。
-client dev tun proto udp remote ipaddr port resolv-retry infinite nobind persist-key persist-tun ca /etc/openvpn/ca.crt cert /etc/openvpn/openwrt.crt key /etc/openvpn/openwrt.key ns-cert-type server tls-auth /etc/openvpn/ta.key 1 cipher DES-EDE3-CBC comp-lzo verb 3 script-security 3 up /etc/openvpn/dftup down /etc/openvpn/dftdown  注意，其中的路径必须写完整，貌似测试下来不支持相对目录。其中的up和down是指在启动和关闭时会自动执行的两个脚本。根据贝壳的测试，redirect-gateway是无效的，不知道为什么。具体的路由配置方法，会在下一章中具体介绍。
+client dev tun proto udp remote ipaddr port resolv-retry infinite nobind persist-key persist-tun ca /etc/openvpn/ca.crt cert /etc/openvpn/openwrt.crt key /etc/openvpn/openwrt.key ns-cert-type server tls-auth /etc/openvpn/ta.key 1 cipher DES-EDE3-CBC comp-lzo verb 3 script-security 3 up /etc/openvpn/dftup down /etc/openvpn/dftdown 注意，其中的路径必须写完整，貌似测试下来不支持相对目录。其中的up和down是指在启动和关闭时会自动执行的两个脚本。根据贝壳的测试，redirect-gateway是无效的，不知道为什么。具体的路由配置方法，会在下一章中具体介绍。
 然后，你需要将这个配置启用，方法是修改/etc/config/openvpn，在其中加入以下内容。
-config openvpn name option enable 1 option config /etc/openvpn/name.conf  name是你的配置名，下面的路径和配置文件路径吻合。
+config openvpn name option enable 1 option config /etc/openvpn/name.conf name是你的配置名，下面的路径和配置文件路径吻合。
 然后，你可以这样启动vpn。
-/etc/init.d/openvpn restart  </description>
+/etc/init.d/openvpn restart </description>
     </item>
     
     <item>
@@ -956,11 +969,11 @@ config openvpn name option enable 1 option config /etc/openvpn/name.conf  name�
       <description>贝壳入手了一个DIR-825路由器，机器不错，可惜存储太小。所以要用extroot做成U盘启动。
 首先，你需要安装kmod-usb2，kmod-usb-uhci，kmod-usb-ohci，kmod-usb-storage，kmod-usb-storage-extras这几个包，以保证系统可以正常访问你的USB key。而后安装block-mount block-hotplug block-extroot这几个包，来启用U盘启动。最后不要忘记安装kmod-fs-ext3，驱动文件系统。
 当你搞定这几步后，修改/etc/config/fstab这个文件，如下配置。
-config mount option device /dev/sda1 option fstype ext3 option options rw,sync option enabled 1 option enabled\_fsck 1 option is\_rootfs 1 config swap option device /dev/sda2 option enabled 1  然后，恭喜你，你就拥有一个可以从U盘引导的路由器设备了。当然，如果不从U盘引导，那么还是可以正常使用目前有路由拥有的普通功能。在使用U盘后，路由器的包和设定就完全存储在了U盘上。如果配置错误，拔下U盘就可以还原。你也可以复制自己的U盘给别人，在同样型号，并且安装了同样上述包和配置的路由器上继续使用（当然，会沿用你的配置）。
+config mount option device /dev/sda1 option fstype ext3 option options rw,sync option enabled 1 option enabled\_fsck 1 option is\_rootfs 1 config swap option device /dev/sda2 option enabled 1 然后，恭喜你，你就拥有一个可以从U盘引导的路由器设备了。当然，如果不从U盘引导，那么还是可以正常使用目前有路由拥有的普通功能。在使用U盘后，路由器的包和设定就完全存储在了U盘上。如果配置错误，拔下U盘就可以还原。你也可以复制自己的U盘给别人，在同样型号，并且安装了同样上述包和配置的路由器上继续使用（当然，会沿用你的配置）。
 下面，是如何创建可被openwrt引导的U盘。
-mkdir /tmp/sda1 mkdir /tmp/root mount /dev/sda1 /tmp/sda1 mount -o bind / /tmp/root cp -a /tmp/root/\* /tmp/sda1  上面几步，更详细的可以参考这篇文章（http://ddnas.org:88/blog/index.php/archives/2.html）。
+mkdir /tmp/sda1 mkdir /tmp/root mount /dev/sda1 /tmp/sda1 mount -o bind / /tmp/root cp -a /tmp/root/\* /tmp/sda1 上面几步，更详细的可以参考这篇文章（http://ddnas.org:88/blog/index.php/archives/2.html）。
 下面说一下使用U盘启动后，你很可能需要的一些包。
- bash 当有了空间，你可以修改/etc/passwd来使用bash作为你的默认sh，这样比较习惯。 ifstat 非常常用的软件，监控各个网卡设备上的吞吐。 iftop 监控各个IP的访问情况。 iperf 测试路由器到各个节点的速度。 openssh-server sshd openvpn vpn软件 screen 一个ssh中运行多个bash的玩意。  注意，openssh使用~/.</description>
+bash 当有了空间，你可以修改/etc/passwd来使用bash作为你的默认sh，这样比较习惯。 ifstat 非常常用的软件，监控各个网卡设备上的吞吐。 iftop 监控各个IP的访问情况。 iperf 测试路由器到各个节点的速度。 openssh-server sshd openvpn vpn软件 screen 一个ssh中运行多个bash的玩意。 注意，openssh使用~/.ssh/authorized_keys作为验证文件，并且该文件必须是600以下权限。而dropbear不使用这个文件。因此必须先产生该文件，再禁用openssh的password验证模式，不要想当然直接以为dropbear已经产生了这个文件。</description>
     </item>
     
     <item>
@@ -1063,7 +1076,7 @@ shell909090：（16:06:04）
       
       <guid>//blog.shell909090.org/blog/archives/1681/</guid>
       <description>freenas是一个基于freebsd构建的免费网络存储系统(network storage system)，关于他的简介可以看这里（http://beacon.blog.51cto.com/442731/109961），主页在这里（http://freenas.org/FreeNAS）。
-freenas的一个特点是结构简单，易于安装和管理，可以在非常低的硬件环境下工作。例如低端的2.5&amp;rdquo;硬盘或者U盘，基于mini-ITX板子的EPIA等。512M内存的低端EPIA不带硬盘大约在250元上下，加上机箱不超过400。加上几块硬盘就可以组建可用的大型存储系统，稳定工作。安装freenas所需的知识基本不超过英语，当然，要组建微型服务器和RAID还是要正确理解服务器结构和配置的。支持smb/ftp/iscsi/http访问内容，通常在小型公司中可以处理掉大多数的文件共享需求。
+freenas的一个特点是结构简单，易于安装和管理，可以在非常低的硬件环境下工作。例如低端的2.5&amp;rsquo;&amp;lsquo;硬盘或者U盘，基于mini-ITX板子的EPIA等。512M内存的低端EPIA不带硬盘大约在250元上下，加上机箱不超过400。加上几块硬盘就可以组建可用的大型存储系统，稳定工作。安装freenas所需的知识基本不超过英语，当然，要组建微型服务器和RAID还是要正确理解服务器结构和配置的。支持smb/ftp/iscsi/http访问内容，通常在小型公司中可以处理掉大多数的文件共享需求。
 freenas最强大的一点，就是使用“解决方案”级别提供。freenas的载体是一张安装光盘，而非一个freebsd下的软件包。这张光盘在服务器上的安装是通过特定的功能来完成，而不是复杂的安装向导，因此要安装使用非常简单。如果是基于freebsd的软件包，那么为了安装这个软件，首先必须freebsd的系统管理员来安装一个系统，并配置到合适状态。再在这个系统上安装软件包，再配置，整个过程就艰难无比了。
 同样适合类似的解决方案提供的，还有邮件服务器。虽然很多空间商提供了邮箱服务，但是部分公司对邮件系统的需求远远超出空间商能提供的服务。对于企业邮箱系统，不仅仅是邮件发送和接收服务（esmtp/pop3/imap），而且包括一定的用户数据库（ldap）和在线交互系统（im）。严格来说，这已经不是普通的企业级邮箱系统，而是整合办公环境。对于这种整合环境，要完整配置出来还是有一定难度的。对此采用简化的方法，将一套系统作成整合解决方案，不失为一个简单好用低成本的方案。</description>
     </item>
@@ -1183,7 +1196,7 @@ KV300L++在判断用户当前插入的盘片不是江民的原始加密盘之后
 这个配置针对三个上下文起作用。Windows，Linux图形，Linux+SSH。在Windows下，不使用alias，因为emacsclient会在找不到server的时候自动启动一个新的emacs。将emacsclient加入到注册表中，就可以对任意文件“使用emacs打开”。
 Linux和Linux+SSH中，需要使用alias技巧，因为emacsclient不会在没有server的时候自动启动emacs。过程如下：
 首先在系统相关的配置中，加入server-start，以便启动server服务。系统选择上，linux和windows加，console不加，因为后者没什么意义。然后，在系统中加入alias设定。
-alias emacsclient=&amp;quot;emacsclient -a emacs&amp;quot;  这样，当系统中没有emacs启动的时候，就会启动一个。当有emacs启动后，就会调用这个emacs来打开文件。
+alias emacsclient=&amp;quot;emacsclient -a emacs&amp;quot; 这样，当系统中没有emacs启动的时候，就会启动一个。当有emacs启动后，就会调用这个emacs来打开文件。
 在ssh环境下，需要开启x forward。这样就会打开远程emacs。这是比较慢的用法，快的方法是直接在本地emacs上使用tramp。</description>
     </item>
     
@@ -1287,7 +1300,7 @@ Q:别太把自己当回事了。google在中国的利润有多少？不超过总
 而且，一旦明确指责网络舆论控制和网络安全问题，那么，同样进入中国的其他大型厂商就会陷入被动，包括微软，雅虎等。撤吧，他们的市场份额更大，问题也更复杂。不撤吧，他们在美国的形象会受到影响，有利于google在其他地区的业务。
 F:google走了，百度得益了？
 Q:短期来看，没错，长期来看，市场会重新平衡。由于百度在谈判上的强势地位，因此会导致代理商和广告主非常难做，同时互联网广告的成本会增加。进而加剧劣币驱逐良币，最后让整个互联网的所有广告都变成近乎于废纸，互联网广告业务名存实亡。
-而且，一旦google离开，百度就会直面政府。从政府需要&amp;rdquo;团结和依靠&amp;rdquo;的多数，变成需要&amp;rdquo;警惕&amp;rdquo;的&amp;rdquo;怀有异心&amp;rdquo;的人。可以预见，政府对百度的监控和利用会达到一个新的高峰(因为用不着让你活着对付google了)，并且可能会提出注资成为某部下属机构的要求。
+而且，一旦google离开，百度就会直面政府。从政府需要&amp;quot;团结和依靠&amp;quot;的多数，变成需要&amp;quot;警惕&amp;quot;的&amp;quot;怀有异心&amp;quot;的人。可以预见，政府对百度的监控和利用会达到一个新的高峰(因为用不着让你活着对付google了)，并且可能会提出注资成为某部下属机构的要求。
 F:google走了，我们将会怎样？
 Q:google的离开，标志着中国的互联网整体倒退了6年。在IT界，3年是一个时代，6年的倒退，让我们退回了两个时代去，变成了上个世纪网络刚刚兴起的时候，那种上网艰难的状况。这不是用备份邮箱，备份新闻标签等方法可以解决的。
 更严重的是，这会严重打击整个业界，工程师，对于中国的网络发展的评价。在这个问题解决前，我们可能落后其他国家10年以上。当然，之所以我这么担忧，其实还是因为这直接影响到了我的饭碗。</description>
@@ -1331,7 +1344,7 @@ Q:google的离开，标志着中国的互联网整体倒退了6年。在IT界，
       <description>谨以此缅怀那些为了今日软件事业的自由做出贡献的先辈们。(注1:多数人没牺牲，谢谢)(注2: 排名不分先后)(注3: 科普作品，大家别怕)
 我在撰写这篇文章的时候，避免使用自由软件这个词，而改为更普遍意义上的软件自由。因为自由软件是RMS提出的一个专有词语，指软件的开源，复制，协作等
 特质。而我试图通过软件自由这个词，表达人们在使用软件上的自由，以及使用软件来为我们获取自由。我们拥有知道软件一切内幕的自由，我们拥有修改软件的自由，我们拥有思考的自由，我们拥有挑战老系统的自由，我们拥有拒绝通过软件收费的自由，我们拥有通过软件获得信息的自由，我们拥有不受任何人，包括政府监控的自由。为了这种自由而付出的，不仅是自由程序的拥护者，也有商业程序的拥护者。
- Richard Matthew Stallman  大名鼎鼎的RMS，GNU的核心人物，自由软件的布道者。要是在这个列表上没有他的名字，那我不知道还有谁能留在这张表上。具体可以看这里(http://zh.wikipedia.org/zh-cn/%E7%90%86%E6%9F%A5%E5%BE%B7%C2%B7%E6%96%AF%E6%89%98%E6%9B%BC)。简单来说这家伙最大的几个成就：创立了GNU和FSF，为自由软件的传播奠定了基础。制作了emacs，当今黑客世界两大编辑器之一(另一个是VIM)。制作了GCC，世界上使用最广泛的编译器。
+Richard Matthew Stallman 大名鼎鼎的RMS，GNU的核心人物，自由软件的布道者。要是在这个列表上没有他的名字，那我不知道还有谁能留在这张表上。具体可以看这里(http://zh.wikipedia.org/zh-cn/%E7%90%86%E6%9F%A5%E5%BE%B7%C2%B7%E6%96%AF%E6%89%98%E6%9B%BC)。简单来说这家伙最大的几个成就：创立了GNU和FSF，为自由软件的传播奠定了基础。制作了emacs，当今黑客世界两大编辑器之一(另一个是VIM)。制作了GCC，世界上使用最广泛的编译器。
 RMS的核心想法是，因为软件而收费是罪恶的，这种人是撒旦(当然，Bill Gates是其中最大的那个)。他认为软件应当自由分享，程序员从中收取的应当是服务费。今天，RedHat正是继承了这一模式。通过免费的软件和收费的服务来进行持续的开发。
 2.Linus Benedict Torvalds
 常常和RMS并提的一个家伙，具体在这里(http://zh.wikipedia.org/zh-cn/%E6%9E%97%E7%BA%B3%E6%96%AF%C2%B7%E6%89%98%E7%93%A6%E5%85%B9)。
@@ -1365,7 +1378,9 @@ Linux世界有所谓三大发行，四大包管理系统之说。其中三大发
 在上个世纪，美国政府有一种观点，他们需要能随时随地的窃听任何一个人和其他人的通讯。同时，作为延伸，他们制定了国家安全出口法案，将密码产品作为军用管制品，限制出口。这其实是很荒谬和不合逻辑的，任何公开的算法都可以被多个人独立的实现。只要算法是公开的，即使产品不允许出口，国外也可以没有任何阻碍的实现出来。而如果算法是不公开的，则会出现两个弊端。一个是阻碍密码学的交流和进步，更麻烦的是，根据密码学的内在逻辑，这样的系统，由于验证不完全，因此比公开的系统更加不安全。
 在1991年前后，PZ制作了PGP软件，用于保障当时备受争议的电子邮件的安全(小常识:电子邮件默认是明文的，安全程度和你写在明信片背面寄给你父母的句子差不多)。这个软件使用了1980年以来提出的现代密码系统几大密码系统，实现了签名安全和秘密安全。这里我们小小的讲解一下电子邮件的两大安全系统，对此无爱的人自行跳到下一段。签名安全就是指，你收到一个邮件的时候，能够确信，这个信的内容是原始发件人的真实意思表示，而不是被篡改过的。秘密安全就是指，当你收到一个信的时候，你能够确信，除了你没有别人能够偷看到内容。对此，一般采用公钥系统来实现两者的安全。所谓公钥系统是这样一种系统，用公钥加密必须用私钥解密，用私钥加密必须用公钥解密，私钥很容易计算出公钥，公钥非常难计算出私钥。当你要签名安全的时候，将邮件内容用自己的私钥加密再发送一次(实际是将内容hash了再加密的)，接收者解密后对比。由于篡改者只有公钥，因此虽然可以拦截和修改内容，但是无法伪造出一对匹配的内容，用公钥解密后刚好一致。而秘密安全则是用对方的公钥加密。对于更高层级的要求，你的公钥不仅要求公布，而且必须在国家认可的部门公布，这样就由国家认定了你的公钥和你的身份的一致性。当你对一个内容签署的时候，只要能用公钥验证签名，就可以认定内容是你的真实意思表述，并被法律所承认。
 当时的PGP当然还没有这么复杂，但是对于当时缺乏任何安全性特征(当时连TLS都没有)的电子邮件来说，是非常必要的补充。可是我们上文说了，美国禁止出口这些产品。于是，PZ免费的将软件的最初版本散发给同事和其他人使用，而这些人又可以免费的分发出去——这和自由模式非常的吻合，除了我找不到具体信息标明当时PZ是否从授权上同意他们做这个事情。法律上说，PZ并没有“出口”密码产品，但是实际上，是他实现并且向全世界推广了高强度的电子邮件安全系统。从某种意义上说，PZ可以说是叛国者。非法散布军用管制品，危害美国的国家安全(这还不像中国那种含糊不清的指控，这里的军用管制品定义是明确的，并且是由国会制定的)。于是，PZ受到了三年的官司和五年的调查，直到96年的时候，克林顿签署了新的法案，放松了密码产品的出口限制。其实也没松多少，从40位到56位——大概就是从5个字符到7个字符的区别。反之，我们改变观点，从世界的角度说，由于他的勇气和决心，我们每个人从中受益匪浅。
-EDIT 2016-09-08: 按照我听到的更新消息，PZ当时实际上是出版了一本书，这个书里面就是完整的源码。他虽然没有“出口”这些源码，但是实际上任何人都可以在书店里买一本，然后带去海外，照着源码keyin一遍。美国政府虽然希望禁止这本书的出版，但是禁止个人出版图书违反宪法第一修正案——言论自由。当时政府还不能因为国家安全因素就随意禁止公民出版书籍（这都是911之后的事了），所以只能用官司和调查来整PZ。</description>
+EDIT 2016-09-08: 按照我听到的更新消息，PZ当时实际上是出版了一本书，这个书里面就是完整的源码。他虽然没有“出口”这些源码，但是实际上任何人都可以在书店里买一本，然后带去海外，照着源码keyin一遍。美国政府虽然希望禁止这本书的出版，但是禁止个人出版图书违反宪法第一修正案——言论自由。当时政府还不能因为国家安全因素就随意禁止公民出版书籍（这都是911之后的事了），所以只能用官司和调查来整PZ。
+必须得说，其实这一改变很大程度上并不是PZ个人努力或者公民运动的结果，其中有巨大的商业力量。IBM，微软和Lotus之类的跨国软件巨头在出口产品的时候，由于受到出口限制，因此在海外产品上的安全性一直很成问题。很多时候他们因为这个问题受到了巨大的挑战。在这一问题上，他们有足够的理由去游说白宫，改变出口限制的要求。关于这个案件的其他资料，可以参考这里(http://cyberlaw.stanford.edu/~prz/ZH/faq/index.html和这里(http://www.techcn.com.cn/index.php?doc-view-130949)。
+在今日，PGP仍旧是一个非常强大的加密系统，并且是开源的——理所当然，如果不开源，我们会担心其中是否有漏洞和后门继续危害我们的安全。并且，从密码学内在的逻辑来说，不公开的系统是不安全的。不过他仍旧受限于美国国家安全出口管制条例，原因是因为由于今日强大的计算能力，因此密钥通常的长度是1024，2048，4096位长的——远远超过美国国家限制数十倍。因此这一软件的强密钥版本只有英文版，因为不用考虑出口。对于海外人士来说，我们更推荐OpenPGP，同样是开源的，而且基于开源模式开发的GNU自由软件。能够充分保证你的信息安全。</description>
     </item>
     
     <item>
@@ -1431,7 +1446,7 @@ Mobile系统的区别，知道iPhone和RIM这些单词的人算是很高端用�
 高的商家，产品介绍里面就有是否智能手机这一栏。在知道自己的手机是否是智能手机后，一个最浅显的结论是，如果你的手机不是智能手机，那么手机病毒和你无
 缘。放心睡大觉吧，别为这事儿烦心了。 糟了，我的是智能手机哦。
 别怕，继续往下看。软件病毒实际上是一种对系统有害，更改用户数据，给用户造成经济或名誉损失并能够自我复制自动传播的软
-件。这个定义里面的一个很关键的词是&amp;rdquo;自我复制自动传播&amp;rdquo;，也就是我们常说的感染。智能手机都可以安装很多软件的，看起来就像普通的电脑一样，智能手机好
+件。这个定义里面的一个很关键的词是&amp;quot;自我复制自动传播&amp;quot;，也就是我们常说的感染。智能手机都可以安装很多软件的，看起来就像普通的电脑一样，智能手机好
 像具备了被感染的能力，也就有中毒的风险。那怎么才会被感染呢？又一个重要的概念出现了，一种智能手机操作系统的软件不可能安装在另外一种智能手机操作系
 统上（这个说法有一个小漏洞，后面再补上）。如果不理解这句话的话，我来举个例子：棉铃虫是是棉花种植中的一种很严重的病虫灾害，在棉花的主产区很容易传
 播和互相感染。但是，人是不会长棉铃虫的。我们不用担心去收棉花的时候染上棉铃虫。智能手机操作系统也是一样，塞班（Symbian,诺基亚智能手机的主
@@ -1578,7 +1593,7 @@ void CWordFilter::Init() { HANDLE hFile; DWORD dwRead; int nLen; BOOL bResult; C
       
       <guid>//blog.shell909090.org/blog/archives/36/</guid>
       <description>贝壳周四的时候收到消息，烟台的系统崩溃，于是在24小时之内走了一趟天堂和地狱间的旅行。
-开始的时候，贝壳在查一些业务有关的资料。期间和一个同事开了几句玩笑，但是发现他一脸便秘的样子，和我说没空。贝壳很郁闷，怎么这么没面子？过了几分钟，事情就发展成贝壳也一脸便秘的没胆子了，原因是烟台的系统崩溃。由于远程无法连接，只能让客户去机房重起整个系统。可重起后也没有反应。于是贝壳怕了，马上通知了老板。老板马上做了决定，要我们当时飞去烟台，并且在几分钟内给我们搞定了机票。于是在贝壳头处理紧急问题的时候，就受到了&amp;rdquo;飞机-出租- 零反应&amp;rdquo;的待遇。
+开始的时候，贝壳在查一些业务有关的资料。期间和一个同事开了几句玩笑，但是发现他一脸便秘的样子，和我说没空。贝壳很郁闷，怎么这么没面子？过了几分钟，事情就发展成贝壳也一脸便秘的没胆子了，原因是烟台的系统崩溃。由于远程无法连接，只能让客户去机房重起整个系统。可重起后也没有反应。于是贝壳怕了，马上通知了老板。老板马上做了决定，要我们当时飞去烟台，并且在几分钟内给我们搞定了机票。于是在贝壳头处理紧急问题的时候，就受到了&amp;quot;飞机-出租- 零反应&amp;quot;的待遇。
 中间首先要感谢一下给我们做Oracle技术支持的纪锋老师，这次如果不是他的大力协助，恐怕问题不会这么快解决。我们在零时间往烟台赶的时候，纪老师也马上打车往机场走。我们是五点接到的问题通告，五点半就联络好了各种问题，乘公司的车子往机场走(主要怕下班高峰不好打车)。六点多点的时候，我们拿到了登机牌，去做安检，然后顺便讨论起问题原因。当时认为基本不可能是软件问题，因为软件问题重起后基本都可以解决，也不会弄的机器停机(这个最终被检验是正确的)。可能是维护问题或者硬件问题。按照机器安装时间来计算，硬件问题的可能居多(系统才刚刚交付几个月)。
 飞机是8点50在烟台落的地，落地后我们心急火燎地坐出租往报社赶。车刚出机场，收到一个消息，问题消失了。我们顿时安心很多，要是问题继续出现导致更严重问题，怕我们全都吃不了兜着走。现在，虽然我们还要去找出根本原因，可总比被客户拷问着检查系统来的好的多。到了报业后，我们先检查了系统。第一个被发现的问题是备份机已经满了，怎么会这样？系统的设计容量是三年500G，按照现在的数据量估计，最高不会超过30G，可备份机上足足有100G的空间！我们倒推了数据，发现备份要用140G以上的空间。怎么会这样呢？
 原因我们没有找到，不过按照纪老师给出的原因，是备份的时候大量的归档日志造成了数据量暴增。但是备份暴增怎么会造成系统不能访问呢？贝壳陷入了奇怪的感觉中。虽然直觉上觉得就是这个理由，但是实际上却无法确定。按照我和同事说的话，如果用这个理由来说服我，是无法说服的。但是如果在目前让我给出一个理由，恐怕只有这个了。当天比较晚了，因此没有进一步分析，只是让纪老师调整了备份策略就去睡觉了。
@@ -1618,7 +1633,7 @@ void CWordFilter::Init() { HANDLE hFile; DWORD dwRead; int nLen; BOOL bResult; C
 首先纠正一点，最标准的浏览器虽然不是IE，但是也不是firefox。而是以下三个，Safari(WebKit) / Opera(Presto) / Konqueror(KHTML)。Safari是Mac上的浏览器，Konqueror是Linux上的，Opera则多数用于手机上。Firefox 2.0.0.3 (Gecko 1.8.1.3)稍微差点，Internet Explorer 7.0 (Trident)和Internet Explorer 6.0 (Trident)是最不标准的。具体请看Acid2测试(http://www.osxcn.com/css/the-second-acid-test.html)。当然，也有消息称Firefox和IE已经都通过了测试(http://www.appbeta.com/50226711/ie8afirefoxasafariaoperaecaeacid2ce_133101.php)。
 其次，当你用着号称国人精华的XX浏览器的时候。首先请注意一下他是否使用了ie内核。IE有一个非常大的框架，其内核是Trident。所谓的浏览器内核，就是负责将html转换为DOM，然后渲染的组件集。当然，还有一些执行js等等的组件。微软的IE内核一般在mshtml.dll上，如果你有procexp，可以看看所谓的XX浏览器是否用了这个dll。如果用了，没的说，肯定是Trident内核。如果没有么……将mshtml改名转移，直到IE无法正常浏览。然后看看您的XX浏览器怎么样。
 Firefox的内核是Gecko，据说将来要使用Cairo。这两种组件……嘿嘿，贝壳都用过。但是firefox最强大的是他的插件组，效果终身难忘，让人不忍舍弃。下面贝壳介绍一下firefox的部分插件，脚本。
-/find/，这是个很小巧的插件，可以使得firefox能够以正则表达式在全文进行搜索。普通用户就表想了，这东西可是专业人士的杀手工具。可以做出&amp;rdquo;搜索全文中的所有电话号码&amp;rdquo;或者&amp;rdquo;搜索全文中的所有email&amp;rdquo;等等强大功能。当然，如果你需要的话。
+/find/，这是个很小巧的插件，可以使得firefox能够以正则表达式在全文进行搜索。普通用户就表想了，这东西可是专业人士的杀手工具。可以做出&amp;quot;搜索全文中的所有电话号码&amp;quot;或者&amp;quot;搜索全文中的所有email&amp;quot;等等强大功能。当然，如果你需要的话。
 CustomizeGoogle，GFan一定要用。这个插件可以定制Google，例如可以在其他搜索引擎搜索，剔除赞助商广告，修改搜索的语言(贝壳的firefox就老阿达到英文上去，用这个插件就一切OK)。适用于Google的多个产品，包括gmail，google reader等等。
 fasterfox，强力推荐，加速插件。不过通常我都是用来调整性能参数的。自定义设置，不启用增强预读，缓存32M。这个配置对于0.5-1G的本本很有用。
 firebug，这东西也就网站开发人员用。不过绝对是杀手阿，可以看到网页的css，javascript，在线调试，察看ajax的网络通讯。通过这个东西，很容易调试多数的网页。
@@ -1663,12 +1678,12 @@ Download Youtube Video III，在youtube的播放文件下面显示一个download
       <guid>//blog.shell909090.org/blog/archives/428/</guid>
       <description>以下内容可以说是作为一个时代的预告，请大家见证将来是否按照我的预想进行。
 首先请大家想想，当大家上网的时候，都做什么？也许是打游戏，也许是看电影，也许是泡论坛，也许是看好友的blog。随着web2.0时代的到来，我们每个人都有发布自己话语的能力。看上去和上世纪末的主页时代类似，然而不同的是，发布的频率增高了。假定你和我一样，有大约20-50个好友在网络上进场写blog。每个人每月写一篇，那么你每天就有1-2篇blog要看。你喜欢的电视剧有10个，它们每周更新一次，那么你每天就有1-2集电视剧要看。依此类推，你所关心的东西在网络上绝对不缺。每天平均下来都要看3-5篇东西，和几个朋友聊聊最新的生活，看几集电视剧，多好的生活。然而，当前却有个不和谐的问题，你需要持续的检查更新！
-按照我们上文举出的数据来推算，如果这个人每天需要看这些东西作为日常的网络活动。那么他就需要检查30-100个页面来确定哪些内容更新了，需要跟踪10-20个页面来确定需要下载的东西。在网络小众的时代，也许这不是个问题。我们的习惯是每天上网，然后收一次邮件，检查书签里面所有的页面，看看是否有更新了。下载最新的东西，把写好的信件发出去。以天为单位来说，这不是一个问题。然而正如在线时间的增长催生了IM来替代Mail一样，长时间的在线使得我们希望简单的获得&amp;rdquo;第一时间&amp;rdquo;的东西。邮件到达的时候，我希望&amp;rdquo;第一时间&amp;rdquo;的获得。有新闻的时候，我希望&amp;rdquo;第一时间&amp;rdquo;的关注。朋友写了blog的时候，我希望&amp;rdquo;第一时间&amp;rdquo;的回复。OK，假定5分钟是你可以认可的&amp;rdquo;第一时间&amp;rdquo;。那么你需要每5分钟&amp;rdquo;检查30-100个页面来确定哪些内容更新了，需要跟踪10-20个页面来确定需要下载的东西&amp;rdquo;。
+按照我们上文举出的数据来推算，如果这个人每天需要看这些东西作为日常的网络活动。那么他就需要检查30-100个页面来确定哪些内容更新了，需要跟踪10-20个页面来确定需要下载的东西。在网络小众的时代，也许这不是个问题。我们的习惯是每天上网，然后收一次邮件，检查书签里面所有的页面，看看是否有更新了。下载最新的东西，把写好的信件发出去。以天为单位来说，这不是一个问题。然而正如在线时间的增长催生了IM来替代Mail一样，长时间的在线使得我们希望简单的获得&amp;quot;第一时间&amp;quot;的东西。邮件到达的时候，我希望&amp;quot;第一时间&amp;quot;的获得。有新闻的时候，我希望&amp;quot;第一时间&amp;quot;的关注。朋友写了blog的时候，我希望&amp;quot;第一时间&amp;quot;的回复。OK，假定5分钟是你可以认可的&amp;quot;第一时间&amp;quot;。那么你需要每5分钟&amp;quot;检查30-100个页面来确定哪些内容更新了，需要跟踪10-20个页面来确定需要下载的东西&amp;quot;。
 幸运的是，我们可以使用程序来自动做这些事情，并且现在已经有了部分解决方案。有一种邮件跟踪程序，可以跟踪pop3，hotmail，yahoo等常见的邮箱，检查是否有新的邮件。好友的blog和新闻都可以用rss软件来跟踪是否有新的内容。然而不幸的是，每种解决方案都是单独的。如果你需要持续的跟踪，就必须挂上邮箱的检查程序，rss的检查程序，网页的检查程序(用于部分不支持rss的网页)。不但复杂难以管理而且资源消耗也相当惊人。
-我预期将来大家都会持续的挂线，因此预计将来的模型是&amp;rdquo;通知&amp;rdquo;而非&amp;rdquo;检查&amp;rdquo;。当你有邮件时，会收到邮件到达通知，当你关注的新闻更新时，会收到新闻更新通知。而具体怎么实现呢？我估计是IM系统整合。当今IM界发展的趋势是互通，IM的特点又是即时，因此有很大可能性会是使用IM来通告新的内容到达。你可以向一些支持的网站注册你的IM，而后他们会视图加你为好友，并且向你提供验证号。当你将验证号回复给网站后，你的网站账户(如果需要的话)就和IM绑定在一起。而后你可以主动订阅一些内容主体的更新通知，当网站程序更新这些内容的时候，会读取到你的订阅。而后将内容更新和你的IM发送到一个队列中，这个队列再将这些消息发送到你的IM中。
+我预期将来大家都会持续的挂线，因此预计将来的模型是&amp;quot;通知&amp;quot;而非&amp;quot;检查&amp;quot;。当你有邮件时，会收到邮件到达通知，当你关注的新闻更新时，会收到新闻更新通知。而具体怎么实现呢？我估计是IM系统整合。当今IM界发展的趋势是互通，IM的特点又是即时，因此有很大可能性会是使用IM来通告新的内容到达。你可以向一些支持的网站注册你的IM，而后他们会视图加你为好友，并且向你提供验证号。当你将验证号回复给网站后，你的网站账户(如果需要的话)就和IM绑定在一起。而后你可以主动订阅一些内容主体的更新通知，当网站程序更新这些内容的时候，会读取到你的订阅。而后将内容更新和你的IM发送到一个队列中，这个队列再将这些消息发送到你的IM中。
 当然，IM接受这些消息的显示方式很可能不会用通常的消息界面，更可行的界面是类似google
-reader的聚合通告界面。当你完成订阅后，你的IM就会将源放到一个通知树中。每个源是一个列表，代表了这个源的内容。例如邮箱源的列表就是邮箱内的邮件，rss源的列表就是rss的新闻，&amp;rdquo;越狱&amp;rdquo;这种源的列表就是一堆的&amp;rdquo;越狱&amp;rdquo;影片下载地址(当然，如果合法的话)。甚至论坛的某个帖子都可以做源。源代表了内容，并且通告变化，而IM则记录了客户是否看过每个源的具体内容。有可能还会出现一些服务网站，负责每一定时间去检测不支持源的页面，如果满足一定的更新条件，那么就通知页面更新了。
-通过这种模式，你每天上线后就可以看到没上线时更新的内容，直接点击过去看。并且在线的时候各种需要的消息还会持续的通告过来。当然，你也应该可以(只要客户端支持)设定某种消息会强制的弹出(例如公司的邮箱里面有新邮件)，而某些只是更改托盘区的图标(例如某些有点关心的新闻更新了，你不会希望这个原因把你从游戏里面拉出来吧)。理论上说，当IM的客户端范畴拓展到手机后，我们甚至可以如同宣传中说的一样&amp;rdquo;随时随地，掌握信息&amp;rdquo;了。</description>
+reader的聚合通告界面。当你完成订阅后，你的IM就会将源放到一个通知树中。每个源是一个列表，代表了这个源的内容。例如邮箱源的列表就是邮箱内的邮件，rss源的列表就是rss的新闻，&amp;ldquo;越狱&amp;quot;这种源的列表就是一堆的&amp;quot;越狱&amp;quot;影片下载地址(当然，如果合法的话)。甚至论坛的某个帖子都可以做源。源代表了内容，并且通告变化，而IM则记录了客户是否看过每个源的具体内容。有可能还会出现一些服务网站，负责每一定时间去检测不支持源的页面，如果满足一定的更新条件，那么就通知页面更新了。
+通过这种模式，你每天上线后就可以看到没上线时更新的内容，直接点击过去看。并且在线的时候各种需要的消息还会持续的通告过来。当然，你也应该可以(只要客户端支持)设定某种消息会强制的弹出(例如公司的邮箱里面有新邮件)，而某些只是更改托盘区的图标(例如某些有点关心的新闻更新了，你不会希望这个原因把你从游戏里面拉出来吧)。理论上说，当IM的客户端范畴拓展到手机后，我们甚至可以如同宣传中说的一样&amp;quot;随时随地，掌握信息&amp;quot;了。</description>
     </item>
     
     <item>
@@ -1992,7 +2007,7 @@ cpp2dia到是可以部分的解决这个问题。如果说dia2code是以UML模�
       
       <guid>//blog.shell909090.org/blog/archives/343/</guid>
       <description>用过debian的朋友，在用apt-get和aptitude的时候会发现有句声明。
-#aptitude --help ... 这个 aptitude 没有超级牛力。 #apt-get --help ... 本 APT 有着超级牛力。  什么是超级牛力呢？
+#aptitude --help ... 这个 aptitude 没有超级牛力。 #apt-get --help ... 本 APT 有着超级牛力。 什么是超级牛力呢？
 超級牛力是 Debian 系統中一股神秘的力量。
 /*
 ..暴打ing..
@@ -2023,7 +2038,8 @@ Kadamila是eMule所用的服务，很多BT中也使用了兼容协议。
 顺便说一下网状模型的一个修改吧，几年前的东西了，可惜一直弄不出算法来。当前的网状模型是一个节点传输给其他节点，然后层级传递。理论上应该将发起节点最近的和提供带宽最高的节点放在顶层，以减少网的层数。不过将底层的节点带宽废弃还是可惜了点。我们可以将一个流分成两个部分(如果先天就可以分离最好，例如视频和音频，不过他们不对等)，然后组成两颗树。这样网络中的底层节点就可以在另外一颗树中被定义为次层节点。如此会对带宽利用更加彻底，当然，程序也会更加复杂。
 参考和引用:
 1.P2P网络的拓扑结构:http://www.intsci.ac.cn/users/luojw/P2P/ch02.html
- 2.Kademlia协议:http://www.itslife.net/blog/?p=132  :http://blog.csdn.net/colinchan/archive/2006/05/08/712760.aspx
+2.Kademlia协议:http://www.itslife.net/blog/?p=132
+:http://blog.csdn.net/colinchan/archive/2006/05/08/712760.aspx
 3.Gnutella协议:http://www9.limewire.com/developer/gnutella_protocol_0.4.pdf
 4.Napster官方网站:http://www.napster.com/
 5.Pastry 工程:http://research.microsoft.com/~antr/PAST/pastry.pdf
@@ -2043,8 +2059,8 @@ Kadamila是eMule所用的服务，很多BT中也使用了兼容协议。
 1.tcp连接丢包率
 根据我的测试，有一次出现了4%的丢包率，其余时间是0。
 2.网络时延测试
-www.google.com的测试结果是 平均/抖动=295.3&amp;frasl;591.7
-www.sina.com.cn的测试接过是 平均/抖动=435.1&amp;frasl;714.3
+www.google.com的测试结果是 平均/抖动=295.3/591.7
+www.sina.com.cn的测试接过是 平均/抖动=435.1/714.3
 3.TTL状态
 平均TTL大约在12-18左右，略略好于有线通1-2个路由器。
 4.动态丢包测试
@@ -2054,14 +2070,14 @@ P2P/HTTP混合实际使用下1分钟8863个包，丢包2.7%。
 从以上参数中可以看出，电信的质量略略好于有线通的。但是网络时延大，带有数据丢包。这个要去检查是否是信号线上的问题。
 下午仔细检测了ADSL的详细状况，然后得出了一个更详细的表，附录如下：
 1.tcp连接丢包率&amp;amp;网络时延测试
-#hping -p 80 www.sina.com.cn #hping -p 80 www.google.com  2.TTL状态
+#hping -p 80 www.sina.com.cn #hping -p 80 www.google.com 2.TTL状态
 NTOP测定，平均TTL大约在12-18左右，略略好于有线通1-2个路由器。
 3.动态丢包测试
 wireshark测定。
 1.无网络压力状态下测试
 双机器自然负荷，仅仅开启MSN等IM软件。
---- www.google.com hping statistic --- 96 packets transmitted, 95 packets received, 2% packet loss round-trip min/avg/max = 36.1/39.3/57.6 ms  平均/抖动=39.3&amp;frasl;21.5
---- www.sina.com.cn hping statistic --- 96 packets transmitted, 96 packets received, 0% packet loss round-trip min/avg/max = 10.</description>
+--- www.google.com hping statistic --- 96 packets transmitted, 95 packets received, 2% packet loss round-trip min/avg/max = 36.1/39.3/57.6 ms 平均/抖动=39.3/21.5
+--- www.sina.com.cn hping statistic --- 96 packets transmitted, 96 packets received, 0% packet loss round-trip min/avg/max = 10.6/13.1/16.7 ms 平均/抖动=13.</description>
     </item>
     
     <item>
@@ -2093,8 +2109,8 @@ p0f 被动指纹分析工具
 4.2.测试网络IP包传输往返时延(RTT)和IP包时延变化(抖动)
 分主动被动方法，被动方法用wireshark抓包分析。下面主要介绍主动方法：
 运行hping2 www.google.com -p 80。得到
-56 packets transmitted, 56 packets received, 0% packet loss round-trip min/avg/max = 242.5/269.9/381.1 ms  即在主动建立的到www.google.com的TCP连接中(默认为TCP，可以使用UDP，ICMP，IP，具体请看hping2 &amp;ndash;help)，丢包率为0。平均传输延迟为269.9，抖动为138.6。
-注：按照《中华人民共和国信息产业部令第36号》，往返时延平均值≤200毫秒，时延变化平均值≤80毫秒。此处已经超标。但因为测试环境和适用条件不完全吻合，因此无法作为有效证据。
+56 packets transmitted, 56 packets received, 0% packet loss round-trip min/avg/max = 242.5/269.9/381.1 ms 即在主动建立的到www.google.com的TCP连接中(默认为TCP，可以使用UDP，ICMP，IP，具体请看hping2 &amp;ndash;help)，丢包率为0。平均传输延迟为269.9，抖动为138.6。
+注：按照《**中华人民共和国信息产业部令第36号》，**往返时延平均值≤200毫秒，时延变化平均值≤80毫秒。此处已经超标。但因为测试环境和适用条件不完全吻合，因此无法作为有效证据。
 4.3.IP包丢失率(Lost rate)
 也分主动方法和被动方法，主动方法见上。被动方法是用wireshark抓包后，通过tpc.analysis.lost_segment标志分析丢包数量和总体数量。具体为。
 用wireshark抓包。
@@ -2135,10 +2151,10 @@ p0f 被动指纹分析工具
 首先是VNC，在windows上面安装RealVNC，启动服务。然后用linux的xvncviewer访问，就可以无缝在linux上面访问windows。
 然后是Xming，这个是Cygwin的一个部分。可以在windows上启动X服务，这样我们可以运行一个远程跨平台的图形界面。在我的Debian上面是这样的。
 用一个tty登录进去，然后
-$export DISPLAY=192.168.0.X:0 $/etc/X11/Xsession &amp;amp;  这样就完成了完整的一个界面，界面控制是在windows下，但是程序是在linux下跑。和VNC不一样的是，windows的前端在操作的时候，其他的前端可以同步操作。
+$export DISPLAY=192.168.0.X:0 $/etc/X11/Xsession &amp;amp; 这样就完成了完整的一个界面，界面控制是在windows下，但是程序是在linux下跑。和VNC不一样的是，windows的前端在操作的时候，其他的前端可以同步操作。
 再然后是esound，这也是Cygwin的一个部分。可以在windows上开启一个esound daemon。方法是运行。
-esound -tcp -public  在linux下面，esound可以跨站传输，方法是设定。
-$export ESPEAKER=192.168.0.X:16001  当然，监听端口可以自行设定。
+esound -tcp -public 在linux下面，esound可以跨站传输，方法是设定。
+$export ESPEAKER=192.168.0.X:16001 当然，监听端口可以自行设定。
 这样，就完成了从linux上将声音输出到windows听的功能。
 最后，我讲讲我的实现。我先开了一个VNC穿到windows上操作，然后启动Xming。按F8退出到本地，用Ctrl+Atl+F2切换到tty登录，并且连接上Xming的前台X。然后Atl+F7返回GUI，F8返回VNC全屏模式。在Xming里面，开了个term。export了参数后启动xmms，并且切换到esound输出。再在windows下面运行esound4win，插上耳机。最后我点了下VNC中的Xming中的xmms的播放，声音出来了——世界多么奇妙？</description>
     </item>
@@ -2150,8 +2166,8 @@ $export ESPEAKER=192.168.0.X:16001  当然，监听端口可以自行设定。
       
       <guid>//blog.shell909090.org/blog/archives/321/</guid>
       <description>随便写了点问题玩玩——大家开心就好哦——
-1.电脑开机和关机一样简单 2.会按照标准流程关机 3.非常习惯的在关机的时候点关机去 4.电脑不经常关机 5.为啥要关机？ 1.不知道啥叫重装系统 2.定期找人重装系统 3.会自己重装系统 4.用过windows以外的系统 5.用的是自己定制的系统 1.从来都只在网络上听歌而不下载 2.没有用过CMD窗口下的命令 3.会按照网络上的说明调整系统 4.中了木马会手工查找 5.经常在自己的论坛或者wiki上写东西 1.看到弹出一个对话框就习惯的按回车 2.删除错误了去回收站里面找 3.文件按照分类摆放 4.经常写两个脚本用用 5.经常猜到将来会流行什么类型的软件 1.电脑里的软件都是中文的 2.可以用一些英文软件 3.偶尔自己装几个软件试用一下 4.经常试用各种软件 5.一般只用自己熟悉的软件 1.出现异常的时候手足无措 2.出现异常时候的反应是，中病毒了 3.出现异常会去论坛上提问 4.出现异常会提交报告 5.出现异常会条件反应出出错的原因  评：
-5-8分：您是标准的电脑白痴，除非有人帮忙，否则电脑就是废物。 9-12分:您刚刚学会用电脑，不过还不是很熟练 13-16分：您的电脑还算不错 17-20分：已经算是个高手了 21-25分：对您来说，用电脑和呼吸一样自然，你是神吗？  </description>
+1.电脑开机和关机一样简单 2.会按照标准流程关机 3.非常习惯的在关机的时候点关机去 4.电脑不经常关机 5.为啥要关机？ 1.不知道啥叫重装系统 2.定期找人重装系统 3.会自己重装系统 4.用过windows以外的系统 5.用的是自己定制的系统 1.从来都只在网络上听歌而不下载 2.没有用过CMD窗口下的命令 3.会按照网络上的说明调整系统 4.中了木马会手工查找 5.经常在自己的论坛或者wiki上写东西 1.看到弹出一个对话框就习惯的按回车 2.删除错误了去回收站里面找 3.文件按照分类摆放 4.经常写两个脚本用用 5.经常猜到将来会流行什么类型的软件 1.电脑里的软件都是中文的 2.可以用一些英文软件 3.偶尔自己装几个软件试用一下 4.经常试用各种软件 5.一般只用自己熟悉的软件 1.出现异常的时候手足无措 2.出现异常时候的反应是，中病毒了 3.出现异常会去论坛上提问 4.出现异常会提交报告 5.出现异常会条件反应出出错的原因 评：
+5-8分：您是标准的电脑白痴，除非有人帮忙，否则电脑就是废物。 9-12分:您刚刚学会用电脑，不过还不是很熟练 13-16分：您的电脑还算不错 17-20分：已经算是个高手了 21-25分：对您来说，用电脑和呼吸一样自然，你是神吗？ </description>
     </item>
     
     <item>
@@ -2356,11 +2372,11 @@ BTW,做live的时候，千万记得放一个ntfsfix在盘里面。贝壳的/dev/
       
       <guid>//blog.shell909090.org/blog/archives/282/</guid>
       <description>IE这个东西讨人喜欢讨人嫌，很多时候没有它不行，有了又容易中各种东西。下面的研究就是怎么样来控制IE的各种行为。首先是屏蔽IE的开启
-cacls &amp;quot;C:\Program Files\Internet Explorer&amp;quot; /P admini:N /E  这条语句的目的是屏蔽administrator对浏览器目录的访问权限，访问权限都没了，浏览器自然开不了了。不过这只适合于用户手工开启浏览器，如果系统自动弹出，浏览器还是照样开的。例如我们亲爱的MSN，所以还要加下面这条。
-cacls &amp;quot;C:\WINNT\system32\BROWSEUI.DLL&amp;quot; /P admini:N /E  这条屏蔽的是IE的界面（UI），所以凡用IE界面的东西全部弹不出来。像刚刚我就差点无法写新的日志。所以用这两条语句重新开启访问权限。
-cacls &amp;quot;C:\WINNT\system32\BROWSEUI.DLL&amp;quot; /P admini:F /E cacls &amp;quot;C:\Program Files\Internet Explorer&amp;quot; /P admini:F /E  这里要特别说明下，admini在我的机器上指administrator，而我机器上的administrator则是一个连guest权限都没有的空账户，专门用来诱骗攻击的。各种账户的情况大家可以根据自己机器自行修改。
+cacls &amp;quot;C:\Program Files\Internet Explorer&amp;quot; /P admini:N /E 这条语句的目的是屏蔽administrator对浏览器目录的访问权限，访问权限都没了，浏览器自然开不了了。不过这只适合于用户手工开启浏览器，如果系统自动弹出，浏览器还是照样开的。例如我们亲爱的MSN，所以还要加下面这条。
+cacls &amp;quot;C:\WINNT\system32\BROWSEUI.DLL&amp;quot; /P admini:N /E 这条屏蔽的是IE的界面（UI），所以凡用IE界面的东西全部弹不出来。像刚刚我就差点无法写新的日志。所以用这两条语句重新开启访问权限。
+cacls &amp;quot;C:\WINNT\system32\BROWSEUI.DLL&amp;quot; /P admini:F /E cacls &amp;quot;C:\Program Files\Internet Explorer&amp;quot; /P admini:F /E 这里要特别说明下，admini在我的机器上指administrator，而我机器上的administrator则是一个连guest权限都没有的空账户，专门用来诱骗攻击的。各种账户的情况大家可以根据自己机器自行修改。
 上面屏蔽了IE的UI，但是内核还是可以访问的，所以在FireFox里面用IE插件可以载入IE的解释系统，外壳则是FireFox的。如果要真正保证安全就使用这个语句。
-cacls &amp;quot;C:\WINNT\system32\MSHTML.DLL&amp;quot; /P admini:N /E  这个语句屏蔽的是IE内核入口，所以下面所有的IE行为全部都会变成下载。有啥网页也全都是下载而不是解释出来显示在网页上。至于解除代码，自己想吧。</description>
+cacls &amp;quot;C:\WINNT\system32\MSHTML.DLL&amp;quot; /P admini:N /E 这个语句屏蔽的是IE内核入口，所以下面所有的IE行为全部都会变成下载。有啥网页也全都是下载而不是解释出来显示在网页上。至于解除代码，自己想吧。</description>
     </item>
     
     <item>
@@ -2474,7 +2490,7 @@ truecrypt是一个加密软件，姑且算吧。用hash和对称加密算法来�
       <guid>//blog.shell909090.org/blog/archives/241/</guid>
       <description>表达式解析的本质是什么？是树的构造和消解。其他算法本质上都是树算法。
 首先，我们使用Token算法来获得一个Token和Object混合的列表。然后我们将列表展开成为一颗树。这个树符合以下条件。
- 树的所有叶子都是Object，无论是数据还是变量。 树的节点上都是算符或函数，其分支数目和算符目或函数参数相等。 单根，无()。  那么我提出一种构造方法。我们假定一种算符passby，然后用Token算法切分表达式并且转换成合适的对象，放置在passby上面。然后我们根据(,,)的规则将整个列表递归表达成同级树。树的每层都是同级的。而后每层都根据优先级从高到低的顺序来计算结果，反馈到上层。由此我们可以得到有效的结果。
+树的所有叶子都是Object，无论是数据还是变量。 树的节点上都是算符或函数，其分支数目和算符目或函数参数相等。 单根，无()。 那么我提出一种构造方法。我们假定一种算符passby，然后用Token算法切分表达式并且转换成合适的对象，放置在passby上面。然后我们根据(,,)的规则将整个列表递归表达成同级树。树的每层都是同级的。而后每层都根据优先级从高到低的顺序来计算结果，反馈到上层。由此我们可以得到有效的结果。
 但是我没有按照上述方法写解析器。原因是太麻烦，运算时间长，不容易看懂。代码大，维护困难。我问一个同学，你是喜欢精致小巧但是有瑕疵的东西呢？还是庞大严谨没有错误的东西。结果回答说是精致小巧的。好，这就是解析器算法来源。我用了数据结构中的堆栈算法。这种算法在解析正确的式子的时候没有问题，但是精心构造的“看起来”不正确“的式子也可以解析。而且不容易检查堆栈问题。但是谁管呢？喜欢就好。</description>
     </item>
     
@@ -2486,7 +2502,7 @@ truecrypt是一个加密软件，姑且算吧。用hash和对称加密算法来�
       <guid>//blog.shell909090.org/blog/archives/240/</guid>
       <description>贝壳遇到邪门事了，msiexec的服务死活起不来。这个东西服务态啊，又不好做跟踪的。贝壳无奈只好求助于google。结果找到一个解决办法，适用于windowsXPWindows
 Installer服务启动即关闭症状的解决。
-Windows Registry Editor Version 5.00 [HKEY_LOCAL_MACHINESYSTEMCurrentControlSetSevicesMS IServer] &amp;quot;ImagePath&amp;quot;=- &amp;quot;ImagePath&amp;quot;=hex(2):25,00,53,00,79,00,73,00,74,00,65,00,6d,00,52,00,6f, 00,6f,00,74,00,25,00,5c,00,53,00,79,00,73,00,74,00,65,00,6d,00,33,00,32, 00,5c00,6d,73,00,69,00,65,00,78,00,65,00,63,00,2e,00,65,00,78,00,65,00, 20,00,2f,00,56,00,00,00  注意最后是两个回车。
+Windows Registry Editor Version 5.00 [HKEY_LOCAL_MACHINESYSTEMCurrentControlSetSevicesMS IServer] &amp;quot;ImagePath&amp;quot;=- &amp;quot;ImagePath&amp;quot;=hex(2):25,00,53,00,79,00,73,00,74,00,65,00,6d,00,52,00,6f, 00,6f,00,74,00,25,00,5c,00,53,00,79,00,73,00,74,00,65,00,6d,00,33,00,32, 00,5c00,6d,73,00,69,00,65,00,78,00,65,00,63,00,2e,00,65,00,78,00,65,00, 20,00,2f,00,56,00,00,00 注意最后是两个回车。
 特存留念，方便自己和大家以后使用。</description>
     </item>
     
@@ -2533,7 +2549,7 @@ XML：全世界的语言。</description>
 我们假定所有连接都会产生一个权，这个权由某个信任实体直接给出。
 我们假定用户对自己的信任是1。
 我们假定连接存在以下五种类型：
- 请求。有向关系。 应答。有向关系。 依赖/依存。有向/无向关系。 包含于，有向关系。 互斥，无向关系。  利用以上假定，我们可以计算某个系统行为模式对某个用户的潜在风向。
+请求。有向关系。 应答。有向关系。 依赖/依存。有向/无向关系。 包含于，有向关系。 互斥，无向关系。 利用以上假定，我们可以计算某个系统行为模式对某个用户的潜在风向。
 先停止写，去看UML建模。根据分析结果，计算和信息的相关程序有相当关系。</description>
     </item>
     
@@ -2563,7 +2579,7 @@ XML：全世界的语言。</description>
 编译器理论中有中叫做核心构造和自构造。首先通过A语言写出B语言的初次编译器，然后通过初次编译器编译用B语言写的B语言编译器本身，形成二次编译器。逐步叠代，形成稳定的核心编译器，然后通过核心编译器编译层次1，通过编译器和层次1编译层次2，逐步递推，形成最终release的集成编译器。最出名的产品就是IBM公司的Pascal语言。（还有多少人在学……世代更替啊）
 同样在离散数学的数理逻辑算符体系中也有一个最小构造集合。通过最小构造集合的有限次叠代可以产生全集合的等效结果。所以又被称为核心集合。
 大家可能会认为比较无聊，不过不才贝壳我现在搬到语言上套用，看看这种理论是否可行。
- 首先通过单词表等等对比的形式教会最小的单词集合。 然后通过标准语法格式教会最小的语法集合。 通过标准语法集合解释扩展单词和语法集合1。 逐次叠代教会大多数的单词和语法。 着重解释如何学习新的单词和语法。  按照我们使用中文的习惯，还有我使用计算机的经验。我们不是什么都知道的。很多人不知道二进制(binary)是什么意思，但是他们可以很快的学会。如果我们不知道二进制的英文，我们很习惯是通过中文词表的方式来获得其中的意思。但是真正英语好的人都是通过交互的解释来获得意思的，这样的好处是具备非常好的动态性能。因为很多英文单词没有贴切的中文解释，语法更是天地之别。通过英语本身获得英语知识的能力可以让一个人不但具备英语能力，而且可以根据不同环境变化自己的英语。
+首先通过单词表等等对比的形式教会最小的单词集合。 然后通过标准语法格式教会最小的语法集合。 通过标准语法集合解释扩展单词和语法集合1。 逐次叠代教会大多数的单词和语法。 着重解释如何学习新的单词和语法。 按照我们使用中文的习惯，还有我使用计算机的经验。我们不是什么都知道的。很多人不知道二进制(binary)是什么意思，但是他们可以很快的学会。如果我们不知道二进制的英文，我们很习惯是通过中文词表的方式来获得其中的意思。但是真正英语好的人都是通过交互的解释来获得意思的，这样的好处是具备非常好的动态性能。因为很多英文单词没有贴切的中文解释，语法更是天地之别。通过英语本身获得英语知识的能力可以让一个人不但具备英语能力，而且可以根据不同环境变化自己的英语。
 通常来说，一个人学习语言的最初是模仿，通过学习周围人的发音和对应的可能意义来分辨词素的音和意。至于形来说，符号文字一般都具备相当的音形对应性，象形文字则是意形对应性。这个可以通过后天的刻意学习获得，而且也无关人的交流。毕竟在美国也不是完全没有文盲的。然后音意的对应性存在一个问题，就是循环解释。我们可以通过一个基础的词意去解释另外一个，但是语言是唯一无法用语言来解释的东西。一个词的解释最后永远涉及他的自身。所以我们通过一个最小单词和语法的构造集合来解决这个问题。毕竟发展出自我独立的语言体系结构是我们小时候做的事情，现在完全没有必要这么麻烦。</description>
     </item>
     

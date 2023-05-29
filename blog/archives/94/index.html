@@ -2,24 +2,23 @@
 <html lang="en-us">
   <head>
     <title>ext3下小文件的恢复 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
@@ -27,24 +26,24 @@ if (!doNotTrack) {
 <meta name="twitter:title" content="ext3下小文件的恢复"/>
 <meta name="twitter:description" content="ext3下如果误删除了文件，恢复起来是异常麻烦的。如果是小文件，其实很多时候不用走常规文件恢复的路子，只要能找到内容就好了。基本思路是从磁盘中直接搜索内容，然后设法复制出来。
 恢复条件：
- 文件没有被覆盖。如果被覆盖了，那就绝对没有希望了。 文件不大(通常建议在16K以内)。如果很大，下面一个条件就很难满足。 知晓文件内的特定关键字。条件是，文件每4K内，你必须知道至少一个关键字。因为ext3通常将4K内容连续存放，每知道一个关键字，可以恢复4K内容。如果缺少关键字，那就无法恢复了。 文件保存的版本不太多。  满足以上条件后，使用以下方法进行恢复：
-# grep -abn &quot;id_insert_stmt_param&quot; /dev/xvda1 4799010:713068605:sql_id_insert_stmt_param = &quot;SELECT NEXTVAL  使用grep对/dev/xvda1磁盘进行搜索，需要管理员权限直接访问设备文件，搜索哪个物理磁盘可以用mount来确定。 713068605是相对偏移地址，如果保存了多个版本，可能有多个偏移地址。 他们的选择和确定是个非常麻烦的问题，所以文件保存的版本不能过多。
-$ python &gt;&gt;&gt; (713068605/4096)*4096 713068544 &gt;&gt;&gt; exit ()  以上过程可以在常规权限下操作，使用python(或者其他你高兴的计算器)确定该偏移地址的块首地址。
-# dd if=/dev/xvda1 bs=1 count=4k skip=713068544 &gt; 1.tmp  将这个块的内容复制出来，注意磁盘上必须有足够空间，否则搞不好会将原始内容覆盖。
+文件没有被覆盖。如果被覆盖了，那就绝对没有希望了。 文件不大(通常建议在16K以内)。如果很大，下面一个条件就很难满足。 知晓文件内的特定关键字。条件是，文件每4K内，你必须知道至少一个关键字。因为ext3通常将4K内容连续存放，每知道一个关键字，可以恢复4K内容。如果缺少关键字，那就无法恢复了。 文件保存的版本不太多。 满足以上条件后，使用以下方法进行恢复：
+# grep -abn &quot;id_insert_stmt_param&quot; /dev/xvda1 4799010:713068605:sql_id_insert_stmt_param = &quot;SELECT NEXTVAL 使用grep对/dev/xvda1磁盘进行搜索，需要管理员权限直接访问设备文件，搜索哪个物理磁盘可以用mount来确定。 713068605是相对偏移地址，如果保存了多个版本，可能有多个偏移地址。 他们的选择和确定是个非常麻烦的问题，所以文件保存的版本不能过多。
+$ python &gt;&gt;&gt; (713068605/4096)*4096 713068544 &gt;&gt;&gt; exit () 以上过程可以在常规权限下操作，使用python(或者其他你高兴的计算器)确定该偏移地址的块首地址。
+# dd if=/dev/xvda1 bs=1 count=4k skip=713068544 &gt; 1.tmp 将这个块的内容复制出来，注意磁盘上必须有足够空间，否则搞不好会将原始内容覆盖。
 更严谨的方法是将内容dump到其他磁盘设备的挂载点下，做异地磁盘恢复。
 以上方法可以恢复一个块的内容。手工恢复所有块后，将内容拼接，就是你要恢复的文件。"/>
 
     <meta property="og:title" content="ext3下小文件的恢复" />
 <meta property="og:description" content="ext3下如果误删除了文件，恢复起来是异常麻烦的。如果是小文件，其实很多时候不用走常规文件恢复的路子，只要能找到内容就好了。基本思路是从磁盘中直接搜索内容，然后设法复制出来。
 恢复条件：
- 文件没有被覆盖。如果被覆盖了，那就绝对没有希望了。 文件不大(通常建议在16K以内)。如果很大，下面一个条件就很难满足。 知晓文件内的特定关键字。条件是，文件每4K内，你必须知道至少一个关键字。因为ext3通常将4K内容连续存放，每知道一个关键字，可以恢复4K内容。如果缺少关键字，那就无法恢复了。 文件保存的版本不太多。  满足以上条件后，使用以下方法进行恢复：
-# grep -abn &quot;id_insert_stmt_param&quot; /dev/xvda1 4799010:713068605:sql_id_insert_stmt_param = &quot;SELECT NEXTVAL  使用grep对/dev/xvda1磁盘进行搜索，需要管理员权限直接访问设备文件，搜索哪个物理磁盘可以用mount来确定。 713068605是相对偏移地址，如果保存了多个版本，可能有多个偏移地址。 他们的选择和确定是个非常麻烦的问题，所以文件保存的版本不能过多。
-$ python &gt;&gt;&gt; (713068605/4096)*4096 713068544 &gt;&gt;&gt; exit ()  以上过程可以在常规权限下操作，使用python(或者其他你高兴的计算器)确定该偏移地址的块首地址。
-# dd if=/dev/xvda1 bs=1 count=4k skip=713068544 &gt; 1.tmp  将这个块的内容复制出来，注意磁盘上必须有足够空间，否则搞不好会将原始内容覆盖。
+文件没有被覆盖。如果被覆盖了，那就绝对没有希望了。 文件不大(通常建议在16K以内)。如果很大，下面一个条件就很难满足。 知晓文件内的特定关键字。条件是，文件每4K内，你必须知道至少一个关键字。因为ext3通常将4K内容连续存放，每知道一个关键字，可以恢复4K内容。如果缺少关键字，那就无法恢复了。 文件保存的版本不太多。 满足以上条件后，使用以下方法进行恢复：
+# grep -abn &quot;id_insert_stmt_param&quot; /dev/xvda1 4799010:713068605:sql_id_insert_stmt_param = &quot;SELECT NEXTVAL 使用grep对/dev/xvda1磁盘进行搜索，需要管理员权限直接访问设备文件，搜索哪个物理磁盘可以用mount来确定。 713068605是相对偏移地址，如果保存了多个版本，可能有多个偏移地址。 他们的选择和确定是个非常麻烦的问题，所以文件保存的版本不能过多。
+$ python &gt;&gt;&gt; (713068605/4096)*4096 713068544 &gt;&gt;&gt; exit () 以上过程可以在常规权限下操作，使用python(或者其他你高兴的计算器)确定该偏移地址的块首地址。
+# dd if=/dev/xvda1 bs=1 count=4k skip=713068544 &gt; 1.tmp 将这个块的内容复制出来，注意磁盘上必须有足够空间，否则搞不好会将原始内容覆盖。
 更严谨的方法是将内容dump到其他磁盘设备的挂载点下，做异地磁盘恢复。
 以上方法可以恢复一个块的内容。手工恢复所有块后，将内容拼接，就是你要恢复的文件。" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/94/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/94/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2010-02-21T10:20:00+08:00" />
 <meta property="article:modified_time" content="2010-02-21T10:20:00+08:00" />
 
@@ -84,11 +83,8 @@ $ python &gt;&gt;&gt; (713068605/4096)*4096 713068544 &gt;&gt;&gt; exit ()  以�
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -98,62 +94,56 @@ $ python &gt;&gt;&gt; (713068605/4096)*4096 713068544 &gt;&gt;&gt; exit ()  以�
       <h1 class ="post-title">ext3下小文件的恢复</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Feb 21, 2010
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/ext3/">ext3</a><a class="tag" href="//blog.shell909090.org/tags/grep/">grep</a><a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/ext3/">ext3</a>
+              <a class="tag" href="//blog.shell909090.org/tags/grep/">grep</a>
+              <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
       <p>ext3下如果误删除了文件，恢复起来是异常麻烦的。如果是小文件，其实很多时候不用走常规文件恢复的路子，只要能找到内容就好了。基本思路是从磁盘中直接搜索内容，然后设法复制出来。</p>
-
 <p>恢复条件：</p>
-
 <ol>
 <li>文件没有被覆盖。如果被覆盖了，那就绝对没有希望了。</li>
 <li>文件不大(通常建议在16K以内)。如果很大，下面一个条件就很难满足。</li>
 <li>知晓文件内的特定关键字。条件是，文件每4K内，你必须知道至少一个关键字。因为ext3通常将4K内容连续存放，每知道一个关键字，可以恢复4K内容。如果缺少关键字，那就无法恢复了。</li>
 <li>文件保存的版本不太多。</li>
 </ol>
-
 <p>满足以上条件后，使用以下方法进行恢复：</p>
-
 <pre><code># grep -abn &quot;id_insert_stmt_param&quot; /dev/xvda1
 4799010:713068605:sql_id_insert_stmt_param = &quot;SELECT NEXTVAL
 </code></pre>
-
 <p>使用grep对/dev/xvda1磁盘进行搜索，需要管理员权限直接访问设备文件，搜索哪个物理磁盘可以用mount来确定。
 713068605是相对偏移地址，如果保存了多个版本，可能有多个偏移地址。
 他们的选择和确定是个非常麻烦的问题，所以文件保存的版本不能过多。</p>
-
 <pre><code>$ python
 &gt;&gt;&gt; (713068605/4096)*4096
 713068544
 &gt;&gt;&gt; exit ()
 </code></pre>
-
 <p>以上过程可以在常规权限下操作，使用python(或者其他你高兴的计算器)确定该偏移地址的块首地址。</p>
-
 <pre><code># dd if=/dev/xvda1 bs=1 count=4k skip=713068544 &gt; 1.tmp
 </code></pre>
-
 <p>将这个块的内容复制出来，注意磁盘上必须有足够空间，否则搞不好会将原始内容覆盖。</p>
-
 <p>更严谨的方法是将内容dump到其他磁盘设备的挂载点下，做异地磁盘恢复。</p>
-
 <p>以上方法可以恢复一个块的内容。手工恢复所有块后，将内容拼接，就是你要恢复的文件。</p>
 
     </div>

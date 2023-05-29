@@ -2,24 +2,23 @@
 <html lang="en-us">
   <head>
     <title>Linux内存计数详解 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
@@ -72,7 +71,7 @@ used mem=内核表使用&#43;程序使用物理内存&#43;buffer mem&#43;cached 
 =swap used&#43;used mem-buffer mem-cached mem
 =total mem-free mem&#43;swap used-buffer mem-cached mem" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/264/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/264/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2005-11-24T23:53:35+08:00" />
 <meta property="article:modified_time" content="2005-11-24T23:53:35+08:00" />
 
@@ -112,11 +111,8 @@ used mem=内核表使用&#43;程序使用物理内存&#43;buffer mem&#43;cached 
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -126,96 +122,64 @@ used mem=内核表使用&#43;程序使用物理内存&#43;buffer mem&#43;cached 
       <h1 class ="post-title">Linux内存计数详解</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Nov 24, 2005
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
       <p>又中计了……</p>
-
 <p>近几天用oracle，发现oracle狂用内存，经常内存小到10M的规模。汗一个，赶快让经理买了新的1G内存来装，上去后发现根本认不出来。加班一多小时才发现386内核根本不认高端内存(HIGHMEM)，所以内存极限一直是896M。以前是1G内存，所以看不出来，现在换了1.5G，看出来了。</p>
-
 <p>赶快上了一个2.6.12-1-686的内核，然后重启，认出来了。不过free还是只有32M左右，我们大惊小怪的打电话到oracle那里去咨询，得到的答复是要安装完整的补丁，并且要用oracle认证过的服务器。oracle认证了啥服务器？RedHatEnterpriseAS3/4,那个东西要收费的，而且绝对不便宜。最后无奈，做了一次不启动oracle的测试。出乎我们意料的，mysql吃了多数的内存。具体造成这种状况的原因是啥呢？</p>
-
 <p>偶查阅了linux内存管理资料，发现linux的内存管理计数上讲的东西和windows讲的有很大差异。下面具体列举下几种计数、查看方式和含义。</p>
-
 <p>total mem，可以用top free查看出来。</p>
-
 <p>free mem，可以用top free vmstat查看出来。</p>
-
 <p>used mem，可以用top free查看出来.</p>
-
 <p>buffer mem，可以用top free vmstat查看出来。</p>
-
 <p>shared mem，可以用free查看出来。</p>
-
 <p>swap mem，可以用top查看出来。</p>
-
 <p>swap used，可以用top vmstat查看出来。</p>
-
 <p>cached mem，可以用top free vmstat查看出来。</p>
-
 <p>active mem，可以用free vmstat -a查看出来，即cached used。</p>
-
 <p>inactive mem，可以用free vmstat -a查看出来，即cached free。</p>
-
 <p>其中total mem是除去系统外的可用内存，系统大约占1M多。然后分配给free mem和used mem。used mem又包括了内核表使用（例如GDT），程序使用，buffer，cached。所以</p>
-
 <p>cached mem=active mem+inactive mem</p>
-
 <p>total mem=free mem+used mem</p>
-
 <p>used mem=内核表使用+程序使用物理内存+buffer mem+cached mem</p>
-
 <p>略去内核表使用，这个式子可以变形成这样：</p>
-
 <p>程序使用总内存=swap used+程序使用物理内存</p>
-
 <p>=swap used+used mem-buffer mem-cached mem</p>
-
 <p>=total mem-free mem+swap used-buffer mem-cached mem</p>
-
 <p>根据所有系统内存管理的恒等式：</p>
-
 <p>程序使用总内存+一次可申请内存=total mem+swap used</p>
-
 <p>我们可以计算出：</p>
-
 <p>一次可申请内存=free mem+buffer mem+cached mem（事实上要略小于这个值）</p>
-
 <p>程序使用的部分swap出去部分，占用total部分，剩下的就是一次可以申请的最大值。多次申请造成这个值太小就继续向swap里面交换。</p>
-
 <p>首先解释buffer和cached区别。通俗的讲，buffer中放的是对象数据结构，而cached中放的是无结构的块数据。cached可以缓冲任何标准的块设备，而不用管是什么东西。其中涉及写通和写回的概念，大家自己看去吧。</p>
-
 <p>然后是程序使用物理内存的概念。程序的总内存等于交换出去的部分加上程序使用物理内存。而程序使用的总内存和各个程序的内存占用是什么关系呢？这个又要涉及共用页面的问题。</p>
-
 <p>windows中也有类似概念，如果两个页面内容相同，那么在内存中保留一份就可以了。这个是动态链接库/动态共享库的理论基础。所以所有进程的shared mem只有一份copy。进程使用的Data+Stack是数据空间，code是代码空间，两者和减去shared mem是私有空间，也就是俗称的进程内存占用。将所有内存占用求和加上shared mem的和，就得到了程序的总内存。</p>
-
 <p>Linux的cached和windows的一个很大差异在于，windows的磁盘缓存是读写缓存队列。写入操作和预读取操作在队列中排序。完了就释放了，主要用于平缓读写瓶颈。读取预测机制才是增加命中的重头。linux的cached读写完了一直不释放，直到内存不足再释放。释放的速度来说应该是没有问题的，毕竟数据已经写入了，只差一个数据结构标志位修改而已。这种机制主要对应高命中率，如果重复使用相同文件（应该说是相同块设备的相同offset）。那么缓存机制永远只要读一次，写入次数也远远小于应当的写入次数。</p>
-
 <p>根据上面一次可申请内存的计算公式，可以知道这次偶死在哪里了吧。</p>
-
 <p>reference：</p>
-
 <p>感谢以下几位作者的文章为我解答了疑惑，为了表达敬意列于下。我没有全文照抄，按理不用起告知义务吧。</p>
-
-<p>[1].Linux内存使用的体会.nonameboy.linux宝库.<a href="http://www.linuxmine.com/5621.html">http://www.linuxmine.com/5621.html</a></p>
-
+<p>[1].Linux内存使用的体会.nonameboy.linux宝库.http://www.linuxmine.com/5621.html</p>
 <p>[2].Linux管理员手册(4)&ndash;内存管理&hellip;<a href="http://it.qlsh.net/html/2004/11/20041110092900-1.htm">http://it.qlsh.net/html/2004/11/20041110092900-1.htm</a></p>
 
     </div>

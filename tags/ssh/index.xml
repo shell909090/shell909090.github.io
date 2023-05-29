@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>ssh on Shell&#39;s Home</title>
@@ -7,11 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Wed, 22 Jan 2014 13:31:45 +0800</lastBuildDate>
-    
-	<atom:link href="//blog.shell909090.org/tags/ssh/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Wed, 22 Jan 2014 13:31:45 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/ssh/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>在PAM中使用google authentication</title>
       <link>//blog.shell909090.org/blog/archives/2539/</link>
@@ -19,19 +15,21 @@
       
       <guid>//blog.shell909090.org/blog/archives/2539/</guid>
       <description>PAM是linux系统身份验证的核心，在用户登录/ssh身份校验中均有很大用途。但是很少有人想到，其实这个东西还可以用google authentication来进行身份校验。
-安装 sudo apt-get install libpam-google-authenticator  设定 使用前，需要对用户做一个用户级配置，生成配置文件。这个文件就是这个用户的身份验证凭证。配置请使用用户执行google-authenticator。
+安装 sudo apt-get install libpam-google-authenticator 设定 使用前，需要对用户做一个用户级配置，生成配置文件。这个文件就是这个用户的身份验证凭证。配置请使用用户执行google-authenticator。
 上来先会问你是否使用基于时间的验证，肯定选是。但是注意，基于时间的验证要求服务器时间必须精确。更准确的说，是服务器时间和手机时间校准在30秒以内。由于手机一般都采用GSM校时，因此只需要在意服务器时间。建议是使用ntpdate来校准时间。特别注意，linux的时钟是会漂移的，必须按天级校准。
 然后程序会给出一个url，还可能有QR码（真够不容易的，Console级别的QR码。。。）。记住，一定要用url去获得QR码给程序扫描。因为url获得的QR码算法是最新的，而直接生成的有可能不能跑。
 下面是secret key和verification code，一般来说这两个不用关心。但是你需要记住emergency scratch codes。libpam-google-authenticator默认给你生成了5个，一般都够用了。通常用到3个就更新一遍吧。
- 是否生成配置，选是。 是否拒绝使用同一个token的人登录。如果选是，30秒内只能登录一个人。建议选是。 是否放送时间验证，从1分30秒到4分钟。如果选是，允许更大的服务器时间偏差。看你服务器时间是不是够准。 是否防止暴力破解，30秒内尝试不超过3次。建议选是。  OK，你的配置就完成了。如果有多个用户，请多次配置。
+是否生成配置，选是。 是否拒绝使用同一个token的人登录。如果选是，30秒内只能登录一个人。建议选是。 是否放送时间验证，从1分30秒到4分钟。如果选是，允许更大的服务器时间偏差。看你服务器时间是不是够准。 是否防止暴力破解，30秒内尝试不超过3次。建议选是。 OK，你的配置就完成了。如果有多个用户，请多次配置。
 手机app 按照系统安装以下app，下面以android版为例介绍。
- Google Authenticator Android Google Authenticator iOS Authenticator for Windows Phone Blackbarry  选择setup account，然后scan a barcode。程序会要求你使用barcode扫描软件扫描(推荐barcode scanner)。这时去扫描设定一节中访问url显示的那个qr码。
+Google Authenticator Android Google Authenticator iOS Authenticator for Windows Phone Blackbarry 选择setup account，然后scan a barcode。程序会要求你使用barcode扫描软件扫描(推荐barcode scanner)。这时去扫描设定一节中访问url显示的那个qr码。
 pam配置 对于ssh而言，请在/etc/pam.d/sshd的最后一行增加这句。
-auth required pam_google_authenticator.so  注意，这样其实是密码/校验码双重验证。如果你不需要密码请注释掉下面这句。
-@include common-auth  或者其他包含以下这句的地方。
-auth required pam_permit.so  如果你希望增强sudo安全性，也可以把这句加入/etc/pam.d/sudo后面。如果同样不需要密码，请注释上面那句。
+auth required pam_google_authenticator.so 注意，这样其实是密码/校验码双重验证。如果你不需要密码请注释掉下面这句。
+@include common-auth 或者其他包含以下这句的地方。
+auth required pam_permit.so 如果你希望增强sudo安全性，也可以把这句加入/etc/pam.d/sudo后面。如果同样不需要密码，请注释上面那句。
 sshd配置 保证/etc/ssh/sshd_config里面，以下参数都处于正确的配置。
-ChallengeResponseAuthentication yes PasswordAuthentication no UsePAM yes  如果你使用openssh6.</description>
+ChallengeResponseAuthentication yes PasswordAuthentication no UsePAM yes 如果你使用openssh6.2以上版本，请额外加入这句以开启publickey和验证同时启用。
+AuthenticationMethods publickey,keyboard-interactive sudo 注意，如果是NOPASSWORD，则没有校验。
+参考和鸣谢 Why enable SSH Two-Factor Authentication on your server?</description>
     </item>
     
     <item>
@@ -50,7 +48,7 @@ ChallengeResponseAuthentication yes PasswordAuthentication no UsePAM yes  如果
       
       <guid>//blog.shell909090.org/blog/archives/71/</guid>
       <description>不多说了，上脚本。
------------/etc/init.d/sshtunnel------------ #!/bin/bash PATH=/bin:/sbin:/usr/bin:/usr/sbin CONF=&amp;quot;/etc/default/sshtunnel&amp;quot; source $CONF if ! [ -x /usr/bin/ssh ]; then exit 0 fi start () { echo -n &amp;quot;Starting tunnel..&amp;quot; ssh -CNq -D &amp;quot;$PROXYPORT&amp;quot; &amp;quot;$USERNAME@$SSHHOST&amp;quot; -p $SSHPORT -o ServerAliveInterval=30 &amp;amp; echo &amp;quot;done.&amp;quot; } stop () { echo -n &amp;quot;Stopping tunnel..&amp;quot; PID=$(netstat -nlp -4 | grep &amp;quot;:$PROXYPORT&amp;quot;) PID=$(echo $PID | sed &amp;quot;s/.*LISTENs*(.*)/1/&amp;quot; | cut -f1 -d/) kill -9 $PID echo &amp;quot;done.&amp;quot; } case &amp;quot;$1&amp;quot; in start|restart) start ;; stop) stop ;; restart) stop start ;; *) echo &amp;quot;Usage: $0 {start|stop|restart|clear}&amp;quot; exit 1 ;; esac exit 0 -----------------end of file------------------ ---------/etc/default/sshtunnel---------- PROXYPORT=7777 USERNAME=abc SSHHOST=abc SSHPORT=22 -----------------end of file------------------  首先准备一个远程服务器，获得域名端口，用户名密码。而后将上述脚本放置于指定位置，修改/etc/default/sshtunnel的值，即完成配置。但是上述脚本并没有解决自动登录问题，因此，请生成一个没有密码的密钥，将公钥导入远程服务器。</description>
+-----------/etc/init.d/sshtunnel------------ #!/bin/bash PATH=/bin:/sbin:/usr/bin:/usr/sbin CONF=&amp;quot;/etc/default/sshtunnel&amp;quot; source $CONF if ! [ -x /usr/bin/ssh ]; then exit 0 fi start () { echo -n &amp;quot;Starting tunnel..&amp;quot; ssh -CNq -D &amp;quot;$PROXYPORT&amp;quot; &amp;quot;$USERNAME@$SSHHOST&amp;quot; -p $SSHPORT -o ServerAliveInterval=30 &amp;amp; echo &amp;quot;done.&amp;quot; } stop () { echo -n &amp;quot;Stopping tunnel..&amp;quot; PID=$(netstat -nlp -4 | grep &amp;quot;:$PROXYPORT&amp;quot;) PID=$(echo $PID | sed &amp;quot;s/.*LISTENs*(.*)/1/&amp;quot; | cut -f1 -d/) kill -9 $PID echo &amp;quot;done.&amp;quot; } case &amp;quot;$1&amp;quot; in start|restart) start ;; stop) stop ;; restart) stop start ;; *) echo &amp;quot;Usage: $0 {start|stop|restart|clear}&amp;quot; exit 1 ;; esac exit 0 -----------------end of file------------------ ---------/etc/default/sshtunnel---------- PROXYPORT=7777 USERNAME=abc SSHHOST=abc SSHPORT=22 -----------------end of file------------------ 首先准备一个远程服务器，获得域名端口，用户名密码。而后将上述脚本放置于指定位置，修改/etc/default/sshtunnel的值，即完成配置。但是上述脚本并没有解决自动登录问题，因此，请生成一个没有密码的密钥，将公钥导入远程服务器。</description>
     </item>
     
   </channel>

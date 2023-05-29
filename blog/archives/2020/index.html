@@ -2,24 +2,23 @@
 <html lang="en-us">
   <head>
     <title>linux tty部分源码阅读 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
@@ -40,7 +39,7 @@ if (!doNotTrack) {
 4.pty总不转包了吧 以write而言，pty.c做的很简单，就是tty_insert_flip_string而已。不过之后调用了tty_flip_buffer_push，这个又会调用flush_to_ldisc，这个里面会调用ldisc-&gt;ops。从上文中我们知道，这个函数的实体在n_tty.c的n_tty_receive_buf。
 5.n_tty_receive_buf做了些什么 这个函数对每个字符依次处理，如果是普通字符，就调用n_tty_receive_char。这个函数会调用put_tty_queue，经过两次转手，最终，这个字符进入了read_buf。这是一个循环队列。" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2020/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2020/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2011-12-19T16:08:11+08:00" />
 <meta property="article:modified_time" content="2011-12-19T16:08:11+08:00" />
 
@@ -80,11 +79,8 @@ if (!doNotTrack) {
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -94,48 +90,41 @@ if (!doNotTrack) {
       <h1 class ="post-title">linux tty部分源码阅读</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Dec 19, 2011
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/kernel/">kernel</a><a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a><a class="tag" href="//blog.shell909090.org/tags/source/">source</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/kernel/">kernel</a>
+              <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a>
+              <a class="tag" href="//blog.shell909090.org/tags/source/">source</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
-      
-
-<h1 id="1-事情从file开始">1.事情从file开始</h1>
-
+      <h1 id="1事情从file开始">1.事情从file开始</h1>
 <p>file的定义在include/linux/fs.h中，其中有两个field，一个叫file_operations</p>
-
 <p>*f_op，一个叫void *private_data。file_operations定义了所有file能够进行的操作，在tty这个层面而言，drivers/tty/tty_io.c能看到有个叫做file_operations tty_fops的东西，下面有个叫console_fops的东西。两者区别不大，就是write函数进行了一下包装而已。从这里可以看出，系统将某个file的读写操作，转包给了tty_io.c这个文件。这个转包的手法非常类似虚函数。如果将tty_io.c里面的函数看作一个类的所有成员，那么tty_fops就是虚函数表，而f_op就是虚函数指针_v_ptr。</p>
-
-<h1 id="2-tty-io的二转包">2.tty_io的二转包</h1>
-
+<h1 id="2tty_io的二转包">2.tty_io的二转包</h1>
 <p>tty_io做了什么？他直接转包给了ldisc来处理这个事情。从tty_struct的结构我们能够看到，有这么一个field，tty_ldisc *ldisc。而tty_ldisc.h文件里面，我们能看到这个结构又有这么一个成员，tty_ldisc_ops *ops。同样手法，第二次使用。目标是tty/下面很多n_开始的文件，例如n_gsm，估计是处理手机的。我们的目标看起来像是n_tty.c中的tty_ldisc_ops tty_ldisc_N_TTY对象。</p>
-
-<h1 id="3-n-tty做了些什么">3.n_tty做了些什么</h1>
-
+<h1 id="3n_tty做了些什么">3.n_tty做了些什么</h1>
 <p>n_tty也做了很多转包，例如对于n_tty_write而言，他使用了tty-&gt;ops-&gt;write这个函数。我们从struct tty_struct中可以看到这个field，tty_operations *ops。目标是谁？看起来像是pty.c，他里面有很多定义，例如tty_operations master_pty_ops_bsd，tty_operations slave_pty_ops_bsd，tty_operations ptm_unix98_ops，tty_operations pty_unix98_ops。</p>
-
-<h1 id="4-pty总不转包了吧">4.pty总不转包了吧</h1>
-
+<h1 id="4pty总不转包了吧">4.pty总不转包了吧</h1>
 <p>以write而言，pty.c做的很简单，就是tty_insert_flip_string而已。不过之后调用了tty_flip_buffer_push，这个又会调用flush_to_ldisc，这个里面会调用ldisc-&gt;ops。从上文中我们知道，这个函数的实体在n_tty.c的n_tty_receive_buf。</p>
-
-<h1 id="5-n-tty-receive-buf做了些什么">5.n_tty_receive_buf做了些什么</h1>
-
+<h1 id="5n_tty_receive_buf做了些什么">5.n_tty_receive_buf做了些什么</h1>
 <p>这个函数对每个字符依次处理，如果是普通字符，就调用n_tty_receive_char。这个函数会调用put_tty_queue，经过两次转手，最终，这个字符进入了read_buf。这是一个循环队列。</p>
 
     </div>

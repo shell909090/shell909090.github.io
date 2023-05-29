@@ -2,41 +2,84 @@
 <html lang="en-us">
   <head>
     <title>python源码解析读书笔记（一）——内置对象 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
     <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="python源码解析读书笔记（一）——内置对象"/>
-<meta name="twitter:description" content="1.类型的类型  
- obj int(10).ob_type -&gt; PyInt_Type
-
- PyInt\_Type.ob\_type -&gt; PyType\_Type   PyInt\_Type.tp\_base -&gt; PyBaseObject\_Type   PyBaseObject\_Type.ob\_type -&gt; PyType\_Type   PyType\_Type.ob\_type -&gt; PyType\_Type   更精确的参考源码解析262页图。   \   2.小整数对象   if (-NSMALLNEGINTS &lt;= ival && ival &lt; NSMALLPOSINTS) {   v = small\_ints\[ival &#43; NSMALLNEGINTS\];   Py\_INCREF(v);   }   \   3.大整数对象，空对象池，对象缓存    &gt;&gt;&gt; a = 1000000   &gt;&gt;&gt; b = 2000000   &gt;&gt;&gt; id(a) == id(1000000)   False    &gt;&gt;&gt; id(100000) == id(100000)   True   最后一个是因为python解析器在解析对象的时候，对前后生成的对象进行了缓存。经过测试，对文件也有效。   \   4."/>
+<meta name="twitter:description" content="1.类型的类型 obj int(10).ob_type -&gt; PyInt_Type
+PyInt_Type.ob_type -&gt; PyType_Type
+PyInt_Type.tp_base -&gt; PyBaseObject_Type
+PyBaseObject_Type.ob_type -&gt; PyType_Type
+PyType_Type.ob_type -&gt; PyType_Type
+更精确的参考源码解析262页图。
+\
+2.小整数对象
+if (-NSMALLNEGINTS &lt;= ival &amp;&amp; ival &lt; NSMALLPOSINTS) {
+v = small_ints[ival &#43; NSMALLNEGINTS];
+Py_INCREF(v);
+}
+\
+3.大整数对象，空对象池，对象缓存
+&gt;&gt;&gt; a = 1000000
+&gt;&gt;&gt; b = 2000000
+&gt;&gt;&gt; id(a) == id(1000000)
+False
+&gt;&gt;&gt; id(100000) == id(100000)
+True
+最后一个是因为python解析器在解析对象的时候，对前后生成的对象进行了缓存。经过测试，对文件也有效。
+\
+4.字符串对象复用和缓存
+&gt;&gt;&gt; c = &lsquo;qazwsxedcrfvt&rsquo;
+&gt;&gt;&gt; c &#43;= &lsquo;gbyhnujmikolp&rsquo;
+&gt;&gt;&gt; a = &lsquo;qazwsxedcrfvtgbyhnujmikolp&rsquo;"/>
 
     <meta property="og:title" content="python源码解析读书笔记（一）——内置对象" />
-<meta property="og:description" content="1.类型的类型  
- obj int(10).ob_type -&gt; PyInt_Type
-
- PyInt\_Type.ob\_type -&gt; PyType\_Type   PyInt\_Type.tp\_base -&gt; PyBaseObject\_Type   PyBaseObject\_Type.ob\_type -&gt; PyType\_Type   PyType\_Type.ob\_type -&gt; PyType\_Type   更精确的参考源码解析262页图。   \   2.小整数对象   if (-NSMALLNEGINTS &lt;= ival && ival &lt; NSMALLPOSINTS) {   v = small\_ints\[ival &#43; NSMALLNEGINTS\];   Py\_INCREF(v);   }   \   3.大整数对象，空对象池，对象缓存    &gt;&gt;&gt; a = 1000000   &gt;&gt;&gt; b = 2000000   &gt;&gt;&gt; id(a) == id(1000000)   False    &gt;&gt;&gt; id(100000) == id(100000)   True   最后一个是因为python解析器在解析对象的时候，对前后生成的对象进行了缓存。经过测试，对文件也有效。   \   4." />
+<meta property="og:description" content="1.类型的类型 obj int(10).ob_type -&gt; PyInt_Type
+PyInt_Type.ob_type -&gt; PyType_Type
+PyInt_Type.tp_base -&gt; PyBaseObject_Type
+PyBaseObject_Type.ob_type -&gt; PyType_Type
+PyType_Type.ob_type -&gt; PyType_Type
+更精确的参考源码解析262页图。
+\
+2.小整数对象
+if (-NSMALLNEGINTS &lt;= ival &amp;&amp; ival &lt; NSMALLPOSINTS) {
+v = small_ints[ival &#43; NSMALLNEGINTS];
+Py_INCREF(v);
+}
+\
+3.大整数对象，空对象池，对象缓存
+&gt;&gt;&gt; a = 1000000
+&gt;&gt;&gt; b = 2000000
+&gt;&gt;&gt; id(a) == id(1000000)
+False
+&gt;&gt;&gt; id(100000) == id(100000)
+True
+最后一个是因为python解析器在解析对象的时候，对前后生成的对象进行了缓存。经过测试，对文件也有效。
+\
+4.字符串对象复用和缓存
+&gt;&gt;&gt; c = &lsquo;qazwsxedcrfvt&rsquo;
+&gt;&gt;&gt; c &#43;= &lsquo;gbyhnujmikolp&rsquo;
+&gt;&gt;&gt; a = &lsquo;qazwsxedcrfvtgbyhnujmikolp&rsquo;" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/1756/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/1756/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2011-03-27T22:48:11+08:00" />
 <meta property="article:modified_time" content="2011-03-27T22:48:11+08:00" />
 
@@ -76,11 +119,8 @@ if (!doNotTrack) {
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -90,416 +130,223 @@ if (!doNotTrack) {
       <h1 class ="post-title">python源码解析读书笔记（一）——内置对象</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Mar 27, 2011
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/program/">program</a><a class="tag" href="//blog.shell909090.org/tags/python/">python</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/program/">program</a>
+              <a class="tag" href="//blog.shell909090.org/tags/python/">python</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
-      <p><span class="Apple-style-span" style="font-size: large;">1.类型的类型
-</span>
-<div></p>
-
+      <p><!-- raw HTML omitted -->1.类型的类型
+<!-- raw HTML omitted --></p>
+<!-- raw HTML omitted -->
 <p>    obj int(10).ob_type -&gt; PyInt_Type</p>
-
-<p></div></p>
-
-<div>
-
-    PyInt\_Type.ob\_type -&gt; PyType\_Type
-
-</div>
-
-<div>
-
-    PyInt\_Type.tp\_base -&gt; PyBaseObject\_Type
-
-</div>
-
-<div>
-
-    PyBaseObject\_Type.ob\_type -&gt; PyType\_Type
-
-</div>
-
-<div>
-
-    PyType\_Type.ob\_type -&gt; PyType\_Type
-
-</div>
-
-<div>
-
-更精确的参考源码解析262页图。
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-<span class="Apple-style-span"
-style="font-size: large;">2.小整数对象</span>
-
-</div>
-
-<div>
-
-    if (-NSMALLNEGINTS &lt;= ival && ival &lt; NSMALLPOSINTS) {
-
-</div>
-
-<div>
-
-        v = small\_ints\[ival + NSMALLNEGINTS\];
-
-</div>
-
-<div>
-
-        Py\_INCREF(v);
-
-</div>
-
-<div>
-
-    }
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-<span class="Apple-style-span"
-style="font-size: large;">3.大整数对象，空对象池，对象缓存</span>
-
-</div>
-
-<div>
-
-<div>
-
-&gt;&gt;&gt; a = 1000000
-
-</div>
-
-<div>
-
-&gt;&gt;&gt; b = 2000000
-
-</div>
-
-<div>
-
-&gt;&gt;&gt; id(a) == id(1000000)
-
-</div>
-
-<div>
-
-False
-
-</div>
-
-<div>
-
-<div>
-
-&gt;&gt;&gt; id(100000) == id(100000)
-
-</div>
-
-<div>
-
-True
-
-</div>
-
-<div>
-
-最后一个是因为python解析器在解析对象的时候，对前后生成的对象进行了缓存。经过测试，对文件也有效。
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-<span class="Apple-style-span"
-style="font-size: large;">4.字符串对象复用和缓存</span>
-
-</div>
-
-<div>
-
-<div>
-
-&gt;&gt;&gt; c = 'qazwsxedcrfvt'
-
-</div>
-
-<div>
-
-&gt;&gt;&gt; c += 'gbyhnujmikolp'
-
-</div>
-
-<div>
-
-&gt;&gt;&gt; a = 'qazwsxedcrfvtgbyhnujmikolp'
-
-</div>
-
-<div>
-
-&gt;&gt;&gt; id(a) == id(c)
-
-</div>
-
-<div>
-
-False
-
-</div>
-
-<div>
-
-<div>
-
-&gt;&gt;&gt; a = 'abc'
-
-</div>
-
-<div>
-
-&gt;&gt;&gt; b = 'def'
-
-</div>
-
-<div>
-
-&gt;&gt;&gt; c = 'abc'
-
-</div>
-
-<div>
-
-&gt;&gt;&gt; id(a) == id(c)
-
-</div>
-
-<div>
-
-True
-
-</div>
-
-<div>
-
-<div>
-
-&gt;&gt;&gt; b = 'abcde'
-
-</div>
-
-<div>
-
-&gt;&gt;&gt; id(b\[1\]) == id(c\[1\])
-
-</div>
-
-<div>
-
-True
-
-</div>
-
-<div>
-
-缓存原理同上，对于长度为0, 1的小字符串，永久缓存。
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-<span class="Apple-style-span"
-style="font-size: large;">5.free\_list对象缓存的机制</span>
-
-</div>
-
-<div>
-
-每个类别有自己的free\_list对象，用于缓存已经被销毁的对象。目前尚不清楚GC是否会定时释放这部分内存，但是python在对象引用到0时是不释放对象的，而且多数情况下表现为内存泄漏。而且多种对象的free\_list不能互相通用，继承子类也不适用。
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-<span class="Apple-style-span"
-style="font-size: large;">6.list对象的行为</span>
-
-</div>
-
-<div>
-
-list对象用一种vector等同的方法处理对象池。因此随机插入（尤其是头部插入）一个对象超长队列会引发大量的内存复制行为。
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-<span class="Apple-style-span"
-style="font-size: large;">7.dict对象的索引方案</span>
-
-</div>
-
-<div>
-
-dict对象的索引方案使用的是哈希表，而且是开放地址法的哈希表。当装载率达到一定规模后，会新申请一块内存，将有效数据复制过去。最小的表空间为8个对象，当装载率超过2/3时，会扩大规模到当前active的4倍（超过50000个对象为2倍）。目前为止，在对象被删除后，其表空间并不释放。因此曾经增长的非常大的dict对象，可以定期复制以回收空间。
-
-</div>
-
-<div>
-
-\
-
-</div>
-
-<div>
-
-<span class="Apple-style-span"
-style="font-size: large;">8.dict的用法注释</span>
-
-</div>
-
-<div>
-
-<div>
-
-从序列中移除重复对象
-
-</div>
-
-<div>
-
-    dict.fromkeys(seqn).keys()
-
-</div>
-
-<div>
-
-计算序列中元素出现次数
-
-</div>
-
-<div>
-
-    for e in seqn: d\[e\] = d.get(e,0) + 1
-
-</div>
-
-<div>
-
-<div>
-
-词典中移除大量元素
-
-</div>
-
-<div>
-
-    d = dict(\[(k, v) for k, v in d.items() if k != xxx\])
-
-</div>
-
-<div>
-
-词典中访问可能不存在的元素（当不存在的风险高于5%时）
-
-</div>
-
-<div>
-
-    o = d.get(k, default)
-
-</div>
-
-<div>
-
-词典中访问可能不存在的元素（当不存在的风险低于5%时）
-
-</div>
-
-<div>
-
-    try: o = d\[k\]
-
-</div>
-
-<div>
-
-    except KeyError: o = default
-
-</div>
-
-<p></div></p>
-
-<p></div></p>
-
-<p></div></p>
-
-<p></div></p>
-
-<p></div></p>
-
-<p></div></p>
-
-<p></div></p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    PyInt_Type.ob_type -&gt; PyType_Type</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    PyInt_Type.tp_base -&gt; PyBaseObject_Type</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    PyBaseObject_Type.ob_type -&gt; PyType_Type</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    PyType_Type.ob_type -&gt; PyType_Type</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>更精确的参考源码解析262页图。</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>\</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p><!-- raw HTML omitted -->2.小整数对象<!-- raw HTML omitted --></p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    if (-NSMALLNEGINTS &lt;= ival &amp;&amp; ival &lt; NSMALLPOSINTS) {</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>        v = small_ints[ival + NSMALLNEGINTS];</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>        Py_INCREF(v);</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    }</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>\</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p><!-- raw HTML omitted -->3.大整数对象，空对象池，对象缓存<!-- raw HTML omitted --></p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; a = 1000000</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; b = 2000000</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; id(a) == id(1000000)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>False</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; id(100000) == id(100000)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>True</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>最后一个是因为python解析器在解析对象的时候，对前后生成的对象进行了缓存。经过测试，对文件也有效。</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>\</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p><!-- raw HTML omitted -->4.字符串对象复用和缓存<!-- raw HTML omitted --></p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; c = &lsquo;qazwsxedcrfvt&rsquo;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; c += &lsquo;gbyhnujmikolp&rsquo;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; a = &lsquo;qazwsxedcrfvtgbyhnujmikolp&rsquo;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; id(a) == id(c)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>False</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; a = &lsquo;abc&rsquo;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; b = &lsquo;def&rsquo;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; c = &lsquo;abc&rsquo;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; id(a) == id(c)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>True</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; b = &lsquo;abcde&rsquo;</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&gt;&gt;&gt; id(b[1]) == id(c[1])</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>True</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>缓存原理同上，对于长度为0, 1的小字符串，永久缓存。</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>\</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p><!-- raw HTML omitted -->5.free_list对象缓存的机制<!-- raw HTML omitted --></p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>每个类别有自己的free_list对象，用于缓存已经被销毁的对象。目前尚不清楚GC是否会定时释放这部分内存，但是python在对象引用到0时是不释放对象的，而且多数情况下表现为内存泄漏。而且多种对象的free_list不能互相通用，继承子类也不适用。</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>\</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p><!-- raw HTML omitted -->6.list对象的行为<!-- raw HTML omitted --></p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>list对象用一种vector等同的方法处理对象池。因此随机插入（尤其是头部插入）一个对象超长队列会引发大量的内存复制行为。</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>\</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p><!-- raw HTML omitted -->7.dict对象的索引方案<!-- raw HTML omitted --></p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>dict对象的索引方案使用的是哈希表，而且是开放地址法的哈希表。当装载率达到一定规模后，会新申请一块内存，将有效数据复制过去。最小的表空间为8个对象，当装载率超过2/3时，会扩大规模到当前active的4倍（超过50000个对象为2倍）。目前为止，在对象被删除后，其表空间并不释放。因此曾经增长的非常大的dict对象，可以定期复制以回收空间。</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>\</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p><!-- raw HTML omitted -->8.dict的用法注释<!-- raw HTML omitted --></p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>从序列中移除重复对象</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    dict.fromkeys(seqn).keys()</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>计算序列中元素出现次数</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    for e in seqn: d[e] = d.get(e,0) + 1</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>词典中移除大量元素</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    d = dict([(k, v) for k, v in d.items() if k != xxx])</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>词典中访问可能不存在的元素（当不存在的风险高于5%时）</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    o = d.get(k, default)</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>词典中访问可能不存在的元素（当不存在的风险低于5%时）</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    try: o = d[k]</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>    except KeyError: o = default</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
 
     </div>
     <div class="post-footer">

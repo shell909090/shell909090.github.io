@@ -2,24 +2,23 @@
 <html lang="en-us">
   <head>
     <title>如何在colab上用whisper识别语音 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
@@ -27,7 +26,7 @@ if (!doNotTrack) {
 <meta name="twitter:title" content="如何在colab上用whisper识别语音"/>
 <meta name="twitter:description" content="Abstract 简述了使用whisper识别语音的方法，以及如何使用colab的GPU加速runtime来识别语音内容。
 Whisper whisper是OpenAI开源的工具，你可以在这里找到介绍。在这里下载源码。中文的指引可以参考这篇。
-Linux上运行Whisper的准备  ffmpeg: linux上很容易安装。 git: linux上很容易安装。 pytorch: 上pytorch.org，选择合适的发行，复制代码，安装。 whisper:  pip install git&#43;https://github.com/openai/whisper.git pip install &ndash;upgrade &ndash;no-deps &ndash;force-reinstall git&#43;https://github.com/openai/whisper.git   4.2那步我看不懂为啥要reinstall，不过反正照做了。
+Linux上运行Whisper的准备 ffmpeg: linux上很容易安装。 git: linux上很容易安装。 pytorch: 上pytorch.org，选择合适的发行，复制代码，安装。 whisper: pip install git&#43;https://github.com/openai/whisper.git pip install &ndash;upgrade &ndash;no-deps &ndash;force-reinstall git&#43;https://github.com/openai/whisper.git 4.2那步我看不懂为啥要reinstall，不过反正照做了。
 3步那里，有GPU选择GPU安装，没有GPU选择CPU安装。
 使用 time whisper --language Chinese --model medium [filename]
 如果没有模型，会现场下载。文件位置在~/.cache/whisper/。
@@ -39,15 +38,15 @@ small的pt文件大约500M。medium的pt文件1.5G。所有关联包1.3G左右�
 Docker上运行Whisper Webservice 参考这里。
 CPU版本：
 docker run -d -p 9000:9000 -e ASR_MODEL=base onerahmet/openai-whisper-asr-webservice:latest
-Colab Colab是Google推出的&rdquo;类Jupyter&rdquo;计算平台。最大的好处是可以选择GPU机型，上面搭载了16G显存，可以做一些简单计算。具体可以看这里。
+Colab Colab是Google推出的&quot;类Jupyter&quot;计算平台。最大的好处是可以选择GPU机型，上面搭载了16G显存，可以做一些简单计算。具体可以看这里。
 注意，Colab虽然是免费的，但大量使用昂贵的节点进行计算（尤其是GPU）会消耗你的计算单元。当计算单元消耗到一定程度的时候，就会受到一些限制。如果你希望大量执行GPU运算，最好直接买Colab的计算单元，或者干脆租用一台GPU型的机器。
 在Colab上进行Whisper识别 没啥好多说的。
-!nvidia-smi !pip3 install torch torchvision torchaudio !pip3 install git&#43;https://github."/>
+!nvidia-smi !pip3 install torch torchvision torchaudio !pip3 install git&#43;https://github.com/openai/whisper.git !pip3 install --upgrade --no-deps --force-reinstall git&#43;https://github."/>
 
     <meta property="og:title" content="如何在colab上用whisper识别语音" />
 <meta property="og:description" content="Abstract 简述了使用whisper识别语音的方法，以及如何使用colab的GPU加速runtime来识别语音内容。
 Whisper whisper是OpenAI开源的工具，你可以在这里找到介绍。在这里下载源码。中文的指引可以参考这篇。
-Linux上运行Whisper的准备  ffmpeg: linux上很容易安装。 git: linux上很容易安装。 pytorch: 上pytorch.org，选择合适的发行，复制代码，安装。 whisper:  pip install git&#43;https://github.com/openai/whisper.git pip install &ndash;upgrade &ndash;no-deps &ndash;force-reinstall git&#43;https://github.com/openai/whisper.git   4.2那步我看不懂为啥要reinstall，不过反正照做了。
+Linux上运行Whisper的准备 ffmpeg: linux上很容易安装。 git: linux上很容易安装。 pytorch: 上pytorch.org，选择合适的发行，复制代码，安装。 whisper: pip install git&#43;https://github.com/openai/whisper.git pip install &ndash;upgrade &ndash;no-deps &ndash;force-reinstall git&#43;https://github.com/openai/whisper.git 4.2那步我看不懂为啥要reinstall，不过反正照做了。
 3步那里，有GPU选择GPU安装，没有GPU选择CPU安装。
 使用 time whisper --language Chinese --model medium [filename]
 如果没有模型，会现场下载。文件位置在~/.cache/whisper/。
@@ -59,12 +58,12 @@ small的pt文件大约500M。medium的pt文件1.5G。所有关联包1.3G左右�
 Docker上运行Whisper Webservice 参考这里。
 CPU版本：
 docker run -d -p 9000:9000 -e ASR_MODEL=base onerahmet/openai-whisper-asr-webservice:latest
-Colab Colab是Google推出的&rdquo;类Jupyter&rdquo;计算平台。最大的好处是可以选择GPU机型，上面搭载了16G显存，可以做一些简单计算。具体可以看这里。
+Colab Colab是Google推出的&quot;类Jupyter&quot;计算平台。最大的好处是可以选择GPU机型，上面搭载了16G显存，可以做一些简单计算。具体可以看这里。
 注意，Colab虽然是免费的，但大量使用昂贵的节点进行计算（尤其是GPU）会消耗你的计算单元。当计算单元消耗到一定程度的时候，就会受到一些限制。如果你希望大量执行GPU运算，最好直接买Colab的计算单元，或者干脆租用一台GPU型的机器。
 在Colab上进行Whisper识别 没啥好多说的。
-!nvidia-smi !pip3 install torch torchvision torchaudio !pip3 install git&#43;https://github." />
+!nvidia-smi !pip3 install torch torchvision torchaudio !pip3 install git&#43;https://github.com/openai/whisper.git !pip3 install --upgrade --no-deps --force-reinstall git&#43;https://github." />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2887/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2887/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2023-03-24T20:40:39+08:00" />
 <meta property="article:modified_time" content="2023-03-24T20:40:39+08:00" />
 
@@ -104,11 +103,8 @@ Colab Colab是Google推出的&rdquo;类Jupyter&rdquo;计算平台。最大的好
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -118,100 +114,70 @@ Colab Colab是Google推出的&rdquo;类Jupyter&rdquo;计算平台。最大的好
       <h1 class ="post-title">如何在colab上用whisper识别语音</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Mar 24, 2023
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div></div>
+        </div>
+      </div>
     </header>
     <div class="post-content">
-      
-
-<h1 id="abstract">Abstract</h1>
-
+      <h1 id="abstract">Abstract</h1>
 <p>简述了使用whisper识别语音的方法，以及如何使用colab的GPU加速runtime来识别语音内容。</p>
-
 <h1 id="whisper">Whisper</h1>
-
 <p>whisper是OpenAI开源的工具，你可以在<a href="https://openai.com/research/whisper">这里</a>找到介绍。在<a href="https://github.com/openai/whisper">这里</a>下载源码。中文的指引可以参考<a href="https://www.zhihu.com/question/23473262">这篇</a>。</p>
-
 <h1 id="linux上运行whisper的准备">Linux上运行Whisper的准备</h1>
-
 <ol>
 <li>ffmpeg: linux上很容易安装。</li>
 <li>git: linux上很容易安装。</li>
 <li>pytorch: 上<a href="pytorch.org">pytorch.org</a>，选择合适的发行，复制代码，安装。</li>
 <li>whisper:
-
 <ol>
-<li>pip install git+<a href="https://github.com/openai/whisper.git">https://github.com/openai/whisper.git</a></li>
-<li>pip install &ndash;upgrade &ndash;no-deps &ndash;force-reinstall git+<a href="https://github.com/openai/whisper.git">https://github.com/openai/whisper.git</a></li>
-</ol></li>
+<li>pip install git+https://github.com/openai/whisper.git</li>
+<li>pip install &ndash;upgrade &ndash;no-deps &ndash;force-reinstall git+https://github.com/openai/whisper.git</li>
 </ol>
-
+</li>
+</ol>
 <p>4.2那步我看不懂为啥要reinstall，不过反正照做了。</p>
-
 <p>3步那里，有GPU选择GPU安装，没有GPU选择CPU安装。</p>
-
 <h1 id="使用">使用</h1>
-
 <p><code>time whisper --language Chinese --model medium [filename]</code></p>
-
 <p>如果没有模型，会现场下载。文件位置在<code>~/.cache/whisper/</code>。</p>
-
 <p>注意，执行时内存要求巨大。small大约需要3G，medium没有8G就别试了。我本来想打个docker版，结果被带崩了N次，放弃了。要打docker版，起码得是直接在宿主机上直接安装docker。</p>
-
 <h1 id="效果对比">效果对比</h1>
-
 <p>small和medium对比过一下，small我基本无法接受，medium基本就能接受了。</p>
-
 <p>small的pt文件大约500M。medium的pt文件1.5G。所有关联包1.3G左右。</p>
-
 <h1 id="速度对比">速度对比</h1>
-
 <p>对一个22分钟的电话录音，进行识别。Colab的GPU版本耗时约8分钟，我的电脑（i3-9100，4cores4.2G）执行118分钟。性能差距15倍。基本上GPU耗时约原始语料的1/3，CPU耗时约原始语料的5倍。</p>
-
 <h1 id="在virtualenv里安装工具链">在Virtualenv里安装工具链</h1>
-
 <p>其实很简单。用apt安装<code>python3-virtualenv</code>，再用virtualenv安装pip下的所有工具就行。ffmpeg和git用apt单装。</p>
-
 <h1 id="docker上运行whisper-webservice">Docker上运行Whisper Webservice</h1>
-
 <p>参考<a href="https://github.com/ahmetoner/whisper-asr-webservice">这里</a>。</p>
-
 <p>CPU版本：</p>
-
 <p><code>docker run -d -p 9000:9000 -e ASR_MODEL=base onerahmet/openai-whisper-asr-webservice:latest</code></p>
-
 <h1 id="colab">Colab</h1>
-
-<p>Colab是Google推出的&rdquo;类Jupyter&rdquo;计算平台。最大的好处是可以选择GPU机型，上面搭载了16G显存，可以做一些简单计算。具体可以看<a href="https://zhuanlan.zhihu.com/p/54389036">这里</a>。</p>
-
+<p>Colab是Google推出的&quot;类Jupyter&quot;计算平台。最大的好处是可以选择GPU机型，上面搭载了16G显存，可以做一些简单计算。具体可以看<a href="https://zhuanlan.zhihu.com/p/54389036">这里</a>。</p>
 <p>注意，Colab虽然是免费的，但大量使用昂贵的节点进行计算（尤其是GPU）会消耗你的计算单元。当计算单元消耗到一定程度的时候，就会受到一些限制。如果你希望大量执行GPU运算，最好直接买Colab的计算单元，或者干脆租用一台GPU型的机器。</p>
-
 <h1 id="在colab上进行whisper识别">在Colab上进行Whisper识别</h1>
-
 <p>没啥好多说的。</p>
-
-<pre><code>!nvidia-smi
+<pre tabindex="0"><code>!nvidia-smi
 !pip3 install torch torchvision torchaudio
 !pip3 install git+https://github.com/openai/whisper.git
 !pip3 install --upgrade --no-deps --force-reinstall git+https://github.com/openai/whisper.git
 from google.colab import drive
-drive.mount('/content/gdrive')
-%cd &quot;/content/gdrive/MyDrive/Colab Notebooks&quot;
+drive.mount(&#39;/content/gdrive&#39;)
+%cd &#34;/content/gdrive/MyDrive/Colab Notebooks&#34;
 !ls -l
 !time whisper --language Chinese --model medium
 </code></pre>
-
     </div>
     <div class="post-footer">
       

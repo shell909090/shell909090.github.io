@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>codec on Shell&#39;s Home</title>
@@ -7,11 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Thu, 27 Dec 2007 22:04:59 +0800</lastBuildDate>
-    
-	<atom:link href="//blog.shell909090.org/tags/codec/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Thu, 27 Dec 2007 22:04:59 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/codec/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>libxml使用中的编码问题</title>
       <link>//blog.shell909090.org/blog/archives/423/</link>
@@ -20,8 +16,8 @@
       <guid>//blog.shell909090.org/blog/archives/423/</guid>
       <description>libxml是gnome的XML解析库，具有强大的解析能力，支持DOM和SAX解析模型，属于验证型解析器。其内部是使用utf-8编码工作的，因此gbk之类编码的XML无法解析。为了解决这个问题，我们可以使用一个很简单的小窍门。
 libxml是要和iconv一并使用的，头文件引用一般类似以下形式。
-#include &amp;lt;iconv.h&amp;gt; #pragma comment(lib, &amp;quot;iconv&amp;quot;) #include &amp;lt;libxml/tree.h&amp;gt; #include &amp;lt;libxml/parser.h&amp;gt; #pragma comment(lib, &amp;quot;libxml2&amp;quot;)  这样的话，我们向libxml注册一个处理句柄，对其他编码的xml先执行一次转换，再进行解析。
-iconv_t iconv_utf8_gbk = NULL; iconv_t iconv_gbk_utf8 = NULL; int gbk_input (unsigned char *out, int *outlen, const unsigned char *in, int *inlen) { char *outbuf = (char *) out; char *inbuf = (char *) in; size_t rslt; rslt = iconv (iconv_utf8_gbk, (const char **) &amp;amp;inbuf, (size_t *) inlen, &amp;amp;outbuf, (size_t *) outlen); if (rslt &amp;lt; 0) return rslt; *outlen = ((unsigned char *) outbuf - out); *inlen = ((unsigned char *) inbuf - in); return *outlen; } int gbk_output (unsigned char *out, int *outlen, const unsigned char *in, int *inlen) { char *outbuf = (char *) out; char *inbuf = (char *) in; size_t rslt; rslt = iconv (iconv_gbk_utf8, (const char **) &amp;amp;inbuf, (size_t *) inlen, &amp;amp;outbuf, (size_t *) outlen); if (rslt &amp;lt; 0) return rslt; *outlen = ((unsigned char *) outbuf - out); *inlen = ((unsigned char *) inbuf - in); return *outlen; }  初始化的时候运行以下代码进行句柄注册。</description>
+#include &amp;lt;iconv.h&amp;gt; #pragma comment(lib, &amp;quot;iconv&amp;quot;) #include &amp;lt;libxml/tree.h&amp;gt; #include &amp;lt;libxml/parser.h&amp;gt; #pragma comment(lib, &amp;quot;libxml2&amp;quot;) 这样的话，我们向libxml注册一个处理句柄，对其他编码的xml先执行一次转换，再进行解析。
+iconv_t iconv_utf8_gbk = NULL; iconv_t iconv_gbk_utf8 = NULL; int gbk_input (unsigned char *out, int *outlen, const unsigned char *in, int *inlen) { char *outbuf = (char *) out; char *inbuf = (char *) in; size_t rslt; rslt =	iconv (iconv_utf8_gbk, (const char **) &amp;amp;inbuf, (size_t *) inlen, &amp;amp;outbuf, (size_t *) outlen); if (rslt &amp;lt; 0) return rslt; *outlen = ((unsigned char *) outbuf - out); *inlen = ((unsigned char *) inbuf - in); return *outlen; } int gbk_output (unsigned char *out, int *outlen, const unsigned char *in, int *inlen) { char *outbuf = (char *) out; char *inbuf = (char *) in; size_t rslt; rslt =	iconv (iconv_gbk_utf8, (const char **) &amp;amp;inbuf, (size_t *) inlen, &amp;amp;outbuf, (size_t *) outlen); if (rslt &amp;lt; 0) return rslt; *outlen = ((unsigned char *) outbuf - out); *inlen = ((unsigned char *) inbuf - in); return *outlen; } 初始化的时候运行以下代码进行句柄注册。</description>
     </item>
     
     <item>
@@ -33,7 +29,7 @@ iconv_t iconv_utf8_gbk = NULL; iconv_t iconv_gbk_utf8 = NULL; int gbk_input (uns
       <description>libxml2是gnome做的一个xml的库，支持SAX和DOM。
 在解析xml的时候，libxml2会将xml中不属于标签的部分作为text节点插入。如果是属性，则添加一个属性节点到父节点上，一个文字节点到属性节点下。那么整个xml就变成了一颗单纯的树。
 支持多语言的问题上，libxml2的内核只支持UTF-8。但是可以通过注册编码句柄来添加语言支持，一般是配合iconv[2]使用的，因为libxml2的编译依赖就是iconv。下面是代码。
-iconv_t iconv_utf8_gbk; iconv_t iconv_gbk_utf8; int gbk_input (unsigned char *out, int *outlen, const unsigned char *in, int *inlen) { char *outbuf = (char *) out; char *inbuf = (char *) in; size_t rslt; rslt = iconv (iconv_utf8_gbk, (const char **) &amp;amp;inbuf, (size_t *) inlen, &amp;amp;outbuf, (size_t *) outlen); if (rslt &amp;lt; 0) return rslt; *outlen = ((unsigned char *) outbuf - out); *inlen = ((unsigned char *) inbuf - in); return *outlen; } int gbk_output (unsigned char *out, int *outlen, const unsigned char *in, int *inlen) { char *outbuf = (char *) out; char *inbuf = (char *) in; size_t rslt; rslt = iconv (iconv_gbk_utf8, (const char **) &amp;amp;inbuf, (size_t *) inlen, &amp;amp;outbuf, (size_t *) outlen); if (rslt &amp;lt; 0) return rslt; *outlen = ((unsigned char *) outbuf - out); *inlen = ((unsigned char *) inbuf - in); return *outlen; } static void print_element_names (xmlDocPtr doc, xmlNode * a_node, int n) { xmlNode *cur_node = NULL; xmlAttr *cur_attr = NULL; xmlChar *key; for (cur_node = a_node; cur_node; cur_node = cur_node-&amp;gt;next) { for (int i = 0; i &amp;lt; n; ++i) printf (&amp;quot; &amp;quot;); // key = xmlNodeListGetString(doc, cur_node-&amp;gt;xmlChildrenNode, 1); printf (&amp;quot;node %d: %s = %sn&amp;quot;, cur_node-&amp;gt;type, cur_node-&amp;gt;name, cur_node-&amp;gt;content); if (cur_node-&amp;gt;properties !</description>
+iconv_t iconv_utf8_gbk; iconv_t iconv_gbk_utf8; int gbk_input (unsigned char *out, int *outlen, const unsigned char *in, int *inlen) { char *outbuf = (char *) out; char *inbuf = (char *) in; size_t rslt; rslt =	iconv (iconv_utf8_gbk, (const char **) &amp;amp;inbuf, (size_t *) inlen, &amp;amp;outbuf, (size_t *) outlen); if (rslt &amp;lt; 0) return rslt; *outlen = ((unsigned char *) outbuf - out); *inlen = ((unsigned char *) inbuf - in); return *outlen; } int gbk_output (unsigned char *out, int *outlen, const unsigned char *in, int *inlen) { char *outbuf = (char *) out; char *inbuf = (char *) in; size_t rslt; rslt =	iconv (iconv_gbk_utf8, (const char **) &amp;amp;inbuf, (size_t *) inlen, &amp;amp;outbuf, (size_t *) outlen); if (rslt &amp;lt; 0) return rslt; *outlen = ((unsigned char *) outbuf - out); *inlen = ((unsigned char *) inbuf - in); return *outlen; } static void print_element_names (xmlDocPtr doc, xmlNode * a_node, int n) { xmlNode *cur_node = NULL; xmlAttr *cur_attr = NULL; xmlChar *key; for (cur_node = a_node; cur_node; cur_node = cur_node-&amp;gt;next) { for (int i = 0; i &amp;lt; n; ++i) printf (&amp;quot; &amp;quot;); // key = xmlNodeListGetString(doc, cur_node-&amp;gt;xmlChildrenNode, 1); printf (&amp;quot;node %d: %s = %sn&amp;quot;, cur_node-&amp;gt;type, cur_node-&amp;gt;name, cur_node-&amp;gt;content); if (cur_node-&amp;gt;properties !</description>
     </item>
     
     <item>
@@ -85,9 +81,9 @@ Reference:
 /etc/environment:LANG=zh_CN #这个是登录进入X后的设置，你运行的所有程序基本都是使用这个
 dpkg-reconfigure locales的默认语言设定修改的是/etc/default/locale，所以对X登录进去后的程序不一定起作用。一般情况下这zh_CN的设定就通吃了，不过有的时候有点小BUG，例如term下面vi后退出，就变成看不懂的乱马了。这个时候要重设屏幕才可以恢复。而且在输入的时候没有——的，很多东西也看不到。所以我改成了zh_CN.GBK，然后出现了两个问题。
 一个是gvim不运行了，这个看了看别人，这么解决。
-----------------------\~/.gvimrc----------------------- set encoding=gb2312 set langmenu=zh_CN.GB2312 set imcmdline source $VIMRUNTIME/delmenu.vim source $VIMRUNTIME/menu.vim ---------------------------------------------------------  保证这个文件里面有这些内容就可以了。
+----------------------\~/.gvimrc----------------------- set encoding=gb2312 set langmenu=zh_CN.GB2312 set imcmdline source $VIMRUNTIME/delmenu.vim source $VIMRUNTIME/menu.vim --------------------------------------------------------- 保证这个文件里面有这些内容就可以了。
 然后是gtk1.X的程序都不正常了，主要是xmms和audacity。这个看了人家忽悠半天，最后这么解决的。
------------------/usr/bin/env_zh_CN--------------- #!/bin/bash LANG=zh_CN exec $@ ----------------------------------------------------------  然后chmod a+x /usr/bin/env_zh_CN
+-----------------/usr/bin/env_zh_CN--------------- #!/bin/bash LANG=zh_CN exec $@ ---------------------------------------------------------- 然后chmod a+x /usr/bin/env_zh_CN
 再修改所有运行语句成env_zh_CN xmms
 我修改了两处。
 世界基本就清静了。</description>

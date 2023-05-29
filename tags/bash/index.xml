@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>bash on Shell&#39;s Home</title>
@@ -7,11 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Tue, 04 Dec 2007 05:44:52 +0800</lastBuildDate>
-    
-	<atom:link href="//blog.shell909090.org/tags/bash/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Tue, 04 Dec 2007 05:44:52 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/bash/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>wc、sort介绍</title>
       <link>//blog.shell909090.org/blog/archives/421/</link>
@@ -31,13 +27,13 @@
       
       <guid>//blog.shell909090.org/blog/archives/348/</guid>
       <description>算是介绍一个奇淫巧技吧。查找重复的文件，这个应该有很多软件都可以做的。不过在Linux里面，利用系统工具，一句语句查找应该就比较少见了。
-$find . -name &amp;quot;*&amp;quot; -type f -size +0 -exec md5sum {} ; | sort | uniq -d -w 32  原理是这样的，先用find查找当前所有文件。我们加上限定类型必须是文件，目录不要。限定大小不为0，空文件不要。然后对所有满足条件的执行md5sum，获得md5和文件的列表。然后排序，再针对md5的部分做唯一限定。就得到了所有md5相同的文件的列表。
+$find . -name &amp;quot;*&amp;quot; -type f -size +0 -exec md5sum {} ; | sort | uniq -d -w 32 原理是这样的，先用find查找当前所有文件。我们加上限定类型必须是文件，目录不要。限定大小不为0，空文件不要。然后对所有满足条件的执行md5sum，获得md5和文件的列表。然后排序，再针对md5的部分做唯一限定。就得到了所有md5相同的文件的列表。
 问题是，这时候我们得到的还只是一堆重复的文件的md5。我们可以把以上步骤拆开来获得完整的输出。
-$find . -name &amp;quot;*&amp;quot; -type f -size +0 -exec md5sum {} ; | sort &amp;gt; file_md5 $cat file_md5 | uniq -d -w 32 $grep &amp;quot;...&amp;quot; file_md5  相信大家都看出是怎么回事情了，就不赘言了。
+$find . -name &amp;quot;*&amp;quot; -type f -size +0 -exec md5sum {} ; | sort &amp;gt; file_md5 $cat file_md5 | uniq -d -w 32 $grep &amp;quot;...&amp;quot; file_md5 相信大家都看出是怎么回事情了，就不赘言了。
 Windows下以前我总是执行不出，原因在于要这么写。
-find . -type f -size +0 -exec md5sum {} ; | sort &amp;gt; report.txt  差一个转义，因为不需要。
+find . -type f -size +0 -exec md5sum {} ; | sort &amp;gt; report.txt 差一个转义，因为不需要。
 总结一下，我们可以用一个脚本来处理这些问题。
---------------------------fine_rep------------------------------ find $1 -type f -size +0 -exec md5sum {} ; | sort &amp;gt; &amp;quot;file_md5&amp;quot; cat &amp;quot;file_md5&amp;quot; | uniq -d -w 32 | cut -d&amp;quot; &amp;quot; -f1 | while read x do grep &amp;quot;$x&amp;quot; file_md5 echo &amp;quot;&amp;quot; done echo &amp;quot;done&amp;quot; rm &amp;quot;file_md5&amp;quot; ------------------------------------------------------------  </description>
+--------------------------fine_rep------------------------------ find $1 -type f -size +0 -exec md5sum {} ; | sort &amp;gt; &amp;quot;file_md5&amp;quot; cat &amp;quot;file_md5&amp;quot; | uniq -d -w 32 | cut -d&amp;quot; &amp;quot; -f1 | while read x do grep &amp;quot;$x&amp;quot; file_md5 echo &amp;quot;&amp;quot; done echo &amp;quot;done&amp;quot; rm &amp;quot;file_md5&amp;quot; ------------------------------------------------------------ </description>
     </item>
     
     <item>
@@ -55,7 +51,7 @@ xserverrc内容仅为启动X。xinitrc会执行/etc/X11/Xsession，而后进入s
 /etc/X11/Xsession和/etc/init.d/rc很类似，是用来循环依次启动其他脚本的控制脚本。他负责启动/etc/X11/Xsession.d/下的所有文件。其中50xfree86-common_determine-startup文件会依次检测以下3个文件，并且设置到STARTUP变量中。x-session-manager;x-window-manager;x-terminal-emulator;最后99xfree86-common_start文件会执行exec $STARTUP;完成整个系统的启动过程。
 3.gdm
 gdm服务被/etc/init.d/gdm启动，而后读取/etc/gdm/gdm.conf配置自身。后面是基于理论分析，没有加以验证。
-|-gdm---gdm-+-Xorg | `-x-session-manag-+-scim | `-ssh-agent  上面是pstree的结果，第1个gdm是/etc/init.d/gdm，第2个gdm是/usr/bin/gdm。gdm先启动一个X作为服务端，否则自身也无法以图形方式显示登录界面。而后gdm成为此X界面的唯一用户，显示登录系统。在用户登录后，gdm启动/etc/gdm/Xsession。这个脚本的内容和/etc/X11/Xsession非常类似，我怀疑为什么他们不用链接的方式(可能是因为包的关系？)。这时整个启动活动就结束了。</description>
+|-gdm---gdm-+-Xorg | `-x-session-manag-+-scim | `-ssh-agent 上面是pstree的结果，第1个gdm是/etc/init.d/gdm，第2个gdm是/usr/bin/gdm。gdm先启动一个X作为服务端，否则自身也无法以图形方式显示登录界面。而后gdm成为此X界面的唯一用户，显示登录系统。在用户登录后，gdm启动/etc/gdm/Xsession。这个脚本的内容和/etc/X11/Xsession非常类似，我怀疑为什么他们不用链接的方式(可能是因为包的关系？)。这时整个启动活动就结束了。</description>
     </item>
     
     <item>
@@ -137,7 +133,7 @@ wav文件又叫做PCM编码格式。这是一切音乐的基础。无论你是�
 1.7.iso
 iso也不是音乐文件，但是和音乐的关系非常密切。大家都知道iso是光盘的镜像，其实说的还不确切。iso本身就是光盘内容严格1字节比1字节复制的结果。至于有的为什么有其他格式。那就涉及光驱设备工作和数据流／加解密的问题了。
 另外说一个iso的问题，大家知道linux下面挂载iso的指令是
-# mount -t iso9660 -o loop file /mnt  这其实是两个步骤，一个是</description>
+# mount -t iso9660 -o loop file /mnt 这其实是两个步骤，一个是</description>
     </item>
     
     <item>

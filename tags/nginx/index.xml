@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>nginx on Shell&#39;s Home</title>
@@ -7,11 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Wed, 15 Jan 2014 10:53:20 +0800</lastBuildDate>
-    
-	<atom:link href="//blog.shell909090.org/tags/nginx/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Wed, 15 Jan 2014 10:53:20 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/nginx/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>golang和nginx的简单性能对比</title>
       <link>//blog.shell909090.org/blog/archives/2536/</link>
@@ -19,11 +15,11 @@
       
       <guid>//blog.shell909090.org/blog/archives/2536/</guid>
       <description>说明 测试都是ab做的，中等并发量，统一采用10000并发，100000个请求。都是本机请求本机，避免公司内网IDS的干扰。
-机器是一台双核CPU的DELL：Intel&amp;reg; Pentium&amp;reg; CPU G2030 @ 3.00GHz。配4G内存。
+机器是一台双核CPU的DELL：Intel(R) Pentium(R) CPU G2030 @ 3.00GHz。配4G内存。
 第一组数据是ab测试nginx，nginx的配置如下：
-worker_processes 4; pid /run/nginx.pid; worker_rlimit_nofile 30000; events { worker_connections 20000; multi_accept on; } http { sendfile on; tcp_nopush on; tcp_nodelay on; ... }  第二组是ab测试golang，返回固定是个OK。
+worker_processes 4; pid /run/nginx.pid; worker_rlimit_nofile 30000; events { worker_connections 20000; multi_accept on; } http { sendfile on; tcp_nopush on; tcp_nodelay on; ... } 第二组是ab测试golang，返回固定是个OK。
 第三组是ab测试golang，返回某个目录或文件。
-err := http.ListenAndServe(&amp;quot;:8080&amp;quot;, http.FileServer(http.Dir(&amp;quot;/home/shell/photo&amp;quot;)))  nginx Concurrency Level: 10000 Time taken for tests: 5.720 seconds Complete requests: 100000 Failed requests: 0 Write errors: 0 Total transferred: 172100000 bytes HTML transferred: 160000000 bytes Requests per second: 17482.</description>
+err := http.ListenAndServe(&amp;quot;:8080&amp;quot;, http.FileServer(http.Dir(&amp;quot;/home/shell/photo&amp;quot;))) nginx Concurrency Level: 10000 Time taken for tests: 5.720 seconds Complete requests: 100000 Failed requests: 0 Write errors: 0 Total transferred: 172100000 bytes HTML transferred: 160000000 bytes Requests per second: 17482.47 [#/sec] (mean) Time per request: 572.</description>
     </item>
     
     <item>
@@ -33,21 +29,21 @@ err := http.ListenAndServe(&amp;quot;:8080&amp;quot;, http.FileServer(http.Dir(&
       
       <guid>//blog.shell909090.org/blog/archives/2200/</guid>
       <description>abstract graphite是一个python写的性能监控系统。这个系统是由多个分离的部分组成的。
- graphite-web: 由django写的web界面系统。 carbon: 数据收集的守护进程。 whisper: 一种python写的数据库，类似rrd，便于大量的性能日志数据收集和处理。上两个组件会调用这个库。 collectd: 数据收集守护进程，向carbon中喂数据的数据源。  另外，有一点黑色幽默的就是，graphite的意思是石墨，是炭(carbon)的一种同素异形体。因此在graphite项目中，多次出现carbon这个名字。当然，另两个同素异形体是钻石(diamond)和足球烯(footballene)，你就暂时别指望看到他们的身影了。
+graphite-web: 由django写的web界面系统。 carbon: 数据收集的守护进程。 whisper: 一种python写的数据库，类似rrd，便于大量的性能日志数据收集和处理。上两个组件会调用这个库。 collectd: 数据收集守护进程，向carbon中喂数据的数据源。 另外，有一点黑色幽默的就是，graphite的意思是石墨，是炭(carbon)的一种同素异形体。因此在graphite项目中，多次出现carbon这个名字。当然，另两个同素异形体是钻石(diamond)和足球烯(footballene)，你就暂时别指望看到他们的身影了。
 另一个用python写的，以元素命名的著名软件是mercurial。化学元素中的汞，俗称水银，符号hg。因此mercurial的命令行简写才是hg。
 以上几个的结构大概是这样的：
 collectd(source) -network-&amp;gt; carbon -&amp;gt; writing-&amp;gt; whisper
 database -&amp;gt; reading-&amp;gt; graphite-web
 下文描述了在debian wheezy下，以nginx+uwsgi模式安装graphite的过程。之所以用这个模式，是因为我的大部分系统都是python写的，同样安装在uwsgi下面。一事不烦二主。
 carbon carbon有对应的debian包，可以很简单的安装。
-sudo aptitude install graphite-carbon  默认的数据端口是2003，默认的数据路径是/var/lib/graphite/，这个在下文需要用到。
+sudo aptitude install graphite-carbon 默认的数据端口是2003，默认的数据路径是/var/lib/graphite/，这个在下文需要用到。
 graphite virtual graphite有部分需要安装到系统中，因此最好用virtualenv进行安装。
-cd /var/web/ sudo aptitude install python-virtualenv virtualenv --system-site-packages graphite  我假定你的安装路径是/var/web/graphite，这个在下面要反复用到。
+cd /var/web/ sudo aptitude install python-virtualenv virtualenv --system-site-packages graphite 我假定你的安装路径是/var/web/graphite，这个在下面要反复用到。
 install 在安装路径下，执行以下内容
-source bin/activite pip install graphite-web --install-option=&amp;quot;--prefix=/var/web/graphite&amp;quot; --install-option=&amp;quot;--install-lib=/var/web/graphite/webapp&amp;quot;  注意，/var/web/graphite需要根据上面的设定自行修改，webapp是你的django基础路径。
+source bin/activite pip install graphite-web --install-option=&amp;quot;--prefix=/var/web/graphite&amp;quot; --install-option=&amp;quot;--install-lib=/var/web/graphite/webapp&amp;quot; 注意，/var/web/graphite需要根据上面的设定自行修改，webapp是你的django基础路径。
 configure 在/var/web/graphite/webapp/graphite下面，执行以下内容
-cp local_settings.py.example local_settings.py  然后编辑local_settings.py
-GRAPHITE_ROOT = &#39;/var/web/graphite&#39; WHISPER_DIR = &#39;/var/lib/graphite/whisper&#39; DATABASES = .</description>
+cp local_settings.py.example local_settings.py 然后编辑local_settings.py
+GRAPHITE_ROOT = &#39;/var/web/graphite&#39; WHISPER_DIR = &#39;/var/lib/graphite/whisper&#39; DATABASES = ... 注意databases，不要在settings.</description>
     </item>
     
     <item>
@@ -60,10 +56,10 @@ GRAPHITE_ROOT = &#39;/var/web/graphite&#39; WHISPER_DIR = &#39;/var/lib/graphite
 下面说说，使用debian官方的包如何做uwsgi发布，还是vhost模式哦。
 首先安装uwsgi，uwsgi-plugin-python这两个包。uwsgi-plugin-greenlet-python也可以考虑，装不装看你的需求。
 然后在/etc/uwsgi/apps-available/sites.xml下面写一个文本文件，内容如下：
-&amp;lt;uwsgi&amp;gt; &amp;lt;vhost/&amp;gt; &amp;lt;no-site/&amp;gt; &amp;lt;/uwsgi&amp;gt;  再从/etc/uwsgi/apps-enabled/sites.xml链接过去，重启uwsgi服务，事情就搞定了。
+&amp;lt;uwsgi&amp;gt; &amp;lt;vhost/&amp;gt; &amp;lt;no-site/&amp;gt; &amp;lt;/uwsgi&amp;gt; 再从/etc/uwsgi/apps-enabled/sites.xml链接过去，重启uwsgi服务，事情就搞定了。
 默认的配置在/usr/share/uwsgi/conf/default.ini，可以看看是否都满意了。一般来说，master和no-orphans都建议打开，chmod-socket最高660，改成600应该也可以工作。贝壳的机器负载小，只用一个worker就够了，所以完整的配置是这样的：
-&amp;lt;uwsgi&amp;gt; &amp;lt;plugins&amp;gt;greenlet,ugreen&amp;lt;/plugins&amp;gt; &amp;lt;workers&amp;gt;1&amp;lt;/workers&amp;gt; &amp;lt;reload-on-as&amp;gt;128&amp;lt;/reload-on-as&amp;gt; &amp;lt;vhost/&amp;gt; &amp;lt;no-site/&amp;gt; &amp;lt;/uwsgi&amp;gt;  nginx里面如此设定：
-location /asdf { include uwsgi\_params; uwsgi\_param UWSGI\_PYHOME /usr; uwsgi\_param UWSGI\_CHDIR /var/web/hosts; uwsgi\_param UWSGI\_SCRIPT main; uwsgi\_pass unix:/run/uwsgi/sites/socket; }  其中，我的程序放在/var/web/hosts底下，使用系统环境来运行（而不是virtualenv），主脚本（带applications那个）是main.py。unix
+&amp;lt;uwsgi&amp;gt; &amp;lt;plugins&amp;gt;greenlet,ugreen&amp;lt;/plugins&amp;gt; &amp;lt;workers&amp;gt;1&amp;lt;/workers&amp;gt; &amp;lt;reload-on-as&amp;gt;128&amp;lt;/reload-on-as&amp;gt; &amp;lt;vhost/&amp;gt; &amp;lt;no-site/&amp;gt; &amp;lt;/uwsgi&amp;gt; nginx里面如此设定：
+location /asdf { include uwsgi\_params; uwsgi\_param UWSGI\_PYHOME /usr; uwsgi\_param UWSGI\_CHDIR /var/web/hosts; uwsgi\_param UWSGI\_SCRIPT main; uwsgi\_pass unix:/run/uwsgi/sites/socket; } 其中，我的程序放在/var/web/hosts底下，使用系统环境来运行（而不是virtualenv），主脚本（带applications那个）是main.py。unix
 socket和上文default.ini里面的socket正好对应上。
 同理，我们其实还可以开多个uwsgi应用，只要放置多个xml配置就好。不过既然都采用了vhost模式，何必还开多个呢？这毕竟不是虚拟网站，要给其他人使用的。</description>
     </item>
@@ -95,12 +91,12 @@ http://aftnn.org/2009/jan/23/nginx-django-fastcgi/</description>
       <guid>//blog.shell909090.org/blog/archives/1618/</guid>
       <description>我假定你了解hg，了解python，理解nginx或者其他cgi/fcgi的配置过程。现在想用http发布自己的mercurial仓库，而且可能发布一群，怎么操作呢？
 首先，复制模板文件过来，你可以挑选其中之一。以下是debian的文件位置，其他发布请自行查询。
-/usr/share/doc/mercurial-common/examples/hgweb.wsgi /usr/share/doc/mercurial-common/examples/hgweb.fcgi /usr/share/doc/mercurial-common/examples/hgweb.cgi  我使用nginx+fastcgi模式部署，因此复制了hgweb.fcgi。我假定你的仓库在~/hg下面，有很多子仓库。复制hgweb.fcgi到~/hg/下，改名为hgweb.py，并修改以下两行。
-config = &amp;quot;/path/to/you/config&amp;quot; WSGIServer(application, bindAddress=&#39;hgweb.sock&#39;).run()  其中bindAddress为你需要监听的unixsocket路径，没有前缀表示在当前目录生成。而后建立配置文件，大概为以下内容。
-[web] allow_push = someone push_ssl = false [paths] /hg/proj1=/path/to/proj1 /hg/proj2=/path/to/proj2  以上就完成了hgweb的服务配置，/hg/proj1是你的url映射路径，/path/to/proj1是物理路径。someone是允许进行push的人，而push_ssl是允许http推送。而后，启动服务。
-python hgweb.py &amp;amp; chmod 666 hgweb.sock  注意，这里要用screen之类的程序来启动hgweb，否则term关闭后服务进程停止，就没的玩了。修改权限是因为debian下的nginx使用www-data运行，对/home/user/hg没有读写权限，导致无法使用unixsock。
+/usr/share/doc/mercurial-common/examples/hgweb.wsgi /usr/share/doc/mercurial-common/examples/hgweb.fcgi /usr/share/doc/mercurial-common/examples/hgweb.cgi 我使用nginx+fastcgi模式部署，因此复制了hgweb.fcgi。我假定你的仓库在~/hg下面，有很多子仓库。复制hgweb.fcgi到~/hg/下，改名为hgweb.py，并修改以下两行。
+config = &amp;quot;/path/to/you/config&amp;quot; WSGIServer(application, bindAddress=&#39;hgweb.sock&#39;).run() 其中bindAddress为你需要监听的unixsocket路径，没有前缀表示在当前目录生成。而后建立配置文件，大概为以下内容。
+[web] allow_push = someone push_ssl = false [paths] /hg/proj1=/path/to/proj1 /hg/proj2=/path/to/proj2 以上就完成了hgweb的服务配置，/hg/proj1是你的url映射路径，/path/to/proj1是物理路径。someone是允许进行push的人，而push_ssl是允许http推送。而后，启动服务。
+python hgweb.py &amp;amp; chmod 666 hgweb.sock 注意，这里要用screen之类的程序来启动hgweb，否则term关闭后服务进程停止，就没的玩了。修改权限是因为debian下的nginx使用www-data运行，对/home/user/hg没有读写权限，导致无法使用unixsock。
 在nginx中做以下配置。
-location ^~ /hg/ { limit_except GET { auth_basic &amp;quot;Restricted&amp;quot;; auth_basic_user_file /home/user/hg/users; } fastcgi_pass unix:/home/user/hg/hgweb.sock; include fastcgi_params; }  如果你不需要auth，可以自行参照nginx的配置修改。其他web服务器以此类推。重启服务后，http://domains/hg/proj1 就可以访问到proj1了。
+location ^~ /hg/ { limit_except GET { auth_basic &amp;quot;Restricted&amp;quot;; auth_basic_user_file /home/user/hg/users; } fastcgi_pass unix:/home/user/hg/hgweb.sock; include fastcgi_params; } 如果你不需要auth，可以自行参照nginx的配置修改。其他web服务器以此类推。重启服务后，http://domains/hg/proj1 就可以访问到proj1了。
 当然，其实最后还要提一句，如果你不需要web界面，可以直接设定将文件内容直接发出去，这样也是可以做pull/push的。
 参考： http://mercurial.selenic.com/wiki/PublishingRepositories</description>
     </item>
@@ -111,8 +107,7 @@ location ^~ /hg/ { limit_except GET { auth_basic &amp;quot;Restricted&amp;quot;;
       <pubDate>Fri, 02 Apr 2010 03:40:00 +0800</pubDate>
       
       <guid>//blog.shell909090.org/blog/archives/108/</guid>
-      <description>本文系电脑资料，同步到blog上。小黄姐姐不必看了，可以帮我留个言。 nginx性能不错，可惜不支持WebDAV，因此没法拿来作为subversion的http服务。于是考虑开一个nginx作为前端，后端就跑一个apache来作为容器。配置这么写的(节选)： =========/etc/nginx/sites-enabled/default========= server { listen 443; server_name OOXX ssl on; ssl_certificate keys/server.crt; ssl_certificate_key keys/server.key; ssl_session_timeout 5m; ssl_protocols SSLv2 SSLv3 TLSv1; ssl_ciphers ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP; ssl_prefer_server_ciphers on; access_log /var/log/nginx/localhost.access.log; include /etc/nginx/mapping-ssl; error_page 500 502 503 504 /50x.html;
-location = /50x.html { root /var/www/nginx-default; } } 打开了一个https的服务，这是当然的，svn传输的数据使用http很危险。 ===========/etc/nginx/mapping-ssl============= location \^~ /svn { proxy_set_header Destination \$http_destination; proxy_pass http://apache_svr; proxy_set_header Host \$host; proxy_set_header X-Real-IP \$remote_addr; proxy_set_header X-Forwarded-Host \$host; proxy_set_header X-Forwarded-Proto https; proxy_set_header X-Forwarded-Server \$host; proxy_set_header X-Forwarded-For</description>
+      <description>本文系电脑资料，同步到blog上。小黄姐姐不必看了，可以帮我留个言。 nginx性能不错，可惜不支持WebDAV，因此没法拿来作为subversion的http服务。于是考虑开一个nginx作为前端，后端就跑一个apache来作为容器。配置这么写的(节选)： =========/etc/nginx/sites-enabled/default========= server { listen 443; server_name OOXX ssl on; ssl_certificate keys/server.crt; ssl_certificate_key keys/server.key; ssl_session_timeout 5m; ssl_protocols SSLv2 SSLv3 TLSv1; ssl_ciphers ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP; ssl_prefer_server_ciphers on; access_log /var/log/nginx/localhost.access.log; include /etc/nginx/mapping-ssl; error_page 500 502 503 504 /50x.html; location = /50x.html { root /var/www/nginx-default; } } 打开了一个https的服务，这是当然的，svn传输的数据使用http很危险。 ===========/etc/nginx/mapping-ssl============= location ^~ /svn { proxy_set_header Destination $http_destination; proxy_pass http://apache_svr; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-Host $host; proxy_set_header X-Forwarded-Proto https; proxy_set_header X-Forwarded-Server $host; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; } 将/svn下面的所有请求交给apache2。 =====/etc/apache2/mods-enabled/dav_svn.</description>
     </item>
     
     <item>
@@ -123,10 +118,10 @@ location = /50x.html { root /var/www/nginx-default; } } 打开了一个https的
       <guid>//blog.shell909090.org/blog/archives/89/</guid>
       <description>贝壳家里开了emule，天天下载，问题是又不能每次都是晚上添加资源。
 怎么办呢？不知道大家知道不知道，emule是可以网络管理的，端口是4711。不过不是https，密码容易泄露。而且贝壳已经有一个nginx服务器了，也懒的再做端口映射，换端口。于是，在nginx中做如下设定。(当然，贝壳是放在https段中的)
-location ^~ /emule/ { rewrite ^/emule/(.*)$ /$1 break; proxy_pass &amp;lt;http://hostip:4711&amp;gt;; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; }  然后，用https://dynname/emule/就可以访问你家里的emule了，记得密码设强点。
+location ^~ /emule/ { rewrite ^/emule/(.*)$ /$1 break; proxy_pass &amp;lt;http://hostip:4711&amp;gt;; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; } 然后，用https://dynname/emule/就可以访问你家里的emule了，记得密码设强点。
 接下来，verycd里面曾经有复制所有连接的选项，现在没了。面对几个链接，也就手工复制一下，面对上百个连接，贝壳就无语了。贝壳试验过几个插件，都无法正确识别ed2k的链接获取。那怎么办呢？这时就要请出我们伟大的Linux。
 需要准备的工具是lynx，请预先装好，然后如下操作。(范例是个动画^_^)
-wget -c &amp;lt;http://www.verycd.com/topics/2779234/&amp;gt; lynx -dump -listonly index.html | grep &amp;quot;ed2k://&amp;quot; | sed &amp;quot;s/.*ed2k/ed2k/g&amp;quot; | grep -v BIG5 &amp;gt; out.txt wc -l out.txt  lynx的-dump选项是将某个网页全部渲染成文本进行展示，这是html2text的好方法，效果还不错哦，不过中文支持好像不是很好。而-listonly则是展示出页面上的所有链接，这就拿到了我们需要的原始数据。
+wget -c &amp;lt;http://www.verycd.com/topics/2779234/&amp;gt; lynx -dump -listonly index.html | grep &amp;quot;ed2k://&amp;quot; | sed &amp;quot;s/.*ed2k/ed2k/g&amp;quot; | grep -v BIG5 &amp;gt; out.txt wc -l out.txt lynx的-dump选项是将某个网页全部渲染成文本进行展示，这是html2text的好方法，效果还不错哦，不过中文支持好像不是很好。而-listonly则是展示出页面上的所有链接，这就拿到了我们需要的原始数据。
 然后，我们取其中的ed2k行，忽略其他链接，再通过sed转换，去除头部的编号和空格，这样就可以得到所有的ed2k链接。
 我在下面是用-v BIG5的参数，忽略了其中繁体中文的资源，然后输出到一个文件中。数数行数，52行，大致和文件个数相当(其中好像有两个v2)。那就是可用资源了，复制到emule的控制页面中——出错？
 这是因为emule的控制页面使用GET方式传递参数，因此有长度限制。你需要将链接10个一批往里面复制——有个几次就OK了。当然，如果还是多，贝壳回头会写一篇文章，介绍如何使用curl自动干这事情——这还不算太难。

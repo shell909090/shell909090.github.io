@@ -2,24 +2,23 @@
 <html lang="en-us">
   <head>
     <title>p2p vpn的部署方法 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
@@ -39,8 +38,8 @@ route/iroute表示这个地址段归属于这个节点所有，区别在于route
 p2p vpn也有类似的问题。甚至，由于没有统一配置端，因此连每个节点的虚IP都不能很容易的得到。在配置中必须注意这点。
 n2n n2n的模式比较简单，也比较有局限性。基本分为两个端，supernode和edge。supernode类似于hub，把所有edge拉到一起。edge都是对等的。
 supernode:
-supernode -l port  edge:
-edge -a [address] -c [name] -k [password] -l [supernode:port] -u [userid] -g [groupid]  解释一下。开一个supernode，不用做任何设定。反正supernode也不会持有edge别的信息。edge要设定supernode的ip和端口，然后提交name和password。name和password相同的，就进入同一个虚拟网络。然后自己的虚拟ip是address。最后的userid和groupid必须是数字。主要是因为开tun需要root权限，因此可以在获得完权限后退化成普通用户，以防权限太高。
+supernode -l port edge:
+edge -a [address] -c [name] -k [password] -l [supernode:port] -u [userid] -g [groupid] 解释一下。开一个supernode，不用做任何设定。反正supernode也不会持有edge别的信息。edge要设定supernode的ip和端口，然后提交name和password。name和password相同的，就进入同一个虚拟网络。然后自己的虚拟ip是address。最后的userid和groupid必须是数字。主要是因为开tun需要root权限，因此可以在获得完权限后退化成普通用户，以防权限太高。
 这里好玩的就是，理论上address可以天南海北，完全不用管路由怎么走。甚至172.16.0.1可以和10.0.0.1通讯(我没实际确认)。因为大家都是看彼此的IP是否经过注册，而不是计算路由表。
 但是这里就有个缺点，我看到man文档中只提到address，没提到可以提交一个网段。所以无论我怎么设定，使用三层方案做隧道的时候，n2n是转不过去的。因为他不知道这个网段归哪个节点管。
 所以，n2n的p2p模式很便利，但是没法打tunnel(至少我不知道怎么玩)。
@@ -50,7 +49,7 @@ tinc tinc和n2n一样，也是一种p2p vpn。不过好处在于，tinc允许你
 /etc/tinc/[configname]: 配置的根路径，以下路径全是相对路径。
 配置 下面就是某个配置中的一堆文件。注意这些配置都是配置自己节点的属性信息。
 tinc.conf:
-Name = [nodename] Device = /dev/net/tun ConnectTo = xxx  tinc-up:"/>
+Name = [nodename] Device = /dev/net/tun ConnectTo = xxx tinc-up:"/>
 
     <meta property="og:title" content="p2p vpn的部署方法" />
 <meta property="og:description" content="p2p vpn的基本概念 p2p vpn这个概念的提出，是因为openvpn在数据传输上的一个特性——虚拟链路都是从拨入端到服务器的。例如vpn网关在北美，上海电信的两个人要通讯，数据就要从北美绕一圈。这个特性在多节点打通上无疑很扯，于是催生了很多p2p vpn。他们的基本理念是——尽力从端到端，不成再绕。而且为了解决端到端，顺便得解决NAT问题——也就是带有STUN打洞。
@@ -67,8 +66,8 @@ route/iroute表示这个地址段归属于这个节点所有，区别在于route
 p2p vpn也有类似的问题。甚至，由于没有统一配置端，因此连每个节点的虚IP都不能很容易的得到。在配置中必须注意这点。
 n2n n2n的模式比较简单，也比较有局限性。基本分为两个端，supernode和edge。supernode类似于hub，把所有edge拉到一起。edge都是对等的。
 supernode:
-supernode -l port  edge:
-edge -a [address] -c [name] -k [password] -l [supernode:port] -u [userid] -g [groupid]  解释一下。开一个supernode，不用做任何设定。反正supernode也不会持有edge别的信息。edge要设定supernode的ip和端口，然后提交name和password。name和password相同的，就进入同一个虚拟网络。然后自己的虚拟ip是address。最后的userid和groupid必须是数字。主要是因为开tun需要root权限，因此可以在获得完权限后退化成普通用户，以防权限太高。
+supernode -l port edge:
+edge -a [address] -c [name] -k [password] -l [supernode:port] -u [userid] -g [groupid] 解释一下。开一个supernode，不用做任何设定。反正supernode也不会持有edge别的信息。edge要设定supernode的ip和端口，然后提交name和password。name和password相同的，就进入同一个虚拟网络。然后自己的虚拟ip是address。最后的userid和groupid必须是数字。主要是因为开tun需要root权限，因此可以在获得完权限后退化成普通用户，以防权限太高。
 这里好玩的就是，理论上address可以天南海北，完全不用管路由怎么走。甚至172.16.0.1可以和10.0.0.1通讯(我没实际确认)。因为大家都是看彼此的IP是否经过注册，而不是计算路由表。
 但是这里就有个缺点，我看到man文档中只提到address，没提到可以提交一个网段。所以无论我怎么设定，使用三层方案做隧道的时候，n2n是转不过去的。因为他不知道这个网段归哪个节点管。
 所以，n2n的p2p模式很便利，但是没法打tunnel(至少我不知道怎么玩)。
@@ -78,9 +77,9 @@ tinc tinc和n2n一样，也是一种p2p vpn。不过好处在于，tinc允许你
 /etc/tinc/[configname]: 配置的根路径，以下路径全是相对路径。
 配置 下面就是某个配置中的一堆文件。注意这些配置都是配置自己节点的属性信息。
 tinc.conf:
-Name = [nodename] Device = /dev/net/tun ConnectTo = xxx  tinc-up:" />
+Name = [nodename] Device = /dev/net/tun ConnectTo = xxx tinc-up:" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2727/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2727/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2015-02-09T00:00:00+00:00" />
 <meta property="article:modified_time" content="2015-02-09T00:00:00+00:00" />
 
@@ -120,11 +119,8 @@ Name = [nodename] Device = /dev/net/tun ConnectTo = xxx  tinc-up:" />
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -134,132 +130,84 @@ Name = [nodename] Device = /dev/net/tun ConnectTo = xxx  tinc-up:" />
       <h1 class ="post-title">p2p vpn的部署方法</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Feb 9, 2015
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div></div>
+        </div>
+      </div>
     </header>
     <div class="post-content">
-      
-
-<h1 id="p2p-vpn的基本概念">p2p vpn的基本概念</h1>
-
+      <h1 id="p2p-vpn的基本概念">p2p vpn的基本概念</h1>
 <p>p2p vpn这个概念的提出，是因为openvpn在数据传输上的一个特性——虚拟链路都是从拨入端到服务器的。例如vpn网关在北美，上海电信的两个人要通讯，数据就要从北美绕一圈。这个特性在多节点打通上无疑很扯，于是催生了很多p2p vpn。他们的基本理念是——尽力从端到端，不成再绕。而且为了解决端到端，顺便得解决NAT问题——也就是带有STUN打洞。</p>
-
 <h2 id="tun模式的三层转发表">tun模式的三层转发表</h2>
-
 <p>先说明一点，大部分p2p vpn都是tun模式。这也很正常，tunnel用的么。但是大家在配置openvpn的时候，不知是否注意过iroute这个指令。为什么会有iroute指令的存在？</p>
-
 <p>tun模式是三层模式，相信大家都有数。也就是说，报文传递的时候只带有三层地址，openvpn也凭借三层地址来找到要转发给谁。这里和普通的网络就显示出区别了——普通网络使用ARP协议来自管理转发规则，而openvpn则是凭借内部写好的转发表。</p>
-
 <p>例如vpn gateway的虚地址是192.168.100.1，节点1是100.5，节点2是100.10。那么节点2发送报文给节点1时，报文大约长这个样子。</p>
-
 <p>192.168.100.10 -&gt; 192.168.100.5</p>
-
 <p>在普通网络中，第一步会查路由表，确定是eth0(虚拟网络是tun0)。然后在上面广播ARP请求，获得MAC地址。最后填写MAC地址，发送报文。但是在tun虚拟网络中，仔细看你的路由表，是不是整个虚网络都被交给了一个叫做100.4之类的奇怪gateway转发？甚至如果你没有打开client-to-client，整个虚网络只有一台可见，这台还是交给这个gateway转发的。</p>
-
 <p>这是因为你到这个奇怪的IP之间还是走ARP过程，但是这个奇怪的IP收到你的报文后，就可以是纯三层过程了。你可以把这个IP视为本地openvpn的化身。openvpn会把你的报文发送到openvpn gateway，然后openvpn gateway再转发给正确的机器。也就是说，openvpn gateway必须知道某个目标IP需要转给哪个节点，物理地址多少，对吧？</p>
-
 <p>作为纯虚网络，知道节点的IP很容易——毕竟是openvpn gateway管理的地址分配过程。但是作为tunnel和多地址打通，这里就有点困难了。例如节点1还有个网段是192.168.80.0/24，节点2还有个网段是192.168.60.0/24，那么如下一个报文从节点2中出去，你让openvpn gateway怎么办？</p>
-
 <p>192.168.60.15 -&gt; 192.168.80.15</p>
-
 <p>你也许会说，我当然有配节点1的网关转给openvpn的拨入端。问题是，这个动作，openvpn的拨入端尚且不知，何况openvpn gateway？于是我们派生了route/iroute这两个指令。</p>
-
 <p>route/iroute表示这个地址段归属于这个节点所有，区别在于route同时修改路由表，而iroute不修改路由表。配合push，可以由服务器端下发指令修改客户端路由表。</p>
-
 <p>p2p vpn也有类似的问题。甚至，由于没有统一配置端，因此连每个节点的虚IP都不能很容易的得到。在配置中必须注意这点。</p>
-
 <h1 id="n2n">n2n</h1>
-
 <p>n2n的模式比较简单，也比较有局限性。基本分为两个端，supernode和edge。supernode类似于hub，把所有edge拉到一起。edge都是对等的。</p>
-
 <p>supernode:</p>
-
 <pre><code>supernode -l port
 </code></pre>
-
 <p>edge:</p>
-
 <pre><code>edge -a [address] -c [name] -k [password] -l [supernode:port] -u [userid] -g [groupid]
 </code></pre>
-
 <p>解释一下。开一个supernode，不用做任何设定。反正supernode也不会持有edge别的信息。edge要设定supernode的ip和端口，然后提交name和password。name和password相同的，就进入同一个虚拟网络。然后自己的虚拟ip是address。最后的userid和groupid必须是数字。主要是因为开tun需要root权限，因此可以在获得完权限后退化成普通用户，以防权限太高。</p>
-
 <p>这里好玩的就是，理论上address可以天南海北，完全不用管路由怎么走。甚至172.16.0.1可以和10.0.0.1通讯(我没实际确认)。因为大家都是看彼此的IP是否经过注册，而不是计算路由表。</p>
-
 <p>但是这里就有个缺点，我看到man文档中只提到address，没提到可以提交一个网段。所以无论我怎么设定，使用三层方案做隧道的时候，n2n是转不过去的。因为他不知道这个网段归哪个节点管。</p>
-
 <p>所以，n2n的p2p模式很便利，但是没法打tunnel(至少我不知道怎么玩)。</p>
-
 <h1 id="tinc">tinc</h1>
-
 <p>tinc和n2n一样，也是一种p2p vpn。不过好处在于，tinc允许你在一个节点上配置多个网络，因此可以打tunnel。</p>
-
 <p>在配置之前，我先约定两个词。“配置名”和“节点名”。一个配置是接入同一个网络的多个节点，还有他们如何拓扑。节点名就是一个节点的名字。所以，和配置有关的有以下两个。</p>
-
 <p>/etc/tinc/nets.boot: 这里写上想自动启用的配置的名字</p>
-
 <p>/etc/tinc/[configname]: 配置的根路径，以下路径全是相对路径。</p>
-
 <h2 id="配置">配置</h2>
-
 <p>下面就是某个配置中的一堆文件。注意这些配置都是配置自己节点的属性信息。</p>
-
 <p>tinc.conf:</p>
-
 <pre><code>Name = [nodename]
 Device = /dev/net/tun
 ConnectTo = xxx
 </code></pre>
-
 <p>tinc-up:</p>
-
 <pre><code>ip link set $INTERFACE up
 ip addr add [address/32] dev $INTERFACE
 ip route add [network/mask] dev $INTERFACE
 </code></pre>
-
 <p>tinc-down:</p>
-
 <pre><code>ip route del [network/mask] dev $INTERFACE
 ip addr del [address/32] dev $INTERFACE
 ip link set $INTERFACE down
 </code></pre>
-
 <p>其中tinc-up会在tinc启动时执行，tinc-down会在tinc关闭时执行，所以两者必须是+x权限。有趣的是，tinc并不管理你的整个启动过程，tinc-up和tinc-down甚至要亲自来管理接口的up和down过程。但是这也给你足够的额权力去执行任何复杂的路由逻辑指令。</p>
-
 <h2 id="hosts">hosts</h2>
-
 <p>除去上部分外，还有一个很大的hosts目录。里面放满了节点群信息。</p>
-
 <p>hosts/[nodename]:</p>
-
 <pre><code>Address = external ip address
 Port = external port
 Subnet = network/mask
 </code></pre>
-
 <p>其中Address和Port如果没有可以不写。Subnet可以彼此重叠，路由决定逻辑是从小子网到大子网(普通路由表逻辑)</p>
-
 <h2 id="初始化">初始化</h2>
-
 <p>在配置hosts的时候，我建议每个节点就配置自己的hosts/[nodename]文件，然后执行下面的指令：</p>
-
 <pre><code>tincd -n [name] -K
 </code></pre>
-
 <p>这个指令会在/etc/tinc/[configname]/rsa_key.priv下生成一个私钥，并且把公钥添加到hosts/[nodename]文件中。最后，在多个node间把彼此的hosts/下的文件一复制，让每个node都拥有其他node的hosts文件，整个网络就完成配置了。</p>
-
 <p>如果你的配置名已经写入nets.boot文件的话，可以用<code>/etc/init.d/tinc restart</code>来重启启动整个网络。</p>
 
     </div>

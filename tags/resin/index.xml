@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>resin on Shell&#39;s Home</title>
@@ -7,11 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Tue, 06 Dec 2005 17:17:59 +0800</lastBuildDate>
-    
-	<atom:link href="//blog.shell909090.org/tags/resin/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Tue, 06 Dec 2005 17:17:59 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/resin/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>AS3下安装resin出错</title>
       <link>//blog.shell909090.org/blog/archives/270/</link>
@@ -20,8 +16,8 @@
       <guid>//blog.shell909090.org/blog/archives/270/</guid>
       <description>make不通过
 出错如下
-clude/linux -I../common -DCPU=&amp;quot;i386&amp;quot; -DOS= -c -o ssl.o ssl.c In file included from /usr/include/openssl/ssl.h:179, from ssl.c:62: /usr/include/openssl/kssl.h:72:18: krb5.h: No such file or directory In file included from /usr/include/openssl/ssl.h:179, from ssl.c:62:  解决方法：
-export LOCALDEFS=&amp;quot;-DOPENSSL_NO_KRB5&amp;quot; export C_INCLUDE_PATH=&amp;quot;/usr/kerberos/include&amp;quot;  引用自http://www.thinkjam.org/meteor/archives/2005/04/as3resin.html</description>
+clude/linux -I../common -DCPU=&amp;quot;i386&amp;quot; -DOS= -c -o ssl.o ssl.c In file included from /usr/include/openssl/ssl.h:179, from ssl.c:62: /usr/include/openssl/kssl.h:72:18: krb5.h: No such file or directory In file included from /usr/include/openssl/ssl.h:179, from ssl.c:62: 解决方法：
+export LOCALDEFS=&amp;quot;-DOPENSSL_NO_KRB5&amp;quot; export C_INCLUDE_PATH=&amp;quot;/usr/kerberos/include&amp;quot; 引用自http://www.thinkjam.org/meteor/archives/2005/04/as3resin.html</description>
     </item>
     
     <item>
@@ -34,10 +30,10 @@ export LOCALDEFS=&amp;quot;-DOPENSSL_NO_KRB5&amp;quot; export C_INCLUDE_PATH=&am
 拿到resin，放在目标目录下面，然后tar -jxvf。完成后用ln -s做一个链接上去，使用resin的名字，这样可以方便的替换版本。然后在主目录下面运行./configure，make一下。一般来说，会出不少错误，最后生成一个libresin.so放到libexec下面，并且更新了resin的主执行程序。这个so很具有迷惑性，开始贝壳就被他骗了。这个so貌似是resin在本地平台下的加速程序，而不是嵌入到apache系列服务器中的整合插件。其中最大的差异是没有caucho_module导出符号，在apache加载的时候肯定会失败。
 跑到src/c/plugins/apache2下面运行make。可能会报错，可能没有。贝壳这里报了错，不过贝壳运行configure的时候没有加任何参数，也许加了参数就正常了。如果不正常，出错的代码可能分别是httpd.h找不到或者apr_time.h找不到。运行vi Makefile，看到有INCLUDE的目录吗？那里面要包含/usr/include/apache2和/usr/include/apr-0两个目录，没有就肯定出错。好了，修改然后重新make。得到的文件是mod_caucho.so。将它cp到$RESIN_HOME/libexec下面，这个动态库导出了caucho_module符号。
 在/etc/apache2/httpd.conf里面编辑一下，添加这个内容。
-LoadModule caucho_module /usr/resin/libexec/mod_caucho.so &amp;lt;IfModule mod_caucho.c&amp;gt; CauchoConfigFile ......../resin.conf &amp;lt;Location /caucho-status&amp;gt; SetHandler caucho-status &amp;lt;/Location&amp;gt; &amp;lt;/IfModule&amp;gt;  在/usr/resin/conf/resin.conf里面，添加这些内容。
-&amp;lt;doc-dir&amp;gt;/var/www/htdocs&amp;lt;/doc-dir&amp;gt; &amp;lt;war-dir id=&#39;/var/www/htdocs&#39;/&amp;gt;  在/etc/apache2/sites-available/default中可能要修改如下配置。
-DocumentRoot /var/www/htdocs/ &amp;lt;Directory /var/www/htdocs/&amp;gt;  然后注销
-RedirectMatch ^/$ /apache2-default/  OK，这样就基本完成了整个系统的整合配置。</description>
+LoadModule caucho_module /usr/resin/libexec/mod_caucho.so &amp;lt;IfModule mod_caucho.c&amp;gt; CauchoConfigFile ......../resin.conf &amp;lt;Location /caucho-status&amp;gt; SetHandler caucho-status &amp;lt;/Location&amp;gt; &amp;lt;/IfModule&amp;gt; 在/usr/resin/conf/resin.conf里面，添加这些内容。
+&amp;lt;doc-dir&amp;gt;/var/www/htdocs&amp;lt;/doc-dir&amp;gt; &amp;lt;war-dir id=&#39;/var/www/htdocs&#39;/&amp;gt; 在/etc/apache2/sites-available/default中可能要修改如下配置。
+DocumentRoot /var/www/htdocs/ &amp;lt;Directory /var/www/htdocs/&amp;gt; 然后注销
+RedirectMatch ^/$ /apache2-default/ OK，这样就基本完成了整个系统的整合配置。</description>
     </item>
     
   </channel>

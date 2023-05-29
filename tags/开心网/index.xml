@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>开心网 on Shell&#39;s Home</title>
@@ -7,11 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Tue, 20 Jan 2009 14:49:00 +0800</lastBuildDate>
-    
-	<atom:link href="//blog.shell909090.org/tags/%E5%BC%80%E5%BF%83%E7%BD%91/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Tue, 20 Jan 2009 14:49:00 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/%E5%BC%80%E5%BF%83%E7%BD%91/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>24点计算原理和程序</title>
       <link>//blog.shell909090.org/blog/archives/50/</link>
@@ -22,7 +18,7 @@
 我们将24点问题一般化，变成一个搜索问题。假定从一个初始表开始，里面有一些原子。我们定义一个操作，结合。每次操作任意从中选择出两个(或者以上)原子，使用算符连接，成为一个新的原子。那么，一般来说，24点就是计算所有可能的路径，从初始表开始，持续进行结合，直到只剩下一个原子，并且对这个原子求值得24。
 有人可能在算符优先级上想不开，其实不用考虑这个问题，每次求值的时候，按照求值顺序优先就可以。你想到的另外一种优先级可能，会在穷举的时候被列举出来算掉，不用担心遗漏。
 同时，算子必须是两目以上算子，因为单目算子可以持续作用于同一个对象，因此原子表中的原子个数并不严格单调减少，造成无法肯定路径收敛于有限步骤上。并且，如果允许单目算子，那么我只需要求导和阶乘就可以对任何数字求24点。
-((a&#39;)!+(b&#39;)!+(c&#39;)!+(d&#39;)!)!=24  因此，单目算符是没有意义的。
+((a&#39;)!+(b&#39;)!+(c&#39;)!+(d&#39;)!)!=24 因此，单目算符是没有意义的。
 另外，注意算符分可交换和非可交换的。例如：a+b=b+a，但是a-b!=b-a。如果不注意这点，倒是不会漏算，但是会造成搜索空间增大，并且有重复结果。
 以下是24点计算程序，python版本的。有兴趣的朋友可以用scheme重写，相信会更简洁有效。回头会用django封装一下，做成网页给大家玩玩。
 #!/usr/bin/python import sys symbol_list = [ (&amp;quot;%s+%s&amp;quot;, True), (&amp;quot;%s-%s&amp;quot;, False), (&amp;quot;%s*%s&amp;quot;, True), (&amp;quot;%s/%s&amp;quot;, False), (&amp;quot;%s**%s&amp;quot;, False), ] def diff_seq(length): for i in range(0, length): for j in range(i + 1, length): yield (i, j) def get_less_state(input_state): for i, j in diff_seq(len(input_state)): temp = input_state[:] del temp[j] del temp[i] for s in symbol_list: rslt = s[0] % (input_state[i], input_state[j]) rslt = &amp;quot;(%s)&amp;quot; % rslt temp.</description>

@@ -2,24 +2,23 @@
 <html lang="en-us">
   <head>
     <title>为什么running不高但是load很高 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
@@ -36,7 +35,7 @@ OK，言归正转。为了解释这个疑惑，我特意的去看了一下内核
 ——问题是咱脑子不清不楚的就没想这差异，而且咱连man proc都没查。。。
 另外顺便说一句，内核也告诉了我们一点东西——load计算的时候是连内核线程一起算的。
 清楚这点差异后，问题的原因也很清楚了——肯定是哪里有很高的D。用ps -e Hl | grep -e R -e D扫了一下，再用wc -l做了一下统计。214个线程在D(或者R，或者只是不小心被grep到，但是实际上大部分都是D)。系统当前的loadavg正好长这样：
-214.12 156.63 82.25 7/4629 10027  7个执行中线程&reg;，207个uninterruptible。
+214.12 156.63 82.25 7/4629 10027 7个执行中线程(R)，207个uninterruptible。
 ——所有的谜都解开了。"/>
 
     <meta property="og:title" content="为什么running不高但是load很高" />
@@ -51,10 +50,10 @@ OK，言归正转。为了解释这个疑惑，我特意的去看了一下内核
 ——问题是咱脑子不清不楚的就没想这差异，而且咱连man proc都没查。。。
 另外顺便说一句，内核也告诉了我们一点东西——load计算的时候是连内核线程一起算的。
 清楚这点差异后，问题的原因也很清楚了——肯定是哪里有很高的D。用ps -e Hl | grep -e R -e D扫了一下，再用wc -l做了一下统计。214个线程在D(或者R，或者只是不小心被grep到，但是实际上大部分都是D)。系统当前的loadavg正好长这样：
-214.12 156.63 82.25 7/4629 10027  7个执行中线程&reg;，207个uninterruptible。
+214.12 156.63 82.25 7/4629 10027 7个执行中线程(R)，207个uninterruptible。
 ——所有的谜都解开了。" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2640/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2640/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2014-06-03T14:43:11+08:00" />
 <meta property="article:modified_time" content="2014-06-03T14:43:11+08:00" />
 
@@ -94,11 +93,8 @@ OK，言归正转。为了解释这个疑惑，我特意的去看了一下内核
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -108,54 +104,44 @@ OK，言归正转。为了解释这个疑惑，我特意的去看了一下内核
       <h1 class ="post-title">为什么running不高但是load很高</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Jun 3, 2014
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
       <p>很多初学者会混淆几个概念。CPU繁忙程度，load。两者的区别在于，一个秘书是真的忙着抄抄写写，另一个么，反正领导只检查桌子上堆的文件数。只要桌子上准备一堆文件，在文件里换来换去就好了，没必要真的很忙。当然，大多数时候桌子上堆着很多文件的理由还是因为秘书手不够了，不过少数时候也有例外。例如fork
 boom，CPU很空但是load奇高。</p>
-
 <p>我们就遇到了一个例外的例外。</p>
-
 <p>症状是这样的。系统经常出现偶发性的load过高。例如有那么几分钟，load会高到100-200，然后就快速下降。但是检查后发现，即使在load极高的时候，cpu占用率也并不高，大概在10-20左右。磁盘吞吐也一般。那么load为什么会这么高呢？</p>
-
 <p>我的第一怀疑当然是超多数量的小线程，在那里搞切换调度。所以我第一反应就是看了/proc/loadavg的当前活跃线程数——结果居然只有1-5。为了确认，我特意的持续观察了数次，在我观测期间load的1分钟计数还升高了——这说明当前实际队列比1分钟平均还要高，而活跃线程却是3。</p>
-
 <p>怎么可能？交通系统报警说北三环大赛车，平均堵塞长度500辆。去一辆警车到现场回报说只看到塞了两辆，再去一辆说算上我们自己三辆。去了十多次都如此。任何脑子清楚的人都会毫无疑问的喊出——黑箱政治，政府不作为，我们要占领国会——不好意思，我们好像没有这个东西。</p>
-
 <p>OK，言归正转。为了解释这个疑惑，我特意的去看了一下内核源码——我擦，loadavg的平均值计算中，是把uninterruptible算在一起的。而活跃上下文中，只算了nr_running！</p>
-
 <p>——你丫敢再精神分裂点么？</p>
-
 <p>为了确认，我还特意man proc，结果发现里面确实有说，平均值是R和D两者去算的。但是在活跃上下文那里，只说了the number of currently runnable kernel scheduling entities——看看清楚，这里可从没有说有D。脑子清楚的仔细想想就知道，D是不可调度的。</p>
-
 <p>——问题是咱脑子不清不楚的就没想这差异，而且咱连man proc都没查。。。</p>
-
 <p>另外顺便说一句，内核也告诉了我们一点东西——load计算的时候是连内核线程一起算的。</p>
-
 <p>清楚这点差异后，问题的原因也很清楚了——肯定是哪里有很高的D。用<code>ps -e Hl | grep -e R -e D</code>扫了一下，再用<code>wc -l</code>做了一下统计。214个线程在D(或者R，或者只是不小心被grep到，但是实际上大部分都是D)。系统当前的loadavg正好长这样：</p>
-
 <pre><code>214.12 156.63 82.25 7/4629 10027
 </code></pre>
-
-<p>7个执行中线程&reg;，207个uninterruptible。</p>
-
+<p>7个执行中线程(R)，207个uninterruptible。</p>
 <p>——所有的谜都解开了。</p>
 
     </div>

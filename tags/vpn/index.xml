@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>vpn on Shell&#39;s Home</title>
@@ -7,11 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Wed, 04 Feb 2015 15:07:42 +0800</lastBuildDate>
-    
-	<atom:link href="//blog.shell909090.org/tags/vpn/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Wed, 04 Feb 2015 15:07:42 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/vpn/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>openvpn的几种基本模式</title>
       <link>//blog.shell909090.org/blog/archives/2724/</link>
@@ -23,15 +19,16 @@
 虽然openvpn在科学上网上是废了，但是在不出国的网络上用来保护通讯，还是非常好用的。
 tap模式 tap模式的特点是二层打通。典型场景是从外部打一条隧道到本地网络。进来的机器就像本地的机器一样参与通讯，你分毫看不出这些机器是在远程。
 优点：
- 配置简单。 不需要在所有机器上配置或者动网关。  缺点：
- tap在部分设备上不支持(例如移动设备)。 wlan加入网桥后不一定可以工作。 广播包会散发到虚拟网络中，可能极大消耗流量。  特别解说一下wlan。部分AP对一个客户只接受一个MAC地址，因此无法做网桥。这应该是wifi网络的常规问题了。解决方法是换AP，或者做mac-nat。
+配置简单。 不需要在所有机器上配置或者动网关。 缺点：
+tap在部分设备上不支持(例如移动设备)。 wlan加入网桥后不一定可以工作。 广播包会散发到虚拟网络中，可能极大消耗流量。 特别解说一下wlan。部分AP对一个客户只接受一个MAC地址，因此无法做网桥。这应该是wifi网络的常规问题了。解决方法是换AP，或者做mac-nat。
 操作方法：
 你需要先在当前网络中，为vpn预留一些地址。这些地址应该足够拨入用户使用，不应和dhcp撞车，不应有其他人使用。
 而后，建立一个br，将当前工作的eth迁移过去。(具体细节就不说了，每个系统小有差别)再建立一个tap vpn，在启动脚本中指定加入这个br。
 example 假定内网地址为172.19.0.0/24，其中保留172.19.0.16-172.19.0.31供vpn使用。
 服务器配置:
-port [port num] proto udp ; 参考我上一篇[vpn不要走tcp协议](http://blog.shell909090.org/blog/archives/2722) dev tap ca ca.crt cert server.crt key server.key server-bridge 172.19.0.16 255.255.255.0 172.19.0.17 172.19.0.31 ; 或者可以采用这句 ; server 172.19.0.16 255.255.255.240 ; 注意掩码实际上等于/28，做掩码运算后，这段地址和上面的保留地址重合 script-security 2 up vpn-start ; 建议使用绝对路径，避免版本坑 down vpn-stop  vpn-start:
-brctl add br0 $dev  vpn-stop:</description>
+port [port num] proto udp ; 参考我上一篇[vpn不要走tcp协议](http://blog.shell909090.org/blog/archives/2722) dev tap ca ca.crt cert server.crt key server.key server-bridge 172.19.0.16 255.255.255.0 172.19.0.17 172.19.0.31 ; 或者可以采用这句 ; server 172.19.0.16 255.255.255.240 ; 注意掩码实际上等于/28，做掩码运算后，这段地址和上面的保留地址重合 script-security 2 up vpn-start ; 建议使用绝对路径，避免版本坑 down vpn-stop vpn-start:
+brctl add br0 $dev vpn-stop:
+brctl del br0 $dev 客户端配置:</description>
     </item>
     
     <item>
@@ -41,10 +38,10 @@ brctl add br0 $dev  vpn-stop:</description>
       
       <guid>//blog.shell909090.org/blog/archives/2339/</guid>
       <description>背景 贝壳自己的vps蒙难，不能正常工作了。所以贝壳买了一个vpn。是pptp/l2tp系列的。用起来很好用，但是这类ip-based vpn有几个不便。
- 不能自动设定客户端路由表，实现智能翻墙选择。 每个需要翻墙的设备均需要拨号，而目标设备有容量极限。 不能实现非侵入式翻墙，打开之后连p2p都翻了。  与此相反，代理式翻墙可以比较有效的解决这些问题。一个点拨号，其他点可以共享代理。不需要翻墙的直接访问不设定代理就好。唯路由表没有办法。实际上，为了使得代理可以使用路由表选择，贝壳还是花了一番功夫做了antigfw项目的。
+不能自动设定客户端路由表，实现智能翻墙选择。 每个需要翻墙的设备均需要拨号，而目标设备有容量极限。 不能实现非侵入式翻墙，打开之后连p2p都翻了。 与此相反，代理式翻墙可以比较有效的解决这些问题。一个点拨号，其他点可以共享代理。不需要翻墙的直接访问不设定代理就好。唯路由表没有办法。实际上，为了使得代理可以使用路由表选择，贝壳还是花了一番功夫做了antigfw项目的。
 闲话少说。这次贝壳就展示一下如何在debian下设定pptp vpn，并且利用代理无缝共享的。
 linux下的vpn设定 安装pptp-linux这个包，然后按照说明使用即可。
-pptpsetup --create &amp;lt;TUNNEL&amp;gt; --server &amp;lt;SERVER&amp;gt; [--domain &amp;lt;DOMAIN&amp;gt;] --username &amp;lt;USERNAME&amp;gt; [--password &amp;lt;PASSWORD&amp;gt;] [--encrypt] [--start]  自己填充用户名密码服务器，就会在/etc/ppp/peers/下面生成对应的文件。使用pon tunnelname就可以拨号了。
+pptpsetup --create &amp;lt;TUNNEL&amp;gt; --server &amp;lt;SERVER&amp;gt; [--domain &amp;lt;DOMAIN&amp;gt;] --username &amp;lt;USERNAME&amp;gt; [--password &amp;lt;PASSWORD&amp;gt;] [--encrypt] [--start] 自己填充用户名密码服务器，就会在/etc/ppp/peers/下面生成对应的文件。使用pon tunnelname就可以拨号了。
 路由设定 初始设定好的vpn不具有智能路由，因此必须添加一些内容。
 首先使用chnroutes.py这个程序，得到ovpn下常规用的路由表。当然，我们可以用linux下的路由表，但是他的old gateway存放在了/tmp下面，对此我并不是很喜欢。所以我只用了他的路由 表信息，其余自己处理。如果你不确定自己执行时的默认路由，理论上也应当需要下面的一些配置。
 使用下面这个topptp.sh，可以将输出的routes.txt转换为pptpup和pptpdown两个文件。
@@ -126,7 +123,7 @@ http://code.google.com/p/tunnelblick/
 我去阿，你在中国网络上玩多了，啥都要免费，有没有写信给电信要求宽带接入免费阿。你要是真没钱，要么就不用，要么就学学怎么让自己出去。
 天下的特权有几类的，一种是你通过努力来获得某种特权，一种是你付钱让别人帮你获得这种特权，一种是左求右拜，借到某种特权。这特权还不稳固，有点问题就让人收了回去，因此不得不小心翼翼，缩着尾巴做人。且不提现实中有个头痛脑热，行政手续，求爷爷告奶奶的诸多无奈。那毕竟很多时候还是不得以而为之。网络上凡是有点大小P事，全是“360度冰天雪地裸体跪求”，就这种人还自诩为“不食嗟来之食”之后，实在让人叹息。
 墙的存在意义，就是要“拦截大多数”。要稳定翻墙，基本就两种途径。一者是牛，自己付出辛苦，学会了整个过程，从而翻墙出去。或者你付钱，弄到了翻墙帐号，从而翻墙出去，这也是一种。这两者都算的上少数，剩下的就是绝对的大多数。既不付钱，也不想付出辛苦，张口就求各种方法的人不知有没有想过，当某种方法会的人多了，墙自然就会把这种方法连根铲掉。法子不能用了，瞬间破口大骂给法子的人，不知道脑子里转的是什么逻辑——或者是，他们其实想过，只是：
- 在中国，只要考虑三天后的事情，三个月后的事情谁说的准呢。 在网络上求爷爷告奶奶也是一种辛苦阿。  ——我已经连叹息都发不出了。
+在中国，只要考虑三天后的事情，三个月后的事情谁说的准呢。 在网络上求爷爷告奶奶也是一种辛苦阿。 ——我已经连叹息都发不出了。
 最后一个话题，如果你的某种对服务的应用，对其他人会产生伤害怎么办？例如，你用某个空间翻墙，这个空间IP就可能被墙。你用GAE翻墙，GAE就会被墙。你在网站上发表很合理的言论，自己没事，站长进去了。
 首先请允许我就最后一个例子向中国的有关部门表示无比的XXX。。。就这精确度还好意思指责人家老美的导弹？
 我们先说最后一个。很多人往往鄙视中国的网站管理者，我写个无比正常的内容你都给我删了。实际上，在一切不正常都当作正常的国度，再正常的内容都可能是不正常的。我是挺同情网站的管理者的，删把，道义上挺站不住的，不删吧，自己进去了。某种意义上说，开网站是为了赚两个钱顺便提供娱乐的(当然，很多人是反过来的)，而不是为你表达言论挺身而出的——真是这个目的开的网站现在站长的骨头都在长草了——从这个意义看，删，不是恶。如果你要指责，应当指责的是这个制度和产生这个制度的原因。
@@ -149,12 +146,13 @@ http://code.google.com/p/tunnelblick/
 vim debian默认装的是vim-tiny，很不好用。建议改为vim，改配置的时候让自己舒服点。
 安全部分 iptables-persistent 这是debian内用于iptables规则持久化的工具，你可以编辑/etc/iptables/rules.v4来修改防火墙规则。注意，目前debian stable(squeeze)中的版本还没有4/6区分，你可以弄一个testing(wheezy)中的来装。
 一般来说，你的规则中至少要包含以下内容：
--A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT -A INPUT -i lo -j ACCEPT -A INPUT -i tun+ -j ACCEPT -A INPUT -i ppp+ -j ACCEPT -A INPUT -p tcp -m multiport --dport 22,xxx,xxx,xxx -j ACCEPT -A INPUT -p udp -m multiport --dport xxx,xxx,xxx -j ACCEPT  而且强烈建议，先保存一个没问题的iptables，然后直接修改iptables，再保存。这样的好处是，当你脑残改错了导致你自己都无法管理的时候，只要重启就可以恢复vps工作，而不用更麻烦的动作。
+-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT -A INPUT -i lo -j ACCEPT -A INPUT -i tun+ -j ACCEPT -A INPUT -i ppp+ -j ACCEPT -A INPUT -p tcp -m multiport --dport 22,xxx,xxx,xxx -j ACCEPT -A INPUT -p udp -m multiport --dport xxx,xxx,xxx -j ACCEPT 而且强烈建议，先保存一个没问题的iptables，然后直接修改iptables，再保存。这样的好处是，当你脑残改错了导致你自己都无法管理的时候，只要重启就可以恢复vps工作，而不用更麻烦的动作。
 denyhosts 这是ssh的连接防御进程，用python编写。如果有人试图尝试你的ssh密码，这个程序就会踢掉他的ip。
 如果你已经用了我说的，通过key的连接方式，你可以一次就直接踢掉对方ip。
 管理部分 ifstat ifstat是用于网络流量管理的工具，可以告诉你网络目标的流量是多少。
 dnsutils dnsutils里面包含了不少用于管理dns的工具，包括我们常用的nslookup，还有相对少用的dig。
-mtr-tiny mtr是一个traceroute工具，比后者好用很多。这个工具可以快速跟踪路由。</description>
+mtr-tiny mtr是一个traceroute工具，比后者好用很多。这个工具可以快速跟踪路由。
+vnstat vnstat是用于跟踪网卡流量的工具，尤其对于每个月都有限额的vps，这个工具更有意义。</description>
     </item>
     
     <item>

@@ -2,43 +2,42 @@
 <html lang="en-us">
   <head>
     <title>openwrt配置——防火墙规则 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
     <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="openwrt配置——防火墙规则"/>
 <meta name="twitter:description" content="如果说路由规则还能讲讲，iptables防火墙规则就彻底没法讲。简直是千变万化无所不能。下面就简单说一下，对于新增的tun0设备如何设定防火墙规则。
-----------config/network---------- config &#39;interface&#39; &#39;tun&#39; option &#39;ifname&#39; &#39;tun&#43;&#39; option &#39;proto&#39; &#39;none&#39; ** ----------config/firewall---------- config &#39;zone&#39; option &#39;name&#39; &#39;tun&#39; option &#39;input&#39; &#39;ACCEPT&#39; option &#39;output&#39; &#39;ACCEPT&#39; option &#39;forward&#39; &#39;REJECT&#39; config &#39;forwarding&#39; option &#39;src&#39; &#39;lan&#39; option &#39;dest&#39; &#39;tun&#39; option &#39;mtu\_fix&#39; &#39;0&#39; config &#39;forwarding&#39; option &#39;src&#39; &#39;tun&#39; option &#39;dest&#39; &#39;lan&#39; option &#39;mtu\_fix&#39; &#39;0&#39;  好了，新增了一个网口，叫做tun，处理所有tun&#43;（就是任何tun设备）的吞吐。默认规则是可以收发，拒绝转发。转发规则是可以和lan互相转发。
-/etc/init.d/network restart /etc/init.d/firewall restart  然后你看看你的配置是否正确。
-iptables -L -v  另外，这个配置方法有个bug。由于你的网口是tun&#43;，所以在启动时，无法自动启用这个接口。在路由器重启后必须/etc/init.d/network restart才能工作。对我来说，每次路由器重启后都是手工开启openvpn的，问题不大。但是对于某些人就比较麻烦。对此推荐这些人直接修改/etc/firewall.user，直接加入以下指令。
-iptables -I INPUT -i tun&#43; -j ACCEPT iptables -I OUTPUT -o tun&#43; -j ACCEPT iptables -I FORWARD -i tun&#43; -j ACCEPT iptables -I FORWARD -o tun&#43; -j ACCEPT  使用interface配置的最终效果也差不多，不过比较简单整齐好理解。"/>
+----------config/network---------- config &#39;interface&#39; &#39;tun&#39; option &#39;ifname&#39; &#39;tun&#43;&#39; option &#39;proto&#39; &#39;none&#39; ** ----------config/firewall---------- config &#39;zone&#39; option &#39;name&#39; &#39;tun&#39; option &#39;input&#39; &#39;ACCEPT&#39; option &#39;output&#39; &#39;ACCEPT&#39; option &#39;forward&#39; &#39;REJECT&#39; config &#39;forwarding&#39; option &#39;src&#39; &#39;lan&#39; option &#39;dest&#39; &#39;tun&#39; option &#39;mtu\_fix&#39; &#39;0&#39; config &#39;forwarding&#39; option &#39;src&#39; &#39;tun&#39; option &#39;dest&#39; &#39;lan&#39; option &#39;mtu\_fix&#39; &#39;0&#39; 好了，新增了一个网口，叫做tun，处理所有tun&#43;（就是任何tun设备）的吞吐。默认规则是可以收发，拒绝转发。转发规则是可以和lan互相转发。
+/etc/init.d/network restart /etc/init.d/firewall restart 然后你看看你的配置是否正确。
+iptables -L -v 另外，这个配置方法有个bug。由于你的网口是tun&#43;，所以在启动时，无法自动启用这个接口。在路由器重启后必须/etc/init.d/network restart才能工作。对我来说，每次路由器重启后都是手工开启openvpn的，问题不大。但是对于某些人就比较麻烦。对此推荐这些人直接修改/etc/firewall.user，直接加入以下指令。
+iptables -I INPUT -i tun&#43; -j ACCEPT iptables -I OUTPUT -o tun&#43; -j ACCEPT iptables -I FORWARD -i tun&#43; -j ACCEPT iptables -I FORWARD -o tun&#43; -j ACCEPT 使用interface配置的最终效果也差不多，不过比较简单整齐好理解。"/>
 
     <meta property="og:title" content="openwrt配置——防火墙规则" />
 <meta property="og:description" content="如果说路由规则还能讲讲，iptables防火墙规则就彻底没法讲。简直是千变万化无所不能。下面就简单说一下，对于新增的tun0设备如何设定防火墙规则。
-----------config/network---------- config &#39;interface&#39; &#39;tun&#39; option &#39;ifname&#39; &#39;tun&#43;&#39; option &#39;proto&#39; &#39;none&#39; ** ----------config/firewall---------- config &#39;zone&#39; option &#39;name&#39; &#39;tun&#39; option &#39;input&#39; &#39;ACCEPT&#39; option &#39;output&#39; &#39;ACCEPT&#39; option &#39;forward&#39; &#39;REJECT&#39; config &#39;forwarding&#39; option &#39;src&#39; &#39;lan&#39; option &#39;dest&#39; &#39;tun&#39; option &#39;mtu\_fix&#39; &#39;0&#39; config &#39;forwarding&#39; option &#39;src&#39; &#39;tun&#39; option &#39;dest&#39; &#39;lan&#39; option &#39;mtu\_fix&#39; &#39;0&#39;  好了，新增了一个网口，叫做tun，处理所有tun&#43;（就是任何tun设备）的吞吐。默认规则是可以收发，拒绝转发。转发规则是可以和lan互相转发。
-/etc/init.d/network restart /etc/init.d/firewall restart  然后你看看你的配置是否正确。
-iptables -L -v  另外，这个配置方法有个bug。由于你的网口是tun&#43;，所以在启动时，无法自动启用这个接口。在路由器重启后必须/etc/init.d/network restart才能工作。对我来说，每次路由器重启后都是手工开启openvpn的，问题不大。但是对于某些人就比较麻烦。对此推荐这些人直接修改/etc/firewall.user，直接加入以下指令。
-iptables -I INPUT -i tun&#43; -j ACCEPT iptables -I OUTPUT -o tun&#43; -j ACCEPT iptables -I FORWARD -i tun&#43; -j ACCEPT iptables -I FORWARD -o tun&#43; -j ACCEPT  使用interface配置的最终效果也差不多，不过比较简单整齐好理解。" />
+----------config/network---------- config &#39;interface&#39; &#39;tun&#39; option &#39;ifname&#39; &#39;tun&#43;&#39; option &#39;proto&#39; &#39;none&#39; ** ----------config/firewall---------- config &#39;zone&#39; option &#39;name&#39; &#39;tun&#39; option &#39;input&#39; &#39;ACCEPT&#39; option &#39;output&#39; &#39;ACCEPT&#39; option &#39;forward&#39; &#39;REJECT&#39; config &#39;forwarding&#39; option &#39;src&#39; &#39;lan&#39; option &#39;dest&#39; &#39;tun&#39; option &#39;mtu\_fix&#39; &#39;0&#39; config &#39;forwarding&#39; option &#39;src&#39; &#39;tun&#39; option &#39;dest&#39; &#39;lan&#39; option &#39;mtu\_fix&#39; &#39;0&#39; 好了，新增了一个网口，叫做tun，处理所有tun&#43;（就是任何tun设备）的吞吐。默认规则是可以收发，拒绝转发。转发规则是可以和lan互相转发。
+/etc/init.d/network restart /etc/init.d/firewall restart 然后你看看你的配置是否正确。
+iptables -L -v 另外，这个配置方法有个bug。由于你的网口是tun&#43;，所以在启动时，无法自动启用这个接口。在路由器重启后必须/etc/init.d/network restart才能工作。对我来说，每次路由器重启后都是手工开启openvpn的，问题不大。但是对于某些人就比较麻烦。对此推荐这些人直接修改/etc/firewall.user，直接加入以下指令。
+iptables -I INPUT -i tun&#43; -j ACCEPT iptables -I OUTPUT -o tun&#43; -j ACCEPT iptables -I FORWARD -i tun&#43; -j ACCEPT iptables -I FORWARD -o tun&#43; -j ACCEPT 使用interface配置的最终效果也差不多，不过比较简单整齐好理解。" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/1836/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/1836/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2011-06-17T14:01:28+08:00" />
 <meta property="article:modified_time" content="2011-06-17T14:01:28+08:00" />
 
@@ -78,11 +77,8 @@ iptables -I INPUT -i tun&#43; -j ACCEPT iptables -I OUTPUT -o tun&#43; -j ACCEPT
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -92,28 +88,31 @@ iptables -I INPUT -i tun&#43; -j ACCEPT iptables -I OUTPUT -o tun&#43; -j ACCEPT
       <h1 class ="post-title">openwrt配置——防火墙规则</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Jun 17, 2011
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/computer/">computer</a><a class="tag" href="//blog.shell909090.org/tags/openwrt/">openwrt</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/computer/">computer</a>
+              <a class="tag" href="//blog.shell909090.org/tags/openwrt/">openwrt</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
       <p>如果说路由规则还能讲讲，iptables防火墙规则就彻底没法讲。简直是千变万化无所不能。下面就简单说一下，对于新增的tun0设备如何设定防火墙规则。</p>
-
 <pre><code>----------config/network----------
 config 'interface' 'tun'
 option 'ifname' 'tun+'
@@ -135,24 +134,17 @@ option 'src' 'tun'
 option 'dest' 'lan'
 option 'mtu\_fix' '0'
 </code></pre>
-
 <p>好了，新增了一个网口，叫做tun，处理所有tun+（就是任何tun设备）的吞吐。默认规则是可以收发，拒绝转发。转发规则是可以和lan互相转发。</p>
-
 <pre><code>/etc/init.d/network restart
 /etc/init.d/firewall restart
 </code></pre>
-
 <p>然后你看看你的配置是否正确。</p>
-
 <pre><code>iptables -L -v
 </code></pre>
-
 <p>另外，这个配置方法有个bug。由于你的网口是tun+，所以在启动时，无法自动启用这个接口。在路由器重启后必须<code>/etc/init.d/network restart</code>才能工作。对我来说，每次路由器重启后都是手工开启openvpn的，问题不大。但是对于某些人就比较麻烦。对此推荐这些人直接修改/etc/firewall.user，直接加入以下指令。</p>
-
 <pre><code>iptables -I INPUT -i tun+ -j ACCEPT iptables -I OUTPUT -o tun+ -j ACCEPT
 iptables -I FORWARD -i tun+ -j ACCEPT iptables -I FORWARD -o tun+ -j ACCEPT
 </code></pre>
-
 <p>使用interface配置的最终效果也差不多，不过比较简单整齐好理解。</p>
 
     </div>

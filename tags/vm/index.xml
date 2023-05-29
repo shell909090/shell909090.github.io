@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>vm on Shell&#39;s Home</title>
@@ -7,11 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Wed, 19 Feb 2014 10:14:23 +0800</lastBuildDate>
-    
-	<atom:link href="//blog.shell909090.org/tags/vm/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Wed, 19 Feb 2014 10:14:23 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/vm/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>利用cgroups隔离多个进程资源消耗的尝试</title>
       <link>//blog.shell909090.org/blog/archives/2561/</link>
@@ -19,10 +15,10 @@
       
       <guid>//blog.shell909090.org/blog/archives/2561/</guid>
       <description>setup Add to /etc/fstab.
-cgroup /sys/fs/cgroup cgroup defaults 0 2  Then sudo mount -a.
+cgroup /sys/fs/cgroup cgroup defaults 0 2 Then sudo mount -a.
 Change directory to /sys/fs/cgroup/. Use mkdir to create a new group, and initalize it like those.
-echo 0-3 &amp;gt;&amp;gt; cpuset.cpus echo 0 &amp;gt; cpuset.mems  Without those two step, next operator will failure.
-echo 0 &amp;gt; memory.swappiness echo 52428800 &amp;gt; memory.limit_in_bytes  Set memory limit 50M, and forbidden swap.
+echo 0-3 &amp;gt;&amp;gt; cpuset.cpus echo 0 &amp;gt; cpuset.mems Without those two step, next operator will failure.
+echo 0 &amp;gt; memory.swappiness echo 52428800 &amp;gt; memory.limit_in_bytes Set memory limit 50M, and forbidden swap.
 python test code import os, sys, time, random, string def main(): l = [] random.</description>
     </item>
     
@@ -35,11 +31,11 @@ python test code import os, sys, time, random, string def main(): l = [] random.
       <description>说明 测试各种虚拟化系统下的虚拟机性能。
 测试使用sysbench。
 CPU采用如下指令测试。
-sysbench --test=cpu --num-threads=2 --cpu-max-prime=50000 run  文件IO采用如下指令测试。
-sysbench --test=fileio --file-total-size=10G prepare sysbench --test=fileio --file-total-size=10G --file-test-mode=rndrw --init-rng=on --max-time=300 --max-requests=0 run  内存采用如下指令测试。
-sysbench --test=memory --num-threads=2 --memory-access-mode=seq run sysbench --test=memory --num-threads=2 --memory-access-mode=rnd run  线程采用如下指令。
-sysbench --test=threads --num-threads=2 run sysbench --test=mutex --num-threads=2 --mutex-locks=1000000 run  裸硬盘测试采用如下指令。
-hdparm -tT &amp;lt;dev&amp;gt;  物理机上有三个文件系统，ext4/xfs/btrfs，前两者仅做fileio测试以对比性能。
+sysbench --test=cpu --num-threads=2 --cpu-max-prime=50000 run 文件IO采用如下指令测试。
+sysbench --test=fileio --file-total-size=10G prepare sysbench --test=fileio --file-total-size=10G --file-test-mode=rndrw --init-rng=on --max-time=300 --max-requests=0 run 内存采用如下指令测试。
+sysbench --test=memory --num-threads=2 --memory-access-mode=seq run sysbench --test=memory --num-threads=2 --memory-access-mode=rnd run 线程采用如下指令。
+sysbench --test=threads --num-threads=2 run sysbench --test=mutex --num-threads=2 --mutex-locks=1000000 run 裸硬盘测试采用如下指令。
+hdparm -tT &amp;lt;dev&amp;gt; 物理机上有三个文件系统，ext4/xfs/btrfs，前两者仅做fileio测试以对比性能。
 另外做两个特殊文件系统对比，aufs带复制和aufs无复制。前者在只读层上准备好测试文件，而后进行随机读写测试。其中就附带了文件复制开销。后者在aufs建立后初始化测试文件，因此消除了文件复制开销。
 所有测试都是测试数次，取最高者（因为低者可能受到各种干扰）。一般是2-3次。
 物理机是一台DELL Intel 64位桌面系统，支持硬件虚拟化，有4G内存。系统采用debian jessie，测试于2014年1月17日-20日执行，内核3.12.6-2 (2013-12-29) x86_64。
@@ -56,14 +52,15 @@ hdparm -tT &amp;lt;dev&amp;gt;  物理机上有三个文件系统，ext4/xfs/btr
       <guid>//blog.shell909090.org/blog/archives/2533/</guid>
       <description>基本安装 安装lxc包。
 注意修改/bin/sh，链接到/bin/bash。lxc在某些版本上有一个bug，声明为/bin/sh却使用bash语法，导致不如此链接会出现错误。
- lxc on debian wiki  镜像和设定 使用lxc-create -n name -t template生成镜像。
+lxc on debian wiki 镜像和设定 使用lxc-create -n name -t template生成镜像。
 在/usr/share/lxc/templates可以看到可用的模板。
 在/var/cache/lxc/debian会缓存生成过程的临时文件。
 生成的镜像需要在镜像内安装lxc，否则无法使用lxc-execute。
 资源限制 在config文件内，写入cgroup限定规则。注意，使用内存限定的话，需要在内核参数中加入cgroup_enable=memory。
 在debian下，可以修改/etc/default/grub文件，使用update-grub重新生成规则。
-GRUB_CMDLINE_LINUX_DEFAULT=&amp;quot;cgroup_enable=memory quiet&amp;quot;  在config文件中可以如下限定。
-lxc.cgroup.memory.limit_in_bytes = 512M # 限定内存 lxc.cgroup.cpuset.cpus = 0 # 限定可以使用的核 lxc.cgroup.blkio.throttle.read_bps_device = 8:0 100 # 读取速率限定 lxc.cgroup.blkio.throttle.write_bps_device = 8:0 100 # 写入速率限定 lxc.cgroup.blkio.throttle.read_iops_device = 8:0 100 # 读取频率限定 lxc.cgroup.blkio.throttle.write_iops_device = 8:0 100 # 写入频率限定   cgroups blkio-controller cpusets memory  执行 lxc-start -n name /bin/echo hello  还可以用以下指令，在已经启动的container里执行进程。</description>
+GRUB_CMDLINE_LINUX_DEFAULT=&amp;quot;cgroup_enable=memory quiet&amp;quot; 在config文件中可以如下限定。
+lxc.cgroup.memory.limit_in_bytes = 512M # 限定内存 lxc.cgroup.cpuset.cpus = 0 # 限定可以使用的核 lxc.cgroup.blkio.throttle.read_bps_device = 8:0 100 # 读取速率限定 lxc.cgroup.blkio.throttle.write_bps_device = 8:0 100 # 写入速率限定 lxc.cgroup.blkio.throttle.read_iops_device = 8:0 100 # 读取频率限定 lxc.cgroup.blkio.throttle.write_iops_device = 8:0 100 # 写入频率限定 cgroups blkio-controller cpusets memory 执行 lxc-start -n name /bin/echo hello 还可以用以下指令，在已经启动的container里执行进程。
+lxc-attach -n name /bin/echo hello 以下指令是用来在未启动的container里执行进程的。</description>
     </item>
     
     <item>
@@ -72,23 +69,23 @@ lxc.cgroup.memory.limit_in_bytes = 512M # 限定内存 lxc.cgroup.cpuset.cpus = 
       <pubDate>Fri, 24 May 2013 09:25:36 +0800</pubDate>
       
       <guid>//blog.shell909090.org/blog/archives/2404/</guid>
-      <description> 为什么使用路由模式 lxc默认使用的是桥模式，这也是我在家里和公司里部署的模式。在这种模式下，lxc虚拟机可以直接和真实网络中的机器互相访问，就如同一台真的机器一样。路由模式则没有这个便利性。
+      <description>为什么使用路由模式 lxc默认使用的是桥模式，这也是我在家里和公司里部署的模式。在这种模式下，lxc虚拟机可以直接和真实网络中的机器互相访问，就如同一台真的机器一样。路由模式则没有这个便利性。
 但是桥模式有个缺陷，必须能够做出桥来。我们有做不出桥来的时候么？有，如果你用笔记本，大部分AP会拒绝第二个MAC地址的包。导致网桥可以组建，却永远无法正常使用。
 第一种路由模式，双重NAT简版 双重NAT可以用于几乎所有场景，并且不会带来后遗症。然而，双重NAT的问题在于，物理网络不能直接访问虚拟机。对于很多设备来说，这就失去了价值。另外说一点，之所以叫做双重NAT，是因为多数时候物理网络接到外网还需要一次NAT。
 lxc的双重NAT可以视为两步，建立NAT连接的虚拟网络，将lxc连接到虚拟网络。
 第一步比较复杂，我们先从br0的建立开始说起。首先，你需要为虚拟网络分配一个不同的保留内网网段。如果使用同样的内网网段，在ARP查询的时候会从一个端口发出超过一个的MAC回应，这就退回了桥模式。
 然后我们需要建立一个br0网桥作为配置的起点，对这个网桥赋予IP，配置路由和防火墙，并启动dnsmasq以便于dhcp和dns。这个模式之所以叫做简版，是因为我们先不讨论dnsmasq。
 假如你的lxc内网网段是192.168.66.0/24，那么你大致可以如下配置：
-brctl addbr br0 ifconfig br0 192.168.66.1 route add -net 192.168.66.0/24 dev br0 iptables -A INPUT -s 192.168.66.0/24 -j ACCEPT iptables -t nat -A POSTROUTING -s 192.168.66.0/24 -j MASQUERADE  实际上，对于任何一种网口设备，将其配置为NAT的过程都是一样的。
+brctl addbr br0 ifconfig br0 192.168.66.1 route add -net 192.168.66.0/24 dev br0 iptables -A INPUT -s 192.168.66.0/24 -j ACCEPT iptables -t nat -A POSTROUTING -s 192.168.66.0/24 -j MASQUERADE 实际上，对于任何一种网口设备，将其配置为NAT的过程都是一样的。
 第二步非常容易，在lxc的config文件内，指定网桥为br0就OK了。当然，作为略去dnsmasq的代价，你需要手工配置每台机器的IP地址和DNS服务器。
 第二种路由模式，双重NAT 双重NAT的完整版需要在内网网口上启动dns，作为dns缓存代理和dhcp服务器。其余和第一种模式没有区别，只是你不需要手工指定IP和DNS服务器了。
 当然，其实任何一种网口的NAT配置都是一样的。
 第三种路由模式，双边交互路由 第三种路由模式的效果最好，虚拟机和真实机可以互相访问。但是这种模式需要能够修改物理网络网关的路由表。这种模式使用主机作为路由器，中转真实网络和虚拟网络。
 我略去如何创造br以及如何将lxc连接到上面，这些前面有叙述。下面我简述一下双边路由最关键的几点。
- 最重要的重点，就是在真实网络的网关上，将你的真实物理机在外网的IP，配置为虚拟网络的下一跳网关。例如，对于上面的例子，我们应当在网关上如此配置。
+最重要的重点，就是在真实网络的网关上，将你的真实物理机在外网的IP，配置为虚拟网络的下一跳网关。例如，对于上面的例子，我们应当在网关上如此配置。
 route add -net 192.168.66.0/24 gw 192.168.1.4
-  如果不进行如此配置，物理网络所发出的包在到达网关后就不知道应当如何转发了。
- 在物理机上允许双边网络的所有包透过。你的包当然不能被防火墙挡掉。 虚拟网络的dhcp是不会传递到外网的，因此如果打算使用dhcp，还是需要开dnsmasq。  </description>
+如果不进行如此配置，物理网络所发出的包在到达网关后就不知道应当如何转发了。
+在物理机上允许双边网络的所有包透过。你的包当然不能被防火墙挡掉。 虚拟网络的dhcp是不会传递到外网的，因此如果打算使用dhcp，还是需要开dnsmasq。 </description>
     </item>
     
     <item>
@@ -129,7 +126,7 @@ route add -net 192.168.66.0/24 gw 192.168.1.4
       
       <guid>//blog.shell909090.org/blog/archives/2098/</guid>
       <description>最近整XEN，出了一个奇怪的错误。
-ERROR (SrvDaemon:355) Exception starting xend((22, &#39;Invalid argument&#39;)) Traceback (most recent call last): File &amp;quot;/usr/lib/xen-4.0/lib/python/xen/xend/server/SrvDaemon.py&amp;quot;, line 335, in run xinfo = xc.xeninfo() Error: (22, &#39;Invalid argument&#39;)  根据网络上的内容，首先排除没有xen模块——有了，然后是/proc/xen目录是否mount——有了，然后是/sys/hypervisor/下面的一堆属性——有了，然后是版本——不对。xen-utils-4.1是4.1.2版本，而xen-tools是4.2版本。不过xen-utils并不依赖xen-tools，没有后者应当也可以运行这些玩意。hypervisor和xen-utils的版本是一致的。那问题是什么？
+ERROR (SrvDaemon:355) Exception starting xend((22, &#39;Invalid argument&#39;)) Traceback (most recent call last): File &amp;quot;/usr/lib/xen-4.0/lib/python/xen/xend/server/SrvDaemon.py&amp;quot;, line 335, in run xinfo = xc.xeninfo() Error: (22, &#39;Invalid argument&#39;) 根据网络上的内容，首先排除没有xen模块——有了，然后是/proc/xen目录是否mount——有了，然后是/sys/hypervisor/下面的一堆属性——有了，然后是版本——不对。xen-utils-4.1是4.1.2版本，而xen-tools是4.2版本。不过xen-utils并不依赖xen-tools，没有后者应当也可以运行这些玩意。hypervisor和xen-utils的版本是一致的。那问题是什么？
 出错的文件是/usr/lib/xen-4.1/lib/python/xen/lowlevel/xc.so里面发生的异常，下载xen的源码检查，这个函数主要是检查属性。属性检查会出什么错？
 正在一头雾水的时候，突然想起一个问题。我安装的是xen-hypervisor-4.1-amd64，因为kernel是linux-image-3.1.0-1-amd64。然而，我这个系统有一个非常大的特殊——在64位CPU上运行的32位系统。因此，实际上xen-utils是32位的。行了行了，下面的事情用膝盖都能想到。
 叹气，这世界上，真的有种错误，叫做太常见了以至于视而不见。不要认为自己不会犯。</description>
@@ -142,9 +139,9 @@ ERROR (SrvDaemon:355) Exception starting xend((22, &#39;Invalid argument&#39;)) 
       
       <guid>//blog.shell909090.org/blog/archives/2094/</guid>
       <description>废话不说，上干货。先装一下syslinux，genisoimage，kvm，debootstrap，squashfs-tools。
-$ mkdir debcd $ cd debcd $ mkdir isoroot $ cp/usr/lib/syslinux/isolinux.bin isoroot/ $cat &amp;gt; isoroot/isolinux.cfg &amp;lt;&amp;lt; &amp;quot;EOF&amp;quot; prompt 0 default linux label linux kernel vmlinuz append initrd=initrd.img EOF $ cp /boot/vmlinuz-3.2.0-1-amd64 isoroot/vmlinuz  完成上述步骤后，你就准备好了一个基础的iso镜像文件系统，并有了一个基础的引导模块和内核。现在，我们尝试把这玩意烧到iso上，并且测试一下。
-$genisoimage -o output.iso -b isolinux.bin -c boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table isoroot/ $ sudo kvm -cdrom output.iso -m 512  如果没法装kvm，换成qemu。屏幕会停在内核引导过程中——因为你没有initrd.img，所以在isolinux.cfg中指定的initrd就不正确。下面我们会设法弄一个initrd.img。
-$ cp -a /etc/initramfs-tools/ initramfs $ mkinitramfs -d initramfs -o isoroot/initrd.img $genisoimage -o output.iso -b isolinux.</description>
+$ mkdir debcd $ cd debcd $ mkdir isoroot $ cp/usr/lib/syslinux/isolinux.bin isoroot/ $cat &amp;gt; isoroot/isolinux.cfg &amp;lt;&amp;lt; &amp;quot;EOF&amp;quot; prompt 0 default linux label linux kernel vmlinuz append initrd=initrd.img EOF $ cp /boot/vmlinuz-3.2.0-1-amd64 isoroot/vmlinuz 完成上述步骤后，你就准备好了一个基础的iso镜像文件系统，并有了一个基础的引导模块和内核。现在，我们尝试把这玩意烧到iso上，并且测试一下。
+$genisoimage -o output.iso -b isolinux.bin -c boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table isoroot/ $ sudo kvm -cdrom output.iso -m 512 如果没法装kvm，换成qemu。屏幕会停在内核引导过程中——因为你没有initrd.img，所以在isolinux.cfg中指定的initrd就不正确。下面我们会设法弄一个initrd.img。
+$ cp -a /etc/initramfs-tools/ initramfs $ mkinitramfs -d initramfs -o isoroot/initrd.img $genisoimage -o output.iso -b isolinux.bin -c boot.</description>
     </item>
     
     <item>

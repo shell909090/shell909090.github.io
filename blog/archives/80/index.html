@@ -2,24 +2,23 @@
 <html lang="en-us">
   <head>
     <title>用python实现webserver(一)――Prefork // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
@@ -30,8 +29,8 @@ if (!doNotTrack) {
 主进程在每次进入accept后阻塞，子进程在每次进入recv后阻塞。这样会带来几方面的好处。首先是模型分离，即使一个子进程崩溃，也不会影响到其他子进程。其次是身份分离，当你需要让http server以高于常规运行(常规都是以apache, www-data, nobody运行的)用户的权限进行工作时，每进程模式是唯一安全的模式。其他模式都会造成同一进程内的其他session也暂时获得这个权限的问题。但是同样，这样有几方面的问题，主要就是性能问题。
 由于每个连接都需要fork出一个新进程去处理。因此针对大量小连接的时候，fork和exit消耗了大量CPU。问题更严重的是，由于用户进程总数是有限的(PEM或者ulimit都会限制这个数量)，因此压力大到一定程度时(通常是1024或者2048)，就会出现无法创建连接的情况。而对小型服务器而言，在压力还没大道这个程度以前，服务器就会由于性能达到限制而造成段错误。以下是实际试验指令和结果：
 测试指令：
-ab -n 10000 -c 100 &lt;http://localhost:8000/py-web-server&gt;  服务器报错：
-20090924 05:51:18: Traceback (most recent call last): 20090924 05:51:18: File &ldquo;main.py&rdquo;, line 19, in  20090924 05:51:18: 20090924 05:51:18: sock.run (); 20090924 05:51:18: File &ldquo;/home/shell/py-web-server/server.py&rdquo;, line 30, in run 20090924 05:51:18: 20090924 05:51:18: while loop_func (): pass 20090924 05:51:18: File &ldquo;/home/shell/py-web-server/server.py&rdquo;, line 56, in do_loop 20090924 05:51:18: 20090924 05:51:18: if os.fork () == 0:"/>
+ab -n 10000 -c 100 &lt;http://localhost:8000/py-web-server&gt; 服务器报错：
+[20090924 05:51:18]: Traceback (most recent call last): [20090924 05:51:18]: File &ldquo;main.py&rdquo;, line 19, in [20090924 05:51:18]: [20090924 05:51:18]: sock.run (); [20090924 05:51:18]: File &ldquo;/home/shell/py-web-server/server.py&rdquo;, line 30, in run [20090924 05:51:18]: [20090924 05:51:18]: while loop_func (): pass [20090924 05:51:18]: File &ldquo;/home/shell/py-web-server/server.py&rdquo;, line 56, in do_loop [20090924 05:51:18]: [20090924 05:51:18]: if os.fork () == 0: [20090924 05:51:18]: OSError [20090924 05:51:18]: : [20090924 05:51:18]: [Errno 11] Resource temporarily unavailable"/>
 
     <meta property="og:title" content="用python实现webserver(一)――Prefork" />
 <meta property="og:description" content="要实现webserver，首先需要一个tcp server。作为python的设计原则，最好是使用SocketServer或者封装更好的BaseHTTPServer来复用。不过既然我们的目的是为了学习，那么就不能用这两个内置对象。我们先实现一个最古典的每进程模式实现。而我们标题上的Prefork，则是apache服务器对这个模式的称呼。
@@ -39,10 +38,10 @@ ab -n 10000 -c 100 &lt;http://localhost:8000/py-web-server&gt;  服务器报错�
 主进程在每次进入accept后阻塞，子进程在每次进入recv后阻塞。这样会带来几方面的好处。首先是模型分离，即使一个子进程崩溃，也不会影响到其他子进程。其次是身份分离，当你需要让http server以高于常规运行(常规都是以apache, www-data, nobody运行的)用户的权限进行工作时，每进程模式是唯一安全的模式。其他模式都会造成同一进程内的其他session也暂时获得这个权限的问题。但是同样，这样有几方面的问题，主要就是性能问题。
 由于每个连接都需要fork出一个新进程去处理。因此针对大量小连接的时候，fork和exit消耗了大量CPU。问题更严重的是，由于用户进程总数是有限的(PEM或者ulimit都会限制这个数量)，因此压力大到一定程度时(通常是1024或者2048)，就会出现无法创建连接的情况。而对小型服务器而言，在压力还没大道这个程度以前，服务器就会由于性能达到限制而造成段错误。以下是实际试验指令和结果：
 测试指令：
-ab -n 10000 -c 100 &lt;http://localhost:8000/py-web-server&gt;  服务器报错：
-20090924 05:51:18: Traceback (most recent call last): 20090924 05:51:18: File &ldquo;main.py&rdquo;, line 19, in  20090924 05:51:18: 20090924 05:51:18: sock.run (); 20090924 05:51:18: File &ldquo;/home/shell/py-web-server/server.py&rdquo;, line 30, in run 20090924 05:51:18: 20090924 05:51:18: while loop_func (): pass 20090924 05:51:18: File &ldquo;/home/shell/py-web-server/server.py&rdquo;, line 56, in do_loop 20090924 05:51:18: 20090924 05:51:18: if os.fork () == 0:" />
+ab -n 10000 -c 100 &lt;http://localhost:8000/py-web-server&gt; 服务器报错：
+[20090924 05:51:18]: Traceback (most recent call last): [20090924 05:51:18]: File &ldquo;main.py&rdquo;, line 19, in [20090924 05:51:18]: [20090924 05:51:18]: sock.run (); [20090924 05:51:18]: File &ldquo;/home/shell/py-web-server/server.py&rdquo;, line 30, in run [20090924 05:51:18]: [20090924 05:51:18]: while loop_func (): pass [20090924 05:51:18]: File &ldquo;/home/shell/py-web-server/server.py&rdquo;, line 56, in do_loop [20090924 05:51:18]: [20090924 05:51:18]: if os.fork () == 0: [20090924 05:51:18]: OSError [20090924 05:51:18]: : [20090924 05:51:18]: [Errno 11] Resource temporarily unavailable" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/80/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/80/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2009-10-21T10:31:00+08:00" />
 <meta property="article:modified_time" content="2009-10-21T10:31:00+08:00" />
 
@@ -82,11 +81,8 @@ ab -n 10000 -c 100 &lt;http://localhost:8000/py-web-server&gt;  服务器报错�
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -96,60 +92,57 @@ ab -n 10000 -c 100 &lt;http://localhost:8000/py-web-server&gt;  服务器报错�
       <h1 class ="post-title">用python实现webserver(一)――Prefork</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Oct 21, 2009
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           2 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/asynchronous/">asynchronous</a><a class="tag" href="//blog.shell909090.org/tags/coroutine/">coroutine</a><a class="tag" href="//blog.shell909090.org/tags/program/">program</a><a class="tag" href="//blog.shell909090.org/tags/python/">python</a><a class="tag" href="//blog.shell909090.org/tags/webserver/">webserver</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/asynchronous/">asynchronous</a>
+              <a class="tag" href="//blog.shell909090.org/tags/coroutine/">coroutine</a>
+              <a class="tag" href="//blog.shell909090.org/tags/program/">program</a>
+              <a class="tag" href="//blog.shell909090.org/tags/python/">python</a>
+              <a class="tag" href="//blog.shell909090.org/tags/webserver/">webserver</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
       <p>要实现webserver，首先需要一个tcp server。作为python的设计原则，最好是使用SocketServer或者封装更好的BaseHTTPServer来复用。不过既然我们的目的是为了学习，那么就不能用这两个内置对象。我们先实现一个最古典的每进程模式实现。而我们标题上的Prefork，则是apache服务器对这个模式的称呼。</p>
-
 <p>每进程模式，顾名思义，就是每个新连接开启一个进程进行处理。首先创建一个socket，bind到一个套接字上。当有请求时，accept。(好多英文，不是我有意cheglish，全是api的名称)accept会返回一个通讯用的socket，这时fork出一个新的进程，处理这个socket。</p>
-
 <p>主进程在每次进入accept后阻塞，子进程在每次进入recv后阻塞。这样会带来几方面的好处。首先是模型分离，即使一个子进程崩溃，也不会影响到其他子进程。其次是身份分离，当你需要让http server以高于常规运行(常规都是以apache, www-data, nobody运行的)用户的权限进行工作时，每进程模式是唯一安全的模式。其他模式都会造成同一进程内的其他session也暂时获得这个权限的问题。但是同样，这样有几方面的问题，主要就是性能问题。</p>
-
 <p>由于每个连接都需要fork出一个新进程去处理。因此针对大量小连接的时候，fork和exit消耗了大量CPU。问题更严重的是，由于用户进程总数是有限的(PEM或者ulimit都会限制这个数量)，因此压力大到一定程度时(通常是1024或者2048)，就会出现无法创建连接的情况。而对小型服务器而言，在压力还没大道这个程度以前，服务器就会由于性能达到限制而造成段错误。以下是实际试验指令和结果：</p>
-
 <p>测试指令：</p>
-
 <pre><code>ab -n 10000 -c 100 &lt;http://localhost:8000/py-web-server&gt;
 </code></pre>
-
 <p>服务器报错：</p>
-
-<p><a href=":">20090924 05:51:18</a>: Traceback (most recent call last):
-<a href=":">20090924 05:51:18</a>: File &ldquo;main.py&rdquo;, line 19, in <module>
-<a href=":">20090924 05:51:18</a>:
-<a href=":">20090924 05:51:18</a>: sock.run ();
-<a href=":">20090924 05:51:18</a>: File &ldquo;/home/shell/py-web-server/server.py&rdquo;, line 30, in run
-<a href=":">20090924 05:51:18</a>:
-<a href=":">20090924 05:51:18</a>: while loop_func (): pass
-<a href=":">20090924 05:51:18</a>: File &ldquo;/home/shell/py-web-server/server.py&rdquo;, line 56, in do_loop
-<a href=":">20090924 05:51:18</a>: <a href=":">20090924 05:51:18</a>: if os.fork () == 0:</p>
-
-<p><a href=":">20090924 05:51:18</a>: [Errno 11] Resource temporarily unavailable</p>
-
+<p>[20090924 05:51:18]: Traceback (most recent call last):
+[20090924 05:51:18]: File &ldquo;main.py&rdquo;, line 19, in <!-- raw HTML omitted -->
+[20090924 05:51:18]:
+[20090924 05:51:18]: sock.run ();
+[20090924 05:51:18]: File &ldquo;/home/shell/py-web-server/server.py&rdquo;, line 30, in run
+[20090924 05:51:18]:
+[20090924 05:51:18]: while loop_func (): pass
+[20090924 05:51:18]: File &ldquo;/home/shell/py-web-server/server.py&rdquo;, line 56, in do_loop
+[20090924 05:51:18]: [20090924 05:51:18]: if os.fork () == 0:
+[20090924 05:51:18]: OSError
+[20090924 05:51:18]: :
+[20090924 05:51:18]: [Errno 11] Resource temporarily unavailable</p>
 <p>测试指令：</p>
-
 <pre><code>ab -n 1000 -c 100 &lt;http://localhost:8000/py-web-server&gt;
 </code></pre>
-
 <p>返回结果：</p>
-
 <pre><code>Document Path: /py-web-server Document Length: 1320 bytes
 Concurrency Level: 100 Time taken for tests: 14.189 seconds
 Complete requests: 1000 Failed requests: 0 Write
@@ -162,30 +155,18 @@ Transfer rate: 93.67 [Kbytes/sec] received Connection Times
 0 9000 Processing: 4 109 211.0 95 3335 Waiting: 4
 100 211.1 86 3324 Total: 8 127 498.3 95 12332
 </code></pre>
-
 <p>为什么只有100并发？因为200并发的时候测试机上的服务器已经崩溃了。而且我们看到服务器的效率大约是70req/sec。等过两天，讲到</p>
-
 <p>Thread模式的时候，大家可以对比一下Thread模式的效率。基本上说，针对普通服务器，个人觉得Prefork模式并发数量尽量控制在</p>
-
 <p>100-800这个级别比较合适。更高的也许能承受，可是就可能发生不稳定(原因上面有说，就是进程数量限制)。那么Prefork模式通常用在哪里呢？</p>
-
 <p>数据库！Oracle和Postgresql全是Prefork模式的(其中Oracle的Prefork模式还经过一次分发，更复杂一些)。压力通常在</p>
-
 <p>100-200这个级别，连接基本不断开，连接的请求和销毁开销很小，但是处理的过程开销很大。并且，由于处理过程复杂，一个链接的处理错误不能殃及整个</p>
-
 <p>系统。对于这种问题，最好采用Prefork模式进行处理。同类的问题还有一些EJB服务器，复杂中间件等等。</p>
-
 <p>那么反过来，作为客户，我在面对Prefork模式的时候，如何才能高效处理呢？——对，大家都想到了，连接池模式。通过连接池存放空闲连接，避免连接的建立和释放开销，从而增加服务器性能。</p>
-
 <p>另外，python实现其实性能是很有问题的，我们对比一下apache2的测试结果：</p>
-
 <p>测试指令：</p>
-
 <pre><code>ab -n 1000 -c 100 &lt;http://localhost:8000/py-web-server&gt;
 </code></pre>
-
 <p>返回结果：</p>
-
 <pre><code>Document Path: / Document Length: 45 bytes
 Concurrency Level: 1000 Time taken for tests: 7.914 seconds
 Complete requests: 10000 Failed requests: 0 Write
@@ -198,7 +179,6 @@ Transfer rate: 395.40 [Kbytes/sec] received Connection Times
 3 3028 Processing: 0 193 733.0 88 6629 Waiting: 0
 190 732.4 85 6621 Total: 46 263 950.7 93 7895 --
 </code></pre>
-
 <p>与其相濡以沫，不如相忘于江湖</p>
 
     </div>

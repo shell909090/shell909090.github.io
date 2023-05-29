@@ -2,41 +2,40 @@
 <html lang="en-us">
   <head>
     <title>Windows系统引论 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
     <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Windows系统引论"/>
 <meta name="twitter:description" content="最近在开linux系统，找找发现资料那个叫……哎。到不是说少，linux号称开放源码，想要什么没有阿。问题是精论系统结构和意义的很少，一般都是讨论某个技术点如何如何的。没有大略的瞻观（当然，也有可能是英文，贝壳的E文水平看了等于没看到）。而一般系统中要做某个应用，除了经验，就是根据系统的运作方法、构架、原理等等去模拟。例如了解了file
-HANDLE这种东西后，自然会就如何将一个HiddenConsole的Output转Dump到一个windows的text中产生想法。或者了解了[\.]()系列文件后，自然会想到如何制作的ISO。当然，其实还有ATAPI的方法。如果了解了winsock的层实现流程，自然会知道防火墙如何实现。所以了解一个系统，无须了解内核的每句代码（对于windows，根本无法了解。即使是linux，了解了全部也要数年。届时你了解的也该淘汰了。）。系统主要了解其构架和思想，关键部分才了解实现。
+HANDLE这种东西后，自然会就如何将一个HiddenConsole的Output转Dump到一个windows的text中产生想法。或者了解了\.系列文件后，自然会想到如何制作的ISO。当然，其实还有ATAPI的方法。如果了解了winsock的层实现流程，自然会知道防火墙如何实现。所以了解一个系统，无须了解内核的每句代码（对于windows，根本无法了解。即使是linux，了解了全部也要数年。届时你了解的也该淘汰了。）。系统主要了解其构架和思想，关键部分才了解实现。
 现在看linux系统，犹如隔纱而望。当然，系统的命令我了解了不少（其实了解了ls和man已经差不多了）。但是每个命令是哪里的？系统的目录如何设置？什么配置应该看什么地方。linux载入进程是如何实现的。（估计这个是ELF的范畴，不过肯定要先啃过内核在看的懂。否则就如同我当年不知道NativeAPI的时候看NE和PE一样）
 所以现在写一个windows系统引论，希望抛砖引玉。毕竟windows的资料全，了解时间长。所以难保还有哪位大大也写过类似文章，大家姑且看之吧。"/>
 
     <meta property="og:title" content="Windows系统引论" />
 <meta property="og:description" content="最近在开linux系统，找找发现资料那个叫……哎。到不是说少，linux号称开放源码，想要什么没有阿。问题是精论系统结构和意义的很少，一般都是讨论某个技术点如何如何的。没有大略的瞻观（当然，也有可能是英文，贝壳的E文水平看了等于没看到）。而一般系统中要做某个应用，除了经验，就是根据系统的运作方法、构架、原理等等去模拟。例如了解了file
-HANDLE这种东西后，自然会就如何将一个HiddenConsole的Output转Dump到一个windows的text中产生想法。或者了解了[\.]()系列文件后，自然会想到如何制作的ISO。当然，其实还有ATAPI的方法。如果了解了winsock的层实现流程，自然会知道防火墙如何实现。所以了解一个系统，无须了解内核的每句代码（对于windows，根本无法了解。即使是linux，了解了全部也要数年。届时你了解的也该淘汰了。）。系统主要了解其构架和思想，关键部分才了解实现。
+HANDLE这种东西后，自然会就如何将一个HiddenConsole的Output转Dump到一个windows的text中产生想法。或者了解了\.系列文件后，自然会想到如何制作的ISO。当然，其实还有ATAPI的方法。如果了解了winsock的层实现流程，自然会知道防火墙如何实现。所以了解一个系统，无须了解内核的每句代码（对于windows，根本无法了解。即使是linux，了解了全部也要数年。届时你了解的也该淘汰了。）。系统主要了解其构架和思想，关键部分才了解实现。
 现在看linux系统，犹如隔纱而望。当然，系统的命令我了解了不少（其实了解了ls和man已经差不多了）。但是每个命令是哪里的？系统的目录如何设置？什么配置应该看什么地方。linux载入进程是如何实现的。（估计这个是ELF的范畴，不过肯定要先啃过内核在看的懂。否则就如同我当年不知道NativeAPI的时候看NE和PE一样）
 所以现在写一个windows系统引论，希望抛砖引玉。毕竟windows的资料全，了解时间长。所以难保还有哪位大大也写过类似文章，大家姑且看之吧。" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/190/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/190/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2005-07-13T23:15:09+08:00" />
 <meta property="article:modified_time" content="2005-07-13T23:15:09+08:00" />
 
@@ -76,11 +75,8 @@ HANDLE这种东西后，自然会就如何将一个HiddenConsole的Output转Dump
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -90,32 +86,33 @@ HANDLE这种东西后，自然会就如何将一个HiddenConsole的Output转Dump
       <h1 class ="post-title">Windows系统引论</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Jul 13, 2005
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           1 min read
-        </div><div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
   <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line>
+  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
 </svg>
-          <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a><a class="tag" href="//blog.shell909090.org/tags/windows/">windows</a></div></div>
+              <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a>
+              <a class="tag" href="//blog.shell909090.org/tags/windows/">windows</a>
+        </div>
+      </div>
     </header>
     <div class="post-content">
       <p>最近在开linux系统，找找发现资料那个叫……哎。到不是说少，linux号称开放源码，想要什么没有阿。问题是精论系统结构和意义的很少，一般都是讨论某个技术点如何如何的。没有大略的瞻观（当然，也有可能是英文，贝壳的E文水平看了等于没看到）。而一般系统中要做某个应用，除了经验，就是根据系统的运作方法、构架、原理等等去模拟。例如了解了file</p>
-
-<p>HANDLE这种东西后，自然会就如何将一个HiddenConsole的Output转Dump到一个windows的text中产生想法。或者了解了[\.]()系列文件后，自然会想到如何制作的ISO。当然，其实还有ATAPI的方法。如果了解了winsock的层实现流程，自然会知道防火墙如何实现。所以了解一个系统，无须了解内核的每句代码（对于windows，根本无法了解。即使是linux，了解了全部也要数年。届时你了解的也该淘汰了。）。系统主要了解其构架和思想，关键部分才了解实现。</p>
-
+<p>HANDLE这种东西后，自然会就如何将一个HiddenConsole的Output转Dump到一个windows的text中产生想法。或者了解了<a href="">\.</a>系列文件后，自然会想到如何制作的ISO。当然，其实还有ATAPI的方法。如果了解了winsock的层实现流程，自然会知道防火墙如何实现。所以了解一个系统，无须了解内核的每句代码（对于windows，根本无法了解。即使是linux，了解了全部也要数年。届时你了解的也该淘汰了。）。系统主要了解其构架和思想，关键部分才了解实现。</p>
 <p>现在看linux系统，犹如隔纱而望。当然，系统的命令我了解了不少（其实了解了ls和man已经差不多了）。但是每个命令是哪里的？系统的目录如何设置？什么配置应该看什么地方。linux载入进程是如何实现的。（估计这个是ELF的范畴，不过肯定要先啃过内核在看的懂。否则就如同我当年不知道NativeAPI的时候看NE和PE一样）</p>
-
 <p>所以现在写一个windows系统引论，希望抛砖引玉。毕竟windows的资料全，了解时间长。所以难保还有哪位大大也写过类似文章，大家姑且看之吧。</p>
 
     </div>

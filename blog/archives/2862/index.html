@@ -2,55 +2,56 @@
 <html lang="en-us">
   <head>
     <title>openssl基本密码学操作 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.58.1" />
+    <meta name="generator" content="Hugo 0.112.5">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="//blog.shell909090.org/css/main.min.f90f5edd436ec7b74ad05479a05705770306911f721193e7845948fb07fe1335.css" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
 
     
-<script type="application/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
 var doNotTrack = false;
 if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-48816091-1', 'auto');
-	
-	ga('send', 'pageview');
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
 }
 </script>
 
     <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="openssl基本密码学操作"/>
 <meta name="twitter:description" content="openssl的基本检查 使用以下命令检测版本，-a可以提供完整数据。
-openssl version openssl version -a  speed test speed测试是openssl为你跑一下不同算法在你机器上的实际执行速度，这项测试在openssl中是一项非常有指导意义的测试。一方面，他给出了你选择算法的依据，通过实际数据告诉你每个算法能跑多快。另一方面，他可以用来评估不同硬件对算法的加速能力。如果仅仅是给出了选择算法的能力，我们一般都可以得到一个一般性结论，例如chacha20比AES快。但实际上很多CPU带有AESNI指令集，这种情况下AES的执行速度反而会更高。所以运行性能是和执行平台紧密相关的。关于这部分，可以参考Intel对OpenSSL的性能优化。
+openssl version openssl version -a speed test speed测试是openssl为你跑一下不同算法在你机器上的实际执行速度，这项测试在openssl中是一项非常有指导意义的测试。一方面，他给出了你选择算法的依据，通过实际数据告诉你每个算法能跑多快。另一方面，他可以用来评估不同硬件对算法的加速能力。如果仅仅是给出了选择算法的能力，我们一般都可以得到一个一般性结论，例如chacha20比AES快。但实际上很多CPU带有AESNI指令集，这种情况下AES的执行速度反而会更高。所以运行性能是和执行平台紧密相关的。关于这部分，可以参考Intel对OpenSSL的性能优化。
 具体的测试方法是
-openssl speed  后面可以跟算法，只测试特定的算法集。
+openssl speed 后面可以跟算法，只测试特定的算法集。
 我这里跑了一遍全集，挑几个重点算法说一下性能吧。
 hash算法
- sha256，标杆性hash算法，64字节小数据140M/s，8k大数据353M/s。sha512，170/470。hash算法的内部状态越长，在连续计算时的速度越快。 sha1，251/768。 md5，243/575。(你没看错，md5比sha1还慢) rmd160比sha256还慢，whirlpool比sha256慢。最快的是ghash，小数据4222/9732。但是见鬼的是，我查不着这是TMD什么算法(openssl list -digest-algorithms的输出里没有)。 最合适的算法，应该就是sha-512/256了吧。很安全，速度比sha256快，长度也不算太长，还能防御LEA(Length extension attack)。  对称算法
- aes-128-cbc，标杆算法，120/125(M/s)。aes-192，93/103。aes-256，86/88。aes的内部状态越长，在连续计算时的速度越慢。这点和hash正好相反。 camellia128，138/167。camellia192，110/128。camellia256，109/124。这是一种大批量数据计算非常优越的算法，AES在计算大批量时性能上升并不快。 des比aes慢的多，只有66M/s。3DES更慢，只有25M/s。 没有chacha20。 不考虑chacha20的情况下，最好的算法应该是camellia128。当然，工业标杆是aes-128-cbc。  非对称算法
- rsa 1024/2048/3072/4096的sign效率分别是8698/1351/453/206(个/s)，verify效率分别是131847/46297/22970/13415。rsa也是随着内部状态上升效率下降的，而且下降非常快。而且verify效率远高于sign。 dsa 1024/2048的sign效率分别是9836/3280，verify的效率分别是10584/3616。 ecdsa 192/224/256/384的sign效率分别是12696/12672/21016/4383，verify效率分别是3200/5630/9994/1019。能很明显看出来，sign效率比verify高。256位的时候由于某种效应性能达峰，后续直接断崖下跌。 ecdh 192/224/256/384的效率为3642/8339/15094/1183。同样能看出这种效应。 rsa和ecc不具有互换性。rsa参数选择建议2048，ecc参数选择建议256。  对称加解密 openssl支持多种对称加密算法，可以直接对文件加解密。在使用前，我们首先列出系统上支持的算法。
-openssl enc -ciphers  输出很复杂，不列举。我们直接讲我的机器上分析后的结果。
- 第一段是密码算法。在我这里，支持以下算法：aes, bf, blowfish, camellia, cast, chacha20, des, des3, desx, id(ea), rc2, rc4, seed。 最后一段有可能是模式。在我这里，支持以下模式：ECB，CBC，CFB，OFB，CNT。其中CFB，OFB和CTR(CNT)是可流式的，其余都是块式的。关于加密模式，可以看这篇。 在enc的manpages里明确说了，enc不支持CCM或是GCM这类的authenticated encryption。推荐是使用CMS。  例如我们使用比较流行的chacha20来加密一个文件src，里面可以随便写一句话。"/>
+sha256，标杆性hash算法，64字节小数据140M/s，8k大数据353M/s。sha512，170/470。hash算法的内部状态越长，在连续计算时的速度越快。 sha1，251/768。 md5，243/575。(你没看错，md5比sha1还慢) rmd160比sha256还慢，whirlpool比sha256慢。最快的是ghash，小数据4222/9732。但是见鬼的是，我查不着这是TMD什么算法(openssl list -digest-algorithms的输出里没有)。 最合适的算法，应该就是sha-512/256了吧。很安全，速度比sha256快，长度也不算太长，还能防御LEA(Length extension attack)。 对称算法
+aes-128-cbc，标杆算法，120/125(M/s)。aes-192，93/103。aes-256，86/88。aes的内部状态越长，在连续计算时的速度越慢。这点和hash正好相反。 camellia128，138/167。camellia192，110/128。camellia256，109/124。这是一种大批量数据计算非常优越的算法，AES在计算大批量时性能上升并不快。 des比aes慢的多，只有66M/s。3DES更慢，只有25M/s。 没有chacha20。 不考虑chacha20的情况下，最好的算法应该是camellia128。当然，工业标杆是aes-128-cbc。 非对称算法
+rsa 1024/2048/3072/4096的sign效率分别是8698/1351/453/206(个/s)，verify效率分别是131847/46297/22970/13415。rsa也是随着内部状态上升效率下降的，而且下降非常快。而且verify效率远高于sign。 dsa 1024/2048的sign效率分别是9836/3280，verify的效率分别是10584/3616。 ecdsa 192/224/256/384的sign效率分别是12696/12672/21016/4383，verify效率分别是3200/5630/9994/1019。能很明显看出来，sign效率比verify高。256位的时候由于某种效应性能达峰，后续直接断崖下跌。 ecdh 192/224/256/384的效率为3642/8339/15094/1183。同样能看出这种效应。 rsa和ecc不具有互换性。rsa参数选择建议2048，ecc参数选择建议256。 对称加解密 openssl支持多种对称加密算法，可以直接对文件加解密。在使用前，我们首先列出系统上支持的算法。
+openssl enc -ciphers 输出很复杂，不列举。我们直接讲我的机器上分析后的结果。
+第一段是密码算法。在我这里，支持以下算法：aes, bf, blowfish, camellia, cast, chacha20, des, des3, desx, id(ea), rc2, rc4, seed。 最后一段有可能是模式。在我这里，支持以下模式：ECB，CBC，CFB，OFB，CNT。其中CFB，OFB和CTR(CNT)是可流式的，其余都是块式的。关于加密模式，可以看这篇。 在enc的manpages里明确说了，enc不支持CCM或是GCM这类的authenticated encryption。推荐是使用CMS。 例如我们使用比较流行的chacha20来加密一个文件src，里面可以随便写一句话。
+openssl enc -chacha20 &lt; src &gt; dst 注意dst应该会比src大。因为默认情况下，openssl会为密码加一个salt，然后把salt保存到加密结果上去。再从passwd&#43;salt里推导出key和IV（默认sha256）。默认的salt为8bytes，合64bits。key为32bytes，合256bits。IV为16bytes，合128bits。具体情况可以用openssl enc -P -chacha20来打印。"/>
 
     <meta property="og:title" content="openssl基本密码学操作" />
 <meta property="og:description" content="openssl的基本检查 使用以下命令检测版本，-a可以提供完整数据。
-openssl version openssl version -a  speed test speed测试是openssl为你跑一下不同算法在你机器上的实际执行速度，这项测试在openssl中是一项非常有指导意义的测试。一方面，他给出了你选择算法的依据，通过实际数据告诉你每个算法能跑多快。另一方面，他可以用来评估不同硬件对算法的加速能力。如果仅仅是给出了选择算法的能力，我们一般都可以得到一个一般性结论，例如chacha20比AES快。但实际上很多CPU带有AESNI指令集，这种情况下AES的执行速度反而会更高。所以运行性能是和执行平台紧密相关的。关于这部分，可以参考Intel对OpenSSL的性能优化。
+openssl version openssl version -a speed test speed测试是openssl为你跑一下不同算法在你机器上的实际执行速度，这项测试在openssl中是一项非常有指导意义的测试。一方面，他给出了你选择算法的依据，通过实际数据告诉你每个算法能跑多快。另一方面，他可以用来评估不同硬件对算法的加速能力。如果仅仅是给出了选择算法的能力，我们一般都可以得到一个一般性结论，例如chacha20比AES快。但实际上很多CPU带有AESNI指令集，这种情况下AES的执行速度反而会更高。所以运行性能是和执行平台紧密相关的。关于这部分，可以参考Intel对OpenSSL的性能优化。
 具体的测试方法是
-openssl speed  后面可以跟算法，只测试特定的算法集。
+openssl speed 后面可以跟算法，只测试特定的算法集。
 我这里跑了一遍全集，挑几个重点算法说一下性能吧。
 hash算法
- sha256，标杆性hash算法，64字节小数据140M/s，8k大数据353M/s。sha512，170/470。hash算法的内部状态越长，在连续计算时的速度越快。 sha1，251/768。 md5，243/575。(你没看错，md5比sha1还慢) rmd160比sha256还慢，whirlpool比sha256慢。最快的是ghash，小数据4222/9732。但是见鬼的是，我查不着这是TMD什么算法(openssl list -digest-algorithms的输出里没有)。 最合适的算法，应该就是sha-512/256了吧。很安全，速度比sha256快，长度也不算太长，还能防御LEA(Length extension attack)。  对称算法
- aes-128-cbc，标杆算法，120/125(M/s)。aes-192，93/103。aes-256，86/88。aes的内部状态越长，在连续计算时的速度越慢。这点和hash正好相反。 camellia128，138/167。camellia192，110/128。camellia256，109/124。这是一种大批量数据计算非常优越的算法，AES在计算大批量时性能上升并不快。 des比aes慢的多，只有66M/s。3DES更慢，只有25M/s。 没有chacha20。 不考虑chacha20的情况下，最好的算法应该是camellia128。当然，工业标杆是aes-128-cbc。  非对称算法
- rsa 1024/2048/3072/4096的sign效率分别是8698/1351/453/206(个/s)，verify效率分别是131847/46297/22970/13415。rsa也是随着内部状态上升效率下降的，而且下降非常快。而且verify效率远高于sign。 dsa 1024/2048的sign效率分别是9836/3280，verify的效率分别是10584/3616。 ecdsa 192/224/256/384的sign效率分别是12696/12672/21016/4383，verify效率分别是3200/5630/9994/1019。能很明显看出来，sign效率比verify高。256位的时候由于某种效应性能达峰，后续直接断崖下跌。 ecdh 192/224/256/384的效率为3642/8339/15094/1183。同样能看出这种效应。 rsa和ecc不具有互换性。rsa参数选择建议2048，ecc参数选择建议256。  对称加解密 openssl支持多种对称加密算法，可以直接对文件加解密。在使用前，我们首先列出系统上支持的算法。
-openssl enc -ciphers  输出很复杂，不列举。我们直接讲我的机器上分析后的结果。
- 第一段是密码算法。在我这里，支持以下算法：aes, bf, blowfish, camellia, cast, chacha20, des, des3, desx, id(ea), rc2, rc4, seed。 最后一段有可能是模式。在我这里，支持以下模式：ECB，CBC，CFB，OFB，CNT。其中CFB，OFB和CTR(CNT)是可流式的，其余都是块式的。关于加密模式，可以看这篇。 在enc的manpages里明确说了，enc不支持CCM或是GCM这类的authenticated encryption。推荐是使用CMS。  例如我们使用比较流行的chacha20来加密一个文件src，里面可以随便写一句话。" />
+sha256，标杆性hash算法，64字节小数据140M/s，8k大数据353M/s。sha512，170/470。hash算法的内部状态越长，在连续计算时的速度越快。 sha1，251/768。 md5，243/575。(你没看错，md5比sha1还慢) rmd160比sha256还慢，whirlpool比sha256慢。最快的是ghash，小数据4222/9732。但是见鬼的是，我查不着这是TMD什么算法(openssl list -digest-algorithms的输出里没有)。 最合适的算法，应该就是sha-512/256了吧。很安全，速度比sha256快，长度也不算太长，还能防御LEA(Length extension attack)。 对称算法
+aes-128-cbc，标杆算法，120/125(M/s)。aes-192，93/103。aes-256，86/88。aes的内部状态越长，在连续计算时的速度越慢。这点和hash正好相反。 camellia128，138/167。camellia192，110/128。camellia256，109/124。这是一种大批量数据计算非常优越的算法，AES在计算大批量时性能上升并不快。 des比aes慢的多，只有66M/s。3DES更慢，只有25M/s。 没有chacha20。 不考虑chacha20的情况下，最好的算法应该是camellia128。当然，工业标杆是aes-128-cbc。 非对称算法
+rsa 1024/2048/3072/4096的sign效率分别是8698/1351/453/206(个/s)，verify效率分别是131847/46297/22970/13415。rsa也是随着内部状态上升效率下降的，而且下降非常快。而且verify效率远高于sign。 dsa 1024/2048的sign效率分别是9836/3280，verify的效率分别是10584/3616。 ecdsa 192/224/256/384的sign效率分别是12696/12672/21016/4383，verify效率分别是3200/5630/9994/1019。能很明显看出来，sign效率比verify高。256位的时候由于某种效应性能达峰，后续直接断崖下跌。 ecdh 192/224/256/384的效率为3642/8339/15094/1183。同样能看出这种效应。 rsa和ecc不具有互换性。rsa参数选择建议2048，ecc参数选择建议256。 对称加解密 openssl支持多种对称加密算法，可以直接对文件加解密。在使用前，我们首先列出系统上支持的算法。
+openssl enc -ciphers 输出很复杂，不列举。我们直接讲我的机器上分析后的结果。
+第一段是密码算法。在我这里，支持以下算法：aes, bf, blowfish, camellia, cast, chacha20, des, des3, desx, id(ea), rc2, rc4, seed。 最后一段有可能是模式。在我这里，支持以下模式：ECB，CBC，CFB，OFB，CNT。其中CFB，OFB和CTR(CNT)是可流式的，其余都是块式的。关于加密模式，可以看这篇。 在enc的manpages里明确说了，enc不支持CCM或是GCM这类的authenticated encryption。推荐是使用CMS。 例如我们使用比较流行的chacha20来加密一个文件src，里面可以随便写一句话。
+openssl enc -chacha20 &lt; src &gt; dst 注意dst应该会比src大。因为默认情况下，openssl会为密码加一个salt，然后把salt保存到加密结果上去。再从passwd&#43;salt里推导出key和IV（默认sha256）。默认的salt为8bytes，合64bits。key为32bytes，合256bits。IV为16bytes，合128bits。具体情况可以用openssl enc -P -chacha20来打印。" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2862/" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2862/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2018-04-01T11:19:20+08:00" />
 <meta property="article:modified_time" content="2018-04-01T11:19:20+08:00" />
 
@@ -90,11 +91,8 @@ openssl enc -ciphers  输出很复杂，不列举。我们直接讲我的机器�
   <body>
     <header class="app-header">
       <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
-      <h1>Shell&#39;s Home</h1>
+      <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
-      <div class="app-header-social">
-        
-      </div>
       <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
     </header>
     <main class="app-container">
@@ -104,46 +102,35 @@ openssl enc -ciphers  输出很复杂，不列举。我们直接讲我的机器�
       <h1 class ="post-title">openssl基本密码学操作</h1>
       <div class="post-meta">
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
   <title>calendar</title>
   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
 </svg>
           Apr 1, 2018
         </div>
         <div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
   <title>clock</title>
   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
 </svg>
           2 min read
-        </div></div>
+        </div>
+      </div>
     </header>
     <div class="post-content">
-      
-
-<h1 id="openssl的基本检查">openssl的基本检查</h1>
-
+      <h1 id="openssl的基本检查">openssl的基本检查</h1>
 <p>使用以下命令检测版本，-a可以提供完整数据。</p>
-
 <pre><code>openssl version
 openssl version -a
 </code></pre>
-
 <h2 id="speed-test">speed test</h2>
-
 <p>speed测试是openssl为你跑一下不同算法在你机器上的实际执行速度，这项测试在openssl中是一项非常有指导意义的测试。一方面，他给出了你选择算法的依据，通过实际数据告诉你每个算法能跑多快。另一方面，他可以用来评估不同硬件对算法的加速能力。如果仅仅是给出了选择算法的能力，我们一般都可以得到一个一般性结论，例如chacha20比AES快。但实际上很多CPU带有AESNI指令集，这种情况下AES的执行速度反而会更高。所以运行性能是和执行平台紧密相关的。关于这部分，可以参考<a href="https://software.intel.com/en-us/articles/improving-openssl-performance">Intel对OpenSSL的性能优化</a>。</p>
-
 <p>具体的测试方法是</p>
-
 <pre><code>openssl speed
 </code></pre>
-
 <p>后面可以跟算法，只测试特定的算法集。</p>
-
 <p>我这里跑了一遍全集，挑几个重点算法说一下性能吧。</p>
-
 <p>hash算法</p>
-
 <ol>
 <li>sha256，标杆性hash算法，64字节小数据140M/s，8k大数据353M/s。sha512，170/470。hash算法的内部状态越长，在连续计算时的速度越快。</li>
 <li>sha1，251/768。</li>
@@ -151,9 +138,7 @@ openssl version -a
 <li>rmd160比sha256还慢，whirlpool比sha256慢。最快的是ghash，小数据4222/9732。但是见鬼的是，我查不着这是TMD什么算法(<code>openssl list -digest-algorithms</code>的输出里没有)。</li>
 <li>最合适的算法，应该就是sha-512/256了吧。很安全，速度比sha256快，长度也不算太长，还能防御LEA(Length extension attack)。</li>
 </ol>
-
 <p>对称算法</p>
-
 <ol>
 <li>aes-128-cbc，标杆算法，120/125(M/s)。aes-192，93/103。aes-256，86/88。aes的内部状态越长，在连续计算时的速度越慢。这点和hash正好相反。</li>
 <li>camellia128，138/167。camellia192，110/128。camellia256，109/124。这是一种大批量数据计算非常优越的算法，AES在计算大批量时性能上升并不快。</li>
@@ -161,9 +146,7 @@ openssl version -a
 <li>没有chacha20。</li>
 <li>不考虑chacha20的情况下，最好的算法应该是camellia128。当然，工业标杆是aes-128-cbc。</li>
 </ol>
-
 <p>非对称算法</p>
-
 <ol>
 <li>rsa 1024/2048/3072/4096的sign效率分别是8698/1351/453/206(个/s)，verify效率分别是131847/46297/22970/13415。rsa也是随着内部状态上升效率下降的，而且下降非常快。而且verify效率远高于sign。</li>
 <li>dsa 1024/2048的sign效率分别是9836/3280，verify的效率分别是10584/3616。</li>
@@ -171,283 +154,166 @@ openssl version -a
 <li>ecdh 192/224/256/384的效率为3642/8339/15094/1183。同样能看出这种效应。</li>
 <li>rsa和ecc不具有互换性。rsa参数选择建议2048，ecc参数选择建议256。</li>
 </ol>
-
 <h1 id="对称加解密">对称加解密</h1>
-
 <p>openssl支持多种对称加密算法，可以直接对文件加解密。在使用前，我们首先列出系统上支持的算法。</p>
-
 <pre><code>openssl enc -ciphers
 </code></pre>
-
 <p>输出很复杂，不列举。我们直接讲我的机器上分析后的结果。</p>
-
 <ol>
 <li>第一段是密码算法。在我这里，支持以下算法：aes, bf, blowfish, camellia, cast, chacha20, des, des3, desx, id(ea), rc2, rc4, seed。</li>
 <li>最后一段有可能是模式。在我这里，支持以下模式：ECB，CBC，CFB，OFB，CNT。其中CFB，OFB和CTR(CNT)是可流式的，其余都是块式的。关于加密模式，可以看<a href="http://blog.shell909090.org/blog/archives/2861/">这篇</a>。</li>
 <li>在<a href="https://www.openssl.org/docs/manmaster/man1/enc.html">enc的manpages</a>里明确说了，enc不支持CCM或是GCM这类的authenticated encryption。推荐是使用CMS。</li>
 </ol>
-
 <p>例如我们使用比较流行的chacha20来加密一个文件src，里面可以随便写一句话。</p>
-
 <pre><code>openssl enc -chacha20 &lt; src &gt; dst
 </code></pre>
-
 <p>注意dst应该会比src大。因为默认情况下，openssl会为密码加一个salt，然后把salt保存到加密结果上去。再从passwd+salt里推导出key和IV（默认sha256）。默认的salt为8bytes，合64bits。key为32bytes，合256bits。IV为16bytes，合128bits。具体情况可以用<code>openssl enc -P -chacha20</code>来打印。</p>
-
 <p>另一点让我比较惊讶的就是，chacha20是一种流式算法。如果你采用-aes-128-ecb的话（这是一种典型的块式算法，已经研究的比较透彻了），输出是长度对16对整加16字节。而chacha20的输出纯粹比输入长16个字节。我觉得很好奇，于是就找了<a href="https://gist.github.com/cathalgarvey/0ce7dbae2aa9e3984adc">这个源码</a>研究了下。</p>
-
 <p>算法的核心状态机是一个64字节的数组，第一个分组16字节填充固定数据，第二个分组32字节填充key，第三个分组8字节填充nonce，最后8字节填充IV。然后通过一个变形算法，把这个核心状态变成一个out数组，再XOR到目标数据上去。每次输出一个out数组，nonce都会自动增长。</p>
-
 <p>如果他的算法没错的话，chacha20非但是一个流式算法，而且主体算法就是CTR的变形。那么chacha20就会有CTR的几个特性，例如明文-密文对应，加密-解密过程是同一个。而且如果每次nonce不变的话，对CPA的抵抗会有问题。(公司里有个场景正好是这种nonce不能变的)</p>
-
 <p>另外，这个加密过程有几个细节。一个是可以用-a或者-base64开关来获得一个纯文本的结果（当然，代价就是增加空间消耗）。第二个是可以用-k来指定密码，用-kfile来指定密码文件，而不是现场输入。当然，这样做的代价就是可能会记入command history，或者有磁盘记录。最后一个是-z，可以在加密前先做一遍压缩。</p>
-
 <p>相应的，解密指令就是</p>
-
 <pre><code>openssl enc -d -chacha20 &lt; dst
 </code></pre>
-
 <p>另外，openssl还提供了以算法为基础的写法。例如chacha20的加密指令也可以写成这样。</p>
-
 <pre><code>openssl chacha20 &lt; src &gt; dst
 </code></pre>
-
 <p>大家举一反三，我就不罗嗦了。</p>
-
 <h1 id="摘要生成">摘要生成</h1>
-
 <p>先说一句，本章一般人不需要阅读。性子急的朋友请先看最后一段。</p>
-
 <p>openssl用于摘要的方法主要是dgst。首先老规矩，我们先看有哪些摘要算法。</p>
-
 <pre><code>openssl list -digest-commands
 </code></pre>
-
 <p>在贝壳这里的机器上，算法基本有这么几类。blake2，gost，md4，md5，rmd160，sha1，sha2。不用说，md4/5，sha1都是不安全的。我查了一下，gost和原生ripemd也是不安全的。blake2，ripemd160，sha2还是安全的。所以推荐算法是blake2，sha2。具体来说算法就是blake2b512，blake2s256，sha224，sha256，sha384，sha512，第一选择是sha256。很可惜，没有sha-512/256。</p>
-
 <p>然后我们就可以用来算hash了。例如</p>
-
 <pre><code>openssl sha256 &lt; src
 </code></pre>
-
 <p>可以看到输出了吧。</p>
-
 <p>OK，下面要说一个悲伤的事实。为什么我们没听说过人家用这个功能呢？因为linux的coreutils里面，有md5sum和sha256sum。我查了一下，支持blake2，CRC，md5，sha1，sha224，sha256，sha384，sha512。上面数的各种推荐算法，还有最常用的MD5，你都能直接用。不用苦逼的用openssl拼。</p>
-
 <p>所以这一章，其实是废话来着。</p>
-
 <h1 id="rsa的生成和使用">RSA的生成和使用</h1>
-
 <p>RSA支持的功能比较全面，加解密，签署验证，还有验证还原操作。可以说是用途最广的一个算法族。</p>
-
 <h2 id="公私钥对的生成和管理">公私钥对的生成和管理</h2>
-
 <p>生成密钥</p>
-
 <pre><code>openssl genrsa 2048 &gt; rsa.key
 </code></pre>
-
 <p>在openssl里，in和out经常和stdin和stdout有相同的含义。两者经常可以互换使用。例如上面指令，其实也可以写成<code>openssl genrsa 2048 -out rsa.key</code>。但是如果用stdout写出，会使得openssl无法控制权限（毕竟它不知道你要写文件）。所以，这样生成的密钥，权限为其他人可读。常规请用-out写出，比较安全。</p>
-
 <p>查看密钥</p>
-
 <pre><code>openssl rsa -text -in rsa.key
 </code></pre>
-
 <p>可以看到很多数据，modulus，publicExponent，privateExponent，prime1，prime2，exponent1，exponent2，coefficient。具体意义可以在<a href="https://stackoverflow.com/questions/5244129/use-rsa-private-key-to-generate-public-key">这里</a>查看。</p>
-
 <p>可以注意到，除了最基本的p=prime1，q=prime2，n=modulus，e=publicExponent，d=privateExponent外。openssl还额外保存了三个数，exponent1=d mod (p-1)，exponent2=d mod (q-1)，coefficient=(inverse of q) mod p。为啥我也不明白。关于prime1啦，prime2的详细解释，请看<a href="http://blog.shell909090.org/blog/archives/2861/">这篇</a>。</p>
-
 <p>分离公钥</p>
-
 <pre><code>openssl rsa -pubout &lt; rsa.key &gt; rsa.pub
 </code></pre>
-
 <p>分离之后可以查看</p>
-
 <pre><code>openssl rsa -text -pubin -in rsa.pub
 </code></pre>
-
 <p>可以看到，只有modulus和publicExponent了。</p>
-
 <p>另外，你可以把key加密或解密（很多场合下会用到）。方法如下：</p>
-
 <pre><code>openssl rsa -aes128 &lt; rsa.key &gt; rsa.enc
 openssl rsa &lt; rsa.enc &gt; rsa.key
 </code></pre>
-
 <p>很多教程里会告诉你用-des或-3des，根据密码学常识你就知道，这是错的。idea也建议不要用，因此推荐用aes(优先)或者camellia。</p>
-
 <h2 id="加解密">加解密</h2>
-
 <p>数据加密</p>
-
 <pre><code>openssl rsautl -encrypt -pubin -inkey rsa.pub &lt; src &gt; dst
 </code></pre>
-
 <p>注意输出长度和位数相等（这里是2048）。</p>
-
 <p>数据解密</p>
-
 <pre><code>openssl rsautl -decrypt -inkey rsa.key &lt; dst &gt; src.new
 diff src src.new
 </code></pre>
-
 <p>注意公钥加密私钥解密。</p>
-
 <h2 id="签署验证">签署验证</h2>
-
 <p>数据签署</p>
-
 <pre><code>openssl rsautl -sign -inkey rsa.key &lt; src &gt; dst
 </code></pre>
-
 <p>注意输出长度和位数相等（这里是2048）。</p>
-
 <p>数据验证有多种方法，第一种是直接用rsautl</p>
-
 <pre><code>openssl rsautl -verify -pubin -inkey rsa.pub &lt; dst &gt; src.new
 diff src src.new
 </code></pre>
-
 <p>注意私钥签署公钥验证。</p>
-
 <p>另一种是用pkeyutl，注意这里有两种效果。</p>
-
 <pre><code>openssl pkeyutl -verify -pubin -inkey rsa.pub -sigfile sig &lt; src
 openssl pkeyutl -verifyrecover -pubin -inkey rsa.pub &lt; sig
 </code></pre>
-
 <p>这里就是RSA系列sign算法比较特殊的地方。一般的sign都是验证sig和src是否具有对应关系，RSA的verify直接能解出原始数据来，这也算某种意义上的“验证了对应关系”。所以rsautl的verify，在pkeyutl的通配模式里，其实是verifyrecover。</p>
-
 <h1 id="ecc的生成和使用">ECC的生成和使用</h1>
-
 <p>ECC支持签署，验证和derivation。其中签署用的是ECDSA算法（很遗憾，不是EdDSA），Kx用的是ECDH。</p>
-
 <h2 id="公私钥对的生成和管理-1">公私钥对的生成和管理</h2>
-
 <p>ECC的生成比较特殊。在ECC里，你不止要设定一个长度，而是要选择一条曲线。因此第一步，需要列出所有支持的曲线。</p>
-
 <pre><code>openssl ecparam -list_curves
 </code></pre>
-
 <p>我这里的数据很长，具体不列了。但是可以看出几个特点。</p>
-
 <ol>
 <li>不支持25519曲线。</li>
 <li>某几条曲线不支持ECDSA。</li>
 </ol>
-
 <p>随后，你可以选择一个曲线来生成密钥。例如我们选择secp256r1。</p>
-
 <pre><code>openssl ecparam -genkey -name secp256r1 &gt; ecc.key
 </code></pre>
-
 <p>查看密钥</p>
-
 <pre><code>openssl ec -text &lt; ecc.key
 </code></pre>
-
 <p>可以看到，ECC的数据就要比RSA简单的多，只有一个priv和一个pub。其余主要是说你用了什么曲线。</p>
-
 <p>分离公钥并查看</p>
-
 <pre><code>openssl ec -pubout &lt; ecc.key &gt; ecc.pub
 openssl ec -text -pubin &lt; ecc.pub
 </code></pre>
-
 <p>其实很多同学看出来了，openssl在处理ECC时和RSA的参数基本是类似的，只是ec和rsa指令的区别而已。对于已经生成好的key而言，我们可以抽离具体的key算法，用一个比较通用的办法来处理公钥提取问题。</p>
-
 <pre><code>openssl pkey -pubout &lt; ecc.key &gt; ecc.pub
 </code></pre>
-
 <p>pkey指令也可以用于其他方面，例如加解密。具体就不赘述了。</p>
-
 <h2 id="签署和验证">签署和验证</h2>
-
 <p>ECC的签署和验证就要借助于pkey指令了，具体来说，是pkeyutl指令。注意，这里的形态和RSA的形态不一样。</p>
-
 <pre><code>openssl pkeyutl -sign -inkey ecc.key &lt; src &gt; sig
 openssl pkeyutl -verify -pubin -inkey ecc.pub -sigfile sig &lt; src
 </code></pre>
-
 <p>这里无法直接解出原始数据，只能验证得到是否正确的结果。ECC是不支持verifyrecover的。</p>
-
 <h2 id="derivation">derivation</h2>
-
 <p>我们先假定你生成了两对key和pub，随后你可以用这两对key和pub推导出一个双方共同的秘密。</p>
-
 <pre><code>openssl pkeyutl -derive -inkey ecc1.key -peerkey ecc2.pub
 </code></pre>
-
 <p>我们可以看到，这么生成出来的数据是一堆乱码。所以加上hexdump让输出比较可读。</p>
-
 <pre><code>openssl pkeyutl -derive -inkey ecc1.key -peerkey ecc2.pub -hexdump
 </code></pre>
-
 <p>我们也可以换一个顺序来生成。</p>
-
 <pre><code>openssl pkeyutl -derive -inkey ecc2.key -peerkey ecc1.pub -hexdump
 </code></pre>
-
 <p>可以看到，结果并没有差别。</p>
-
 <p>key derivation的时候，双方互相给对方发一个pub。随后利用对方的pub和自己的priv计算出一个共享的s。攻击者虽然有双方的pub，然而无法得到s。当然，如我们在<a href="http://blog.shell909090.org/blog/archives/2861/">这里</a>说过，Mallory永远可以通过拦截pub的发送过程来发出攻击。</p>
-
 <h1 id="dh的生成和使用">DH的生成和使用</h1>
-
 <h2 id="私钥生成">私钥生成</h2>
-
 <p>生成dh私钥</p>
-
 <pre><code>openssl dhparam -outform PEM -out dhparam.pem 1024
 </code></pre>
-
 <p>查看私钥</p>
-
 <pre><code>openssl dhparam -in dhparam.pem -text
 </code></pre>
-
 <p>注意，双方的p和g都是现场约定的，公钥A可以很快计算生成，因此都无需保存。</p>
-
 <p>DH的私钥一般不用于加密和签署（你看，他连公钥都没有）。DH是一个Kx算法，因此DH的私钥只用于derivation操作。</p>
-
 <h2 id="derivation-1">derivation</h2>
-
 <p>根据<a href="https://www.openssl.org/docs/manmaster/man1/pkeyutl.html">pkeyutl的manpage</a>，dh的私钥应当支持derivation操作。然而杯具的是，我实际测试<code>openssl pkeyutl -derive -inkey dhparam1.pem -peerkey dhparam2.pem</code>无法执行，不知道是不是因为dhparam都是priv的缘故。但是dhparam里确实没有生成公钥的参数。</p>
-
 <p>无论如何，在nginx里，dhparam是一个重要参数。如果你使用默认的dhparam，会被警告不安全。</p>
-
 <h1 id="dsa的生成和使用">DSA的生成和使用</h1>
-
 <p>首先，DSA只支持签署和验证。</p>
-
 <h2 id="公私钥对的生成">公私钥对的生成</h2>
-
 <p>和RSA非常像，但是有点区别。</p>
-
 <pre><code>openssl dsaparam -genkey 2048 &gt; dsa.key
 </code></pre>
-
 <p>另外注意，dsaparam参数是不支持加密的。如果要加密，需要写成这个样子。</p>
-
 <pre><code>openssl dsaparam -genkey 2048 | openssl dsa -aes128 &gt; dsa.key
 </code></pre>
-
 <p>同类，如果要读取内容的话，可以这么做。</p>
-
 <pre><code>openssl dsa -text &lt; dsa.key
 </code></pre>
-
 <p>剥离公钥这么做。</p>
-
 <pre><code>openssl dsa -pubout &lt; dsa.key &gt; dsa.pub
 </code></pre>
-
 <p>我们把公钥和私钥分别打出来，可以发现，公钥的要素是pub，P，Q，G。私钥多一项priv。</p>
-
 <h2 id="签署验证-1">签署验证</h2>
-
 <p>这是另一个奇怪的地方。根据<a href="https://www.openssl.org/docs/manmaster/man1/pkeyutl.html">pkeyutl的manpage</a>，DSA的key支持sign(而且只支持sign)。可是我在实验<code>openssl pkeyutl -sign -in src -inkey dsa.key -out sig</code>的时候，又失败了。这个例子是直接抄的manpage，错误提示是<code>Public Key operation error</code>。如果有朋友知道为什么，请务必教我。</p>
 
     </div>
