@@ -7,7 +7,23 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Sun, 23 Jul 2023 22:00:59 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/blog/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 18 Aug 2023 17:30:53 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/blog/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>redis三种高可用部署</title>
+      <link>//blog.shell909090.org/blog/archives/2893/</link>
+      <pubDate>Fri, 18 Aug 2023 17:30:53 +0800</pubDate>
+      
+      <guid>//blog.shell909090.org/blog/archives/2893/</guid>
+      <description>主从模式 最简单的模式。
+master啥都不用配置。
+slave如下配置。
+replicaof [master ip] 6379 replica-serve-stale-data no 启动后就可以形成主从集群。一写多读模式，适用于少写多读的应用，同时对一致性没有强要求，例如缓存。
+docker验证 我用如下命令开docker容器做的测试。
+export TAG=7-alpine export FLAGS=-d --restart=always docker run ${FLAGS} --name master -p 6379:6379 -v $PWD/master/:/data/ redis:${TAG} redis-server redis.conf docker run ${FLAGS} --name slave -p 6378:6379 -v $PWD/slave/:/data/ redis:${TAG} redis-server redis.conf 当前目录下分别开master和slave目录，里面放redis.conf，启动容器即可形成集群。
+用如下命令验证：
+docker run -it --rm redis:7-alpine redis-cli -h [master ip] -p 6379 info replication docker run -it --rm redis:7-alpine redis-cli -h [master ip] -p 6378 info replication docker run -it --rm redis:7-alpine redis-cli -h [master ip] -p 6379 set abc def docker run -it --rm redis:7-alpine redis-cli -h [master ip] -p 6378 get abc sentinel模式 复杂且不好用。</description>
+    </item>
+    
     <item>
       <title>仙本那潜水信息</title>
       <link>//blog.shell909090.org/blog/archives/2892/</link>

@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>redis三种高可用部署 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+
+    
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
+}
+</script>
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="redis三种高可用部署"/>
+<meta name="twitter:description" content="主从模式 最简单的模式。
+master啥都不用配置。
+slave如下配置。
+replicaof [master ip] 6379 replica-serve-stale-data no 启动后就可以形成主从集群。一写多读模式，适用于少写多读的应用，同时对一致性没有强要求，例如缓存。
+docker验证 我用如下命令开docker容器做的测试。
+export TAG=7-alpine export FLAGS=-d --restart=always docker run ${FLAGS} --name master -p 6379:6379 -v $PWD/master/:/data/ redis:${TAG} redis-server redis.conf docker run ${FLAGS} --name slave -p 6378:6379 -v $PWD/slave/:/data/ redis:${TAG} redis-server redis.conf 当前目录下分别开master和slave目录，里面放redis.conf，启动容器即可形成集群。
+用如下命令验证：
+docker run -it --rm redis:7-alpine redis-cli -h [master ip] -p 6379 info replication docker run -it --rm redis:7-alpine redis-cli -h [master ip] -p 6378 info replication docker run -it --rm redis:7-alpine redis-cli -h [master ip] -p 6379 set abc def docker run -it --rm redis:7-alpine redis-cli -h [master ip] -p 6378 get abc sentinel模式 复杂且不好用。"/>
+
+    <meta property="og:title" content="redis三种高可用部署" />
+<meta property="og:description" content="主从模式 最简单的模式。
+master啥都不用配置。
+slave如下配置。
+replicaof [master ip] 6379 replica-serve-stale-data no 启动后就可以形成主从集群。一写多读模式，适用于少写多读的应用，同时对一致性没有强要求，例如缓存。
+docker验证 我用如下命令开docker容器做的测试。
+export TAG=7-alpine export FLAGS=-d --restart=always docker run ${FLAGS} --name master -p 6379:6379 -v $PWD/master/:/data/ redis:${TAG} redis-server redis.conf docker run ${FLAGS} --name slave -p 6378:6379 -v $PWD/slave/:/data/ redis:${TAG} redis-server redis.conf 当前目录下分别开master和slave目录，里面放redis.conf，启动容器即可形成集群。
+用如下命令验证：
+docker run -it --rm redis:7-alpine redis-cli -h [master ip] -p 6379 info replication docker run -it --rm redis:7-alpine redis-cli -h [master ip] -p 6378 info replication docker run -it --rm redis:7-alpine redis-cli -h [master ip] -p 6379 set abc def docker run -it --rm redis:7-alpine redis-cli -h [master ip] -p 6378 get abc sentinel模式 复杂且不好用。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2893/" /><meta property="article:section" content="blog" />
+<meta property="article:published_time" content="2023-08-18T17:30:53+08:00" />
+<meta property="article:modified_time" content="2023-08-18T17:30:53+08:00" />
+
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
+
+<header>
+
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
+</header>
+
+
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <span class="app-header-title">Shell&#39;s Home</span>
+      <p>贝壳的壳</p>
+      <p>Copyright &copy; 2023 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">redis三种高可用部署</h1>
+      <div class="post-meta">
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Aug 18, 2023
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          2 min read
+        </div>
+      </div>
+    </header>
+    <div class="post-content">
+      <h1 id="主从模式">主从模式</h1>
+<p>最简单的模式。</p>
+<p>master啥都不用配置。</p>
+<p>slave如下配置。</p>
+<pre tabindex="0"><code>replicaof [master ip] 6379
+replica-serve-stale-data no
+</code></pre><p>启动后就可以形成主从集群。一写多读模式，适用于少写多读的应用，同时对一致性没有强要求，例如缓存。</p>
+<h2 id="docker验证">docker验证</h2>
+<p>我用如下命令开docker容器做的测试。</p>
+<pre tabindex="0"><code>export TAG=7-alpine
+export FLAGS=-d --restart=always
+docker run ${FLAGS} --name master -p 6379:6379 -v $PWD/master/:/data/ redis:${TAG} redis-server redis.conf
+docker run ${FLAGS} --name slave -p 6378:6379 -v $PWD/slave/:/data/ redis:${TAG} redis-server redis.conf
+</code></pre><p>当前目录下分别开master和slave目录，里面放redis.conf，启动容器即可形成集群。</p>
+<p>用如下命令验证：</p>
+<pre tabindex="0"><code>docker run -it --rm redis:7-alpine redis-cli -h [master ip] -p 6379 info replication
+docker run -it --rm redis:7-alpine redis-cli -h [master ip] -p 6378 info replication
+docker run -it --rm redis:7-alpine redis-cli -h [master ip] -p 6379 set abc def
+docker run -it --rm redis:7-alpine redis-cli -h [master ip] -p 6378 get abc
+</code></pre><h1 id="sentinel模式">sentinel模式</h1>
+<p>复杂且不好用。</p>
+<p>sentinel需要N个redis和M个sentinel。其中M应为奇数，防止脑裂。sentinel会连接每个redis，验证他们的可用性。在master redis下线的时候，M个哨兵通过私下串联，重新选举主，并且将所有redis配置修改到正确的状态。因而，在M个哨兵的监督下，N个redis可以形成自选举的一写多读集群。</p>
+<p>先配置N个redis主从，方法同上。理论上N个无关redis也能形成一写多读集群。实际上N个无关redis不会被sentinel自动认为同一个集群。</p>
+<p>随后配置三个sentinel。</p>
+<pre tabindex="0"><code>sentinel monitor redis1 [redis1 ip] 6379 1
+sentinel down-after-milliseconds redis1 5000
+sentinel parallel-syncs redis1 2
+sentinel failover-timeout redis1 300000
+
+sentinel monitor redis2 [redis2 ip] 6379 1
+sentinel down-after-milliseconds redis2 5000
+sentinel parallel-syncs redis2 2
+sentinel failover-timeout redis2 300000
+
+sentinel monitor redis3 [redis3] 6379 1
+sentinel down-after-milliseconds redis3 5000
+sentinel parallel-syncs redis3 2
+sentinel failover-timeout redis3 300000
+</code></pre><p>启动后即可形成sentinel集群。</p>
+<p>注意sentinel模式是failover。一旦master下线，再上线会被自动配置成slave。</p>
+<h2 id="docker验证-1">docker验证</h2>
+<p>reference2里写明了，sentinel模式不支持NAT内部，因此要用&ndash;net=host来配置所有容器。</p>
+<pre tabindex="0"><code>docker run ${FLAGS} --name redis1 --net=host -v $PWD/redis1/:/data/ redis:${TAG} redis-server redis.conf
+docker run ${FLAGS} --name redis2 --net=host -v $PWD/redis2/:/data/ redis:${TAG} redis-server redis.conf
+docker run ${FLAGS} --name redis3 --net=host -v $PWD/redis3/:/data/ redis:${TAG} redis-server redis.conf
+sleep 1
+docker run ${FLAGS} --name sentinel1 --net=host -v $PWD/sentinel1/:/data/ redis:${TAG} redis-server sentinel.conf --sentinel
+docker run ${FLAGS} --name sentinel2 --net=host -v $PWD/sentinel2/:/data/ redis:${TAG} redis-server sentinel.conf --sentinel
+docker run ${FLAGS} --name sentinel3 --net=host -v $PWD/sentinel3/:/data/ redis:${TAG} redis-server sentinel.conf --sentinel
+</code></pre><p>三个redis的配置文件分别配置端口为6377,6378,6379（因为使用host network）。三个sentinel的端口分别为26377,26378,26379。验证方法和主从模式同。</p>
+<h1 id="cluster模式">cluster模式</h1>
+<p>cluster模式使用分片+副本。</p>
+<p>对任意key，redis的分片算法会计算key的CRC16，然后映射到16384个slots中的一个。最后redis维护一张一致性表，记录这16384个slot分别在哪个redis实例上。当增删节点的时候，只要调整这张一致性表就好了。为了增加可用性，这张表还能带主从。每个slot可以配置一个主多个从。可惜cluster模式的从不能分担读压力，只是一个冷备。</p>
+<p>但这里似乎有个撞key漏洞。如果攻击者知道redis中的key分布规律，理论上可以构造许多key，均落在一个slot里。使得分布算法无论怎么调整，压力都精确的打到一台redis上，引起DoS。对于sha来说这个计算困难，对于CRC16来说还是不算太难的。因此redis中的key最好不要用用户可选择数据。</p>
+<p>另外cluster模式继承了k-v分治模式的同类缺点。对于批量操作跨node的，cluster模式的实现要么不支持，要么有问题（influx-proxy也有类似问题）。</p>
+<p>每个节点如下配置：</p>
+<pre tabindex="0"><code>port 6377/6378/6379
+cluster-enabled yes
+cluster-config-file nodes.conf
+cluster-node-timeout 15000
+</code></pre><h2 id="docker验证-2">docker验证</h2>
+<p>用如下命令启动集群。</p>
+<pre tabindex="0"><code>docker run ${FLAGS} --name cluster1 --net=host -v $PWD/cluster1/:/data/ redis:${TAG} redis-server redis.conf
+docker run ${FLAGS} --name cluster2 --net=host -v $PWD/cluster2/:/data/ redis:${TAG} redis-server redis.conf
+docker run ${FLAGS} --name cluster3 --net=host -v $PWD/cluster3/:/data/ redis:${TAG} redis-server redis.conf
+sleep 1
+docker run -it --rm redis:7-alpine redis-cli --cluster create 127.0.0.1:6377 127.0.0.1:6378 127.0.0.1:6379
+</code></pre><p>验证的时候，redis-cli的参数里要加<code>-c</code>。</p>
+<h1 id="reference">reference</h1>
+<ol>
+<li><a href="https://juejin.cn/post/6844904097116585991">一文掌握Redis主从复制、哨兵、Cluster三种集群模式</a></li>
+<li><a href="https://redis.io/docs/management/sentinel/">High availability with Redis Sentinel</a></li>
+<li><a href="https://redis.io/docs/management/scaling/">Scaling with Redis Cluster</a></li>
+</ol>
+
+    </div>
+    <div class="post-footer">
+      
+    </div>
+  </article>
+
+    </main>
+  </body>
+</html>
