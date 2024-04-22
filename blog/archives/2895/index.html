@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>Python3下dict和list的线程安全性分析 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+
+    
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
+}
+</script>
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Python3下dict和list的线程安全性分析"/>
+<meta name="twitter:description" content="简述 很多人说python的list和dict对象是线程安全的。呵呵我不信。
+首先我们把线程安全定义一下，省得抬杠。线程不安全有以下几种形态。如果发生其中之一，则肯定是线程不安全的。以下是充分非必要条件。
+多个线程竞争访问时，发生内存访问异常。 多个线程竞争访问时，发生异常。 多个线程竞争访问时，数据某种程度上不一致。 其中三的争议比较大。到底什么是数据不一致，我们下面会给出细节解释。但是线程不安全的前提是读-写。如果是“纯读取”，则肯定不发生线程不安全。这点以下不再强调。
+思路 Python的线程安全，其实是指GIL。GIL会在一个P指令的周期内，锁住解释器。除去少数代码，大部分P指令在执行时，均不会发生上下文切换。因此一般语言访问内部数据结构不一致所引发的内存访问异常，在Python内均不会发生。这是“Python的list和dict线程安全”这个断言的源头。
+这个断言本身，其实并没有排除“组合不安全”的可能。例如a[k] &#43;= 1，其实是a[k] = a[k] &#43; 1的缩写（两者在P代码层面有细微差别，但是不重要）。在多线程状态下，这个操作可能引起&#43;1丢失问题。不过这个概率非常低，而且这是“预期中的不安全问题”。如下一节所演示的。下面希望阐述的，是每个调用都是原子调用，最终产生线程不安全的结果。
+这类结果，最大可能是发生在keys/values/iterms调用上。这三个调用，在Python2的时代，返回的是容器类对象。虽然有复制开销，但是一劳永逸避免竞争问题。Python3大量改为iterator后，这里就隐藏了一个风险。
+组合不安全问题的例子 代码。由于太难触发，因此加time.sleep来扩大问题。
+import time, threading def add(d): for _ in range(1000): i = d[1] &#43; 1 time.sleep(0.000001) d[1] = i def main(): d = {1: 0} ths = [threading.Thread(target=add, args=(d,)) for _ in range(2)] for th in ths: th.start() for th in ths: th.join() print(d[1]) 结果：
+注释掉time.sleep，确定的2000。 启用time.sleep，有时为1000，有时为1001。 key数量发生增减的形态 代码
+import time import threading def daemon(d): time."/>
+
+    <meta property="og:title" content="Python3下dict和list的线程安全性分析" />
+<meta property="og:description" content="简述 很多人说python的list和dict对象是线程安全的。呵呵我不信。
+首先我们把线程安全定义一下，省得抬杠。线程不安全有以下几种形态。如果发生其中之一，则肯定是线程不安全的。以下是充分非必要条件。
+多个线程竞争访问时，发生内存访问异常。 多个线程竞争访问时，发生异常。 多个线程竞争访问时，数据某种程度上不一致。 其中三的争议比较大。到底什么是数据不一致，我们下面会给出细节解释。但是线程不安全的前提是读-写。如果是“纯读取”，则肯定不发生线程不安全。这点以下不再强调。
+思路 Python的线程安全，其实是指GIL。GIL会在一个P指令的周期内，锁住解释器。除去少数代码，大部分P指令在执行时，均不会发生上下文切换。因此一般语言访问内部数据结构不一致所引发的内存访问异常，在Python内均不会发生。这是“Python的list和dict线程安全”这个断言的源头。
+这个断言本身，其实并没有排除“组合不安全”的可能。例如a[k] &#43;= 1，其实是a[k] = a[k] &#43; 1的缩写（两者在P代码层面有细微差别，但是不重要）。在多线程状态下，这个操作可能引起&#43;1丢失问题。不过这个概率非常低，而且这是“预期中的不安全问题”。如下一节所演示的。下面希望阐述的，是每个调用都是原子调用，最终产生线程不安全的结果。
+这类结果，最大可能是发生在keys/values/iterms调用上。这三个调用，在Python2的时代，返回的是容器类对象。虽然有复制开销，但是一劳永逸避免竞争问题。Python3大量改为iterator后，这里就隐藏了一个风险。
+组合不安全问题的例子 代码。由于太难触发，因此加time.sleep来扩大问题。
+import time, threading def add(d): for _ in range(1000): i = d[1] &#43; 1 time.sleep(0.000001) d[1] = i def main(): d = {1: 0} ths = [threading.Thread(target=add, args=(d,)) for _ in range(2)] for th in ths: th.start() for th in ths: th.join() print(d[1]) 结果：
+注释掉time.sleep，确定的2000。 启用time.sleep，有时为1000，有时为1001。 key数量发生增减的形态 代码
+import time import threading def daemon(d): time." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2895/" /><meta property="article:section" content="blog" />
+<meta property="article:published_time" content="2024-04-23T01:04:07+08:00" />
+<meta property="article:modified_time" content="2024-04-23T01:04:07+08:00" />
+
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
+
+<header>
+
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
+</header>
+
+
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <span class="app-header-title">Shell&#39;s Home</span>
+      <p>贝壳的壳</p>
+      <p>Copyright &copy; 2024 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">Python3下dict和list的线程安全性分析</h1>
+      <div class="post-meta">
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Apr 23, 2024
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          3 min read
+        </div>
+      </div>
+    </header>
+    <div class="post-content">
+      <h1 id="简述">简述</h1>
+<p>很多人说python的list和dict对象是线程安全的。呵呵我不信。</p>
+<p>首先我们把<a href="https://zh.wikipedia.org/zh-hans/%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8">线程安全</a>定义一下，省得抬杠。线程不安全有以下几种形态。如果发生其中之一，则肯定是线程不安全的。以下是充分非必要条件。</p>
+<ol>
+<li>多个线程竞争访问时，发生内存访问异常。</li>
+<li>多个线程竞争访问时，发生异常。</li>
+<li>多个线程竞争访问时，数据某种程度上不一致。</li>
+</ol>
+<p>其中三的争议比较大。到底什么是数据不一致，我们下面会给出细节解释。但是线程不安全的前提是读-写。如果是“纯读取”，则肯定不发生线程不安全。这点以下不再强调。</p>
+<h1 id="思路">思路</h1>
+<p>Python的线程安全，其实是指GIL。GIL会在一个P指令的周期内，锁住解释器。除去少数代码，大部分P指令在执行时，均不会发生上下文切换。因此一般语言访问内部数据结构不一致所引发的内存访问异常，在Python内均不会发生。这是“Python的list和dict线程安全”这个断言的源头。</p>
+<p>这个断言本身，其实并没有排除“组合不安全”的可能。例如a[k] += 1，其实是a[k] = a[k] + 1的缩写（两者在P代码层面有细微差别，但是不重要）。在多线程状态下，这个操作可能引起+1丢失问题。不过这个概率非常低，而且这是“预期中的不安全问题”。如下一节所演示的。下面希望阐述的，是每个调用都是原子调用，最终产生线程不安全的结果。</p>
+<p>这类结果，最大可能是发生在keys/values/iterms调用上。这三个调用，在Python2的时代，返回的是容器类对象。虽然有复制开销，但是一劳永逸避免竞争问题。Python3大量改为iterator后，这里就隐藏了一个风险。</p>
+<h1 id="组合不安全问题的例子">组合不安全问题的例子</h1>
+<p>代码。由于太难触发，因此加time.sleep来扩大问题。</p>
+<pre><code>import time, threading
+
+def add(d):
+	for _ in range(1000):
+		i = d[1] + 1
+		time.sleep(0.000001)
+		d[1] = i
+
+def main():
+	d = {1: 0}
+	ths = [threading.Thread(target=add, args=(d,)) for _ in range(2)]
+	for th in ths:
+		th.start()
+	for th in ths:
+		th.join()
+	print(d[1])
+</code></pre>
+<p>结果：</p>
+<ol>
+<li>注释掉time.sleep，确定的2000。</li>
+<li>启用time.sleep，有时为1000，有时为1001。</li>
+</ol>
+<h1 id="key数量发生增减的形态">key数量发生增减的形态</h1>
+<p>代码</p>
+<pre><code>import time
+import threading
+
+def daemon(d):
+	time.sleep(0.2)
+	for k, v in d.items():
+		print(k, v)
+		time.sleep(0.1)
+
+def main():
+	d = {}
+	threading.Thread(target=daemon, args=(d,)).start()
+	for i in range(10):
+		d[i] = i
+		time.sleep(0.1)
+	print(d)
+</code></pre>
+<p>结果</p>
+<pre><code>0 0
+Exception in thread Thread-1 (daemon):
+Traceback (most recent call last):
+  File &quot;/usr/lib/python3.11/threading.py&quot;, line 1038, in _bootstrap_inner
+	self.run()
+  File &quot;/usr/lib/python3.11/threading.py&quot;, line 975, in run
+	self._target(*self._args, **self._kwargs)
+  File &quot;/tmp/t.py&quot;, line 15, in daemon
+	for k, v in d.items():
+RuntimeError: dictionary changed size during iteration
+{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
+</code></pre>
+<h1 id="key内容发生改变的形态">key内容发生改变的形态</h1>
+<p>由于需要变更key，因此代码里做了一个del和一个set操作。由于两者间没有刻意加入time.sleep，一般不停顿，因此不会引发上面的“key数量发生增减的形态”。代码</p>
+<pre><code>import time
+import threading
+
+def daemon(d):
+	time.sleep(0.2)
+	for k, v in d.items():
+		print(k, v)
+		time.sleep(0.1)
+
+def main():
+	d = {}
+	threading.Thread(target=daemon, args=(d,)).start()
+	for i in range(10):
+		d[i] = i
+	for i in range(10):
+		del d[i]
+		d[i+100] = i
+		time.sleep(0.1)
+	print(d)
+</code></pre>
+<p>结果</p>
+<pre><code>2 2
+3 3
+5 5
+6 6
+7 7
+8 8
+9 9
+100 0
+{100: 0, 101: 1, 102: 2, 103: 3, 104: 4, 105: 5, 106: 6, 107: 7, 108: 8, 109: 9}
+101 1
+102 2
+Exception in thread Thread-1 (daemon):
+Traceback (most recent call last):
+  File &quot;/usr/lib/python3.11/threading.py&quot;, line 1038, in _bootstrap_inner
+	self.run()
+  File &quot;/usr/lib/python3.11/threading.py&quot;, line 975, in run
+	self._target(*self._args, **self._kwargs)
+  File &quot;/tmp/t.py&quot;, line 14, in daemon
+	for k, v in d.items():
+RuntimeError: dictionary keys changed during iteration
+</code></pre>
+<p>这个数据其实很有意思。可以结合最下面的源码想想为什么。</p>
+<h1 id="key不发生改变的形态">key不发生改变的形态</h1>
+<p>代码</p>
+<pre><code>import time
+import threading
+
+def daemon(d):
+	time.sleep(0.2)
+	for k, v in d.items():
+		print(k, v)
+		time.sleep(0.05)
+
+def main():
+	d = {}
+	threading.Thread(target=daemon, args=(d,)).start()
+	for i in range(10):
+		d[i] = i
+	for i in range(10):
+		d[i] = i+1
+		time.sleep(0.1)
+	print(d)
+</code></pre>
+<p>结果</p>
+<pre><code>0 1
+1 2
+2 3
+3 4
+4 5
+5 5
+6 6
+7 7
+8 8
+9 9
+{0: 1, 1: 2, 2: 3, 3: 4, 4: 5, 5: 6, 6: 7, 7: 8, 8: 9, 9: 10}
+</code></pre>
+<p>注意4之前，d[k] = k+1。5之后，d[k] = k。这个结果非常有意思，属于典型的情况三。如果你认为每个数都是独立的，那么这个例子线程安全。但如果你认为这些数之间有内在关联性，例如你需要用他们的总和来进行后续计算。那么这个例子线程不安全。</p>
+<h1 id="其他有趣形态">其他有趣形态</h1>
+<p>这个例子是“key内容发生改变的形态”的一种变形。代码</p>
+<pre><code>import time
+import threading
+
+def daemon(d):
+	time.sleep(0.2)
+	for k, v in reversed(d.items()):
+		print(k, v)
+		time.sleep(0.1)
+
+def main():
+	d = {}
+	threading.Thread(target=daemon, args=(d,)).start()
+	for i in range(10):
+		d[i] = i
+	for i in range(10):
+		del d[i]
+		d[i+100] = i
+		time.sleep(0.1)
+	print(d)
+</code></pre>
+<p>结果</p>
+<pre><code>101 1
+100 0
+9 9
+8 8
+7 7
+{100: 0, 101: 1, 102: 2, 103: 3, 104: 4, 105: 5, 106: 6, 107: 7, 108: 8, 109: 9}
+</code></pre>
+<p>这同样也是线程非安全的，而且不安全的非常有趣。没有任何报错，但取得的数据集既不是新的，也不是旧的。</p>
+<h1 id="源码">源码</h1>
+<ul>
+<li><a href="https://github.com/python/cpython/blob/3.12/Objects/dictobject.c#L3839">PyDict_Type</a></li>
+<li><a href="https://github.com/python/cpython/blob/3.12/Objects/dictobject.c#L3958">dictiter_new</a></li>
+<li><a href="https://github.com/python/cpython/blob/3.12/Objects/dictobject.c#L3955">dictiterobject</a></li>
+<li><a href="https://github.com/python/cpython/blob/3.12/Objects/dictobject.c#L4240">dictiter_iternextitem</a></li>
+</ul>
+<p>注意dictiterobject这个对象，其中包含的是PyDictObject *di_dict指针。这也预示着多个线程将真实引用同一个对象。如果我们学Python2一般，让每个线程获得一个独立象，则确定不会出现问题。</p>
+<h1 id="退化成python2的形态">退化成Python2的形态</h1>
+<p>代码</p>
+<pre><code>import time
+import threading
+
+def daemon(d):
+	time.sleep(0.2)
+	for k, v in list(d.items()):
+		print(k, v)
+		time.sleep(0.1)
+
+def main():
+	d = {}
+	threading.Thread(target=daemon, args=(d,)).start()
+	for i in range(10):
+		d[i] = i
+		time.sleep(0.1)
+	print(d)
+</code></pre>
+<p>结果</p>
+<pre><code>0 0
+1 1
+{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
+</code></pre>
+<p>只要在d.items调用后，list调用前，d.items不发生改变，这个结果就是稳定的，不出错的。一般来说，这个情况出现的概率比较小。但是严格的编程中，也应当避免这种形态。<code>d.copy().items()</code>则没有这个问题。</p>
+<p>当然，内存和CPU的消耗是另一码事。</p>
+<h1 id="结论">结论</h1>
+<p>即便不考虑“key不发生改变的形态”到底算不算线程不安全。由于有其他几个情形的存在，因此多线程中混用keys/values/items和其他修改操作，一般来说结果将是不可预测和危险的。甚至，如果更进一步考虑<code>__get__</code>和<code>__set__</code>之类元函数的存在，直接使用dict和list来保证线程安全性，几乎是不可行的。整个设计难度相当大，且所有使用者均需要遵守使用原则。（严禁重载元函数，所有的key必须在排他的情况下进行修改，且结果总体不具一致性，或干脆放弃使用keys/values/items）鉴于此，Python中使用多线程访问dict和list的最佳实践应上锁。</p>
+
+    </div>
+    <div class="post-footer">
+      
+    </div>
+  </article>
+
+    </main>
+  </body>
+</html>

@@ -7,7 +7,25 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Wed, 30 Aug 2023 19:05:28 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/blog/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 23 Apr 2024 01:04:07 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/blog/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Python3下dict和list的线程安全性分析</title>
+      <link>//blog.shell909090.org/blog/archives/2895/</link>
+      <pubDate>Tue, 23 Apr 2024 01:04:07 +0800</pubDate>
+      
+      <guid>//blog.shell909090.org/blog/archives/2895/</guid>
+      <description>简述 很多人说python的list和dict对象是线程安全的。呵呵我不信。
+首先我们把线程安全定义一下，省得抬杠。线程不安全有以下几种形态。如果发生其中之一，则肯定是线程不安全的。以下是充分非必要条件。
+多个线程竞争访问时，发生内存访问异常。 多个线程竞争访问时，发生异常。 多个线程竞争访问时，数据某种程度上不一致。 其中三的争议比较大。到底什么是数据不一致，我们下面会给出细节解释。但是线程不安全的前提是读-写。如果是“纯读取”，则肯定不发生线程不安全。这点以下不再强调。
+思路 Python的线程安全，其实是指GIL。GIL会在一个P指令的周期内，锁住解释器。除去少数代码，大部分P指令在执行时，均不会发生上下文切换。因此一般语言访问内部数据结构不一致所引发的内存访问异常，在Python内均不会发生。这是“Python的list和dict线程安全”这个断言的源头。
+这个断言本身，其实并没有排除“组合不安全”的可能。例如a[k] += 1，其实是a[k] = a[k] + 1的缩写（两者在P代码层面有细微差别，但是不重要）。在多线程状态下，这个操作可能引起+1丢失问题。不过这个概率非常低，而且这是“预期中的不安全问题”。如下一节所演示的。下面希望阐述的，是每个调用都是原子调用，最终产生线程不安全的结果。
+这类结果，最大可能是发生在keys/values/iterms调用上。这三个调用，在Python2的时代，返回的是容器类对象。虽然有复制开销，但是一劳永逸避免竞争问题。Python3大量改为iterator后，这里就隐藏了一个风险。
+组合不安全问题的例子 代码。由于太难触发，因此加time.sleep来扩大问题。
+import time, threading def add(d): for _ in range(1000): i = d[1] + 1 time.sleep(0.000001) d[1] = i def main(): d = {1: 0} ths = [threading.Thread(target=add, args=(d,)) for _ in range(2)] for th in ths: th.start() for th in ths: th.join() print(d[1]) 结果：
+注释掉time.sleep，确定的2000。 启用time.sleep，有时为1000，有时为1001。 key数量发生增减的形态 代码
+import time import threading def daemon(d): time.</description>
+    </item>
+    
     <item>
       <title>核电废水排放</title>
       <link>//blog.shell909090.org/blog/archives/2894/</link>
