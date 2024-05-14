@@ -7,7 +7,30 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Tue, 23 Apr 2024 01:04:07 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/blog/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 14 May 2024 22:54:48 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/blog/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>用pandas统计人口数据</title>
+      <link>//blog.shell909090.org/blog/archives/2896/</link>
+      <pubDate>Tue, 14 May 2024 22:54:48 +0800</pubDate>
+      
+      <guid>//blog.shell909090.org/blog/archives/2896/</guid>
+      <description>今天讲一个很有趣的话题，用pandas来统计中国人口数据。即每一年，几岁的人口有多少。
+原理和原始数据 原理很简单。人在出生后，就会不停死亡。每一年的人，能活到第二年的概率，有一个模型，叫生命表。根据这个表，以及每年出生人口，你可以大致算出后续某年，几岁的人还有多少活着。
+这个模型有几个问题。首先，生命表并不反应历史重大事件。例如，因为战争，饥荒，导致人口大量死亡。这个在生命表里是反应不出来的。其次，出生人口数据不是无限前推的。例如，你要算出今年100虽的人口有多少（假设生命表准确，上推的极限是105岁），就需要1924年的出生人口作为原始数据。这个原始数据我反正没有。所以，我们这个计算只能以其他方式进行拟合（或者叫凑合）。
+这个凑合的最重要数据，就是每年总人口。用出生人口推算出来的每个年龄的人口数据，叫直接推断数据。用总人口减去直接推断数据，就得到剩余，这部分是间接数据。理论上说，如果有年龄分布数据的话，可以把剩余分布到各个年龄段。但是很可惜，这个修正对于刚开始的数据（在我这里是1949年前后）比较重要。可是我没有1949年的人口分布模型。到2024年的时候，1949年出生的人已经75了，分布模型也不重要了。所以我用了一个很土的办法——把剩余均摊到后面的年龄上去。
+另一个参考数据，则是七普（或者你也可以用六普的数据附加校验）数据。七普是2020年，所以这张表算出来的2020年人口模型，应当符合2020年人口的年龄分布。
+你可以随便下一个差不多的生命表，我用的是这张。原始数据整理好了，csv文件gzip后base64，在文末。在这里有历年出生人数和年末总人口。我对比了一下，数据应该是从这里来的，所以我就直接采信了。其中最初几行的出生数据参考了这篇。原始数据同样整理了一下，在文末。
+计算过程 我先起了一个jupyter，然后初始化了一下环境。
+import pandas as pd import numpy as np import matplotlib.pyplot as plt %matplotlib notebook #%matplotlib inline 然后读取人口数据和生命表。
+population = pd.read_csv(&amp;#39;population.csv&amp;#39;, index_col=&amp;#39;year&amp;#39;) life = pd.read_csv(&amp;#39;life.csv&amp;#39;, index_col=&amp;#39;age&amp;#39;) 看一眼出生数据。
+plt.plot(population[&amp;#39;birth&amp;#39;]) 特别注意1961和1979的低谷。61年是“三年困难时期”的末尾，出生人口的锐减被反馈出来。77-79是文革末尾。最近一次的暴跌是2023，原因大家都懂。
+随后，我们计算直接人口数据。
+pop = population[&amp;#39;birth&amp;#39;].copy() population[0] = pop for age in range(1, 90): pop.index += 1 pop *= (1-life[&amp;#39;CL5&amp;#39;][age-1]-0.0014) population[age] = pop.copy() 刚出生的人口，年底时算0岁。然后每年加一岁（去年0岁的今年1岁，下同），一直加到90。90这个数字有一定意义。下面会提到。
+生命表里的每个数字，表示这个岁数的人，活到下一个岁数前死亡的概率。因此人口乘以1-生命表，就能得到明年下一个岁数的人口数量。这里我采用CL5数据作为下降参数，再扣除0.0014（即千分之1.4）。其中0.0014这个数据，是用来拟合七普的。具体往下看。
+随后计算剩余，并展示直接推断数据。
+rest = population[&amp;#39;total&amp;#39;].copy() for age in range(0, 90): rest -= population[age].</description>
+    </item>
+    
     <item>
       <title>Python3下dict和list的线程安全性分析</title>
       <link>//blog.shell909090.org/blog/archives/2895/</link>

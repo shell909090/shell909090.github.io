@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>用pandas统计人口数据 // Shell&#39;s Home</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Shell Xu" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+
+    
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
+}
+</script>
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="用pandas统计人口数据"/>
+<meta name="twitter:description" content="今天讲一个很有趣的话题，用pandas来统计中国人口数据。即每一年，几岁的人口有多少。
+原理和原始数据 原理很简单。人在出生后，就会不停死亡。每一年的人，能活到第二年的概率，有一个模型，叫生命表。根据这个表，以及每年出生人口，你可以大致算出后续某年，几岁的人还有多少活着。
+这个模型有几个问题。首先，生命表并不反应历史重大事件。例如，因为战争，饥荒，导致人口大量死亡。这个在生命表里是反应不出来的。其次，出生人口数据不是无限前推的。例如，你要算出今年100虽的人口有多少（假设生命表准确，上推的极限是105岁），就需要1924年的出生人口作为原始数据。这个原始数据我反正没有。所以，我们这个计算只能以其他方式进行拟合（或者叫凑合）。
+这个凑合的最重要数据，就是每年总人口。用出生人口推算出来的每个年龄的人口数据，叫直接推断数据。用总人口减去直接推断数据，就得到剩余，这部分是间接数据。理论上说，如果有年龄分布数据的话，可以把剩余分布到各个年龄段。但是很可惜，这个修正对于刚开始的数据（在我这里是1949年前后）比较重要。可是我没有1949年的人口分布模型。到2024年的时候，1949年出生的人已经75了，分布模型也不重要了。所以我用了一个很土的办法——把剩余均摊到后面的年龄上去。
+另一个参考数据，则是七普（或者你也可以用六普的数据附加校验）数据。七普是2020年，所以这张表算出来的2020年人口模型，应当符合2020年人口的年龄分布。
+你可以随便下一个差不多的生命表，我用的是这张。原始数据整理好了，csv文件gzip后base64，在文末。在这里有历年出生人数和年末总人口。我对比了一下，数据应该是从这里来的，所以我就直接采信了。其中最初几行的出生数据参考了这篇。原始数据同样整理了一下，在文末。
+计算过程 我先起了一个jupyter，然后初始化了一下环境。
+import pandas as pd import numpy as np import matplotlib.pyplot as plt %matplotlib notebook #%matplotlib inline 然后读取人口数据和生命表。
+population = pd.read_csv(&#39;population.csv&#39;, index_col=&#39;year&#39;) life = pd.read_csv(&#39;life.csv&#39;, index_col=&#39;age&#39;) 看一眼出生数据。
+plt.plot(population[&#39;birth&#39;]) 特别注意1961和1979的低谷。61年是“三年困难时期”的末尾，出生人口的锐减被反馈出来。77-79是文革末尾。最近一次的暴跌是2023，原因大家都懂。
+随后，我们计算直接人口数据。
+pop = population[&#39;birth&#39;].copy() population[0] = pop for age in range(1, 90): pop.index &#43;= 1 pop *= (1-life[&#39;CL5&#39;][age-1]-0.0014) population[age] = pop.copy() 刚出生的人口，年底时算0岁。然后每年加一岁（去年0岁的今年1岁，下同），一直加到90。90这个数字有一定意义。下面会提到。
+生命表里的每个数字，表示这个岁数的人，活到下一个岁数前死亡的概率。因此人口乘以1-生命表，就能得到明年下一个岁数的人口数量。这里我采用CL5数据作为下降参数，再扣除0.0014（即千分之1.4）。其中0.0014这个数据，是用来拟合七普的。具体往下看。
+随后计算剩余，并展示直接推断数据。
+rest = population[&#39;total&#39;].copy() for age in range(0, 90): rest -= population[age]."/>
+
+    <meta property="og:title" content="用pandas统计人口数据" />
+<meta property="og:description" content="今天讲一个很有趣的话题，用pandas来统计中国人口数据。即每一年，几岁的人口有多少。
+原理和原始数据 原理很简单。人在出生后，就会不停死亡。每一年的人，能活到第二年的概率，有一个模型，叫生命表。根据这个表，以及每年出生人口，你可以大致算出后续某年，几岁的人还有多少活着。
+这个模型有几个问题。首先，生命表并不反应历史重大事件。例如，因为战争，饥荒，导致人口大量死亡。这个在生命表里是反应不出来的。其次，出生人口数据不是无限前推的。例如，你要算出今年100虽的人口有多少（假设生命表准确，上推的极限是105岁），就需要1924年的出生人口作为原始数据。这个原始数据我反正没有。所以，我们这个计算只能以其他方式进行拟合（或者叫凑合）。
+这个凑合的最重要数据，就是每年总人口。用出生人口推算出来的每个年龄的人口数据，叫直接推断数据。用总人口减去直接推断数据，就得到剩余，这部分是间接数据。理论上说，如果有年龄分布数据的话，可以把剩余分布到各个年龄段。但是很可惜，这个修正对于刚开始的数据（在我这里是1949年前后）比较重要。可是我没有1949年的人口分布模型。到2024年的时候，1949年出生的人已经75了，分布模型也不重要了。所以我用了一个很土的办法——把剩余均摊到后面的年龄上去。
+另一个参考数据，则是七普（或者你也可以用六普的数据附加校验）数据。七普是2020年，所以这张表算出来的2020年人口模型，应当符合2020年人口的年龄分布。
+你可以随便下一个差不多的生命表，我用的是这张。原始数据整理好了，csv文件gzip后base64，在文末。在这里有历年出生人数和年末总人口。我对比了一下，数据应该是从这里来的，所以我就直接采信了。其中最初几行的出生数据参考了这篇。原始数据同样整理了一下，在文末。
+计算过程 我先起了一个jupyter，然后初始化了一下环境。
+import pandas as pd import numpy as np import matplotlib.pyplot as plt %matplotlib notebook #%matplotlib inline 然后读取人口数据和生命表。
+population = pd.read_csv(&#39;population.csv&#39;, index_col=&#39;year&#39;) life = pd.read_csv(&#39;life.csv&#39;, index_col=&#39;age&#39;) 看一眼出生数据。
+plt.plot(population[&#39;birth&#39;]) 特别注意1961和1979的低谷。61年是“三年困难时期”的末尾，出生人口的锐减被反馈出来。77-79是文革末尾。最近一次的暴跌是2023，原因大家都懂。
+随后，我们计算直接人口数据。
+pop = population[&#39;birth&#39;].copy() population[0] = pop for age in range(1, 90): pop.index &#43;= 1 pop *= (1-life[&#39;CL5&#39;][age-1]-0.0014) population[age] = pop.copy() 刚出生的人口，年底时算0岁。然后每年加一岁（去年0岁的今年1岁，下同），一直加到90。90这个数字有一定意义。下面会提到。
+生命表里的每个数字，表示这个岁数的人，活到下一个岁数前死亡的概率。因此人口乘以1-生命表，就能得到明年下一个岁数的人口数量。这里我采用CL5数据作为下降参数，再扣除0.0014（即千分之1.4）。其中0.0014这个数据，是用来拟合七普的。具体往下看。
+随后计算剩余，并展示直接推断数据。
+rest = population[&#39;total&#39;].copy() for age in range(0, 90): rest -= population[age]." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//blog.shell909090.org/blog/archives/2896/" /><meta property="article:section" content="blog" />
+<meta property="article:published_time" content="2024-05-14T22:54:48+08:00" />
+<meta property="article:modified_time" content="2024-05-14T22:54:48+08:00" />
+
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body);
+        });
+    </script>
+
+<header>
+
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-eighties.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="//blog.shell909090.org/">/home/shell&#39;s home</a>
+      </li>
+      
+
+      
+
+    </ul>
+  </nav>
+</header>
+
+
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <span class="app-header-title">Shell&#39;s Home</span>
+      <p>贝壳的壳</p>
+      <p>Copyright &copy; 2024 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">用pandas统计人口数据</h1>
+      <div class="post-meta">
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          May 14, 2024
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          2 min read
+        </div>
+      </div>
+    </header>
+    <div class="post-content">
+      <p>今天讲一个很有趣的话题，用pandas来统计中国人口数据。即每一年，几岁的人口有多少。</p>
+<h1 id="原理和原始数据">原理和原始数据</h1>
+<p>原理很简单。人在出生后，就会不停死亡。每一年的人，能活到第二年的概率，有一个模型，叫<a href="https://zh.wikipedia.org/wiki/%E7%94%9F%E5%91%BD%E8%A1%A8">生命表</a>。根据这个表，以及每年出生人口，你可以大致算出后续某年，几岁的人还有多少活着。</p>
+<p>这个模型有几个问题。首先，生命表并不反应历史重大事件。例如，因为战争，饥荒，导致人口大量死亡。这个在生命表里是反应不出来的。其次，出生人口数据不是无限前推的。例如，你要算出今年100虽的人口有多少（假设生命表准确，上推的极限是105岁），就需要1924年的出生人口作为原始数据。这个原始数据我反正没有。所以，我们这个计算只能以其他方式进行拟合（或者叫凑合）。</p>
+<p>这个凑合的最重要数据，就是每年总人口。用出生人口推算出来的每个年龄的人口数据，叫直接推断数据。用总人口减去直接推断数据，就得到剩余，这部分是间接数据。理论上说，如果有年龄分布数据的话，可以把剩余分布到各个年龄段。但是很可惜，这个修正对于刚开始的数据（在我这里是1949年前后）比较重要。可是我没有1949年的人口分布模型。到2024年的时候，1949年出生的人已经75了，分布模型也不重要了。所以我用了一个很土的办法——把剩余均摊到后面的年龄上去。</p>
+<p>另一个参考数据，则是七普（或者你也可以用六普的数据附加校验）数据。七普是2020年，所以这张表算出来的2020年人口模型，应当符合2020年人口的年龄分布。</p>
+<p>你可以随便下一个差不多的生命表，我用的是<a href="https://www.cbirc.gov.cn/cn/view/pages/ItemDetail_gdsj.html?docId=19861&amp;docType=2">这张</a>。原始数据整理好了，csv文件gzip后base64，在文末。在<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E4%BA%BA%E5%8F%A3">这里</a>有历年出生人数和年末总人口。我对比了一下，数据应该是从<a href="https://data.stats.gov.cn/easyquery.htm?cn=C01">这里</a>来的，所以我就直接采信了。其中最初几行的出生数据参考了<a href="https://zhuanlan.zhihu.com/p/634146715">这篇</a>。原始数据同样整理了一下，在文末。</p>
+<h1 id="计算过程">计算过程</h1>
+<p>我先起了一个jupyter，然后初始化了一下环境。</p>
+<pre tabindex="0"><code>import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+%matplotlib notebook
+#%matplotlib inline
+</code></pre><p>然后读取人口数据和生命表。</p>
+<pre tabindex="0"><code>population = pd.read_csv(&#39;population.csv&#39;, index_col=&#39;year&#39;)
+life = pd.read_csv(&#39;life.csv&#39;, index_col=&#39;age&#39;)
+</code></pre><p>看一眼出生数据。</p>
+<pre tabindex="0"><code>plt.plot(population[&#39;birth&#39;])
+</code></pre><p>特别注意1961和1979的低谷。61年是“三年困难时期”的末尾，出生人口的锐减被反馈出来。77-79是文革末尾。最近一次的暴跌是2023，原因大家都懂。</p>
+<p>随后，我们计算直接人口数据。</p>
+<pre tabindex="0"><code>pop = population[&#39;birth&#39;].copy()
+population[0] = pop
+for age in range(1, 90):
+    pop.index += 1
+    pop *= (1-life[&#39;CL5&#39;][age-1]-0.0014)
+    population[age] = pop.copy()
+</code></pre><p>刚出生的人口，年底时算0岁。然后每年加一岁（去年0岁的今年1岁，下同），一直加到90。90这个数字有一定意义。下面会提到。</p>
+<p>生命表里的每个数字，表示这个岁数的人，活到下一个岁数前死亡的概率。因此人口乘以1-生命表，就能得到明年下一个岁数的人口数量。这里我采用CL5数据作为下降参数，再扣除0.0014（即千分之1.4）。其中0.0014这个数据，是用来拟合七普的。具体往下看。</p>
+<p>随后计算剩余，并展示直接推断数据。</p>
+<pre tabindex="0"><code>rest = population[&#39;total&#39;].copy()
+for age in range(0, 90):
+    rest -= population[age].fillna(0)
+population[&#39;rest&#39;] = rest
+
+population
+</code></pre><p>随后，我们来拟合七普数据。</p>
+<pre tabindex="0"><code># https://www.gov.cn/guoqing/2021-05/13/content_5606149.htm
+pop20 = population.loc[2020].fillna(0)
+# pop of 60-90 + rest of 2020 = 26401
+print(pop20[62:92].sum() + pop20[&#39;rest&#39;])
+# pop of 65-90 + rest of 2020 = 19063
+print(pop20[67:92].sum() + pop20[&#39;rest&#39;])
+# pop of 15-60 = 89437
+print(pop20[17:62].sum())
+# pop of 0-15 = 25338
+print(pop20[2:18].sum())
+</code></pre><p>这四个数字，在我取上文参数0.0014的时候，误差最小。分别为26782.432745867867，19014.235490027462，90818.8496460739，25189.186152495437。当然，你也可以用CL1/CL3，再加修正。我算出来CL1的修正参数是0.0009。中国人每个年龄的实际死亡几率，要比生命表里的大一些。大家可以细品一下。</p>
+<p>最后，把剩余平摊到尚没有数字的位置，裁掉46-48年的数据（没有总人口，无法校正），裁掉出生人口/总人口/剩余，我们就得到了人口表。保存一下结果。</p>
+<pre tabindex="0"><code>population = population.drop([1946, 1947, 1948])
+for i, s in population.iterrows():
+    avg = s[&#39;rest&#39;]/s.isna().sum()
+    population.loc[i] = s.fillna(avg)
+population = population.drop([&#39;birth&#39;, &#39;total&#39;, &#39;rest&#39;], axis=1)
+population.to_csv(&#39;final.csv&#39;)
+population
+</code></pre><p>这里就要说到为什么是90了。我们的数据最早是46年的，在2024年是78岁。我开始用的是80。结果剩余人口摊薄后发生了递增——因为实际上我把未知岁数的所有人口，都集中到了“直接推断的最大值”到80之间，也就是79-80。最后在2024年的时候，所有46年以前老人都是79-80岁，造成了老人年龄暴增。这个数据怎么看怎么怪异。改为90之后，摊薄起码是基本逐年递减的。虽然这部分数据肯定是假的，但起码假得像一些吧。</p>
+<p>最后，再打一张3D图出来看看。</p>
+<pre tabindex="0"><code>Y = np.arange(1949, 2024)
+X = np.arange(0, 90)
+X, Y = np.meshgrid(X, Y)
+
+fig = plt.figure()
+ax = fig.add_subplot(projection=&#39;3d&#39;)
+ax.plot_surface(X, Y, population.values, antialiased=True)
+plt.show()
+</code></pre><h1 id="进一步推论">进一步推论</h1>
+<p>实际上，这张“每个年龄的分布图”有一定预测能力——每年出生人口，和育龄人口成正比。我们可以取N岁到M岁作为育龄人口，计算新生儿对其比率。定义上女性育龄是15-49，我觉得这个定义太丧心病狂了点，所以采用的是20-40。你可以很容易的算出来育龄生育率图。大致是一张百分比曲线，从普遍的0.15-0.2震荡，到最新的0.021。但是请注意，这个图有意义的部分在1989年之后。因为，还记得么？之前的人口-年龄分布都是我们瞎填的，中年人太少，老年人太多，所以算出来的比率一定高得惊人。截取有意义的部分后，得到的图是从0.06一路下滑到0.02。这个数值的实际意义是，2023年，100对育龄夫妇（假设全结婚了）每年生育4个孩子。换算成总和生育率就是0.8。0.06对应的总和生育率就是2.4。</p>
+<p>注意，下面的语句执行需要在上面的3D图之前，否则就要把上面的matplotlib notebook改成matplotlib inline。</p>
+<pre tabindex="0"><code>s = population.loc[:, 0]/population.loc[:, 20:40].sum(axis=1)
+plt.plot(s[s.index&gt;1985])
+</code></pre><p>如果维持总和生育率0.8不变，大家可以继续推算下面的人口数据。</p>
+<h1 id="生命表">生命表</h1>
+<pre tabindex="0"><code>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
+2icU4+df+wvj99OSLRcAAA==
+</code></pre><h1 id="人口原始数据">人口原始数据</h1>
+<pre tabindex="0"><code>H4sICL6lP2YAA3BvcHVsYXRpb24uY3N2AC1US4odQQzbv7N4Uf7bx5lAIIFAYHibuf1I1bNp2mrb
+Jcvq+vr98Sm//n6+/8j7//vj30s3SvScFb62qJrd18GrP+iKWqdkaDXiPGLHXDJ1i7EiLsTl5zA2
+MT3I7xhj7GKmiKef/EAcKXWsbpyi2yOlUcm4GJeUjQ3jRr9qKXx2xqC26F+5G4zBr0C92g751RH1
+Wan6iRWjDPrn5DIGv0AS8i8fUDeSqtUm3wI/fJI+sTc/EZ+QtnTyqRLLbunIuPngh9mly+t+H+SD
+dE86+dUixvxzqhVxQ7/2krFd1reyvmXSjOe1Mcb31ib/dvJ1mTW99dTPU/Y882A10HtlLYz6QzrF
+0bKOBoyx1Z4WLLLJB1IruAuEeOqhXxu+9zPPQL8GuNOH+5i736VLzhVojATQ5WglOw4YHq7lwAGU
+YIIA9nrCkxwGHGEaAFgChxiI6EjT03m3NFTRmLGPjbAxuISOVBiFAHSMcy2KdQBYCOnL7YY7nYF3
+M/LQHLsAraigrpCCxy6YqhUNkVecDYoHHuTIYzcfNysK7ZYUARzLmanXgunh+OZ1iS0NGaBu0XVL
+cOI4msInUy+DcJQUTK06nADem3pYlzUBe0ysNpE3AxSSjWztyQgCJIYDhwD0LUWJQ8N7CuZKauoa
+cTOaJQQw9BIA0+LDHVQILDOUQGB8O3oIgIzHWSWgLGGPWGWJkinsp448I+Ckzp8Of9TNQHYNiTX+
+WQJkSjv4+JNRtCQevua3Bz2KO0UD0txjQTIfAPcOATDFBYCH0mMwE068lgrsiT0MTE89QHEWuOle
+JoH15+veWftT4PX6BuTDE2ELBQAA
+</code></pre>
+    </div>
+    <div class="post-footer">
+      
+    </div>
+  </article>
+
+    </main>
+  </body>
+</html>
