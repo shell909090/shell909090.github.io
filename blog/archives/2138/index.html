@@ -4,27 +4,32 @@
     <title>segment的核心数据结构空间和时间效率估量 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="segment的核心数据结构空间和时间效率估量"/>
-<meta name="twitter:description" content="首先我们简述核心词典的目标。词典最主要的目标是，给定一句句子S，匹配出所有和句子开始拥有完整匹配的词语。所谓完整匹配，就是句子开始的一定长度的连续序列和词语相等。例如，中华，中华人民，中华人民共和国，都是句子：中华人民共和国今天成立了，的完整匹配。
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="segment的核心数据结构空间和时间效率估量">
+  <meta name="twitter:description" content="首先我们简述核心词典的目标。词典最主要的目标是，给定一句句子S，匹配出所有和句子开始拥有完整匹配的词语。所谓完整匹配，就是句子开始的一定长度的连续序列和词语相等。例如，中华，中华人民，中华人民共和国，都是句子：中华人民共和国今天成立了，的完整匹配。
 要解决这个问题，直观方式是使用tied tree。但是中文的tied tree非常不好实现。英文的tied tree在一个节点上最多拥有不超过26个子节点，而中文的在根上面会拥有6000个以上的子节点，使用同样的结构在子节点上会浪费大量内存。
 我们先跳过tied树本身的细节，来讨论如何使用python内置数据结构高效简洁的完成这一工作。作为一个读比写高频很多的结构，无疑hash table是一个非常适合的结构。我在hash table的性能分析中说过，hash table的查询性能是O(1)量级的。无疑，可以使用hash tree来高速完成查找。同时注意一点，词语的最小长度是2，因此不存在只有一级的结构。所以，hash tree的第一级结构可以从2开始，而不是1。
 实现效果如何？我们正式给出的词典拥有127K的词汇量，平均第二级宽度为6.8，因此大致可以推算出，第一级的词典含有元素19K个左右。python源码解析中说过，当表项小于50000个时，扩张大小为当前活跃表项的4倍，最高填充率不超过2/3，即填充率最低25%，最高66%。平均来说，填充率应当在45%上下波动，我们以0.5计算，实际上一级词典的Entry个数应当是40K个上下。在源码Include/dictobject.h:50有给出Entry的结构，这应当是三个平台相关的数据结构，以贝壳的64位系统而言，长度应当是24字节。忽略掉辅助结构，一级词典的大小应当是960K，即约1M。而词典指向的数据，即2字长的str对象本身头部长度24字节，辅助数据长度12字节，数据长度4字节（utf-16编码的两个unicode），null term1字节，共计41字节。由于python对象是8字节对齐，因此实际占用48字节。19K个数据总计占用912K。
@@ -36,10 +41,12 @@ if (!doNotTrack) {
 不过这次我们就可以控制一下哈希表的大小了。对于大小不超过6W的哈希，我建议采用crc32，虽然离散度并不高，但是作为一个近似填满的hash table的hash key足矣（这点需要实际考察一下）。如果是自己实现，表项直接存字符串，连指针都不需要，采用开链法。总计大小1M即可以保存所有的一级数据。
 二级数据就无法这么偷懒了，因为二级结构中字符串长度不定。但是以数据展开大小只有2.4M来看，无论这一级别如何扩张，字符串本身大小不应当超过3M。开链法一个节点24字节，平均填充率0.5计算，14个表项一个词典（这个也可以自行控制了），336个字节一个词典，乘以19K个dict。大约6.23M。127K个频率数据1M，这是常规占用。
 以上总计，初级词典本身占用1M，二级结构本身占用10M，不超过20M应当就可以构建起一个高效的核心数据结构。由于实现类似，时间复杂度也类似，就不详细推论了。
-以上还有一点可改进之处，dict作为二级存储的绝对劣势在于，必须要对比全部词典才能确定完全匹配数量，于是时间复杂度正比于词典大小。严格的tied树只需要沿着顺序进行几次索引即可，复杂度取决于词语长度——基本来说和词典大小无关。按照这个推论，实现一个紧凑的，高效的二级小结构，可能比较有利于减小总体大小，增加工作速度。"/>
+以上还有一点可改进之处，dict作为二级存储的绝对劣势在于，必须要对比全部词典才能确定完全匹配数量，于是时间复杂度正比于词典大小。严格的tied树只需要沿着顺序进行几次索引即可，复杂度取决于词语长度——基本来说和词典大小无关。按照这个推论，实现一个紧凑的，高效的二级小结构，可能比较有利于减小总体大小，增加工作速度。">
 
-    <meta property="og:title" content="segment的核心数据结构空间和时间效率估量" />
-<meta property="og:description" content="首先我们简述核心词典的目标。词典最主要的目标是，给定一句句子S，匹配出所有和句子开始拥有完整匹配的词语。所谓完整匹配，就是句子开始的一定长度的连续序列和词语相等。例如，中华，中华人民，中华人民共和国，都是句子：中华人民共和国今天成立了，的完整匹配。
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/2138/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="segment的核心数据结构空间和时间效率估量">
+  <meta property="og:description" content="首先我们简述核心词典的目标。词典最主要的目标是，给定一句句子S，匹配出所有和句子开始拥有完整匹配的词语。所谓完整匹配，就是句子开始的一定长度的连续序列和词语相等。例如，中华，中华人民，中华人民共和国，都是句子：中华人民共和国今天成立了，的完整匹配。
 要解决这个问题，直观方式是使用tied tree。但是中文的tied tree非常不好实现。英文的tied tree在一个节点上最多拥有不超过26个子节点，而中文的在根上面会拥有6000个以上的子节点，使用同样的结构在子节点上会浪费大量内存。
 我们先跳过tied树本身的细节，来讨论如何使用python内置数据结构高效简洁的完成这一工作。作为一个读比写高频很多的结构，无疑hash table是一个非常适合的结构。我在hash table的性能分析中说过，hash table的查询性能是O(1)量级的。无疑，可以使用hash tree来高速完成查找。同时注意一点，词语的最小长度是2，因此不存在只有一级的结构。所以，hash tree的第一级结构可以从2开始，而不是1。
 实现效果如何？我们正式给出的词典拥有127K的词汇量，平均第二级宽度为6.8，因此大致可以推算出，第一级的词典含有元素19K个左右。python源码解析中说过，当表项小于50000个时，扩张大小为当前活跃表项的4倍，最高填充率不超过2/3，即填充率最低25%，最高66%。平均来说，填充率应当在45%上下波动，我们以0.5计算，实际上一级词典的Entry个数应当是40K个上下。在源码Include/dictobject.h:50有给出Entry的结构，这应当是三个平台相关的数据结构，以贝壳的64位系统而言，长度应当是24字节。忽略掉辅助结构，一级词典的大小应当是960K，即约1M。而词典指向的数据，即2字长的str对象本身头部长度24字节，辅助数据长度12字节，数据长度4字节（utf-16编码的两个unicode），null term1字节，共计41字节。由于python对象是8字节对齐，因此实际占用48字节。19K个数据总计占用912K。
@@ -51,11 +58,15 @@ if (!doNotTrack) {
 不过这次我们就可以控制一下哈希表的大小了。对于大小不超过6W的哈希，我建议采用crc32，虽然离散度并不高，但是作为一个近似填满的hash table的hash key足矣（这点需要实际考察一下）。如果是自己实现，表项直接存字符串，连指针都不需要，采用开链法。总计大小1M即可以保存所有的一级数据。
 二级数据就无法这么偷懒了，因为二级结构中字符串长度不定。但是以数据展开大小只有2.4M来看，无论这一级别如何扩张，字符串本身大小不应当超过3M。开链法一个节点24字节，平均填充率0.5计算，14个表项一个词典（这个也可以自行控制了），336个字节一个词典，乘以19K个dict。大约6.23M。127K个频率数据1M，这是常规占用。
 以上总计，初级词典本身占用1M，二级结构本身占用10M，不超过20M应当就可以构建起一个高效的核心数据结构。由于实现类似，时间复杂度也类似，就不详细推论了。
-以上还有一点可改进之处，dict作为二级存储的绝对劣势在于，必须要对比全部词典才能确定完全匹配数量，于是时间复杂度正比于词典大小。严格的tied树只需要沿着顺序进行几次索引即可，复杂度取决于词语长度——基本来说和词典大小无关。按照这个推论，实现一个紧凑的，高效的二级小结构，可能比较有利于减小总体大小，增加工作速度。" />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2138/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2012-04-12T01:55:37+08:00" />
-<meta property="article:modified_time" content="2012-04-12T01:55:37+08:00" />
+以上还有一点可改进之处，dict作为二级存储的绝对劣势在于，必须要对比全部词典才能确定完全匹配数量，于是时间复杂度正比于词典大小。严格的tied树只需要沿着顺序进行几次索引即可，复杂度取决于词语长度——基本来说和词典大小无关。按照这个推论，实现一个紧凑的，高效的二级小结构，可能比较有利于减小总体大小，增加工作速度。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2012-04-12T01:55:37+08:00">
+    <meta property="article:modified_time" content="2012-04-12T01:55:37+08:00">
+    <meta property="article:tag" content="Program">
+    <meta property="article:tag" content="Python">
+    <meta property="article:tag" content="Segment">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -92,7 +103,7 @@ if (!doNotTrack) {
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -104,27 +115,18 @@ if (!doNotTrack) {
       <h1 class ="post-title">segment的核心数据结构空间和时间效率估量</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Apr 12, 2012
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/program/">program</a>
-              <a class="tag" href="//blog.shell909090.org/tags/python/">python</a>
-              <a class="tag" href="//blog.shell909090.org/tags/segment/">segment</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/program/">Program</a>
+              <a class="tag" href="/tags/python/">Python</a>
+              <a class="tag" href="/tags/segment/">Segment</a>
         </div>
       </div>
     </header>
@@ -145,7 +147,24 @@ if (!doNotTrack) {
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

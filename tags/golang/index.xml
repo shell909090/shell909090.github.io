@@ -1,61 +1,27 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>golang on Shell&#39;s Home</title>
+    <title>Golang on Shell&#39;s Home</title>
     <link>//blog.shell909090.org/tags/golang/</link>
-    <description>Recent content in golang on Shell&#39;s Home</description>
-    <generator>Hugo -- gohugo.io</generator>
+    <description>Recent content in Golang on Shell&#39;s Home</description>
+    <generator>Hugo</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Thu, 08 May 2014 16:41:25 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/golang/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 08 May 2014 16:41:25 +0800</lastBuildDate>
+    <atom:link href="//blog.shell909090.org/tags/golang/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>goproxy和msocks简介</title>
       <link>//blog.shell909090.org/blog/archives/2627/</link>
       <pubDate>Thu, 08 May 2014 16:41:25 +0800</pubDate>
-      
       <guid>//blog.shell909090.org/blog/archives/2627/</guid>
-      <description>goproxy是我个人写的，和shadowsocks同类的软件。当然，在设计之初我完全不知道shadowsocks的存在，goproxy的最初目标也不是成为shadowsocks的同类。只是我一直无法实现一个可靠的，能够达成目标的系统。最后想，那这样吧，我找一个跳一跳能够够到的苹果。大幅简化的结果就是goproxy——后来我才知道shadowsocks。
-shadowsocks的基本原理 shadowsocks的基本概念，就是利用某种不同于SSL的协议，将本地的socks数据流转发到远程。这个协议，在默认版本中是一个凯撒变换，后来有了aes等加密算法。goproxy也采用了类似的做法，同样支持aes等加密算法。在每次连接时，客户端先用加密通道连接服务器端，然后完成整个连接通路。这样的设计鲁棒性相当好，但是作为代价的，也有不少缺陷。
-首先，goproxy和shadowsocks不约而同的采用了自己的协议，而非将socks5透明的转发到远程的服务器端。为什么？因为socksv5协议中，握手过程是三次交互。客户发送握手包，服务器响应允许的握手验证方法。客户发送验证报文，服务器端返回是否成功，客户发送要连接的目标，服务器端返回是否成功。细节我记得不是很清楚，但是2-3次往返是必须的。
-这种工作机制需要client -&amp;gt; proxy-client -&amp;gt; proxy-server -&amp;gt; server的一个链条，本身就比直连多了两次TCP握手。加上上述的往返过程，更加耗时。而且这个消耗在每次建立链接时都要来一次，而HTTP是一种短连接协议——这就更加无法容忍了。因此改用自有协议，一次交互完成握手，就会更加快速。
-更根本的原因在于，这两个系统都需要越过IDS，而三次交互的报文大小是几乎固定的——就算加密也无法改变报文大小。不但大小一样，而且由于用户名密码相同，起始加密过程和IV一致，因此采用socks协议的话，每个链接开始都有相同的来返数据。
-我不知道shadowsocks怎么处理的这个问题。qsocks协议（msocks）的前身规定，每次握手时客户端提供一组IV，然后发送一个头部变长的字符串（256字符以内），在远程丢弃同样长度的随机字符。经过这样的处理，每次链接时的报文长度和内容序列都不一样，增加了破译难度。至于多出来的几十个字节，和验证报文在一个报文内，开销相比一次RTO几乎可以忽略不计。
-但是还是有一点无法避免的问题。如果你看到某个服务器上有一个端口，频繁的被一个或多个IP链接。每个链接都不长，每次都是客户端吐一堆数据，服务器返回一堆，然后关闭链接。尽管协议无法破解，但是基本可以肯定这就是shadowsocks。根据这个特性，可以有效的阻挡服务——这也是我最近碰到的问题。
-而且每个链接都需要验证和TCP握手太慢了。
-msocks的改进 所以，我参考SPDY协议，做了msocks。msocks的核心思路和qsocks很类似，主要修改是以下两点：
-使用一个可靠链接（这里是经过加密的TCP），在这个链接里面封装多对传输。 每个链接只要一次验证。 这样做，首先减少了一次TCP握手和一次身份验证，工作速度更加快。其次多个传输叠加在一个流里面，流特征更加变化莫测。最后，无论是服务器端还是客户端的开销都小了很多。
-当然，这也带来不少问题。例如TCP原本的拥塞控制窗口是为了一对传输序列设计的。当很多传输序列在一对TCP上传递的时候，丢报文造成的影响会作用作用在全体传输序列上。包括丢了一个报文重传的时候，所有序列都必须阻塞。还有基础的TCP被施加了丢包，导致全体序列共享5k带宽。当然，经过评估后，我觉得这些问题比频繁握手更加轻，所以就设计了msocks协议。
-协议设计的时候，有几个细节问题。
-多对复用 我采用了一个map，来记录某个id是否对应到了一个控制结构。这个映射只能被客户端更改，并且有个专门的函数负责查找空闲的id，每次生成的id都是递增的，如果碰到最大值则绕回。
-id的大小是16位，足够容纳65536对同时链接。其实不修改内核的话，500对代理就会导致too many files。
-实际上一般到id达到400后，单一的tcp就断线重连了。目前我还没见过上千的数字呢。
-连接状态 连接一般情况下可以看到5种状态，连接请求发送，连接请求接收，连接建立，主动关闭连接中，被动关闭连接中。
-当客户端请求代理连接一个远程服务器时，进入连接请求发送。代理远程端接受后在连接目标服务器的过程中，进入连接请求接收。当成功后，双方进入连接建立。
-当关闭时，主动发起关闭一端进入主动关闭，另一端进入被动关闭。当被动关闭端调用close，或者主动关闭端收到对方关闭，整个链接就销毁。
-由于tcp是可靠传输，因此三次握手和四次关闭都是不必须的。
-简单吧。
-拥塞控制 TCP原本是带有拥塞控制的——借助SSN双序列和窗口机制。但是在多路复用的时候，我们需要自行控制拥塞——而且不能采用会和机制。会和会导致后续已经到达的其他链接的报文被一个没人接收的报文阻挡。所以必须采用带拥塞控制的缓存队列机制。
-不过幸好，TCP本身是可靠传输协议，所以我不用担心丢包重发之类的问题。我需要做的，就是把对方读取的字节数传递回来，减在控制器上，即可。
-不过，我没有做对应于silly window syndrome的优化，在每次读取小数据量后，这个读取造成的window扩张都会被传回。当然，这么设计是有原因的。我默认采用了8K的buffer进行fd间拷贝，所以一般碰不到SWS。
-为了解决tcp链接复用造成的单连接带宽问题，我强烈的建议你做以下的设定：
-net.ipv4.tcp_congestion_control = htcp net.core.rmem_default = 2621440 net.core.rmem_max = 16777216 net.core.wmem_default = 655360 net.core.wmem_max = 16777216 net.ipv4.tcp_rmem = 4096 2621440 16777216 net.ipv4.tcp_wmem = 4096 655360 16777216 ip选择算法和DNS 在goproxy中，我沿用了一个做法。通过DNS获得请求的目标IP，和中国IP范围核对。如果在国内则直接访问，否则透过代理。这个方法能够极快的加速访问，而且几乎不依赖于需要更新的列表（中国IP列表相对来说固定）。
-问题是DNS解析过程。msocks内置了DNS能力，可以帮助做DNS。但是实践下来发现这样做效果并不很好。而原本是采用直接DNS，丢弃特定的报文。这样可以过滤防火墙污染。
-原因很简单。原本的模式会让DNS服务器感知到查询者位于中国，于是给出中国可以访问的最快地址。而新的模式则会将DNS请求者搬到美国——这无故加重了代理的负担。例如www.qq.com，原本只需要请求得到一台深圳的服务器即可，现在则需要让DNS绕出去，再回来。如果不幸，QQ有一台位于美国的服务器，那么我的访问都会通过这台服务器——这可比深圳的服务器慢多了。</description>
+      <description>&lt;p&gt;goproxy是我个人写的，和shadowsocks同类的软件。当然，在设计之初我完全不知道shadowsocks的存在，goproxy的最初目标也不是成为shadowsocks的同类。只是我一直无法实现一个可靠的，能够达成目标的系统。最后想，那这样吧，我找一个跳一跳能够够到的苹果。大幅简化的结果就是goproxy——后来我才知道shadowsocks。&lt;/p&gt;&#xA;&lt;h1 id=&#34;shadowsocks的基本原理&#34;&gt;shadowsocks的基本原理&lt;/h1&gt;&#xA;&lt;p&gt;shadowsocks的基本概念，就是利用某种不同于SSL的协议，将本地的socks数据流转发到远程。这个协议，在默认版本中是一个凯撒变换，后来有了aes等加密算法。goproxy也采用了类似的做法，同样支持aes等加密算法。在每次连接时，客户端先用加密通道连接服务器端，然后完成整个连接通路。这样的设计鲁棒性相当好，但是作为代价的，也有不少缺陷。&lt;/p&gt;&#xA;&lt;p&gt;首先，goproxy和shadowsocks不约而同的采用了自己的协议，而非将socks5透明的转发到远程的服务器端。为什么？因为socksv5协议中，握手过程是三次交互。客户发送握手包，服务器响应允许的握手验证方法。客户发送验证报文，服务器端返回是否成功，客户发送要连接的目标，服务器端返回是否成功。细节我记得不是很清楚，但是2-3次往返是必须的。&lt;/p&gt;&#xA;&lt;p&gt;这种工作机制需要client -&amp;gt; proxy-client -&amp;gt; proxy-server -&amp;gt;&#xA;server的一个链条，本身就比直连多了两次TCP握手。加上上述的往返过程，更加耗时。而且这个消耗在每次建立链接时都要来一次，而HTTP是一种短连接协议——这就更加无法容忍了。因此改用自有协议，一次交互完成握手，就会更加快速。&lt;/p&gt;&#xA;&lt;p&gt;更根本的原因在于，这两个系统都需要越过IDS，而三次交互的报文大小是几乎固定的——就算加密也无法改变报文大小。不但大小一样，而且由于用户名密码相同，起始加密过程和IV一致，因此采用socks协议的话，每个链接开始都有相同的来返数据。&lt;/p&gt;&#xA;&lt;p&gt;我不知道shadowsocks怎么处理的这个问题。qsocks协议（msocks）的前身规定，每次握手时客户端提供一组IV，然后发送一个头部变长的字符串（256字符以内），在远程丢弃同样长度的随机字符。经过这样的处理，每次链接时的报文长度和内容序列都不一样，增加了破译难度。至于多出来的几十个字节，和验证报文在一个报文内，开销相比一次RTO几乎可以忽略不计。&lt;/p&gt;&#xA;&lt;p&gt;但是还是有一点无法避免的问题。如果你看到某个服务器上有一个端口，频繁的被一个或多个IP链接。每个链接都不长，每次都是客户端吐一堆数据，服务器返回一堆，然后关闭链接。尽管协议无法破解，但是基本可以肯定这就是shadowsocks。根据这个特性，可以有效的阻挡服务——这也是我最近碰到的问题。&lt;/p&gt;&#xA;&lt;p&gt;而且每个链接都需要验证和TCP握手太慢了。&lt;/p&gt;&#xA;&lt;h1 id=&#34;msocks的改进&#34;&gt;msocks的改进&lt;/h1&gt;&#xA;&lt;p&gt;所以，我参考SPDY协议，做了msocks。msocks的核心思路和qsocks很类似，主要修改是以下两点：&lt;/p&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;使用一个可靠链接（这里是经过加密的TCP），在这个链接里面封装多对传输。&lt;/li&gt;&#xA;&lt;li&gt;每个链接只要一次验证。&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;p&gt;这样做，首先减少了一次TCP握手和一次身份验证，工作速度更加快。其次多个传输叠加在一个流里面，流特征更加变化莫测。最后，无论是服务器端还是客户端的开销都小了很多。&lt;/p&gt;&#xA;&lt;p&gt;当然，这也带来不少问题。例如TCP原本的拥塞控制窗口是为了一对传输序列设计的。当很多传输序列在一对TCP上传递的时候，丢报文造成的影响会作用作用在全体传输序列上。包括丢了一个报文重传的时候，所有序列都必须阻塞。还有基础的TCP被施加了丢包，导致全体序列共享5k带宽。当然，经过评估后，我觉得这些问题比频繁握手更加轻，所以就设计了msocks协议。&lt;/p&gt;&#xA;&lt;p&gt;协议设计的时候，有几个细节问题。&lt;/p&gt;&#xA;&lt;h1 id=&#34;多对复用&#34;&gt;多对复用&lt;/h1&gt;&#xA;&lt;p&gt;我采用了一个map，来记录某个id是否对应到了一个控制结构。这个映射只能被客户端更改，并且有个专门的函数负责查找空闲的id，每次生成的id都是递增的，如果碰到最大值则绕回。&lt;/p&gt;&#xA;&lt;p&gt;id的大小是16位，足够容纳65536对同时链接。其实不修改内核的话，500对代理就会导致too&#xA;many files。&lt;/p&gt;&#xA;&lt;p&gt;实际上一般到id达到400后，单一的tcp就断线重连了。目前我还没见过上千的数字呢。&lt;/p&gt;&#xA;&lt;h1 id=&#34;连接状态&#34;&gt;连接状态&lt;/h1&gt;&#xA;&lt;p&gt;连接一般情况下可以看到5种状态，连接请求发送，连接请求接收，连接建立，主动关闭连接中，被动关闭连接中。&lt;/p&gt;&#xA;&lt;p&gt;当客户端请求代理连接一个远程服务器时，进入连接请求发送。代理远程端接受后在连接目标服务器的过程中，进入连接请求接收。当成功后，双方进入连接建立。&lt;/p&gt;&#xA;&lt;p&gt;当关闭时，主动发起关闭一端进入主动关闭，另一端进入被动关闭。当被动关闭端调用close，或者主动关闭端收到对方关闭，整个链接就销毁。&lt;/p&gt;&#xA;&lt;p&gt;由于tcp是可靠传输，因此三次握手和四次关闭都是不必须的。&lt;/p&gt;&#xA;&lt;p&gt;简单吧。&lt;/p&gt;&#xA;&lt;h1 id=&#34;拥塞控制&#34;&gt;拥塞控制&lt;/h1&gt;&#xA;&lt;p&gt;TCP原本是带有拥塞控制的——借助SSN双序列和窗口机制。但是在多路复用的时候，我们需要自行控制拥塞——而且不能采用会和机制。会和会导致后续已经到达的其他链接的报文被一个没人接收的报文阻挡。所以必须采用带拥塞控制的缓存队列机制。&lt;/p&gt;&#xA;&lt;p&gt;不过幸好，TCP本身是可靠传输协议，所以我不用担心丢包重发之类的问题。我需要做的，就是把对方读取的字节数传递回来，减在控制器上，即可。&lt;/p&gt;&#xA;&lt;p&gt;不过，我没有做对应于silly window&#xA;syndrome的优化，在每次读取小数据量后，这个读取造成的window扩张都会被传回。当然，这么设计是有原因的。我默认采用了8K的buffer进行fd间拷贝，所以一般碰不到SWS。&lt;/p&gt;&#xA;&lt;p&gt;为了解决tcp链接复用造成的单连接带宽问题，我强烈的建议你做以下的设定：&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;net.ipv4.tcp_congestion_control = htcp&#xA;net.core.rmem_default = 2621440&#xA;net.core.rmem_max = 16777216&#xA;net.core.wmem_default = 655360&#xA;net.core.wmem_max = 16777216&#xA;net.ipv4.tcp_rmem = 4096    2621440 16777216&#xA;net.ipv4.tcp_wmem = 4096    655360  16777216&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;h1 id=&#34;ip选择算法和dns&#34;&gt;ip选择算法和DNS&lt;/h1&gt;&#xA;&lt;p&gt;在goproxy中，我沿用了一个做法。通过DNS获得请求的目标IP，和中国IP范围核对。如果在国内则直接访问，否则透过代理。这个方法能够极快的加速访问，而且几乎不依赖于需要更新的列表（中国IP列表相对来说固定）。&lt;/p&gt;&#xA;&lt;p&gt;问题是DNS解析过程。msocks内置了DNS能力，可以帮助做DNS。但是实践下来发现这样做效果并不很好。而原本是采用直接DNS，丢弃特定的报文。这样可以过滤防火墙污染。&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>golang和nginx的简单性能对比</title>
       <link>//blog.shell909090.org/blog/archives/2536/</link>
       <pubDate>Wed, 15 Jan 2014 10:53:20 +0800</pubDate>
-      
       <guid>//blog.shell909090.org/blog/archives/2536/</guid>
-      <description>说明 测试都是ab做的，中等并发量，统一采用10000并发，100000个请求。都是本机请求本机，避免公司内网IDS的干扰。
-机器是一台双核CPU的DELL：Intel(R) Pentium(R) CPU G2030 @ 3.00GHz。配4G内存。
-第一组数据是ab测试nginx，nginx的配置如下：
-worker_processes 4; pid /run/nginx.pid; worker_rlimit_nofile 30000; events { worker_connections 20000; multi_accept on; } http { sendfile on; tcp_nopush on; tcp_nodelay on; ... } 第二组是ab测试golang，返回固定是个OK。
-第三组是ab测试golang，返回某个目录或文件。
-err := http.ListenAndServe(&amp;quot;:8080&amp;quot;, http.FileServer(http.Dir(&amp;quot;/home/shell/photo&amp;quot;))) nginx Concurrency Level: 10000 Time taken for tests: 5.720 seconds Complete requests: 100000 Failed requests: 0 Write errors: 0 Total transferred: 172100000 bytes HTML transferred: 160000000 bytes Requests per second: 17482.47 [#/sec] (mean) Time per request: 572.</description>
+      <description>&lt;h1 id=&#34;说明&#34;&gt;说明&lt;/h1&gt;&#xA;&lt;p&gt;测试都是ab做的，中等并发量，统一采用10000并发，100000个请求。都是本机请求本机，避免公司内网IDS的干扰。&lt;/p&gt;&#xA;&lt;p&gt;机器是一台双核CPU的DELL：Intel(R) Pentium(R) CPU G2030 @&#xA;3.00GHz。配4G内存。&lt;/p&gt;&#xA;&lt;p&gt;第一组数据是ab测试nginx，nginx的配置如下：&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;worker_processes 4;&#xA;pid /run/nginx.pid;&#xA;worker_rlimit_nofile 30000;&#xA;&#xA;events {&#xA;        worker_connections 20000;&#xA;        multi_accept on;&#xA;}&#xA;&#xA;http {&#xA;        sendfile on;&#xA;        tcp_nopush on;&#xA;        tcp_nodelay on;&#xA;        ...&#xA;}&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;第二组是ab测试golang，返回固定是个OK。&lt;/p&gt;&#xA;&lt;p&gt;第三组是ab测试golang，返回某个目录或文件。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;err := http.ListenAndServe(&amp;quot;:8080&amp;quot;, http.FileServer(http.Dir(&amp;quot;/home/shell/photo&amp;quot;)))&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;h1 id=&#34;nginx&#34;&gt;nginx&lt;/h1&gt;&#xA;&lt;pre&gt;&lt;code&gt;Concurrency Level:      10000&#xA;Time taken for tests:   5.720 seconds&#xA;Complete requests:      100000&#xA;Failed requests:        0&#xA;Write errors:           0&#xA;Total transferred:      172100000 bytes&#xA;HTML transferred:       160000000 bytes&#xA;Requests per second:    17482.47 [#/sec] (mean)&#xA;Time per request:       572.001 [ms] (mean)&#xA;Time per request:       0.057 [ms] (mean, across all concurrent requests)&#xA;Transfer rate:          29382.16 [Kbytes/sec] received&#xA;&#xA;Connection Times (ms)&#xA;              min  mean[+/-sd] median   max&#xA;Connect:        0  320 581.1    146    3262&#xA;Processing:     1  197 136.6    198    1886&#xA;Waiting:        1  162 120.6    154    1811&#xA;Total:          1  517 604.1    371    3558&#xA;&#xA;Percentage of the requests served within a certain time (ms)&#xA;  50%    371&#xA;  66%    455&#xA;  75%    515&#xA;  80%    587&#xA;  90%   1167&#xA;  95%   1378&#xA;  98%   3375&#xA;  99%   3402&#xA; 100%   3558 (longest request)&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;h1 id=&#34;golang-with-string&#34;&gt;golang with string&lt;/h1&gt;&#xA;&lt;pre&gt;&lt;code&gt;Concurrency Level:      10000&#xA;Time taken for tests:   5.147 seconds&#xA;Complete requests:      100000&#xA;Failed requests:        0&#xA;Write errors:           0&#xA;Total transferred:      11800000 bytes&#xA;HTML transferred:       200000 bytes&#xA;Requests per second:    19429.37 [#/sec] (mean)&#xA;Time per request:       514.685 [ms] (mean)&#xA;Time per request:       0.051 [ms] (mean, across all concurrent requests)&#xA;Transfer rate:          2238.93 [Kbytes/sec] received&#xA;&#xA;Connection Times (ms)&#xA;              min  mean[+/-sd] median   max&#xA;Connect:        0  293 659.6      5    3020&#xA;Processing:     1   37 112.3     10    1644&#xA;Waiting:        1   34 111.9      9    1642&#xA;Total:          3  329 700.4     16    4653&#xA;&#xA;Percentage of the requests served within a certain time (ms)&#xA;  50%     16&#xA;  66%     25&#xA;  75%    248&#xA;  80%   1003&#xA;  90%   1032&#xA;  95%   1431&#xA;  98%   3026&#xA;  99%   3042&#xA; 100%   4653 (longest request)&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;h1 id=&#34;golang-with-file&#34;&gt;golang with file&lt;/h1&gt;&#xA;&lt;pre&gt;&lt;code&gt;Concurrency Level:      10000&#xA;Time taken for tests:   8.122 seconds&#xA;Complete requests:      100000&#xA;Failed requests:        0&#xA;Write errors:           0&#xA;Keep-Alive requests:    100000&#xA;Total transferred:      72200000 bytes&#xA;HTML transferred:       53500000 bytes&#xA;Requests per second:    12312.87 [#/sec] (mean)&#xA;Time per request:       812.158 [ms] (mean)&#xA;Time per request:       0.081 [ms] (mean, across all concurrent requests)&#xA;Transfer rate:          8681.54 [Kbytes/sec] received&#xA;&#xA;Connection Times (ms)&#xA;              min  mean[+/-sd] median   max&#xA;Connect:        0   29 333.4      0    7009&#xA;Processing:     0  495  98.1    524    1918&#xA;Waiting:        0  495  98.1    524    1918&#xA;Total:          0  524 353.0    525    8086&#xA;&#xA;Percentage of the requests served within a certain time (ms)&#xA;  50%    525&#xA;  66%    531&#xA;  75%    535&#xA;  80%    537&#xA;  90%    543&#xA;  95%    550&#xA;  98%    558&#xA;  99%    563&#xA; 100%   8086 (longest request)&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;h1 id=&#34;分析&#34;&gt;分析&lt;/h1&gt;&#xA;&lt;p&gt;从rps来看，三者都达到了10Krps的级别以上，而且差距很小。golang在没有逻辑的情况下比nginx还要快11%，但是加入逻辑后反而落后30%（这不奇怪）。三者差距都在50%以内，基本属于同一个数量级。&lt;/p&gt;</description>
     </item>
-    
   </channel>
 </rss>

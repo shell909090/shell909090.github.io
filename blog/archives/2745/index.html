@@ -4,48 +4,56 @@
     <title>Sysctl Timestamp对速度的影响 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Sysctl Timestamp对速度的影响"/>
-<meta name="twitter:description" content="不知道我是不是写过了。
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Sysctl Timestamp对速度的影响">
+  <meta name="twitter:description" content="不知道我是不是写过了。
 sysctl中有一个内核设定：
 net.ipv4.tcp_timestamps = 1 这个值默认被设定为1，但是当这个设定被设定为0时，会导致tcp序列号高速绕回，从而导致传输速度上限。
 tcp的最大报文生存时间(MSL)默认值为60s（这也是为何TIME_WAIT默认120s的原因）。而tcp序列号只有32位，未来区域只有2^31。
 **31 * 8 / 60.0 / 1024 / 1024 = 273Mbps 因此当关闭timestamp时，最大传输速率不超过273Mbps。
 在公司内部曾出现过这个现象（由于某个理由，错误的关闭timestamp），在自建系统上的测试也验证了这点。
 使用iperf对性能进行测试，最大速度为266Mbps。
-但请注意，被设定后，需要长达10分钟以上的时间才会发生效果。因此需要在设定后半小时后，去用iperf检验设定是否生效。"/>
+但请注意，被设定后，需要长达10分钟以上的时间才会发生效果。因此需要在设定后半小时后，去用iperf检验设定是否生效。">
 
-    <meta property="og:title" content="Sysctl Timestamp对速度的影响" />
-<meta property="og:description" content="不知道我是不是写过了。
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/2745/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="Sysctl Timestamp对速度的影响">
+  <meta property="og:description" content="不知道我是不是写过了。
 sysctl中有一个内核设定：
 net.ipv4.tcp_timestamps = 1 这个值默认被设定为1，但是当这个设定被设定为0时，会导致tcp序列号高速绕回，从而导致传输速度上限。
 tcp的最大报文生存时间(MSL)默认值为60s（这也是为何TIME_WAIT默认120s的原因）。而tcp序列号只有32位，未来区域只有2^31。
 **31 * 8 / 60.0 / 1024 / 1024 = 273Mbps 因此当关闭timestamp时，最大传输速率不超过273Mbps。
 在公司内部曾出现过这个现象（由于某个理由，错误的关闭timestamp），在自建系统上的测试也验证了这点。
 使用iperf对性能进行测试，最大速度为266Mbps。
-但请注意，被设定后，需要长达10分钟以上的时间才会发生效果。因此需要在设定后半小时后，去用iperf检验设定是否生效。" />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2745/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2015-05-12T00:00:00+00:00" />
-<meta property="article:modified_time" content="2015-05-12T00:00:00+00:00" />
+但请注意，被设定后，需要长达10分钟以上的时间才会发生效果。因此需要在设定后半小时后，去用iperf检验设定是否生效。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2015-05-12T00:00:00+00:00">
+    <meta property="article:modified_time" content="2015-05-12T00:00:00+00:00">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -82,7 +90,7 @@ tcp的最大报文生存时间(MSL)默认值为60s（这也是为何TIME_WAIT默
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -94,17 +102,11 @@ tcp的最大报文生存时间(MSL)默认值为60s（这也是为何TIME_WAIT默
       <h1 class ="post-title">Sysctl Timestamp对速度的影响</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           May 12, 2015
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
       </div>
@@ -125,7 +127,24 @@ tcp的最大报文生存时间(MSL)默认值为60s（这也是为何TIME_WAIT默
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

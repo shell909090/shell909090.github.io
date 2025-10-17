@@ -4,27 +4,32 @@
     <title>multiseat简说 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="multiseat简说"/>
-<meta name="twitter:description" content="简述 这篇文章说的是如何实现multiseat，必须的条件和步骤等等。
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="multiseat简说">
+  <meta name="twitter:description" content="简述 这篇文章说的是如何实现multiseat，必须的条件和步骤等等。
 首先简介一下multiseat。multiseat又叫做多座电脑，和瘦客户端(thinclient)一样，是一种降低电脑平均使用成本的方案。基本思路是，买一台稍好的物理机，然后买两个显示器和键盘鼠标，让两个(或者多个)人同时使用一台电脑。和瘦客户端一样，multiseat一般只用于对电脑计算能力要求不高的场合，打游戏的一般就别考虑了。和瘦客户端不同的是，multiseat的处理都在近程，所以在体验上会略好一些，部署时也不依赖于中心化网络。不过这些年网络设备都在改善，相差也不多。
 硬件解说 显示系统 显示系统通常分为显卡和显示器两部分。multiseat至少需要两个显示器，但是两台显示器输出有多种情况。
 单卡单核心双输出。一块显卡，一块核心，pci上就一个物理设备，但是可以输出到两台显示器上。例如笔记本，一个输出到本子上，一个输出到投影上。大部分机器都是这种情况。 单卡双核心单输出。又叫做单卡双核心交火。交火是一个ati术语，在nv那里叫做sli。是指用两块显卡为同一个显示进行加速，达到比一块显卡更快的情况。这一般是顶级显卡。 单卡双核心双输出。在单卡双核心单输出的卡上，一般都有两个输出。如果接入两个设备，那就是双核心双输出了。 双卡双核心单输出。又叫做双卡交火，在pci上有两个物理设备。同样是为了游戏而生的电脑。 双卡双核心双输出，两个pci-e。在上面的基础上，多接一台显示器。 双卡双核心双输出，一个pci。很少见，一般都是图形工作站。 之所以在这个问题上说这么细，是因为多X方案必须工作在两个以上核心上，每个核心分别输出一路。也就是说，上文中的3, 5, 6三种情况。我们最常见的1是不可以用多X方案的。而方案5, 6，是这么分的。一般的显卡都是pci-e的，而一块主板上只有一个pci-e插槽。所以普通主板是配不上两块普通显卡的。也不要考虑板载显卡和外接显卡的问题，卖电脑的说，大部分主板上都做了自动屏蔽。外接显卡一插上去，板载显卡自动屏蔽。
@@ -42,10 +47,12 @@ Xephyr方案 Xephry是一个X的模块，他的目的是使用内存作为X的�
 虚拟化拖机 无论是windows还是linux，都有一个不算方案的方案。安装一套vmware，然后将vmware在其中一个显示器全屏，再把其中一个鼠标和键盘指定给这台虚拟机。这样也可以做到multiseat的效果。使用Virtualbox/Vitrual
 PC也是完全一样的原理。
 vmware中原生是不可以将鼠标/键盘指定给虚拟机的。关于这点，文档[6]给出了完整的解决方案。在.vmx中加入下面一行即可。
-usb.generic.allowHID = &quot;TRUE&quot; 参考 Multiseat Documentation in x.org Softxpand BeTwin Multiseat Display Manager ourbetwin VMware拖机方法 "/>
+usb.generic.allowHID = &#34;TRUE&#34; 参考 Multiseat Documentation in x.org Softxpand BeTwin Multiseat Display Manager ourbetwin VMware拖机方法">
 
-    <meta property="og:title" content="multiseat简说" />
-<meta property="og:description" content="简述 这篇文章说的是如何实现multiseat，必须的条件和步骤等等。
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/2192/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="multiseat简说">
+  <meta property="og:description" content="简述 这篇文章说的是如何实现multiseat，必须的条件和步骤等等。
 首先简介一下multiseat。multiseat又叫做多座电脑，和瘦客户端(thinclient)一样，是一种降低电脑平均使用成本的方案。基本思路是，买一台稍好的物理机，然后买两个显示器和键盘鼠标，让两个(或者多个)人同时使用一台电脑。和瘦客户端一样，multiseat一般只用于对电脑计算能力要求不高的场合，打游戏的一般就别考虑了。和瘦客户端不同的是，multiseat的处理都在近程，所以在体验上会略好一些，部署时也不依赖于中心化网络。不过这些年网络设备都在改善，相差也不多。
 硬件解说 显示系统 显示系统通常分为显卡和显示器两部分。multiseat至少需要两个显示器，但是两台显示器输出有多种情况。
 单卡单核心双输出。一块显卡，一块核心，pci上就一个物理设备，但是可以输出到两台显示器上。例如笔记本，一个输出到本子上，一个输出到投影上。大部分机器都是这种情况。 单卡双核心单输出。又叫做单卡双核心交火。交火是一个ati术语，在nv那里叫做sli。是指用两块显卡为同一个显示进行加速，达到比一块显卡更快的情况。这一般是顶级显卡。 单卡双核心双输出。在单卡双核心单输出的卡上，一般都有两个输出。如果接入两个设备，那就是双核心双输出了。 双卡双核心单输出。又叫做双卡交火，在pci上有两个物理设备。同样是为了游戏而生的电脑。 双卡双核心双输出，两个pci-e。在上面的基础上，多接一台显示器。 双卡双核心双输出，一个pci。很少见，一般都是图形工作站。 之所以在这个问题上说这么细，是因为多X方案必须工作在两个以上核心上，每个核心分别输出一路。也就是说，上文中的3, 5, 6三种情况。我们最常见的1是不可以用多X方案的。而方案5, 6，是这么分的。一般的显卡都是pci-e的，而一块主板上只有一个pci-e插槽。所以普通主板是配不上两块普通显卡的。也不要考虑板载显卡和外接显卡的问题，卖电脑的说，大部分主板上都做了自动屏蔽。外接显卡一插上去，板载显卡自动屏蔽。
@@ -63,11 +70,13 @@ Xephyr方案 Xephry是一个X的模块，他的目的是使用内存作为X的�
 虚拟化拖机 无论是windows还是linux，都有一个不算方案的方案。安装一套vmware，然后将vmware在其中一个显示器全屏，再把其中一个鼠标和键盘指定给这台虚拟机。这样也可以做到multiseat的效果。使用Virtualbox/Vitrual
 PC也是完全一样的原理。
 vmware中原生是不可以将鼠标/键盘指定给虚拟机的。关于这点，文档[6]给出了完整的解决方案。在.vmx中加入下面一行即可。
-usb.generic.allowHID = &quot;TRUE&quot; 参考 Multiseat Documentation in x.org Softxpand BeTwin Multiseat Display Manager ourbetwin VMware拖机方法 " />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2192/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2012-06-11T03:19:54+08:00" />
-<meta property="article:modified_time" content="2012-06-11T03:19:54+08:00" />
+usb.generic.allowHID = &#34;TRUE&#34; 参考 Multiseat Documentation in x.org Softxpand BeTwin Multiseat Display Manager ourbetwin VMware拖机方法">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2012-06-11T03:19:54+08:00">
+    <meta property="article:modified_time" content="2012-06-11T03:19:54+08:00">
+    <meta property="article:tag" content="Linux">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -104,7 +113,7 @@ usb.generic.allowHID = &quot;TRUE&quot; 参考 Multiseat Documentation in x.org 
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -116,25 +125,16 @@ usb.generic.allowHID = &quot;TRUE&quot; 参考 Multiseat Documentation in x.org 
       <h1 class ="post-title">multiseat简说</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Jun 11, 2012
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/linux/">Linux</a>
         </div>
       </div>
     </header>
@@ -189,7 +189,24 @@ usb.generic.allowHID = &quot;TRUE&quot; 参考 Multiseat Documentation in x.org 
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

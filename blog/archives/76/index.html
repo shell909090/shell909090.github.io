@@ -4,34 +4,44 @@
     <title>搭建家用的OpenVPN服务器 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="搭建家用的OpenVPN服务器">
+  <meta name="twitter:description" content="啥都不说了，贝壳最近搞了一个家用的OpenVPN服务器，任何机器，随时随地可以穿到家里来，很方便。用VPN干啥？这就多了。我可以用vpn操作 Windows上的vnc，使用Windows的共享文件服务，直接向Linux Server放文件(这样别人可以用http下载)，查看摄像头(被网络公布了)。将来如果有其他网络设备(例如冰箱和空调)，也可以一并管理。不过最直 观的——可以很方便的打游戏，我们根本就在一个网络里面。要点是，这些服务要分别开映射端口非常麻烦。而且有的服务从安全起见，根本不能开端口(例如臭名 昭著的Windows文件共享服务)。 具体原理上，贝壳有一台Windows，上面用Vmware搭建了一台Debian Linux，两者使用桥接模式。从概念上看，就是一台通向公网的路由器，里面放了一台Windows和一台Linux。现在，贝壳想通过某种方法，将外部 的一台机器接入内部的局域网中，就如同随身携带着一根通向家里路由器的网线一样。 下面直接上具体配置： ———–filename: /etc/network/interface——————- auto lo iface lo inet loopback iface eth0 inet static address 0.0.0.0 iface tap0 inet static address 0.0.0.0 auto br0 iface br0 inet static bridge_ports eth0 tap0 address 192.168.1.IP netmask 255.255.255.0 network 192.168.1.0 broadcast 192.168.1.255 gateway 192.168.1.1 dns-nameservers 192.168.1.1 dns-search home ————————————————————- 使用上述配置的原因是，vpn只能联通你机器上的逻辑网卡和服务器上的逻辑网卡。单就vpn自身而言，是无法让你连到服务器上的内网网卡的。因此，我们需要通过网桥的配置，将eth0和tap0配置成网桥。这样，你的服务器就如同一台交换机一般，联通了两个网段。 而后，我们设定服务器配置。 ———–filename: /etc/openvpn/server.conf—————- local 192.168.1.51 port 1194 proto udp dev tap0 ca /etc/openvpn/keys/ca.crt cert /etc/openvpn/keys/server.crt key /etc/openvpn/keys/server.key dh /etc/openvpn/keys/dh2048.pem server-bridge 192.168.1.IP 255.255.255.0 192.168.1.100 192.168.1.149 push “route 192.168.1.0 255.255.255.0” keepalive 10 120 user nobody group nogroup persist-key persist-tun cipher DES-EDE3-CBC # Triple-DES comp-lzo verb 3 status /var/log/openvpn-status.log ;log openvpn.log log-append openvpn.log 其中的server-bridge是因为我们采用网桥的关系，100-149是向外部拨入分配的IP池。贝壳的2-100是内部固定IP保留，150-199是内部DHCP池，200-254保留。这个大家可以按照自己的情况配置。 需要特别注意的是，由于上文我们已经建立了tap0这个设备，因此才dev中必须指定tap0设备。如果你仅写tap，那有可能是新建一个设备出来。到时候就好玩大了… 上文中，我们使用了ca cert key dh四个密钥文件选项。下面我们说说如何产生这些密钥文件。 首先，你需要复制usr/share/doc/openvpn/examples/easy-rsa/2.0/到你的个人目录，并修改其中的vars文 件。将其中的一些东西修改为你需要的参数(很简单，我假定大多数人都会用，这个是基于SSL的)，而后source vars，执行下述命令。 ./clean-all ./build-ca ./build-key-server server ./build-dh #需要�入密�的 ./build-key-pass username #不需要�入密�的 ./build-key username 最后两个可以随便签署，想发多少密钥就给多少人签署。不过请注意，easy-rsa的默认脚本中，是没有ns-cert-type server的设定的，因此*千万不要*在配置中加上这个设定。否则会导致TLS handshark failed。 最后，启动vpn，并且修改你的防火墙和路由器映射，贝壳这里使用的是udp1194端口(默认)。再给客户分发配置和key，具体如下： ——————filename: home.ovpn———————– remote shell909090.3322.org 1194 client proto udp dev tap ca home.crt cert shell.crt key shell.key resolv-retry infinite persist-key persist-tun cipher DES-EDE3-CBC comp-lzo verb 3 其中home.crt是服务器上的server.crt，shell.crt和shell.key是刚刚签署的用户密钥。如果有密码，需要设定密码，或在连接时提供。 – 与其相濡以沫，不如相忘于江湖">
 
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="搭建家用的OpenVPN服务器"/>
-<meta name="twitter:description" content="啥都不说了，贝壳最近搞了一个家用的OpenVPN服务器，任何机器，随时随地可以穿到家里来，很方便。用VPN干啥？这就多了。我可以用vpn操作 Windows上的vnc，使用Windows的共享文件服务，直接向Linux Server放文件(这样别人可以用http下载)，查看摄像头(被网络公布了)。将来如果有其他网络设备(例如冰箱和空调)，也可以一并管理。不过最直 观的——可以很方便的打游戏，我们根本就在一个网络里面。要点是，这些服务要分别开映射端口非常麻烦。而且有的服务从安全起见，根本不能开端口(例如臭名 昭著的Windows文件共享服务)。 具体原理上，贝壳有一台Windows，上面用Vmware搭建了一台Debian Linux，两者使用桥接模式。从概念上看，就是一台通向公网的路由器，里面放了一台Windows和一台Linux。现在，贝壳想通过某种方法，将外部 的一台机器接入内部的局域网中，就如同随身携带着一根通向家里路由器的网线一样。 下面直接上具体配置： &mdash;&mdash;&mdash;&ndash;filename: /etc/network/interface&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;- auto lo iface lo inet loopback iface eth0 inet static address 0.0.0.0 iface tap0 inet static address 0.0.0.0 auto br0 iface br0 inet static bridge_ports eth0 tap0 address 192.168.1.IP netmask 255.255.255.0 network 192.168.1.0 broadcast 192.168.1.255 gateway 192.168.1.1 dns-nameservers 192.168.1.1 dns-search home &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;- 使用上述配置的原因是，vpn只能联通你机器上的逻辑网卡和服务器上的逻辑网卡。单就vpn自身而言，是无法让你连到服务器上的内网网卡的。因此，我们需要通过网桥的配置，将eth0和tap0配置成网桥。这样，你的服务器就如同一台交换机一般，联通了两个网段。 而后，我们设定服务器配置。 &mdash;&mdash;&mdash;&ndash;filename: /etc/openvpn/server.conf&mdash;&mdash;&mdash;&mdash;&mdash;- local 192.168.1.51 port 1194 proto udp dev tap0 ca /etc/openvpn/keys/ca.crt cert /etc/openvpn/keys/server.crt key /etc/openvpn/keys/server."/>
-
-    <meta property="og:title" content="搭建家用的OpenVPN服务器" />
-<meta property="og:description" content="啥都不说了，贝壳最近搞了一个家用的OpenVPN服务器，任何机器，随时随地可以穿到家里来，很方便。用VPN干啥？这就多了。我可以用vpn操作 Windows上的vnc，使用Windows的共享文件服务，直接向Linux Server放文件(这样别人可以用http下载)，查看摄像头(被网络公布了)。将来如果有其他网络设备(例如冰箱和空调)，也可以一并管理。不过最直 观的——可以很方便的打游戏，我们根本就在一个网络里面。要点是，这些服务要分别开映射端口非常麻烦。而且有的服务从安全起见，根本不能开端口(例如臭名 昭著的Windows文件共享服务)。 具体原理上，贝壳有一台Windows，上面用Vmware搭建了一台Debian Linux，两者使用桥接模式。从概念上看，就是一台通向公网的路由器，里面放了一台Windows和一台Linux。现在，贝壳想通过某种方法，将外部 的一台机器接入内部的局域网中，就如同随身携带着一根通向家里路由器的网线一样。 下面直接上具体配置： &mdash;&mdash;&mdash;&ndash;filename: /etc/network/interface&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;- auto lo iface lo inet loopback iface eth0 inet static address 0.0.0.0 iface tap0 inet static address 0.0.0.0 auto br0 iface br0 inet static bridge_ports eth0 tap0 address 192.168.1.IP netmask 255.255.255.0 network 192.168.1.0 broadcast 192.168.1.255 gateway 192.168.1.1 dns-nameservers 192.168.1.1 dns-search home &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;- 使用上述配置的原因是，vpn只能联通你机器上的逻辑网卡和服务器上的逻辑网卡。单就vpn自身而言，是无法让你连到服务器上的内网网卡的。因此，我们需要通过网桥的配置，将eth0和tap0配置成网桥。这样，你的服务器就如同一台交换机一般，联通了两个网段。 而后，我们设定服务器配置。 &mdash;&mdash;&mdash;&ndash;filename: /etc/openvpn/server.conf&mdash;&mdash;&mdash;&mdash;&mdash;- local 192.168.1.51 port 1194 proto udp dev tap0 ca /etc/openvpn/keys/ca.crt cert /etc/openvpn/keys/server.crt key /etc/openvpn/keys/server." />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/76/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2009-09-04T14:50:00+08:00" />
-<meta property="article:modified_time" content="2009-09-04T14:50:00+08:00" />
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/76/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="搭建家用的OpenVPN服务器">
+  <meta property="og:description" content="啥都不说了，贝壳最近搞了一个家用的OpenVPN服务器，任何机器，随时随地可以穿到家里来，很方便。用VPN干啥？这就多了。我可以用vpn操作 Windows上的vnc，使用Windows的共享文件服务，直接向Linux Server放文件(这样别人可以用http下载)，查看摄像头(被网络公布了)。将来如果有其他网络设备(例如冰箱和空调)，也可以一并管理。不过最直 观的——可以很方便的打游戏，我们根本就在一个网络里面。要点是，这些服务要分别开映射端口非常麻烦。而且有的服务从安全起见，根本不能开端口(例如臭名 昭著的Windows文件共享服务)。 具体原理上，贝壳有一台Windows，上面用Vmware搭建了一台Debian Linux，两者使用桥接模式。从概念上看，就是一台通向公网的路由器，里面放了一台Windows和一台Linux。现在，贝壳想通过某种方法，将外部 的一台机器接入内部的局域网中，就如同随身携带着一根通向家里路由器的网线一样。 下面直接上具体配置： ———–filename: /etc/network/interface——————- auto lo iface lo inet loopback iface eth0 inet static address 0.0.0.0 iface tap0 inet static address 0.0.0.0 auto br0 iface br0 inet static bridge_ports eth0 tap0 address 192.168.1.IP netmask 255.255.255.0 network 192.168.1.0 broadcast 192.168.1.255 gateway 192.168.1.1 dns-nameservers 192.168.1.1 dns-search home ————————————————————- 使用上述配置的原因是，vpn只能联通你机器上的逻辑网卡和服务器上的逻辑网卡。单就vpn自身而言，是无法让你连到服务器上的内网网卡的。因此，我们需要通过网桥的配置，将eth0和tap0配置成网桥。这样，你的服务器就如同一台交换机一般，联通了两个网段。 而后，我们设定服务器配置。 ———–filename: /etc/openvpn/server.conf—————- local 192.168.1.51 port 1194 proto udp dev tap0 ca /etc/openvpn/keys/ca.crt cert /etc/openvpn/keys/server.crt key /etc/openvpn/keys/server.key dh /etc/openvpn/keys/dh2048.pem server-bridge 192.168.1.IP 255.255.255.0 192.168.1.100 192.168.1.149 push “route 192.168.1.0 255.255.255.0” keepalive 10 120 user nobody group nogroup persist-key persist-tun cipher DES-EDE3-CBC # Triple-DES comp-lzo verb 3 status /var/log/openvpn-status.log ;log openvpn.log log-append openvpn.log 其中的server-bridge是因为我们采用网桥的关系，100-149是向外部拨入分配的IP池。贝壳的2-100是内部固定IP保留，150-199是内部DHCP池，200-254保留。这个大家可以按照自己的情况配置。 需要特别注意的是，由于上文我们已经建立了tap0这个设备，因此才dev中必须指定tap0设备。如果你仅写tap，那有可能是新建一个设备出来。到时候就好玩大了… 上文中，我们使用了ca cert key dh四个密钥文件选项。下面我们说说如何产生这些密钥文件。 首先，你需要复制usr/share/doc/openvpn/examples/easy-rsa/2.0/到你的个人目录，并修改其中的vars文 件。将其中的一些东西修改为你需要的参数(很简单，我假定大多数人都会用，这个是基于SSL的)，而后source vars，执行下述命令。 ./clean-all ./build-ca ./build-key-server server ./build-dh #需要�入密�的 ./build-key-pass username #不需要�入密�的 ./build-key username 最后两个可以随便签署，想发多少密钥就给多少人签署。不过请注意，easy-rsa的默认脚本中，是没有ns-cert-type server的设定的，因此*千万不要*在配置中加上这个设定。否则会导致TLS handshark failed。 最后，启动vpn，并且修改你的防火墙和路由器映射，贝壳这里使用的是udp1194端口(默认)。再给客户分发配置和key，具体如下： ——————filename: home.ovpn———————– remote shell909090.3322.org 1194 client proto udp dev tap ca home.crt cert shell.crt key shell.key resolv-retry infinite persist-key persist-tun cipher DES-EDE3-CBC comp-lzo verb 3 其中home.crt是服务器上的server.crt，shell.crt和shell.key是刚刚签署的用户密钥。如果有密码，需要设定密码，或在连接时提供。 – 与其相濡以沫，不如相忘于江湖">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2009-09-04T14:50:00+08:00">
+    <meta property="article:modified_time" content="2009-09-04T14:50:00+08:00">
+    <meta property="article:tag" content="Linux">
+    <meta property="article:tag" content="Vpn">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -68,7 +78,7 @@ if (!doNotTrack) {
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -80,26 +90,17 @@ if (!doNotTrack) {
       <h1 class ="post-title">搭建家用的OpenVPN服务器</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Sep 4, 2009
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a>
-              <a class="tag" href="//blog.shell909090.org/tags/vpn/">vpn</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/linux/">Linux</a>
+              <a class="tag" href="/tags/vpn/">Vpn</a>
         </div>
       </div>
     </header>
@@ -151,7 +152,24 @@ infinite persist-key persist-tun cipher DES-EDE3-CBC comp-lzo verb 3</h2>
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

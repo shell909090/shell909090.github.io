@@ -4,46 +4,57 @@
     <title>python内存不释放原理 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="python内存不释放原理"/>
-<meta name="twitter:description" content="在maillist里面看到无数次的有人问，python速度为什么这么慢，python内存管理很差。实话说，我前面已经说过了。如果你在意内存/CPU，不要用python，改用C吧。就算C不行，起码也用个go或者java。不过今天还是说说，python的内存为什么不释放。
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="python内存不释放原理">
+  <meta name="twitter:description" content="在maillist里面看到无数次的有人问，python速度为什么这么慢，python内存管理很差。实话说，我前面已经说过了。如果你在意内存/CPU，不要用python，改用C吧。就算C不行，起码也用个go或者java。不过今天还是说说，python的内存为什么不释放。
 首先，python的初始内存消耗比C大，而且大很多。这个主要来自python解释器的开销，没什么好解释的。用解释器，就得承担解释器运行开销。然后，python中的每个对象，都有一定的对象描述成本。因此一个long为例，在C下面一般是4个字节（不用int是因为int在不同平台下是变长的），而python下面至少是16个字节。如果你生成100W个对象，那么C的内存消耗是4M，python的是16M。这些都是常规内存消耗，搞不明白的就别问了，不再解释。
 下面解释一下python的内存释放情况。
 如果是C，通常是用long array[1024 * 1024]的方法来生成1M个对象空间。当然，实际这样是不一定能运行的。因为linux的默认栈空间是8M，而Windows默认栈空间只有1M。所以代码在linux下可以通过，而windows下会跑爆掉。怎么办？下面说。当这个函数执行完毕后，当RET的时候，会自动退栈，空间就会自动释放掉（虽然在逻辑上这部分空间还是保留没有释放的，然而空间不活跃了，不过统计的时候还是占用的）。当然，更好的办法是使用malloc。malloc会从系统中自动提取和管理空间，free自动释放。这样无论是linux还是windows，都没有栈空间不足的问题。free后就会自动交还系统（4M已经超过了交还的最大阀值，一般glibc不会自己闷掉不交给系统的）。如果你忘记free，这部分内存就会一直占用，直到进程退出未知，这就是很有名的内存泄露。
 python下的情况更加复杂一些，python没有直接使用malloc为对象分配细粒度内存，而是使用了三层堆结构，加上三色标记进行回收。所谓三层堆，细节我们不说了，在源码阅读笔记里面写的比较详细。但是有一点需要我们记住的——当我们分配某个大小的内存的时候，内存管理器实际上是向上对齐到8字节，然后去对应的内存池中切一块出来用的。也就是说，如果我们运气比较差，申请了10个对象，偏偏每个对象大小差8字节。这样系统就要给我们分配10个堆，而不是刚刚好。如果你的对象粒度都比较散，那么内存开销比较大也不奇怪。
 python下还有一个更坑爹的事情，也是大部分内存不释放的根本原因。在int/str等对象的模块中，有个模块级别的对象缓存链表，static PyObject * free_list。当对象释放的时候，压根不会还到池中，而是直接在free_list中缓存。根据我的搜索，python内部没有地方对此进行干预。就是说，一旦你真的生成了1M个数字对象，然后释放。这1M个对象会在free_list链表中等待重用，直到天荒地老，这16M内存压根不会返还。而且，int的对象缓存链表和str的还不通用。如果你又做了1M个str对象，他的开销还是会继续上涨。几乎所有的内建对象都有这种机制，因此对于大规模对象同时生成，python会消耗大量内存，并且永不释放。
-解决的机制，基本只有用yield来将列表对象转换为生成器对象。列表对象会同时生成所有元素，从而直接分配所有内存。而生成器则是一次生成一个元素，比较节约内存。"/>
+解决的机制，基本只有用yield来将列表对象转换为生成器对象。列表对象会同时生成所有元素，从而直接分配所有内存。而生成器则是一次生成一个元素，比较节约内存。">
 
-    <meta property="og:title" content="python内存不释放原理" />
-<meta property="og:description" content="在maillist里面看到无数次的有人问，python速度为什么这么慢，python内存管理很差。实话说，我前面已经说过了。如果你在意内存/CPU，不要用python，改用C吧。就算C不行，起码也用个go或者java。不过今天还是说说，python的内存为什么不释放。
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/1921/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="python内存不释放原理">
+  <meta property="og:description" content="在maillist里面看到无数次的有人问，python速度为什么这么慢，python内存管理很差。实话说，我前面已经说过了。如果你在意内存/CPU，不要用python，改用C吧。就算C不行，起码也用个go或者java。不过今天还是说说，python的内存为什么不释放。
 首先，python的初始内存消耗比C大，而且大很多。这个主要来自python解释器的开销，没什么好解释的。用解释器，就得承担解释器运行开销。然后，python中的每个对象，都有一定的对象描述成本。因此一个long为例，在C下面一般是4个字节（不用int是因为int在不同平台下是变长的），而python下面至少是16个字节。如果你生成100W个对象，那么C的内存消耗是4M，python的是16M。这些都是常规内存消耗，搞不明白的就别问了，不再解释。
 下面解释一下python的内存释放情况。
 如果是C，通常是用long array[1024 * 1024]的方法来生成1M个对象空间。当然，实际这样是不一定能运行的。因为linux的默认栈空间是8M，而Windows默认栈空间只有1M。所以代码在linux下可以通过，而windows下会跑爆掉。怎么办？下面说。当这个函数执行完毕后，当RET的时候，会自动退栈，空间就会自动释放掉（虽然在逻辑上这部分空间还是保留没有释放的，然而空间不活跃了，不过统计的时候还是占用的）。当然，更好的办法是使用malloc。malloc会从系统中自动提取和管理空间，free自动释放。这样无论是linux还是windows，都没有栈空间不足的问题。free后就会自动交还系统（4M已经超过了交还的最大阀值，一般glibc不会自己闷掉不交给系统的）。如果你忘记free，这部分内存就会一直占用，直到进程退出未知，这就是很有名的内存泄露。
 python下的情况更加复杂一些，python没有直接使用malloc为对象分配细粒度内存，而是使用了三层堆结构，加上三色标记进行回收。所谓三层堆，细节我们不说了，在源码阅读笔记里面写的比较详细。但是有一点需要我们记住的——当我们分配某个大小的内存的时候，内存管理器实际上是向上对齐到8字节，然后去对应的内存池中切一块出来用的。也就是说，如果我们运气比较差，申请了10个对象，偏偏每个对象大小差8字节。这样系统就要给我们分配10个堆，而不是刚刚好。如果你的对象粒度都比较散，那么内存开销比较大也不奇怪。
 python下还有一个更坑爹的事情，也是大部分内存不释放的根本原因。在int/str等对象的模块中，有个模块级别的对象缓存链表，static PyObject * free_list。当对象释放的时候，压根不会还到池中，而是直接在free_list中缓存。根据我的搜索，python内部没有地方对此进行干预。就是说，一旦你真的生成了1M个数字对象，然后释放。这1M个对象会在free_list链表中等待重用，直到天荒地老，这16M内存压根不会返还。而且，int的对象缓存链表和str的还不通用。如果你又做了1M个str对象，他的开销还是会继续上涨。几乎所有的内建对象都有这种机制，因此对于大规模对象同时生成，python会消耗大量内存，并且永不释放。
-解决的机制，基本只有用yield来将列表对象转换为生成器对象。列表对象会同时生成所有元素，从而直接分配所有内存。而生成器则是一次生成一个元素，比较节约内存。" />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/1921/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2011-09-28T09:57:04+08:00" />
-<meta property="article:modified_time" content="2011-09-28T09:57:04+08:00" />
+解决的机制，基本只有用yield来将列表对象转换为生成器对象。列表对象会同时生成所有元素，从而直接分配所有内存。而生成器则是一次生成一个元素，比较节约内存。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2011-09-28T09:57:04+08:00">
+    <meta property="article:modified_time" content="2011-09-28T09:57:04+08:00">
+    <meta property="article:tag" content="C">
+    <meta property="article:tag" content="Program">
+    <meta property="article:tag" content="Python">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -80,7 +91,7 @@ python下还有一个更坑爹的事情，也是大部分内存不释放的根�
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -92,27 +103,18 @@ python下还有一个更坑爹的事情，也是大部分内存不释放的根�
       <h1 class ="post-title">python内存不释放原理</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Sep 28, 2011
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/c/">c</a>
-              <a class="tag" href="//blog.shell909090.org/tags/program/">program</a>
-              <a class="tag" href="//blog.shell909090.org/tags/python/">python</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/c/">C</a>
+              <a class="tag" href="/tags/program/">Program</a>
+              <a class="tag" href="/tags/python/">Python</a>
         </div>
       </div>
     </header>
@@ -127,7 +129,24 @@ python下还有一个更坑爹的事情，也是大部分内存不释放的根�
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

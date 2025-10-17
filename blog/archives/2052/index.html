@@ -4,27 +4,32 @@
     <title>哈希冲突漏洞的原理和对策 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="哈希冲突漏洞的原理和对策"/>
-<meta name="twitter:description" content="cpug上面最近在讨论一个严重级漏洞，漏洞的相关资料如下： ERT-VN:VU#903934 CVE-2011-4815 CVE-2011-3414 CVE-2011-4838 CVE-2011-4885
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="哈希冲突漏洞的原理和对策">
+  <meta name="twitter:description" content="cpug上面最近在讨论一个严重级漏洞，漏洞的相关资料如下： ERT-VN:VU#903934 CVE-2011-4815 CVE-2011-3414 CVE-2011-4838 CVE-2011-4885
 上面主要讨论的是这么一个概念，当用户post一个数据，而且这个数据又是一个form的时候，应用需要先将form解析为dict，然后才能方便的使用。例如a=1&amp;b=2，可以解析为{&#39;a&#39;:&#39;1&#39;, &#39;b&#39;:&#39;2&#39;}。之所以1和2是字符串，是因为只有用户自己才清楚这个数据的类型。
 通常情况下，这个form的key都是随机的，生成的hash碰撞概率很低，因此dict的默认实现——hash table没什么问题。但是当攻击者恶意构造数据的时候，情况就完全不同。我们首先讨论一下hash table的实现——开链法和二次探测法。
 所谓开链，就是指对所有同余hash，将他们挂到一个hash表项上，形成一个链表。而所谓二次探测，就是在第一次hash冲突后，再进行一次hash，作为第二地址。
@@ -34,10 +39,12 @@ table就退化为了链表。链表的插入复杂度是O(n^2)级的。而作为
 也就是说，即使是sha256这样强的hash算法，只要保证哈希函数特性，对同样的值得到同样的哈希，就无法保证开链法的安全。
 而二次探测法对这个是有先天抵抗的，二次探测法的第一次碰撞并不难构造，但是第二次哈希后依然保持同余的构造难度就由n增加到了n^2，多次碰撞的构造难度以此类推。虽然我没有完整的计算过这个值，但是猜测难度量级应当是O(n*n^n)级别的。这个级别基本就不用玩了——前提是哈希算法必须是安全的。
 由于为了节约计算过程，因此python和php的hash算法都没有采用md5之类的高散列算法，而是一个很简单的算法。我摘抄一下Python2.7.2中的这段代码。python_string_hash.c
-static long string_hash(PyStringObject *a) { register Py_ssize_t len; register unsigned char *p; register long x; if (a-&gt;ob_shash != -1) return a-&gt;ob_shash; len = Py_SIZE(a); p = (unsigned char *) a-&gt;ob_sval; x = *p &lt;&lt; 7; while (--len &gt;= 0) x = (1000003*x) ^ *p&#43;&#43;; x ^= Py_SIZE(a); if (x == -1) x = -2; a-&gt;ob_shash = x; return x; } 按照&laquo;python."/>
+static long string_hash(PyStringObject *a) { register Py_ssize_t len; register unsigned char *p; register long x; if (a-&gt;ob_shash != -1) return a-&gt;ob_shash; len = Py_SIZE(a); p = (unsigned char *) a-&gt;ob_sval; x = *p &lt;&lt; 7; while (--len &gt;= 0) x = (1000003*x) ^ *p&#43;&#43;; x ^= Py_SIZE(a); if (x == -1) x = -2; a-&gt;ob_shash = x; return x; } 按照«python.leojay@gmail.com»的计算，以很短的时间，就可以构造出大量同样hash的字符串。既然hash相同，后续的同余不同余就没了意义。不过刚刚我复现了一下他的结论，在64位下有点问题。源码中是这么定义的。">
 
-    <meta property="og:title" content="哈希冲突漏洞的原理和对策" />
-<meta property="og:description" content="cpug上面最近在讨论一个严重级漏洞，漏洞的相关资料如下： ERT-VN:VU#903934 CVE-2011-4815 CVE-2011-3414 CVE-2011-4838 CVE-2011-4885
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/2052/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="哈希冲突漏洞的原理和对策">
+  <meta property="og:description" content="cpug上面最近在讨论一个严重级漏洞，漏洞的相关资料如下： ERT-VN:VU#903934 CVE-2011-4815 CVE-2011-3414 CVE-2011-4838 CVE-2011-4885
 上面主要讨论的是这么一个概念，当用户post一个数据，而且这个数据又是一个form的时候，应用需要先将form解析为dict，然后才能方便的使用。例如a=1&amp;b=2，可以解析为{&#39;a&#39;:&#39;1&#39;, &#39;b&#39;:&#39;2&#39;}。之所以1和2是字符串，是因为只有用户自己才清楚这个数据的类型。
 通常情况下，这个form的key都是随机的，生成的hash碰撞概率很低，因此dict的默认实现——hash table没什么问题。但是当攻击者恶意构造数据的时候，情况就完全不同。我们首先讨论一下hash table的实现——开链法和二次探测法。
 所谓开链，就是指对所有同余hash，将他们挂到一个hash表项上，形成一个链表。而所谓二次探测，就是在第一次hash冲突后，再进行一次hash，作为第二地址。
@@ -47,11 +54,14 @@ table就退化为了链表。链表的插入复杂度是O(n^2)级的。而作为
 也就是说，即使是sha256这样强的hash算法，只要保证哈希函数特性，对同样的值得到同样的哈希，就无法保证开链法的安全。
 而二次探测法对这个是有先天抵抗的，二次探测法的第一次碰撞并不难构造，但是第二次哈希后依然保持同余的构造难度就由n增加到了n^2，多次碰撞的构造难度以此类推。虽然我没有完整的计算过这个值，但是猜测难度量级应当是O(n*n^n)级别的。这个级别基本就不用玩了——前提是哈希算法必须是安全的。
 由于为了节约计算过程，因此python和php的hash算法都没有采用md5之类的高散列算法，而是一个很简单的算法。我摘抄一下Python2.7.2中的这段代码。python_string_hash.c
-static long string_hash(PyStringObject *a) { register Py_ssize_t len; register unsigned char *p; register long x; if (a-&gt;ob_shash != -1) return a-&gt;ob_shash; len = Py_SIZE(a); p = (unsigned char *) a-&gt;ob_sval; x = *p &lt;&lt; 7; while (--len &gt;= 0) x = (1000003*x) ^ *p&#43;&#43;; x ^= Py_SIZE(a); if (x == -1) x = -2; a-&gt;ob_shash = x; return x; } 按照&laquo;python." />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2052/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2012-01-04T03:59:57+08:00" />
-<meta property="article:modified_time" content="2012-01-04T03:59:57+08:00" />
+static long string_hash(PyStringObject *a) { register Py_ssize_t len; register unsigned char *p; register long x; if (a-&gt;ob_shash != -1) return a-&gt;ob_shash; len = Py_SIZE(a); p = (unsigned char *) a-&gt;ob_sval; x = *p &lt;&lt; 7; while (--len &gt;= 0) x = (1000003*x) ^ *p&#43;&#43;; x ^= Py_SIZE(a); if (x == -1) x = -2; a-&gt;ob_shash = x; return x; } 按照«python.leojay@gmail.com»的计算，以很短的时间，就可以构造出大量同样hash的字符串。既然hash相同，后续的同余不同余就没了意义。不过刚刚我复现了一下他的结论，在64位下有点问题。源码中是这么定义的。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2012-01-04T03:59:57+08:00">
+    <meta property="article:modified_time" content="2012-01-04T03:59:57+08:00">
+    <meta property="article:tag" content="Computer">
+    <meta property="article:tag" content="Crypt">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -88,7 +98,7 @@ static long string_hash(PyStringObject *a) { register Py_ssize_t len; register u
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -100,26 +110,17 @@ static long string_hash(PyStringObject *a) { register Py_ssize_t len; register u
       <h1 class ="post-title">哈希冲突漏洞的原理和对策</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Jan 4, 2012
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/computer/">computer</a>
-              <a class="tag" href="//blog.shell909090.org/tags/crypt/">crypt</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/computer/">Computer</a>
+              <a class="tag" href="/tags/crypt/">Crypt</a>
         </div>
       </div>
     </header>
@@ -176,7 +177,24 @@ string_hash(PyStringObject *a)
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

@@ -1,46 +1,27 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>openvpn on Shell&#39;s Home</title>
+    <title>Openvpn on Shell&#39;s Home</title>
     <link>//blog.shell909090.org/tags/openvpn/</link>
-    <description>Recent content in openvpn on Shell&#39;s Home</description>
-    <generator>Hugo -- gohugo.io</generator>
+    <description>Recent content in Openvpn on Shell&#39;s Home</description>
+    <generator>Hugo</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Wed, 04 Feb 2015 15:07:42 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/openvpn/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 04 Feb 2015 15:07:42 +0800</lastBuildDate>
+    <atom:link href="//blog.shell909090.org/tags/openvpn/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>openvpn的几种基本模式</title>
       <link>//blog.shell909090.org/blog/archives/2724/</link>
       <pubDate>Wed, 04 Feb 2015 15:07:42 +0800</pubDate>
-      
       <guid>//blog.shell909090.org/blog/archives/2724/</guid>
-      <description>vpn的原始模式 vpn的最简模型，相当于在两台机器上插一块虚拟网卡，然后中间连一根虚拟网线连通。因此vpn才得名vpn(virtual private network)。
-其复杂之处在于，这块虚拟网卡如何配置网络，和别的网卡是什么关系。再加上多个节点间如何通讯。种种都够新手喝一壶。
-虽然openvpn在科学上网上是废了，但是在不出国的网络上用来保护通讯，还是非常好用的。
-tap模式 tap模式的特点是二层打通。典型场景是从外部打一条隧道到本地网络。进来的机器就像本地的机器一样参与通讯，你分毫看不出这些机器是在远程。
-优点：
-配置简单。 不需要在所有机器上配置或者动网关。 缺点：
-tap在部分设备上不支持(例如移动设备)。 wlan加入网桥后不一定可以工作。 广播包会散发到虚拟网络中，可能极大消耗流量。 特别解说一下wlan。部分AP对一个客户只接受一个MAC地址，因此无法做网桥。这应该是wifi网络的常规问题了。解决方法是换AP，或者做mac-nat。
-操作方法：
-你需要先在当前网络中，为vpn预留一些地址。这些地址应该足够拨入用户使用，不应和dhcp撞车，不应有其他人使用。
-而后，建立一个br，将当前工作的eth迁移过去。(具体细节就不说了，每个系统小有差别)再建立一个tap vpn，在启动脚本中指定加入这个br。
-example 假定内网地址为172.19.0.0/24，其中保留172.19.0.16-172.19.0.31供vpn使用。
-服务器配置:
-port [port num] proto udp ; 参考我上一篇[vpn不要走tcp协议](http://blog.shell909090.org/blog/archives/2722) dev tap ca ca.crt cert server.crt key server.key server-bridge 172.19.0.16 255.255.255.0 172.19.0.17 172.19.0.31 ; 或者可以采用这句 ; server 172.19.0.16 255.255.255.240 ; 注意掩码实际上等于/28，做掩码运算后，这段地址和上面的保留地址重合 script-security 2 up vpn-start ; 建议使用绝对路径，避免版本坑 down vpn-stop vpn-start:
-brctl add br0 $dev vpn-stop:
-brctl del br0 $dev 客户端配置:</description>
+      <description>&lt;h1 id=&#34;vpn的原始模式&#34;&gt;vpn的原始模式&lt;/h1&gt;&#xA;&lt;p&gt;vpn的最简模型，相当于在两台机器上插一块虚拟网卡，然后中间连一根虚拟网线连通。因此vpn才得名vpn(virtual private network)。&lt;/p&gt;&#xA;&lt;p&gt;其复杂之处在于，这块虚拟网卡如何配置网络，和别的网卡是什么关系。再加上多个节点间如何通讯。种种都够新手喝一壶。&lt;/p&gt;&#xA;&lt;p&gt;虽然openvpn在科学上网上是废了，但是在不出国的网络上用来保护通讯，还是非常好用的。&lt;/p&gt;&#xA;&lt;h1 id=&#34;tap模式&#34;&gt;tap模式&lt;/h1&gt;&#xA;&lt;p&gt;tap模式的特点是二层打通。典型场景是从外部打一条隧道到本地网络。进来的机器就像本地的机器一样参与通讯，你分毫看不出这些机器是在远程。&lt;/p&gt;&#xA;&lt;p&gt;优点：&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;配置简单。&lt;/li&gt;&#xA;&lt;li&gt;不需要在所有机器上配置或者动网关。&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;缺点：&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;tap在部分设备上不支持(例如移动设备)。&lt;/li&gt;&#xA;&lt;li&gt;wlan加入网桥后不一定可以工作。&lt;/li&gt;&#xA;&lt;li&gt;广播包会散发到虚拟网络中，可能极大消耗流量。&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;特别解说一下wlan。部分AP对一个客户只接受一个MAC地址，因此无法做网桥。这应该是wifi网络的常规问题了。解决方法是换AP，或者做mac-nat。&lt;/p&gt;&#xA;&lt;p&gt;操作方法：&lt;/p&gt;&#xA;&lt;p&gt;你需要先在当前网络中，为vpn预留一些地址。这些地址应该足够拨入用户使用，不应和dhcp撞车，不应有其他人使用。&lt;/p&gt;&#xA;&lt;p&gt;而后，建立一个br，将当前工作的eth迁移过去。(具体细节就不说了，每个系统小有差别)再建立一个tap&#xA;vpn，在启动脚本中指定加入这个br。&lt;/p&gt;&#xA;&lt;h2 id=&#34;example&#34;&gt;example&lt;/h2&gt;&#xA;&lt;p&gt;假定内网地址为172.19.0.0/24，其中保留172.19.0.16-172.19.0.31供vpn使用。&lt;/p&gt;&#xA;&lt;p&gt;服务器配置:&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;port [port num]&#xA;proto udp&#xA;; 参考我上一篇[vpn不要走tcp协议](http://blog.shell909090.org/blog/archives/2722)&#xA;dev tap&#xA;ca ca.crt&#xA;cert server.crt&#xA;key server.key&#xA;server-bridge 172.19.0.16 255.255.255.0 172.19.0.17 172.19.0.31&#xA;; 或者可以采用这句&#xA;; server 172.19.0.16 255.255.255.240&#xA;; 注意掩码实际上等于/28，做掩码运算后，这段地址和上面的保留地址重合&#xA;script-security 2&#xA;up vpn-start&#xA;; 建议使用绝对路径，避免版本坑 down&#xA;vpn-stop&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;vpn-start:&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;brctl add br0 $dev&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;vpn-stop:&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;brctl del br0 $dev&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;客户端配置:&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>openvpn auth with google authentication</title>
       <link>//blog.shell909090.org/blog/archives/2545/</link>
       <pubDate>Fri, 24 Jan 2014 12:33:39 +0800</pubDate>
-      
       <guid>//blog.shell909090.org/blog/archives/2545/</guid>
-      <description>client config # base config client dev tun proto udp remote 192.168.1.122 1194 nobind user nobody group nogroup persist-key persist-tun mute-replay-warnings comp-lzo # authentication config ca ca.crt cert shell.crt key shell.key ns-cert-type server tls-auth ta.key 1 auth-user-pass Group should be nogroup, not nobody in debian.
-auth-user-pass is needed for google auth.
-pam config account [success=2 new_authtok_reqd=done default=ignore] pam_unix.so account [success=1 new_authtok_reqd=done default=ignore] pam_winbind.so account requisite pam_deny.so account required pam_permit.so auth required pam_google_authenticator.</description>
+      <description>&lt;h1 id=&#34;client-config&#34;&gt;client config&lt;/h1&gt;&#xA;&lt;pre&gt;&lt;code&gt;# base config&#xA;client&#xA;dev tun&#xA;proto udp&#xA;remote 192.168.1.122 1194&#xA;nobind&#xA;user nobody&#xA;group nogroup&#xA;persist-key&#xA;persist-tun&#xA;mute-replay-warnings&#xA;comp-lzo&#xA;&#xA;# authentication config&#xA;ca ca.crt&#xA;cert shell.crt&#xA;key shell.key&#xA;ns-cert-type server&#xA;tls-auth ta.key 1&#xA;auth-user-pass&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;Group should be nogroup, not nobody in debian.&lt;/p&gt;&#xA;&lt;p&gt;auth-user-pass is needed for google auth.&lt;/p&gt;&#xA;&lt;h1 id=&#34;pam-config&#34;&gt;pam config&lt;/h1&gt;&#xA;&lt;pre&gt;&lt;code&gt;account [success=2 new_authtok_reqd=done default=ignore]    pam_unix.so&#xA;account [success=1 new_authtok_reqd=done default=ignore]    pam_winbind.so&#xA;account requisite           pam_deny.so&#xA;account required            pam_permit.so&#xA;auth required pam_google_authenticator.so&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;In /etc/pam.d/openvpn.&lt;/p&gt;</description>
     </item>
-    
   </channel>
 </rss>

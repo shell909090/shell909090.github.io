@@ -4,27 +4,32 @@
     <title>用pandas统计人口数据 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="用pandas统计人口数据"/>
-<meta name="twitter:description" content="今天讲一个很有趣的话题，用pandas来统计中国人口数据。即每一年，几岁的人口有多少。
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="用pandas统计人口数据">
+  <meta name="twitter:description" content="今天讲一个很有趣的话题，用pandas来统计中国人口数据。即每一年，几岁的人口有多少。
 原理和原始数据 原理很简单。人在出生后，就会不停死亡。每一年的人，能活到第二年的概率，有一个模型，叫生命表。根据这个表，以及每年出生人口，你可以大致算出后续某年，几岁的人还有多少活着。
 这个模型有几个问题。首先，生命表并不反应历史重大事件。例如，因为战争，饥荒，导致人口大量死亡。这个在生命表里是反应不出来的。其次，出生人口数据不是无限前推的。例如，你要算出今年100虽的人口有多少（假设生命表准确，上推的极限是105岁），就需要1924年的出生人口作为原始数据。这个原始数据我反正没有。所以，我们这个计算只能以其他方式进行拟合（或者叫凑合）。
 这个凑合的最重要数据，就是每年总人口。用出生人口推算出来的每个年龄的人口数据，叫直接推断数据。用总人口减去直接推断数据，就得到剩余，这部分是间接数据。理论上说，如果有年龄分布数据的话，可以把剩余分布到各个年龄段。但是很可惜，这个修正对于刚开始的数据（在我这里是1949年前后）比较重要。可是我没有1949年的人口分布模型。到2024年的时候，1949年出生的人已经75了，分布模型也不重要了。所以我用了一个很土的办法——把剩余均摊到后面的年龄上去。
@@ -38,10 +43,12 @@ plt.plot(population[&#39;birth&#39;]) 特别注意1961和1979的低谷。61年�
 pop = population[&#39;birth&#39;].copy() population[0] = pop for age in range(1, 90): pop.index &#43;= 1 pop *= (1-life[&#39;CL5&#39;][age-1]-0.0014) population[age] = pop.copy() 刚出生的人口，年底时算0岁。然后每年加一岁（去年0岁的今年1岁，下同），一直加到90。90这个数字有一定意义。下面会提到。
 生命表里的每个数字，表示这个岁数的人，活到下一个岁数前死亡的概率。因此人口乘以1-生命表，就能得到明年下一个岁数的人口数量。这里我采用CL5数据作为下降参数，再扣除0.0014（即千分之1.4）。其中0.0014这个数据，是用来拟合七普的。具体往下看。
 随后计算剩余，并展示直接推断数据。
-rest = population[&#39;total&#39;].copy() for age in range(0, 90): rest -= population[age]."/>
+rest = population[&#39;total&#39;].copy() for age in range(0, 90): rest -= population[age].fillna(0) population[&#39;rest&#39;] = rest population 随后，我们来拟合七普数据。">
 
-    <meta property="og:title" content="用pandas统计人口数据" />
-<meta property="og:description" content="今天讲一个很有趣的话题，用pandas来统计中国人口数据。即每一年，几岁的人口有多少。
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/2896/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="用pandas统计人口数据">
+  <meta property="og:description" content="今天讲一个很有趣的话题，用pandas来统计中国人口数据。即每一年，几岁的人口有多少。
 原理和原始数据 原理很简单。人在出生后，就会不停死亡。每一年的人，能活到第二年的概率，有一个模型，叫生命表。根据这个表，以及每年出生人口，你可以大致算出后续某年，几岁的人还有多少活着。
 这个模型有几个问题。首先，生命表并不反应历史重大事件。例如，因为战争，饥荒，导致人口大量死亡。这个在生命表里是反应不出来的。其次，出生人口数据不是无限前推的。例如，你要算出今年100虽的人口有多少（假设生命表准确，上推的极限是105岁），就需要1924年的出生人口作为原始数据。这个原始数据我反正没有。所以，我们这个计算只能以其他方式进行拟合（或者叫凑合）。
 这个凑合的最重要数据，就是每年总人口。用出生人口推算出来的每个年龄的人口数据，叫直接推断数据。用总人口减去直接推断数据，就得到剩余，这部分是间接数据。理论上说，如果有年龄分布数据的话，可以把剩余分布到各个年龄段。但是很可惜，这个修正对于刚开始的数据（在我这里是1949年前后）比较重要。可是我没有1949年的人口分布模型。到2024年的时候，1949年出生的人已经75了，分布模型也不重要了。所以我用了一个很土的办法——把剩余均摊到后面的年龄上去。
@@ -55,11 +62,12 @@ plt.plot(population[&#39;birth&#39;]) 特别注意1961和1979的低谷。61年�
 pop = population[&#39;birth&#39;].copy() population[0] = pop for age in range(1, 90): pop.index &#43;= 1 pop *= (1-life[&#39;CL5&#39;][age-1]-0.0014) population[age] = pop.copy() 刚出生的人口，年底时算0岁。然后每年加一岁（去年0岁的今年1岁，下同），一直加到90。90这个数字有一定意义。下面会提到。
 生命表里的每个数字，表示这个岁数的人，活到下一个岁数前死亡的概率。因此人口乘以1-生命表，就能得到明年下一个岁数的人口数量。这里我采用CL5数据作为下降参数，再扣除0.0014（即千分之1.4）。其中0.0014这个数据，是用来拟合七普的。具体往下看。
 随后计算剩余，并展示直接推断数据。
-rest = population[&#39;total&#39;].copy() for age in range(0, 90): rest -= population[age]." />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2896/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2024-05-14T22:54:48+08:00" />
-<meta property="article:modified_time" content="2024-05-14T22:54:48+08:00" />
+rest = population[&#39;total&#39;].copy() for age in range(0, 90): rest -= population[age].fillna(0) population[&#39;rest&#39;] = rest population 随后，我们来拟合七普数据。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2024-05-14T22:54:48+08:00">
+    <meta property="article:modified_time" content="2024-05-14T22:54:48+08:00">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -96,7 +104,7 @@ rest = population[&#39;total&#39;].copy() for age in range(0, 90): rest -= popul
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -108,17 +116,11 @@ rest = population[&#39;total&#39;].copy() for age in range(0, 90): rest -= popul
       <h1 class ="post-title">用pandas统计人口数据</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           May 14, 2024
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           2 min read
         </div>
       </div>
@@ -250,7 +252,24 @@ JoH15+veWftT4PX6BuTDE2ELBQAA
 </code></pre>
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

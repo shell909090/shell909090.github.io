@@ -4,27 +4,32 @@
     <title>debain // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="debain"/>
-<meta name="twitter:description" content="根据babylon的结果，没有debian这个词。根据我的拼音加加的结果，debian打出来是“得便”的意思。而事实上……debian是一个linux的版本。
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="debain">
+  <meta name="twitter:description" content="根据babylon的结果，没有debian这个词。根据我的拼音加加的结果，debian打出来是“得便”的意思。而事实上……debian是一个linux的版本。
 不过我很奇怪了，why所有的linux发行版本都这么大呢？windows2000的发行版本是4in1，四个版本合一张光盘。而RedHat9的发行版本是1in3，一个版本放了三张光盘……这个居然还好意思号称内核精简。windows的内核严格说起来也只有2M而已，smss大约100K，Csrss不知道多大，加上NTDLL.user32.Kernel32.win32k.gdi32也没有多大。不过windows组件模型比较大，搞得整个windows貌似比较庞大而已。一般来说，优化过后服务器上大约需要2-3G的分区空间。而一个正常可以跑的linux桌面大致也需要这么多的空间……界面和通用性上还不及。这厢真是郁闷大了。
 不过仔细想想，linux和windows的传奇都貌似到了顶点。windows自从2003后就基本没有了声音，就算现在他出什么新版本我会不会买账还是回事情。（2003现在都没有试过呢……）linux出新版本总比windows落后一步，usb如此，摄像头亦如此。加上PDA或者智能手机一类的嵌入设备中越来越多的使用WinCE（就是PPC啦），ActiveSync和windows捆绑的迹象越发严重。linux的路不好走啊。
 下面恐怕就是分布式系统了吧，如同我前面所讲。分布式系统相对正常系统具备极大的优势。例如硬盘空间共享，这样利用效率就会上升。软件的安装和维护集成，节约成本。CPU资源共用，有利于承担突发事件，并且方便利用用户使用不了的CPU时间。（例如一个在看网页的人的空闲CPU可以分配给运行大型程序的）不过最大的问题就是保密性、可维护性和网络速度问题。一般来说只有当网络速度和硬盘读写速度量级相当的时候才可以考虑分布系统。目前的接入普遍都不快，只有内部网络貌似可以达到这个级别。100Mbps=12.8MB/s，硬盘大约是30MB/s-60MB/s。尚可以考虑考虑。
@@ -32,10 +37,12 @@ if (!doNotTrack) {
 我设想分布系统可能如此实现。网络和文件系统编译入内核来加速。程序的运行都要在中央服务器上启动才行。每个进程会派生出控制端的概念，控制端对应不同的权限。严格来说，控制端是一个亚进程的概念。因为同样一个程序可能又多个机器要运行，例如IE一类的浏览器。如果放出多个进程恐怕太过浪费，但是如果放出一个进程，那么这个进程的权限又不好控制。考虑中是否可以将界面控制部分和程序分立开，成为控制端。控制端具备独立的变量空间和权限环境，对应不同终端上的用户窗口，可以容纳多个线程。或者进一步说，同样代码在不同机器上运行时候，环境理论上应当相同，除了控制端部分的数据应当不同（替换成本地的数据）。这样输出窗口的时候可以输出到不同的窗口上。
 理论上说，每个程序应当只允许运行一个Instance。如果有人运行某个程序，则应当建立程序的私有空间，并且初始化程序，察看是否已经在运行中。如果在运行中则自网络上虚拟映射入整个程序。而后初始化控制端，并且派生出本地线程。由本地线程来运作整个程序。程序对非控制端部分的操作都要进行互斥访问……真麻烦。
 如果某个机器具备空CPU，而另外一个机器CPU运行满，则将整个进程映射入空闲机器中，包括控制端部分。这样可以用空闲的CPU，当然前提必须是支持多线程，这样才可以移动一个线程过去。不过问题是保密性，还有如果空闲的机器也要运行这个程序了怎么办？这样恐怕就要将线程移动回去，然后清空控制端重新初始化。但是空闲的CPU就无法利用了。
-呃……貌似扯的蛮远了，从linux安装失败一直扯到了分布系统……今天就这样吧，郁闷……"/>
+呃……貌似扯的蛮远了，从linux安装失败一直扯到了分布系统……今天就这样吧，郁闷……">
 
-    <meta property="og:title" content="debain" />
-<meta property="og:description" content="根据babylon的结果，没有debian这个词。根据我的拼音加加的结果，debian打出来是“得便”的意思。而事实上……debian是一个linux的版本。
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/168/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="debain">
+  <meta property="og:description" content="根据babylon的结果，没有debian这个词。根据我的拼音加加的结果，debian打出来是“得便”的意思。而事实上……debian是一个linux的版本。
 不过我很奇怪了，why所有的linux发行版本都这么大呢？windows2000的发行版本是4in1，四个版本合一张光盘。而RedHat9的发行版本是1in3，一个版本放了三张光盘……这个居然还好意思号称内核精简。windows的内核严格说起来也只有2M而已，smss大约100K，Csrss不知道多大，加上NTDLL.user32.Kernel32.win32k.gdi32也没有多大。不过windows组件模型比较大，搞得整个windows貌似比较庞大而已。一般来说，优化过后服务器上大约需要2-3G的分区空间。而一个正常可以跑的linux桌面大致也需要这么多的空间……界面和通用性上还不及。这厢真是郁闷大了。
 不过仔细想想，linux和windows的传奇都貌似到了顶点。windows自从2003后就基本没有了声音，就算现在他出什么新版本我会不会买账还是回事情。（2003现在都没有试过呢……）linux出新版本总比windows落后一步，usb如此，摄像头亦如此。加上PDA或者智能手机一类的嵌入设备中越来越多的使用WinCE（就是PPC啦），ActiveSync和windows捆绑的迹象越发严重。linux的路不好走啊。
 下面恐怕就是分布式系统了吧，如同我前面所讲。分布式系统相对正常系统具备极大的优势。例如硬盘空间共享，这样利用效率就会上升。软件的安装和维护集成，节约成本。CPU资源共用，有利于承担突发事件，并且方便利用用户使用不了的CPU时间。（例如一个在看网页的人的空闲CPU可以分配给运行大型程序的）不过最大的问题就是保密性、可维护性和网络速度问题。一般来说只有当网络速度和硬盘读写速度量级相当的时候才可以考虑分布系统。目前的接入普遍都不快，只有内部网络貌似可以达到这个级别。100Mbps=12.8MB/s，硬盘大约是30MB/s-60MB/s。尚可以考虑考虑。
@@ -43,11 +50,14 @@ if (!doNotTrack) {
 我设想分布系统可能如此实现。网络和文件系统编译入内核来加速。程序的运行都要在中央服务器上启动才行。每个进程会派生出控制端的概念，控制端对应不同的权限。严格来说，控制端是一个亚进程的概念。因为同样一个程序可能又多个机器要运行，例如IE一类的浏览器。如果放出多个进程恐怕太过浪费，但是如果放出一个进程，那么这个进程的权限又不好控制。考虑中是否可以将界面控制部分和程序分立开，成为控制端。控制端具备独立的变量空间和权限环境，对应不同终端上的用户窗口，可以容纳多个线程。或者进一步说，同样代码在不同机器上运行时候，环境理论上应当相同，除了控制端部分的数据应当不同（替换成本地的数据）。这样输出窗口的时候可以输出到不同的窗口上。
 理论上说，每个程序应当只允许运行一个Instance。如果有人运行某个程序，则应当建立程序的私有空间，并且初始化程序，察看是否已经在运行中。如果在运行中则自网络上虚拟映射入整个程序。而后初始化控制端，并且派生出本地线程。由本地线程来运作整个程序。程序对非控制端部分的操作都要进行互斥访问……真麻烦。
 如果某个机器具备空CPU，而另外一个机器CPU运行满，则将整个进程映射入空闲机器中，包括控制端部分。这样可以用空闲的CPU，当然前提必须是支持多线程，这样才可以移动一个线程过去。不过问题是保密性，还有如果空闲的机器也要运行这个程序了怎么办？这样恐怕就要将线程移动回去，然后清空控制端重新初始化。但是空闲的CPU就无法利用了。
-呃……貌似扯的蛮远了，从linux安装失败一直扯到了分布系统……今天就这样吧，郁闷……" />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/168/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2005-05-31T20:54:40+08:00" />
-<meta property="article:modified_time" content="2005-05-31T20:54:40+08:00" />
+呃……貌似扯的蛮远了，从linux安装失败一直扯到了分布系统……今天就这样吧，郁闷……">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2005-05-31T20:54:40+08:00">
+    <meta property="article:modified_time" content="2005-05-31T20:54:40+08:00">
+    <meta property="article:tag" content="Linux">
+    <meta property="article:tag" content="System">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -84,7 +94,7 @@ if (!doNotTrack) {
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -96,26 +106,17 @@ if (!doNotTrack) {
       <h1 class ="post-title">debain</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           May 31, 2005
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a>
-              <a class="tag" href="//blog.shell909090.org/tags/system/">system</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/linux/">Linux</a>
+              <a class="tag" href="/tags/system/">System</a>
         </div>
       </div>
     </header>
@@ -132,7 +133,24 @@ if (!doNotTrack) {
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

@@ -4,28 +4,33 @@
     <title>合用两个路由器的几种方案 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="合用两个路由器的几种方案"/>
-<meta name="twitter:description" content="为什么用两个路由器？最常见的理由是延长信号。在超级大的场地中，中间放一个路由器，用四根线连接到周围的几个路由器上面，信号覆盖整个场地。这是最常见的理由。也有可能是因为你的主路由器LAN接口不足了。当然，也可能是因为蛋疼，或者其他原因。不论如何，为了在多个路由器上达到同时上网的目的，你有以下几个选项。桥接模式，路由模式，双层NAT模式。
-我先解说一下一些基础的环境。我假定你有一个互联网线，有一个路由器的WAN口接到了互联网上面，这个路由器称为M。其他路由器分别称为S1,S2&hellip;。直接连接到M的LAN口的电脑称为ML1,ML2&hellip;，通过无线连接的就称为MW1,MW1&hellip;。同样，连接到路由器S1的LAN和无线的分别叫做S1L1,S1W1，类推。
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="合用两个路由器的几种方案">
+  <meta name="twitter:description" content="为什么用两个路由器？最常见的理由是延长信号。在超级大的场地中，中间放一个路由器，用四根线连接到周围的几个路由器上面，信号覆盖整个场地。这是最常见的理由。也有可能是因为你的主路由器LAN接口不足了。当然，也可能是因为蛋疼，或者其他原因。不论如何，为了在多个路由器上达到同时上网的目的，你有以下几个选项。桥接模式，路由模式，双层NAT模式。
+我先解说一下一些基础的环境。我假定你有一个互联网线，有一个路由器的WAN口接到了互联网上面，这个路由器称为M。其他路由器分别称为S1,S2…。直接连接到M的LAN口的电脑称为ML1,ML2…，通过无线连接的就称为MW1,MW1…。同样，连接到路由器S1的LAN和无线的分别叫做S1L1,S1W1，类推。
 1.桥接模式
 这是你第一个应当尝试的模式，连接方法是路由器S1的LAN口直接连接路由器M的LAN口。这个模式不一定能够配通，原因是因为要求路由器S必须支持桥接模式。基于某些理由，很多路由器并不支持桥接。一般来说，有可能LAN口支持桥接而WIFI不支持。因此S1L1支持桥接成功的概率比S1W1支持桥接成功的概率高。如果你需要一台支持桥接的路由器，TP-LINK的TL-WR*系列路由器好像大多支持。希望大家补充哪款路由器支持桥接或者不支持。
 桥接是将路由器S完全的作为一个交换机使用，所以你的ML1和S1L1在同一个网段，两者可以互相ping通，发送各种包，也可以看到对方的广播。这种模式一旦连接成功，连接模式是透明的。因此，应当关闭DHCP，只启用一台路由器的DHCP功能。或者最好手工分配IP。
@@ -38,11 +43,13 @@ if (!doNotTrack) {
 如果上两种模式都不工作，你就必须使用双层NAT模式。这种模式保证一定工作，但是在使用上比较麻烦，需要用户自行计算访问规则。
 接法是路由器S1的WAN口连接路由器M的LAN口，并且将S配置为DHCP。M的网段和S的网段必须不为同一个网段，例如M配置为192.168.0.0/24网段，S配置为192.168.1.0/24网段。
 S的数据包会被NAT两次再发到互联网上，要进行端口转发也必须配置两次。性能相对比较差，而且无法做NAT穿透。
-当这个模式连接完成后，ML1和S1L1在不同网段，S1L1可以ping通ML1，但是反过来不行。因此，S1L1可以主动连接上ML1，而反过来不行。这种模式不是透明的，两者进行连接时必须考虑网络转换和端口转发。"/>
+当这个模式连接完成后，ML1和S1L1在不同网段，S1L1可以ping通ML1，但是反过来不行。因此，S1L1可以主动连接上ML1，而反过来不行。这种模式不是透明的，两者进行连接时必须考虑网络转换和端口转发。">
 
-    <meta property="og:title" content="合用两个路由器的几种方案" />
-<meta property="og:description" content="为什么用两个路由器？最常见的理由是延长信号。在超级大的场地中，中间放一个路由器，用四根线连接到周围的几个路由器上面，信号覆盖整个场地。这是最常见的理由。也有可能是因为你的主路由器LAN接口不足了。当然，也可能是因为蛋疼，或者其他原因。不论如何，为了在多个路由器上达到同时上网的目的，你有以下几个选项。桥接模式，路由模式，双层NAT模式。
-我先解说一下一些基础的环境。我假定你有一个互联网线，有一个路由器的WAN口接到了互联网上面，这个路由器称为M。其他路由器分别称为S1,S2&hellip;。直接连接到M的LAN口的电脑称为ML1,ML2&hellip;，通过无线连接的就称为MW1,MW1&hellip;。同样，连接到路由器S1的LAN和无线的分别叫做S1L1,S1W1，类推。
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/1917/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="合用两个路由器的几种方案">
+  <meta property="og:description" content="为什么用两个路由器？最常见的理由是延长信号。在超级大的场地中，中间放一个路由器，用四根线连接到周围的几个路由器上面，信号覆盖整个场地。这是最常见的理由。也有可能是因为你的主路由器LAN接口不足了。当然，也可能是因为蛋疼，或者其他原因。不论如何，为了在多个路由器上达到同时上网的目的，你有以下几个选项。桥接模式，路由模式，双层NAT模式。
+我先解说一下一些基础的环境。我假定你有一个互联网线，有一个路由器的WAN口接到了互联网上面，这个路由器称为M。其他路由器分别称为S1,S2…。直接连接到M的LAN口的电脑称为ML1,ML2…，通过无线连接的就称为MW1,MW1…。同样，连接到路由器S1的LAN和无线的分别叫做S1L1,S1W1，类推。
 1.桥接模式
 这是你第一个应当尝试的模式，连接方法是路由器S1的LAN口直接连接路由器M的LAN口。这个模式不一定能够配通，原因是因为要求路由器S必须支持桥接模式。基于某些理由，很多路由器并不支持桥接。一般来说，有可能LAN口支持桥接而WIFI不支持。因此S1L1支持桥接成功的概率比S1W1支持桥接成功的概率高。如果你需要一台支持桥接的路由器，TP-LINK的TL-WR*系列路由器好像大多支持。希望大家补充哪款路由器支持桥接或者不支持。
 桥接是将路由器S完全的作为一个交换机使用，所以你的ML1和S1L1在同一个网段，两者可以互相ping通，发送各种包，也可以看到对方的广播。这种模式一旦连接成功，连接模式是透明的。因此，应当关闭DHCP，只启用一台路由器的DHCP功能。或者最好手工分配IP。
@@ -55,11 +62,15 @@ S的数据包会被NAT两次再发到互联网上，要进行端口转发也必�
 如果上两种模式都不工作，你就必须使用双层NAT模式。这种模式保证一定工作，但是在使用上比较麻烦，需要用户自行计算访问规则。
 接法是路由器S1的WAN口连接路由器M的LAN口，并且将S配置为DHCP。M的网段和S的网段必须不为同一个网段，例如M配置为192.168.0.0/24网段，S配置为192.168.1.0/24网段。
 S的数据包会被NAT两次再发到互联网上，要进行端口转发也必须配置两次。性能相对比较差，而且无法做NAT穿透。
-当这个模式连接完成后，ML1和S1L1在不同网段，S1L1可以ping通ML1，但是反过来不行。因此，S1L1可以主动连接上ML1，而反过来不行。这种模式不是透明的，两者进行连接时必须考虑网络转换和端口转发。" />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/1917/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2011-09-26T12:03:30+08:00" />
-<meta property="article:modified_time" content="2011-09-26T12:03:30+08:00" />
+当这个模式连接完成后，ML1和S1L1在不同网段，S1L1可以ping通ML1，但是反过来不行。因此，S1L1可以主动连接上ML1，而反过来不行。这种模式不是透明的，两者进行连接时必须考虑网络转换和端口转发。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2011-09-26T12:03:30+08:00">
+    <meta property="article:modified_time" content="2011-09-26T12:03:30+08:00">
+    <meta property="article:tag" content="Computer">
+    <meta property="article:tag" content="Network">
+    <meta property="article:tag" content="Openwrt">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -96,7 +107,7 @@ S的数据包会被NAT两次再发到互联网上，要进行端口转发也必�
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -108,27 +119,18 @@ S的数据包会被NAT两次再发到互联网上，要进行端口转发也必�
       <h1 class ="post-title">合用两个路由器的几种方案</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Sep 26, 2011
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/computer/">computer</a>
-              <a class="tag" href="//blog.shell909090.org/tags/network/">network</a>
-              <a class="tag" href="//blog.shell909090.org/tags/openwrt/">openwrt</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/computer/">Computer</a>
+              <a class="tag" href="/tags/network/">Network</a>
+              <a class="tag" href="/tags/openwrt/">Openwrt</a>
         </div>
       </div>
     </header>
@@ -151,7 +153,24 @@ S的数据包会被NAT两次再发到互联网上，要进行端口转发也必�
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

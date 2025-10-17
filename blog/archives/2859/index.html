@@ -4,27 +4,32 @@
     <title>在云存储上叠加加密文件系统 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="在云存储上叠加加密文件系统"/>
-<meta name="twitter:description" content="目标很简单。云存储上很多文件都挺私人的，直接放着很吓人。虽说云存储采用各种方法来保证你的安全，但是世界上没有绝对的安全。万一密码泄漏，或者更糟糕，云存储泄漏。此时你的各种文件就在网络上裸奔了。
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="在云存储上叠加加密文件系统">
+  <meta name="twitter:description" content="目标很简单。云存储上很多文件都挺私人的，直接放着很吓人。虽说云存储采用各种方法来保证你的安全，但是世界上没有绝对的安全。万一密码泄漏，或者更糟糕，云存储泄漏。此时你的各种文件就在网络上裸奔了。
 最简单的解决方法是什么？在底层存储上套一层加密呗。不过由于是云存储，所以基于块设备的加密方案不能用，例如LUKS。否则你同步到云上的就是一个超级巨大的块文件，然后每次修改，云存储客户端都要找到差别上传。这太蛋疼了。正解是每个文件分别加密上传。但即便如此，对于超大文件进行加密后依然会影响上传效率，请提前考虑一下这个问题。
 同时又要注意，云存储用的加密文件系统和普通的加密文件系统还有点差别。很多加密文件系统的daemon会认为自己是唯一一个会访问加密内容的进程，而云存储可能随时接收来自远程的修改。所以这会造成一些问题。
 备选方案 我对比了四种方案，EncFS，CryFS，GoCryptFS，eCryptFS。对比的方法是用这四种分别建立一个加密目录，然后用不同的方法做写入测试，看他的各种参数。顺便说一句，如果你要看的话，其实看这份表格就好。我只是在自己的机器上复现了一下，顺便了解一下各家特点。
@@ -33,11 +38,12 @@ time dd if=/dev/zero of=test bs=1048576 count=1024 time dd if=/dev/zero of=test 
 数据对比 &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43; | |time1 |size1|time2 |size2|time3 |size3|comment | &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43; |EncFS |13.210s|1.1G |39.039s|1.1G |26.496s|894M | | &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43; |CryFS |9.327s |1.1G |21.230s|1.1G |42.918s|2.5G |删除耗时2.804s| &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43; |GoCryptFS|3.515s |1.1G |28.180s|1.1G |19.874s|918M | | &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43; |eCryptFS |3.132s |1.1G |10.218s|1.1G |9.448s |1.4G | | &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43; 解读 首先说怎么解读。time1是连续写入性能，time2是离散写入性能，time3是小文件写入性能，size3是大量小文件膨胀系统。size1和size2没啥用。
 下面先看性能。从性能上看，最优秀的是eCryptFS。这是理所当然，因为这是唯一一个内核态而且和内核整合的系统。GoCryptFS次之。EncFS要慢上好多。至于CryFS，一开始写小文件就原型毕露了。何况这是唯一一个删除大文件时间超过1s的，达到2.8s。你看我其他系统测试里都没写。
 然后是膨胀率。EncFS膨胀2.75%，CryFS膨胀近三倍，GoCryptFS膨胀5.52%，eCryptFS膨胀65%。相比起来，EncFS膨胀率最小，GoCryptFS次之，CryFS最糟糕。
-安全性 下面是同一个人出的三份审计报告：
-encfs的审计报告 gocryptfs的审计报告 ecryptfs的审计报告 根据报告可以得到这么几个意见。"/>
+安全性 下面是同一个人出的三份审计报告：">
 
-    <meta property="og:title" content="在云存储上叠加加密文件系统" />
-<meta property="og:description" content="目标很简单。云存储上很多文件都挺私人的，直接放着很吓人。虽说云存储采用各种方法来保证你的安全，但是世界上没有绝对的安全。万一密码泄漏，或者更糟糕，云存储泄漏。此时你的各种文件就在网络上裸奔了。
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/2859/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="在云存储上叠加加密文件系统">
+  <meta property="og:description" content="目标很简单。云存储上很多文件都挺私人的，直接放着很吓人。虽说云存储采用各种方法来保证你的安全，但是世界上没有绝对的安全。万一密码泄漏，或者更糟糕，云存储泄漏。此时你的各种文件就在网络上裸奔了。
 最简单的解决方法是什么？在底层存储上套一层加密呗。不过由于是云存储，所以基于块设备的加密方案不能用，例如LUKS。否则你同步到云上的就是一个超级巨大的块文件，然后每次修改，云存储客户端都要找到差别上传。这太蛋疼了。正解是每个文件分别加密上传。但即便如此，对于超大文件进行加密后依然会影响上传效率，请提前考虑一下这个问题。
 同时又要注意，云存储用的加密文件系统和普通的加密文件系统还有点差别。很多加密文件系统的daemon会认为自己是唯一一个会访问加密内容的进程，而云存储可能随时接收来自远程的修改。所以这会造成一些问题。
 备选方案 我对比了四种方案，EncFS，CryFS，GoCryptFS，eCryptFS。对比的方法是用这四种分别建立一个加密目录，然后用不同的方法做写入测试，看他的各种参数。顺便说一句，如果你要看的话，其实看这份表格就好。我只是在自己的机器上复现了一下，顺便了解一下各家特点。
@@ -46,12 +52,12 @@ time dd if=/dev/zero of=test bs=1048576 count=1024 time dd if=/dev/zero of=test 
 数据对比 &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43; | |time1 |size1|time2 |size2|time3 |size3|comment | &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43; |EncFS |13.210s|1.1G |39.039s|1.1G |26.496s|894M | | &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43; |CryFS |9.327s |1.1G |21.230s|1.1G |42.918s|2.5G |删除耗时2.804s| &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43; |GoCryptFS|3.515s |1.1G |28.180s|1.1G |19.874s|918M | | &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43; |eCryptFS |3.132s |1.1G |10.218s|1.1G |9.448s |1.4G | | &#43;---------&#43;-------&#43;-----&#43;-------&#43;-----&#43;-------&#43;-----&#43;--------------&#43; 解读 首先说怎么解读。time1是连续写入性能，time2是离散写入性能，time3是小文件写入性能，size3是大量小文件膨胀系统。size1和size2没啥用。
 下面先看性能。从性能上看，最优秀的是eCryptFS。这是理所当然，因为这是唯一一个内核态而且和内核整合的系统。GoCryptFS次之。EncFS要慢上好多。至于CryFS，一开始写小文件就原型毕露了。何况这是唯一一个删除大文件时间超过1s的，达到2.8s。你看我其他系统测试里都没写。
 然后是膨胀率。EncFS膨胀2.75%，CryFS膨胀近三倍，GoCryptFS膨胀5.52%，eCryptFS膨胀65%。相比起来，EncFS膨胀率最小，GoCryptFS次之，CryFS最糟糕。
-安全性 下面是同一个人出的三份审计报告：
-encfs的审计报告 gocryptfs的审计报告 ecryptfs的审计报告 根据报告可以得到这么几个意见。" />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2859/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2017-12-17T11:29:29+08:00" />
-<meta property="article:modified_time" content="2017-12-17T11:29:29+08:00" />
+安全性 下面是同一个人出的三份审计报告：">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2017-12-17T11:29:29+08:00">
+    <meta property="article:modified_time" content="2017-12-17T11:29:29+08:00">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -88,7 +94,7 @@ encfs的审计报告 gocryptfs的审计报告 ecryptfs的审计报告 根据报�
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -100,17 +106,11 @@ encfs的审计报告 gocryptfs的审计报告 ecryptfs的审计报告 根据报�
       <h1 class ="post-title">在云存储上叠加加密文件系统</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Dec 17, 2017
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
       </div>
@@ -165,7 +165,24 @@ time tar xf linux-4.13.12.tar.xz
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

@@ -4,44 +4,55 @@
     <title>linux tty部分源码阅读 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="linux tty部分源码阅读"/>
-<meta name="twitter:description" content="1.事情从file开始 file的定义在include/linux/fs.h中，其中有两个field，一个叫file_operations
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="linux tty部分源码阅读">
+  <meta name="twitter:description" content="1.事情从file开始 file的定义在include/linux/fs.h中，其中有两个field，一个叫file_operations
 *f_op，一个叫void *private_data。file_operations定义了所有file能够进行的操作，在tty这个层面而言，drivers/tty/tty_io.c能看到有个叫做file_operations tty_fops的东西，下面有个叫console_fops的东西。两者区别不大，就是write函数进行了一下包装而已。从这里可以看出，系统将某个file的读写操作，转包给了tty_io.c这个文件。这个转包的手法非常类似虚函数。如果将tty_io.c里面的函数看作一个类的所有成员，那么tty_fops就是虚函数表，而f_op就是虚函数指针_v_ptr。
 2.tty_io的二转包 tty_io做了什么？他直接转包给了ldisc来处理这个事情。从tty_struct的结构我们能够看到，有这么一个field，tty_ldisc *ldisc。而tty_ldisc.h文件里面，我们能看到这个结构又有这么一个成员，tty_ldisc_ops *ops。同样手法，第二次使用。目标是tty/下面很多n_开始的文件，例如n_gsm，估计是处理手机的。我们的目标看起来像是n_tty.c中的tty_ldisc_ops tty_ldisc_N_TTY对象。
 3.n_tty做了些什么 n_tty也做了很多转包，例如对于n_tty_write而言，他使用了tty-&gt;ops-&gt;write这个函数。我们从struct tty_struct中可以看到这个field，tty_operations *ops。目标是谁？看起来像是pty.c，他里面有很多定义，例如tty_operations master_pty_ops_bsd，tty_operations slave_pty_ops_bsd，tty_operations ptm_unix98_ops，tty_operations pty_unix98_ops。
 4.pty总不转包了吧 以write而言，pty.c做的很简单，就是tty_insert_flip_string而已。不过之后调用了tty_flip_buffer_push，这个又会调用flush_to_ldisc，这个里面会调用ldisc-&gt;ops。从上文中我们知道，这个函数的实体在n_tty.c的n_tty_receive_buf。
-5.n_tty_receive_buf做了些什么 这个函数对每个字符依次处理，如果是普通字符，就调用n_tty_receive_char。这个函数会调用put_tty_queue，经过两次转手，最终，这个字符进入了read_buf。这是一个循环队列。"/>
+5.n_tty_receive_buf做了些什么 这个函数对每个字符依次处理，如果是普通字符，就调用n_tty_receive_char。这个函数会调用put_tty_queue，经过两次转手，最终，这个字符进入了read_buf。这是一个循环队列。">
 
-    <meta property="og:title" content="linux tty部分源码阅读" />
-<meta property="og:description" content="1.事情从file开始 file的定义在include/linux/fs.h中，其中有两个field，一个叫file_operations
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/2020/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="linux tty部分源码阅读">
+  <meta property="og:description" content="1.事情从file开始 file的定义在include/linux/fs.h中，其中有两个field，一个叫file_operations
 *f_op，一个叫void *private_data。file_operations定义了所有file能够进行的操作，在tty这个层面而言，drivers/tty/tty_io.c能看到有个叫做file_operations tty_fops的东西，下面有个叫console_fops的东西。两者区别不大，就是write函数进行了一下包装而已。从这里可以看出，系统将某个file的读写操作，转包给了tty_io.c这个文件。这个转包的手法非常类似虚函数。如果将tty_io.c里面的函数看作一个类的所有成员，那么tty_fops就是虚函数表，而f_op就是虚函数指针_v_ptr。
 2.tty_io的二转包 tty_io做了什么？他直接转包给了ldisc来处理这个事情。从tty_struct的结构我们能够看到，有这么一个field，tty_ldisc *ldisc。而tty_ldisc.h文件里面，我们能看到这个结构又有这么一个成员，tty_ldisc_ops *ops。同样手法，第二次使用。目标是tty/下面很多n_开始的文件，例如n_gsm，估计是处理手机的。我们的目标看起来像是n_tty.c中的tty_ldisc_ops tty_ldisc_N_TTY对象。
 3.n_tty做了些什么 n_tty也做了很多转包，例如对于n_tty_write而言，他使用了tty-&gt;ops-&gt;write这个函数。我们从struct tty_struct中可以看到这个field，tty_operations *ops。目标是谁？看起来像是pty.c，他里面有很多定义，例如tty_operations master_pty_ops_bsd，tty_operations slave_pty_ops_bsd，tty_operations ptm_unix98_ops，tty_operations pty_unix98_ops。
 4.pty总不转包了吧 以write而言，pty.c做的很简单，就是tty_insert_flip_string而已。不过之后调用了tty_flip_buffer_push，这个又会调用flush_to_ldisc，这个里面会调用ldisc-&gt;ops。从上文中我们知道，这个函数的实体在n_tty.c的n_tty_receive_buf。
-5.n_tty_receive_buf做了些什么 这个函数对每个字符依次处理，如果是普通字符，就调用n_tty_receive_char。这个函数会调用put_tty_queue，经过两次转手，最终，这个字符进入了read_buf。这是一个循环队列。" />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2020/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2011-12-19T16:08:11+08:00" />
-<meta property="article:modified_time" content="2011-12-19T16:08:11+08:00" />
+5.n_tty_receive_buf做了些什么 这个函数对每个字符依次处理，如果是普通字符，就调用n_tty_receive_char。这个函数会调用put_tty_queue，经过两次转手，最终，这个字符进入了read_buf。这是一个循环队列。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2011-12-19T16:08:11+08:00">
+    <meta property="article:modified_time" content="2011-12-19T16:08:11+08:00">
+    <meta property="article:tag" content="Kernel">
+    <meta property="article:tag" content="Linux">
+    <meta property="article:tag" content="Source">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -78,7 +89,7 @@ if (!doNotTrack) {
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -90,27 +101,18 @@ if (!doNotTrack) {
       <h1 class ="post-title">linux tty部分源码阅读</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Dec 19, 2011
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/kernel/">kernel</a>
-              <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a>
-              <a class="tag" href="//blog.shell909090.org/tags/source/">source</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/kernel/">Kernel</a>
+              <a class="tag" href="/tags/linux/">Linux</a>
+              <a class="tag" href="/tags/source/">Source</a>
         </div>
       </div>
     </header>
@@ -129,7 +131,24 @@ if (!doNotTrack) {
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

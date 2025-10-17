@@ -4,27 +4,32 @@
     <title>Process Explorer的潜在内存泄漏 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Process Explorer的潜在内存泄漏"/>
-<meta name="twitter:description" content="贝壳最近碰到一个郁闷到死的问题。机器经常出现硬盘狂转，系统响应延迟。系统弹出一个错误，然后死机。贝壳开始猜测是硬盘驱动问题，升级驱动N次，无效。然后再猜测是ext2fs的问题(贝壳用这个驱动挂载linux下面的盘的)，看来看去，不是。最后，贝壳确定了，这是内存泄漏了～～～
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Process Explorer的潜在内存泄漏">
+  <meta name="twitter:description" content=" 贝壳最近碰到一个郁闷到死的问题。机器经常出现硬盘狂转，系统响应延迟。系统弹出一个错误，然后死机。贝壳开始猜测是硬盘驱动问题，升级驱动N次，无效。然后再猜测是ext2fs的问题(贝壳用这个驱动挂载linux下面的盘的)，看来看去，不是。最后，贝壳确定了，这是内存泄漏了～～～
 问题是，这时候可没人跳出来推荐喝什么口服液的。贝壳系统中永远挂着一个procexp，看内存状态的。这东西是sysinternals的产品，后来被微软收购了。功能强大，很多系统调试，杀马都需要用到。于是贝壳就用这个工具看哪个程序的内存泄漏，可是看来看去看不到。准确说，是没等贝壳看到，系统就先死透了。最后贝壳多次尝试，发现了一个死机的规律。当mysql开启的时候，procexp就会随时发生异常死机。这是一个重要的提示，要么mysql内存泄漏了，要么procexp内存泄漏了。究竟是哪个呢？贝壳用了同属于sysinternals开发的pstools系列工具，仔细检查了异常发生时候的内存状态，确定，Process Explorer存在内存泄漏的风险！
 看来sysinternals被微软收购后，旗下的工具也出现了微软的一贯特色。以下是一次内存泄漏后，终止mysql服务后抓下来的内存状态输出。如果不终止mysql，不等我抓系统就挂了。
 Process memory detail for HOME-B2326348D0:
@@ -34,10 +39,43 @@ System 4 800 52 0 0 10120 0 0
 smss 772 3748 48 172 1648 223 0 5
 csrss 828 68132 1464 2304 3768 13748 6 144
 winlogon 856 61528 580 8536 8684 5143 39 96
-services 900 37724 804 2256 2404 2740 7 65"/>
+services 900 37724 804 2256 2404 2740 7 65
+lsass 912 44848 352 2684 2860 7332 7 80
+svchost 1060 36904 200 1500 1544 1028 3 68
+svchost 1136 39256 456 1984 2004 1437 13 72
+svchost 1216 118756 2564 19236 28112 24221 93 197
+svchost 1292 31728 192 1472 1512 1123 4 55
+aswUpdSv 1536 18748 52 652 652 557 2 31
+ashServ 1592 120428 6704 16628 41168 1076043 8 128
+explorer 1884 119644 1908 19128 20552 4364782 16 177
+spoolsv 288 50072 224 3564 3828 1502 5 85
+TSVNCache 544 48008 700 6968 7068 21580 4 67
+mobmeter 620 41116 588 4940 5044 14266 3 63
+procexp 628 605756 15532 549068 549068 4776417 8 109
+ashDisp 636 54468 928 6992 7016 28399 5 80
+ctfmon 664 39064 380 4816 4840 15588 4 66
+googletalk 720 76420 2852 8540 9036 428030 13 108
+mdm 832 30008 440 1088 1100 860 3 49
+svchost 1244 40704 208 2640 2708 1896 3 73
+svnserve 1264 16612 124 904 920 652 3 29
+svchost 232 37936 536 1592 1636 1330 4 70
+alg 600 35664 200 1312 1352 1018 5 69
+TTPlayer 3208 65672 3688 10920 13924 169533 8 86
+thunderbird 3240 109016 2272 28832 31344 64167 14 112
+conime 3284 42564 404 5184 5184 17612 3 68
+firefox 1944 270920 11108 118720 132648 1233696 14 135
+flashget 2836 108756 11248 19472 29636 117115 30 146
+pyintau 2080 45004 172 4720 4788 1848 3 62
+wuauclt 1068 67012 396 6580 6600 2167 7 115
+cmd 3540 32764 920 3308 3372 15075 2 60
+pslist 3048 32124 3108 2440 2956 10890 2 49
+我们可以看到，procexp这个进程的虚拟内存空间只有60M，工作集更只有15M，可私有内存高达549M！贝壳的机器只有768M内存，不死机还等啥？
+贝壳试验了mysql5.0.45，mysql5.0.51a，mysql5.1.22，procexp11.01，procexp11.04。确定在贝壳的本本上全都会造成上述问题。但是同样的环境在家里的2G内存机器上模拟的时候，全都不出现上述问题。从测试角度讲，这个属于和环境相关的隐性危险，严重级别是重。">
 
-    <meta property="og:title" content="Process Explorer的潜在内存泄漏" />
-<meta property="og:description" content="贝壳最近碰到一个郁闷到死的问题。机器经常出现硬盘狂转，系统响应延迟。系统弹出一个错误，然后死机。贝壳开始猜测是硬盘驱动问题，升级驱动N次，无效。然后再猜测是ext2fs的问题(贝壳用这个驱动挂载linux下面的盘的)，看来看去，不是。最后，贝壳确定了，这是内存泄漏了～～～
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/426/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="Process Explorer的潜在内存泄漏">
+  <meta property="og:description" content=" 贝壳最近碰到一个郁闷到死的问题。机器经常出现硬盘狂转，系统响应延迟。系统弹出一个错误，然后死机。贝壳开始猜测是硬盘驱动问题，升级驱动N次，无效。然后再猜测是ext2fs的问题(贝壳用这个驱动挂载linux下面的盘的)，看来看去，不是。最后，贝壳确定了，这是内存泄漏了～～～
 问题是，这时候可没人跳出来推荐喝什么口服液的。贝壳系统中永远挂着一个procexp，看内存状态的。这东西是sysinternals的产品，后来被微软收购了。功能强大，很多系统调试，杀马都需要用到。于是贝壳就用这个工具看哪个程序的内存泄漏，可是看来看去看不到。准确说，是没等贝壳看到，系统就先死透了。最后贝壳多次尝试，发现了一个死机的规律。当mysql开启的时候，procexp就会随时发生异常死机。这是一个重要的提示，要么mysql内存泄漏了，要么procexp内存泄漏了。究竟是哪个呢？贝壳用了同属于sysinternals开发的pstools系列工具，仔细检查了异常发生时候的内存状态，确定，Process Explorer存在内存泄漏的风险！
 看来sysinternals被微软收购后，旗下的工具也出现了微软的一贯特色。以下是一次内存泄漏后，终止mysql服务后抓下来的内存状态输出。如果不终止mysql，不等我抓系统就挂了。
 Process memory detail for HOME-B2326348D0:
@@ -47,11 +85,45 @@ System 4 800 52 0 0 10120 0 0
 smss 772 3748 48 172 1648 223 0 5
 csrss 828 68132 1464 2304 3768 13748 6 144
 winlogon 856 61528 580 8536 8684 5143 39 96
-services 900 37724 804 2256 2404 2740 7 65" />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/426/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2008-01-31T19:21:06+08:00" />
-<meta property="article:modified_time" content="2008-01-31T19:21:06+08:00" />
+services 900 37724 804 2256 2404 2740 7 65
+lsass 912 44848 352 2684 2860 7332 7 80
+svchost 1060 36904 200 1500 1544 1028 3 68
+svchost 1136 39256 456 1984 2004 1437 13 72
+svchost 1216 118756 2564 19236 28112 24221 93 197
+svchost 1292 31728 192 1472 1512 1123 4 55
+aswUpdSv 1536 18748 52 652 652 557 2 31
+ashServ 1592 120428 6704 16628 41168 1076043 8 128
+explorer 1884 119644 1908 19128 20552 4364782 16 177
+spoolsv 288 50072 224 3564 3828 1502 5 85
+TSVNCache 544 48008 700 6968 7068 21580 4 67
+mobmeter 620 41116 588 4940 5044 14266 3 63
+procexp 628 605756 15532 549068 549068 4776417 8 109
+ashDisp 636 54468 928 6992 7016 28399 5 80
+ctfmon 664 39064 380 4816 4840 15588 4 66
+googletalk 720 76420 2852 8540 9036 428030 13 108
+mdm 832 30008 440 1088 1100 860 3 49
+svchost 1244 40704 208 2640 2708 1896 3 73
+svnserve 1264 16612 124 904 920 652 3 29
+svchost 232 37936 536 1592 1636 1330 4 70
+alg 600 35664 200 1312 1352 1018 5 69
+TTPlayer 3208 65672 3688 10920 13924 169533 8 86
+thunderbird 3240 109016 2272 28832 31344 64167 14 112
+conime 3284 42564 404 5184 5184 17612 3 68
+firefox 1944 270920 11108 118720 132648 1233696 14 135
+flashget 2836 108756 11248 19472 29636 117115 30 146
+pyintau 2080 45004 172 4720 4788 1848 3 62
+wuauclt 1068 67012 396 6580 6600 2167 7 115
+cmd 3540 32764 920 3308 3372 15075 2 60
+pslist 3048 32124 3108 2440 2956 10890 2 49
+我们可以看到，procexp这个进程的虚拟内存空间只有60M，工作集更只有15M，可私有内存高达549M！贝壳的机器只有768M内存，不死机还等啥？
+贝壳试验了mysql5.0.45，mysql5.0.51a，mysql5.1.22，procexp11.01，procexp11.04。确定在贝壳的本本上全都会造成上述问题。但是同样的环境在家里的2G内存机器上模拟的时候，全都不出现上述问题。从测试角度讲，这个属于和环境相关的隐性危险，严重级别是重。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2008-01-31T19:21:06+08:00">
+    <meta property="article:modified_time" content="2008-01-31T19:21:06+08:00">
+    <meta property="article:tag" content="Memory-Leak">
+    <meta property="article:tag" content="Windows">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -88,7 +160,7 @@ services 900 37724 804 2256 2404 2740 7 65" />
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -100,26 +172,17 @@ services 900 37724 804 2256 2404 2740 7 65" />
       <h1 class ="post-title">Process Explorer的潜在内存泄漏</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Jan 31, 2008
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           2 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/memory-leak/">memory-leak</a>
-              <a class="tag" href="//blog.shell909090.org/tags/windows/">windows</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/memory-leak/">Memory-Leak</a>
+              <a class="tag" href="/tags/windows/">Windows</a>
         </div>
       </div>
     </header>
@@ -208,12 +271,29 @@ pslist             3048   32124    3108    2440    2956 
 我们可以看到，procexp这个进程的虚拟内存空间只有60M，工作集更只有15M，可私有内存高达549M！贝壳的机器只有768M内存，不死机还等啥？<br>
    
 贝壳试验了mysql5.0.45，mysql5.0.51a，mysql5.1.22，procexp11.01，procexp11.04。确定在贝壳的本本上全都会造成上述问题。但是同样的环境在家里的2G内存机器上模拟的时候，全都不出现上述问题。从测试角度讲，这个属于和环境相关的隐性危险，严重级别是重。</p>
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
+<div>
+</div>
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

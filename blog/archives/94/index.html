@@ -4,48 +4,59 @@
     <title>ext3下小文件的恢复 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="ext3下小文件的恢复"/>
-<meta name="twitter:description" content="ext3下如果误删除了文件，恢复起来是异常麻烦的。如果是小文件，其实很多时候不用走常规文件恢复的路子，只要能找到内容就好了。基本思路是从磁盘中直接搜索内容，然后设法复制出来。
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="ext3下小文件的恢复">
+  <meta name="twitter:description" content="ext3下如果误删除了文件，恢复起来是异常麻烦的。如果是小文件，其实很多时候不用走常规文件恢复的路子，只要能找到内容就好了。基本思路是从磁盘中直接搜索内容，然后设法复制出来。
 恢复条件：
 文件没有被覆盖。如果被覆盖了，那就绝对没有希望了。 文件不大(通常建议在16K以内)。如果很大，下面一个条件就很难满足。 知晓文件内的特定关键字。条件是，文件每4K内，你必须知道至少一个关键字。因为ext3通常将4K内容连续存放，每知道一个关键字，可以恢复4K内容。如果缺少关键字，那就无法恢复了。 文件保存的版本不太多。 满足以上条件后，使用以下方法进行恢复：
-# grep -abn &quot;id_insert_stmt_param&quot; /dev/xvda1 4799010:713068605:sql_id_insert_stmt_param = &quot;SELECT NEXTVAL 使用grep对/dev/xvda1磁盘进行搜索，需要管理员权限直接访问设备文件，搜索哪个物理磁盘可以用mount来确定。 713068605是相对偏移地址，如果保存了多个版本，可能有多个偏移地址。 他们的选择和确定是个非常麻烦的问题，所以文件保存的版本不能过多。
+# grep -abn &#34;id_insert_stmt_param&#34; /dev/xvda1 4799010:713068605:sql_id_insert_stmt_param = &#34;SELECT NEXTVAL 使用grep对/dev/xvda1磁盘进行搜索，需要管理员权限直接访问设备文件，搜索哪个物理磁盘可以用mount来确定。 713068605是相对偏移地址，如果保存了多个版本，可能有多个偏移地址。 他们的选择和确定是个非常麻烦的问题，所以文件保存的版本不能过多。
 $ python &gt;&gt;&gt; (713068605/4096)*4096 713068544 &gt;&gt;&gt; exit () 以上过程可以在常规权限下操作，使用python(或者其他你高兴的计算器)确定该偏移地址的块首地址。
 # dd if=/dev/xvda1 bs=1 count=4k skip=713068544 &gt; 1.tmp 将这个块的内容复制出来，注意磁盘上必须有足够空间，否则搞不好会将原始内容覆盖。
 更严谨的方法是将内容dump到其他磁盘设备的挂载点下，做异地磁盘恢复。
-以上方法可以恢复一个块的内容。手工恢复所有块后，将内容拼接，就是你要恢复的文件。"/>
+以上方法可以恢复一个块的内容。手工恢复所有块后，将内容拼接，就是你要恢复的文件。">
 
-    <meta property="og:title" content="ext3下小文件的恢复" />
-<meta property="og:description" content="ext3下如果误删除了文件，恢复起来是异常麻烦的。如果是小文件，其实很多时候不用走常规文件恢复的路子，只要能找到内容就好了。基本思路是从磁盘中直接搜索内容，然后设法复制出来。
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/94/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="ext3下小文件的恢复">
+  <meta property="og:description" content="ext3下如果误删除了文件，恢复起来是异常麻烦的。如果是小文件，其实很多时候不用走常规文件恢复的路子，只要能找到内容就好了。基本思路是从磁盘中直接搜索内容，然后设法复制出来。
 恢复条件：
 文件没有被覆盖。如果被覆盖了，那就绝对没有希望了。 文件不大(通常建议在16K以内)。如果很大，下面一个条件就很难满足。 知晓文件内的特定关键字。条件是，文件每4K内，你必须知道至少一个关键字。因为ext3通常将4K内容连续存放，每知道一个关键字，可以恢复4K内容。如果缺少关键字，那就无法恢复了。 文件保存的版本不太多。 满足以上条件后，使用以下方法进行恢复：
-# grep -abn &quot;id_insert_stmt_param&quot; /dev/xvda1 4799010:713068605:sql_id_insert_stmt_param = &quot;SELECT NEXTVAL 使用grep对/dev/xvda1磁盘进行搜索，需要管理员权限直接访问设备文件，搜索哪个物理磁盘可以用mount来确定。 713068605是相对偏移地址，如果保存了多个版本，可能有多个偏移地址。 他们的选择和确定是个非常麻烦的问题，所以文件保存的版本不能过多。
+# grep -abn &#34;id_insert_stmt_param&#34; /dev/xvda1 4799010:713068605:sql_id_insert_stmt_param = &#34;SELECT NEXTVAL 使用grep对/dev/xvda1磁盘进行搜索，需要管理员权限直接访问设备文件，搜索哪个物理磁盘可以用mount来确定。 713068605是相对偏移地址，如果保存了多个版本，可能有多个偏移地址。 他们的选择和确定是个非常麻烦的问题，所以文件保存的版本不能过多。
 $ python &gt;&gt;&gt; (713068605/4096)*4096 713068544 &gt;&gt;&gt; exit () 以上过程可以在常规权限下操作，使用python(或者其他你高兴的计算器)确定该偏移地址的块首地址。
 # dd if=/dev/xvda1 bs=1 count=4k skip=713068544 &gt; 1.tmp 将这个块的内容复制出来，注意磁盘上必须有足够空间，否则搞不好会将原始内容覆盖。
 更严谨的方法是将内容dump到其他磁盘设备的挂载点下，做异地磁盘恢复。
-以上方法可以恢复一个块的内容。手工恢复所有块后，将内容拼接，就是你要恢复的文件。" />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/94/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2010-02-21T10:20:00+08:00" />
-<meta property="article:modified_time" content="2010-02-21T10:20:00+08:00" />
+以上方法可以恢复一个块的内容。手工恢复所有块后，将内容拼接，就是你要恢复的文件。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2010-02-21T10:20:00+08:00">
+    <meta property="article:modified_time" content="2010-02-21T10:20:00+08:00">
+    <meta property="article:tag" content="Ext3">
+    <meta property="article:tag" content="Grep">
+    <meta property="article:tag" content="Linux">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -82,7 +93,7 @@ $ python &gt;&gt;&gt; (713068605/4096)*4096 713068544 &gt;&gt;&gt; exit () 以�
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -94,27 +105,18 @@ $ python &gt;&gt;&gt; (713068605/4096)*4096 713068544 &gt;&gt;&gt; exit () 以�
       <h1 class ="post-title">ext3下小文件的恢复</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Feb 21, 2010
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/ext3/">ext3</a>
-              <a class="tag" href="//blog.shell909090.org/tags/grep/">grep</a>
-              <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/ext3/">Ext3</a>
+              <a class="tag" href="/tags/grep/">Grep</a>
+              <a class="tag" href="/tags/linux/">Linux</a>
         </div>
       </div>
     </header>
@@ -148,7 +150,24 @@ $ python &gt;&gt;&gt; (713068605/4096)*4096 713068544 &gt;&gt;&gt; exit () 以�
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

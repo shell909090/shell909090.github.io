@@ -1,127 +1,48 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>lxc on Shell&#39;s Home</title>
+    <title>Lxc on Shell&#39;s Home</title>
     <link>//blog.shell909090.org/tags/lxc/</link>
-    <description>Recent content in lxc on Shell&#39;s Home</description>
-    <generator>Hugo -- gohugo.io</generator>
+    <description>Recent content in Lxc on Shell&#39;s Home</description>
+    <generator>Hugo</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Mon, 30 Jun 2014 12:32:08 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/lxc/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 30 Jun 2014 12:32:08 +0800</lastBuildDate>
+    <atom:link href="//blog.shell909090.org/tags/lxc/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>docker的原理和类比</title>
       <link>//blog.shell909090.org/blog/archives/2650/</link>
       <pubDate>Mon, 30 Jun 2014 12:32:08 +0800</pubDate>
-      
       <guid>//blog.shell909090.org/blog/archives/2650/</guid>
-      <description>从虚拟化的种类和层级说起 cpu虚拟化：可以模拟不同CPU，例如bochs 完全虚拟化：只能模拟同样CPU，但是可以执行不同系统，例如vmware 半虚拟化：guest必须打补丁，例如Xen 硬件虚拟化：可以当作获得硬件加速的完全虚拟化 系统虚拟化：host和guest共享一样的内核，例如Openvz 语言沙盒：只能在语言的范围内使用 虚拟化的级别越偏底层，速度越慢，用户越难察觉到虚拟化的存在。 虚拟化的级别越偏上层，速度越快，用户越容易感知。
-cpu虚拟化和完全虚拟化时，用户几乎可以不察觉到虚拟化的存在 半虚拟化时，guest内核必须存在补丁 系统虚拟化时，用户不能控制自己的内核 语言沙盒时，用户没有使用api的自由 docker的实现结构 docker lxc namespace: 仅沙盒隔离，不限制资源。 cgroup: 仅限制资源，不沙盒隔离。 aufs image管理 当然，还有很多细节的东西，里面就不一一列举了。例如veth。
-docker不是虚拟机 docker不是虚拟机，因为lxc已经是虚拟机。如果两者功能一样，那么docker就没有存在的必要。
-你可以把docker当虚拟机用，但是当虚拟机用的话，他的完备程度远远不及现在的种种虚拟机。相比之下，就会觉得很不好用。这不是docker的错，只能说被不正确的使用了。
-docker是什么 docker就是环境。
-docker实际上只做了一件事情——镜像管理。负责将可执行的镜像导入导出，在不同设备上迁移。
-原本我们发布软件有两种方法，源码发布和二进制发布。二进制发布又有两种方案，静态链接和动态链接。最早的时候，我们发布软件都喜欢动态链接，因为小。但是随着网络和存储的升级，软件越来越喜欢静态链接，或者把动态库打包到发布里。因为系统情况越来越复杂，依赖关系一旦出错，系统就无法启动。
-将这个思路推到极限，就是虚拟机发布。早些年有人发过一些Oracle的linux安装镜像，算的上是先驱。因为Oracle早些年的安装程序很难用，对系统的依赖复杂。公司做测试用装一套Oracle还不够麻烦的。相比起来，下载一个虚拟机直接跑起来就可以用就方便了很多。即使性能差一些，测试而已也不是特别在意。
-docker再进了一步。不但提供一个镜像，可以在系统间方便的迁移。而且连镜像的升级都能做掉。更爽的是，升级只用传输差量数据。当然，有好处就有牺牲。
-docker的镜像是只读的 其实不是，docker的镜像当然可以写入。但是写的时候有几个问题。
-如果对镜像进行写入，aufs会将原始文件复制一次，再进行写入。这样性能比较低。 更直接的问题是，一旦对镜像做了写入，就无法从docker这里获得更新支持——docker不能将你的写入和上游的更新合并。因此，整个系统就退化成了一个完全的虚拟机。 所以，我个人认为，docker的镜像本身应当是只读的——如同EC2里面一样。数据的写入应当通过远程文件系统或者数据库服务来解决。
-vagrant 提到镜像管理，我们可以提一下同样属于镜像管理的一个软件——vagrant。
-可以将vbox的镜像打包导入导出 提供了一个cloud，允许镜像的分享/更新 为什么vagrant不如docker出名 快，系统级虚拟化使得docker的虚拟化开销降低到百分级别以下。 可以在虚拟机内使用的虚拟机，例如云主机内。 资源调度灵活，不需要将资源预先划定给不同的实例，在不同资源的机器上也不用调整参数。 成功案例 编译系统/打包系统/集成测试环境 典型的搭建一次，执行一次，销毁一次。不需要对image做更改（准确说的需要做更改，但是不需要保存）。
-公司内部应用 在IaaS的比拼中，以Openvz为代表的系统化虚拟化方案几乎完败于完全虚拟化/半虚拟化系列技术。就我和朋友的讨论，这里面最主要的因素在于。完全虚拟化技术可以比较好的隔离实例和实例间的资源使用，而系统虚拟化技术更偏向于将资源充分利用。这使得系统虚拟化更容易超售。
-然而，在公司内部应用中，这一缺陷就变成了优势。企业的诸多系统，只要在同一个优先级，其可用性应当是一致的。几个联动系统中，一个资源不足陷于濒死的情况下，保持其他几个系统资源充足并无意义。而且总资源是否足够应当是得到充分保证的事情，企业自己“超售”自己的资源，使得业务系统陷入运行缓慢的境地一点意义都没有。
-因此，系统虚拟化可以为企业级云计算提供可以灵活调度的资源，和非常低的额外开销。
-当然，云计算在企业化中原本就面临一些问题。原本提供软-硬件统一解决方案的集成商，需要如何重新组织解决方案。如何协调节约资源和高性能，高可用。云计算在企业级应用中还有很长的路要走。
-短板 太新。目前成功案例还是不足，而且围绕docker的工具链还不完备。 适用范围比较窄。需求需要集中在“环境迁移”领域，而且image本身不应被写入。 生不逢时。rvm和virtualenv已经在前面了。 </description>
+      <description>&lt;h1 id=&#34;从虚拟化的种类和层级说起&#34;&gt;从虚拟化的种类和层级说起&lt;/h1&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;cpu虚拟化：可以模拟不同CPU，例如bochs&lt;/li&gt;&#xA;&lt;li&gt;完全虚拟化：只能模拟同样CPU，但是可以执行不同系统，例如vmware&lt;/li&gt;&#xA;&lt;li&gt;半虚拟化：guest必须打补丁，例如Xen&lt;/li&gt;&#xA;&lt;li&gt;硬件虚拟化：可以当作获得硬件加速的完全虚拟化&lt;/li&gt;&#xA;&lt;li&gt;系统虚拟化：host和guest共享一样的内核，例如Openvz&lt;/li&gt;&#xA;&lt;li&gt;语言沙盒：只能在语言的范围内使用&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;hr&gt;&#xA;&lt;p&gt;虚拟化的级别越偏底层，速度越慢，用户越难察觉到虚拟化的存在。&#xA;虚拟化的级别越偏上层，速度越快，用户越容易感知。&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;cpu虚拟化和完全虚拟化时，用户几乎可以不察觉到虚拟化的存在&lt;/li&gt;&#xA;&lt;li&gt;半虚拟化时，guest内核必须存在补丁&lt;/li&gt;&#xA;&lt;li&gt;系统虚拟化时，用户不能控制自己的内核&lt;/li&gt;&#xA;&lt;li&gt;语言沙盒时，用户没有使用api的自由&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h1 id=&#34;docker的实现结构&#34;&gt;docker的实现结构&lt;/h1&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;docker&#xA;&lt;ul&gt;&#xA;&lt;li&gt;lxc&lt;/li&gt;&#xA;&lt;li&gt;namespace: 仅沙盒隔离，不限制资源。&lt;/li&gt;&#xA;&lt;li&gt;cgroup: 仅限制资源，不沙盒隔离。&lt;/li&gt;&#xA;&lt;li&gt;aufs&lt;/li&gt;&#xA;&lt;li&gt;image管理&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;当然，还有很多细节的东西，里面就不一一列举了。例如veth。&lt;/p&gt;&#xA;&lt;h2 id=&#34;docker不是虚拟机&#34;&gt;docker不是虚拟机&lt;/h2&gt;&#xA;&lt;p&gt;docker不是虚拟机，因为lxc已经是虚拟机。如果两者功能一样，那么docker就没有存在的必要。&lt;/p&gt;&#xA;&lt;p&gt;你可以把docker当虚拟机用，但是当虚拟机用的话，他的完备程度远远不及现在的种种虚拟机。相比之下，就会觉得很不好用。这不是docker的错，只能说被不正确的使用了。&lt;/p&gt;&#xA;&lt;h2 id=&#34;docker是什么&#34;&gt;docker是什么&lt;/h2&gt;&#xA;&lt;p&gt;docker就是环境。&lt;/p&gt;&#xA;&lt;p&gt;docker实际上只做了一件事情——镜像管理。负责将可执行的镜像导入导出，在不同设备上迁移。&lt;/p&gt;&#xA;&lt;p&gt;原本我们发布软件有两种方法，源码发布和二进制发布。二进制发布又有两种方案，静态链接和动态链接。最早的时候，我们发布软件都喜欢动态链接，因为小。但是随着网络和存储的升级，软件越来越喜欢静态链接，或者把动态库打包到发布里。因为系统情况越来越复杂，依赖关系一旦出错，系统就无法启动。&lt;/p&gt;&#xA;&lt;p&gt;将这个思路推到极限，就是虚拟机发布。早些年有人发过一些Oracle的linux安装镜像，算的上是先驱。因为Oracle早些年的安装程序很难用，对系统的依赖复杂。公司做测试用装一套Oracle还不够麻烦的。相比起来，下载一个虚拟机直接跑起来就可以用就方便了很多。即使性能差一些，测试而已也不是特别在意。&lt;/p&gt;&#xA;&lt;p&gt;docker再进了一步。不但提供一个镜像，可以在系统间方便的迁移。而且连镜像的升级都能做掉。更爽的是，升级只用传输差量数据。当然，有好处就有牺牲。&lt;/p&gt;&#xA;&lt;h2 id=&#34;docker的镜像是只读的&#34;&gt;docker的镜像是只读的&lt;/h2&gt;&#xA;&lt;p&gt;其实不是，docker的镜像当然可以写入。但是写的时候有几个问题。&lt;/p&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;如果对镜像进行写入，aufs会将原始文件复制一次，再进行写入。这样性能比较低。&lt;/li&gt;&#xA;&lt;li&gt;更直接的问题是，一旦对镜像做了写入，就无法从docker这里获得更新支持——docker不能将你的写入和上游的更新合并。因此，整个系统就退化成了一个完全的虚拟机。&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;p&gt;所以，我个人认为，docker的镜像本身应当是只读的——如同EC2里面一样。数据的写入应当通过远程文件系统或者数据库服务来解决。&lt;/p&gt;&#xA;&lt;h1 id=&#34;vagrant&#34;&gt;vagrant&lt;/h1&gt;&#xA;&lt;p&gt;提到镜像管理，我们可以提一下同样属于镜像管理的一个软件——vagrant。&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;可以将vbox的镜像打包导入导出&lt;/li&gt;&#xA;&lt;li&gt;提供了一个cloud，允许镜像的分享/更新&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;为什么vagrant不如docker出名&#34;&gt;为什么vagrant不如docker出名&lt;/h2&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;快，系统级虚拟化使得docker的虚拟化开销降低到百分级别以下。&lt;/li&gt;&#xA;&lt;li&gt;可以在虚拟机内使用的虚拟机，例如云主机内。&lt;/li&gt;&#xA;&lt;li&gt;资源调度灵活，不需要将资源预先划定给不同的实例，在不同资源的机器上也不用调整参数。&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h1 id=&#34;成功案例&#34;&gt;成功案例&lt;/h1&gt;&#xA;&lt;h2 id=&#34;编译系统打包系统集成测试环境&#34;&gt;编译系统/打包系统/集成测试环境&lt;/h2&gt;&#xA;&lt;p&gt;典型的搭建一次，执行一次，销毁一次。不需要对image做更改（准确说的需要做更改，但是不需要保存）。&lt;/p&gt;&#xA;&lt;h2 id=&#34;公司内部应用&#34;&gt;公司内部应用&lt;/h2&gt;&#xA;&lt;p&gt;在IaaS的比拼中，以Openvz为代表的系统化虚拟化方案几乎完败于完全虚拟化/半虚拟化系列技术。就我和朋友的讨论，这里面最主要的因素在于。完全虚拟化技术可以比较好的隔离实例和实例间的资源使用，而系统虚拟化技术更偏向于将资源充分利用。这使得系统虚拟化更容易超售。&lt;/p&gt;&#xA;&lt;p&gt;然而，在公司内部应用中，这一缺陷就变成了优势。企业的诸多系统，只要在同一个优先级，其可用性应当是一致的。几个联动系统中，一个资源不足陷于濒死的情况下，保持其他几个系统资源充足并无意义。而且总资源是否足够应当是得到充分保证的事情，企业自己“超售”自己的资源，使得业务系统陷入运行缓慢的境地一点意义都没有。&lt;/p&gt;&#xA;&lt;p&gt;因此，系统虚拟化可以为企业级云计算提供可以灵活调度的资源，和非常低的额外开销。&lt;/p&gt;&#xA;&lt;p&gt;当然，云计算在企业化中原本就面临一些问题。原本提供软-硬件统一解决方案的集成商，需要如何重新组织解决方案。如何协调节约资源和高性能，高可用。云计算在企业级应用中还有很长的路要走。&lt;/p&gt;&#xA;&lt;h1 id=&#34;短板&#34;&gt;短板&lt;/h1&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;太新。目前成功案例还是不足，而且围绕docker的工具链还不完备。&lt;/li&gt;&#xA;&lt;li&gt;适用范围比较窄。需求需要集中在“环境迁移”领域，而且image本身不应被写入。&lt;/li&gt;&#xA;&lt;li&gt;生不逢时。rvm和virtualenv已经在前面了。&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
-    
     <item>
       <title>lxc和virtualbox和物理机的简单性能测试和对比</title>
       <link>//blog.shell909090.org/blog/archives/2542/</link>
       <pubDate>Thu, 23 Jan 2014 11:04:34 +0800</pubDate>
-      
       <guid>//blog.shell909090.org/blog/archives/2542/</guid>
-      <description>说明 测试各种虚拟化系统下的虚拟机性能。
-测试使用sysbench。
-CPU采用如下指令测试。
-sysbench --test=cpu --num-threads=2 --cpu-max-prime=50000 run 文件IO采用如下指令测试。
-sysbench --test=fileio --file-total-size=10G prepare sysbench --test=fileio --file-total-size=10G --file-test-mode=rndrw --init-rng=on --max-time=300 --max-requests=0 run 内存采用如下指令测试。
-sysbench --test=memory --num-threads=2 --memory-access-mode=seq run sysbench --test=memory --num-threads=2 --memory-access-mode=rnd run 线程采用如下指令。
-sysbench --test=threads --num-threads=2 run sysbench --test=mutex --num-threads=2 --mutex-locks=1000000 run 裸硬盘测试采用如下指令。
-hdparm -tT &amp;lt;dev&amp;gt; 物理机上有三个文件系统，ext4/xfs/btrfs，前两者仅做fileio测试以对比性能。
-另外做两个特殊文件系统对比，aufs带复制和aufs无复制。前者在只读层上准备好测试文件，而后进行随机读写测试。其中就附带了文件复制开销。后者在aufs建立后初始化测试文件，因此消除了文件复制开销。
-所有测试都是测试数次，取最高者（因为低者可能受到各种干扰）。一般是2-3次。
-物理机是一台DELL Intel 64位桌面系统，支持硬件虚拟化，有4G内存。系统采用debian jessie，测试于2014年1月17日-20日执行，内核3.12.6-2 (2013-12-29) x86_64。
-虚拟机lxc是使用lxc切分的一台虚拟机，没有做资源限制。
-虚拟机vbox是使用virtualbox切分的一台虚拟机，分配了所有CPU，打开了硬件虚拟化，分配了1G内存。
-文件系统 ext4 Operations performed: 21311 Read, 14207 Write, 45440 Other = 80958 Total Read 332.</description>
+      <description>&lt;h1 id=&#34;说明&#34;&gt;说明&lt;/h1&gt;&#xA;&lt;p&gt;测试各种虚拟化系统下的虚拟机性能。&lt;/p&gt;&#xA;&lt;p&gt;测试使用sysbench。&lt;/p&gt;&#xA;&lt;p&gt;CPU采用如下指令测试。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;sysbench --test=cpu --num-threads=2 --cpu-max-prime=50000 run&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;文件IO采用如下指令测试。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;sysbench --test=fileio --file-total-size=10G prepare&#xA;sysbench --test=fileio --file-total-size=10G --file-test-mode=rndrw --init-rng=on --max-time=300 --max-requests=0 run&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;内存采用如下指令测试。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;sysbench --test=memory --num-threads=2 --memory-access-mode=seq run&#xA;sysbench --test=memory --num-threads=2 --memory-access-mode=rnd run&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;线程采用如下指令。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;sysbench --test=threads --num-threads=2 run&#xA;sysbench --test=mutex --num-threads=2 --mutex-locks=1000000 run&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;裸硬盘测试采用如下指令。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;hdparm -tT &amp;lt;dev&amp;gt;&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;物理机上有三个文件系统，ext4/xfs/btrfs，前两者仅做fileio测试以对比性能。&lt;/p&gt;&#xA;&lt;p&gt;另外做两个特殊文件系统对比，aufs带复制和aufs无复制。前者在只读层上准备好测试文件，而后进行随机读写测试。其中就附带了文件复制开销。后者在aufs建立后初始化测试文件，因此消除了文件复制开销。&lt;/p&gt;&#xA;&lt;p&gt;所有测试都是测试数次，取最高者（因为低者可能受到各种干扰）。一般是2-3次。&lt;/p&gt;&#xA;&lt;p&gt;物理机是一台DELL Intel 64位桌面系统，支持硬件虚拟化，有4G内存。系统采用debian jessie，测试于2014年1月17日-20日执行，内核3.12.6-2 (2013-12-29) x86_64。&lt;/p&gt;&#xA;&lt;p&gt;虚拟机lxc是使用lxc切分的一台虚拟机，没有做资源限制。&lt;/p&gt;&#xA;&lt;p&gt;虚拟机vbox是使用virtualbox切分的一台虚拟机，分配了所有CPU，打开了硬件虚拟化，分配了1G内存。&lt;/p&gt;&#xA;&lt;h1 id=&#34;文件系统&#34;&gt;文件系统&lt;/h1&gt;&#xA;&lt;h2 id=&#34;ext4&#34;&gt;ext4&lt;/h2&gt;&#xA;&lt;p&gt;Operations performed: 21311 Read, 14207 Write, 45440 Other = 80958 Total&#xA;Read 332.98Mb Written 221.98Mb Total transferred 554.97Mb (1.8499Mb/sec)&#xA;118.39 Requests/sec executed&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>lxc简单介绍</title>
       <link>//blog.shell909090.org/blog/archives/2533/</link>
       <pubDate>Thu, 02 Jan 2014 12:48:17 +0800</pubDate>
-      
       <guid>//blog.shell909090.org/blog/archives/2533/</guid>
-      <description>基本安装 安装lxc包。
-注意修改/bin/sh，链接到/bin/bash。lxc在某些版本上有一个bug，声明为/bin/sh却使用bash语法，导致不如此链接会出现错误。
-lxc on debian wiki 镜像和设定 使用lxc-create -n name -t template生成镜像。
-在/usr/share/lxc/templates可以看到可用的模板。
-在/var/cache/lxc/debian会缓存生成过程的临时文件。
-生成的镜像需要在镜像内安装lxc，否则无法使用lxc-execute。
-资源限制 在config文件内，写入cgroup限定规则。注意，使用内存限定的话，需要在内核参数中加入cgroup_enable=memory。
-在debian下，可以修改/etc/default/grub文件，使用update-grub重新生成规则。
-GRUB_CMDLINE_LINUX_DEFAULT=&amp;quot;cgroup_enable=memory quiet&amp;quot; 在config文件中可以如下限定。
-lxc.cgroup.memory.limit_in_bytes = 512M # 限定内存 lxc.cgroup.cpuset.cpus = 0 # 限定可以使用的核 lxc.cgroup.blkio.throttle.read_bps_device = 8:0 100 # 读取速率限定 lxc.cgroup.blkio.throttle.write_bps_device = 8:0 100 # 写入速率限定 lxc.cgroup.blkio.throttle.read_iops_device = 8:0 100 # 读取频率限定 lxc.cgroup.blkio.throttle.write_iops_device = 8:0 100 # 写入频率限定 cgroups blkio-controller cpusets memory 执行 lxc-start -n name /bin/echo hello 还可以用以下指令，在已经启动的container里执行进程。
-lxc-attach -n name /bin/echo hello 以下指令是用来在未启动的container里执行进程的。</description>
+      <description>&lt;h1 id=&#34;基本安装&#34;&gt;基本安装&lt;/h1&gt;&#xA;&lt;p&gt;安装lxc包。&lt;/p&gt;&#xA;&lt;p&gt;注意修改/bin/sh，链接到/bin/bash。lxc在某些版本上有一个bug，声明为/bin/sh却使用bash语法，导致不如此链接会出现错误。&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;a href=&#34;https://wiki.debian.org/LXC&#34;&gt;lxc on debian wiki&lt;/a&gt;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h1 id=&#34;镜像和设定&#34;&gt;镜像和设定&lt;/h1&gt;&#xA;&lt;p&gt;使用&lt;code&gt;lxc-create -n name -t template&lt;/code&gt;生成镜像。&lt;/p&gt;&#xA;&lt;p&gt;在/usr/share/lxc/templates可以看到可用的模板。&lt;/p&gt;&#xA;&lt;p&gt;在/var/cache/lxc/debian会缓存生成过程的临时文件。&lt;/p&gt;&#xA;&lt;p&gt;生成的镜像需要在镜像内安装lxc，否则无法使用lxc-execute。&lt;/p&gt;&#xA;&lt;h1 id=&#34;资源限制&#34;&gt;资源限制&lt;/h1&gt;&#xA;&lt;p&gt;在config文件内，写入cgroup限定规则。注意，使用内存限定的话，需要在内核参数中加入cgroup_enable=memory。&lt;/p&gt;&#xA;&lt;p&gt;在debian下，可以修改/etc/default/grub文件，使用update-grub重新生成规则。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;GRUB_CMDLINE_LINUX_DEFAULT=&amp;quot;cgroup_enable=memory quiet&amp;quot;&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;在config文件中可以如下限定。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;lxc.cgroup.memory.limit_in_bytes = 512M # 限定内存&#xA;lxc.cgroup.cpuset.cpus = 0 # 限定可以使用的核&#xA;lxc.cgroup.blkio.throttle.read_bps_device = 8:0 100 # 读取速率限定&#xA;lxc.cgroup.blkio.throttle.write_bps_device = 8:0 100 # 写入速率限定&#xA;lxc.cgroup.blkio.throttle.read_iops_device = 8:0 100 # 读取频率限定&#xA;lxc.cgroup.blkio.throttle.write_iops_device = 8:0 100 # 写入频率限定&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;a href=&#34;https://www.kernel.org/doc/Documentation/cgroups/&#34;&gt;cgroups&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;https://www.kernel.org/doc/Documentation/cgroups/blkio-controller.txt&#34;&gt;blkio-controller&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;https://www.kernel.org/doc/Documentation/cgroups/cpusets.txt&#34;&gt;cpusets&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;https://www.kernel.org/doc/Documentation/cgroups/memory.txt&#34;&gt;memory&lt;/a&gt;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h1 id=&#34;执行&#34;&gt;执行&lt;/h1&gt;&#xA;&lt;pre&gt;&lt;code&gt;lxc-start -n name /bin/echo hello&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;还可以用以下指令，在已经启动的container里执行进程。&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>lxc的double NAT模式无法使用dnsmasq的分析</title>
       <link>//blog.shell909090.org/blog/archives/2517/</link>
       <pubDate>Mon, 25 Nov 2013 16:40:01 +0800</pubDate>
-      
       <guid>//blog.shell909090.org/blog/archives/2517/</guid>
-      <description>系统debian testing，lxc-0.9。
-在笔记本上做lxc，网络是wifi，AP会drop不同MAC发出的报文，所以无法做网桥。一个办法是用ebtables做规则，我嫌麻烦。另一个是配置多头主机，double NAT。当然，还有路由器模式。不过大多数网络环境中我搞不到default gateway的权限来添加子网的路由规则。所以就选了double NAT。
-问题出在dnsmasq作为dhcp和dns服务器上。整个网络都搭好了，通的。完了我在host上启动dnsmasq，在guest里就是硬生生无法获得IP。
-首先host上vi /var/log/syslog，看到dnsmasq把dhcp offer发出去了。在guest里tcpdump，看到有报文收到。那就奇怪该死的dhclient不工作了。dhclient版本4.2.4，和主系统一致。网桥环境中这个版本可以工作。
-所以把网桥环境中的报文也tcpdump了一遍，加上刚刚不成功的dumpout一起看——什么都看不出来。
-偶然dhclient -v -d -4 eth0了一下，看到bad udp checksums，顿时一愣。跑到wireshark下面看了一下——还真是没有计算checksum。打开checksum计算可以看到double NAT里的checksum算错了。提示是maybe checksum offload。
-我找到这个链接：http://www.wireshark.org/docs/wsug_html_chunked/ChAdvChecksums.html
-里面提到，checksum可能是由网卡或驱动计算的。这就难怪——没问题的dhcp offer的udp checksum是由openwrt的网卡发出，而有问题的则是由bridge和virtual ethernet发出。
-那见鬼，别人是怎么成功的？
-一番搜索，看来lxc还不是第一个中招的：http://lists.xen.org/archives/html/xen-devel/2011-12/msg01770.html
-dhcp-4.2.2可以打这个补丁，使得dhcp-client不去校验udp checksum：http://pkgs.fedoraproject.org/cgit/dhcp.git/plain/dhcp-4.2.2-xen-checksum.patch?id2=HEAD
-当然，也有各种坑爹补丁（例如这个：http://marc.info/?l=kvm&amp;amp;m=121882968407525&amp;amp;w=2 ）来修复虚拟驱动上的问题，计算出正确的checksum。
-在debian下，他被报为bts671707(http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=671707)。已经报了一年半，尚未处理。
-网上很多教程能够跑通的原因，大概是因为他们的guest基于08年以后的rh系系统。rh在08年就对dhclient出了一个补丁（4.2.2那个），用于暂时修复这个问题。
-所有基于debian系的系统都无法从offloading不处理的系统上获得dhcp offer。</description>
+      <description>&lt;p&gt;系统debian testing，lxc-0.9。&lt;/p&gt;&#xA;&lt;p&gt;在笔记本上做lxc，网络是wifi，AP会drop不同MAC发出的报文，所以无法做网桥。一个办法是用ebtables做规则，我嫌麻烦。另一个是配置多头主机，double NAT。当然，还有路由器模式。不过大多数网络环境中我搞不到default gateway的权限来添加子网的路由规则。所以就选了double NAT。&lt;/p&gt;&#xA;&lt;p&gt;问题出在dnsmasq作为dhcp和dns服务器上。整个网络都搭好了，通的。完了我在host上启动dnsmasq，在guest里就是硬生生无法获得IP。&lt;/p&gt;&#xA;&lt;p&gt;首先host上vi /var/log/syslog，看到dnsmasq把dhcp offer发出去了。在guest里tcpdump，看到有报文收到。那就奇怪该死的dhclient不工作了。dhclient版本4.2.4，和主系统一致。网桥环境中这个版本可以工作。&lt;/p&gt;&#xA;&lt;p&gt;所以把网桥环境中的报文也tcpdump了一遍，加上刚刚不成功的dumpout一起看——什么都看不出来。&lt;/p&gt;&#xA;&lt;p&gt;偶然dhclient -v -d -4 eth0了一下，看到bad udp checksums，顿时一愣。跑到wireshark下面看了一下——还真是没有计算checksum。打开checksum计算可以看到double NAT里的checksum算错了。提示是maybe checksum offload。&lt;/p&gt;&#xA;&lt;p&gt;我找到这个链接：http://www.wireshark.org/docs/wsug_html_chunked/ChAdvChecksums.html&lt;/p&gt;&#xA;&lt;p&gt;里面提到，checksum可能是由网卡或驱动计算的。这就难怪——没问题的dhcp offer的udp checksum是由openwrt的网卡发出，而有问题的则是由bridge和virtual ethernet发出。&lt;/p&gt;&#xA;&lt;p&gt;那见鬼，别人是怎么成功的？&lt;/p&gt;&#xA;&lt;p&gt;一番搜索，看来lxc还不是第一个中招的：http://lists.xen.org/archives/html/xen-devel/2011-12/msg01770.html&lt;/p&gt;&#xA;&lt;p&gt;dhcp-4.2.2可以打这个补丁，使得dhcp-client不去校验udp checksum：http://pkgs.fedoraproject.org/cgit/dhcp.git/plain/dhcp-4.2.2-xen-checksum.patch?id2=HEAD&lt;/p&gt;&#xA;&lt;p&gt;当然，也有各种坑爹补丁（例如这个：http://marc.info/?l=kvm&amp;amp;m=121882968407525&amp;amp;w=2 ）来修复虚拟驱动上的问题，计算出正确的checksum。&lt;/p&gt;&#xA;&lt;p&gt;在debian下，他被报为bts671707(&lt;a href=&#34;http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=671707&#34;&gt;http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=671707&lt;/a&gt;)。已经报了一年半，尚未处理。&lt;/p&gt;&#xA;&lt;p&gt;网上很多教程能够跑通的原因，大概是因为他们的guest基于08年以后的rh系系统。rh在08年就对dhclient出了一个补丁（4.2.2那个），用于暂时修复这个问题。&lt;/p&gt;&#xA;&lt;p&gt;所有基于debian系的系统都无法从offloading不处理的系统上获得dhcp offer。&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>lxc路由模式</title>
       <link>//blog.shell909090.org/blog/archives/2404/</link>
       <pubDate>Fri, 24 May 2013 09:25:36 +0800</pubDate>
-      
       <guid>//blog.shell909090.org/blog/archives/2404/</guid>
-      <description>为什么使用路由模式 lxc默认使用的是桥模式，这也是我在家里和公司里部署的模式。在这种模式下，lxc虚拟机可以直接和真实网络中的机器互相访问，就如同一台真的机器一样。路由模式则没有这个便利性。
-但是桥模式有个缺陷，必须能够做出桥来。我们有做不出桥来的时候么？有，如果你用笔记本，大部分AP会拒绝第二个MAC地址的包。导致网桥可以组建，却永远无法正常使用。
-第一种路由模式，双重NAT简版 双重NAT可以用于几乎所有场景，并且不会带来后遗症。然而，双重NAT的问题在于，物理网络不能直接访问虚拟机。对于很多设备来说，这就失去了价值。另外说一点，之所以叫做双重NAT，是因为多数时候物理网络接到外网还需要一次NAT。
-lxc的双重NAT可以视为两步，建立NAT连接的虚拟网络，将lxc连接到虚拟网络。
-第一步比较复杂，我们先从br0的建立开始说起。首先，你需要为虚拟网络分配一个不同的保留内网网段。如果使用同样的内网网段，在ARP查询的时候会从一个端口发出超过一个的MAC回应，这就退回了桥模式。
-然后我们需要建立一个br0网桥作为配置的起点，对这个网桥赋予IP，配置路由和防火墙，并启动dnsmasq以便于dhcp和dns。这个模式之所以叫做简版，是因为我们先不讨论dnsmasq。
-假如你的lxc内网网段是192.168.66.0/24，那么你大致可以如下配置：
-brctl addbr br0 ifconfig br0 192.168.66.1 route add -net 192.168.66.0/24 dev br0 iptables -A INPUT -s 192.168.66.0/24 -j ACCEPT iptables -t nat -A POSTROUTING -s 192.168.66.0/24 -j MASQUERADE 实际上，对于任何一种网口设备，将其配置为NAT的过程都是一样的。
-第二步非常容易，在lxc的config文件内，指定网桥为br0就OK了。当然，作为略去dnsmasq的代价，你需要手工配置每台机器的IP地址和DNS服务器。
-第二种路由模式，双重NAT 双重NAT的完整版需要在内网网口上启动dns，作为dns缓存代理和dhcp服务器。其余和第一种模式没有区别，只是你不需要手工指定IP和DNS服务器了。
-当然，其实任何一种网口的NAT配置都是一样的。
-第三种路由模式，双边交互路由 第三种路由模式的效果最好，虚拟机和真实机可以互相访问。但是这种模式需要能够修改物理网络网关的路由表。这种模式使用主机作为路由器，中转真实网络和虚拟网络。
-我略去如何创造br以及如何将lxc连接到上面，这些前面有叙述。下面我简述一下双边路由最关键的几点。
-最重要的重点，就是在真实网络的网关上，将你的真实物理机在外网的IP，配置为虚拟网络的下一跳网关。例如，对于上面的例子，我们应当在网关上如此配置。
-route add -net 192.168.66.0/24 gw 192.168.1.4
-如果不进行如此配置，物理网络所发出的包在到达网关后就不知道应当如何转发了。
-在物理机上允许双边网络的所有包透过。你的包当然不能被防火墙挡掉。 虚拟网络的dhcp是不会传递到外网的，因此如果打算使用dhcp，还是需要开dnsmasq。 </description>
+      <description>&lt;h1 id=&#34;为什么使用路由模式&#34;&gt;为什么使用路由模式&lt;/h1&gt;&#xA;&lt;p&gt;lxc默认使用的是桥模式，这也是我在家里和公司里部署的模式。在这种模式下，lxc虚拟机可以直接和真实网络中的机器互相访问，就如同一台真的机器一样。路由模式则没有这个便利性。&lt;/p&gt;&#xA;&lt;p&gt;但是桥模式有个缺陷，必须能够做出桥来。我们有做不出桥来的时候么？有，如果你用笔记本，大部分AP会拒绝第二个MAC地址的包。导致网桥可以组建，却永远无法正常使用。&lt;/p&gt;&#xA;&lt;h1 id=&#34;第一种路由模式双重nat简版&#34;&gt;第一种路由模式，双重NAT简版&lt;/h1&gt;&#xA;&lt;p&gt;双重NAT可以用于几乎所有场景，并且不会带来后遗症。然而，双重NAT的问题在于，物理网络不能直接访问虚拟机。对于很多设备来说，这就失去了价值。另外说一点，之所以叫做双重NAT，是因为多数时候物理网络接到外网还需要一次NAT。&lt;/p&gt;&#xA;&lt;p&gt;lxc的双重NAT可以视为两步，建立NAT连接的虚拟网络，将lxc连接到虚拟网络。&lt;/p&gt;&#xA;&lt;p&gt;第一步比较复杂，我们先从br0的建立开始说起。首先，你需要为虚拟网络分配一个不同的保留内网网段。如果使用同样的内网网段，在ARP查询的时候会从一个端口发出超过一个的MAC回应，这就退回了桥模式。&lt;/p&gt;&#xA;&lt;p&gt;然后我们需要建立一个br0网桥作为配置的起点，对这个网桥赋予IP，配置路由和防火墙，并启动dnsmasq以便于dhcp和dns。这个模式之所以叫做简版，是因为我们先不讨论dnsmasq。&lt;/p&gt;&#xA;&lt;p&gt;假如你的lxc内网网段是192.168.66.0/24，那么你大致可以如下配置：&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;brctl addbr br0&#xA;ifconfig br0 192.168.66.1&#xA;route add -net 192.168.66.0/24 dev br0&#xA;iptables -A INPUT -s 192.168.66.0/24 -j ACCEPT&#xA;iptables -t nat -A POSTROUTING -s 192.168.66.0/24 -j MASQUERADE&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;实际上，对于任何一种网口设备，将其配置为NAT的过程都是一样的。&lt;/p&gt;&#xA;&lt;p&gt;第二步非常容易，在lxc的config文件内，指定网桥为br0就OK了。当然，作为略去dnsmasq的代价，你需要手工配置每台机器的IP地址和DNS服务器。&lt;/p&gt;&#xA;&lt;h1 id=&#34;第二种路由模式双重nat&#34;&gt;第二种路由模式，双重NAT&lt;/h1&gt;&#xA;&lt;p&gt;双重NAT的完整版需要在内网网口上启动dns，作为dns缓存代理和dhcp服务器。其余和第一种模式没有区别，只是你不需要手工指定IP和DNS服务器了。&lt;/p&gt;&#xA;&lt;p&gt;当然，其实任何一种网口的NAT配置都是一样的。&lt;/p&gt;&#xA;&lt;h1 id=&#34;第三种路由模式双边交互路由&#34;&gt;第三种路由模式，双边交互路由&lt;/h1&gt;&#xA;&lt;p&gt;第三种路由模式的效果最好，虚拟机和真实机可以互相访问。但是这种模式需要能够修改物理网络网关的路由表。这种模式使用主机作为路由器，中转真实网络和虚拟网络。&lt;/p&gt;&#xA;&lt;p&gt;我略去如何创造br以及如何将lxc连接到上面，这些前面有叙述。下面我简述一下双边路由最关键的几点。&lt;/p&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;&#xA;&lt;p&gt;最重要的重点，就是在真实网络的网关上，将你的真实物理机在外网的IP，配置为虚拟网络的下一跳网关。例如，对于上面的例子，我们应当在网关上如此配置。&lt;/p&gt;&#xA;&lt;p&gt;route add -net 192.168.66.0/24 gw 192.168.1.4&lt;/p&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;p&gt;如果不进行如此配置，物理网络所发出的包在到达网关后就不知道应当如何转发了。&lt;/p&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;在物理机上允许双边网络的所有包透过。你的包当然不能被防火墙挡掉。&lt;/li&gt;&#xA;&lt;li&gt;虚拟网络的dhcp是不会传递到外网的，因此如果打算使用dhcp，还是需要开dnsmasq。&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
-    
   </channel>
 </rss>

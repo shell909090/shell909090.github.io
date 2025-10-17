@@ -4,27 +4,32 @@
     <title>论同时的双系统－－准虚拟对双系统的进一步扩充 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="论同时的双系统－－准虚拟对双系统的进一步扩充"/>
-<meta name="twitter:description" content="熟悉贝壳的人都知道，贝壳是个linux爱用者，不过因为工作关系，经常要使用windows。贝壳在自己的笔记本上使用了linux/windows混合双系统，并通过共用磁盘的方式共享数据，解决这个问题。但是长期的使用表明，这种解决方案存在几个巨大的瑕疵。首先是系统切换时间常，因此长期在一个系统中工作，而很少触及另外一个系统。其次是稳定性差，windows下一旦崩溃，进入linux后就需要检测数据盘，80G的数据慢慢扫描，感觉晕到死。那么是否有一种方案，能够同时使用两个工作级系统（注意，不是实验级，贝壳成功的在windows下的vmware里跑了一个oracle，这个可以说是实验级的典范。然而工作级系统的要求和实验级完全不同）。
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="论同时的双系统－－准虚拟对双系统的进一步扩充">
+  <meta name="twitter:description" content="熟悉贝壳的人都知道，贝壳是个linux爱用者，不过因为工作关系，经常要使用windows。贝壳在自己的笔记本上使用了linux/windows混合双系统，并通过共用磁盘的方式共享数据，解决这个问题。但是长期的使用表明，这种解决方案存在几个巨大的瑕疵。首先是系统切换时间常，因此长期在一个系统中工作，而很少触及另外一个系统。其次是稳定性差，windows下一旦崩溃，进入linux后就需要检测数据盘，80G的数据慢慢扫描，感觉晕到死。那么是否有一种方案，能够同时使用两个工作级系统（注意，不是实验级，贝壳成功的在windows下的vmware里跑了一个oracle，这个可以说是实验级的典范。然而工作级系统的要求和实验级完全不同）。
 从系统发展史的角度来说，我们可以预见，将来的系统将是脱离硬件的。首要的原因就是和硬件不相匹配的各个层级的计算能力需求。现在系统发展有两个极端，一个是虚拟机，试图将一个硬件整体分离，运行多个系统。另一个是高性能集群，试图将多个硬件合并，运行一个系统。从根本上说，这是因为高性价比的硬件集中在了一个性能区间，而实际的性能需求却是完全分离的，因此我们才会出现如此两类完全背离的需求。而现在有大量宝贵的人力浪费在了系统和硬件结合，系统稳定性问题上，这无疑是对将来发展的一个巨大瓶颈。虽然无法预知将来的技术发展会以何种方式解决这个问题，然而可以预见的是，解决硬件和性能的背离将是人类计算机发展史上一个重要的里程碑，解决这个问题的人必定会在计算机历史上留下重重的一笔。
 同时，更进一步，贝壳揣测，将来的解决方案将是系统硬件调度/驱动和系统软件管理分离。一个软系统拥有一个用户表和一个硬件表，硬件表上写他可能有10个键盘，两个显示器，或者一堆其他设备。系统借助某个可信方案，管理了一系列虚拟抽象设备和真实设备形成的映射。作为系统层以上的软件，我们只要关心如何操作这个虚拟设备即可。而实际上，我们可以通过管理参数和对应关系实现各种需要。例如我们可以将多个机器的硬件管理核心加入一个系统，形成集群。或者我们可以在一个机器的硬件管理核心上加入多个系统，形成虚拟机。这个基本是分布系统的观点。如此一来，系统层软件就无法得知也无需得知自己是在到底运行在什么环境下。只是这个系统设计方案对高性能要求的子系统（主要是显卡）相当不利。
 从揣测回到现实，为了实现一个工作级系统（幸好，还不是工业级），我们需要为系统制定一些评判标准，以判别各个方案的优劣。我们首先能想到的评判标准就是速度，一个慢吞吞的系统解决方案是没有任何实用价值的。当然，这个速度是有差异的，可能是linux快一些，windows慢一些，或者相反。我们假定实际的需要是windows快一些，因为linux可以通过定制进行加速。
@@ -37,10 +42,12 @@ linux虚拟方案，xen。速度超快，但是上来就在贝壳的机器上暴
 linux虚拟方案，openvz。这种方案压根就不适合贝壳的状况，因为这个虚拟方案要求宿主和客户必须是同一CPU同一系统（不要求同一linux发行）。主要用于希望将一个主机切分成多个独立的同构主机，以达到分离管理的目的（例如业务服务器和数据库服务器分离）。需要做大型网络管理/虚拟主机业务的人可能会对这个虚拟方案感兴趣。
 linux虚拟方案，vmware。速度一般，linux快windows慢，视频效果不错。vmware毕竟是商业公司，视频驱动挺齐全的。但是内核驱动的编译麻烦到死，首先是要求编译器版本和主内核编译器版本一致，于是贝壳去搞了个gcc-4.1，然后连接了上去。下面又是内核头定义出现版本差异，搞到现在还没有搞定。谁能搞的定的给个参考，最好是debian上的解决方案。
 linux虚拟方案，kvm。这个是贝壳目前使用的方案，基本比较理想。速度很快，和xen基本差不多，显示速度不如vmware（理论上说装好显卡驱动应该会好点，不过贝壳找不到CLDC5446的XP驱动，那是Win32和Win95时代的显卡）。linux快windows慢，但是还在可忍受范围内。稳定性很好，只要测试通过，运行中到目前为止没有死机（当然很多参数是加了之后开机即死机）。数据可以通过samba互通，邮件也同样可以互通。然而使用samba无疑复杂很多，而且性能并不太好。只是从稳定性上说，让linux自己去驱动ext3总比半吊子的windows驱动更好，同时也不会出现争抢的问题。易用性上还算可以，无论是内核编译还是系统使用都不太难，最大的麻烦就是网络配置。根据贝壳的测试，在真实机器上superpi运行100W 位需要45秒，虚拟机内需要54-60秒，尤其在换用kvm-72.2后反而更慢了（54下降到60，折合真实机器83.3％下降到75％）。
-总体来说，贝壳更倾向于使用全开源的准-全虚拟解决方案kvm，主要因为他简便易行，对系统影响小，不改变现有系统。同时性能高，稳定性好。主要需要解决显卡效率问题。如果以上问题无法彻底解决，贝壳打算换用linux下的vmware，想办法搞定他的内核模块。"/>
+总体来说，贝壳更倾向于使用全开源的准-全虚拟解决方案kvm，主要因为他简便易行，对系统影响小，不改变现有系统。同时性能高，稳定性好。主要需要解决显卡效率问题。如果以上问题无法彻底解决，贝壳打算换用linux下的vmware，想办法搞定他的内核模块。">
 
-    <meta property="og:title" content="论同时的双系统－－准虚拟对双系统的进一步扩充" />
-<meta property="og:description" content="熟悉贝壳的人都知道，贝壳是个linux爱用者，不过因为工作关系，经常要使用windows。贝壳在自己的笔记本上使用了linux/windows混合双系统，并通过共用磁盘的方式共享数据，解决这个问题。但是长期的使用表明，这种解决方案存在几个巨大的瑕疵。首先是系统切换时间常，因此长期在一个系统中工作，而很少触及另外一个系统。其次是稳定性差，windows下一旦崩溃，进入linux后就需要检测数据盘，80G的数据慢慢扫描，感觉晕到死。那么是否有一种方案，能够同时使用两个工作级系统（注意，不是实验级，贝壳成功的在windows下的vmware里跑了一个oracle，这个可以说是实验级的典范。然而工作级系统的要求和实验级完全不同）。
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/49/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="论同时的双系统－－准虚拟对双系统的进一步扩充">
+  <meta property="og:description" content="熟悉贝壳的人都知道，贝壳是个linux爱用者，不过因为工作关系，经常要使用windows。贝壳在自己的笔记本上使用了linux/windows混合双系统，并通过共用磁盘的方式共享数据，解决这个问题。但是长期的使用表明，这种解决方案存在几个巨大的瑕疵。首先是系统切换时间常，因此长期在一个系统中工作，而很少触及另外一个系统。其次是稳定性差，windows下一旦崩溃，进入linux后就需要检测数据盘，80G的数据慢慢扫描，感觉晕到死。那么是否有一种方案，能够同时使用两个工作级系统（注意，不是实验级，贝壳成功的在windows下的vmware里跑了一个oracle，这个可以说是实验级的典范。然而工作级系统的要求和实验级完全不同）。
 从系统发展史的角度来说，我们可以预见，将来的系统将是脱离硬件的。首要的原因就是和硬件不相匹配的各个层级的计算能力需求。现在系统发展有两个极端，一个是虚拟机，试图将一个硬件整体分离，运行多个系统。另一个是高性能集群，试图将多个硬件合并，运行一个系统。从根本上说，这是因为高性价比的硬件集中在了一个性能区间，而实际的性能需求却是完全分离的，因此我们才会出现如此两类完全背离的需求。而现在有大量宝贵的人力浪费在了系统和硬件结合，系统稳定性问题上，这无疑是对将来发展的一个巨大瓶颈。虽然无法预知将来的技术发展会以何种方式解决这个问题，然而可以预见的是，解决硬件和性能的背离将是人类计算机发展史上一个重要的里程碑，解决这个问题的人必定会在计算机历史上留下重重的一笔。
 同时，更进一步，贝壳揣测，将来的解决方案将是系统硬件调度/驱动和系统软件管理分离。一个软系统拥有一个用户表和一个硬件表，硬件表上写他可能有10个键盘，两个显示器，或者一堆其他设备。系统借助某个可信方案，管理了一系列虚拟抽象设备和真实设备形成的映射。作为系统层以上的软件，我们只要关心如何操作这个虚拟设备即可。而实际上，我们可以通过管理参数和对应关系实现各种需要。例如我们可以将多个机器的硬件管理核心加入一个系统，形成集群。或者我们可以在一个机器的硬件管理核心上加入多个系统，形成虚拟机。这个基本是分布系统的观点。如此一来，系统层软件就无法得知也无需得知自己是在到底运行在什么环境下。只是这个系统设计方案对高性能要求的子系统（主要是显卡）相当不利。
 从揣测回到现实，为了实现一个工作级系统（幸好，还不是工业级），我们需要为系统制定一些评判标准，以判别各个方案的优劣。我们首先能想到的评判标准就是速度，一个慢吞吞的系统解决方案是没有任何实用价值的。当然，这个速度是有差异的，可能是linux快一些，windows慢一些，或者相反。我们假定实际的需要是windows快一些，因为linux可以通过定制进行加速。
@@ -53,11 +60,15 @@ linux虚拟方案，xen。速度超快，但是上来就在贝壳的机器上暴
 linux虚拟方案，openvz。这种方案压根就不适合贝壳的状况，因为这个虚拟方案要求宿主和客户必须是同一CPU同一系统（不要求同一linux发行）。主要用于希望将一个主机切分成多个独立的同构主机，以达到分离管理的目的（例如业务服务器和数据库服务器分离）。需要做大型网络管理/虚拟主机业务的人可能会对这个虚拟方案感兴趣。
 linux虚拟方案，vmware。速度一般，linux快windows慢，视频效果不错。vmware毕竟是商业公司，视频驱动挺齐全的。但是内核驱动的编译麻烦到死，首先是要求编译器版本和主内核编译器版本一致，于是贝壳去搞了个gcc-4.1，然后连接了上去。下面又是内核头定义出现版本差异，搞到现在还没有搞定。谁能搞的定的给个参考，最好是debian上的解决方案。
 linux虚拟方案，kvm。这个是贝壳目前使用的方案，基本比较理想。速度很快，和xen基本差不多，显示速度不如vmware（理论上说装好显卡驱动应该会好点，不过贝壳找不到CLDC5446的XP驱动，那是Win32和Win95时代的显卡）。linux快windows慢，但是还在可忍受范围内。稳定性很好，只要测试通过，运行中到目前为止没有死机（当然很多参数是加了之后开机即死机）。数据可以通过samba互通，邮件也同样可以互通。然而使用samba无疑复杂很多，而且性能并不太好。只是从稳定性上说，让linux自己去驱动ext3总比半吊子的windows驱动更好，同时也不会出现争抢的问题。易用性上还算可以，无论是内核编译还是系统使用都不太难，最大的麻烦就是网络配置。根据贝壳的测试，在真实机器上superpi运行100W 位需要45秒，虚拟机内需要54-60秒，尤其在换用kvm-72.2后反而更慢了（54下降到60，折合真实机器83.3％下降到75％）。
-总体来说，贝壳更倾向于使用全开源的准-全虚拟解决方案kvm，主要因为他简便易行，对系统影响小，不改变现有系统。同时性能高，稳定性好。主要需要解决显卡效率问题。如果以上问题无法彻底解决，贝壳打算换用linux下的vmware，想办法搞定他的内核模块。" />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/49/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2009-01-12T01:04:00+08:00" />
-<meta property="article:modified_time" content="2009-01-12T01:04:00+08:00" />
+总体来说，贝壳更倾向于使用全开源的准-全虚拟解决方案kvm，主要因为他简便易行，对系统影响小，不改变现有系统。同时性能高，稳定性好。主要需要解决显卡效率问题。如果以上问题无法彻底解决，贝壳打算换用linux下的vmware，想办法搞定他的内核模块。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2009-01-12T01:04:00+08:00">
+    <meta property="article:modified_time" content="2009-01-12T01:04:00+08:00">
+    <meta property="article:tag" content="Linux">
+    <meta property="article:tag" content="Vm">
+    <meta property="article:tag" content="Windows">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -94,7 +105,7 @@ linux虚拟方案，kvm。这个是贝壳目前使用的方案，基本比较理
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -106,27 +117,18 @@ linux虚拟方案，kvm。这个是贝壳目前使用的方案，基本比较理
       <h1 class ="post-title">论同时的双系统－－准虚拟对双系统的进一步扩充</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Jan 12, 2009
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a>
-              <a class="tag" href="//blog.shell909090.org/tags/vm/">vm</a>
-              <a class="tag" href="//blog.shell909090.org/tags/windows/">windows</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/linux/">Linux</a>
+              <a class="tag" href="/tags/vm/">Vm</a>
+              <a class="tag" href="/tags/windows/">Windows</a>
         </div>
       </div>
     </header>
@@ -148,7 +150,24 @@ linux虚拟方案，kvm。这个是贝壳目前使用的方案，基本比较理
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

@@ -4,27 +4,32 @@
     <title>android几个常识 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="android几个常识"/>
-<meta name="twitter:description" content="内存问题 首先，总内存量需要被各种CPU划出部分使用，剩余才是系统可用内存。这个概念差不多相当于电脑上的共享显存，系统对划走的内存是没有管理能力的，因此在/proc/meminfo中找不到这部分内存。这部分内存既不能优化也不能使用，因此其实是不可使用内存。厂家出厂内存（标称内存）和可使用内存一定存在差，具体多少看各种机型。htcg2是288m标称191m可用，p81hd是512m标称288m可用。
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="android几个常识">
+  <meta name="twitter:description" content="内存问题 首先，总内存量需要被各种CPU划出部分使用，剩余才是系统可用内存。这个概念差不多相当于电脑上的共享显存，系统对划走的内存是没有管理能力的，因此在/proc/meminfo中找不到这部分内存。这部分内存既不能优化也不能使用，因此其实是不可使用内存。厂家出厂内存（标称内存）和可使用内存一定存在差，具体多少看各种机型。htcg2是288m标称191m可用，p81hd是512m标称288m可用。
 可用内存是linux kernel能管理的内存，这部分再会被划出一些供系统使用/服务使用/常驻程序使用。这部分是可以优化的，少编译一些ko模块，少开一些服务，少一些常驻程序，内存就会节约一点。
 最后，剩下来的内存才是程序实际能用的量，htcg2和p81hd都在100-150M上下。不过程序退出时，内存并不交还给系统。而是当系统内存不足时(memory threshold，通常24m)，由系统分析目前内存中，使用频率最少的一块，然后去释放这个内存。通常而言，你在系统中开了三五个程序，然后按Home退出到桌面，再进入时程序还处于退出当时所处的状态，这就是因为还在内存中没有释放的缘故。而当你开的程序比较多，例如十多个程序，也是由Home退出到桌面，再进入最老的一个程序时，程序已经处于初始的状态。这就是因为内存不足，系统帮你杀了这个程序的缘故。如果用Back键退出，程序会直接关闭，内存释放，这个无关系统是否有空余内存。
 所以，对android而言，内存只代表两件事情。一个是所能运行的最大的程序。如果总内存不足，一些一次性需要内存比较大的程序就会无法运行，特征是一运行就退出，系统没有提示错误。另一个是同时在内存中不关闭的程序的数量。内存越大，在机器中就可以保持越多的程序处于打开状态。对于新打开程序（此时内存请求较多），或者程序突然申请大量内存，系统就开始释放其他程序，此时系统会稍慢。但是在考虑是否需要使用内存优化软件的时候，不妨这么想。内存优化软件运行的时间，一般比直接kill进程还长呢。
@@ -47,10 +52,12 @@ android手机的每个程序，都有一个权限和他相关。规定的事情�
 android的root，基本方法都是通过某种方法将/system改成可读写，然后用自己做的su替换/system/bin/su文件。自己做的程序，会以一些方法验证某个程序是否具有su的权限（一般是弹出对话框确认），然后让他们可以拥有最高权限。可以su的程序，他们的权限表就没有意义了。
 adhoc问题 adhoc是一种常见的wifi形态，特征是没有一个ap（常见的路由器即是一种ap），全部由普通的客户端电脑来进行网络连接。
 android的wpa_supplicant文件做过一些修改，过滤了adhoc网络的essid。所以，如果你使用adhoc模式共享了网络，你的android设备将无法使用。
-但是android是可以做出adhoc的。这是很悖论的一个事情，android自己做出的网络分享，另一台android是无法使用的。"/>
+但是android是可以做出adhoc的。这是很悖论的一个事情，android自己做出的网络分享，另一台android是无法使用的。">
 
-    <meta property="og:title" content="android几个常识" />
-<meta property="og:description" content="内存问题 首先，总内存量需要被各种CPU划出部分使用，剩余才是系统可用内存。这个概念差不多相当于电脑上的共享显存，系统对划走的内存是没有管理能力的，因此在/proc/meminfo中找不到这部分内存。这部分内存既不能优化也不能使用，因此其实是不可使用内存。厂家出厂内存（标称内存）和可使用内存一定存在差，具体多少看各种机型。htcg2是288m标称191m可用，p81hd是512m标称288m可用。
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/2018/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="android几个常识">
+  <meta property="og:description" content="内存问题 首先，总内存量需要被各种CPU划出部分使用，剩余才是系统可用内存。这个概念差不多相当于电脑上的共享显存，系统对划走的内存是没有管理能力的，因此在/proc/meminfo中找不到这部分内存。这部分内存既不能优化也不能使用，因此其实是不可使用内存。厂家出厂内存（标称内存）和可使用内存一定存在差，具体多少看各种机型。htcg2是288m标称191m可用，p81hd是512m标称288m可用。
 可用内存是linux kernel能管理的内存，这部分再会被划出一些供系统使用/服务使用/常驻程序使用。这部分是可以优化的，少编译一些ko模块，少开一些服务，少一些常驻程序，内存就会节约一点。
 最后，剩下来的内存才是程序实际能用的量，htcg2和p81hd都在100-150M上下。不过程序退出时，内存并不交还给系统。而是当系统内存不足时(memory threshold，通常24m)，由系统分析目前内存中，使用频率最少的一块，然后去释放这个内存。通常而言，你在系统中开了三五个程序，然后按Home退出到桌面，再进入时程序还处于退出当时所处的状态，这就是因为还在内存中没有释放的缘故。而当你开的程序比较多，例如十多个程序，也是由Home退出到桌面，再进入最老的一个程序时，程序已经处于初始的状态。这就是因为内存不足，系统帮你杀了这个程序的缘故。如果用Back键退出，程序会直接关闭，内存释放，这个无关系统是否有空余内存。
 所以，对android而言，内存只代表两件事情。一个是所能运行的最大的程序。如果总内存不足，一些一次性需要内存比较大的程序就会无法运行，特征是一运行就退出，系统没有提示错误。另一个是同时在内存中不关闭的程序的数量。内存越大，在机器中就可以保持越多的程序处于打开状态。对于新打开程序（此时内存请求较多），或者程序突然申请大量内存，系统就开始释放其他程序，此时系统会稍慢。但是在考虑是否需要使用内存优化软件的时候，不妨这么想。内存优化软件运行的时间，一般比直接kill进程还长呢。
@@ -73,11 +80,14 @@ android手机的每个程序，都有一个权限和他相关。规定的事情�
 android的root，基本方法都是通过某种方法将/system改成可读写，然后用自己做的su替换/system/bin/su文件。自己做的程序，会以一些方法验证某个程序是否具有su的权限（一般是弹出对话框确认），然后让他们可以拥有最高权限。可以su的程序，他们的权限表就没有意义了。
 adhoc问题 adhoc是一种常见的wifi形态，特征是没有一个ap（常见的路由器即是一种ap），全部由普通的客户端电脑来进行网络连接。
 android的wpa_supplicant文件做过一些修改，过滤了adhoc网络的essid。所以，如果你使用adhoc模式共享了网络，你的android设备将无法使用。
-但是android是可以做出adhoc的。这是很悖论的一个事情，android自己做出的网络分享，另一台android是无法使用的。" />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2018/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2011-12-16T10:41:28+08:00" />
-<meta property="article:modified_time" content="2011-12-16T10:41:28+08:00" />
+但是android是可以做出adhoc的。这是很悖论的一个事情，android自己做出的网络分享，另一台android是无法使用的。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2011-12-16T10:41:28+08:00">
+    <meta property="article:modified_time" content="2011-12-16T10:41:28+08:00">
+    <meta property="article:tag" content="Android">
+    <meta property="article:tag" content="Linux">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -114,7 +124,7 @@ android的wpa_supplicant文件做过一些修改，过滤了adhoc网络的essid�
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -126,26 +136,17 @@ android的wpa_supplicant文件做过一些修改，过滤了adhoc网络的essid�
       <h1 class ="post-title">android几个常识</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Dec 16, 2011
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/android/">android</a>
-              <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/android/">Android</a>
+              <a class="tag" href="/tags/linux/">Linux</a>
         </div>
       </div>
     </header>
@@ -189,7 +190,24 @@ android的wpa_supplicant文件做过一些修改，过滤了adhoc网络的essid�
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

@@ -4,33 +4,38 @@
     <title>网络性能测试和标准 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="网络性能测试和标准"/>
-<meta name="twitter:description" content="前两天弄有线通的事情弄的郁闷了，所以就研究了网络性能测试。以后不用也是浪费，大家需要就看看吧。
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="网络性能测试和标准">
+  <meta name="twitter:description" content="前两天弄有线通的事情弄的郁闷了，所以就研究了网络性能测试。以后不用也是浪费，大家需要就看看吧。
 1.目标
 测试目的往往是测试清楚几个值，包括:IP包传输往返时延(RTT)，IP包时延变化(抖动)，IP包丢失率(Lost rate)，IP业务可用性，还有带宽(Bandwidth)。
 2.适用标准
 RFC 1242， RFC1944， RFC2285， RFC2432。
 ** 中华人民共和国信息产业部令第36号(http://www.chinanetcom.com.cn/mj/dxsc.asp?Unid=3810)
-** IP网络技术要求&ndash; 网络性能参数与指标(YD/T 1171-2001)
+** IP网络技术要求– 网络性能参数与指标(YD/T 1171-2001)
 3.测试平台和工具
 我们假定基于POSIX兼容平台测试，演示用的例子来自Debian Etch/Kernel 2.6.17-2-686。Windows下所需要工具可以参考移植工具。
 iperf 网络带宽测试工具
@@ -47,21 +52,23 @@ p0f 被动指纹分析工具
 4.2.测试网络IP包传输往返时延(RTT)和IP包时延变化(抖动)
 分主动被动方法，被动方法用wireshark抓包分析。下面主要介绍主动方法：
 运行hping2 www.google.com -p 80。得到
-56 packets transmitted, 56 packets received, 0% packet loss round-trip min/avg/max = 242.5/269.9/381.1 ms 即在主动建立的到www.google.com的TCP连接中(默认为TCP，可以使用UDP，ICMP，IP，具体请看hping2 &ndash;help)，丢包率为0。平均传输延迟为269.9，抖动为138.6。
+56 packets transmitted, 56 packets received, 0% packet loss round-trip min/avg/max = 242.5/269.9/381.1 ms 即在主动建立的到www.google.com的TCP连接中(默认为TCP，可以使用UDP，ICMP，IP，具体请看hping2 –help)，丢包率为0。平均传输延迟为269.9，抖动为138.6。
 注：按照《**中华人民共和国信息产业部令第36号》，**往返时延平均值≤200毫秒，时延变化平均值≤80毫秒。此处已经超标。但因为测试环境和适用条件不完全吻合，因此无法作为有效证据。
 4.3.IP包丢失率(Lost rate)
 也分主动方法和被动方法，主动方法见上。被动方法是用wireshark抓包后，通过tpc.analysis.lost_segment标志分析丢包数量和总体数量。具体为。
 用wireshark抓包。
-用( tcp.srcport == 7007 || tcp."/>
+用( tcp.srcport == 7007 || tcp.dstport == 7007)&amp;&amp;(tcp.analysis.retransmission||tcp.analysis.lost_segment||tcp.analysis.ack_lost_segment)过滤。7007为aMule端口。">
 
-    <meta property="og:title" content="网络性能测试和标准" />
-<meta property="og:description" content="前两天弄有线通的事情弄的郁闷了，所以就研究了网络性能测试。以后不用也是浪费，大家需要就看看吧。
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/324/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="网络性能测试和标准">
+  <meta property="og:description" content="前两天弄有线通的事情弄的郁闷了，所以就研究了网络性能测试。以后不用也是浪费，大家需要就看看吧。
 1.目标
 测试目的往往是测试清楚几个值，包括:IP包传输往返时延(RTT)，IP包时延变化(抖动)，IP包丢失率(Lost rate)，IP业务可用性，还有带宽(Bandwidth)。
 2.适用标准
 RFC 1242， RFC1944， RFC2285， RFC2432。
 ** 中华人民共和国信息产业部令第36号(http://www.chinanetcom.com.cn/mj/dxsc.asp?Unid=3810)
-** IP网络技术要求&ndash; 网络性能参数与指标(YD/T 1171-2001)
+** IP网络技术要求– 网络性能参数与指标(YD/T 1171-2001)
 3.测试平台和工具
 我们假定基于POSIX兼容平台测试，演示用的例子来自Debian Etch/Kernel 2.6.17-2-686。Windows下所需要工具可以参考移植工具。
 iperf 网络带宽测试工具
@@ -78,16 +85,20 @@ p0f 被动指纹分析工具
 4.2.测试网络IP包传输往返时延(RTT)和IP包时延变化(抖动)
 分主动被动方法，被动方法用wireshark抓包分析。下面主要介绍主动方法：
 运行hping2 www.google.com -p 80。得到
-56 packets transmitted, 56 packets received, 0% packet loss round-trip min/avg/max = 242.5/269.9/381.1 ms 即在主动建立的到www.google.com的TCP连接中(默认为TCP，可以使用UDP，ICMP，IP，具体请看hping2 &ndash;help)，丢包率为0。平均传输延迟为269.9，抖动为138.6。
+56 packets transmitted, 56 packets received, 0% packet loss round-trip min/avg/max = 242.5/269.9/381.1 ms 即在主动建立的到www.google.com的TCP连接中(默认为TCP，可以使用UDP，ICMP，IP，具体请看hping2 –help)，丢包率为0。平均传输延迟为269.9，抖动为138.6。
 注：按照《**中华人民共和国信息产业部令第36号》，**往返时延平均值≤200毫秒，时延变化平均值≤80毫秒。此处已经超标。但因为测试环境和适用条件不完全吻合，因此无法作为有效证据。
 4.3.IP包丢失率(Lost rate)
 也分主动方法和被动方法，主动方法见上。被动方法是用wireshark抓包后，通过tpc.analysis.lost_segment标志分析丢包数量和总体数量。具体为。
 用wireshark抓包。
-用( tcp.srcport == 7007 || tcp." />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/324/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2006-09-30T22:46:28+08:00" />
-<meta property="article:modified_time" content="2006-09-30T22:46:28+08:00" />
+用( tcp.srcport == 7007 || tcp.dstport == 7007)&amp;&amp;(tcp.analysis.retransmission||tcp.analysis.lost_segment||tcp.analysis.ack_lost_segment)过滤。7007为aMule端口。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2006-09-30T22:46:28+08:00">
+    <meta property="article:modified_time" content="2006-09-30T22:46:28+08:00">
+    <meta property="article:tag" content="Computer">
+    <meta property="article:tag" content="Network">
+    <meta property="article:tag" content="Performance">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -124,7 +135,7 @@ p0f 被动指纹分析工具
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -136,27 +147,18 @@ p0f 被动指纹分析工具
       <h1 class ="post-title">网络性能测试和标准</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Sep 30, 2006
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           2 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/computer/">computer</a>
-              <a class="tag" href="//blog.shell909090.org/tags/network/">network</a>
-              <a class="tag" href="//blog.shell909090.org/tags/performance/">performance</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/computer/">Computer</a>
+              <a class="tag" href="/tags/network/">Network</a>
+              <a class="tag" href="/tags/performance/">Performance</a>
         </div>
       </div>
     </header>
@@ -229,7 +231,24 @@ round-trip min/avg/max = 242.5/269.9/381.1 ms
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

@@ -4,34 +4,47 @@
     <title>使用uwsgi搭建python应用 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="使用uwsgi搭建python应用">
+  <meta name="twitter:description" content=" wsgi是python的一个标准web服务接口，具体去google pep文档，不解释。在李木头的忽悠下，贝壳试用了一下uwsgi搭建python服务器，感觉还不错。 首先，贝壳将uwsgi打包成deb包，因为这东西和python基本没什么关系，就是一个标准的系统守护服务程序。其中贝壳测试了一下，uwsgi编译的时候是依赖版本的。所以请教了一下thomas，打了uwsgi2.6和uwsgi2.7两个包。没办法，mercurial对python2.7的支持不是很好，每次都出问题。具体的可以加贝壳的repos: https://home.shell909090.org/debian/ testing，然后通过一下贝壳的key，就可以直接安装uwsgi2.6了。当然，不通过key也可以，只是每次安装升级都有警告。 贝壳写了一个很简单的init.d，使用–vhost来启动uwsgi为服务模式。这种模式的好处是，uwsgi的具体执行的应用都是由nginx来确定的，因此所有的映射只需要修改nginx配置就好。uwsgi参数很多，包括可以指定内存限制，工作进程/线程，定时重启工作进程，多解释器等等。是一个高效的，功能强大的服务器。具体可以自己参考调整。最好的的地方是，uwsgi还支持virtualenv，你可以给不同的应用建立不同的工作环境，从而在环境中使用指定的包，而不是系统包。 下面是一个nginx配置的例子。 location /ticket { include uwsgi_params; uwsgi_param UWSGI_PYHOME /usr; uwsgi_param UWSGI_CHDIR /home/shell/workspace/hg/thost; uwsgi_param UWSGI_SCRIPT main; uwsgi_pass unix:/var/run/uwsgi.socket; } location /mlocate { include uwsgi_params; uwsgi_param UWSGI_PYHOME /usr; uwsgi_param UWSGI_CHDIR /home/shell/workspace/hg/thost; uwsgi_param UWSGI_SCRIPT main; uwsgi_pass unix:/var/run/uwsgi.socket; } location /hg { include uwsgi_params; uwsgi_param UWSGI_PYHOME /usr; uwsgi_param UWSGI_CHDIR /home/shell/workspace/hg; uwsgi_param UWSGI_SCRIPT hgweb; uwsgi_param SCRIPT_NAME /; uwsgi_param SERVER_NAME hgweb; uwsgi_pass unix:/var/run/uwsgi.socket; } 这里面设定了三个应用。由于贝壳不需要virtualenv，所以PYHOME设定了/usr。第一二个应用的基础路径在/home/shell/workspace/hg/thost，脚本叫做main.py。第三个应用的基础路径在/home/shell/workspace/hg，脚本叫做hgweb.py。需要注意的是，uwsgi会以模块方式导入这些脚本，然后使用其中的application对象作为wsgi处理函数。所以不要把application对象赋值放在if __name__ == ‘__main__‘里面，那没用的。第三个应用指定了SCRIPT_NAME和SERVER_NAME，是因为hg的wsgi模块没有SCRIPT_NAME不工作，而这个应用和前两个不在一起，所以如果不指定SERVER_NAME会导致覆盖冲突。 这种部署模式的好处是，我可以使用一个宿主来管理所有的应用，而不必每个应用启动一个宿主，省去了多个宿主管理的麻烦。而多进程，压力分布等等问题都被uwsgi的配置系统搞定了。于是应用程序宿主做到了彻底的免管理，即装即用，只用调节性能匹配即可。具体程序配置下放到nginx中，要修改映射关系只用管理一个位置。">
 
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="使用uwsgi搭建python应用"/>
-<meta name="twitter:description" content="wsgi是python的一个标准web服务接口，具体去google pep文档，不解释。在李木头的忽悠下，贝壳试用了一下uwsgi搭建python服务器，感觉还不错。 首先，贝壳将uwsgi打包成deb包，因为这东西和python基本没什么关系，就是一个标准的系统守护服务程序。其中贝壳测试了一下，uwsgi编译的时候是依赖版本的。所以请教了一下thomas，打了uwsgi2.6和uwsgi2.7两个包。没办法，mercurial对python2.7的支持不是很好，每次都出问题。具体的可以加贝壳的repos: https://home.shell909090.org/debian/ testing，然后通过一下贝壳的key，就可以直接安装uwsgi2.6了。当然，不通过key也可以，只是每次安装升级都有警告。 贝壳写了一个很简单的init.d，使用&ndash;vhost来启动uwsgi为服务模式。这种模式的好处是，uwsgi的具体执行的应用都是由nginx来确定的，因此所有的映射只需要修改nginx配置就好。uwsgi参数很多，包括可以指定内存限制，工作进程/线程，定时重启工作进程，多解释器等等。是一个高效的，功能强大的服务器。具体可以自己参考调整。最好的的地方是，uwsgi还支持virtualenv，你可以给不同的应用建立不同的工作环境，从而在环境中使用指定的包，而不是系统包。 下面是一个nginx配置的例子。 location /ticket { include uwsgi_params; uwsgi_param UWSGI_PYHOME /usr; uwsgi_param UWSGI_CHDIR /home/shell/workspace/hg/thost; uwsgi_param UWSGI_SCRIPT main; uwsgi_pass unix:/var/run/uwsgi.socket; } location /mlocate { include uwsgi_params; uwsgi_param UWSGI_PYHOME /usr; uwsgi_param UWSGI_CHDIR /home/shell/workspace/hg/thost; uwsgi_param UWSGI_SCRIPT main; uwsgi_pass unix:/var/run/uwsgi.socket; } location /hg { include uwsgi_params; uwsgi_param UWSGI_PYHOME /usr; uwsgi_param UWSGI_CHDIR /home/shell/workspace/hg; uwsgi_param UWSGI_SCRIPT hgweb; uwsgi_param SCRIPT_NAME /; uwsgi_param SERVER_NAME hgweb; uwsgi_pass unix:/var/run/uwsgi.socket; } 这里面设定了三个应用。由于贝壳不需要virtualenv，所以PYHOME设定了/usr。第一二个应用的基础路径在/home/shell/workspace/hg/thost，脚本叫做main.py。第三个应用的基础路径在/home/shell/workspace/hg，脚本叫做hgweb.py。需要注意的是，uwsgi会以模块方式导入这些脚本，然后使用其中的application对象作为wsgi处理函数。所以不要把application对象赋值放在if __name__ == &lsquo;__main__&lsquo;里面，那没用的。第三个应用指定了SCRIPT_NAME和SERVER_NAME，是因为hg的wsgi模块没有SCRIPT_NAME不工作，而这个应用和前两个不在一起，所以如果不指定SERVER_NAME会导致覆盖冲突。 这种部署模式的好处是，我可以使用一个宿主来管理所有的应用，而不必每个应用启动一个宿主，省去了多个宿主管理的麻烦。而多进程，压力分布等等问题都被uwsgi的配置系统搞定了。于是应用程序宿主做到了彻底的免管理，即装即用，只用调节性能匹配即可。具体程序配置下放到nginx中，要修改映射关系只用管理一个位置。"/>
-
-    <meta property="og:title" content="使用uwsgi搭建python应用" />
-<meta property="og:description" content="wsgi是python的一个标准web服务接口，具体去google pep文档，不解释。在李木头的忽悠下，贝壳试用了一下uwsgi搭建python服务器，感觉还不错。 首先，贝壳将uwsgi打包成deb包，因为这东西和python基本没什么关系，就是一个标准的系统守护服务程序。其中贝壳测试了一下，uwsgi编译的时候是依赖版本的。所以请教了一下thomas，打了uwsgi2.6和uwsgi2.7两个包。没办法，mercurial对python2.7的支持不是很好，每次都出问题。具体的可以加贝壳的repos: https://home.shell909090.org/debian/ testing，然后通过一下贝壳的key，就可以直接安装uwsgi2.6了。当然，不通过key也可以，只是每次安装升级都有警告。 贝壳写了一个很简单的init.d，使用&ndash;vhost来启动uwsgi为服务模式。这种模式的好处是，uwsgi的具体执行的应用都是由nginx来确定的，因此所有的映射只需要修改nginx配置就好。uwsgi参数很多，包括可以指定内存限制，工作进程/线程，定时重启工作进程，多解释器等等。是一个高效的，功能强大的服务器。具体可以自己参考调整。最好的的地方是，uwsgi还支持virtualenv，你可以给不同的应用建立不同的工作环境，从而在环境中使用指定的包，而不是系统包。 下面是一个nginx配置的例子。 location /ticket { include uwsgi_params; uwsgi_param UWSGI_PYHOME /usr; uwsgi_param UWSGI_CHDIR /home/shell/workspace/hg/thost; uwsgi_param UWSGI_SCRIPT main; uwsgi_pass unix:/var/run/uwsgi.socket; } location /mlocate { include uwsgi_params; uwsgi_param UWSGI_PYHOME /usr; uwsgi_param UWSGI_CHDIR /home/shell/workspace/hg/thost; uwsgi_param UWSGI_SCRIPT main; uwsgi_pass unix:/var/run/uwsgi.socket; } location /hg { include uwsgi_params; uwsgi_param UWSGI_PYHOME /usr; uwsgi_param UWSGI_CHDIR /home/shell/workspace/hg; uwsgi_param UWSGI_SCRIPT hgweb; uwsgi_param SCRIPT_NAME /; uwsgi_param SERVER_NAME hgweb; uwsgi_pass unix:/var/run/uwsgi.socket; } 这里面设定了三个应用。由于贝壳不需要virtualenv，所以PYHOME设定了/usr。第一二个应用的基础路径在/home/shell/workspace/hg/thost，脚本叫做main.py。第三个应用的基础路径在/home/shell/workspace/hg，脚本叫做hgweb.py。需要注意的是，uwsgi会以模块方式导入这些脚本，然后使用其中的application对象作为wsgi处理函数。所以不要把application对象赋值放在if __name__ == &lsquo;__main__&lsquo;里面，那没用的。第三个应用指定了SCRIPT_NAME和SERVER_NAME，是因为hg的wsgi模块没有SCRIPT_NAME不工作，而这个应用和前两个不在一起，所以如果不指定SERVER_NAME会导致覆盖冲突。 这种部署模式的好处是，我可以使用一个宿主来管理所有的应用，而不必每个应用启动一个宿主，省去了多个宿主管理的麻烦。而多进程，压力分布等等问题都被uwsgi的配置系统搞定了。于是应用程序宿主做到了彻底的免管理，即装即用，只用调节性能匹配即可。具体程序配置下放到nginx中，要修改映射关系只用管理一个位置。" />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/1811/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2011-05-25T11:08:38+08:00" />
-<meta property="article:modified_time" content="2011-05-25T11:08:38+08:00" />
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/1811/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="使用uwsgi搭建python应用">
+  <meta property="og:description" content=" wsgi是python的一个标准web服务接口，具体去google pep文档，不解释。在李木头的忽悠下，贝壳试用了一下uwsgi搭建python服务器，感觉还不错。 首先，贝壳将uwsgi打包成deb包，因为这东西和python基本没什么关系，就是一个标准的系统守护服务程序。其中贝壳测试了一下，uwsgi编译的时候是依赖版本的。所以请教了一下thomas，打了uwsgi2.6和uwsgi2.7两个包。没办法，mercurial对python2.7的支持不是很好，每次都出问题。具体的可以加贝壳的repos: https://home.shell909090.org/debian/ testing，然后通过一下贝壳的key，就可以直接安装uwsgi2.6了。当然，不通过key也可以，只是每次安装升级都有警告。 贝壳写了一个很简单的init.d，使用–vhost来启动uwsgi为服务模式。这种模式的好处是，uwsgi的具体执行的应用都是由nginx来确定的，因此所有的映射只需要修改nginx配置就好。uwsgi参数很多，包括可以指定内存限制，工作进程/线程，定时重启工作进程，多解释器等等。是一个高效的，功能强大的服务器。具体可以自己参考调整。最好的的地方是，uwsgi还支持virtualenv，你可以给不同的应用建立不同的工作环境，从而在环境中使用指定的包，而不是系统包。 下面是一个nginx配置的例子。 location /ticket { include uwsgi_params; uwsgi_param UWSGI_PYHOME /usr; uwsgi_param UWSGI_CHDIR /home/shell/workspace/hg/thost; uwsgi_param UWSGI_SCRIPT main; uwsgi_pass unix:/var/run/uwsgi.socket; } location /mlocate { include uwsgi_params; uwsgi_param UWSGI_PYHOME /usr; uwsgi_param UWSGI_CHDIR /home/shell/workspace/hg/thost; uwsgi_param UWSGI_SCRIPT main; uwsgi_pass unix:/var/run/uwsgi.socket; } location /hg { include uwsgi_params; uwsgi_param UWSGI_PYHOME /usr; uwsgi_param UWSGI_CHDIR /home/shell/workspace/hg; uwsgi_param UWSGI_SCRIPT hgweb; uwsgi_param SCRIPT_NAME /; uwsgi_param SERVER_NAME hgweb; uwsgi_pass unix:/var/run/uwsgi.socket; } 这里面设定了三个应用。由于贝壳不需要virtualenv，所以PYHOME设定了/usr。第一二个应用的基础路径在/home/shell/workspace/hg/thost，脚本叫做main.py。第三个应用的基础路径在/home/shell/workspace/hg，脚本叫做hgweb.py。需要注意的是，uwsgi会以模块方式导入这些脚本，然后使用其中的application对象作为wsgi处理函数。所以不要把application对象赋值放在if __name__ == ‘__main__‘里面，那没用的。第三个应用指定了SCRIPT_NAME和SERVER_NAME，是因为hg的wsgi模块没有SCRIPT_NAME不工作，而这个应用和前两个不在一起，所以如果不指定SERVER_NAME会导致覆盖冲突。 这种部署模式的好处是，我可以使用一个宿主来管理所有的应用，而不必每个应用启动一个宿主，省去了多个宿主管理的麻烦。而多进程，压力分布等等问题都被uwsgi的配置系统搞定了。于是应用程序宿主做到了彻底的免管理，即装即用，只用调节性能匹配即可。具体程序配置下放到nginx中，要修改映射关系只用管理一个位置。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2011-05-25T11:08:38+08:00">
+    <meta property="article:modified_time" content="2011-05-25T11:08:38+08:00">
+    <meta property="article:tag" content="Debian">
+    <meta property="article:tag" content="Nginx">
+    <meta property="article:tag" content="Program">
+    <meta property="article:tag" content="Python">
+    <meta property="article:tag" content="Uwsgi">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -68,7 +81,7 @@ if (!doNotTrack) {
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -80,29 +93,20 @@ if (!doNotTrack) {
       <h1 class ="post-title">使用uwsgi搭建python应用</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           May 25, 2011
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/debian/">debian</a>
-              <a class="tag" href="//blog.shell909090.org/tags/nginx/">nginx</a>
-              <a class="tag" href="//blog.shell909090.org/tags/program/">program</a>
-              <a class="tag" href="//blog.shell909090.org/tags/python/">python</a>
-              <a class="tag" href="//blog.shell909090.org/tags/uwsgi/">uwsgi</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/debian/">Debian</a>
+              <a class="tag" href="/tags/nginx/">Nginx</a>
+              <a class="tag" href="/tags/program/">Program</a>
+              <a class="tag" href="/tags/python/">Python</a>
+              <a class="tag" href="/tags/uwsgi/">Uwsgi</a>
         </div>
       </div>
     </header>
@@ -111,7 +115,8 @@ if (!doNotTrack) {
 pep文档，不解释。在李木头的忽悠下，贝壳试用了一下uwsgi搭建python服务器，感觉还不错。
  
  首先，贝壳将uwsgi打包成deb包，因为这东西和python基本没什么关系，就是一个标准的系统守护服务程序。其中贝壳测试了一下，uwsgi编译的时候是依赖版本的。所以请教了一下thomas，打了uwsgi2.6和uwsgi2.7两个包。没办法，mercurial对python2.7的支持不是很好，每次都出问题。具体的可以加贝壳的repos:
-<a href="https://home.shell909090.org/debian/">https://home.shell909090.org/debian/</a><!-- raw HTML omitted --><!-- raw HTML omitted -->
+<a href="https://home.shell909090.org/debian/">https://home.shell909090.org/debian/</a><span
+style="min-height: 16px; padding-right: 16px; width: 16px;"></span>
 testing，然后通过一下贝壳的key，就可以直接安装uwsgi2.6了。当然，不通过key也可以，只是每次安装升级都有警告。
  
  贝壳写了一个很简单的init.d，使用&ndash;vhost来启动uwsgi为服务模式。这种模式的好处是，uwsgi的具体执行的应用都是由nginx来确定的，因此所有的映射只需要修改nginx配置就好。uwsgi参数很多，包括可以指定内存限制，工作进程/线程，定时重启工作进程，多解释器等等。是一个高效的，功能强大的服务器。具体可以自己参考调整。最好的的地方是，uwsgi还支持virtualenv，你可以给不同的应用建立不同的工作环境，从而在环境中使用指定的包，而不是系统包。
@@ -138,7 +143,24 @@ __name__ ==
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

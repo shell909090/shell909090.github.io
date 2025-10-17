@@ -4,27 +4,32 @@
     <title>vpn转代理 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="vpn转代理"/>
-<meta name="twitter:description" content="背景 贝壳自己的vps蒙难，不能正常工作了。所以贝壳买了一个vpn。是pptp/l2tp系列的。用起来很好用，但是这类ip-based vpn有几个不便。
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="vpn转代理">
+  <meta name="twitter:description" content="背景 贝壳自己的vps蒙难，不能正常工作了。所以贝壳买了一个vpn。是pptp/l2tp系列的。用起来很好用，但是这类ip-based vpn有几个不便。
 不能自动设定客户端路由表，实现智能翻墙选择。 每个需要翻墙的设备均需要拨号，而目标设备有容量极限。 不能实现非侵入式翻墙，打开之后连p2p都翻了。 与此相反，代理式翻墙可以比较有效的解决这些问题。一个点拨号，其他点可以共享代理。不需要翻墙的直接访问不设定代理就好。唯路由表没有办法。实际上，为了使得代理可以使用路由表选择，贝壳还是花了一番功夫做了antigfw项目的。
 闲话少说。这次贝壳就展示一下如何在debian下设定pptp vpn，并且利用代理无缝共享的。
 linux下的vpn设定 安装pptp-linux这个包，然后按照说明使用即可。
@@ -32,10 +37,12 @@ pptpsetup --create &lt;TUNNEL&gt; --server &lt;SERVER&gt; [--domain &lt;DOMAIN&g
 路由设定 初始设定好的vpn不具有智能路由，因此必须添加一些内容。
 首先使用chnroutes.py这个程序，得到ovpn下常规用的路由表。当然，我们可以用linux下的路由表，但是他的old gateway存放在了/tmp下面，对此我并不是很喜欢。所以我只用了他的路由 表信息，其余自己处理。如果你不确定自己执行时的默认路由，理论上也应当需要下面的一些配置。
 使用下面这个topptp.sh，可以将输出的routes.txt转换为pptpup和pptpdown两个文件。
-#!/bin/bash ETHGW=192.168.1.1 cat &gt; pptpup &lt;&lt;EOF #!/bin/bash export PATH=&quot;/bin:/sbin:/usr/sbin:/usr/bin&quot; EOF cat &gt; pptpdown &lt;&lt;EOF #!/bin/bash export PATH=&quot;/bin:/sbin:/usr/sbin:/usr/bin&quot; EOF sed &quot;s:route (S*) (S*) net_gateway 5:route add -net 1 netmask 2 gw $ETHGW:g&quot; routes.txt &gt;&gt; pptpup sed &quot;s:route (S*) (S*) net_gateway 5:route del -net 1 netmask 2:g&quot; routes."/>
+#!/bin/bash ETHGW=192.168.1.1 cat &gt; pptpup &lt;&lt;EOF #!/bin/bash export PATH=&#34;/bin:/sbin:/usr/sbin:/usr/bin&#34; EOF cat &gt; pptpdown &lt;&lt;EOF #!/bin/bash export PATH=&#34;/bin:/sbin:/usr/sbin:/usr/bin&#34; EOF sed &#34;s:route (S*) (S*) net_gateway 5:route add -net 1 netmask 2 gw $ETHGW:g&#34; routes.txt &gt;&gt; pptpup sed &#34;s:route (S*) (S*) net_gateway 5:route del -net 1 netmask 2:g&#34; routes.txt &gt;&gt; pptpdown chmod 755 pptpup pptpdown 再将这两个文件复制到/etc/ppp下面，然后将如下内容添加到/etc/ppp/peers/xxx文件，具体就是你刚刚生成的配置。">
 
-    <meta property="og:title" content="vpn转代理" />
-<meta property="og:description" content="背景 贝壳自己的vps蒙难，不能正常工作了。所以贝壳买了一个vpn。是pptp/l2tp系列的。用起来很好用，但是这类ip-based vpn有几个不便。
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/2339/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="vpn转代理">
+  <meta property="og:description" content="背景 贝壳自己的vps蒙难，不能正常工作了。所以贝壳买了一个vpn。是pptp/l2tp系列的。用起来很好用，但是这类ip-based vpn有几个不便。
 不能自动设定客户端路由表，实现智能翻墙选择。 每个需要翻墙的设备均需要拨号，而目标设备有容量极限。 不能实现非侵入式翻墙，打开之后连p2p都翻了。 与此相反，代理式翻墙可以比较有效的解决这些问题。一个点拨号，其他点可以共享代理。不需要翻墙的直接访问不设定代理就好。唯路由表没有办法。实际上，为了使得代理可以使用路由表选择，贝壳还是花了一番功夫做了antigfw项目的。
 闲话少说。这次贝壳就展示一下如何在debian下设定pptp vpn，并且利用代理无缝共享的。
 linux下的vpn设定 安装pptp-linux这个包，然后按照说明使用即可。
@@ -43,11 +50,14 @@ pptpsetup --create &lt;TUNNEL&gt; --server &lt;SERVER&gt; [--domain &lt;DOMAIN&g
 路由设定 初始设定好的vpn不具有智能路由，因此必须添加一些内容。
 首先使用chnroutes.py这个程序，得到ovpn下常规用的路由表。当然，我们可以用linux下的路由表，但是他的old gateway存放在了/tmp下面，对此我并不是很喜欢。所以我只用了他的路由 表信息，其余自己处理。如果你不确定自己执行时的默认路由，理论上也应当需要下面的一些配置。
 使用下面这个topptp.sh，可以将输出的routes.txt转换为pptpup和pptpdown两个文件。
-#!/bin/bash ETHGW=192.168.1.1 cat &gt; pptpup &lt;&lt;EOF #!/bin/bash export PATH=&quot;/bin:/sbin:/usr/sbin:/usr/bin&quot; EOF cat &gt; pptpdown &lt;&lt;EOF #!/bin/bash export PATH=&quot;/bin:/sbin:/usr/sbin:/usr/bin&quot; EOF sed &quot;s:route (S*) (S*) net_gateway 5:route add -net 1 netmask 2 gw $ETHGW:g&quot; routes.txt &gt;&gt; pptpup sed &quot;s:route (S*) (S*) net_gateway 5:route del -net 1 netmask 2:g&quot; routes." />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2339/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2013-03-19T10:54:59+08:00" />
-<meta property="article:modified_time" content="2013-03-19T10:54:59+08:00" />
+#!/bin/bash ETHGW=192.168.1.1 cat &gt; pptpup &lt;&lt;EOF #!/bin/bash export PATH=&#34;/bin:/sbin:/usr/sbin:/usr/bin&#34; EOF cat &gt; pptpdown &lt;&lt;EOF #!/bin/bash export PATH=&#34;/bin:/sbin:/usr/sbin:/usr/bin&#34; EOF sed &#34;s:route (S*) (S*) net_gateway 5:route add -net 1 netmask 2 gw $ETHGW:g&#34; routes.txt &gt;&gt; pptpup sed &#34;s:route (S*) (S*) net_gateway 5:route del -net 1 netmask 2:g&#34; routes.txt &gt;&gt; pptpdown chmod 755 pptpup pptpdown 再将这两个文件复制到/etc/ppp下面，然后将如下内容添加到/etc/ppp/peers/xxx文件，具体就是你刚刚生成的配置。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2013-03-19T10:54:59+08:00">
+    <meta property="article:modified_time" content="2013-03-19T10:54:59+08:00">
+    <meta property="article:tag" content="Computer">
+    <meta property="article:tag" content="Vpn">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -84,7 +94,7 @@ pptpsetup --create &lt;TUNNEL&gt; --server &lt;SERVER&gt; [--domain &lt;DOMAIN&g
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -96,26 +106,17 @@ pptpsetup --create &lt;TUNNEL&gt; --server &lt;SERVER&gt; [--domain &lt;DOMAIN&g
       <h1 class ="post-title">vpn转代理</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Mar 19, 2013
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/computer/">computer</a>
-              <a class="tag" href="//blog.shell909090.org/tags/vpn/">vpn</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/computer/">Computer</a>
+              <a class="tag" href="/tags/vpn/">Vpn</a>
         </div>
       </div>
     </header>
@@ -184,7 +185,24 @@ allowedClients = 192.168.1.0/24
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

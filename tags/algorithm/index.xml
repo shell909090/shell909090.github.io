@@ -1,186 +1,62 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>algorithm on Shell&#39;s Home</title>
+    <title>Algorithm on Shell&#39;s Home</title>
     <link>//blog.shell909090.org/tags/algorithm/</link>
-    <description>Recent content in algorithm on Shell&#39;s Home</description>
-    <generator>Hugo -- gohugo.io</generator>
+    <description>Recent content in Algorithm on Shell&#39;s Home</description>
+    <generator>Hugo</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Mon, 28 Nov 2011 10:22:43 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/algorithm/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 28 Nov 2011 10:22:43 +0800</lastBuildDate>
+    <atom:link href="//blog.shell909090.org/tags/algorithm/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>python中dict的插入复杂度估算和排重复杂度估算</title>
       <link>//blog.shell909090.org/blog/archives/1996/</link>
       <pubDate>Mon, 28 Nov 2011 10:22:43 +0800</pubDate>
-      
       <guid>//blog.shell909090.org/blog/archives/1996/</guid>
-      <description>在做分词核心词典数据结构分析的时候需要，就先写一篇吧。
-具体可以参考python源码解析读书笔记（一）——内置对象，这里面有说：
-7.dict对象的索引方案
-dict对象的索引方案使用的是哈希表，而且是开放地址法的哈希表。当装载率达到一定规模后，会新申请一块内存，将有效数据复制过去。最小的表空间为8个对象，当装载率超过2/3时，会扩大规模到当前active的4倍（超过50000个对象为2倍）。目前为止，在对象被删除后，其表空间并不释放。因此曾经增长的非常大的dict对象，可以定期复制以回收空间。
-最初的表项空间为6个以内，满了之后，会自动扩张到24个，有效16个。从大致来说，如果要放下N个表项，大概就要扩张T次，他们满足以下关系。
-A0*(8/3)^(T-1)&amp;lt;N&amp;lt;A0*(8/3)^T 而每次扩张，就要进行全表项复制，因此复杂度大约是O(N)量级。当扩张到放下N个表项时，就需要进行的复制的总数是：
-sum(i, 0, T-1){A0*(8/3)^i} 这是一个典型的等比数列求和问题，我们知道问题的答案应当是：
-A0*3*((8/3)^T-1)/5=A0*(3/5)*(8/3)^T-(3/5)*A0 因此，(3/5)(N-A0)&amp;lt;O&amp;lt;(3/5)\*((8/3)\*N-A0)。如果只考虑数量级的话，插入的复杂度量级为O(n)，即哈希表的平均插入复杂度为n级。
-也许有人奇怪，哈希表的插入复杂度为1级阿，怎么得到n级的结论的？看上面，都说是放下N个表项时的总复杂度了。
-我们可以和红黑树对比一下，红黑树的平均插入复杂度为logn级，平均查找复杂度为logn级。哈希表的平均插入复杂度为1级，查找复杂度为1级。但是红黑树在一点上比hash优秀——他的插入时间基本稳定，hash table的插入时间有可能会暴长。
-于是，当我们有N个元素，需要进行排重的时候，我们可以set化。假定set和dict基于一样原理运作，我们的时间复杂度为O(n+m)级，m为排重后元素个数。其实按照最差情况来说，也可以认为是O(n)级。</description>
+      <description>&lt;p&gt;在做分词核心词典数据结构分析的时候需要，就先写一篇吧。&lt;/p&gt;&#xA;&lt;p&gt;具体可以参考&lt;a href=&#34;http://blog.shell909090.org/blog/archives/1756/&#34;&gt;python源码解析读书笔记（一）——内置对象&lt;/a&gt;，这里面有说：&lt;/p&gt;&#xA;&lt;p&gt;7.dict对象的索引方案&lt;/p&gt;&#xA;&lt;p&gt;dict对象的索引方案使用的是哈希表，而且是开放地址法的哈希表。当装载率达到一定规模后，会新申请一块内存，将有效数据复制过去。最小的表空间为8个对象，当装载率超过2/3时，会扩大规模到当前active的4倍（超过50000个对象为2倍）。目前为止，在对象被删除后，其表空间并不释放。因此曾经增长的非常大的dict对象，可以定期复制以回收空间。&lt;/p&gt;&#xA;&lt;p&gt;最初的表项空间为6个以内，满了之后，会自动扩张到24个，有效16个。从大致来说，如果要放下N个表项，大概就要扩张T次，他们满足以下关系。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;A0*(8/3)^(T-1)&amp;lt;N&amp;lt;A0*(8/3)^T&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;而每次扩张，就要进行全表项复制，因此复杂度大约是O(N)量级。当扩张到放下N个表项时，就需要进行的复制的总数是：&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;sum(i, 0, T-1){A0*(8/3)^i}&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;这是一个典型的等比数列求和问题，我们知道问题的答案应当是：&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;A0*3*((8/3)^T-1)/5=A0*(3/5)*(8/3)^T-(3/5)*A0&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;因此，&lt;code&gt;(3/5)(N-A0)&amp;lt;O&amp;lt;(3/5)\*((8/3)\*N-A0)&lt;/code&gt;。如果只考虑数量级的话，插入的复杂度量级为O(n)，即哈希表的平均插入复杂度为n级。&lt;/p&gt;&#xA;&lt;p&gt;也许有人奇怪，哈希表的插入复杂度为1级阿，怎么得到n级的结论的？看上面，都说是放下N个表项时的总复杂度了。&lt;/p&gt;&#xA;&lt;p&gt;我们可以和红黑树对比一下，红黑树的平均插入复杂度为logn级，平均查找复杂度为logn级。哈希表的平均插入复杂度为1级，查找复杂度为1级。但是红黑树在一点上比hash优秀——他的插入时间基本稳定，hash table的插入时间有可能会暴长。&lt;/p&gt;&#xA;&lt;p&gt;于是，当我们有N个元素，需要进行排重的时候，我们可以set化。假定set和dict基于一样原理运作，我们的时间复杂度为O(n+m)级，m为排重后元素个数。其实按照最差情况来说，也可以认为是O(n)级。&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>python-segment使用示例</title>
       <link>//blog.shell909090.org/blog/archives/1990/</link>
       <pubDate>Tue, 22 Nov 2011 10:18:15 +0800</pubDate>
-      
       <guid>//blog.shell909090.org/blog/archives/1990/</guid>
-      <description>项目的主页是http://code.google.com/p/python-segment/，如果有问题，可以在上面提交issue，我会收到邮件（google code会么？应该会吧）。如果你希望协助开发，可以加入项目。一些简单问题可以直接看项目的WIKI，Wiki中有的一些内容我不会进一步解释，只会告诉你在那里可以看到。
-1.如何获得源码
-你可以使用以下代码，直接从版本库中复制一个可用版本出来。
-hg clone https://shell909090@code.google.com/p/python-segment/ 或者可以从这里下载一个最新版本的包。
-2.如何准备环境
-你可以看INSTALL，里面讲解的比较详细了。如果你不准备进行安装部署，可以跳过安装和打包这两步。但是如果你打算使用cutter工具，请安装chardet。如果你打算使用spider工具，请安装html2text。
-首先按照如下方式生成词典。
-gunzip dict.tar.gz ./ps_dbmgr create dict.txt 然后，你可以看到生成了frq.db，这是词典的默认文件名。注意，词典文件的格式和具体的版本有关，换用版本后最好重新生成词典。
-3.试验分词
-假定有一个文本文件，test.txt，里面内容是中文平文本，编码任意。
-./ps_cutter cutshow test.txt cutter会自动推测编码。
-4.代码使用
-假如当前有一个frq.db词库。
-import segment cut = segment.get_cutter(&#39;frq.db&#39;) print list(cut.parse(u&#39;工信处女干事每月经过下属科室都要亲口交代24口交换机等技术性器件的安装工作&#39;)) 注意，仅仅使用parse是不会进行分词的，因为parse返回的是一个生成器。</description>
+      <description>&lt;p&gt;项目的主页是&lt;a href=&#34;http://code.google.com/p/python-segment/&#34;&gt;http://code.google.com/p/python-segment/&lt;/a&gt;，如果有问题，可以在上面提交issue，我会收到邮件（google code会么？应该会吧）。如果你希望协助开发，可以加入项目。一些简单问题可以直接看项目的WIKI，Wiki中有的一些内容我不会进一步解释，只会告诉你在那里可以看到。&lt;/p&gt;&#xA;&lt;p&gt;1.如何获得源码&lt;/p&gt;&#xA;&lt;p&gt;你可以使用以下代码，直接从版本库中复制一个可用版本出来。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;hg clone https://shell909090@code.google.com/p/python-segment/&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;或者可以从&lt;a href=&#34;http://code.google.com/p/python-segment/downloads/list&#34;&gt;这里&lt;/a&gt;下载一个最新版本的包。&lt;/p&gt;&#xA;&lt;p&gt;2.如何准备环境&lt;/p&gt;&#xA;&lt;p&gt;你可以看INSTALL，里面讲解的比较详细了。如果你不准备进行安装部署，可以跳过安装和打包这两步。但是如果你打算使用cutter工具，请安装chardet。如果你打算使用spider工具，请安装html2text。&lt;/p&gt;&#xA;&lt;p&gt;首先按照如下方式生成词典。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;gunzip dict.tar.gz&#xA;./ps_dbmgr create dict.txt&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;然后，你可以看到生成了frq.db，这是词典的默认文件名。注意，词典文件的格式和具体的版本有关，换用版本后最好重新生成词典。&lt;/p&gt;&#xA;&lt;p&gt;3.试验分词&lt;/p&gt;&#xA;&lt;p&gt;假定有一个文本文件，test.txt，里面内容是中文平文本，编码任意。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;./ps_cutter cutshow test.txt&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;cutter会自动推测编码。&lt;/p&gt;&#xA;&lt;p&gt;4.代码使用&lt;/p&gt;&#xA;&lt;p&gt;假如当前有一个frq.db词库。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;import segment&#xA;cut = segment.get_cutter(&#39;frq.db&#39;)&#xA;print list(cut.parse(u&#39;工信处女干事每月经过下属科室都要亲口交代24口交换机等技术性器件的安装工作&#39;))&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;注意，仅仅使用parse是不会进行分词的，因为parse返回的是一个生成器。&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>分词算法的具体实践</title>
       <link>//blog.shell909090.org/blog/archives/40/</link>
       <pubDate>Sun, 12 Oct 2008 09:27:00 +0800</pubDate>
-      
       <guid>//blog.shell909090.org/blog/archives/40/</guid>
-      <description>说到分词算法，可能很多人都很陌生，然而说起百度，google，很多人却是耳熟能详。google，百度在搜索的时候，输入关键词后瞬间就可以得到结果，如果用通用数据库是无法做到的。实行这个加速的关键就是分词算法。例如&amp;quot;项羽是萝莉控&amp;quot;这句句子，我们一般搜索都是搜索项羽，或者萝莉控，萝莉。你见过有去搜&amp;quot;是萝&amp;quot;这个关键字的么？因此系统通过分词，将句子分解为&amp;quot;项羽/是/萝莉控&amp;quot;，去处单字常见词&amp;quot;是&amp;quot;(如果要索引&amp;quot;是&amp;quot;，可以想像有多少文章没有&amp;quot;是&amp;quot;的)，我们就得到了项羽和萝莉控两个词。再通过反向关联，建立项羽，萝莉控指向文章的连接，就可以完成瞬间的搜索了(具体原理不说了，只要有一定数据库基础的人都应当能想明白原理)。并且通过关联性，某种程度上也可以提供&amp;quot;是萝&amp;quot;的搜索(带&amp;quot;是&amp;quot;的词，带&amp;quot;萝&amp;quot;的词，相关度最高)。
-那么，如何来计算分词呢？方法很多，大家可以在网络上搜索下，贝壳就不赘述了。贝壳现在要说的是这次贝壳主要试验的方向，基于词典的机械分词中的最大分词算法。
-机械分词算法是当今的主流，关键原因在于速度问题。虽然正确的分词很有价值，然而如果速度太慢，一样没有什么用处。机械分词一般可以保证 98%-99.5%以上的正确率，同时提供极高的分词速度。而机械分词一般来说，都是基于词典的。主要有正向分词算法，逆向分词算法，最大匹配分词算法。其中最大匹配分词算法具备最高的灵活性，只要你能评价一个切分的优秀程度，算法能把所有可能算出来让你评价。然而大家可以想像，这个是非常耗费CPU的。贝壳在这个基础上，做了一个具体的实现和细化加速。并且有准备做为一个开源项目来长期运作(只要有人有意向接手合作)。
-首先我们先说贝壳这个算法的评价原则。贝壳认为，评价原则应当有以下几点。同时也必须要说明，以下原则是无法正确评价所有情况的。不过以下原则在原则正确的基础上比较便于优化。一、无法分析的词最少(这是全局最大匹配的理论核心)。二、匹配出的原子最少(这是保证分词优秀性的指标)。三、匹配出原子的出现概率和最高(这是纯粹没有办法了从概率上提高匹配正确的可能)。
-当我们分析一句话的时候，我们可以想像，这句话应当是正常的，可被理解的。换句话说，句子中应当都是有意义的词。那么，在匹配后无法理解的词是什么呢？一种是匹配错误，一种是新单词，一种是单字成词和无意义助词。单字成词的例子有上面的&amp;quot;是&amp;quot;，我们可以通过一个比较小的词典去除。那么，假定词典够大的情况下，无法理解和分析的词越少的组合越正确。而同样一句话，匹配出的原子越少，在搜索的时候效率越高。因此我们有规定了原子最少原则。至于最后一个，在无法分析词一致，原子个数一致的情况下，我们只能通过出现概率来猜测可能性。
-然后，现在让我们分析一下分词的特点，并且做一定的优化。首先就从最著名的例子，&amp;ldquo;长春/市长/春节/致辞&amp;quot;开始。
-长春市长春节致辞 首先，匹配算法一定要先搜索到一个出现的词，有词才有匹配优化问题。没有词的话，你试试看分词&amp;quot;嗡嘛呢呗咪吽&amp;rdquo;。根本无法可分。因此首先我们要计算出一个出现的单词。贝壳是从正向开始计算的(主要是因为词典的加速方法是头索引的)。
-*长春*{市长春节致辞} *长春市*{长春节致辞} 好的，我们匹配到了两个，不过这就是全部可能么？不是，否则就变成了正向最大搜索。你可以看看&amp;quot;有意见分歧&amp;quot;。如果从头一个匹配到开始计算，无论如何都是&amp;quot;有意/见/分歧&amp;quot;，而事实是&amp;quot;有/意见/分歧&amp;quot;。因此我们还有一种可能，在头一个匹配到的位置，其实并不匹配。不匹配多长呢？最大长度不会超过最短的匹配词。为什么？我们来看下面一个例子。
-*长春*{市长春节致辞} *长/春/(这两个字不是词，而是两个无法理解的字){市长春节致辞} 很明显，后一种分法违背了我们的第一原则，无法分析的词最少。无论后面怎么计算，其最优结果是相同的。在后续结果相同的情况下，头一次匹配到词后，所有可能的跳空(搜索可能的不匹配)最大长度严格小于最短匹配词的长度。
-那么是否所有跳空都要搜索呢？也不，我们可以继续剪枝。对于情况&amp;quot;有意见分歧&amp;quot;来说，这个路径是必须搜索的。但是对于我们的例子来说，是无需搜索的。为什么呢？我们看以下计算。
-*长/{春市长春节致辞}(下一个匹配是什么？总不会是春市吧，所以应当是&amp;quot;市长&amp;quot;) *长/春/市长*{春节致辞} *长春*{市长春节致辞} 大家可以看到，其实这个路径是无需计算的。那什么情况下需要计算呢？
-一旦跳空，其跳空后寻找到的下个词的位置必须严格小于最短词的词尾位置。否则就没有搜索价值。具体可以看以下示例。
-XXXXXXXNNNNNNNNNNN(X是词，N是无关紧要的)
-SSSSSSSXXNNNNNNNNN(S是跳空或者跳空后形成的无法理解字，X是词，在这种情况下，无论后面怎么评价，都不影响该匹配被剔除)
-OK，我们回到例子，刚刚我们说了，有&amp;quot;长&amp;quot;的匹配。但是通过刚刚的剪枝，又被剪了出去。我们下面分别计算两个情况。
-市长春节致辞 *市/{长春节致辞} *市长*{春节致辞} 长春节致辞 好，我们先不计算下去了。通过上面的计算，我们发现，在计算过程中经常需要计算同一内容的结果。我们可以想一下，同样的分词，同样的算法，出现的应当是同样的结果。就是说，分词函数是状态无关的算法。通过分解一个单词，得到一个最优结果。那么，我们对于同样的数据，何必需要计算两次呢？贝壳上文中提到过记忆函数，这次就用上了。根据贝壳的试验结果，如果记忆全部词的分解结果，会造成大量的记忆-释放，而内容基本没有用到，造成效率下降。如果只记忆长词的分解结果，往往又会因为太长，大多数句子无法达到长度而根本没用。这中间有个平衡值，具体多少贝壳就不说了。我们可以按照上文的方法计算以下两个过程，得到结果。大家可以自行验证。
-春节致辞 *春节*致辞* 长春节致辞 *长/春节*致辞* *长春*节/致辞* 结合上面的过程，我们推算得到结果。
-*长春*{市长春节致辞} *长春*市长*春节*致辞* *长春市*{长春节致辞} *长春市*长/春节*致辞* *长春市*长春*节/致辞* 按照上面的评价原则，我们得到了正确的结果。
-大家可以看看其他例子，这里着重说一下&amp;quot;有意见分歧&amp;quot;。
-有意见分歧 *有*意见*分歧* *有意*见/分歧* 注意，有是单字成词，见可不是。如果见单字成词，做看见讲，那这句话就彻底成歧义句了。可以理解为，有意的要看到(或者让其表现出)分歧。这一般是古文语法。由此也可以看出上述原则在理解古文的时候往往会出现问题。同时还要指出的是，在匹配&amp;quot;长春市长春药店&amp;quot;的时候，会出现以下结果。
-长春市长春药店 *长春*市长*春药店* *长春市*长春*药店* 两者的无法理解词都没有，切分数一致，最后硬是因为春药店出现概率低而被筛掉。可见系统有的时候是依赖概率和人品在工作的。
-经过上面的原则和算法，贝壳实现了一个python的分词程序，1000行代码，原型系统。90W条词情况下，在AMD MK36上(2G主频)分词效率66K/s上下，具体看分词的选项(例如顺序分词就比较节约资源，分词排除重复就比较慢，启用多线程后在单CPU 机器上更慢)，内存使用114M。使用C++写的核心词典后，90W条词的情况下分词速度80K/s，比python的核心词典快了20%，内存70M，节约内存40%。不过可惜，这个核心词典是公司产权，贝壳无权公布。并且贝壳做了一些工作，准备使用分词程序来生成分词词表。这个么贝壳就不准备讲了。前面讲的内容贝壳准备放到试验型站点 http://shell909090.3322.org/split_word/split_show/ 上面去，08年内有效。有兴趣联系我的可以发 mail给我，shell909090+split@gmail.com，欢迎大家试验并提出意见。</description>
+      <description>&lt;p&gt;说到分词算法，可能很多人都很陌生，然而说起百度，google，很多人却是耳熟能详。google，百度在搜索的时候，输入关键词后瞬间就可以得到结果，如果用通用数据库是无法做到的。实行这个加速的关键就是分词算法。例如&amp;quot;项羽是萝莉控&amp;quot;这句句子，我们一般搜索都是搜索项羽，或者萝莉控，萝莉。你见过有去搜&amp;quot;是萝&amp;quot;这个关键字的么？因此系统通过分词，将句子分解为&amp;quot;项羽/是/萝莉控&amp;quot;，去处单字常见词&amp;quot;是&amp;quot;(如果要索引&amp;quot;是&amp;quot;，可以想像有多少文章没有&amp;quot;是&amp;quot;的)，我们就得到了项羽和萝莉控两个词。再通过反向关联，建立项羽，萝莉控指向文章的连接，就可以完成瞬间的搜索了(具体原理不说了，只要有一定数据库基础的人都应当能想明白原理)。并且通过关联性，某种程度上也可以提供&amp;quot;是萝&amp;quot;的搜索(带&amp;quot;是&amp;quot;的词，带&amp;quot;萝&amp;quot;的词，相关度最高)。&lt;/p&gt;&#xA;&lt;p&gt;那么，如何来计算分词呢？方法很多，大家可以在网络上搜索下，贝壳就不赘述了。贝壳现在要说的是这次贝壳主要试验的方向，基于词典的机械分词中的最大分词算法。&lt;/p&gt;&#xA;&lt;p&gt;机械分词算法是当今的主流，关键原因在于速度问题。虽然正确的分词很有价值，然而如果速度太慢，一样没有什么用处。机械分词一般可以保证 98%-99.5%以上的正确率，同时提供极高的分词速度。而机械分词一般来说，都是基于词典的。主要有正向分词算法，逆向分词算法，最大匹配分词算法。其中最大匹配分词算法具备最高的灵活性，只要你能评价一个切分的优秀程度，算法能把所有可能算出来让你评价。然而大家可以想像，这个是非常耗费CPU的。贝壳在这个基础上，做了一个具体的实现和细化加速。并且有准备做为一个开源项目来长期运作(只要有人有意向接手合作)。&lt;/p&gt;&#xA;&lt;p&gt;首先我们先说贝壳这个算法的评价原则。贝壳认为，评价原则应当有以下几点。同时也必须要说明，以下原则是无法正确评价所有情况的。不过以下原则在原则正确的基础上比较便于优化。一、无法分析的词最少(这是全局最大匹配的理论核心)。二、匹配出的原子最少(这是保证分词优秀性的指标)。三、匹配出原子的出现概率和最高(这是纯粹没有办法了从概率上提高匹配正确的可能)。&lt;/p&gt;&#xA;&lt;p&gt;当我们分析一句话的时候，我们可以想像，这句话应当是正常的，可被理解的。换句话说，句子中应当都是有意义的词。那么，在匹配后无法理解的词是什么呢？一种是匹配错误，一种是新单词，一种是单字成词和无意义助词。单字成词的例子有上面的&amp;quot;是&amp;quot;，我们可以通过一个比较小的词典去除。那么，假定词典够大的情况下，无法理解和分析的词越少的组合越正确。而同样一句话，匹配出的原子越少，在搜索的时候效率越高。因此我们有规定了原子最少原则。至于最后一个，在无法分析词一致，原子个数一致的情况下，我们只能通过出现概率来猜测可能性。&lt;/p&gt;&#xA;&lt;p&gt;然后，现在让我们分析一下分词的特点，并且做一定的优化。首先就从最著名的例子，&amp;ldquo;长春/市长/春节/致辞&amp;quot;开始。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;长春市长春节致辞&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;首先，匹配算法一定要先搜索到一个出现的词，有词才有匹配优化问题。没有词的话，你试试看分词&amp;quot;嗡嘛呢呗咪吽&amp;rdquo;。根本无法可分。因此首先我们要计算出一个出现的单词。贝壳是从正向开始计算的(主要是因为词典的加速方法是头索引的)。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;*长春*{市长春节致辞}&#xA;*长春市*{长春节致辞}&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;好的，我们匹配到了两个，不过这就是全部可能么？不是，否则就变成了正向最大搜索。你可以看看&amp;quot;有意见分歧&amp;quot;。如果从头一个匹配到开始计算，无论如何都是&amp;quot;有意/见/分歧&amp;quot;，而事实是&amp;quot;有/意见/分歧&amp;quot;。因此我们还有一种可能，在头一个匹配到的位置，其实并不匹配。不匹配多长呢？最大长度不会超过最短的匹配词。为什么？我们来看下面一个例子。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;*长春*{市长春节致辞}&#xA;*长/春/(这两个字不是词，而是两个无法理解的字){市长春节致辞}&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;很明显，后一种分法违背了我们的第一原则，无法分析的词最少。无论后面怎么计算，其最优结果是相同的。在后续结果相同的情况下，头一次匹配到词后，所有可能的跳空(搜索可能的不匹配)最大长度严格小于最短匹配词的长度。&lt;/p&gt;&#xA;&lt;p&gt;那么是否所有跳空都要搜索呢？也不，我们可以继续剪枝。对于情况&amp;quot;有意见分歧&amp;quot;来说，这个路径是必须搜索的。但是对于我们的例子来说，是无需搜索的。为什么呢？我们看以下计算。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;*长/{春市长春节致辞}(下一个匹配是什么？总不会是春市吧，所以应当是&amp;quot;市长&amp;quot;)&#xA;*长/春/市长*{春节致辞}&#xA;*长春*{市长春节致辞}&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;大家可以看到，其实这个路径是无需计算的。那什么情况下需要计算呢？&lt;/p&gt;&#xA;&lt;p&gt;一旦跳空，其跳空后寻找到的下个词的位置必须严格小于最短词的词尾位置。否则就没有搜索价值。具体可以看以下示例。&lt;/p&gt;&#xA;&lt;p&gt;XXXXXXXNNNNNNNNNNN(X是词，N是无关紧要的)&lt;/p&gt;&#xA;&lt;p&gt;SSSSSSSXXNNNNNNNNN(S是跳空或者跳空后形成的无法理解字，X是词，在这种情况下，无论后面怎么评价，都不影响该匹配被剔除)&lt;/p&gt;&#xA;&lt;p&gt;OK，我们回到例子，刚刚我们说了，有&amp;quot;长&amp;quot;的匹配。但是通过刚刚的剪枝，又被剪了出去。我们下面分别计算两个情况。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;市长春节致辞&#xA;*市/{长春节致辞}&#xA;*市长*{春节致辞}&#xA;长春节致辞&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;好，我们先不计算下去了。通过上面的计算，我们发现，在计算过程中经常需要计算同一内容的结果。我们可以想一下，同样的分词，同样的算法，出现的应当是同样的结果。就是说，分词函数是状态无关的算法。通过分解一个单词，得到一个最优结果。那么，我们对于同样的数据，何必需要计算两次呢？贝壳上文中提到过记忆函数，这次就用上了。根据贝壳的试验结果，如果记忆全部词的分解结果，会造成大量的记忆-释放，而内容基本没有用到，造成效率下降。如果只记忆长词的分解结果，往往又会因为太长，大多数句子无法达到长度而根本没用。这中间有个平衡值，具体多少贝壳就不说了。我们可以按照上文的方法计算以下两个过程，得到结果。大家可以自行验证。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;春节致辞&#xA;*春节*致辞*&#xA;长春节致辞&#xA;*长/春节*致辞*&#xA;*长春*节/致辞*&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;结合上面的过程，我们推算得到结果。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;*长春*{市长春节致辞}&#xA;*长春*市长*春节*致辞*&#xA;*长春市*{长春节致辞}&#xA;*长春市*长/春节*致辞*&#xA;*长春市*长春*节/致辞*&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;按照上面的评价原则，我们得到了正确的结果。&lt;/p&gt;&#xA;&lt;p&gt;大家可以看看其他例子，这里着重说一下&amp;quot;有意见分歧&amp;quot;。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;有意见分歧&#xA;*有*意见*分歧*&#xA;*有意*见/分歧*&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;注意，有是单字成词，见可不是。如果见单字成词，做看见讲，那这句话就彻底成歧义句了。可以理解为，有意的要看到(或者让其表现出)分歧。这一般是古文语法。由此也可以看出上述原则在理解古文的时候往往会出现问题。同时还要指出的是，在匹配&amp;quot;长春市长春药店&amp;quot;的时候，会出现以下结果。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;长春市长春药店&#xA;*长春*市长*春药店*&#xA;*长春市*长春*药店*&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;两者的无法理解词都没有，切分数一致，最后硬是因为春药店出现概率低而被筛掉。可见系统有的时候是依赖概率和人品在工作的。&lt;/p&gt;&#xA;&lt;p&gt;经过上面的原则和算法，贝壳实现了一个python的分词程序，1000行代码，原型系统。90W条词情况下，在AMD MK36上(2G主频)分词效率66K/s上下，具体看分词的选项(例如顺序分词就比较节约资源，分词排除重复就比较慢，启用多线程后在单CPU 机器上更慢)，内存使用114M。使用C++写的核心词典后，90W条词的情况下分词速度80K/s，比python的核心词典快了20%，内存70M，节约内存40%。不过可惜，这个核心词典是公司产权，贝壳无权公布。并且贝壳做了一些工作，准备使用分词程序来生成分词词表。这个么贝壳就不准备讲了。前面讲的内容贝壳准备放到试验型站点 &lt;a href=&#34;http://shell909090.3322.org/split_word/split_show/&#34;&gt;http://shell909090.3322.org/split_word/split_show/&lt;/a&gt; 上面去，08年内有效。有兴趣联系我的可以发 mail给我，shell909090+split@gmail.com，欢迎大家试验并提出意见。&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>KMP</title>
       <link>//blog.shell909090.org/blog/archives/349/</link>
       <pubDate>Tue, 16 Jan 2007 00:53:52 +0800</pubDate>
-      
       <guid>//blog.shell909090.org/blog/archives/349/</guid>
-      <description>KMP是一个给人捧滥了的算法，其实单看同时有三个发明人这点，就知道这个算法是自古华山一条路，没别的想法的。KMP的算法每步虽然难想但是自然有道理，没有别的方法的。不像排序算法，一嘟噜的算法还没完。根据各种侧重点不同有不同的算法可用。
-KMP的比较算法核心在于不回朔。我们先看一个正常的例子。
-SSSSSSSSSSSSSS
-TTTTT i=0, j=1,2,3&amp;hellip;
-TTTTT i=1, j=1,2,3&amp;hellip;
-TTTTT i=2, j=1,2,3&amp;hellip;
-我们用T去匹配S，先对齐T和S的头部，然后对比T和S。如果T的范围内，TS内容一致，则匹配成功。不成功的话就将T向后移动一个字符。再次匹配T范围内TS的内容是否一致。ij的范围最大会在0&amp;lt;=i&amp;lt;=&amp;ldquo;j KMP算法的核心在于，如果T范围内TS的内容不一致，那么T向后移动不是一个字符，而是多个。而当前比较位置永远不向前移动。如果您写出来的算法当前比较位置向前移动了，那么肯定是写错了。
-我们假定T范围内第i个字符匹配失败(0&amp;lt;=i
-为什么能移动一个以上呢？Next[i]怎么确定呢？我们看一个抽象的例子：M代表匹配，N不匹配，U不知道。
-MMMMMNUUUUU
-TTTTTTTTTTTTTTT
-TTTTTTTTTTTTTTT
-我们可以看到，向后移动字符的时候，T自身有重合的部分。这时候有三种状况，我们先假定一种重合的状况。假定T向后移动了一些字符，P代表当前比较位置。在这个位置上TS出现了不匹配。
-..MMMNUUU..
-..TTTTTPTTTT..
-..MMNTTTTTT..
-在这个T向后移动一些距离后，在当前比较位置前已经出现了自身和自身不匹配的状况。根据上面我们知道，当前位置以前的T和S是匹配的。那么就是说，移动了这些字符后。T当前的位置上不可能取得匹配。我们称这种情况为这个位置的自身完全不匹配。
-然后是另外一种匹配状况，符号和上面一致。
-..MMMNUUU..
-..TTTTTPTTTT..
-..MMMNTTTT..
-这个时候，T在当前匹配位置上自身不匹配，前面位置都匹配。同理可以知道，T在滑移到这个位置后可能取得匹配。我们称这种情况为这个位置的自身部分不匹配。
-最后一种匹配情况是。
-..MMMNUUU..
-..TTTTTPTTTT..
-..MMMMUUU..
-这个时候，T在在前面和当前位置都匹配。我们知道前面是匹配的，然而当前既然已经被证明了和S不匹配。那么滑移这些位置后，新的位置上T也不可能和S取得匹配。我们称这种情况为这个位置的自身完全匹配。
-然后我们可以回头看看比较过程了。当我们对齐TS，然后进行比较的过程中。出现了不匹配。
-注意一个问题，我们回朔是为了知道移动后的T是否仍旧匹配。所以如果我们知道T匹配不匹配，就不用回朔。
-这个时候我们不移动一次T，然后回朔。而是将T滑移一下，先滑移1位好了。假设出现了当前比较位置的自身完全不匹配或者自身完全匹配，那么滑动1位肯定也无法获得一个有效的匹配。那么就继续滑动，直到出现了自身部分不匹配，或者T已经完全的滑动到了当前位置的后面。这时候T的位置才是有可能获得匹配的位置，其余的位置就没必要浪费时间了。
-也就是说，滑移距离Next[i]是i这个位置上滑动距离逐渐增加的时候，首次出现自身部分不匹配情况的位置。如果这情况不出现，那么就设定为&amp;lt;1的值。操作上将整个T滑动到当前位置的后面，并且从下一个位置开始比较起。
-然后附上初始版的代码和比较过程。
-int *cul_next (char *lpTpl)
-{
-unsigned int i = 0, j = 0, l = 0;
-int *next;
-l = strlen (lpTpl);
-next = new int[l];
-memset (next, 0, l * sizeof (int));</description>
+      <description>&lt;p&gt;   &#xA;KMP是一个给人捧滥了的算法，其实单看同时有三个发明人这点，就知道这个算法是自古华山一条路，没别的想法的。KMP的算法每步虽然难想但是自然有道理，没有别的方法的。不像排序算法，一嘟噜的算法还没完。根据各种侧重点不同有不同的算法可用。&lt;br&gt;&#xA;    KMP的比较算法核心在于不回朔。我们先看一个正常的例子。&lt;br&gt;&#xA;SSSSSSSSSSSSSS&lt;br&gt;&#xA;TTTTT            i=0, j=1,2,3&amp;hellip;&lt;br&gt;&#xA;  TTTTT          i=1, j=1,2,3&amp;hellip;&lt;br&gt;&#xA;    TTTTT        i=2, j=1,2,3&amp;hellip;&lt;br&gt;&#xA;   &#xA;我们用T去匹配S，先对齐T和S的头部，然后对比T和S。如果T的范围内，TS内容一致，则匹配成功。不成功的话就将T向后移动一个字符。再次匹配T范围内TS的内容是否一致。ij的范围最大会在0&amp;lt;=i&amp;lt;=&amp;ldquo;j   &#xA;KMP算法的核心在于，如果T范围内TS的内容不一致，那么T向后移动不是一个字符，而是多个。&lt;span&#xA;style=&#34;font-weight:bold&#34;&gt;而当前比较位置永远不向前移动。&lt;/span&gt;如果您写出来的算法当前比较位置向前移动了，那么肯定是写错了。&lt;br&gt;&#xA;    我们假定T范围内第i个字符匹配失败(0&amp;lt;=i&lt;br&gt;&#xA;   &#xA;为什么能移动一个以上呢？Next[i]怎么确定呢？我们看一个抽象的例子：M代表匹配，N不匹配，U不知道。&lt;br&gt;&#xA;MMMMMNUUUUU&lt;br&gt;&#xA;TTTTTTTTTTTTTTT&lt;br&gt;&#xA;  TTTTTTTTTTTTTTT&lt;br&gt;&#xA;   &#xA;我们可以看到，向后移动字符的时候，T自身有重合的部分。这时候有三种状况，我们先假定一种重合的状况。假定T向后移动了一些字符，P代表当前比较位置。在这个位置上TS出现了不匹配。&lt;br&gt;&#xA;..MMMNUUU..&lt;br&gt;&#xA;..TTTTTPTTTT..&lt;br&gt;&#xA;..MMNTTTTTT..&lt;br&gt;&#xA;   &#xA;在这个T向后移动一些距离后，在当前比较位置前已经出现了自身和自身不匹配的状况。根据上面我们知道，当前位置以前的T和S是匹配的。那么就是说，移动了这些字符后。T当前的位置上不可能取得匹配。我们称这种情况为这个位置的自身完全不匹配。&lt;br&gt;&#xA;    然后是另外一种匹配状况，符号和上面一致。&lt;br&gt;&#xA;..MMMNUUU..&lt;br&gt;&#xA;..TTTTTPTTTT..&lt;br&gt;&#xA;..MMMNTTTT..&lt;br&gt;&#xA;   &#xA;这个时候，T在当前匹配位置上自身不匹配，前面位置都匹配。同理可以知道，T在滑移到这个位置后可能取得匹配。我们称这种情况为这个位置的自身部分不匹配。&lt;br&gt;&#xA;    最后一种匹配情况是。&lt;br&gt;&#xA;..MMMNUUU..&lt;br&gt;&#xA;..TTTTTPTTTT..&lt;br&gt;&#xA;..MMMMUUU..&lt;br&gt;&#xA;   &#xA;这个时候，T在在前面和当前位置都匹配。我们知道前面是匹配的，然而当前既然已经被证明了和S不匹配。那么滑移这些位置后，新的位置上T也不可能和S取得匹配。我们称这种情况为这个位置的自身完全匹配。&lt;br&gt;&#xA;   &#xA;然后我们可以回头看看比较过程了。当我们对齐TS，然后进行比较的过程中。出现了不匹配。&lt;br&gt;&#xA;   &#xA;注意一个问题，我们回朔是为了知道移动后的T是否仍旧匹配。所以如果我们知道T匹配不匹配，就不用回朔。&lt;br&gt;&#xA;   &#xA;这个时候我们不移动一次T，然后回朔。而是将T滑移一下，先滑移1位好了。假设出现了当前比较位置的自身完全不匹配或者自身完全匹配，那么滑动1位肯定也无法获得一个有效的匹配。那么就继续滑动，直到出现了自身部分不匹配，或者T已经完全的滑动到了当前位置的后面。这时候T的位置才是有可能获得匹配的位置，其余的位置就没必要浪费时间了。&lt;br&gt;&#xA;   &#xA;也就是说，滑移距离Next[i]是i这个位置上滑动距离逐渐增加的时候，首次出现自身部分不匹配情况的位置。如果这情况不出现，那么就设定为&amp;lt;1的值。操作上将整个T滑动到当前位置的后面，并且从下一个位置开始比较起。&lt;br&gt;&#xA;    然后附上初始版的代码和比较过程。&lt;br&gt;&#xA;int            *cul_next (char *lpTpl)&lt;br&gt;&#xA;{&lt;br&gt;&#xA;    unsigned int    i = 0, j = 0, l = 0;&lt;br&gt;&#xA;    int            *next;&lt;br&gt;&#xA;&lt;br&gt;&#xA;    l = strlen (lpTpl);&lt;br&gt;&#xA;    next = new int[l];&lt;br&gt;&#xA;    memset (next, 0, l * sizeof (int));&lt;br&gt;&#xA;&lt;br&gt;&#xA;    for (i = 1; i &amp;lt; l; i++) {&lt;br&gt;&#xA;        for (j = 0; j &amp;lt; l - i &amp;amp;&amp;amp; lpTpl[j] == lpTpl[j + i]; j++);&lt;br&gt;&#xA;        if (j &amp;lt; l - i &amp;amp;&amp;amp; next[j + i] == 0)&lt;br&gt;&#xA;            next[j + i] = i;&lt;br&gt;&#xA;    }&lt;br&gt;&#xA;&lt;br&gt;&#xA;    for (i = 0; i &amp;lt; l; i++)&lt;br&gt;&#xA;        printf (&amp;quot;%dt&amp;rdquo;, next[i]);&lt;br&gt;&#xA;    printf (&amp;ldquo;n&amp;rdquo;);&lt;br&gt;&#xA;&lt;br&gt;&#xA;    return next;&lt;br&gt;&#xA;}&lt;br&gt;&#xA;int kmp (char *lpSrc, char *lpTpl)&lt;br&gt;&#xA;{&lt;br&gt;&#xA;    char           *lpSrc_now = lpSrc;&lt;br&gt;&#xA;    char           *lpTpl_now = lpTpl;&lt;br&gt;&#xA;    int            *next = cul_next (lpTpl);&lt;br&gt;&#xA;    if (next == NULL)&lt;br&gt;&#xA;        return -1;&lt;br&gt;&#xA;&lt;br&gt;&#xA;    while (*lpSrc_now != &amp;lsquo;&amp;rsquo;) {&lt;br&gt;&#xA;        if (*lpSrc_now == *lpTpl_now) {&lt;br&gt;&#xA;            lpSrc_now++;&lt;br&gt;&#xA;            lpTpl_now++;&lt;br&gt;&#xA;        } else {&lt;br&gt;&#xA;            if (next[lpTpl_now - lpTpl] != 0) {&lt;br&gt;&#xA;                lpTpl_now -= next[lpTpl_now - lpTpl];&lt;br&gt;&#xA;            } else {&lt;br&gt;&#xA;                lpSrc_now++;&lt;br&gt;&#xA;                lpTpl_now = lpTpl;&lt;br&gt;&#xA;            }&lt;br&gt;&#xA;        }&lt;br&gt;&#xA;        if (*lpTpl_now == &amp;lsquo;&amp;rsquo;)&lt;br&gt;&#xA;            break;&lt;br&gt;&#xA;        printf (&amp;quot;%sn%sn&amp;quot;, lpSrc_now, lpTpl_now);&lt;br&gt;&#xA;    }&lt;br&gt;&#xA;    delete          next;&lt;br&gt;&#xA;    if (*lpTpl_now != &amp;lsquo;&amp;rsquo;)&lt;br&gt;&#xA;        return 0;&lt;br&gt;&#xA;    return lpSrc_now - lpSrc - strlen (lpTpl);&lt;br&gt;&#xA;}&lt;br&gt;&#xA;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;ndash;&lt;br&gt;&#xA;0       0       0       0       0       0       0       1&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;aaaaaab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;aaaaab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;aaaab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;aaab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;aab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&amp;lt; br /&amp;gt;b&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaa aaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aaab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aaab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;aab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;aab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;ab&lt;br&gt;&#xA;b&lt;br&gt;&#xA;b&lt;br&gt;&#xA;46\&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>从踢牙老奶奶到火星文，从火星文到人工智能</title>
       <link>//blog.shell909090.org/blog/archives/323/</link>
       <pubDate>Sat, 30 Sep 2006 07:19:07 +0800</pubDate>
-      
       <guid>//blog.shell909090.org/blog/archives/323/</guid>
-      <description>先复制一个小的密码——
-£³¨Ç£ê£±£¬£µ¨É¨Ù¨Ó¡££±¨Ð¨Ç¨Í£¬£±¨Ð£ä¨Ê¡£
-¨×£²£ä£´£¬¨ß¨Ç¨Ñ¨È¡£¨ÙYA¨È£ã£¬£ê£±£´¨Ø¡£
-£´¨Ñ£´£õ£¬£â£ã£â¨Ó¡££±£ã£±¨É£¬¨Í¨Ø£´¨Ó¡£
-看的出来的——请和火星总部联系。
-很多朋友可能不知道一个事情，不过不少人应该听说过无冬城之夜。台湾版的无冬城之夜本地化(l10n)中有一个重大bug。俗称踢牙老奶奶。
-原文是：我看到一位老奶奶慈祥的脸——我抓住她的手，但是她竟然一脚踢到我的牙齿。
-估计所谓踢牙，应当是英文kicked my teeth in，指漠视。最后应当是她竟然无视我。这是典型的一个翻译错误，而且估计可能是机器辅助翻译没有修润的结果。这个错误和当年大菠萝的温暖骷髅情况不一样，没有任何一个电脑会把蠕虫骷髅(wormskull)错成温暖骷髅(warmskull)。
-由此肇因产生了很多火星文，例如说：这个游戏里面到处是踢牙老奶奶。
-不过，无论是机器翻译不完善造成的火星文，还是人造的火星文。其实都是一个核心问题，NLP。
-机器可以理解形式化的编程语言，并且转换为机器代码。是因为语言是具备一定的形式(form)的，或者叫做范式(pattern)。而例如说可以借助符号来做唯一分割(语法树的生成，或者说波兰树的生成)，符号的唯一性。(所谓重载，是用将参数等重载辨识元素附加在名字里面，导致名字的定义仍旧唯一，详细大家可以看有做对象导出的库的导出符号表)然而自然语言本身分割未必唯一，符号也是和上下文相关的。例如最有名的例子，中国队大败美国队获得冠军。(中国队大败美国队获得冠军。和中国队大败美国队获得冠军。前一句中的败是动词，后一个应当是使动用法)这句同时出现了非唯一分割和符号歧义，即使对于人来说，也是具备歧义句特征的。只有在特定的语境中，歧义才会消除。例如如果在表扬中国队表现的文章中，那应当是后面一个解释。
-对于自然语言的理解，人工智能中叫做NLP问题(Nature Language Precess)。首先要处理的就是断词和消除歧义。其中涉及的问题到不繁复，但是很庞大。最关键就在于数据量上。
-断句的话，一般简单的都采用HMM算法，这就需要有前后词或者词组的衔接概率作为基础。中文又具备一个恶心的特性，就是假借。尤其在口语和古语方言一类的东西里面，倒置使动频繁。所以单纯做HMM还不完全解决问题。现在有很多分词软件，是基于HMM的。拿古文上去试试就知道是不是了，例如：古之人诚不余欺也。
-至于消除歧义，更是麻烦的要死的东西。要消除歧义，只有把所有歧义可能全部列举出来。然后查看上下文中相关词汇出现的频率，选择比较高的一个。然而对于上面那个使动用法的例子，两者相关词汇的频率应当差不多。而电脑又不会像人一样判断语境，因此要误判就不奇怪了。
-还有一个就是上面踢牙老奶奶出现的原因，俗语(idiom)或者叫俚语。例如百口莫辩，如果不加处理，至少也是can&amp;rsquo;t argue with one hundred mouth(people)。事实上比较恰当的翻译应当是unable to give a convincing explanation for self-defense。当然，NLP的目的未必是翻译，因此可能出现别的错误。不过错误的原因是一样的，就是俗语不了解。这个问题人也会出现，只是人的智能就比电脑高一些。百口莫辩不知道典故错误翻译过去还算难免，买椟还珠这种东西即使知道椟怎么翻译，在真的翻译前也会问问典故的吧。</description>
+      <description>&lt;p&gt;先复制一个小的密码——&lt;/p&gt;&#xA;&lt;p&gt;£³¨Ç£ê£±£¬£µ¨É¨Ù¨Ó¡££±¨Ð¨Ç¨Í£¬£±¨Ð£ä¨Ê¡£&lt;/p&gt;&#xA;&lt;p&gt;¨×£²£ä£´£¬¨ß¨Ç¨Ñ¨È¡£¨ÙYA¨È£ã£¬£ê£±£´¨Ø¡£&lt;/p&gt;&#xA;&lt;p&gt;£´¨Ñ£´£õ£¬£â£ã£â¨Ó¡££±£ã£±¨É£¬¨Í¨Ø£´¨Ó¡£&lt;/p&gt;&#xA;&lt;p&gt;看的出来的——请和火星总部联系。&lt;/p&gt;&#xA;&lt;p&gt;很多朋友可能不知道一个事情，不过不少人应该听说过无冬城之夜。台湾版的无冬城之夜本地化(l10n)中有一个重大bug。俗称踢牙老奶奶。&lt;/p&gt;&#xA;&lt;p&gt;原文是：我看到一位老奶奶慈祥的脸——我抓住她的手，但是她竟然一脚踢到我的牙齿。&lt;/p&gt;&#xA;&lt;p&gt;估计所谓踢牙，应当是英文kicked my teeth in，指漠视。最后应当是她竟然无视我。这是典型的一个翻译错误，而且估计可能是机器辅助翻译没有修润的结果。这个错误和当年大菠萝的温暖骷髅情况不一样，没有任何一个电脑会把蠕虫骷髅(wormskull)错成温暖骷髅(warmskull)。&lt;/p&gt;&#xA;&lt;p&gt;由此肇因产生了很多火星文，例如说：这个游戏里面到处是踢牙老奶奶。&lt;/p&gt;&#xA;&lt;p&gt;不过，无论是机器翻译不完善造成的火星文，还是人造的火星文。其实都是一个核心问题，NLP。&lt;/p&gt;&#xA;&lt;p&gt;机器可以理解形式化的编程语言，并且转换为机器代码。是因为语言是具备一定的形式(form)的，或者叫做范式(pattern)。而例如说可以借助符号来做唯一分割(语法树的生成，或者说波兰树的生成)，符号的唯一性。(所谓重载，是用将参数等重载辨识元素附加在名字里面，导致名字的定义仍旧唯一，详细大家可以看有做对象导出的库的导出符号表)然而自然语言本身分割未必唯一，符号也是和上下文相关的。例如最有名的例子，中国队大败美国队获得冠军。(中国队大败美国队获得冠军。和中国队大败美国队获得冠军。前一句中的败是动词，后一个应当是使动用法)这句同时出现了非唯一分割和符号歧义，即使对于人来说，也是具备歧义句特征的。只有在特定的语境中，歧义才会消除。例如如果在表扬中国队表现的文章中，那应当是后面一个解释。&lt;/p&gt;&#xA;&lt;p&gt;对于自然语言的理解，人工智能中叫做NLP问题(Nature Language Precess)。首先要处理的就是断词和消除歧义。其中涉及的问题到不繁复，但是很庞大。最关键就在于数据量上。&lt;/p&gt;&#xA;&lt;p&gt;断句的话，一般简单的都采用HMM算法，这就需要有前后词或者词组的衔接概率作为基础。中文又具备一个恶心的特性，就是假借。尤其在口语和古语方言一类的东西里面，倒置使动频繁。所以单纯做HMM还不完全解决问题。现在有很多分词软件，是基于HMM的。拿古文上去试试就知道是不是了，例如：古之人诚不余欺也。&lt;/p&gt;&#xA;&lt;p&gt;至于消除歧义，更是麻烦的要死的东西。要消除歧义，只有把所有歧义可能全部列举出来。然后查看上下文中相关词汇出现的频率，选择比较高的一个。然而对于上面那个使动用法的例子，两者相关词汇的频率应当差不多。而电脑又不会像人一样判断语境，因此要误判就不奇怪了。&lt;/p&gt;&#xA;&lt;p&gt;还有一个就是上面踢牙老奶奶出现的原因，俗语(idiom)或者叫俚语。例如百口莫辩，如果不加处理，至少也是can&amp;rsquo;t argue with one hundred mouth(people)。事实上比较恰当的翻译应当是unable to give a convincing explanation for self-defense。当然，NLP的目的未必是翻译，因此可能出现别的错误。不过错误的原因是一样的，就是俗语不了解。这个问题人也会出现，只是人的智能就比电脑高一些。百口莫辩不知道典故错误翻译过去还算难免，买椟还珠这种东西即使知道椟怎么翻译，在真的翻译前也会问问典故的吧。&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>表达式解析算法</title>
       <link>//blog.shell909090.org/blog/archives/241/</link>
       <pubDate>Thu, 20 Oct 2005 03:31:13 +0800</pubDate>
-      
       <guid>//blog.shell909090.org/blog/archives/241/</guid>
-      <description>表达式解析的本质是什么？是树的构造和消解。其他算法本质上都是树算法。
-首先，我们使用Token算法来获得一个Token和Object混合的列表。然后我们将列表展开成为一颗树。这个树符合以下条件。
-树的所有叶子都是Object，无论是数据还是变量。 树的节点上都是算符或函数，其分支数目和算符目或函数参数相等。 单根，无()。 那么我提出一种构造方法。我们假定一种算符passby，然后用Token算法切分表达式并且转换成合适的对象，放置在passby上面。然后我们根据(,,)的规则将整个列表递归表达成同级树。树的每层都是同级的。而后每层都根据优先级从高到低的顺序来计算结果，反馈到上层。由此我们可以得到有效的结果。
-但是我没有按照上述方法写解析器。原因是太麻烦，运算时间长，不容易看懂。代码大，维护困难。我问一个同学，你是喜欢精致小巧但是有瑕疵的东西呢？还是庞大严谨没有错误的东西。结果回答说是精致小巧的。好，这就是解析器算法来源。我用了数据结构中的堆栈算法。这种算法在解析正确的式子的时候没有问题，但是精心构造的“看起来”不正确“的式子也可以解析。而且不容易检查堆栈问题。但是谁管呢？喜欢就好。</description>
+      <description>&lt;p&gt;表达式解析的本质是什么？是树的构造和消解。其他算法本质上都是树算法。&lt;/p&gt;&#xA;&lt;p&gt;首先，我们使用Token算法来获得一个Token和Object混合的列表。然后我们将列表展开成为一颗树。这个树符合以下条件。&lt;/p&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;树的所有叶子都是Object，无论是数据还是变量。&lt;/li&gt;&#xA;&lt;li&gt;树的节点上都是算符或函数，其分支数目和算符目或函数参数相等。&lt;/li&gt;&#xA;&lt;li&gt;单根，无()。&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;p&gt;那么我提出一种构造方法。我们假定一种算符passby，然后用Token算法切分表达式并且转换成合适的对象，放置在passby上面。然后我们根据(,,)的规则将整个列表递归表达成同级树。树的每层都是同级的。而后每层都根据优先级从高到低的顺序来计算结果，反馈到上层。由此我们可以得到有效的结果。&lt;/p&gt;&#xA;&lt;p&gt;但是我没有按照上述方法写解析器。原因是太麻烦，运算时间长，不容易看懂。代码大，维护困难。我问一个同学，你是喜欢精致小巧但是有瑕疵的东西呢？还是庞大严谨没有错误的东西。结果回答说是精致小巧的。好，这就是解析器算法来源。我用了数据结构中的堆栈算法。这种算法在解析正确的式子的时候没有问题，但是精心构造的“看起来”不正确“的式子也可以解析。而且不容易检查堆栈问题。但是谁管呢？喜欢就好。&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>椭圆曲线算法</title>
       <link>//blog.shell909090.org/blog/archives/212/</link>
       <pubDate>Wed, 28 Sep 2005 15:22:17 +0800</pubDate>
-      
       <guid>//blog.shell909090.org/blog/archives/212/</guid>
-      <description>frist of all, today is google&amp;rsquo;s 7th brithday. Happy brithday.
-这篇是接上篇windows版本论的，主要讲述windows的SN算法和椭圆曲线算法。
-windows的SN长度是25位，大家都知道了。但是大家可能不知道，windows的SN是base24的
-UUCode算法的结果，所以里面应该只有以下字符BCDFGHJKMPQRTVWXY2346789。如果有别的就不用试了，肯定假的。在UUDecode后应该有114bit的数据，其中只有31bit的有效数据，我们称为data。
-具体椭圆曲线密码体系就不说了，大致来说，和RSA一样，是属于非对称密钥体系。RSA是利用大质数分解构造的陷门函数，椭圆曲线利用的是二次方程的整数解。应用方法说明如下：
-先利用data和private key经过SHA-1算法hash出一个hsah，取28位。
-利用data和private key经过椭圆曲线算法得到sign，55位。
-将(data, hash, sign)三元组UUCode出SN。
-SN上面算法如下：
-用SN做UUDecode得到(data, hash, sign)三元组。
-利用sign和hash可以求出private key。（贝壳这里有点看不懂） 利用data和private key经过SHA-1算法hash出一个hsah，取28位。
-效验private key。
-我们的破解程序很明显在根据public key求private key，正好是要算死的那种。幸好微软为了考虑用户输入SN的麻烦，所以sign才55位。否则我们这辈子休想算出一个号来。</description>
+      <description>&lt;p&gt;frist of all, today is google&amp;rsquo;s 7th brithday. Happy brithday.&lt;/p&gt;&#xA;&lt;p&gt;这篇是接上篇windows版本论的，主要讲述windows的SN算法和椭圆曲线算法。&lt;/p&gt;&#xA;&lt;p&gt;windows的SN长度是25位，大家都知道了。但是大家可能不知道，windows的SN是base24的&lt;/p&gt;&#xA;&lt;p&gt;UUCode算法的结果，所以里面应该只有以下字符BCDFGHJKMPQRTVWXY2346789。如果有别的就不用试了，肯定假的。在UUDecode后应该有114bit的数据，其中只有31bit的有效数据，我们称为data。&lt;/p&gt;&#xA;&lt;p&gt;具体椭圆曲线密码体系就不说了，大致来说，和RSA一样，是属于非对称密钥体系。RSA是利用大质数分解构造的陷门函数，椭圆曲线利用的是二次方程的整数解。应用方法说明如下：&lt;/p&gt;&#xA;&lt;p&gt;先利用data和private key经过SHA-1算法hash出一个hsah，取28位。&lt;/p&gt;&#xA;&lt;p&gt;利用data和private key经过椭圆曲线算法得到sign，55位。&lt;/p&gt;&#xA;&lt;p&gt;将(data, hash, sign)三元组UUCode出SN。&lt;/p&gt;&#xA;&lt;p&gt;SN上面算法如下：&lt;/p&gt;&#xA;&lt;p&gt;用SN做UUDecode得到(data, hash, sign)三元组。&lt;/p&gt;&#xA;&lt;p&gt;利用sign和hash可以求出private key。（贝壳这里有点看不懂） 利用data和private key经过SHA-1算法hash出一个hsah，取28位。&lt;/p&gt;&#xA;&lt;p&gt;效验private key。&lt;/p&gt;&#xA;&lt;p&gt;我们的破解程序很明显在根据public key求private key，正好是要算死的那种。幸好微软为了考虑用户输入SN的麻烦，所以sign才55位。否则我们这辈子休想算出一个号来。&lt;/p&gt;</description>
     </item>
-    
   </channel>
 </rss>

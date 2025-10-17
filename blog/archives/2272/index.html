@@ -4,27 +4,32 @@
     <title>python入门指引 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="python入门指引"/>
-<meta name="twitter:description" content="前言 其实我也不知道python怎么入门，由我来写这个真的不是很合适。我学python是直接找了dive into python来看。然后照着写了几个例子。大概两天后，就能磕磕绊绊的上路了。就好像拿筷子，都不记得怎么学会的拿筷子，怎么来教人呢？
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="python入门指引">
+  <meta name="twitter:description" content="前言 其实我也不知道python怎么入门，由我来写这个真的不是很合适。我学python是直接找了dive into python来看。然后照着写了几个例子。大概两天后，就能磕磕绊绊的上路了。就好像拿筷子，都不记得怎么学会的拿筷子，怎么来教人呢？
 不过最近在python-cn的列表里面，我大概连续数周都持续看到“python入门看哪本教程比较好”，实在是不堪其扰。干脆就写个简单的guide，有心的人自己看。没心的——那我也没办法了。
 基本知识 首先，你要了解一个事情。很多你不会的东西并不属于python。例如你不知道网络通讯的流程，你不知道文件的权限和打开标志用法，你不知道fork和stdin/stdout的关系。这些python教不会你。如果你缺乏这些和语言/库无关的相关知识，请自行补课。如果你缺乏计算机基础理论，请自行补课。
 因此不要随便给我发邮件/留言/咨询，为什么这个问题在python里无法解决。为什么python无法所见即所得，为什么python无法热部署，为什么python无法用于嵌入式开发。在问这个问题之前，请先确认“这是一个python的问题”。例如GIL，或者脑残lambda。如果你不确定，请自己搜索一下相关的文章，确认一下。在提问前，看看“提问的智慧”。如果你确实搜过了，找不到，那就问吧，没办法。
@@ -39,10 +44,13 @@ ui python的ui框架也很多，很复杂。同样，如果是入门，我建议
 twisted：非常强大的网络库，各种协议支持全面，不过reactor模式真是纠结。 gevent：异步协程模式的网络库。 Scapy：强大的网络库，基本啥都能干。 pyzmq：我一直不觉得zeromq是一个mq。我觉得他是一个抽象网络层。 web容器 python web框架的一大特点，是容器/框架/ORM/template可以分开自己玩。
 注意，容器和框架是两码事情。容器是python web运行的环境，框架是解析环境的玩意。两者间一般都使用wsgi接口进行连接。这是python的标准做法，fastcgi/scgi也会被转换为wsgi进行连接。但是也不是没有其他选择。一般我们有以下模式：
 cgi：python-doc中自带了cgi模块。 mod_python：embed in apache。 下面是wsgi接口的容器。wsgi的优点在于我们可以在这些容器上运行任意一款支持wsgi的框架。
-flup：支持提供fastcgi, scgi, AJP接口，web server可以用这三种协议进行连接。 Google App Engine：PaaS服务。 Gunicorn：直接提供http服务。 mod_wsgi：使用内部协议和apache集成。 twisted：直接提供http服务。 tornado：直接提供http服务。 uWSGI：使用内部协议和nginx集成。 werkzeug：直接提供http服务。 建议的部署模式是，用apache的，去mode_wsgi。用nginx的，去uwsgi。用GAE的，直接可用。其他，通通转发。"/>
+flup：支持提供fastcgi, scgi, AJP接口，web server可以用这三种协议进行连接。 Google App Engine：PaaS服务。 Gunicorn：直接提供http服务。 mod_wsgi：使用内部协议和apache集成。 twisted：直接提供http服务。 tornado：直接提供http服务。 uWSGI：使用内部协议和nginx集成。 werkzeug：直接提供http服务。 建议的部署模式是，用apache的，去mode_wsgi。用nginx的，去uwsgi。用GAE的，直接可用。其他，通通转发。
+web 你可以参考飞龙的这篇文章，里面介绍了数种框架。你可以通通玩一下，反正也不麻烦，然后选择一种最适合自己的玩意。">
 
-    <meta property="og:title" content="python入门指引" />
-<meta property="og:description" content="前言 其实我也不知道python怎么入门，由我来写这个真的不是很合适。我学python是直接找了dive into python来看。然后照着写了几个例子。大概两天后，就能磕磕绊绊的上路了。就好像拿筷子，都不记得怎么学会的拿筷子，怎么来教人呢？
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/2272/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="python入门指引">
+  <meta property="og:description" content="前言 其实我也不知道python怎么入门，由我来写这个真的不是很合适。我学python是直接找了dive into python来看。然后照着写了几个例子。大概两天后，就能磕磕绊绊的上路了。就好像拿筷子，都不记得怎么学会的拿筷子，怎么来教人呢？
 不过最近在python-cn的列表里面，我大概连续数周都持续看到“python入门看哪本教程比较好”，实在是不堪其扰。干脆就写个简单的guide，有心的人自己看。没心的——那我也没办法了。
 基本知识 首先，你要了解一个事情。很多你不会的东西并不属于python。例如你不知道网络通讯的流程，你不知道文件的权限和打开标志用法，你不知道fork和stdin/stdout的关系。这些python教不会你。如果你缺乏这些和语言/库无关的相关知识，请自行补课。如果你缺乏计算机基础理论，请自行补课。
 因此不要随便给我发邮件/留言/咨询，为什么这个问题在python里无法解决。为什么python无法所见即所得，为什么python无法热部署，为什么python无法用于嵌入式开发。在问这个问题之前，请先确认“这是一个python的问题”。例如GIL，或者脑残lambda。如果你不确定，请自己搜索一下相关的文章，确认一下。在提问前，看看“提问的智慧”。如果你确实搜过了，找不到，那就问吧，没办法。
@@ -57,11 +65,15 @@ ui python的ui框架也很多，很复杂。同样，如果是入门，我建议
 twisted：非常强大的网络库，各种协议支持全面，不过reactor模式真是纠结。 gevent：异步协程模式的网络库。 Scapy：强大的网络库，基本啥都能干。 pyzmq：我一直不觉得zeromq是一个mq。我觉得他是一个抽象网络层。 web容器 python web框架的一大特点，是容器/框架/ORM/template可以分开自己玩。
 注意，容器和框架是两码事情。容器是python web运行的环境，框架是解析环境的玩意。两者间一般都使用wsgi接口进行连接。这是python的标准做法，fastcgi/scgi也会被转换为wsgi进行连接。但是也不是没有其他选择。一般我们有以下模式：
 cgi：python-doc中自带了cgi模块。 mod_python：embed in apache。 下面是wsgi接口的容器。wsgi的优点在于我们可以在这些容器上运行任意一款支持wsgi的框架。
-flup：支持提供fastcgi, scgi, AJP接口，web server可以用这三种协议进行连接。 Google App Engine：PaaS服务。 Gunicorn：直接提供http服务。 mod_wsgi：使用内部协议和apache集成。 twisted：直接提供http服务。 tornado：直接提供http服务。 uWSGI：使用内部协议和nginx集成。 werkzeug：直接提供http服务。 建议的部署模式是，用apache的，去mode_wsgi。用nginx的，去uwsgi。用GAE的，直接可用。其他，通通转发。" />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2272/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2012-11-19T10:11:49+08:00" />
-<meta property="article:modified_time" content="2012-11-19T10:11:49+08:00" />
+flup：支持提供fastcgi, scgi, AJP接口，web server可以用这三种协议进行连接。 Google App Engine：PaaS服务。 Gunicorn：直接提供http服务。 mod_wsgi：使用内部协议和apache集成。 twisted：直接提供http服务。 tornado：直接提供http服务。 uWSGI：使用内部协议和nginx集成。 werkzeug：直接提供http服务。 建议的部署模式是，用apache的，去mode_wsgi。用nginx的，去uwsgi。用GAE的，直接可用。其他，通通转发。
+web 你可以参考飞龙的这篇文章，里面介绍了数种框架。你可以通通玩一下，反正也不麻烦，然后选择一种最适合自己的玩意。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2012-11-19T10:11:49+08:00">
+    <meta property="article:modified_time" content="2012-11-19T10:11:49+08:00">
+    <meta property="article:tag" content="Program">
+    <meta property="article:tag" content="Python">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -98,7 +110,7 @@ flup：支持提供fastcgi, scgi, AJP接口，web server可以用这三种协议
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -110,26 +122,17 @@ flup：支持提供fastcgi, scgi, AJP接口，web server可以用这三种协议
       <h1 class ="post-title">python入门指引</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Nov 19, 2012
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/program/">program</a>
-              <a class="tag" href="//blog.shell909090.org/tags/python/">python</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/program/">Program</a>
+              <a class="tag" href="/tags/python/">Python</a>
         </div>
       </div>
     </header>
@@ -232,7 +235,24 @@ library。另一样要介绍的是pydot，pygraph或者pygraphviz。这不是图
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

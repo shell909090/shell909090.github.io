@@ -1,41 +1,27 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>memory-leak on Shell&#39;s Home</title>
+    <title>Memory-Leak on Shell&#39;s Home</title>
     <link>//blog.shell909090.org/tags/memory-leak/</link>
-    <description>Recent content in memory-leak on Shell&#39;s Home</description>
-    <generator>Hugo -- gohugo.io</generator>
+    <description>Recent content in Memory-Leak on Shell&#39;s Home</description>
+    <generator>Hugo</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Thu, 31 Jan 2008 19:21:06 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/memory-leak/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 31 Jan 2008 19:21:06 +0800</lastBuildDate>
+    <atom:link href="//blog.shell909090.org/tags/memory-leak/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Process Explorer的潜在内存泄漏</title>
       <link>//blog.shell909090.org/blog/archives/426/</link>
       <pubDate>Thu, 31 Jan 2008 19:21:06 +0800</pubDate>
-      
       <guid>//blog.shell909090.org/blog/archives/426/</guid>
-      <description>贝壳最近碰到一个郁闷到死的问题。机器经常出现硬盘狂转，系统响应延迟。系统弹出一个错误，然后死机。贝壳开始猜测是硬盘驱动问题，升级驱动N次，无效。然后再猜测是ext2fs的问题(贝壳用这个驱动挂载linux下面的盘的)，看来看去，不是。最后，贝壳确定了，这是内存泄漏了～～～
-问题是，这时候可没人跳出来推荐喝什么口服液的。贝壳系统中永远挂着一个procexp，看内存状态的。这东西是sysinternals的产品，后来被微软收购了。功能强大，很多系统调试，杀马都需要用到。于是贝壳就用这个工具看哪个程序的内存泄漏，可是看来看去看不到。准确说，是没等贝壳看到，系统就先死透了。最后贝壳多次尝试，发现了一个死机的规律。当mysql开启的时候，procexp就会随时发生异常死机。这是一个重要的提示，要么mysql内存泄漏了，要么procexp内存泄漏了。究竟是哪个呢？贝壳用了同属于sysinternals开发的pstools系列工具，仔细检查了异常发生时候的内存状态，确定，Process Explorer存在内存泄漏的风险！
-看来sysinternals被微软收购后，旗下的工具也出现了微软的一贯特色。以下是一次内存泄漏后，终止mysql服务后抓下来的内存状态输出。如果不终止mysql，不等我抓系统就挂了。
-Process memory detail for HOME-B2326348D0:
-Name Pid VM WS Priv Priv Pk Faults NonP Page
-Idle 0 0 28 0 0 0 0 0
-System 4 800 52 0 0 10120 0 0
-smss 772 3748 48 172 1648 223 0 5
-csrss 828 68132 1464 2304 3768 13748 6 144
-winlogon 856 61528 580 8536 8684 5143 39 96
-services 900 37724 804 2256 2404 2740 7 65</description>
+      <description>&lt;p&gt;   &#xA;贝壳最近碰到一个郁闷到死的问题。机器经常出现硬盘狂转，系统响应延迟。系统弹出一个错误，然后死机。贝壳开始猜测是硬盘驱动问题，升级驱动N次，无效。然后再猜测是ext2fs的问题(贝壳用这个驱动挂载linux下面的盘的)，看来看去，不是。最后，贝壳确定了，这是内存泄漏了～～～&lt;br&gt;&#xA;   &#xA;问题是，这时候可没人跳出来推荐喝什么口服液的。贝壳系统中永远挂着一个procexp，看内存状态的。这东西是sysinternals的产品，后来被微软收购了。功能强大，很多系统调试，杀马都需要用到。于是贝壳就用这个工具看哪个程序的内存泄漏，可是看来看去看不到。准确说，是没等贝壳看到，系统就先死透了。最后贝壳多次尝试，发现了一个死机的规律。当mysql开启的时候，procexp就会随时发生异常死机。这是一个重要的提示，要么mysql内存泄漏了，要么procexp内存泄漏了。究竟是哪个呢？贝壳用了同属于sysinternals开发的pstools系列工具，仔细检查了异常发生时候的内存状态，确定，Process&#xA;Explorer存在内存泄漏的风险！&lt;br&gt;&#xA;   &#xA;看来sysinternals被微软收购后，旗下的工具也出现了微软的一贯特色。以下是一次内存泄漏后，终止mysql服务后抓下来的内存状态输出。如果不终止mysql，不等我抓系统就挂了。&lt;br&gt;&#xA;Process memory detail for HOME-B2326348D0:&lt;/p&gt;&#xA;&lt;p&gt;Name                Pid      VM      WS    Priv Priv Pk   Faults   NonP&#xA;Page&lt;br&gt;&#xA;Idle                  0       0      28       0       0        0     &#xA;0    0&lt;br&gt;&#xA;System                4     800      52       0       0    10120     &#xA;0    0&lt;br&gt;&#xA;smss                772    3748      48     172    1648      223     &#xA;0    5&lt;br&gt;&#xA;csrss               828   68132    1464    2304    3768    13748      6 &#xA;144&lt;br&gt;&#xA;winlogon            856   61528     580    8536    8684     5143    &#xA;39   96&lt;br&gt;&#xA;services            900   37724     804    2256    2404     2740     &#xA;7   65&lt;br&gt;&#xA;lsass               912   44848     352    2684    2860     7332     &#xA;7   80&lt;br&gt;&#xA;svchost            1060   36904     200    1500    1544     1028     &#xA;3   68&lt;br&gt;&#xA;svchost            1136   39256     456    1984    2004     1437    &#xA;13   72&lt;br&gt;&#xA;svchost            1216  118756    2564   19236   28112    24221     93 &#xA;197&lt;br&gt;&#xA;svchost            1292   31728     192    1472    1512     1123     &#xA;4   55&lt;br&gt;&#xA;aswUpdSv           1536   18748      52     652     652      557     &#xA;2   31&lt;br&gt;&#xA;ashServ            1592  120428    6704   16628   41168  1076043      8 &#xA;128&lt;br&gt;&#xA;explorer           1884  119644    1908   19128   20552  4364782     16 &#xA;177&lt;br&gt;&#xA;spoolsv             288   50072     224    3564    3828     1502     &#xA;5   85&lt;br&gt;&#xA;TSVNCache           544   48008     700    6968    7068    21580     &#xA;4   67&lt;br&gt;&#xA;mobmeter            620   41116     588    4940    5044    14266     &#xA;3   63&lt;br&gt;&#xA;procexp             628  605756   15532  549068  549068  4776417      8 &#xA;109&lt;br&gt;&#xA;ashDisp             636   54468     928    6992    7016    28399     &#xA;5   80&lt;br&gt;&#xA;ctfmon              664   39064     380    4816    4840    15588     &#xA;4   66&lt;br&gt;&#xA;googletalk          720   76420    2852    8540    9036   428030     13 &#xA;108&lt;br&gt;&#xA;mdm                 832   30008     440    1088    1100      860     &#xA;3   49&lt;br&gt;&#xA;svchost            1244   40704     208    2640    2708     1896     &#xA;3   73&lt;br&gt;&#xA;svnserve           1264   16612     124     904     920      652     &#xA;3   29&lt;br&gt;&#xA;svchost             232   37936     536    1592    1636     1330     &#xA;4   70&lt;br&gt;&#xA;alg                 600   35664     200    1312    1352     1018     &#xA;5   69&lt;br&gt;&#xA;TTPlayer           3208   65672    3688   10920   13924   169533     &#xA;8   86&lt;br&gt;&#xA;thunderbird        3240  109016    2272   28832   31344    64167     14 &#xA;112&lt;br&gt;&#xA;conime             3284   42564     404    5184    5184    17612     &#xA;3   68&lt;br&gt;&#xA;firefox            1944  270920   11108  118720  132648  1233696     14 &#xA;135&lt;br&gt;&#xA;flashget           2836  108756   11248   19472   29636   117115     30 &#xA;146&lt;br&gt;&#xA;pyintau            2080   45004     172    4720    4788     1848     &#xA;3   62&lt;br&gt;&#xA;wuauclt            1068   67012     396    6580    6600     2167      7 &#xA;115&lt;br&gt;&#xA;cmd                3540   32764     920    3308    3372    15075     &#xA;2   60&lt;br&gt;&#xA;pslist             3048   32124    3108    2440    2956    10890     &#xA;2   49&lt;br&gt;&#xA;   &#xA;我们可以看到，procexp这个进程的虚拟内存空间只有60M，工作集更只有15M，可私有内存高达549M！贝壳的机器只有768M内存，不死机还等啥？&lt;br&gt;&#xA;   &#xA;贝壳试验了mysql5.0.45，mysql5.0.51a，mysql5.1.22，procexp11.01，procexp11.04。确定在贝壳的本本上全都会造成上述问题。但是同样的环境在家里的2G内存机器上模拟的时候，全都不出现上述问题。从测试角度讲，这个属于和环境相关的隐性危险，严重级别是重。&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>内存泄露检测简说</title>
       <link>//blog.shell909090.org/blog/archives/359/</link>
       <pubDate>Wed, 07 Feb 2007 22:48:13 +0800</pubDate>
-      
       <guid>//blog.shell909090.org/blog/archives/359/</guid>
-      <description>我们首先从一段代码说起。
-#define _CRTDBG_MAP_ALLOC #include #include class test { public: test () { lpBuffer = new char[0x1000]; }; \~test () { delete lpBuffer; }; void *operator new (size_t s) { return malloc (s); }; void operator delete (void *pvMem) { if (pvMem != NULL) free (pvMem); }; void *operator new[] (size_t s) { return malloc (s); }; void operator delete[] (void *pvMem) { if (pvMem != NULL) free (pvMem); }; char *lpBuffer; }; test &amp;amp; tt () { static test t; return t; } //test t; void process () { test tf; // _CrtDumpMemoryLeaks (); } int _tmain (int argc, _TCHAR * argv[]) { // test tf; test* tp=new test(); _CrtSetReportMode (_CRT_WARN, _CRTDBG_MODE_FILE); _CrtSetReportFile (_CRT_WARN, _CRTDBG_FILE_STDERR); _CrtSetDbgFlag (_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF); process (); // printf(&amp;quot;hello, world.</description>
+      <description>&lt;p&gt;我们首先从一段代码说起。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;#define _CRTDBG_MAP_ALLOC&#xA;#include&#xA;#include&#xA;&#xA;class test {&#xA;public:&#xA;&#x9;test () {&#xA;&#x9;&#x9;lpBuffer = new char[0x1000];&#xA;&#x9;};&#xA;&#x9;\~test () {&#xA;&#x9;&#x9;delete lpBuffer;&#xA;&#x9;};&#xA;&#x9;void *operator new (size_t s) {&#xA;&#x9;&#x9;return malloc (s);&#xA;&#x9;};&#xA;&#x9;void operator delete (void *pvMem) {&#xA;&#x9;&#x9;if (pvMem != NULL)&#xA;&#x9;&#x9;&#x9;free (pvMem);&#xA;&#x9;};&#xA;&#x9;void *operator new[] (size_t s) {&#xA;&#x9;&#x9;return malloc (s);&#xA;&#x9;};&#xA;&#x9;void operator delete[] (void *pvMem) {&#xA;&#x9;&#x9;if (pvMem != NULL)&#xA;&#x9;&#x9;&#x9;free (pvMem);&#xA;&#x9;};&#xA;&#x9;char *lpBuffer;&#xA;};&#xA;&#xA;test &amp;amp; tt ()&#xA;{&#xA;&#x9;static test t;&#xA;&#x9;return t;&#xA;}&#xA;&#xA;//test t;&#xA;void process ()&#xA;{&#xA;&#x9;test tf;&#xA;// _CrtDumpMemoryLeaks ();&#xA;}&#xA;&#xA;int _tmain (int argc, _TCHAR * argv[])&#xA;{&#xA;// test tf;&#xA;&#x9;test* tp=new test();&#xA;&#x9;_CrtSetReportMode (_CRT_WARN, _CRTDBG_MODE_FILE);&#xA;&#x9;_CrtSetReportFile (_CRT_WARN, _CRTDBG_FILE_STDERR);&#xA;&#x9;_CrtSetDbgFlag (_CRTDBG_ALLOC_MEM_DF |&#xA;&#x9;&#x9;&#x9;_CRTDBG_LEAK_CHECK_DF);&#xA;&#x9;process ();&#xA;// printf(&amp;quot;hello, world.n&amp;quot;, t.lpBuffer);&#xA;&#x9;printf (&amp;quot;hello, world.n&amp;quot;, tt ().lpBuffer);&#xA;// _CrtDumpMemoryLeaks ();&#xA;// printf(&amp;quot;hello, world.n&amp;quot;, t.lpBuffer);&#xA;&#x9;return 0;&#xA;}&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;以上代码，大家可以分别注释不同位置，来查看不同效果。不过我们还是从最基础的如何检测开始说起吧。&lt;/p&gt;</description>
     </item>
-    
   </channel>
 </rss>

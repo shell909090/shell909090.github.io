@@ -4,50 +4,60 @@
     <title>android历史记录备份和应用三例 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="android历史记录备份和应用三例"/>
-<meta name="twitter:description" content="有不少不折腾会死星人已经用上andriod了吧？有没有刷机过？有没有怕手机掉过？android的联系人是同步到gmail的，不用怕。但是信息就不同不了。所以，下面介绍几个信息导出的方法。
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="android历史记录备份和应用三例">
+  <meta name="twitter:description" content="有不少不折腾会死星人已经用上andriod了吧？有没有刷机过？有没有怕手机掉过？android的联系人是同步到gmail的，不用怕。但是信息就不同不了。所以，下面介绍几个信息导出的方法。
 1.aqq
 用adb shell去/data/data/com.android.aqq/databases/下面，把aqq.db复制出来，sqlite3格式，随便看吧。
 2.AnFetion
-用adb shell去/data/data/&hellip;..AnFetion2/databases/下面，把fetion.DB复制出来。
+用adb shell去/data/data/…..AnFetion2/databases/下面，把fetion.DB复制出来。
 3.信息
 这个是最麻烦的。去信息-&gt;Menu-&gt;设置-&gt;导出短信里面导出。但是别高兴的太早，贝壳发现一个bug。如果你的短信里面有西文引号，会导致xml格式错误，从而无法导入。解决方法是手工删除引号。
 应用，使用xsltproc，将xml转换为html来浏览。贝壳用的xslt比较简单，抄在下面。
-&lt;?xml version=&#39;1.0&#39; encoding=&quot;GBK&quot;?&gt; &lt;xsl:stylesheet version=&quot;1.0&quot; xmlns:xsl=&quot;&lt;http://www.w3.org/1999/XSL/Transform&gt;&quot;&gt; &lt;xsl:template match=&quot;/&quot;&gt; &lt;html&gt; &lt;body&gt; &lt;xsl:for-each select=&quot;//smss/address&quot;&gt; Phone Number:&lt;xsl:value-of select=&quot;@data&quot;/&gt; &lt;br/&gt; &lt;table border=&quot;0&quot; class=&quot;rev_tab&quot; width=&quot;100%&quot;&gt; &lt;xsl:for-each select=&quot;sms&quot;&gt; &lt;tr&gt; &lt;td class=&quot;rev_tab_rev&quot;&gt; &lt;xsl:value-of select=&quot;date/@data&quot;/&gt; &lt;/td&gt; &lt;td class=&quot;rev_tab_rev&quot;&gt; &lt;xsl:choose&gt; &lt;xsl:when test=&quot;read/@data = 1&quot;&gt;read&lt;/xsl:when&gt; &lt;xsl:when test=&quot;read/@data = 0&quot;&gt;unread&lt;/xsl:when&gt; &lt;/xsl:choose&gt; &lt;/td&gt; &lt;td class=&quot;rev_tab_rev&quot;&gt; &lt;xsl:value-of select=&quot;body/@data&quot;/&gt; &lt;/td&gt; &lt;/tr&gt; &lt;/xsl:for-each&gt; &lt;/table&gt; &lt;BR/&gt; &lt;/xsl:for-each&gt; &lt;/body&gt; &lt;/html&gt; &lt;/xsl:template&gt; &lt;/xsl:stylesheet&gt; 为了美观，你还可以修改一下xslt。xsltproc在linux下直接有包，Windows可以来信问贝壳索要移植(其实去官网上就能下到)。"/>
+&lt;?xml version=&#39;1.0&#39; encoding=&#34;GBK&#34;?&gt; &lt;xsl:stylesheet version=&#34;1.0&#34; xmlns:xsl=&#34;&lt;http://www.w3.org/1999/XSL/Transform&gt;&#34;&gt; &lt;xsl:template match=&#34;/&#34;&gt; &lt;html&gt; &lt;body&gt; &lt;xsl:for-each select=&#34;//smss/address&#34;&gt; Phone Number:&lt;xsl:value-of select=&#34;@data&#34;/&gt; &lt;br/&gt; &lt;table border=&#34;0&#34; class=&#34;rev_tab&#34; width=&#34;100%&#34;&gt; &lt;xsl:for-each select=&#34;sms&#34;&gt; &lt;tr&gt; &lt;td class=&#34;rev_tab_rev&#34;&gt; &lt;xsl:value-of select=&#34;date/@data&#34;/&gt; &lt;/td&gt; &lt;td class=&#34;rev_tab_rev&#34;&gt; &lt;xsl:choose&gt; &lt;xsl:when test=&#34;read/@data = 1&#34;&gt;read&lt;/xsl:when&gt; &lt;xsl:when test=&#34;read/@data = 0&#34;&gt;unread&lt;/xsl:when&gt; &lt;/xsl:choose&gt; &lt;/td&gt; &lt;td class=&#34;rev_tab_rev&#34;&gt; &lt;xsl:value-of select=&#34;body/@data&#34;/&gt; &lt;/td&gt; &lt;/tr&gt; &lt;/xsl:for-each&gt; &lt;/table&gt; &lt;BR/&gt; &lt;/xsl:for-each&gt; &lt;/body&gt; &lt;/html&gt; &lt;/xsl:template&gt; &lt;/xsl:stylesheet&gt; 为了美观，你还可以修改一下xslt。xsltproc在linux下直接有包，Windows可以来信问贝壳索要移植(其实去官网上就能下到)。">
 
-    <meta property="og:title" content="android历史记录备份和应用三例" />
-<meta property="og:description" content="有不少不折腾会死星人已经用上andriod了吧？有没有刷机过？有没有怕手机掉过？android的联系人是同步到gmail的，不用怕。但是信息就不同不了。所以，下面介绍几个信息导出的方法。
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/99/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="android历史记录备份和应用三例">
+  <meta property="og:description" content="有不少不折腾会死星人已经用上andriod了吧？有没有刷机过？有没有怕手机掉过？android的联系人是同步到gmail的，不用怕。但是信息就不同不了。所以，下面介绍几个信息导出的方法。
 1.aqq
 用adb shell去/data/data/com.android.aqq/databases/下面，把aqq.db复制出来，sqlite3格式，随便看吧。
 2.AnFetion
-用adb shell去/data/data/&hellip;..AnFetion2/databases/下面，把fetion.DB复制出来。
+用adb shell去/data/data/…..AnFetion2/databases/下面，把fetion.DB复制出来。
 3.信息
 这个是最麻烦的。去信息-&gt;Menu-&gt;设置-&gt;导出短信里面导出。但是别高兴的太早，贝壳发现一个bug。如果你的短信里面有西文引号，会导致xml格式错误，从而无法导入。解决方法是手工删除引号。
 应用，使用xsltproc，将xml转换为html来浏览。贝壳用的xslt比较简单，抄在下面。
-&lt;?xml version=&#39;1.0&#39; encoding=&quot;GBK&quot;?&gt; &lt;xsl:stylesheet version=&quot;1.0&quot; xmlns:xsl=&quot;&lt;http://www.w3.org/1999/XSL/Transform&gt;&quot;&gt; &lt;xsl:template match=&quot;/&quot;&gt; &lt;html&gt; &lt;body&gt; &lt;xsl:for-each select=&quot;//smss/address&quot;&gt; Phone Number:&lt;xsl:value-of select=&quot;@data&quot;/&gt; &lt;br/&gt; &lt;table border=&quot;0&quot; class=&quot;rev_tab&quot; width=&quot;100%&quot;&gt; &lt;xsl:for-each select=&quot;sms&quot;&gt; &lt;tr&gt; &lt;td class=&quot;rev_tab_rev&quot;&gt; &lt;xsl:value-of select=&quot;date/@data&quot;/&gt; &lt;/td&gt; &lt;td class=&quot;rev_tab_rev&quot;&gt; &lt;xsl:choose&gt; &lt;xsl:when test=&quot;read/@data = 1&quot;&gt;read&lt;/xsl:when&gt; &lt;xsl:when test=&quot;read/@data = 0&quot;&gt;unread&lt;/xsl:when&gt; &lt;/xsl:choose&gt; &lt;/td&gt; &lt;td class=&quot;rev_tab_rev&quot;&gt; &lt;xsl:value-of select=&quot;body/@data&quot;/&gt; &lt;/td&gt; &lt;/tr&gt; &lt;/xsl:for-each&gt; &lt;/table&gt; &lt;BR/&gt; &lt;/xsl:for-each&gt; &lt;/body&gt; &lt;/html&gt; &lt;/xsl:template&gt; &lt;/xsl:stylesheet&gt; 为了美观，你还可以修改一下xslt。xsltproc在linux下直接有包，Windows可以来信问贝壳索要移植(其实去官网上就能下到)。" />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/99/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2010-03-02T16:10:00+08:00" />
-<meta property="article:modified_time" content="2010-03-02T16:10:00+08:00" />
+&lt;?xml version=&#39;1.0&#39; encoding=&#34;GBK&#34;?&gt; &lt;xsl:stylesheet version=&#34;1.0&#34; xmlns:xsl=&#34;&lt;http://www.w3.org/1999/XSL/Transform&gt;&#34;&gt; &lt;xsl:template match=&#34;/&#34;&gt; &lt;html&gt; &lt;body&gt; &lt;xsl:for-each select=&#34;//smss/address&#34;&gt; Phone Number:&lt;xsl:value-of select=&#34;@data&#34;/&gt; &lt;br/&gt; &lt;table border=&#34;0&#34; class=&#34;rev_tab&#34; width=&#34;100%&#34;&gt; &lt;xsl:for-each select=&#34;sms&#34;&gt; &lt;tr&gt; &lt;td class=&#34;rev_tab_rev&#34;&gt; &lt;xsl:value-of select=&#34;date/@data&#34;/&gt; &lt;/td&gt; &lt;td class=&#34;rev_tab_rev&#34;&gt; &lt;xsl:choose&gt; &lt;xsl:when test=&#34;read/@data = 1&#34;&gt;read&lt;/xsl:when&gt; &lt;xsl:when test=&#34;read/@data = 0&#34;&gt;unread&lt;/xsl:when&gt; &lt;/xsl:choose&gt; &lt;/td&gt; &lt;td class=&#34;rev_tab_rev&#34;&gt; &lt;xsl:value-of select=&#34;body/@data&#34;/&gt; &lt;/td&gt; &lt;/tr&gt; &lt;/xsl:for-each&gt; &lt;/table&gt; &lt;BR/&gt; &lt;/xsl:for-each&gt; &lt;/body&gt; &lt;/html&gt; &lt;/xsl:template&gt; &lt;/xsl:stylesheet&gt; 为了美观，你还可以修改一下xslt。xsltproc在linux下直接有包，Windows可以来信问贝壳索要移植(其实去官网上就能下到)。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2010-03-02T16:10:00+08:00">
+    <meta property="article:modified_time" content="2010-03-02T16:10:00+08:00">
+    <meta property="article:tag" content="Android">
+    <meta property="article:tag" content="Linux">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -84,7 +94,7 @@ if (!doNotTrack) {
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -96,26 +106,17 @@ if (!doNotTrack) {
       <h1 class ="post-title">android历史记录备份和应用三例</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Mar 2, 2010
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/android/">android</a>
-              <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/android/">Android</a>
+              <a class="tag" href="/tags/linux/">Linux</a>
         </div>
       </div>
     </header>
@@ -164,7 +165,24 @@ if (!doNotTrack) {
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

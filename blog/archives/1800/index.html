@@ -4,44 +4,54 @@
     <title>debian中文初学者引导——系统管理 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="debian中文初学者引导——系统管理"/>
-<meta name="twitter:description" content="装什么系统就要能玩什么，如果你安装的是windows，也需要解决几个最简单的管理工作——文件存放，如何联网，安装软件。不过幸好，用debian的好处是，你暂时不用担心病毒了。
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="debian中文初学者引导——系统管理">
+  <meta name="twitter:description" content="装什么系统就要能玩什么，如果你安装的是windows，也需要解决几个最简单的管理工作——文件存放，如何联网，安装软件。不过幸好，用debian的好处是，你暂时不用担心病毒了。
 在进行管理工作前，我先说明一个事实。平时你在windows下，可以随便进行的系统管理工作，在debian下面不是谁都能干的。如果linux也像windows那样允许所有用户都修改系统，那早就天下大乱了。为了修改系统关键部分，你需要root权限。如果在命令行下（多数系统管理都是命令行完成的），那么用su-来变成root，或者在执行具体命令的时候在前面加上sudo，如果你已经配置了sudo工具的话。需要特别注意的是，我不建议新手随时都顶着root权限做事，这很危险。在windows下我们很容易修改系统导致出错和崩溃，原因之一就是我们随时都可以拥有系统最高权限。所以，当你需要root权限的时候，开一个root的命令行来管理，不要一直用root命令行做日常工作。
 首先是文件存放，这和windows有基础概念区别。windows的文件组织结构继承了DOS的特征，使用A-Z的分区号标示每个物理设备。而linux的文件组织结构继承了unix的特征，所有数据都在一颗单根树下。就是说，系统只有一个根目录。每个物理设备，都被“挂载”在特定的目录下。在windows下，我们把光盘放入光驱，就可以在F盘上面看到一颗目录树。如果在linux下，我们需要将光盘“挂载”在某个目录下。这个目录下的原本内容就消失不见（放心，没有被物理的删除），取而代之的是光盘的目录结构。当然，debian下面通常有自动挂载程序会帮你完成检测到光盘插入后自动挂载的过程。
 文件存放的结构也和windows大有不同。windows下的程序安装和文件组织遵循“同包内聚”的结构特征。即是说，只要属于同一个软件，这些文件就被放到一起。大家可以看看programfiles下面一堆堆的目录，每个都属于一个软件。而linux则基于FHS结构，大部分的时候是“功能内聚”，即是说，同类功能的文件被放到一起。例如可执行代码基本放置在/usr/bin和/usr/sbin，前者是普通用户可执行代码，后者是特权用户可执行代码。当你执行ls的时候，其实是调用了/bin/ls。这样的好处是路径设定及其简单，你不信可以对比windows的path设定和linux的path设定。当然，坏处是无法通过直观的文件删除来删除所有包。
 这当然不代表debian卸载软件比windows更费力。实际上，是更简单。debian提供了dpkg工具来管理包，和apt工具来管理仓库。你可以很简单的用apt-get install 包名，来安装一个包。用apt-get purge包名来彻底删除包。purge和remove的区别相当于windows中的“是否删除注册表”，如果是purge，是不会保留你自己修改和定制的配置文件的，除非这些数据存在于你的HOME目录下。你可以用aptitude update来追踪系统升级，不过这个不会自动的未你下载最新包。update只是检查服务器上有没有新的包出现，然后通知你，有新东西了。升级是upgrade的事情，不过我建议手工进行升级，具体要多读debian参考手册，也要有几次搞坏系统的准备。
-最后一个问题是如何联网。debian是一种很网络化的系统，你的系统升级，使用，都是通过网络的。乃至于我每天用系统的时候，一多半时间都在透过ssh来管理不同的设备。对于这种系统，如何联网是一个很重要的问题。如果你是有线网络，由于不大可能断线，我建议通过/etc/network/interfaces来配置。方法在debian参考手册里面，根据你是dhcp还是static配置好，重启，基本就固定下来不用动了。如果是无线网络，建议直接安装NetworkManager，并且注释掉/etc/network/interfaces中的所有内容。nm的使用很简单，你看着办就好。"/>
+最后一个问题是如何联网。debian是一种很网络化的系统，你的系统升级，使用，都是通过网络的。乃至于我每天用系统的时候，一多半时间都在透过ssh来管理不同的设备。对于这种系统，如何联网是一个很重要的问题。如果你是有线网络，由于不大可能断线，我建议通过/etc/network/interfaces来配置。方法在debian参考手册里面，根据你是dhcp还是static配置好，重启，基本就固定下来不用动了。如果是无线网络，建议直接安装NetworkManager，并且注释掉/etc/network/interfaces中的所有内容。nm的使用很简单，你看着办就好。">
 
-    <meta property="og:title" content="debian中文初学者引导——系统管理" />
-<meta property="og:description" content="装什么系统就要能玩什么，如果你安装的是windows，也需要解决几个最简单的管理工作——文件存放，如何联网，安装软件。不过幸好，用debian的好处是，你暂时不用担心病毒了。
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/1800/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="debian中文初学者引导——系统管理">
+  <meta property="og:description" content="装什么系统就要能玩什么，如果你安装的是windows，也需要解决几个最简单的管理工作——文件存放，如何联网，安装软件。不过幸好，用debian的好处是，你暂时不用担心病毒了。
 在进行管理工作前，我先说明一个事实。平时你在windows下，可以随便进行的系统管理工作，在debian下面不是谁都能干的。如果linux也像windows那样允许所有用户都修改系统，那早就天下大乱了。为了修改系统关键部分，你需要root权限。如果在命令行下（多数系统管理都是命令行完成的），那么用su-来变成root，或者在执行具体命令的时候在前面加上sudo，如果你已经配置了sudo工具的话。需要特别注意的是，我不建议新手随时都顶着root权限做事，这很危险。在windows下我们很容易修改系统导致出错和崩溃，原因之一就是我们随时都可以拥有系统最高权限。所以，当你需要root权限的时候，开一个root的命令行来管理，不要一直用root命令行做日常工作。
 首先是文件存放，这和windows有基础概念区别。windows的文件组织结构继承了DOS的特征，使用A-Z的分区号标示每个物理设备。而linux的文件组织结构继承了unix的特征，所有数据都在一颗单根树下。就是说，系统只有一个根目录。每个物理设备，都被“挂载”在特定的目录下。在windows下，我们把光盘放入光驱，就可以在F盘上面看到一颗目录树。如果在linux下，我们需要将光盘“挂载”在某个目录下。这个目录下的原本内容就消失不见（放心，没有被物理的删除），取而代之的是光盘的目录结构。当然，debian下面通常有自动挂载程序会帮你完成检测到光盘插入后自动挂载的过程。
 文件存放的结构也和windows大有不同。windows下的程序安装和文件组织遵循“同包内聚”的结构特征。即是说，只要属于同一个软件，这些文件就被放到一起。大家可以看看programfiles下面一堆堆的目录，每个都属于一个软件。而linux则基于FHS结构，大部分的时候是“功能内聚”，即是说，同类功能的文件被放到一起。例如可执行代码基本放置在/usr/bin和/usr/sbin，前者是普通用户可执行代码，后者是特权用户可执行代码。当你执行ls的时候，其实是调用了/bin/ls。这样的好处是路径设定及其简单，你不信可以对比windows的path设定和linux的path设定。当然，坏处是无法通过直观的文件删除来删除所有包。
 这当然不代表debian卸载软件比windows更费力。实际上，是更简单。debian提供了dpkg工具来管理包，和apt工具来管理仓库。你可以很简单的用apt-get install 包名，来安装一个包。用apt-get purge包名来彻底删除包。purge和remove的区别相当于windows中的“是否删除注册表”，如果是purge，是不会保留你自己修改和定制的配置文件的，除非这些数据存在于你的HOME目录下。你可以用aptitude update来追踪系统升级，不过这个不会自动的未你下载最新包。update只是检查服务器上有没有新的包出现，然后通知你，有新东西了。升级是upgrade的事情，不过我建议手工进行升级，具体要多读debian参考手册，也要有几次搞坏系统的准备。
-最后一个问题是如何联网。debian是一种很网络化的系统，你的系统升级，使用，都是通过网络的。乃至于我每天用系统的时候，一多半时间都在透过ssh来管理不同的设备。对于这种系统，如何联网是一个很重要的问题。如果你是有线网络，由于不大可能断线，我建议通过/etc/network/interfaces来配置。方法在debian参考手册里面，根据你是dhcp还是static配置好，重启，基本就固定下来不用动了。如果是无线网络，建议直接安装NetworkManager，并且注释掉/etc/network/interfaces中的所有内容。nm的使用很简单，你看着办就好。" />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/1800/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2011-05-16T10:08:01+08:00" />
-<meta property="article:modified_time" content="2011-05-16T10:08:01+08:00" />
+最后一个问题是如何联网。debian是一种很网络化的系统，你的系统升级，使用，都是通过网络的。乃至于我每天用系统的时候，一多半时间都在透过ssh来管理不同的设备。对于这种系统，如何联网是一个很重要的问题。如果你是有线网络，由于不大可能断线，我建议通过/etc/network/interfaces来配置。方法在debian参考手册里面，根据你是dhcp还是static配置好，重启，基本就固定下来不用动了。如果是无线网络，建议直接安装NetworkManager，并且注释掉/etc/network/interfaces中的所有内容。nm的使用很简单，你看着办就好。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2011-05-16T10:08:01+08:00">
+    <meta property="article:modified_time" content="2011-05-16T10:08:01+08:00">
+    <meta property="article:tag" content="Debian">
+    <meta property="article:tag" content="Linux">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -78,7 +88,7 @@ if (!doNotTrack) {
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -90,26 +100,17 @@ if (!doNotTrack) {
       <h1 class ="post-title">debian中文初学者引导——系统管理</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           May 16, 2011
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/debian/">debian</a>
-              <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/debian/">Debian</a>
+              <a class="tag" href="/tags/linux/">Linux</a>
         </div>
       </div>
     </header>
@@ -123,7 +124,24 @@ if (!doNotTrack) {
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

@@ -1,34 +1,20 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>benchmark on Shell&#39;s Home</title>
+    <title>Benchmark on Shell&#39;s Home</title>
     <link>//blog.shell909090.org/tags/benchmark/</link>
-    <description>Recent content in benchmark on Shell&#39;s Home</description>
-    <generator>Hugo -- gohugo.io</generator>
+    <description>Recent content in Benchmark on Shell&#39;s Home</description>
+    <generator>Hugo</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Thu, 23 Jan 2014 11:04:34 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/benchmark/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 23 Jan 2014 11:04:34 +0800</lastBuildDate>
+    <atom:link href="//blog.shell909090.org/tags/benchmark/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>lxc和virtualbox和物理机的简单性能测试和对比</title>
       <link>//blog.shell909090.org/blog/archives/2542/</link>
       <pubDate>Thu, 23 Jan 2014 11:04:34 +0800</pubDate>
-      
       <guid>//blog.shell909090.org/blog/archives/2542/</guid>
-      <description>说明 测试各种虚拟化系统下的虚拟机性能。
-测试使用sysbench。
-CPU采用如下指令测试。
-sysbench --test=cpu --num-threads=2 --cpu-max-prime=50000 run 文件IO采用如下指令测试。
-sysbench --test=fileio --file-total-size=10G prepare sysbench --test=fileio --file-total-size=10G --file-test-mode=rndrw --init-rng=on --max-time=300 --max-requests=0 run 内存采用如下指令测试。
-sysbench --test=memory --num-threads=2 --memory-access-mode=seq run sysbench --test=memory --num-threads=2 --memory-access-mode=rnd run 线程采用如下指令。
-sysbench --test=threads --num-threads=2 run sysbench --test=mutex --num-threads=2 --mutex-locks=1000000 run 裸硬盘测试采用如下指令。
-hdparm -tT &amp;lt;dev&amp;gt; 物理机上有三个文件系统，ext4/xfs/btrfs，前两者仅做fileio测试以对比性能。
-另外做两个特殊文件系统对比，aufs带复制和aufs无复制。前者在只读层上准备好测试文件，而后进行随机读写测试。其中就附带了文件复制开销。后者在aufs建立后初始化测试文件，因此消除了文件复制开销。
-所有测试都是测试数次，取最高者（因为低者可能受到各种干扰）。一般是2-3次。
-物理机是一台DELL Intel 64位桌面系统，支持硬件虚拟化，有4G内存。系统采用debian jessie，测试于2014年1月17日-20日执行，内核3.12.6-2 (2013-12-29) x86_64。
-虚拟机lxc是使用lxc切分的一台虚拟机，没有做资源限制。
-虚拟机vbox是使用virtualbox切分的一台虚拟机，分配了所有CPU，打开了硬件虚拟化，分配了1G内存。
-文件系统 ext4 Operations performed: 21311 Read, 14207 Write, 45440 Other = 80958 Total Read 332.</description>
+      <description>&lt;h1 id=&#34;说明&#34;&gt;说明&lt;/h1&gt;&#xA;&lt;p&gt;测试各种虚拟化系统下的虚拟机性能。&lt;/p&gt;&#xA;&lt;p&gt;测试使用sysbench。&lt;/p&gt;&#xA;&lt;p&gt;CPU采用如下指令测试。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;sysbench --test=cpu --num-threads=2 --cpu-max-prime=50000 run&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;文件IO采用如下指令测试。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;sysbench --test=fileio --file-total-size=10G prepare&#xA;sysbench --test=fileio --file-total-size=10G --file-test-mode=rndrw --init-rng=on --max-time=300 --max-requests=0 run&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;内存采用如下指令测试。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;sysbench --test=memory --num-threads=2 --memory-access-mode=seq run&#xA;sysbench --test=memory --num-threads=2 --memory-access-mode=rnd run&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;线程采用如下指令。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;sysbench --test=threads --num-threads=2 run&#xA;sysbench --test=mutex --num-threads=2 --mutex-locks=1000000 run&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;裸硬盘测试采用如下指令。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;hdparm -tT &amp;lt;dev&amp;gt;&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;物理机上有三个文件系统，ext4/xfs/btrfs，前两者仅做fileio测试以对比性能。&lt;/p&gt;&#xA;&lt;p&gt;另外做两个特殊文件系统对比，aufs带复制和aufs无复制。前者在只读层上准备好测试文件，而后进行随机读写测试。其中就附带了文件复制开销。后者在aufs建立后初始化测试文件，因此消除了文件复制开销。&lt;/p&gt;&#xA;&lt;p&gt;所有测试都是测试数次，取最高者（因为低者可能受到各种干扰）。一般是2-3次。&lt;/p&gt;&#xA;&lt;p&gt;物理机是一台DELL Intel 64位桌面系统，支持硬件虚拟化，有4G内存。系统采用debian jessie，测试于2014年1月17日-20日执行，内核3.12.6-2 (2013-12-29) x86_64。&lt;/p&gt;&#xA;&lt;p&gt;虚拟机lxc是使用lxc切分的一台虚拟机，没有做资源限制。&lt;/p&gt;&#xA;&lt;p&gt;虚拟机vbox是使用virtualbox切分的一台虚拟机，分配了所有CPU，打开了硬件虚拟化，分配了1G内存。&lt;/p&gt;&#xA;&lt;h1 id=&#34;文件系统&#34;&gt;文件系统&lt;/h1&gt;&#xA;&lt;h2 id=&#34;ext4&#34;&gt;ext4&lt;/h2&gt;&#xA;&lt;p&gt;Operations performed: 21311 Read, 14207 Write, 45440 Other = 80958 Total&#xA;Read 332.98Mb Written 221.98Mb Total transferred 554.97Mb (1.8499Mb/sec)&#xA;118.39 Requests/sec executed&lt;/p&gt;</description>
     </item>
-    
   </channel>
 </rss>

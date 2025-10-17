@@ -4,52 +4,63 @@
     <title>构造过程 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="构造过程"/>
-<meta name="twitter:description" content="在进入正题前，我们首先回顾下我们的基础C&#43;&#43;常识。如果调用某个对象的某个方法，那么会调用到什么？
-一般来说，如果这个方法是普通函数，则按照这个对象的声明类型去调用。就好像(&amp;obj)-&gt;obj_type::function(param&hellip;);。而如果是虚函数，则是按照这个对象的构造类型去调用。就好像(&amp;obj)-&gt;((&amp;obj)-&gt;_v_ptr[n])(param&hellip;);。或者说简单点，一个是按照这个类看起来像是哪个类来调用，一个是按照这个类实际是哪个类来调用。
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="构造过程">
+  <meta name="twitter:description" content="在进入正题前，我们首先回顾下我们的基础C&#43;&#43;常识。如果调用某个对象的某个方法，那么会调用到什么？
+一般来说，如果这个方法是普通函数，则按照这个对象的声明类型去调用。就好像(&amp;obj)-&gt;obj_type::function(param…);。而如果是虚函数，则是按照这个对象的构造类型去调用。就好像(&amp;obj)-&gt;((&amp;obj)-&gt;_v_ptr[n])(param…);。或者说简单点，一个是按照这个类看起来像是哪个类来调用，一个是按照这个类实际是哪个类来调用。
 那么，如果在一个基类的某个成员里面调用这个类的另外一个虚函数，调用的是哪个呢？
 任何正常人来说，都应该说是，按照这个类的构造类型来确定。基本上没错，不过有一个函数例外。
 那么先看一个问题。
-class B { public: B(){test ();} virtual void test (){printf (&quot;parentn&quot;);} void out (){test ();} }; class D:public B { public: virtual void test (){printf (&quot;childn&quot;);} }; int _tmain(int argc, _TCHAR* argv[]){ D d; d.out(); return 0; } 想像下输出，再运行下。想想为什么，再看下面。想通了就不用看了。
-&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;我是无敌的分割线&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;
+class B { public: B(){test ();} virtual void test (){printf (&#34;parentn&#34;);} void out (){test ();} }; class D:public B { public: virtual void test (){printf (&#34;childn&#34;);} }; int _tmain(int argc, _TCHAR* argv[]){ D d; d.out(); return 0; } 想像下输出，再运行下。想想为什么，再看下面。想通了就不用看了。
+———————我是无敌的分割线———————–
 C&#43;&#43;标准规定，任何一个带有虚函数的类都有一个_v_ptr成员，这个成员必须存放在这个类内存地址中头部。这个成员指向了这个类的虚函数表。于是，调用虚函数的时候，我们首先确定这个是虚函数。(按照这个逻辑，如果父类不声明为虚函数，子类重载为虚函数，还是没用的)然后，我们确定这是第几个虚函数(严格来说，这并不符合面对对象的设计规范，应该是按照函数名字查表的，_v_ptr也不应该仅仅指向虚函数表，而应该是类形态表)。最后，我们去虚函数表中取得入口地址进行调用。
 那么为什么在构造函数中调用就无法调用子类的虚函数呢？问题在于_v_ptr的初始化时间上。某个类的构造函数启动前，这个类的_v_ptr才能完成初始化。如果是多重继承，那么首先调用最初类的，然后是次类的，最后是子类的。_v_ptr首先指向基类的，再是继承类，最后是子类。我们在父类构造函数中，_v_ptr指针还指向了父类的虚函数表，所以调用不到子类的虚函数。
-其实我们可以这么说，构造函数以前，子类不存在。"/>
+其实我们可以这么说，构造函数以前，子类不存在。">
 
-    <meta property="og:title" content="构造过程" />
-<meta property="og:description" content="在进入正题前，我们首先回顾下我们的基础C&#43;&#43;常识。如果调用某个对象的某个方法，那么会调用到什么？
-一般来说，如果这个方法是普通函数，则按照这个对象的声明类型去调用。就好像(&amp;obj)-&gt;obj_type::function(param&hellip;);。而如果是虚函数，则是按照这个对象的构造类型去调用。就好像(&amp;obj)-&gt;((&amp;obj)-&gt;_v_ptr[n])(param&hellip;);。或者说简单点，一个是按照这个类看起来像是哪个类来调用，一个是按照这个类实际是哪个类来调用。
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/347/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="构造过程">
+  <meta property="og:description" content="在进入正题前，我们首先回顾下我们的基础C&#43;&#43;常识。如果调用某个对象的某个方法，那么会调用到什么？
+一般来说，如果这个方法是普通函数，则按照这个对象的声明类型去调用。就好像(&amp;obj)-&gt;obj_type::function(param…);。而如果是虚函数，则是按照这个对象的构造类型去调用。就好像(&amp;obj)-&gt;((&amp;obj)-&gt;_v_ptr[n])(param…);。或者说简单点，一个是按照这个类看起来像是哪个类来调用，一个是按照这个类实际是哪个类来调用。
 那么，如果在一个基类的某个成员里面调用这个类的另外一个虚函数，调用的是哪个呢？
 任何正常人来说，都应该说是，按照这个类的构造类型来确定。基本上没错，不过有一个函数例外。
 那么先看一个问题。
-class B { public: B(){test ();} virtual void test (){printf (&quot;parentn&quot;);} void out (){test ();} }; class D:public B { public: virtual void test (){printf (&quot;childn&quot;);} }; int _tmain(int argc, _TCHAR* argv[]){ D d; d.out(); return 0; } 想像下输出，再运行下。想想为什么，再看下面。想通了就不用看了。
-&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;我是无敌的分割线&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;
+class B { public: B(){test ();} virtual void test (){printf (&#34;parentn&#34;);} void out (){test ();} }; class D:public B { public: virtual void test (){printf (&#34;childn&#34;);} }; int _tmain(int argc, _TCHAR* argv[]){ D d; d.out(); return 0; } 想像下输出，再运行下。想想为什么，再看下面。想通了就不用看了。
+———————我是无敌的分割线———————–
 C&#43;&#43;标准规定，任何一个带有虚函数的类都有一个_v_ptr成员，这个成员必须存放在这个类内存地址中头部。这个成员指向了这个类的虚函数表。于是，调用虚函数的时候，我们首先确定这个是虚函数。(按照这个逻辑，如果父类不声明为虚函数，子类重载为虚函数，还是没用的)然后，我们确定这是第几个虚函数(严格来说，这并不符合面对对象的设计规范，应该是按照函数名字查表的，_v_ptr也不应该仅仅指向虚函数表，而应该是类形态表)。最后，我们去虚函数表中取得入口地址进行调用。
 那么为什么在构造函数中调用就无法调用子类的虚函数呢？问题在于_v_ptr的初始化时间上。某个类的构造函数启动前，这个类的_v_ptr才能完成初始化。如果是多重继承，那么首先调用最初类的，然后是次类的，最后是子类的。_v_ptr首先指向基类的，再是继承类，最后是子类。我们在父类构造函数中，_v_ptr指针还指向了父类的虚函数表，所以调用不到子类的虚函数。
-其实我们可以这么说，构造函数以前，子类不存在。" />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/347/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2007-01-13T22:12:10+08:00" />
-<meta property="article:modified_time" content="2007-01-13T22:12:10+08:00" />
+其实我们可以这么说，构造函数以前，子类不存在。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2007-01-13T22:12:10+08:00">
+    <meta property="article:modified_time" content="2007-01-13T22:12:10+08:00">
+    <meta property="article:tag" content="C">
+    <meta property="article:tag" content="Oo">
+    <meta property="article:tag" content="Program">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -86,7 +97,7 @@ C&#43;&#43;标准规定，任何一个带有虚函数的类都有一个_v_ptr成
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -98,27 +109,18 @@ C&#43;&#43;标准规定，任何一个带有虚函数的类都有一个_v_ptr成
       <h1 class ="post-title">构造过程</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Jan 13, 2007
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/c/">c</a>
-              <a class="tag" href="//blog.shell909090.org/tags/oo/">oo</a>
-              <a class="tag" href="//blog.shell909090.org/tags/program/">program</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/c/">C</a>
+              <a class="tag" href="/tags/oo/">Oo</a>
+              <a class="tag" href="/tags/program/">Program</a>
         </div>
       </div>
     </header>
@@ -154,7 +156,24 @@ int _tmain(int argc, _TCHAR* argv[]){
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

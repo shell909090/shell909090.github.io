@@ -4,48 +4,60 @@
     <title>emacs配置系统 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="emacs配置系统"/>
-<meta name="twitter:description" content="emacs是个超级复杂的程序，尤其在配置问题上。贝壳的emacs要跨越三个环境。环境一，WindowsXP&#43;Emacs23。环境二，Debian Testing &#43; Xfce4。环境三，CentOS &#43; Ssh。而整个的操作方式，个性设定需要保持一致。因此，引出一个问题。配置如何设置，跨平台，同步。
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="emacs配置系统">
+  <meta name="twitter:description" content="emacs是个超级复杂的程序，尤其在配置问题上。贝壳的emacs要跨越三个环境。环境一，WindowsXP&#43;Emacs23。环境二，Debian Testing &#43; Xfce4。环境三，CentOS &#43; Ssh。而整个的操作方式，个性设定需要保持一致。因此，引出一个问题。配置如何设置，跨平台，同步。
 首先解决配置的同步问题，贝壳建立了一个svn仓库，用于存储该配置系统。然后在各个系统中co出这个仓库，当有需要调整时ci就可以保持同步了。Linux下可以使用ln连接文件，Windows下比较麻烦点，NTFS格式(大多都是NTFS格式了吧)可以去sysinternals下一个叫做junction的工具，以建立目录的工具链接，当然，.emacs文件只能手工拷贝了。
 然后是配置的切分问题，如果只有一个文件，即使使用了版本控制，意义也不大。同时，将配置切割成不同的部分，控制载入过程，也可以跨平台和加速。以下是贝壳的.emacs文件。
-;; .emacs profile, written by shell.xu ;; load other set (add-to-list &#39;load-path &quot;~/.emacs.d/&quot;) (add-to-list &#39;load-path &quot;~/.emacs.d/auto-complete/&quot;) (add-to-list &#39;load-path &quot;~/.emacs.d/plugins/&quot;) (load &quot;emacs-setup&quot;) (load &quot;emacs-redef&quot;) (load &quot;emacs-plugin&quot;) (cond ((not (boundp &#39;initial-window-system)) (load &quot;emacs-console&quot;)) ((memq initial-window-system &#39;(x w32)) (cond ((memq system-type &#39;(windows-nt cygwin)) (load &quot;emacs-win&quot;)) ((memq system-type &#39;(gnu/linux)) (load &quot;emacs-linux&quot;))))) (load &quot;emacs-keymap&quot;) 从上可以看出，我们先设定了.emacs.d作为默认加载路径——大多数文件都是放在这里。plugins是各种第三方程序的安装路径，这样这些程序就无需在各个平台上各自安装一次。而auto-complete单独拆出来纯粹是因为文件太多了。而后，我们加载了setup，这个文件内定义了emacs的基本配置，redef文件内定义了各种自定义函数和变量，plugin内控制了需要加载的各个插件和配置。
+;; .emacs profile, written by shell.xu ;; load other set (add-to-list &#39;load-path &#34;~/.emacs.d/&#34;) (add-to-list &#39;load-path &#34;~/.emacs.d/auto-complete/&#34;) (add-to-list &#39;load-path &#34;~/.emacs.d/plugins/&#34;) (load &#34;emacs-setup&#34;) (load &#34;emacs-redef&#34;) (load &#34;emacs-plugin&#34;) (cond ((not (boundp &#39;initial-window-system)) (load &#34;emacs-console&#34;)) ((memq initial-window-system &#39;(x w32)) (cond ((memq system-type &#39;(windows-nt cygwin)) (load &#34;emacs-win&#34;)) ((memq system-type &#39;(gnu/linux)) (load &#34;emacs-linux&#34;))))) (load &#34;emacs-keymap&#34;) 从上可以看出，我们先设定了.emacs.d作为默认加载路径——大多数文件都是放在这里。plugins是各种第三方程序的安装路径，这样这些程序就无需在各个平台上各自安装一次。而auto-complete单独拆出来纯粹是因为文件太多了。而后，我们加载了setup，这个文件内定义了emacs的基本配置，redef文件内定义了各种自定义函数和变量，plugin内控制了需要加载的各个插件和配置。
 下面就有点复杂，简单来说，设定无Windows系统的时候加载emacs-console文件，有Windows的情况下，在windows下加载emacs-win，在linux下加载emacs-linux。这是实现跨平台设置的核心。
 最后是keymap，经过上面复杂的设定，按键设置是统一的。
 setup文件就不细说了，大家按照自己的习惯设定就好。下面我说几个redef中定义的函数。
-(defun switch-windows-buffer () (interactive) (let ((this-buffer (window-buffer))) (switch-to-buffer (window-buffer (next-window (selected-window)))) (switch-to-buffer-other-window this-buffer) (other-window 1))) 这个函数的目标是用热键交换两个窗口的位置。如果你经常用C-x 3分栏，并且在两者间跳来跳去的话，有的时候往往希望两者的位置换一下。通常都是C-x b切换当前的窗口，然后C-x o切到隔壁去再换。这个太繁琐了。"/>
+(defun switch-windows-buffer () (interactive) (let ((this-buffer (window-buffer))) (switch-to-buffer (window-buffer (next-window (selected-window)))) (switch-to-buffer-other-window this-buffer) (other-window 1))) 这个函数的目标是用热键交换两个窗口的位置。如果你经常用C-x 3分栏，并且在两者间跳来跳去的话，有的时候往往希望两者的位置换一下。通常都是C-x b切换当前的窗口，然后C-x o切到隔壁去再换。这个太繁琐了。">
 
-    <meta property="og:title" content="emacs配置系统" />
-<meta property="og:description" content="emacs是个超级复杂的程序，尤其在配置问题上。贝壳的emacs要跨越三个环境。环境一，WindowsXP&#43;Emacs23。环境二，Debian Testing &#43; Xfce4。环境三，CentOS &#43; Ssh。而整个的操作方式，个性设定需要保持一致。因此，引出一个问题。配置如何设置，跨平台，同步。
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/100/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="emacs配置系统">
+  <meta property="og:description" content="emacs是个超级复杂的程序，尤其在配置问题上。贝壳的emacs要跨越三个环境。环境一，WindowsXP&#43;Emacs23。环境二，Debian Testing &#43; Xfce4。环境三，CentOS &#43; Ssh。而整个的操作方式，个性设定需要保持一致。因此，引出一个问题。配置如何设置，跨平台，同步。
 首先解决配置的同步问题，贝壳建立了一个svn仓库，用于存储该配置系统。然后在各个系统中co出这个仓库，当有需要调整时ci就可以保持同步了。Linux下可以使用ln连接文件，Windows下比较麻烦点，NTFS格式(大多都是NTFS格式了吧)可以去sysinternals下一个叫做junction的工具，以建立目录的工具链接，当然，.emacs文件只能手工拷贝了。
 然后是配置的切分问题，如果只有一个文件，即使使用了版本控制，意义也不大。同时，将配置切割成不同的部分，控制载入过程，也可以跨平台和加速。以下是贝壳的.emacs文件。
-;; .emacs profile, written by shell.xu ;; load other set (add-to-list &#39;load-path &quot;~/.emacs.d/&quot;) (add-to-list &#39;load-path &quot;~/.emacs.d/auto-complete/&quot;) (add-to-list &#39;load-path &quot;~/.emacs.d/plugins/&quot;) (load &quot;emacs-setup&quot;) (load &quot;emacs-redef&quot;) (load &quot;emacs-plugin&quot;) (cond ((not (boundp &#39;initial-window-system)) (load &quot;emacs-console&quot;)) ((memq initial-window-system &#39;(x w32)) (cond ((memq system-type &#39;(windows-nt cygwin)) (load &quot;emacs-win&quot;)) ((memq system-type &#39;(gnu/linux)) (load &quot;emacs-linux&quot;))))) (load &quot;emacs-keymap&quot;) 从上可以看出，我们先设定了.emacs.d作为默认加载路径——大多数文件都是放在这里。plugins是各种第三方程序的安装路径，这样这些程序就无需在各个平台上各自安装一次。而auto-complete单独拆出来纯粹是因为文件太多了。而后，我们加载了setup，这个文件内定义了emacs的基本配置，redef文件内定义了各种自定义函数和变量，plugin内控制了需要加载的各个插件和配置。
+;; .emacs profile, written by shell.xu ;; load other set (add-to-list &#39;load-path &#34;~/.emacs.d/&#34;) (add-to-list &#39;load-path &#34;~/.emacs.d/auto-complete/&#34;) (add-to-list &#39;load-path &#34;~/.emacs.d/plugins/&#34;) (load &#34;emacs-setup&#34;) (load &#34;emacs-redef&#34;) (load &#34;emacs-plugin&#34;) (cond ((not (boundp &#39;initial-window-system)) (load &#34;emacs-console&#34;)) ((memq initial-window-system &#39;(x w32)) (cond ((memq system-type &#39;(windows-nt cygwin)) (load &#34;emacs-win&#34;)) ((memq system-type &#39;(gnu/linux)) (load &#34;emacs-linux&#34;))))) (load &#34;emacs-keymap&#34;) 从上可以看出，我们先设定了.emacs.d作为默认加载路径——大多数文件都是放在这里。plugins是各种第三方程序的安装路径，这样这些程序就无需在各个平台上各自安装一次。而auto-complete单独拆出来纯粹是因为文件太多了。而后，我们加载了setup，这个文件内定义了emacs的基本配置，redef文件内定义了各种自定义函数和变量，plugin内控制了需要加载的各个插件和配置。
 下面就有点复杂，简单来说，设定无Windows系统的时候加载emacs-console文件，有Windows的情况下，在windows下加载emacs-win，在linux下加载emacs-linux。这是实现跨平台设置的核心。
 最后是keymap，经过上面复杂的设定，按键设置是统一的。
 setup文件就不细说了，大家按照自己的习惯设定就好。下面我说几个redef中定义的函数。
-(defun switch-windows-buffer () (interactive) (let ((this-buffer (window-buffer))) (switch-to-buffer (window-buffer (next-window (selected-window)))) (switch-to-buffer-other-window this-buffer) (other-window 1))) 这个函数的目标是用热键交换两个窗口的位置。如果你经常用C-x 3分栏，并且在两者间跳来跳去的话，有的时候往往希望两者的位置换一下。通常都是C-x b切换当前的窗口，然后C-x o切到隔壁去再换。这个太繁琐了。" />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/100/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2010-03-03T16:51:00+08:00" />
-<meta property="article:modified_time" content="2010-03-03T16:51:00+08:00" />
+(defun switch-windows-buffer () (interactive) (let ((this-buffer (window-buffer))) (switch-to-buffer (window-buffer (next-window (selected-window)))) (switch-to-buffer-other-window this-buffer) (other-window 1))) 这个函数的目标是用热键交换两个窗口的位置。如果你经常用C-x 3分栏，并且在两者间跳来跳去的话，有的时候往往希望两者的位置换一下。通常都是C-x b切换当前的窗口，然后C-x o切到隔壁去再换。这个太繁琐了。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2010-03-03T16:51:00+08:00">
+    <meta property="article:modified_time" content="2010-03-03T16:51:00+08:00">
+    <meta property="article:tag" content="Emacs">
+    <meta property="article:tag" content="Linux">
+    <meta property="article:tag" content="Sche">
+    <meta property="article:tag" content="Scheme-2">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -82,7 +94,7 @@ setup文件就不细说了，大家按照自己的习惯设定就好。下面我
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -94,28 +106,19 @@ setup文件就不细说了，大家按照自己的习惯设定就好。下面我
       <h1 class ="post-title">emacs配置系统</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Mar 3, 2010
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/emacs/">emacs</a>
-              <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a>
-              <a class="tag" href="//blog.shell909090.org/tags/sche/">sche</a>
-              <a class="tag" href="//blog.shell909090.org/tags/scheme-2/">scheme-2</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/emacs/">Emacs</a>
+              <a class="tag" href="/tags/linux/">Linux</a>
+              <a class="tag" href="/tags/sche/">Sche</a>
+              <a class="tag" href="/tags/scheme-2/">Scheme-2</a>
         </div>
       </div>
     </header>
@@ -189,7 +192,24 @@ for i in $(DEPENDS); do $(MAKE) -C $$i clean || exit 1; done
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

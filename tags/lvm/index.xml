@@ -1,50 +1,27 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>lvm on Shell&#39;s Home</title>
+    <title>Lvm on Shell&#39;s Home</title>
     <link>//blog.shell909090.org/tags/lvm/</link>
-    <description>Recent content in lvm on Shell&#39;s Home</description>
-    <generator>Hugo -- gohugo.io</generator>
+    <description>Recent content in Lvm on Shell&#39;s Home</description>
+    <generator>Hugo</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Thu, 23 Jan 2014 11:04:34 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/lvm/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 23 Jan 2014 11:04:34 +0800</lastBuildDate>
+    <atom:link href="//blog.shell909090.org/tags/lvm/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>lxc和virtualbox和物理机的简单性能测试和对比</title>
       <link>//blog.shell909090.org/blog/archives/2542/</link>
       <pubDate>Thu, 23 Jan 2014 11:04:34 +0800</pubDate>
-      
       <guid>//blog.shell909090.org/blog/archives/2542/</guid>
-      <description>说明 测试各种虚拟化系统下的虚拟机性能。
-测试使用sysbench。
-CPU采用如下指令测试。
-sysbench --test=cpu --num-threads=2 --cpu-max-prime=50000 run 文件IO采用如下指令测试。
-sysbench --test=fileio --file-total-size=10G prepare sysbench --test=fileio --file-total-size=10G --file-test-mode=rndrw --init-rng=on --max-time=300 --max-requests=0 run 内存采用如下指令测试。
-sysbench --test=memory --num-threads=2 --memory-access-mode=seq run sysbench --test=memory --num-threads=2 --memory-access-mode=rnd run 线程采用如下指令。
-sysbench --test=threads --num-threads=2 run sysbench --test=mutex --num-threads=2 --mutex-locks=1000000 run 裸硬盘测试采用如下指令。
-hdparm -tT &amp;lt;dev&amp;gt; 物理机上有三个文件系统，ext4/xfs/btrfs，前两者仅做fileio测试以对比性能。
-另外做两个特殊文件系统对比，aufs带复制和aufs无复制。前者在只读层上准备好测试文件，而后进行随机读写测试。其中就附带了文件复制开销。后者在aufs建立后初始化测试文件，因此消除了文件复制开销。
-所有测试都是测试数次，取最高者（因为低者可能受到各种干扰）。一般是2-3次。
-物理机是一台DELL Intel 64位桌面系统，支持硬件虚拟化，有4G内存。系统采用debian jessie，测试于2014年1月17日-20日执行，内核3.12.6-2 (2013-12-29) x86_64。
-虚拟机lxc是使用lxc切分的一台虚拟机，没有做资源限制。
-虚拟机vbox是使用virtualbox切分的一台虚拟机，分配了所有CPU，打开了硬件虚拟化，分配了1G内存。
-文件系统 ext4 Operations performed: 21311 Read, 14207 Write, 45440 Other = 80958 Total Read 332.</description>
+      <description>&lt;h1 id=&#34;说明&#34;&gt;说明&lt;/h1&gt;&#xA;&lt;p&gt;测试各种虚拟化系统下的虚拟机性能。&lt;/p&gt;&#xA;&lt;p&gt;测试使用sysbench。&lt;/p&gt;&#xA;&lt;p&gt;CPU采用如下指令测试。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;sysbench --test=cpu --num-threads=2 --cpu-max-prime=50000 run&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;文件IO采用如下指令测试。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;sysbench --test=fileio --file-total-size=10G prepare&#xA;sysbench --test=fileio --file-total-size=10G --file-test-mode=rndrw --init-rng=on --max-time=300 --max-requests=0 run&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;内存采用如下指令测试。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;sysbench --test=memory --num-threads=2 --memory-access-mode=seq run&#xA;sysbench --test=memory --num-threads=2 --memory-access-mode=rnd run&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;线程采用如下指令。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;sysbench --test=threads --num-threads=2 run&#xA;sysbench --test=mutex --num-threads=2 --mutex-locks=1000000 run&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;裸硬盘测试采用如下指令。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;hdparm -tT &amp;lt;dev&amp;gt;&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;物理机上有三个文件系统，ext4/xfs/btrfs，前两者仅做fileio测试以对比性能。&lt;/p&gt;&#xA;&lt;p&gt;另外做两个特殊文件系统对比，aufs带复制和aufs无复制。前者在只读层上准备好测试文件，而后进行随机读写测试。其中就附带了文件复制开销。后者在aufs建立后初始化测试文件，因此消除了文件复制开销。&lt;/p&gt;&#xA;&lt;p&gt;所有测试都是测试数次，取最高者（因为低者可能受到各种干扰）。一般是2-3次。&lt;/p&gt;&#xA;&lt;p&gt;物理机是一台DELL Intel 64位桌面系统，支持硬件虚拟化，有4G内存。系统采用debian jessie，测试于2014年1月17日-20日执行，内核3.12.6-2 (2013-12-29) x86_64。&lt;/p&gt;&#xA;&lt;p&gt;虚拟机lxc是使用lxc切分的一台虚拟机，没有做资源限制。&lt;/p&gt;&#xA;&lt;p&gt;虚拟机vbox是使用virtualbox切分的一台虚拟机，分配了所有CPU，打开了硬件虚拟化，分配了1G内存。&lt;/p&gt;&#xA;&lt;h1 id=&#34;文件系统&#34;&gt;文件系统&lt;/h1&gt;&#xA;&lt;h2 id=&#34;ext4&#34;&gt;ext4&lt;/h2&gt;&#xA;&lt;p&gt;Operations performed: 21311 Read, 14207 Write, 45440 Other = 80958 Total&#xA;Read 332.98Mb Written 221.98Mb Total transferred 554.97Mb (1.8499Mb/sec)&#xA;118.39 Requests/sec executed&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>重分区和lvm</title>
       <link>//blog.shell909090.org/blog/archives/1859/</link>
       <pubDate>Wed, 20 Jul 2011 14:15:10 +0800</pubDate>
-      
       <guid>//blog.shell909090.org/blog/archives/1859/</guid>
-      <description>上篇btrfs会导致虚拟机慢死的blog都看到了吧？看到了就不多解释。
-首先，删除掉cache数据，还有冗余数据，使得数据可备份化。然后执行rsync -av /home /mnt/mdisk/sync，将数据同步到备份的移动硬盘上。之所以用rsync，是因为我在备份的时候还能看看网页什么的。等第一次备份完成，关闭所有X程序，退出shell这个用户的所有进程，然后再次执行rsync，就可以保证同步。同步完成后，注销/etc/fstab下面的/home和swap项目，重启。
-系统启动后，先登入root用户，因为此时/home已经恢复到了/下面，所有shell用户的home路径不存在。建立/home/shell目录，并且复制/etc/skel配置，修改owner后，shell就可以登入了。当然，此时是系统默认环境，并没有定制化。没有关系，我们只需要terminal。在terminal中执行gparted，会出现图形的分区管理工具。当然，理论上说，如果你够熟悉，使用fdisk完成全部操作也是可以的，这免除了初始化shell用户和登入图形界面的麻烦。删除原先的/home所在分区和swap所在分区，切割一个ntfs分区用于将来安装windows(回头可以打游戏)，剩余的全部切割，而后开启lvm标记。当然，这一步贝壳当时不知道，而是创立了一个未知分区，再用fdisk调整分区类型为8E。而后系统会提示你，不能保证内核数据结构更新，需要执行kpartx
-/dev/sda。无论如何，此时我们已经有了一个lvm分区。
-lvm的结构是pv -&amp;gt; pg -&amp;gt; lv，也就是物理卷-&amp;gt;物理组-&amp;gt;逻辑卷。物理的各个分区首先被组织成物理组，再被划分为逻辑卷。这样设计是因为可能有多个磁盘上的空间，被划分为多个逻辑卷。在不改变逻辑的情况下，lvm的默认组织构型是raid0的。不过这对我不是个问题，我只有一个磁盘。
-首先创建pv，使用命令pvcreate，没什么好多说的。然后是产生vg，使用vgcreate main /dev/sda7，之所以需要main，是因为需要一个vg命名。而后我们需要从这个vg中创建出一个lv来，执行指令lvcreate -L150G -nhome main，设定lv的名字叫做main-home，大小150G。此时在/dev/mapper/main-home，就产生了一个设备文件，大小150G，可以当作/dev/sda1之类的设备一样使用。不过，这个设备没有经过任何格式化过程，所以还需要mkfs.ext3 /dev/mapper/main-home。在这个指令后，我很习惯的跟了一个tune2fs -c 0 /dev/mapper/main-home来关闭重启检测。使用blkid，发现这个设备已经成功创立，并且有了ID。把UUID复制进（这时就知道X的好处了，console下面比较绕路）/etc/fstab，并且修改刚刚被注释掉的/home一行，更改UUID和分区格式。贝壳当时光记得复制，忘记改分区格式，导致系统进不去。不过也不困难，修改/etc/fstab后mount -a一下就可以了。
-此时我们已经建立了有效的逻辑卷，并且正确配置。下面要创建一个交换分区，并且挂上去。废话不多说，lvcreate -L6G -nswap main，mkswap /dev/mapper/main-swap。而后一样blkid和vi /etc/fstab。系统就基本配置好了。验证一下看看。
-shell-deb:\~\# pvs PV VG Fmt Attr PSize PFree /dev/sda7 main lvm2 a- 229.19g 73.19g shell-deb:\~\# lvs LV VG Attr LSize Origin Snap% Move Log Copy% Convert home main -wi-ao 150.00g swap main -wi-ao 6.00g 而后就是新系统的启用过程，首先要退出X，注销shell用户的所有进程，然后以root删除/home下的所有数据。如果不删除的话，重启后，这里的数据无法访问，变成垃圾。而后重启，就可以看到正确结果了。不过还不要着急登入shell。首先执行rsync -av /mnt/mdisk/sync/home /home，将备份同步回去。这样我们登入shell的时候就可以看到有效的定制化界面了。另外一点细节是，mdisk使用了ntfs格式，所以导致数据恢复后属性混乱。使用find . -type d -exec chmod 755 {} ;和find .</description>
+      <description>&lt;p&gt;上篇btrfs会导致虚拟机慢死的blog都看到了吧？看到了就不多解释。&lt;/p&gt;&#xA;&lt;p&gt;首先，删除掉cache数据，还有冗余数据，使得数据可备份化。然后执行&lt;code&gt;rsync -av /home /mnt/mdisk/sync&lt;/code&gt;，将数据同步到备份的移动硬盘上。之所以用rsync，是因为我在备份的时候还能看看网页什么的。等第一次备份完成，关闭所有X程序，退出shell这个用户的所有进程，然后再次执行rsync，就可以保证同步。同步完成后，注销/etc/fstab下面的/home和swap项目，重启。&lt;/p&gt;&#xA;&lt;p&gt;系统启动后，先登入root用户，因为此时/home已经恢复到了/下面，所有shell用户的home路径不存在。建立/home/shell目录，并且复制/etc/skel配置，修改owner后，shell就可以登入了。当然，此时是系统默认环境，并没有定制化。没有关系，我们只需要terminal。在terminal中执行gparted，会出现图形的分区管理工具。当然，理论上说，如果你够熟悉，使用fdisk完成全部操作也是可以的，这免除了初始化shell用户和登入图形界面的麻烦。删除原先的/home所在分区和swap所在分区，切割一个ntfs分区用于将来安装windows(回头可以打游戏)，剩余的全部切割，而后开启lvm标记。当然，这一步贝壳当时不知道，而是创立了一个未知分区，再用fdisk调整分区类型为8E。而后系统会提示你，不能保证内核数据结构更新，需要执行kpartx&lt;/p&gt;&#xA;&lt;p&gt;/dev/sda。无论如何，此时我们已经有了一个lvm分区。&lt;/p&gt;&#xA;&lt;p&gt;lvm的结构是pv -&amp;gt; pg -&amp;gt; lv，也就是物理卷-&amp;gt;物理组-&amp;gt;逻辑卷。物理的各个分区首先被组织成物理组，再被划分为逻辑卷。这样设计是因为可能有多个磁盘上的空间，被划分为多个逻辑卷。在不改变逻辑的情况下，lvm的默认组织构型是raid0的。不过这对我不是个问题，我只有一个磁盘。&lt;/p&gt;&#xA;&lt;p&gt;首先创建pv，使用命令pvcreate，没什么好多说的。然后是产生vg，使用&lt;code&gt;vgcreate main /dev/sda7&lt;/code&gt;，之所以需要main，是因为需要一个vg命名。而后我们需要从这个vg中创建出一个lv来，执行指令&lt;code&gt;lvcreate -L150G -nhome main&lt;/code&gt;，设定lv的名字叫做main-home，大小150G。此时在/dev/mapper/main-home，就产生了一个设备文件，大小150G，可以当作/dev/sda1之类的设备一样使用。不过，这个设备没有经过任何格式化过程，所以还需要&lt;code&gt;mkfs.ext3 /dev/mapper/main-home&lt;/code&gt;。在这个指令后，我很习惯的跟了一个&lt;code&gt;tune2fs -c 0 /dev/mapper/main-home&lt;/code&gt;来关闭重启检测。使用blkid，发现这个设备已经成功创立，并且有了ID。把UUID复制进（这时就知道X的好处了，console下面比较绕路）/etc/fstab，并且修改刚刚被注释掉的/home一行，更改UUID和分区格式。贝壳当时光记得复制，忘记改分区格式，导致系统进不去。不过也不困难，修改/etc/fstab后&lt;code&gt;mount -a&lt;/code&gt;一下就可以了。&lt;/p&gt;&#xA;&lt;p&gt;此时我们已经建立了有效的逻辑卷，并且正确配置。下面要创建一个交换分区，并且挂上去。废话不多说，&lt;code&gt;lvcreate -L6G -nswap main&lt;/code&gt;，&lt;code&gt;mkswap /dev/mapper/main-swap&lt;/code&gt;。而后一样blkid和&lt;code&gt;vi /etc/fstab&lt;/code&gt;。系统就基本配置好了。验证一下看看。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;shell-deb:\~\# pvs&#xA;PV VG Fmt Attr PSize PFree&#xA;/dev/sda7 main lvm2 a- 229.19g 73.19g&#xA;shell-deb:\~\# lvs&#xA;LV VG Attr LSize Origin Snap% Move Log Copy% Convert&#xA;home main -wi-ao 150.00g&#xA;swap main -wi-ao 6.00g&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;而后就是新系统的启用过程，首先要退出X，注销shell用户的所有进程，然后以root删除/home下的所有数据。如果不删除的话，重启后，这里的数据无法访问，变成垃圾。而后重启，就可以看到正确结果了。不过还不要着急登入shell。首先执行&lt;code&gt;rsync -av /mnt/mdisk/sync/home /home&lt;/code&gt;，将备份同步回去。这样我们登入shell的时候就可以看到有效的定制化界面了。另外一点细节是，mdisk使用了ntfs格式，所以导致数据恢复后属性混乱。使用&lt;code&gt;find . -type d -exec chmod 755 {} ;&lt;/code&gt;和&lt;code&gt;find . -type f -exec chmod 644 {};&lt;/code&gt;可以恢复大部分，少部分例如~/.ssh/authorized_keys和~/.gnupg需要手工调整。&lt;/p&gt;</description>
     </item>
-    
   </channel>
 </rss>

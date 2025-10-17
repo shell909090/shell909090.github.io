@@ -1,21 +1,20 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>subversion on Shell&#39;s Home</title>
+    <title>Subversion on Shell&#39;s Home</title>
     <link>//blog.shell909090.org/tags/subversion/</link>
-    <description>Recent content in subversion on Shell&#39;s Home</description>
-    <generator>Hugo -- gohugo.io</generator>
+    <description>Recent content in Subversion on Shell&#39;s Home</description>
+    <generator>Hugo</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Fri, 02 Apr 2010 03:40:00 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/subversion/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 02 Apr 2010 03:40:00 +0800</lastBuildDate>
+    <atom:link href="//blog.shell909090.org/tags/subversion/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>以nginx作为subversion前端的一些细节</title>
       <link>//blog.shell909090.org/blog/archives/108/</link>
       <pubDate>Fri, 02 Apr 2010 03:40:00 +0800</pubDate>
-      
       <guid>//blog.shell909090.org/blog/archives/108/</guid>
-      <description>本文系电脑资料，同步到blog上。小黄姐姐不必看了，可以帮我留个言。 nginx性能不错，可惜不支持WebDAV，因此没法拿来作为subversion的http服务。于是考虑开一个nginx作为前端，后端就跑一个apache来作为容器。配置这么写的(节选)： =========/etc/nginx/sites-enabled/default========= server { listen 443; server_name OOXX ssl on; ssl_certificate keys/server.crt; ssl_certificate_key keys/server.key; ssl_session_timeout 5m; ssl_protocols SSLv2 SSLv3 TLSv1; ssl_ciphers ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP; ssl_prefer_server_ciphers on; access_log /var/log/nginx/localhost.access.log; include /etc/nginx/mapping-ssl; error_page 500 502 503 504 /50x.html; location = /50x.html { root /var/www/nginx-default; } } 打开了一个https的服务，这是当然的，svn传输的数据使用http很危险。 ===========/etc/nginx/mapping-ssl============= location ^~ /svn { proxy_set_header Destination $http_destination; proxy_pass http://apache_svr; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-Host $host; proxy_set_header X-Forwarded-Proto https; proxy_set_header X-Forwarded-Server $host; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; } 将/svn下面的所有请求交给apache2。 =====/etc/apache2/mods-enabled/dav_svn.</description>
+      <description>&lt;h1 id=&#34;location--50xhtml--root-varwwwnginx-default--&#34;&gt;本文系电脑资料，同步到blog上。小黄姐姐不必看了，可以帮我留个言。&#xA;nginx性能不错，可惜不支持WebDAV，因此没法拿来作为subversion的http服务。于是考虑开一个nginx作为前端，后端就跑一个apache来作为容器。配置这么写的(节选)：&#xA;=========/etc/nginx/sites-enabled/default========= server { listen  &#xA;443; server_name  OOXX ssl  on; ssl_certificate  keys/server.crt;&#xA;ssl_certificate_key  keys/server.key; ssl_session_timeout  5m;&#xA;ssl_protocols  SSLv2 SSLv3 TLSv1; ssl_ciphers &#xA;ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP;&#xA;ssl_prefer_server_ciphers   on; access_log &#xA;/var/log/nginx/localhost.access.log; include            &#xA;/etc/nginx/mapping-ssl; error_page   500 502 503 504  /50x.html;&#xA;location = /50x.html { root   /var/www/nginx-default; } }&lt;/h1&gt;&#xA;&lt;h1 id=&#34;proxy_add_x_forwarded_for-&#34;&gt;打开了一个https的服务，这是当然的，svn传输的数据使用http很危险。&#xA;===========/etc/nginx/mapping-ssl============= location ^~ /svn {&#xA;proxy_set_header    Destination $http_destination;&#xA;proxy_pass          &lt;a href=&#34;http://apache_svr&#34;&gt;http://apache_svr&lt;/a&gt;; proxy_set_header   &#xA;Host            $host; proxy_set_header    X-Real-IP      &#xA;$remote_addr; proxy_set_header    X-Forwarded-Host $host;&#xA;proxy_set_header    X-Forwarded-Proto https; proxy_set_header   &#xA;X-Forwarded-Server $host; proxy_set_header    X-Forwarded-For&#xA;$proxy_add_x_forwarded_for; }&lt;/h1&gt;&#xA;&lt;h1 id=&#34;varwebsvnmainconfauthz-location&#34;&gt;将/svn下面的所有请求交给apache2。&#xA;=====/etc/apache2/mods-enabled/dav_svn.conf===== &amp;lt;Location&#xA;/svn/main&amp;gt; DAV svn SVNPath /var/web/svn/main AuthType Basic AuthName&#xA;&amp;ldquo;Subversion Repository&amp;rdquo; Require valid-user AuthUserFile&#xA;/var/web/svn/main/conf/passwd AuthzSVNAccessFile&#xA;/var/web/svn/main/conf/authz &amp;lt;/Location&amp;gt;&lt;/h1&gt;&#xA;&lt;h1 id=&#34;svn154-r33841tortoisesvn-15514361-neon0283&#34;&gt;看起来很美，但是在使用中会发生502错误，原因是来自文件移动后，svn会使用COPY作为Verb去请求服务器端，这时候发生了这样一条日志：&#xA;==========/var/log/apache2/access.log========== 127.0.0.1 - {user}&#xA;[02/Apr/2010:11:07:31 +0800] &amp;ldquo;COPY {path} HTTP/1.0&amp;rdquo; 502 546 &amp;ldquo;-&amp;rdquo;&#xA;&amp;ldquo;SVN/1.5.4 (r33841)/TortoiseSVN-1.5.5.14361 neon/0.28.3&amp;rdquo;&lt;/h1&gt;&#xA;&lt;p&gt;搜索了一下，这是因为使用https作为http服务的前端造成的，这里(&lt;a href=&#34;https://secure.bonkabonka.com/blog/2008/01/04/nginx_fronting_for_subversion.html)&#34;&gt;https://secure.bonkabonka.com/blog/2008/01/04/nginx_fronting_for_subversion.html)&lt;/a&gt;提到了解决方案，而它又引用了另一个网页(&lt;a href=&#34;http://silmor.de/49)&#34;&gt;http://silmor.de/49)&lt;/a&gt;解释细节。不幸的是，这个细节是错误的。关键在于这句上&#xA;LoadModule headers_module /usr/lib/apache2/modules/mod_headers_too.so&#xA;仔细看一下就会发现，mod_headers_too应当是mod_headers。在debian下，应当执行这几条指令。&#xA;cd /etc/apache2/mods-enabled ln -s ../mods-available/headers.load&#xA;headers.load 然后，在/etc/apache2/httpd.conf中写入以下内容：&#xA;RequestHeader edit Destination ^https http early 问题解决，Q.E.D。&lt;/p&gt;</description>
     </item>
-    
   </channel>
 </rss>

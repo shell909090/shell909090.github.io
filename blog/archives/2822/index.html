@@ -4,27 +4,32 @@
     <title>一个有趣的问题 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="一个有趣的问题"/>
-<meta name="twitter:description" content="前面给公司出了一个有趣的问题，似乎没采用。所以现在放出来大家看着玩玩。
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="一个有趣的问题">
+  <meta name="twitter:description" content="前面给公司出了一个有趣的问题，似乎没采用。所以现在放出来大家看着玩玩。
 以下代码在python2中适用。python3请看尾部注释。
 import os, time data = range(10000000) pid = os.fork() if pid &lt; 0: print &#39;error:&#39;, pid os.exit(pid) if pid &gt; 0: os.wait() os.exit(0) sum(data) 在第2行执行的前后，使用ps和free观察内存使用情况，可以看到进程使用了320M内存，系统被占用了320M内存。在3行执行后再观察，有两个进程分别占用320M内存，系统总计被占用了320M内存。 问1，为什么两个进程分别占用320M左右内存，系统总计占用数并没有翻倍？这种现象叫做什么？
 在10行执行后再观察，有两个进程分别占用320M内存，系统总计被占用了560M内存。 问2，为什么sum增加了系统内存占用，解释其开销。
@@ -33,10 +38,12 @@ import os, time data = range(10000000) pid = os.fork() if pid &lt; 0: print &#39
 答2. 每个进程的内存占用都没有上升，但总内存占用量上升了，这必然是发生了页面写时复制的结果。页面写时复制必须写入内存，因此推测python使用引用计数 手段控制对象生命周期。当sum时，每个对象都要被读取。在读取前，系统会增加其引用计数。在这个过程中会发生页面写时复制，导致系统内存占用上升。
 注：内存复制必须发生在写时刻，说读取导致内存复制的统统不得分。答出引用计数四个字即可得全分。
 答3. 在写时复制时，数字对象会增加引用计数，而数组对象不会（准确的说，数组对象本身引用计数会增加，但只有一页会发生复制）。发生复制增加的内存有 240M，因此整数对象长度24字节。未倍增内存有80M。对象有10M个。因此推断指针长度为8字节，当前CPU字长64位。
-注：python3里有几个不同。首先，range返回了一个生成器，所以需要改为data = list(range(10000000))。其次，python3中，int长度为28，pointer长度为9。因此下面的数据会需要调整，而且并不很容易解释。"/>
+注：python3里有几个不同。首先，range返回了一个生成器，所以需要改为data = list(range(10000000))。其次，python3中，int长度为28，pointer长度为9。因此下面的数据会需要调整，而且并不很容易解释。">
 
-    <meta property="og:title" content="一个有趣的问题" />
-<meta property="og:description" content="前面给公司出了一个有趣的问题，似乎没采用。所以现在放出来大家看着玩玩。
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/2822/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="一个有趣的问题">
+  <meta property="og:description" content="前面给公司出了一个有趣的问题，似乎没采用。所以现在放出来大家看着玩玩。
 以下代码在python2中适用。python3请看尾部注释。
 import os, time data = range(10000000) pid = os.fork() if pid &lt; 0: print &#39;error:&#39;, pid os.exit(pid) if pid &gt; 0: os.wait() os.exit(0) sum(data) 在第2行执行的前后，使用ps和free观察内存使用情况，可以看到进程使用了320M内存，系统被占用了320M内存。在3行执行后再观察，有两个进程分别占用320M内存，系统总计被占用了320M内存。 问1，为什么两个进程分别占用320M左右内存，系统总计占用数并没有翻倍？这种现象叫做什么？
 在10行执行后再观察，有两个进程分别占用320M内存，系统总计被占用了560M内存。 问2，为什么sum增加了系统内存占用，解释其开销。
@@ -45,11 +52,12 @@ import os, time data = range(10000000) pid = os.fork() if pid &lt; 0: print &#39
 答2. 每个进程的内存占用都没有上升，但总内存占用量上升了，这必然是发生了页面写时复制的结果。页面写时复制必须写入内存，因此推测python使用引用计数 手段控制对象生命周期。当sum时，每个对象都要被读取。在读取前，系统会增加其引用计数。在这个过程中会发生页面写时复制，导致系统内存占用上升。
 注：内存复制必须发生在写时刻，说读取导致内存复制的统统不得分。答出引用计数四个字即可得全分。
 答3. 在写时复制时，数字对象会增加引用计数，而数组对象不会（准确的说，数组对象本身引用计数会增加，但只有一页会发生复制）。发生复制增加的内存有 240M，因此整数对象长度24字节。未倍增内存有80M。对象有10M个。因此推断指针长度为8字节，当前CPU字长64位。
-注：python3里有几个不同。首先，range返回了一个生成器，所以需要改为data = list(range(10000000))。其次，python3中，int长度为28，pointer长度为9。因此下面的数据会需要调整，而且并不很容易解释。" />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2822/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2016-02-25T00:00:00+00:00" />
-<meta property="article:modified_time" content="2016-02-25T00:00:00+00:00" />
+注：python3里有几个不同。首先，range返回了一个生成器，所以需要改为data = list(range(10000000))。其次，python3中，int长度为28，pointer长度为9。因此下面的数据会需要调整，而且并不很容易解释。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2016-02-25T00:00:00+00:00">
+    <meta property="article:modified_time" content="2016-02-25T00:00:00+00:00">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -86,7 +94,7 @@ import os, time data = range(10000000) pid = os.fork() if pid &lt; 0: print &#39
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -98,17 +106,11 @@ import os, time data = range(10000000) pid = os.fork() if pid &lt; 0: print &#39
       <h1 class ="post-title">一个有趣的问题</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Feb 25, 2016
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
       </div>
@@ -143,7 +145,24 @@ write。在fork后，两个进程会共享内存表项，一致的部分会仅�
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

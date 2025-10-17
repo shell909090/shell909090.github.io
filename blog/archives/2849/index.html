@@ -4,27 +4,32 @@
     <title>模拟网络丢包延迟和TC的使用 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="模拟网络丢包延迟和TC的使用"/>
-<meta name="twitter:description" content="iptables方案 这个方案纯基于iptables，不需要内核模块，对容器更加友好一些。
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="模拟网络丢包延迟和TC的使用">
+  <meta name="twitter:description" content="iptables方案 这个方案纯基于iptables，不需要内核模块，对容器更加友好一些。
 iptables -A OUTPUT -d xx.xx.xx.xx -m statistic --mode random --probability 0.1 -j DROP 但是这个方案有个副作用。ping的时候，能看到错误“不允许的操作”。
 tc方案 tc方案相对比较复杂。我们先不说这些复杂的事情，先说结果。
 tc qd add dev wlan0 root netem delay 100ms tc qd change dev wlan0 root netem loss 50% 一个是延迟一个是丢包，一个是设定一个是修改。netem还允许你做乱序和重复。方法就不细写了。删除是这么干。
@@ -32,10 +37,12 @@ tc qd del dev wlan0 root netem 你再用tc qd show看看是不是规则已经没
 tc简述 tc是linux下面用来控制网络发包（注意是发包）的一套系统。基本的设计目标是确定优先级，限流，也有测试性的丢包之类的策略。可以配合iptables和route协同工作。
 基本原理 包从进入tc开始，分为多个qd(qdisc)。每个qd可以包含多个子qd，qd彼此连接形成一颗树。每个qd上可以附加filter，选择进入哪个child。如果都没命中，那就看本身规则。
 我们先从最简单的例子开始。将root qd改为prio。
-sudo tc qdisc add dev eth0 root handle 1: prio 使用tc qd show查看变化。完成后使用sudo tc qdisc del dev eth root删除变化，还原为默认的pfifo_fast。"/>
+sudo tc qdisc add dev eth0 root handle 1: prio 使用tc qd show查看变化。完成后使用sudo tc qdisc del dev eth root删除变化，还原为默认的pfifo_fast。">
 
-    <meta property="og:title" content="模拟网络丢包延迟和TC的使用" />
-<meta property="og:description" content="iptables方案 这个方案纯基于iptables，不需要内核模块，对容器更加友好一些。
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/2849/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="模拟网络丢包延迟和TC的使用">
+  <meta property="og:description" content="iptables方案 这个方案纯基于iptables，不需要内核模块，对容器更加友好一些。
 iptables -A OUTPUT -d xx.xx.xx.xx -m statistic --mode random --probability 0.1 -j DROP 但是这个方案有个副作用。ping的时候，能看到错误“不允许的操作”。
 tc方案 tc方案相对比较复杂。我们先不说这些复杂的事情，先说结果。
 tc qd add dev wlan0 root netem delay 100ms tc qd change dev wlan0 root netem loss 50% 一个是延迟一个是丢包，一个是设定一个是修改。netem还允许你做乱序和重复。方法就不细写了。删除是这么干。
@@ -43,11 +50,12 @@ tc qd del dev wlan0 root netem 你再用tc qd show看看是不是规则已经没
 tc简述 tc是linux下面用来控制网络发包（注意是发包）的一套系统。基本的设计目标是确定优先级，限流，也有测试性的丢包之类的策略。可以配合iptables和route协同工作。
 基本原理 包从进入tc开始，分为多个qd(qdisc)。每个qd可以包含多个子qd，qd彼此连接形成一颗树。每个qd上可以附加filter，选择进入哪个child。如果都没命中，那就看本身规则。
 我们先从最简单的例子开始。将root qd改为prio。
-sudo tc qdisc add dev eth0 root handle 1: prio 使用tc qd show查看变化。完成后使用sudo tc qdisc del dev eth root删除变化，还原为默认的pfifo_fast。" />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2849/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2017-03-02T12:55:37+08:00" />
-<meta property="article:modified_time" content="2017-03-02T12:55:37+08:00" />
+sudo tc qdisc add dev eth0 root handle 1: prio 使用tc qd show查看变化。完成后使用sudo tc qdisc del dev eth root删除变化，还原为默认的pfifo_fast。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2017-03-02T12:55:37+08:00">
+    <meta property="article:modified_time" content="2017-03-02T12:55:37+08:00">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -84,7 +92,7 @@ sudo tc qdisc add dev eth0 root handle 1: prio 使用tc qd show查看变化。�
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -96,17 +104,11 @@ sudo tc qdisc add dev eth0 root handle 1: prio 使用tc qd show查看变化。�
       <h1 class ="post-title">模拟网络丢包延迟和TC的使用</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Mar 2, 2017
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           4 min read
         </div>
       </div>
@@ -216,7 +218,24 @@ sudo tc qdisc del dev eth0 root
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

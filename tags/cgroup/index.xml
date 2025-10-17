@@ -1,40 +1,27 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>cgroup on Shell&#39;s Home</title>
+    <title>Cgroup on Shell&#39;s Home</title>
     <link>//blog.shell909090.org/tags/cgroup/</link>
-    <description>Recent content in cgroup on Shell&#39;s Home</description>
-    <generator>Hugo -- gohugo.io</generator>
+    <description>Recent content in Cgroup on Shell&#39;s Home</description>
+    <generator>Hugo</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Fri, 06 Jun 2014 14:34:45 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/cgroup/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 06 Jun 2014 14:34:45 +0800</lastBuildDate>
+    <atom:link href="//blog.shell909090.org/tags/cgroup/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>cgroup限定内存</title>
       <link>//blog.shell909090.org/blog/archives/2642/</link>
       <pubDate>Fri, 06 Jun 2014 14:34:45 +0800</pubDate>
-      
       <guid>//blog.shell909090.org/blog/archives/2642/</guid>
-      <description>机器配置 ubuntu 12.04
-内核版本：3.11.0-20-generic
-ulimit的限制效果 ulimit -m 8192 当内存突破8M时，什么事情都没有发生。直到38M都没任何反应。
-ulimit -v 65536 python抛出MemoryError
-cgroup的限制效果 echo 8388608 &amp;gt; memory.limit_in_bytes 大小不对，cgroup的内存量计算方法和ps/status不一致。因此限制计数需要根据具体情况调整。
-内核计数 /proc/[pid]/statm size (1) total program size (same as VmSize in /proc/[pid]/status) resident (2) resident set size (same as VmRSS in /proc/[pid]/status) share (3) shared pages (i.e., backed by a file) text (4) text (code) lib (5) library (unused in Linux 2.6) data (6) data + stack dt (7) dirty pages (unused in Linux 2.</description>
+      <description>&lt;h1 id=&#34;机器配置&#34;&gt;机器配置&lt;/h1&gt;&#xA;&lt;p&gt;ubuntu 12.04&lt;/p&gt;&#xA;&lt;p&gt;内核版本：3.11.0-20-generic&lt;/p&gt;&#xA;&lt;h1 id=&#34;ulimit的限制效果&#34;&gt;ulimit的限制效果&lt;/h1&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;&#xA;&lt;p&gt;ulimit -m 8192&#xA;当内存突破8M时，什么事情都没有发生。直到38M都没任何反应。&lt;/p&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;&#xA;&lt;p&gt;ulimit -v 65536 python抛出MemoryError&lt;/p&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h1 id=&#34;cgroup的限制效果&#34;&gt;cgroup的限制效果&lt;/h1&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;echo 8388608 &amp;gt; memory.limit_in_bytes&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;p&gt;大小不对，cgroup的内存量计算方法和ps/status不一致。因此限制计数需要根据具体情况调整。&lt;/p&gt;&#xA;&lt;h1 id=&#34;内核计数&#34;&gt;内核计数&lt;/h1&gt;&#xA;&lt;h2 id=&#34;procpidstatm&#34;&gt;/proc/[pid]/statm&lt;/h2&gt;&#xA;&lt;pre&gt;&lt;code&gt;size       (1) total program size&#xA;(same as VmSize in /proc/[pid]/status)&#xA;resident   (2) resident set size&#xA;(same as VmRSS in /proc/[pid]/status)&#xA;share      (3) shared pages (i.e., backed by a file)&#xA;text       (4) text (code)&#xA;lib        (5) library (unused in Linux 2.6)&#xA;data       (6) data + stack&#xA;dt         (7) dirty pages (unused in Linux 2.6)&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;h2 id=&#34;procpidstatus&#34;&gt;/proc/[pid]/status&lt;/h2&gt;&#xA;&lt;p&gt;statm的size和resident分别乘以pagesize等于VmSize和VmRSS。&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>利用cgroups隔离多个进程资源消耗的尝试</title>
       <link>//blog.shell909090.org/blog/archives/2561/</link>
       <pubDate>Wed, 19 Feb 2014 10:14:23 +0800</pubDate>
-      
       <guid>//blog.shell909090.org/blog/archives/2561/</guid>
-      <description>setup Add to /etc/fstab.
-cgroup /sys/fs/cgroup cgroup defaults 0 2 Then sudo mount -a.
-Change directory to /sys/fs/cgroup/. Use mkdir to create a new group, and initalize it like those.
-echo 0-3 &amp;gt;&amp;gt; cpuset.cpus echo 0 &amp;gt; cpuset.mems Without those two step, next operator will failure.
-echo 0 &amp;gt; memory.swappiness echo 52428800 &amp;gt; memory.limit_in_bytes Set memory limit 50M, and forbidden swap.
-python test code import os, sys, time, random, string def main(): l = [] random.</description>
+      <description>&lt;h1 id=&#34;setup&#34;&gt;setup&lt;/h1&gt;&#xA;&lt;p&gt;Add to /etc/fstab.&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;cgroup                  /sys/fs/cgroup  cgroup  defaults        0       2&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;Then &lt;code&gt;sudo mount -a&lt;/code&gt;.&lt;/p&gt;&#xA;&lt;p&gt;Change directory to /sys/fs/cgroup/. Use mkdir to create a new group,&#xA;and initalize it like those.&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;echo 0-3 &amp;gt;&amp;gt; cpuset.cpus&#xA;echo 0 &amp;gt; cpuset.mems&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;Without those two step, next operator will failure.&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;echo 0 &amp;gt; memory.swappiness&#xA;echo 52428800 &amp;gt; memory.limit_in_bytes&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;Set memory limit 50M, and forbidden swap.&lt;/p&gt;&#xA;&lt;h1 id=&#34;python-test-code&#34;&gt;python test code&lt;/h1&gt;&#xA;&lt;pre&gt;&lt;code&gt;import os, sys, time, random, string&#xA;def main():&#xA;    l = []&#xA;    random.seed()&#xA;    raw_input()&#xA;    for i in xrange(1000000):&#xA;        for j in xrange(1000):&#xA;            t = list(string.letters)&#xA;            random.shuffle(t)&#xA;            s = &#39;&#39;.join(t)&#xA;            l.append(s)&#xA;        time.sleep(0.01)&#xA;&#xA;if __name__ == &#39;__main__&#39;: main()&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;Finally, it triggered OOM.&lt;/p&gt;</description>
     </item>
-    
   </channel>
 </rss>

@@ -4,27 +4,32 @@
     <title>docker的原理和类比 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="docker的原理和类比"/>
-<meta name="twitter:description" content="从虚拟化的种类和层级说起 cpu虚拟化：可以模拟不同CPU，例如bochs 完全虚拟化：只能模拟同样CPU，但是可以执行不同系统，例如vmware 半虚拟化：guest必须打补丁，例如Xen 硬件虚拟化：可以当作获得硬件加速的完全虚拟化 系统虚拟化：host和guest共享一样的内核，例如Openvz 语言沙盒：只能在语言的范围内使用 虚拟化的级别越偏底层，速度越慢，用户越难察觉到虚拟化的存在。 虚拟化的级别越偏上层，速度越快，用户越容易感知。
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="docker的原理和类比">
+  <meta name="twitter:description" content="从虚拟化的种类和层级说起 cpu虚拟化：可以模拟不同CPU，例如bochs 完全虚拟化：只能模拟同样CPU，但是可以执行不同系统，例如vmware 半虚拟化：guest必须打补丁，例如Xen 硬件虚拟化：可以当作获得硬件加速的完全虚拟化 系统虚拟化：host和guest共享一样的内核，例如Openvz 语言沙盒：只能在语言的范围内使用 虚拟化的级别越偏底层，速度越慢，用户越难察觉到虚拟化的存在。 虚拟化的级别越偏上层，速度越快，用户越容易感知。
 cpu虚拟化和完全虚拟化时，用户几乎可以不察觉到虚拟化的存在 半虚拟化时，guest内核必须存在补丁 系统虚拟化时，用户不能控制自己的内核 语言沙盒时，用户没有使用api的自由 docker的实现结构 docker lxc namespace: 仅沙盒隔离，不限制资源。 cgroup: 仅限制资源，不沙盒隔离。 aufs image管理 当然，还有很多细节的东西，里面就不一一列举了。例如veth。
 docker不是虚拟机 docker不是虚拟机，因为lxc已经是虚拟机。如果两者功能一样，那么docker就没有存在的必要。
 你可以把docker当虚拟机用，但是当虚拟机用的话，他的完备程度远远不及现在的种种虚拟机。相比之下，就会觉得很不好用。这不是docker的错，只能说被不正确的使用了。
@@ -41,10 +46,12 @@ vagrant 提到镜像管理，我们可以提一下同样属于镜像管理的一
 然而，在公司内部应用中，这一缺陷就变成了优势。企业的诸多系统，只要在同一个优先级，其可用性应当是一致的。几个联动系统中，一个资源不足陷于濒死的情况下，保持其他几个系统资源充足并无意义。而且总资源是否足够应当是得到充分保证的事情，企业自己“超售”自己的资源，使得业务系统陷入运行缓慢的境地一点意义都没有。
 因此，系统虚拟化可以为企业级云计算提供可以灵活调度的资源，和非常低的额外开销。
 当然，云计算在企业化中原本就面临一些问题。原本提供软-硬件统一解决方案的集成商，需要如何重新组织解决方案。如何协调节约资源和高性能，高可用。云计算在企业级应用中还有很长的路要走。
-短板 太新。目前成功案例还是不足，而且围绕docker的工具链还不完备。 适用范围比较窄。需求需要集中在“环境迁移”领域，而且image本身不应被写入。 生不逢时。rvm和virtualenv已经在前面了。 "/>
+短板 太新。目前成功案例还是不足，而且围绕docker的工具链还不完备。 适用范围比较窄。需求需要集中在“环境迁移”领域，而且image本身不应被写入。 生不逢时。rvm和virtualenv已经在前面了。">
 
-    <meta property="og:title" content="docker的原理和类比" />
-<meta property="og:description" content="从虚拟化的种类和层级说起 cpu虚拟化：可以模拟不同CPU，例如bochs 完全虚拟化：只能模拟同样CPU，但是可以执行不同系统，例如vmware 半虚拟化：guest必须打补丁，例如Xen 硬件虚拟化：可以当作获得硬件加速的完全虚拟化 系统虚拟化：host和guest共享一样的内核，例如Openvz 语言沙盒：只能在语言的范围内使用 虚拟化的级别越偏底层，速度越慢，用户越难察觉到虚拟化的存在。 虚拟化的级别越偏上层，速度越快，用户越容易感知。
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/2650/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="docker的原理和类比">
+  <meta property="og:description" content="从虚拟化的种类和层级说起 cpu虚拟化：可以模拟不同CPU，例如bochs 完全虚拟化：只能模拟同样CPU，但是可以执行不同系统，例如vmware 半虚拟化：guest必须打补丁，例如Xen 硬件虚拟化：可以当作获得硬件加速的完全虚拟化 系统虚拟化：host和guest共享一样的内核，例如Openvz 语言沙盒：只能在语言的范围内使用 虚拟化的级别越偏底层，速度越慢，用户越难察觉到虚拟化的存在。 虚拟化的级别越偏上层，速度越快，用户越容易感知。
 cpu虚拟化和完全虚拟化时，用户几乎可以不察觉到虚拟化的存在 半虚拟化时，guest内核必须存在补丁 系统虚拟化时，用户不能控制自己的内核 语言沙盒时，用户没有使用api的自由 docker的实现结构 docker lxc namespace: 仅沙盒隔离，不限制资源。 cgroup: 仅限制资源，不沙盒隔离。 aufs image管理 当然，还有很多细节的东西，里面就不一一列举了。例如veth。
 docker不是虚拟机 docker不是虚拟机，因为lxc已经是虚拟机。如果两者功能一样，那么docker就没有存在的必要。
 你可以把docker当虚拟机用，但是当虚拟机用的话，他的完备程度远远不及现在的种种虚拟机。相比之下，就会觉得很不好用。这不是docker的错，只能说被不正确的使用了。
@@ -61,11 +68,15 @@ vagrant 提到镜像管理，我们可以提一下同样属于镜像管理的一
 然而，在公司内部应用中，这一缺陷就变成了优势。企业的诸多系统，只要在同一个优先级，其可用性应当是一致的。几个联动系统中，一个资源不足陷于濒死的情况下，保持其他几个系统资源充足并无意义。而且总资源是否足够应当是得到充分保证的事情，企业自己“超售”自己的资源，使得业务系统陷入运行缓慢的境地一点意义都没有。
 因此，系统虚拟化可以为企业级云计算提供可以灵活调度的资源，和非常低的额外开销。
 当然，云计算在企业化中原本就面临一些问题。原本提供软-硬件统一解决方案的集成商，需要如何重新组织解决方案。如何协调节约资源和高性能，高可用。云计算在企业级应用中还有很长的路要走。
-短板 太新。目前成功案例还是不足，而且围绕docker的工具链还不完备。 适用范围比较窄。需求需要集中在“环境迁移”领域，而且image本身不应被写入。 生不逢时。rvm和virtualenv已经在前面了。 " />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2650/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2014-06-30T12:32:08+08:00" />
-<meta property="article:modified_time" content="2014-06-30T12:32:08+08:00" />
+短板 太新。目前成功案例还是不足，而且围绕docker的工具链还不完备。 适用范围比较窄。需求需要集中在“环境迁移”领域，而且image本身不应被写入。 生不逢时。rvm和virtualenv已经在前面了。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2014-06-30T12:32:08+08:00">
+    <meta property="article:modified_time" content="2014-06-30T12:32:08+08:00">
+    <meta property="article:tag" content="Docker">
+    <meta property="article:tag" content="Linux">
+    <meta property="article:tag" content="Lxc">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -102,7 +113,7 @@ vagrant 提到镜像管理，我们可以提一下同样属于镜像管理的一
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -114,27 +125,18 @@ vagrant 提到镜像管理，我们可以提一下同样属于镜像管理的一
       <h1 class ="post-title">docker的原理和类比</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Jun 30, 2014
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/docker/">docker</a>
-              <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a>
-              <a class="tag" href="//blog.shell909090.org/tags/lxc/">lxc</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/docker/">Docker</a>
+              <a class="tag" href="/tags/linux/">Linux</a>
+              <a class="tag" href="/tags/lxc/">Lxc</a>
         </div>
       </div>
     </header>
@@ -215,7 +217,24 @@ vagrant 提到镜像管理，我们可以提一下同样属于镜像管理的一
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

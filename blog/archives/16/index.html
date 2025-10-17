@@ -4,42 +4,53 @@
     <title>反射的几个类型 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="反射的几个类型"/>
-<meta name="twitter:description" content="所谓反射，其实就是在运行时可以获得代码数据的技术，算是面对对象编程语言的专利。从这个意义上说，反射可以分为三个类型。
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="反射的几个类型">
+  <meta name="twitter:description" content="所谓反射，其实就是在运行时可以获得代码数据的技术，算是面对对象编程语言的专利。从这个意义上说，反射可以分为三个类型。
 头一类是RTTI，其实这根本不算反射，本质上只能说多态。RTTI是一种鉴别某个对象是否为某个类的派生实例的技术，在C&#43;&#43;中就有实现。简单的方法就是实现一个特定的虚函数，将当前对象所属的类虚函数表和所属父类的虚函数表一一返回。这样对比某个类的虚函数表，就可以知道是否为派生实例了。支持RTTI，程序才算真正支持了面对对象，而反射则是更高一层的技术。
-第二类就是在C#和Java中盛行的反射技术，这种技术的核心在于可以通过名称寻找到对象。例如，我们可以寻找到一个叫做abc的对象，枚举其中的成员和方法，并且执行调用，这才是反射最大的意义。当我们遇到不同的数据输入时，我们可以调用不同的方法来处理这个数据，并且这个过程是动态配置的。而在C&#43;&#43;中，我们无法通过编译器支持这个能力，必须手工的建立一个名称和一个对象的关联关系表，在合适的时候通过这个表，获得某个名称的函数入口指针。其实C#和Java中实现的方法和VM息息相关，他们的代码在目标文件中还保持着命名空间-类-对象的结构，Java还进一步的保留了源码(只是被翻译为了更快的P代码)，而C#只保留了IL代码。这样VM在执行的时候自然可以很轻松的找到对应的函数，并且获得函数签名。而C类语言的特征是汇编时代的&quot;符号链接&quot;方式，编译的时候保有符号，完成链接就没了。
+第二类就是在C#和Java中盛行的反射技术，这种技术的核心在于可以通过名称寻找到对象。例如，我们可以寻找到一个叫做abc的对象，枚举其中的成员和方法，并且执行调用，这才是反射最大的意义。当我们遇到不同的数据输入时，我们可以调用不同的方法来处理这个数据，并且这个过程是动态配置的。而在C&#43;&#43;中，我们无法通过编译器支持这个能力，必须手工的建立一个名称和一个对象的关联关系表，在合适的时候通过这个表，获得某个名称的函数入口指针。其实C#和Java中实现的方法和VM息息相关，他们的代码在目标文件中还保持着命名空间-类-对象的结构，Java还进一步的保留了源码(只是被翻译为了更快的P代码)，而C#只保留了IL代码。这样VM在执行的时候自然可以很轻松的找到对应的函数，并且获得函数签名。而C类语言的特征是汇编时代的&#34;符号链接&#34;方式，编译的时候保有符号，完成链接就没了。
 中间插一句，其实我们完全可以写一个只支持高阶语言的系统。这样的系统未必高效，可一定方便阿。
-最后一种则是python中的系统，当用户调用一个类中的函数的时候，使用一个专门的函数来决定调用哪个。因此当对付SOAP这种东西的时候，python可以直接上。而C#，Java，C&#43;&#43;都要通过工具生成代理方法。再用代理方法去调用公共函数库，实现调用。因为python直接将调用定向到了一个统一的函数上，所以压根不需要这步。不过这步的代价是严重的性能问题，因为每次函数调用都要去检查调用目标。python是纯脚本语言，占了这点便宜，所以才能这么干。"/>
+最后一种则是python中的系统，当用户调用一个类中的函数的时候，使用一个专门的函数来决定调用哪个。因此当对付SOAP这种东西的时候，python可以直接上。而C#，Java，C&#43;&#43;都要通过工具生成代理方法。再用代理方法去调用公共函数库，实现调用。因为python直接将调用定向到了一个统一的函数上，所以压根不需要这步。不过这步的代价是严重的性能问题，因为每次函数调用都要去检查调用目标。python是纯脚本语言，占了这点便宜，所以才能这么干。">
 
-    <meta property="og:title" content="反射的几个类型" />
-<meta property="og:description" content="所谓反射，其实就是在运行时可以获得代码数据的技术，算是面对对象编程语言的专利。从这个意义上说，反射可以分为三个类型。
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/16/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="反射的几个类型">
+  <meta property="og:description" content="所谓反射，其实就是在运行时可以获得代码数据的技术，算是面对对象编程语言的专利。从这个意义上说，反射可以分为三个类型。
 头一类是RTTI，其实这根本不算反射，本质上只能说多态。RTTI是一种鉴别某个对象是否为某个类的派生实例的技术，在C&#43;&#43;中就有实现。简单的方法就是实现一个特定的虚函数，将当前对象所属的类虚函数表和所属父类的虚函数表一一返回。这样对比某个类的虚函数表，就可以知道是否为派生实例了。支持RTTI，程序才算真正支持了面对对象，而反射则是更高一层的技术。
-第二类就是在C#和Java中盛行的反射技术，这种技术的核心在于可以通过名称寻找到对象。例如，我们可以寻找到一个叫做abc的对象，枚举其中的成员和方法，并且执行调用，这才是反射最大的意义。当我们遇到不同的数据输入时，我们可以调用不同的方法来处理这个数据，并且这个过程是动态配置的。而在C&#43;&#43;中，我们无法通过编译器支持这个能力，必须手工的建立一个名称和一个对象的关联关系表，在合适的时候通过这个表，获得某个名称的函数入口指针。其实C#和Java中实现的方法和VM息息相关，他们的代码在目标文件中还保持着命名空间-类-对象的结构，Java还进一步的保留了源码(只是被翻译为了更快的P代码)，而C#只保留了IL代码。这样VM在执行的时候自然可以很轻松的找到对应的函数，并且获得函数签名。而C类语言的特征是汇编时代的&quot;符号链接&quot;方式，编译的时候保有符号，完成链接就没了。
+第二类就是在C#和Java中盛行的反射技术，这种技术的核心在于可以通过名称寻找到对象。例如，我们可以寻找到一个叫做abc的对象，枚举其中的成员和方法，并且执行调用，这才是反射最大的意义。当我们遇到不同的数据输入时，我们可以调用不同的方法来处理这个数据，并且这个过程是动态配置的。而在C&#43;&#43;中，我们无法通过编译器支持这个能力，必须手工的建立一个名称和一个对象的关联关系表，在合适的时候通过这个表，获得某个名称的函数入口指针。其实C#和Java中实现的方法和VM息息相关，他们的代码在目标文件中还保持着命名空间-类-对象的结构，Java还进一步的保留了源码(只是被翻译为了更快的P代码)，而C#只保留了IL代码。这样VM在执行的时候自然可以很轻松的找到对应的函数，并且获得函数签名。而C类语言的特征是汇编时代的&#34;符号链接&#34;方式，编译的时候保有符号，完成链接就没了。
 中间插一句，其实我们完全可以写一个只支持高阶语言的系统。这样的系统未必高效，可一定方便阿。
-最后一种则是python中的系统，当用户调用一个类中的函数的时候，使用一个专门的函数来决定调用哪个。因此当对付SOAP这种东西的时候，python可以直接上。而C#，Java，C&#43;&#43;都要通过工具生成代理方法。再用代理方法去调用公共函数库，实现调用。因为python直接将调用定向到了一个统一的函数上，所以压根不需要这步。不过这步的代价是严重的性能问题，因为每次函数调用都要去检查调用目标。python是纯脚本语言，占了这点便宜，所以才能这么干。" />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/16/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2008-05-06T16:53:00+08:00" />
-<meta property="article:modified_time" content="2008-05-06T16:53:00+08:00" />
+最后一种则是python中的系统，当用户调用一个类中的函数的时候，使用一个专门的函数来决定调用哪个。因此当对付SOAP这种东西的时候，python可以直接上。而C#，Java，C&#43;&#43;都要通过工具生成代理方法。再用代理方法去调用公共函数库，实现调用。因为python直接将调用定向到了一个统一的函数上，所以压根不需要这步。不过这步的代价是严重的性能问题，因为每次函数调用都要去检查调用目标。python是纯脚本语言，占了这点便宜，所以才能这么干。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2008-05-06T16:53:00+08:00">
+    <meta property="article:modified_time" content="2008-05-06T16:53:00+08:00">
+    <meta property="article:tag" content="C">
+    <meta property="article:tag" content="Program">
+    <meta property="article:tag" content="Reflection">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -76,7 +87,7 @@ if (!doNotTrack) {
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -88,27 +99,18 @@ if (!doNotTrack) {
       <h1 class ="post-title">反射的几个类型</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           May 6, 2008
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/c/">c</a>
-              <a class="tag" href="//blog.shell909090.org/tags/program/">program</a>
-              <a class="tag" href="//blog.shell909090.org/tags/reflection/">reflection</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/c/">C</a>
+              <a class="tag" href="/tags/program/">Program</a>
+              <a class="tag" href="/tags/reflection/">Reflection</a>
         </div>
       </div>
     </header>
@@ -121,7 +123,24 @@ if (!doNotTrack) {
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

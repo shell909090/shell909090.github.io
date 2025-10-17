@@ -4,27 +4,32 @@
     <title>goproxy和msocks简介 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="goproxy和msocks简介"/>
-<meta name="twitter:description" content="goproxy是我个人写的，和shadowsocks同类的软件。当然，在设计之初我完全不知道shadowsocks的存在，goproxy的最初目标也不是成为shadowsocks的同类。只是我一直无法实现一个可靠的，能够达成目标的系统。最后想，那这样吧，我找一个跳一跳能够够到的苹果。大幅简化的结果就是goproxy——后来我才知道shadowsocks。
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="goproxy和msocks简介">
+  <meta name="twitter:description" content="goproxy是我个人写的，和shadowsocks同类的软件。当然，在设计之初我完全不知道shadowsocks的存在，goproxy的最初目标也不是成为shadowsocks的同类。只是我一直无法实现一个可靠的，能够达成目标的系统。最后想，那这样吧，我找一个跳一跳能够够到的苹果。大幅简化的结果就是goproxy——后来我才知道shadowsocks。
 shadowsocks的基本原理 shadowsocks的基本概念，就是利用某种不同于SSL的协议，将本地的socks数据流转发到远程。这个协议，在默认版本中是一个凯撒变换，后来有了aes等加密算法。goproxy也采用了类似的做法，同样支持aes等加密算法。在每次连接时，客户端先用加密通道连接服务器端，然后完成整个连接通路。这样的设计鲁棒性相当好，但是作为代价的，也有不少缺陷。
 首先，goproxy和shadowsocks不约而同的采用了自己的协议，而非将socks5透明的转发到远程的服务器端。为什么？因为socksv5协议中，握手过程是三次交互。客户发送握手包，服务器响应允许的握手验证方法。客户发送验证报文，服务器端返回是否成功，客户发送要连接的目标，服务器端返回是否成功。细节我记得不是很清楚，但是2-3次往返是必须的。
 这种工作机制需要client -&gt; proxy-client -&gt; proxy-server -&gt; server的一个链条，本身就比直连多了两次TCP握手。加上上述的往返过程，更加耗时。而且这个消耗在每次建立链接时都要来一次，而HTTP是一种短连接协议——这就更加无法容忍了。因此改用自有协议，一次交互完成握手，就会更加快速。
@@ -49,11 +54,12 @@ id的大小是16位，足够容纳65536对同时链接。其实不修改内核�
 不过，我没有做对应于silly window syndrome的优化，在每次读取小数据量后，这个读取造成的window扩张都会被传回。当然，这么设计是有原因的。我默认采用了8K的buffer进行fd间拷贝，所以一般碰不到SWS。
 为了解决tcp链接复用造成的单连接带宽问题，我强烈的建议你做以下的设定：
 net.ipv4.tcp_congestion_control = htcp net.core.rmem_default = 2621440 net.core.rmem_max = 16777216 net.core.wmem_default = 655360 net.core.wmem_max = 16777216 net.ipv4.tcp_rmem = 4096 2621440 16777216 net.ipv4.tcp_wmem = 4096 655360 16777216 ip选择算法和DNS 在goproxy中，我沿用了一个做法。通过DNS获得请求的目标IP，和中国IP范围核对。如果在国内则直接访问，否则透过代理。这个方法能够极快的加速访问，而且几乎不依赖于需要更新的列表（中国IP列表相对来说固定）。
-问题是DNS解析过程。msocks内置了DNS能力，可以帮助做DNS。但是实践下来发现这样做效果并不很好。而原本是采用直接DNS，丢弃特定的报文。这样可以过滤防火墙污染。
-原因很简单。原本的模式会让DNS服务器感知到查询者位于中国，于是给出中国可以访问的最快地址。而新的模式则会将DNS请求者搬到美国——这无故加重了代理的负担。例如www.qq.com，原本只需要请求得到一台深圳的服务器即可，现在则需要让DNS绕出去，再回来。如果不幸，QQ有一台位于美国的服务器，那么我的访问都会通过这台服务器——这可比深圳的服务器慢多了。"/>
+问题是DNS解析过程。msocks内置了DNS能力，可以帮助做DNS。但是实践下来发现这样做效果并不很好。而原本是采用直接DNS，丢弃特定的报文。这样可以过滤防火墙污染。">
 
-    <meta property="og:title" content="goproxy和msocks简介" />
-<meta property="og:description" content="goproxy是我个人写的，和shadowsocks同类的软件。当然，在设计之初我完全不知道shadowsocks的存在，goproxy的最初目标也不是成为shadowsocks的同类。只是我一直无法实现一个可靠的，能够达成目标的系统。最后想，那这样吧，我找一个跳一跳能够够到的苹果。大幅简化的结果就是goproxy——后来我才知道shadowsocks。
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/2627/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="goproxy和msocks简介">
+  <meta property="og:description" content="goproxy是我个人写的，和shadowsocks同类的软件。当然，在设计之初我完全不知道shadowsocks的存在，goproxy的最初目标也不是成为shadowsocks的同类。只是我一直无法实现一个可靠的，能够达成目标的系统。最后想，那这样吧，我找一个跳一跳能够够到的苹果。大幅简化的结果就是goproxy——后来我才知道shadowsocks。
 shadowsocks的基本原理 shadowsocks的基本概念，就是利用某种不同于SSL的协议，将本地的socks数据流转发到远程。这个协议，在默认版本中是一个凯撒变换，后来有了aes等加密算法。goproxy也采用了类似的做法，同样支持aes等加密算法。在每次连接时，客户端先用加密通道连接服务器端，然后完成整个连接通路。这样的设计鲁棒性相当好，但是作为代价的，也有不少缺陷。
 首先，goproxy和shadowsocks不约而同的采用了自己的协议，而非将socks5透明的转发到远程的服务器端。为什么？因为socksv5协议中，握手过程是三次交互。客户发送握手包，服务器响应允许的握手验证方法。客户发送验证报文，服务器端返回是否成功，客户发送要连接的目标，服务器端返回是否成功。细节我记得不是很清楚，但是2-3次往返是必须的。
 这种工作机制需要client -&gt; proxy-client -&gt; proxy-server -&gt; server的一个链条，本身就比直连多了两次TCP握手。加上上述的往返过程，更加耗时。而且这个消耗在每次建立链接时都要来一次，而HTTP是一种短连接协议——这就更加无法容忍了。因此改用自有协议，一次交互完成握手，就会更加快速。
@@ -78,12 +84,14 @@ id的大小是16位，足够容纳65536对同时链接。其实不修改内核�
 不过，我没有做对应于silly window syndrome的优化，在每次读取小数据量后，这个读取造成的window扩张都会被传回。当然，这么设计是有原因的。我默认采用了8K的buffer进行fd间拷贝，所以一般碰不到SWS。
 为了解决tcp链接复用造成的单连接带宽问题，我强烈的建议你做以下的设定：
 net.ipv4.tcp_congestion_control = htcp net.core.rmem_default = 2621440 net.core.rmem_max = 16777216 net.core.wmem_default = 655360 net.core.wmem_max = 16777216 net.ipv4.tcp_rmem = 4096 2621440 16777216 net.ipv4.tcp_wmem = 4096 655360 16777216 ip选择算法和DNS 在goproxy中，我沿用了一个做法。通过DNS获得请求的目标IP，和中国IP范围核对。如果在国内则直接访问，否则透过代理。这个方法能够极快的加速访问，而且几乎不依赖于需要更新的列表（中国IP列表相对来说固定）。
-问题是DNS解析过程。msocks内置了DNS能力，可以帮助做DNS。但是实践下来发现这样做效果并不很好。而原本是采用直接DNS，丢弃特定的报文。这样可以过滤防火墙污染。
-原因很简单。原本的模式会让DNS服务器感知到查询者位于中国，于是给出中国可以访问的最快地址。而新的模式则会将DNS请求者搬到美国——这无故加重了代理的负担。例如www.qq.com，原本只需要请求得到一台深圳的服务器即可，现在则需要让DNS绕出去，再回来。如果不幸，QQ有一台位于美国的服务器，那么我的访问都会通过这台服务器——这可比深圳的服务器慢多了。" />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2627/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2014-05-08T16:41:25+08:00" />
-<meta property="article:modified_time" content="2014-05-08T16:41:25+08:00" />
+问题是DNS解析过程。msocks内置了DNS能力，可以帮助做DNS。但是实践下来发现这样做效果并不很好。而原本是采用直接DNS，丢弃特定的报文。这样可以过滤防火墙污染。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2014-05-08T16:41:25+08:00">
+    <meta property="article:modified_time" content="2014-05-08T16:41:25+08:00">
+    <meta property="article:tag" content="Golang">
+    <meta property="article:tag" content="Program">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -120,7 +128,7 @@ net.ipv4.tcp_congestion_control = htcp net.core.rmem_default = 2621440 net.core.
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -132,26 +140,17 @@ net.ipv4.tcp_congestion_control = htcp net.core.rmem_default = 2621440 net.core.
       <h1 class ="post-title">goproxy和msocks简介</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           May 8, 2014
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/golang/">golang</a>
-              <a class="tag" href="//blog.shell909090.org/tags/program/">program</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/golang/">Golang</a>
+              <a class="tag" href="/tags/program/">Program</a>
         </div>
       </div>
     </header>
@@ -210,7 +209,24 @@ net.ipv4.tcp_wmem = 4096    655360  16777216
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

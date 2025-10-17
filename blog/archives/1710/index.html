@@ -4,27 +4,32 @@
     <title>如何建立自己的debian repository // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="如何建立自己的debian repository"/>
-<meta name="twitter:description" content="首先，感谢zigo的大力支持，并且贡献出他的源码，我才得以完成本文。其次，技术文，该散的可以退散了。
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="如何建立自己的debian repository">
+  <meta name="twitter:description" content="首先，感谢zigo的大力支持，并且贡献出他的源码，我才得以完成本文。其次，技术文，该散的可以退散了。
 很多时候，我们对某些东西比较有兴趣，所以会安装一下。debian系统下最熟悉的安装系统就是dpkg了。作为debian用户，我想用deb包来安装这些东西。这样会有以下的好处：
 1.便于在多个系统上重复安装。如果是源码包编译，就必须每台系统安装好环境来configure/make install了。
 2.便于拆除。如果是make install，能不能拆就看你的运气了。
@@ -42,10 +47,12 @@ zigo提供了他的打包代码，比我的功能全多了，大家可以参考�
 全部文件放好后，在根目录下执行python scan_deb.py。如果你需要自动签名，将最后一行的False改为True。在此前请准备好私钥。如果缺少某种架构，请修改脚本architectures一行。
 系统的基本原理是，在某个release, category, architecture下，对于pool/release/category目录执行dpkg-scanpackages操作，生成Packages文件到dists目录下，并且再生成一个压缩版本。
 对所有目录执行过操作后，使用apt-ftparchive来生成一个Release文件，这个文件指名了有哪些Packages文件，以及他们的MD5各是多少。
-客户端获得了Release，就可以知道某种release的特定几个category是否需要更新。更新到了Package，就知道有什么包，他们的meta信息是多少。最后对Release文件进行签名，就可以防止作假了。"/>
+客户端获得了Release，就可以知道某种release的特定几个category是否需要更新。更新到了Package，就知道有什么包，他们的meta信息是多少。最后对Release文件进行签名，就可以防止作假了。">
 
-    <meta property="og:title" content="如何建立自己的debian repository" />
-<meta property="og:description" content="首先，感谢zigo的大力支持，并且贡献出他的源码，我才得以完成本文。其次，技术文，该散的可以退散了。
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/1710/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="如何建立自己的debian repository">
+  <meta property="og:description" content="首先，感谢zigo的大力支持，并且贡献出他的源码，我才得以完成本文。其次，技术文，该散的可以退散了。
 很多时候，我们对某些东西比较有兴趣，所以会安装一下。debian系统下最熟悉的安装系统就是dpkg了。作为debian用户，我想用deb包来安装这些东西。这样会有以下的好处：
 1.便于在多个系统上重复安装。如果是源码包编译，就必须每台系统安装好环境来configure/make install了。
 2.便于拆除。如果是make install，能不能拆就看你的运气了。
@@ -63,11 +70,15 @@ zigo提供了他的打包代码，比我的功能全多了，大家可以参考�
 全部文件放好后，在根目录下执行python scan_deb.py。如果你需要自动签名，将最后一行的False改为True。在此前请准备好私钥。如果缺少某种架构，请修改脚本architectures一行。
 系统的基本原理是，在某个release, category, architecture下，对于pool/release/category目录执行dpkg-scanpackages操作，生成Packages文件到dists目录下，并且再生成一个压缩版本。
 对所有目录执行过操作后，使用apt-ftparchive来生成一个Release文件，这个文件指名了有哪些Packages文件，以及他们的MD5各是多少。
-客户端获得了Release，就可以知道某种release的特定几个category是否需要更新。更新到了Package，就知道有什么包，他们的meta信息是多少。最后对Release文件进行签名，就可以防止作假了。" />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/1710/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2011-02-28T16:36:00+08:00" />
-<meta property="article:modified_time" content="2011-02-28T16:36:00+08:00" />
+客户端获得了Release，就可以知道某种release的特定几个category是否需要更新。更新到了Package，就知道有什么包，他们的meta信息是多少。最后对Release文件进行签名，就可以防止作假了。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2011-02-28T16:36:00+08:00">
+    <meta property="article:modified_time" content="2011-02-28T16:36:00+08:00">
+    <meta property="article:tag" content="Debian">
+    <meta property="article:tag" content="Linux">
+    <meta property="article:tag" content="Repository">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -104,7 +115,7 @@ zigo提供了他的打包代码，比我的功能全多了，大家可以参考�
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -116,27 +127,18 @@ zigo提供了他的打包代码，比我的功能全多了，大家可以参考�
       <h1 class ="post-title">如何建立自己的debian repository</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Feb 28, 2011
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/debian/">debian</a>
-              <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a>
-              <a class="tag" href="//blog.shell909090.org/tags/repository/">repository</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/debian/">Debian</a>
+              <a class="tag" href="/tags/linux/">Linux</a>
+              <a class="tag" href="/tags/repository/">Repository</a>
         </div>
       </div>
     </header>
@@ -164,7 +166,24 @@ install了。</p>
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

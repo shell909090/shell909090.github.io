@@ -4,29 +4,34 @@
     <title>nagios配置 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="nagios配置"/>
-<meta name="twitter:description" content="nagios的结构 nagios的结构其实很简单，一个监视系统，一个web展现系统，一个remote服务器，没了。
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="nagios配置">
+  <meta name="twitter:description" content="nagios的结构 nagios的结构其实很简单，一个监视系统，一个web展现系统，一个remote服务器，没了。
 监视系统是根本，在debian中，需要安装的包是nagios3。在安装这个包之后，会启动一个监视进程，负责检查所有的服务是否OK。不OK就触发事件。
-检查的时候，nagios会去调一些“插件”。这些插件其实都在/etc/nagios-plugins/config下面注册过的。每个插件配置都是name!v1!v2&hellip;的格式。在注册里面，可以看到这个command_name，对应一个command_line。你很容易看到这就将一个定义转换为了一个命令行。
+检查的时候，nagios会去调一些“插件”。这些插件其实都在/etc/nagios-plugins/config下面注册过的。每个插件配置都是name!v1!v2…的格式。在注册里面，可以看到这个command_name，对应一个command_line。你很容易看到这就将一个定义转换为了一个命令行。
 直接执行这个命令行，你可以看到一个标准输出。nagios就是解析这个标准输出，得到值是否在一个合法的范围内的。所以从原理上说，你可以自己写插件，对任何事情做nagios的监控。
 对于某些远程可以获得的信息，目标设备上可以什么都不动，例如ping连通性，或者是端口连通性等。而对于其他信息，例如磁盘空间剩余值，靠远程可能没法获得，就需要在目标设备上装nrpe，Nagios Remote Plugin Executor Server。在debian中，就是nagios-nrpe-server这个包。如果获得本地信息，不需要这个包。
 最后，cgi会将本地的信息暴露给web查询，这就构成了完整的nagios体系。在debian中，这是nagios3-cgi这个包。
@@ -41,12 +46,14 @@ nagios的简单配置 我们首先认清一点，nagios并不负责管理机器�
 所以，我们开心一点。最低限度，我们将所有需要监控的设备和服务端口加入列表。当这些设备不可达时，nagios会发出告警（有邮件）。而如果运气好，我们是可以监控到这台机器是否有apt包需要升级，磁盘空间是否够的。作为建议，其实你只需要监控load和磁盘空间利用率就够了。其余的东西一般不大需要。当内存或者CPU发生问题的时候，你的query其实也拿不到返回。相对的，目标端口很快失去响应进而引发告警才是我们的预期。
 OK，在这个基础之上，让我们看看有什么可以配置的。
 服务器添加 首先，你可以定义一些机器。localhost_nagios2.cfg里面有例子，大致是这个样子。
-define host{ use generic-host ; Name of host template to use host_name host alias host address IP } 我建议你专门弄个文件来管理这些自己的设备，例如我这里叫hosts."/>
+define host{ use generic-host ; Name of host template to use host_name host alias host address IP } 我建议你专门弄个文件来管理这些自己的设备，例如我这里叫hosts.cfg。">
 
-    <meta property="og:title" content="nagios配置" />
-<meta property="og:description" content="nagios的结构 nagios的结构其实很简单，一个监视系统，一个web展现系统，一个remote服务器，没了。
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/2427/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="nagios配置">
+  <meta property="og:description" content="nagios的结构 nagios的结构其实很简单，一个监视系统，一个web展现系统，一个remote服务器，没了。
 监视系统是根本，在debian中，需要安装的包是nagios3。在安装这个包之后，会启动一个监视进程，负责检查所有的服务是否OK。不OK就触发事件。
-检查的时候，nagios会去调一些“插件”。这些插件其实都在/etc/nagios-plugins/config下面注册过的。每个插件配置都是name!v1!v2&hellip;的格式。在注册里面，可以看到这个command_name，对应一个command_line。你很容易看到这就将一个定义转换为了一个命令行。
+检查的时候，nagios会去调一些“插件”。这些插件其实都在/etc/nagios-plugins/config下面注册过的。每个插件配置都是name!v1!v2…的格式。在注册里面，可以看到这个command_name，对应一个command_line。你很容易看到这就将一个定义转换为了一个命令行。
 直接执行这个命令行，你可以看到一个标准输出。nagios就是解析这个标准输出，得到值是否在一个合法的范围内的。所以从原理上说，你可以自己写插件，对任何事情做nagios的监控。
 对于某些远程可以获得的信息，目标设备上可以什么都不动，例如ping连通性，或者是端口连通性等。而对于其他信息，例如磁盘空间剩余值，靠远程可能没法获得，就需要在目标设备上装nrpe，Nagios Remote Plugin Executor Server。在debian中，就是nagios-nrpe-server这个包。如果获得本地信息，不需要这个包。
 最后，cgi会将本地的信息暴露给web查询，这就构成了完整的nagios体系。在debian中，这是nagios3-cgi这个包。
@@ -61,11 +68,13 @@ nagios的简单配置 我们首先认清一点，nagios并不负责管理机器�
 所以，我们开心一点。最低限度，我们将所有需要监控的设备和服务端口加入列表。当这些设备不可达时，nagios会发出告警（有邮件）。而如果运气好，我们是可以监控到这台机器是否有apt包需要升级，磁盘空间是否够的。作为建议，其实你只需要监控load和磁盘空间利用率就够了。其余的东西一般不大需要。当内存或者CPU发生问题的时候，你的query其实也拿不到返回。相对的，目标端口很快失去响应进而引发告警才是我们的预期。
 OK，在这个基础之上，让我们看看有什么可以配置的。
 服务器添加 首先，你可以定义一些机器。localhost_nagios2.cfg里面有例子，大致是这个样子。
-define host{ use generic-host ; Name of host template to use host_name host alias host address IP } 我建议你专门弄个文件来管理这些自己的设备，例如我这里叫hosts." />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2427/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2013-06-08T09:32:28+08:00" />
-<meta property="article:modified_time" content="2013-06-08T09:32:28+08:00" />
+define host{ use generic-host ; Name of host template to use host_name host alias host address IP } 我建议你专门弄个文件来管理这些自己的设备，例如我这里叫hosts.cfg。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2013-06-08T09:32:28+08:00">
+    <meta property="article:modified_time" content="2013-06-08T09:32:28+08:00">
+    <meta property="article:tag" content="Linux">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -102,7 +111,7 @@ define host{ use generic-host ; Name of host template to use host_name host alia
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -114,25 +123,16 @@ define host{ use generic-host ; Name of host template to use host_name host alia
       <h1 class ="post-title">nagios配置</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Jun 8, 2013
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/linux/">Linux</a>
         </div>
       </div>
     </header>
@@ -202,7 +202,24 @@ location /nagios3/stylesheets {
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

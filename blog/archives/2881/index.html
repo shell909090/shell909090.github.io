@@ -4,27 +4,32 @@
     <title>linux迁移和全盘加密 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="linux迁移和全盘加密"/>
-<meta name="twitter:description" content="系统迁移 迁移挺容易的。启一个live系统。把原始系统照样子mount好，把目标盘分区分好，照着你想的样子mount起来。然后对拷数据就行。我踩的一个坑是忘了清理.cache下面各种文件，结果这里复制了好久，我差点以为死机了。Ctrl&#43;C断下来，干掉.cache后速度就快多了。等全部复制好了。umount掉原始系统，然后chroot到新系统里面去，加上以下四个文件系统。[1]（其实应该是两个在chroot前做，两个在chroot后做）
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="linux迁移和全盘加密">
+  <meta name="twitter:description" content="系统迁移 迁移挺容易的。启一个live系统。把原始系统照样子mount好，把目标盘分区分好，照着你想的样子mount起来。然后对拷数据就行。我踩的一个坑是忘了清理.cache下面各种文件，结果这里复制了好久，我差点以为死机了。Ctrl&#43;C断下来，干掉.cache后速度就快多了。等全部复制好了。umount掉原始系统，然后chroot到新系统里面去，加上以下四个文件系统。[1]（其实应该是两个在chroot前做，两个在chroot后做）
 $ sudo mount --bind /dev /mnt/dev $ sudo mount --bind /run /mnt/run $ sudo chroot /mnt/ $ sudo mount --types=proc proc /proc $ sudo mount --types=sysfs sys /sys 然后你就可以在目标系统里跑grub系列指令了。grub-install和update-grub2一下。整个迁移就完事了。
 EFI 其实grub的重点压根不在install上，而在于引导链条的工作机制。以我这种情况来说，我建议别犹豫，直接上UEFI。让你感觉到无比的轻松。
 EFI的引导机制是从磁盘上的EFI分区开始的。当然，你的分区表需要是GPT格式的。EFI分区使用fat32文件格式，里面会存放N个代码文件。以前主板不认识文件系统，所以只能取磁盘第一个分区加载到7C00的方式来引导。因此通行做法是在这个扇区里放一个启动管理器，由管理器加载系统。现在BIOS可以认识文件系统了，因此完全没必要这么干。一个盘上有两个系统的话，就在EFI分区里放两个启动代码，再在BIOS里写两个引导表项。启动的时候你选哪个表项，BIOS就会读取对应的文件来继续引导。如果你有多个盘，每个盘又有多个系统，也可以这么干，只是会形成多个启动表项。所以引导管理就变得非常简单。
@@ -37,10 +42,12 @@ grub stage 2的主要配置很复杂。Debian的配置其实是从系统里生�
 全盘加密 最后我们要说到全盘加密的设计实现。全盘加密的困难处是需要先加载kernel才能解密全盘。但是kernel又在盘里面。所以完整的全盘加密需要grub支持luks。
 我没搞那么极端。我分出来一个/boot分区未加密，这样就不需要grub支持luks了。当然，原则上来说，这样攻击者可以插入恶意代码来获得我的密码。例如替换掉我的kernel，插入他的恶意代码。但是EFI方案的问题之一就是，EFI上面的引导代码本身就是可被攻击的。攻击EFI引导代码和攻击kernel没有区别（除了会稍微麻烦一点）。要防御这个需要构成可信引导链条。要构成可信链条，需要EFI验证引导代码被签署，引导代码验证kernel被签署，etc。但是linux本身就不鸟这个思路，因为没一家BIOS接受grub的签署。大家一般也就是支持微软的签署，苹果自己支持自己的签署。所以，这东西没有任何开放意义，只能在微软自家里面用。用Linux的话就别被人近身吧。就这样。
 kernel这层呢，需要安装cryptsetup-initramfs。这个工具会把/etc/crypttab这个文件打包到initrd.img里去。这个文件最新的版本不是很好解开。你需要先下载binwalk这个工具，然后查到里面的gzip数据块。再用cpio这个工具解开这个数据块[2]。大致指令是。
-binwalk initrd.img-5.10.0-9-amd64 mkdir initrd cd initrd dd if=../initrd.img-5.10.0-9-amd64 bs=N skip=1 | gunzip | cpio -idmv 然后你就能看到crypttab这个文件的存在。"/>
+binwalk initrd.img-5.10.0-9-amd64 mkdir initrd cd initrd dd if=../initrd.img-5.10.0-9-amd64 bs=N skip=1 | gunzip | cpio -idmv 然后你就能看到crypttab这个文件的存在。">
 
-    <meta property="og:title" content="linux迁移和全盘加密" />
-<meta property="og:description" content="系统迁移 迁移挺容易的。启一个live系统。把原始系统照样子mount好，把目标盘分区分好，照着你想的样子mount起来。然后对拷数据就行。我踩的一个坑是忘了清理.cache下面各种文件，结果这里复制了好久，我差点以为死机了。Ctrl&#43;C断下来，干掉.cache后速度就快多了。等全部复制好了。umount掉原始系统，然后chroot到新系统里面去，加上以下四个文件系统。[1]（其实应该是两个在chroot前做，两个在chroot后做）
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/2881/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="linux迁移和全盘加密">
+  <meta property="og:description" content="系统迁移 迁移挺容易的。启一个live系统。把原始系统照样子mount好，把目标盘分区分好，照着你想的样子mount起来。然后对拷数据就行。我踩的一个坑是忘了清理.cache下面各种文件，结果这里复制了好久，我差点以为死机了。Ctrl&#43;C断下来，干掉.cache后速度就快多了。等全部复制好了。umount掉原始系统，然后chroot到新系统里面去，加上以下四个文件系统。[1]（其实应该是两个在chroot前做，两个在chroot后做）
 $ sudo mount --bind /dev /mnt/dev $ sudo mount --bind /run /mnt/run $ sudo chroot /mnt/ $ sudo mount --types=proc proc /proc $ sudo mount --types=sysfs sys /sys 然后你就可以在目标系统里跑grub系列指令了。grub-install和update-grub2一下。整个迁移就完事了。
 EFI 其实grub的重点压根不在install上，而在于引导链条的工作机制。以我这种情况来说，我建议别犹豫，直接上UEFI。让你感觉到无比的轻松。
 EFI的引导机制是从磁盘上的EFI分区开始的。当然，你的分区表需要是GPT格式的。EFI分区使用fat32文件格式，里面会存放N个代码文件。以前主板不认识文件系统，所以只能取磁盘第一个分区加载到7C00的方式来引导。因此通行做法是在这个扇区里放一个启动管理器，由管理器加载系统。现在BIOS可以认识文件系统了，因此完全没必要这么干。一个盘上有两个系统的话，就在EFI分区里放两个启动代码，再在BIOS里写两个引导表项。启动的时候你选哪个表项，BIOS就会读取对应的文件来继续引导。如果你有多个盘，每个盘又有多个系统，也可以这么干，只是会形成多个启动表项。所以引导管理就变得非常简单。
@@ -53,11 +60,12 @@ grub stage 2的主要配置很复杂。Debian的配置其实是从系统里生�
 全盘加密 最后我们要说到全盘加密的设计实现。全盘加密的困难处是需要先加载kernel才能解密全盘。但是kernel又在盘里面。所以完整的全盘加密需要grub支持luks。
 我没搞那么极端。我分出来一个/boot分区未加密，这样就不需要grub支持luks了。当然，原则上来说，这样攻击者可以插入恶意代码来获得我的密码。例如替换掉我的kernel，插入他的恶意代码。但是EFI方案的问题之一就是，EFI上面的引导代码本身就是可被攻击的。攻击EFI引导代码和攻击kernel没有区别（除了会稍微麻烦一点）。要防御这个需要构成可信引导链条。要构成可信链条，需要EFI验证引导代码被签署，引导代码验证kernel被签署，etc。但是linux本身就不鸟这个思路，因为没一家BIOS接受grub的签署。大家一般也就是支持微软的签署，苹果自己支持自己的签署。所以，这东西没有任何开放意义，只能在微软自家里面用。用Linux的话就别被人近身吧。就这样。
 kernel这层呢，需要安装cryptsetup-initramfs。这个工具会把/etc/crypttab这个文件打包到initrd.img里去。这个文件最新的版本不是很好解开。你需要先下载binwalk这个工具，然后查到里面的gzip数据块。再用cpio这个工具解开这个数据块[2]。大致指令是。
-binwalk initrd.img-5.10.0-9-amd64 mkdir initrd cd initrd dd if=../initrd.img-5.10.0-9-amd64 bs=N skip=1 | gunzip | cpio -idmv 然后你就能看到crypttab这个文件的存在。" />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2881/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2021-12-16T23:02:51+08:00" />
-<meta property="article:modified_time" content="2021-12-16T23:02:51+08:00" />
+binwalk initrd.img-5.10.0-9-amd64 mkdir initrd cd initrd dd if=../initrd.img-5.10.0-9-amd64 bs=N skip=1 | gunzip | cpio -idmv 然后你就能看到crypttab这个文件的存在。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2021-12-16T23:02:51+08:00">
+    <meta property="article:modified_time" content="2021-12-16T23:02:51+08:00">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -94,7 +102,7 @@ binwalk initrd.img-5.10.0-9-amd64 mkdir initrd cd initrd dd if=../initrd.img-5.1
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -106,17 +114,11 @@ binwalk initrd.img-5.10.0-9-amd64 mkdir initrd cd initrd dd if=../initrd.img-5.1
       <h1 class ="post-title">linux迁移和全盘加密</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Dec 16, 2021
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
       </div>
@@ -164,7 +166,24 @@ dd if=../initrd.img-5.10.0-9-amd64 bs=N skip=1 | gunzip | cpio -idmv
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

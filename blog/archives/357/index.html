@@ -4,46 +4,57 @@
     <title>继承类静态对象虚拟化 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="继承类静态对象虚拟化"/>
-<meta name="twitter:description" content="其实这个标题不准确，准确的说，应该是继承类拥有自己的基类静态对象。
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="继承类静态对象虚拟化">
+  <meta name="twitter:description" content="其实这个标题不准确，准确的说，应该是继承类拥有自己的基类静态对象。
 我们知道，类中的静态对象本质上是全局变量，不过名字在类命名空间里面。如果类B有静态对象S，D继承了B(先按照public继承讨论，其他其实也一样)。那么在D里面访问S的时候，其实是访问的B命名空间里面的静态对象S。验证代码如下：
-class B { protected: static int S; }; int B::S = 0; class D:public B { public: void print () { printf (&quot;%dn&quot;, S); }; }; class E:public B { public: static void rewrite () { S = 1; }; }; int _tmain (int argc, _TCHAR * argv[]){ D d; d.print (); E::rewrite (); d.print (); return 0; } 上例中可以看到，两个继承类，其实都是将父类的命名空间导入而已。假定我们要使得每类专有一个静态成员，例如我们要计算每个类的生成对象个数，怎么办呢？
+class B { protected: static int S; }; int B::S = 0; class D:public B { public: void print () { printf (&#34;%dn&#34;, S); }; }; class E:public B { public: static void rewrite () { S = 1; }; }; int _tmain (int argc, _TCHAR * argv[]){ D d; d.print (); E::rewrite (); d.print (); return 0; } 上例中可以看到，两个继承类，其实都是将父类的命名空间导入而已。假定我们要使得每类专有一个静态成员，例如我们要计算每个类的生成对象个数，怎么办呢？
 如果不用继承，我们可以在每个类里面加一个静态成员。然后在构造函数中加1，析构中减1。但是如果我们想把这个功能放到基类中，事情就麻烦了。因为所有类从同一个基类派生，我们算出来的其实是所有从基类继承的类的总对象生成个数。
 当然，我们可以用实现的方法来做。把所需要的功能抽离出来，放到一个单独的计数类中。然后构造的时候调用加1，析构的时候减1。听起来很蠢，那是因为例子容易的关系。比较复杂的时候，这样抽象相对简单的。计数类可以用于多个类，实现了代码重用。但是仍旧没有解决关键问题，怎么让继承类特化基类的静态对象？(虚拟化和特化的意思差不多，就是针对具体对象使用具体方法)
 答案最后被我在More Effective C&#43;&#43;中找到了，正确的方法不是寻找一个特化的方法，而是继承不同的基类，使用同一套代码。既然是不同基类，怎么具备同一套代码呢？想到了吧，模版。
-template&lt;T&gt; class B { protected: static int S; }; class D:public B&lt;D&gt; { public: void print () { printf (&quot;%dn&quot;, S); }; }; int B&lt;D&gt;::S = 0; class E:public B&lt;E&gt; { public: static void rewrite () { S = 1; }; }; int B&lt;E&gt;::S = 0; int _tmain (int argc, _TCHAR * argv[]) { D d; d."/>
+template&lt;T&gt; class B { protected: static int S; }; class D:public B&lt;D&gt; { public: void print () { printf (&#34;%dn&#34;, S); }; }; int B&lt;D&gt;::S = 0; class E:public B&lt;E&gt; { public: static void rewrite () { S = 1; }; }; int B&lt;E&gt;::S = 0; int _tmain (int argc, _TCHAR * argv[]) { D d; d.print (); E::rewrite (); d.print (); return 0; } 看到了？每个继承类拥有了自己的静态成员。如果我们把上面的例子中，S改成ID。就可以做到RTTI了(只是还需要很多技巧)。">
 
-    <meta property="og:title" content="继承类静态对象虚拟化" />
-<meta property="og:description" content="其实这个标题不准确，准确的说，应该是继承类拥有自己的基类静态对象。
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/357/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="继承类静态对象虚拟化">
+  <meta property="og:description" content="其实这个标题不准确，准确的说，应该是继承类拥有自己的基类静态对象。
 我们知道，类中的静态对象本质上是全局变量，不过名字在类命名空间里面。如果类B有静态对象S，D继承了B(先按照public继承讨论，其他其实也一样)。那么在D里面访问S的时候，其实是访问的B命名空间里面的静态对象S。验证代码如下：
-class B { protected: static int S; }; int B::S = 0; class D:public B { public: void print () { printf (&quot;%dn&quot;, S); }; }; class E:public B { public: static void rewrite () { S = 1; }; }; int _tmain (int argc, _TCHAR * argv[]){ D d; d.print (); E::rewrite (); d.print (); return 0; } 上例中可以看到，两个继承类，其实都是将父类的命名空间导入而已。假定我们要使得每类专有一个静态成员，例如我们要计算每个类的生成对象个数，怎么办呢？
+class B { protected: static int S; }; int B::S = 0; class D:public B { public: void print () { printf (&#34;%dn&#34;, S); }; }; class E:public B { public: static void rewrite () { S = 1; }; }; int _tmain (int argc, _TCHAR * argv[]){ D d; d.print (); E::rewrite (); d.print (); return 0; } 上例中可以看到，两个继承类，其实都是将父类的命名空间导入而已。假定我们要使得每类专有一个静态成员，例如我们要计算每个类的生成对象个数，怎么办呢？
 如果不用继承，我们可以在每个类里面加一个静态成员。然后在构造函数中加1，析构中减1。但是如果我们想把这个功能放到基类中，事情就麻烦了。因为所有类从同一个基类派生，我们算出来的其实是所有从基类继承的类的总对象生成个数。
 当然，我们可以用实现的方法来做。把所需要的功能抽离出来，放到一个单独的计数类中。然后构造的时候调用加1，析构的时候减1。听起来很蠢，那是因为例子容易的关系。比较复杂的时候，这样抽象相对简单的。计数类可以用于多个类，实现了代码重用。但是仍旧没有解决关键问题，怎么让继承类特化基类的静态对象？(虚拟化和特化的意思差不多，就是针对具体对象使用具体方法)
 答案最后被我在More Effective C&#43;&#43;中找到了，正确的方法不是寻找一个特化的方法，而是继承不同的基类，使用同一套代码。既然是不同基类，怎么具备同一套代码呢？想到了吧，模版。
-template&lt;T&gt; class B { protected: static int S; }; class D:public B&lt;D&gt; { public: void print () { printf (&quot;%dn&quot;, S); }; }; int B&lt;D&gt;::S = 0; class E:public B&lt;E&gt; { public: static void rewrite () { S = 1; }; }; int B&lt;E&gt;::S = 0; int _tmain (int argc, _TCHAR * argv[]) { D d; d." />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/357/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2007-02-02T17:36:35+08:00" />
-<meta property="article:modified_time" content="2007-02-02T17:36:35+08:00" />
+template&lt;T&gt; class B { protected: static int S; }; class D:public B&lt;D&gt; { public: void print () { printf (&#34;%dn&#34;, S); }; }; int B&lt;D&gt;::S = 0; class E:public B&lt;E&gt; { public: static void rewrite () { S = 1; }; }; int B&lt;E&gt;::S = 0; int _tmain (int argc, _TCHAR * argv[]) { D d; d.print (); E::rewrite (); d.print (); return 0; } 看到了？每个继承类拥有了自己的静态成员。如果我们把上面的例子中，S改成ID。就可以做到RTTI了(只是还需要很多技巧)。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2007-02-02T17:36:35+08:00">
+    <meta property="article:modified_time" content="2007-02-02T17:36:35+08:00">
+    <meta property="article:tag" content="C">
+    <meta property="article:tag" content="Oo">
+    <meta property="article:tag" content="Program">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -80,7 +91,7 @@ template&lt;T&gt; class B { protected: static int S; }; class D:public B&lt;D&gt
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -92,27 +103,18 @@ template&lt;T&gt; class B { protected: static int S; }; class D:public B&lt;D&gt
       <h1 class ="post-title">继承类静态对象虚拟化</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Feb 2, 2007
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/c/">c</a>
-              <a class="tag" href="//blog.shell909090.org/tags/oo/">oo</a>
-              <a class="tag" href="//blog.shell909090.org/tags/program/">program</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/c/">C</a>
+              <a class="tag" href="/tags/oo/">Oo</a>
+              <a class="tag" href="/tags/program/">Program</a>
         </div>
       </div>
     </header>
@@ -189,7 +191,24 @@ int _tmain (int argc, _TCHAR * argv[])
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

@@ -1,26 +1,20 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>sdk on Shell&#39;s Home</title>
+    <title>Sdk on Shell&#39;s Home</title>
     <link>//blog.shell909090.org/tags/sdk/</link>
-    <description>Recent content in sdk on Shell&#39;s Home</description>
-    <generator>Hugo -- gohugo.io</generator>
+    <description>Recent content in Sdk on Shell&#39;s Home</description>
+    <generator>Hugo</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Sat, 28 May 2005 00:22:58 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/sdk/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 28 May 2005 00:22:58 +0800</lastBuildDate>
+    <atom:link href="//blog.shell909090.org/tags/sdk/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>光盘镜像Copy、底层文件读写和CreateFile</title>
       <link>//blog.shell909090.org/blog/archives/164/</link>
       <pubDate>Sat, 28 May 2005 00:22:58 +0800</pubDate>
-      
       <guid>//blog.shell909090.org/blog/archives/164/</guid>
-      <description>1.CreateFile读写文件，设备，网络。
-刚刚看到有人在问，知道了数据的物理位置，如何读取光盘上的数据。于是我很纳闷，这有何难。看他的意思不会是要编程进行硬件交互读取吧。如果已知数据的偏移地址，那么使用CreateFile(&amp;quot;\.X:&amp;quot;&amp;hellip;)就可以直接读取某个盘上的数据了。（Windows 2000 Support Tools中DiskProbe就是用这种方法直接读写物理磁盘的，包括可以读写0面0道0扇区，不过他用的对象是\.PHYSICALDRIVEx而已）
-还有可以打开的对象包括管道（会用的人一定知道），文件（废话），Consoles（简单来说就是命令行界面），通信资源（例如COM1）。据说还可以打开内存，似乎是PHYSICMEM资源，记不得了。
-以上资源的打开都有限制的，多数都比较简单，就是在打开时候使用OPEN_EXISTING标志。另外还有些当然的限制，例如光盘不能做为GENERIC_WRITE打开（我是没有试过啦，不过想也知道，光盘哪里能写。）
-举例来说，这次我做的ISO镜像制作程序（ISO可以是光盘的按字节镜像），代码大致就是这样的。（以下代码都是伪代码，不要拿去编译哦。）
-GetLogicalDriveStrings(nBufferLength, lpBuffer); lpRootPathName=lpBuffer; while( lpRootPathName\[0\] ){ if(GetDriveType(lpRootPathName) &amp;amp; DRIVE\_CDROM ) break; lpRootPathName+=strlen(lpRootPathName)+1; }; if( !lpRootPathName\[0\] ) return -1; strcpy(RootPathName, &amp;quot;\\.&amp;quot;); strcat(RootPathName, lpRootPathName); RootPathName\[strlen(RootPathName)-1\]=0; hFileCDROM=CreateFile(RootPathName, GENERIC\_READ,//我要做镜像，不是刻盘（不知道能不能刻） FILE\_SHARE\_READ, NULL, //你这个用户有访问能力就是NULL，没有自己去看API编程去 OPEN\_EXISTING, //必须如此,这个是打开光盘的限制条件 FILE\_ATTRIBUTE\_NORMAL | FILE\_FLAG\_OVERLAPPED, //交叠模式 0); hFileISO=CreateFile(ISOpath, GENERIC\_WRITE, 0, NULL, OPEN\_ALWAYS, FILE\_ATTRIBUTE\_NORMAL, 0); Overlap.hEvent=CreateEvent(NULL, FALSE, FALSE, NULL); do{ Overlap.Offset=...; Overlap.OffsetHigh=...; ReadFile(hFileCDROM, lpBuffer, BUFF\_SIZE, &amp;amp;NumberOfBytes, &amp;amp;Overlap); WaitForSingleObject(olRead.hEvent, TimeOut); if(!GetOverlappedResult(hFileCDROM, &amp;amp;Overlap, &amp;amp;NumberOfBytes, FALSE) ){ switch( GetLastError() ){ case ERROR\_IO\_INCOMPLETE: CancelIo(hFileCDROM); break; default: break; } //error } WriteFile(hFileISO, lpBuffer, BUFF\_SIZE, &amp;amp;NumberOfBytes, NULL); }while( 1 ); CloseHandle(Overlap.</description>
+      <description>&lt;p&gt;1.CreateFile读写文件，设备，网络。&lt;/p&gt;&#xA;&lt;p&gt;刚刚看到有人在问，知道了数据的物理位置，如何读取光盘上的数据。于是我很纳闷，这有何难。看他的意思不会是要编程进行硬件交互读取吧。如果已知数据的偏移地址，那么使用CreateFile(&amp;quot;&lt;a href=&#34;file://.X&#34;&gt;\.X&lt;/a&gt;:&amp;quot;&amp;hellip;)就可以直接读取某个盘上的数据了。（Windows 2000 Support Tools中DiskProbe就是用这种方法直接读写物理磁盘的，包括可以读写0面0道0扇区，不过他用的对象是&lt;a href=&#34;file://.PHYSICALDRIVEx&#34;&gt;\.PHYSICALDRIVEx&lt;/a&gt;而已）&lt;/p&gt;&#xA;&lt;p&gt;还有可以打开的对象包括管道（会用的人一定知道），文件（废话），Consoles（简单来说就是命令行界面），通信资源（例如COM1）。据说还可以打开内存，似乎是PHYSICMEM资源，记不得了。&lt;/p&gt;&#xA;&lt;p&gt;以上资源的打开都有限制的，多数都比较简单，就是在打开时候使用OPEN_EXISTING标志。另外还有些当然的限制，例如光盘不能做为GENERIC_WRITE打开（我是没有试过啦，不过想也知道，光盘哪里能写。）&lt;/p&gt;&#xA;&lt;p&gt;举例来说，这次我做的ISO镜像制作程序（ISO可以是光盘的按字节镜像），代码大致就是这样的。（以下代码都是伪代码，不要拿去编译哦。）&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;GetLogicalDriveStrings(nBufferLength, lpBuffer);&#xA;lpRootPathName=lpBuffer;&#xA;while( lpRootPathName\[0\] ){&#xA;&#x9;if(GetDriveType(lpRootPathName) &amp;amp; DRIVE\_CDROM )&#xA;&#x9;&#x9;break;&#xA;&#x9;lpRootPathName+=strlen(lpRootPathName)+1;&#xA;};&#xA;if( !lpRootPathName\[0\] )&#xA;&#x9;return -1;&#xA;strcpy(RootPathName, &amp;quot;\\.&amp;quot;);&#xA;strcat(RootPathName, lpRootPathName);&#xA;RootPathName\[strlen(RootPathName)-1\]=0;&#xA;hFileCDROM=CreateFile(RootPathName,&#xA;&#x9;&#x9;&#x9;  GENERIC\_READ,//我要做镜像，不是刻盘（不知道能不能刻）&#xA;&#x9;&#x9;&#x9;  FILE\_SHARE\_READ, NULL,&#xA;&#x9;&#x9;&#x9;  //你这个用户有访问能力就是NULL，没有自己去看API编程去 OPEN\_EXISTING,&#xA;&#x9;&#x9;&#x9;  //必须如此,这个是打开光盘的限制条件 FILE\_ATTRIBUTE\_NORMAL |&#xA;&#x9;&#x9;&#x9;  FILE\_FLAG\_OVERLAPPED, //交叠模式&#xA;&#x9;&#x9;&#x9;  0);&#xA;hFileISO=CreateFile(ISOpath, GENERIC\_WRITE, 0, NULL,&#xA;&#x9;&#x9;&#x9;OPEN\_ALWAYS, FILE\_ATTRIBUTE\_NORMAL, 0);&#xA;Overlap.hEvent=CreateEvent(NULL, FALSE, FALSE, NULL);&#xA;do{&#xA;&#x9;Overlap.Offset=...;&#xA;&#x9;Overlap.OffsetHigh=...;&#xA;&#x9;ReadFile(hFileCDROM, lpBuffer, BUFF\_SIZE,&#xA;&#x9;&#x9; &amp;amp;NumberOfBytes, &amp;amp;Overlap);&#xA;&#x9;WaitForSingleObject(olRead.hEvent, TimeOut);&#xA;&#x9;if(!GetOverlappedResult(hFileCDROM, &amp;amp;Overlap, &amp;amp;NumberOfBytes, FALSE) ){&#xA;&#x9;&#x9;switch( GetLastError() ){&#xA;&#x9;&#x9;case ERROR\_IO\_INCOMPLETE:&#xA;&#x9;&#x9;&#x9;CancelIo(hFileCDROM);&#xA;&#x9;&#x9;&#x9;break;&#xA;&#x9;&#x9;default:&#xA;&#x9;&#x9;&#x9;break;&#xA;&#x9;&#x9;}&#xA;&#x9;&#x9;//error&#xA;&#x9;}&#xA;&#x9;WriteFile(hFileISO, lpBuffer, BUFF\_SIZE, &amp;amp;NumberOfBytes, NULL);&#xA;}while( 1 );&#xA;CloseHandle(Overlap.hEvent);&#xA;CloseHandle(hFileISO);&#xA;CloseHandle(hFileCDROM);&#xA;...&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;2.OVERLAPPED模式和大文件&lt;/p&gt;</description>
     </item>
-    
   </channel>
 </rss>

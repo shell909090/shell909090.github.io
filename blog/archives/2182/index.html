@@ -4,27 +4,32 @@
     <title>语言的效率差异3 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="语言的效率差异3"/>
-<meta name="twitter:description" content="在总结前，我们首先搞明白三个问题的差异“效率的决定因素”，“语言效率差异”和“日常使用中造成运行效率差异的因素”。
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="语言的效率差异3">
+  <meta name="twitter:description" content="在总结前，我们首先搞明白三个问题的差异“效率的决定因素”，“语言效率差异”和“日常使用中造成运行效率差异的因素”。
 代码的效率最根本因素绝对不是语言的效率，我一直这么确信。代码效率的决定因素必然是算法的正确选择和实现的优秀程度。这里面包括了正确评估问题，选择合适的数据结构，使用合适的算法等。例如对给定数据的高速查询，用红黑树去跑查询肯定跑不过预编译的哈希算法和哈希表。即使前者使用汇编实现，而后者只是python实现。(对于这点，我对比过一个大规模数据的查询，数据是固定的。数据库效率最差，C&#43;&#43;用红黑树的map次之，效率最好的是python的dict，底层是hashtable。当然，为了防止某些人补充，我自己先说了——我最后用了stlport的hash_map)
 语言效率的差异，有很多因素。例如编译型/解释型语言，动态语言和静态语言，是否带jit优化等，都会造成很大的性能差异。甚至同样是C，不同的编译和优化参数也会造成很大规模的差异，做优化的朋友一定心里有数。然而大多数情况下，决定语言效率的关键因素都不在语言自身的效率上，而是在于底层库实现的效率上。当然，如果底层库使用该种语言直接写成(我也比较喜欢这种风格)，那么归根结底还是考验语言本身的效率问题的。以正则测试为例，实际上python是一种性能很差的语言，但是在测试上并不很低。因为python的库实现是直接引用了C库，其效率仅仅是C加上一个不高的值。而lua得分不足只能说是库的实现比python差。
 最后一个问题相信大家最关心，即日常使用中造成运行效率差异的关键。到底是什么，决定了我们每天写的代码的效率？
@@ -33,10 +38,12 @@ if (!doNotTrack) {
 作为日常生产，我想大部分程序员都有这么个经验。决定代码质量的实际上是项目的时间是否充裕，程序员是否用心严谨，生产流程管理是否到位。除非程序员太差劲，否则技术性代码质量差异并不特别多——一般都是远远小于赶代码造成的严重问题的。如果您那里不是这样，我建议您更换一批靠谱的程序员。同样，在真实的日常生产中，大部分项目都没有那个机会对代码进行多次的复查，深层次优化所有问题。基本是写，写完了查，没有什么表面问题。然后检查一下，用户体验效率是不是很差，找最差的地方优化一下，然后直接交货。很少有像理论代码那样，反复优化和测试，甚至受到来自不同程序员的交叉检测和沟通。如果有这种级别的反复优化，毫无疑问的，C会是常用语言中的效率之王。在[shootout](http://shootout.alioth.debian.org/u64q/which-programming-languages-are-fastest.php)给出的速度评测上，仅有Intel自己实现的fortran超越了C。当然，我相信汇编会更加优秀。
 然而杯具的是，日常生产中恰恰相反，至少我是没什么时间去优化每行代码的。大部分时候，为了处理一个排序问题，我不会去网络上找一个vector库，而是直接开一个100的数组，然后qsort。前方报错了，改1000的数组。在写python的时候，也不会精细的考虑每个地方是否都用了合适的方法，某点是生成器好还是list好。大不了觉得某个程序慢了，cProfile一把，然后对着花时间最长的几个点看看是否有问题。自我感觉而言，python项目在做完之余，我还能泡个茶聊会天，自然也有功夫去看两眼代码，是否有哪里写的太难看了。而C代码就是不停的debug，即使我好容易喘口气，也绝对不会想去再看了。
 最后说一下sbcl，在自身性能测试中，是当之无愧的语言之王。速度是python的一倍不到，代码量是python的一半。常规来说，出错概率，维护难度，都是和代码行数直接相关。一半的代码量基本就意味着维护成本削减一半，而一倍的速度基本和java持平，在C后面紧追不舍。但是，以上常理对lisp均不适用。lisp的学习难度惊人不说，维护难度和代码行数没有直接关系，而是取决于写作者的水平。水平越好的写作者，代码越容易维护，反之，初心者写出来的玩意那是看都看不懂的。冰河在博客上说他找了个职业lisp程序员的工作，人家视若珍宝。我不知道是哪年的blog，但是从老板的角度来说，这才是程序员的悲哀。老板喜欢什么语言？最好有个点子，跑去人才市场插个牌子，上书“我要人”。然后就会有一堆人云集过来，脖子上面都套着“五行一元”，“精通XXX”的草标。抓一只大个的，给个项目经理的头衔，让他管着别人。每个月扔一麻袋饲料下去，过两个月就能收程序了。
-看起来和农场有点像，不是么？遗憾的是，lisp看来是达不到这个要求了。全国能用的python程序员不会超过5000，lisp程序员大概连500都不到。如果哪个老板不幸脑残，用了lisp来做项目，那么在招人这个问题上会比python更难执行。从这个意义上说，这才是lisp程序员不流行的关键——不好找工作。即使运行效率再高，语言本身再好，也没法过老板那关。"/>
+看起来和农场有点像，不是么？遗憾的是，lisp看来是达不到这个要求了。全国能用的python程序员不会超过5000，lisp程序员大概连500都不到。如果哪个老板不幸脑残，用了lisp来做项目，那么在招人这个问题上会比python更难执行。从这个意义上说，这才是lisp程序员不流行的关键——不好找工作。即使运行效率再高，语言本身再好，也没法过老板那关。">
 
-    <meta property="og:title" content="语言的效率差异3" />
-<meta property="og:description" content="在总结前，我们首先搞明白三个问题的差异“效率的决定因素”，“语言效率差异”和“日常使用中造成运行效率差异的因素”。
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/2182/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="语言的效率差异3">
+  <meta property="og:description" content="在总结前，我们首先搞明白三个问题的差异“效率的决定因素”，“语言效率差异”和“日常使用中造成运行效率差异的因素”。
 代码的效率最根本因素绝对不是语言的效率，我一直这么确信。代码效率的决定因素必然是算法的正确选择和实现的优秀程度。这里面包括了正确评估问题，选择合适的数据结构，使用合适的算法等。例如对给定数据的高速查询，用红黑树去跑查询肯定跑不过预编译的哈希算法和哈希表。即使前者使用汇编实现，而后者只是python实现。(对于这点，我对比过一个大规模数据的查询，数据是固定的。数据库效率最差，C&#43;&#43;用红黑树的map次之，效率最好的是python的dict，底层是hashtable。当然，为了防止某些人补充，我自己先说了——我最后用了stlport的hash_map)
 语言效率的差异，有很多因素。例如编译型/解释型语言，动态语言和静态语言，是否带jit优化等，都会造成很大的性能差异。甚至同样是C，不同的编译和优化参数也会造成很大规模的差异，做优化的朋友一定心里有数。然而大多数情况下，决定语言效率的关键因素都不在语言自身的效率上，而是在于底层库实现的效率上。当然，如果底层库使用该种语言直接写成(我也比较喜欢这种风格)，那么归根结底还是考验语言本身的效率问题的。以正则测试为例，实际上python是一种性能很差的语言，但是在测试上并不很低。因为python的库实现是直接引用了C库，其效率仅仅是C加上一个不高的值。而lua得分不足只能说是库的实现比python差。
 最后一个问题相信大家最关心，即日常使用中造成运行效率差异的关键。到底是什么，决定了我们每天写的代码的效率？
@@ -45,11 +52,15 @@ if (!doNotTrack) {
 作为日常生产，我想大部分程序员都有这么个经验。决定代码质量的实际上是项目的时间是否充裕，程序员是否用心严谨，生产流程管理是否到位。除非程序员太差劲，否则技术性代码质量差异并不特别多——一般都是远远小于赶代码造成的严重问题的。如果您那里不是这样，我建议您更换一批靠谱的程序员。同样，在真实的日常生产中，大部分项目都没有那个机会对代码进行多次的复查，深层次优化所有问题。基本是写，写完了查，没有什么表面问题。然后检查一下，用户体验效率是不是很差，找最差的地方优化一下，然后直接交货。很少有像理论代码那样，反复优化和测试，甚至受到来自不同程序员的交叉检测和沟通。如果有这种级别的反复优化，毫无疑问的，C会是常用语言中的效率之王。在[shootout](http://shootout.alioth.debian.org/u64q/which-programming-languages-are-fastest.php)给出的速度评测上，仅有Intel自己实现的fortran超越了C。当然，我相信汇编会更加优秀。
 然而杯具的是，日常生产中恰恰相反，至少我是没什么时间去优化每行代码的。大部分时候，为了处理一个排序问题，我不会去网络上找一个vector库，而是直接开一个100的数组，然后qsort。前方报错了，改1000的数组。在写python的时候，也不会精细的考虑每个地方是否都用了合适的方法，某点是生成器好还是list好。大不了觉得某个程序慢了，cProfile一把，然后对着花时间最长的几个点看看是否有问题。自我感觉而言，python项目在做完之余，我还能泡个茶聊会天，自然也有功夫去看两眼代码，是否有哪里写的太难看了。而C代码就是不停的debug，即使我好容易喘口气，也绝对不会想去再看了。
 最后说一下sbcl，在自身性能测试中，是当之无愧的语言之王。速度是python的一倍不到，代码量是python的一半。常规来说，出错概率，维护难度，都是和代码行数直接相关。一半的代码量基本就意味着维护成本削减一半，而一倍的速度基本和java持平，在C后面紧追不舍。但是，以上常理对lisp均不适用。lisp的学习难度惊人不说，维护难度和代码行数没有直接关系，而是取决于写作者的水平。水平越好的写作者，代码越容易维护，反之，初心者写出来的玩意那是看都看不懂的。冰河在博客上说他找了个职业lisp程序员的工作，人家视若珍宝。我不知道是哪年的blog，但是从老板的角度来说，这才是程序员的悲哀。老板喜欢什么语言？最好有个点子，跑去人才市场插个牌子，上书“我要人”。然后就会有一堆人云集过来，脖子上面都套着“五行一元”，“精通XXX”的草标。抓一只大个的，给个项目经理的头衔，让他管着别人。每个月扔一麻袋饲料下去，过两个月就能收程序了。
-看起来和农场有点像，不是么？遗憾的是，lisp看来是达不到这个要求了。全国能用的python程序员不会超过5000，lisp程序员大概连500都不到。如果哪个老板不幸脑残，用了lisp来做项目，那么在招人这个问题上会比python更难执行。从这个意义上说，这才是lisp程序员不流行的关键——不好找工作。即使运行效率再高，语言本身再好，也没法过老板那关。" />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2182/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2012-05-28T02:13:32+08:00" />
-<meta property="article:modified_time" content="2012-05-28T02:13:32+08:00" />
+看起来和农场有点像，不是么？遗憾的是，lisp看来是达不到这个要求了。全国能用的python程序员不会超过5000，lisp程序员大概连500都不到。如果哪个老板不幸脑残，用了lisp来做项目，那么在招人这个问题上会比python更难执行。从这个意义上说，这才是lisp程序员不流行的关键——不好找工作。即使运行效率再高，语言本身再好，也没法过老板那关。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2012-05-28T02:13:32+08:00">
+    <meta property="article:modified_time" content="2012-05-28T02:13:32+08:00">
+    <meta property="article:tag" content="Lisp">
+    <meta property="article:tag" content="Program">
+    <meta property="article:tag" content="Python">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -86,7 +97,7 @@ if (!doNotTrack) {
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -98,27 +109,18 @@ if (!doNotTrack) {
       <h1 class ="post-title">语言的效率差异3</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           May 28, 2012
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/lisp/">lisp</a>
-              <a class="tag" href="//blog.shell909090.org/tags/program/">program</a>
-              <a class="tag" href="//blog.shell909090.org/tags/python/">python</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/lisp/">Lisp</a>
+              <a class="tag" href="/tags/program/">Program</a>
+              <a class="tag" href="/tags/python/">Python</a>
         </div>
       </div>
     </header>
@@ -136,7 +138,24 @@ if (!doNotTrack) {
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

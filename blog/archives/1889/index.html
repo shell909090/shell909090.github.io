@@ -4,27 +4,32 @@
     <title>一次系统和数据迁移 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="一次系统和数据迁移"/>
-<meta name="twitter:description" content="在文件系统选型后，贝壳骤然发现用ext3保存媒体文件是一件很傻的事情。耗费空间多，性能差，安全性低。根据文章结论，其实最好的文件系统是xfs。同时，贝壳的mini-itx空间基本满了(/home分区75-80%)。所以，贝壳准备买一块新的硬盘，然后将数据迁移过去。
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="一次系统和数据迁移">
+  <meta name="twitter:description" content="在文件系统选型后，贝壳骤然发现用ext3保存媒体文件是一件很傻的事情。耗费空间多，性能差，安全性低。根据文章结论，其实最好的文件系统是xfs。同时，贝壳的mini-itx空间基本满了(/home分区75-80%)。所以，贝壳准备买一块新的硬盘，然后将数据迁移过去。
 硬件选择上，贝壳询问了熟悉的硬件商。他说日立没货，WD的盘问题比较多，推荐希捷的。而且只有绿盘，具体型号是ST2000DL003-9VT166，SataIII，常规转速5900。ST的2T盘入手后，贝壳做了一下基础测试，hdparm分数是，原本的WD硬盘90M/s，新的ST硬盘70M/s，公司的硬盘99M/s。看来硬盘性能还是WD的比较好一点，当然，也可能是因为新硬盘本身就是低档硬盘。
 贝壳的第一选择，是按照原本的U盘安装设置，安装debian系统。不过前后两次都可耻的失败了，主要原因是mini-itx对U盘启动的支持并不是很好。被迫，用新买的大型电脑安装，又失败。原因是6.0的安装镜像对boot.img.gz方式的U盘启动支持不良。算了，先装5.0升级。没想到，这个原因直接导致了贝壳两次系统安装完毕后无法引导升级。为什么？因为硬盘的尺寸刚刚好比2T大了点。gurb升级到grub2的时候，为了让你支持全部空间，很好心的帮你升级到了gpt。然而gpt需要一个分区来保存一些信息，新多出来的空间又刚好不足以保存这个数据。因此，grub-pc就升级失败，而且救都没法救——因为没空间了。
 两次折腾下来，贝壳基本搞明白了为什么。然而要解决这个问题，就要手工分区，计算大小，产生lvm，设定，然后debootstrap，再设定。或者就直接使用debian
@@ -33,10 +38,12 @@ debian 6.0的安装系统比5.0的好了很多，磁盘分区支持gpt，直接�
 贝壳的分区方案是，gpt分区表，一个bios_grub分区，一个ext2的boot分区，一个lvm分区。lvm上面分8G的root，ext4格式。4G的swap，可以适应当前内存和升级到4G的内存(linux swap推荐是，4G以下两倍于内存，4G以上和内存一致)。1.7T的home，xfs格式。剩余268G。为什么要剩余？因为xfs只能扩展不能缩小，如果我需要扩展root和swap，或者需要产生新的lv来做虚拟机，不留下一定空间会出问题的。如果home不足，我再扩展150G基本可以解决问题。
 分区和安装都很顺利，然而approx对新的系统基本没有缓冲作用。我略微想了一下，大概明白了为什么——原有系统是用i386架构和amd64内核，而新系统则是架构内核都是amd64。或者通俗来说，原系统是64位内核下的32位混合系统，而新系统是彻底的64位系统。32位的包对64位的系统一点用都没有，所以approx原有的包都白缓存了。
 好吧，瑕不掩瑜，这次升级基本还是成功的。安装对应软件包，复制数据（推荐首次cp -a，速度快，后面用rsync保证同步），修改属主（否则很多程序无法启动）。尤其需要注意，mldonkey在downloads.ini中，不但保存了以哪个用户启动，同时也保存了用户id。新系统中用户名和id对应关系会发生变化，因此要修改正确。基本——事情就完了。
-一个小细节是，uwsgi由于amd64升级，所以无法使用。贝壳解决了一下问题，重新编译这个包。另外，debian官方的包出来了，目前处于sid状态，大家可以等着什么时候进入testing状态了。"/>
+一个小细节是，uwsgi由于amd64升级，所以无法使用。贝壳解决了一下问题，重新编译这个包。另外，debian官方的包出来了，目前处于sid状态，大家可以等着什么时候进入testing状态了。">
 
-    <meta property="og:title" content="一次系统和数据迁移" />
-<meta property="og:description" content="在文件系统选型后，贝壳骤然发现用ext3保存媒体文件是一件很傻的事情。耗费空间多，性能差，安全性低。根据文章结论，其实最好的文件系统是xfs。同时，贝壳的mini-itx空间基本满了(/home分区75-80%)。所以，贝壳准备买一块新的硬盘，然后将数据迁移过去。
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/1889/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="一次系统和数据迁移">
+  <meta property="og:description" content="在文件系统选型后，贝壳骤然发现用ext3保存媒体文件是一件很傻的事情。耗费空间多，性能差，安全性低。根据文章结论，其实最好的文件系统是xfs。同时，贝壳的mini-itx空间基本满了(/home分区75-80%)。所以，贝壳准备买一块新的硬盘，然后将数据迁移过去。
 硬件选择上，贝壳询问了熟悉的硬件商。他说日立没货，WD的盘问题比较多，推荐希捷的。而且只有绿盘，具体型号是ST2000DL003-9VT166，SataIII，常规转速5900。ST的2T盘入手后，贝壳做了一下基础测试，hdparm分数是，原本的WD硬盘90M/s，新的ST硬盘70M/s，公司的硬盘99M/s。看来硬盘性能还是WD的比较好一点，当然，也可能是因为新硬盘本身就是低档硬盘。
 贝壳的第一选择，是按照原本的U盘安装设置，安装debian系统。不过前后两次都可耻的失败了，主要原因是mini-itx对U盘启动的支持并不是很好。被迫，用新买的大型电脑安装，又失败。原因是6.0的安装镜像对boot.img.gz方式的U盘启动支持不良。算了，先装5.0升级。没想到，这个原因直接导致了贝壳两次系统安装完毕后无法引导升级。为什么？因为硬盘的尺寸刚刚好比2T大了点。gurb升级到grub2的时候，为了让你支持全部空间，很好心的帮你升级到了gpt。然而gpt需要一个分区来保存一些信息，新多出来的空间又刚好不足以保存这个数据。因此，grub-pc就升级失败，而且救都没法救——因为没空间了。
 两次折腾下来，贝壳基本搞明白了为什么。然而要解决这个问题，就要手工分区，计算大小，产生lvm，设定，然后debootstrap，再设定。或者就直接使用debian
@@ -45,11 +52,15 @@ debian 6.0的安装系统比5.0的好了很多，磁盘分区支持gpt，直接�
 贝壳的分区方案是，gpt分区表，一个bios_grub分区，一个ext2的boot分区，一个lvm分区。lvm上面分8G的root，ext4格式。4G的swap，可以适应当前内存和升级到4G的内存(linux swap推荐是，4G以下两倍于内存，4G以上和内存一致)。1.7T的home，xfs格式。剩余268G。为什么要剩余？因为xfs只能扩展不能缩小，如果我需要扩展root和swap，或者需要产生新的lv来做虚拟机，不留下一定空间会出问题的。如果home不足，我再扩展150G基本可以解决问题。
 分区和安装都很顺利，然而approx对新的系统基本没有缓冲作用。我略微想了一下，大概明白了为什么——原有系统是用i386架构和amd64内核，而新系统则是架构内核都是amd64。或者通俗来说，原系统是64位内核下的32位混合系统，而新系统是彻底的64位系统。32位的包对64位的系统一点用都没有，所以approx原有的包都白缓存了。
 好吧，瑕不掩瑜，这次升级基本还是成功的。安装对应软件包，复制数据（推荐首次cp -a，速度快，后面用rsync保证同步），修改属主（否则很多程序无法启动）。尤其需要注意，mldonkey在downloads.ini中，不但保存了以哪个用户启动，同时也保存了用户id。新系统中用户名和id对应关系会发生变化，因此要修改正确。基本——事情就完了。
-一个小细节是，uwsgi由于amd64升级，所以无法使用。贝壳解决了一下问题，重新编译这个包。另外，debian官方的包出来了，目前处于sid状态，大家可以等着什么时候进入testing状态了。" />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/1889/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2011-08-18T15:42:49+08:00" />
-<meta property="article:modified_time" content="2011-08-18T15:42:49+08:00" />
+一个小细节是，uwsgi由于amd64升级，所以无法使用。贝壳解决了一下问题，重新编译这个包。另外，debian官方的包出来了，目前处于sid状态，大家可以等着什么时候进入testing状态了。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2011-08-18T15:42:49+08:00">
+    <meta property="article:modified_time" content="2011-08-18T15:42:49+08:00">
+    <meta property="article:tag" content="Amd64">
+    <meta property="article:tag" content="Linux">
+    <meta property="article:tag" content="Xfs">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -86,7 +97,7 @@ debian 6.0的安装系统比5.0的好了很多，磁盘分区支持gpt，直接�
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -98,27 +109,18 @@ debian 6.0的安装系统比5.0的好了很多，磁盘分区支持gpt，直接�
       <h1 class ="post-title">一次系统和数据迁移</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Aug 18, 2011
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/amd64/">amd64</a>
-              <a class="tag" href="//blog.shell909090.org/tags/linux/">linux</a>
-              <a class="tag" href="//blog.shell909090.org/tags/xfs/">xfs</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/amd64/">Amd64</a>
+              <a class="tag" href="/tags/linux/">Linux</a>
+              <a class="tag" href="/tags/xfs/">Xfs</a>
         </div>
       </div>
     </header>
@@ -136,7 +138,24 @@ debian 6.0的安装系统比5.0的好了很多，磁盘分区支持gpt，直接�
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

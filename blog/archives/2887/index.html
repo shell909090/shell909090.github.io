@@ -4,29 +4,34 @@
     <title>如何在colab上用whisper识别语音 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="如何在colab上用whisper识别语音"/>
-<meta name="twitter:description" content="Abstract 简述了使用whisper识别语音的方法，以及如何使用colab的GPU加速runtime来识别语音内容。
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="如何在colab上用whisper识别语音">
+  <meta name="twitter:description" content="Abstract 简述了使用whisper识别语音的方法，以及如何使用colab的GPU加速runtime来识别语音内容。
 Whisper whisper是OpenAI开源的工具，你可以在这里找到介绍。在这里下载源码。中文的指引可以参考这篇。
-Linux上运行Whisper的准备 ffmpeg: linux上很容易安装。 git: linux上很容易安装。 pytorch: 上pytorch.org，选择合适的发行，复制代码，安装。 whisper: pip install git&#43;https://github.com/openai/whisper.git pip install &ndash;upgrade &ndash;no-deps &ndash;force-reinstall git&#43;https://github.com/openai/whisper.git 4.2那步我看不懂为啥要reinstall，不过反正照做了。
+Linux上运行Whisper的准备 ffmpeg: linux上很容易安装。 git: linux上很容易安装。 pytorch: 上pytorch.org，选择合适的发行，复制代码，安装。 whisper: pip install git&#43;https://github.com/openai/whisper.git pip install –upgrade –no-deps –force-reinstall git&#43;https://github.com/openai/whisper.git 4.2那步我看不懂为啥要reinstall，不过反正照做了。
 3步那里，有GPU选择GPU安装，没有GPU选择CPU安装。
 使用 time whisper --language Chinese --model medium [filename]
 如果没有模型，会现场下载。文件位置在~/.cache/whisper/。
@@ -38,15 +43,17 @@ small的pt文件大约500M。medium的pt文件1.5G。所有关联包1.3G左右�
 Docker上运行Whisper Webservice 参考这里。
 CPU版本：
 docker run -d -p 9000:9000 -e ASR_MODEL=base onerahmet/openai-whisper-asr-webservice:latest
-Colab Colab是Google推出的&quot;类Jupyter&quot;计算平台。最大的好处是可以选择GPU机型，上面搭载了16G显存，可以做一些简单计算。具体可以看这里。
+Colab Colab是Google推出的&#34;类Jupyter&#34;计算平台。最大的好处是可以选择GPU机型，上面搭载了16G显存，可以做一些简单计算。具体可以看这里。
 注意，Colab虽然是免费的，但大量使用昂贵的节点进行计算（尤其是GPU）会消耗你的计算单元。当计算单元消耗到一定程度的时候，就会受到一些限制。如果你希望大量执行GPU运算，最好直接买Colab的计算单元，或者干脆租用一台GPU型的机器。
 在Colab上进行Whisper识别 没啥好多说的。
-!nvidia-smi !pip3 install torch torchvision torchaudio !pip3 install git&#43;https://github.com/openai/whisper.git !pip3 install --upgrade --no-deps --force-reinstall git&#43;https://github."/>
+!nvidia-smi !pip3 install torch torchvision torchaudio !pip3 install git&#43;https://github.com/openai/whisper.git !pip3 install --upgrade --no-deps --force-reinstall git&#43;https://github.com/openai/whisper.git from google.colab import drive drive.mount(&#39;/content/gdrive&#39;) %cd &#34;/content/gdrive/MyDrive/Colab Notebooks&#34; !ls -l !time whisper --language Chinese --model medium">
 
-    <meta property="og:title" content="如何在colab上用whisper识别语音" />
-<meta property="og:description" content="Abstract 简述了使用whisper识别语音的方法，以及如何使用colab的GPU加速runtime来识别语音内容。
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/2887/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="如何在colab上用whisper识别语音">
+  <meta property="og:description" content="Abstract 简述了使用whisper识别语音的方法，以及如何使用colab的GPU加速runtime来识别语音内容。
 Whisper whisper是OpenAI开源的工具，你可以在这里找到介绍。在这里下载源码。中文的指引可以参考这篇。
-Linux上运行Whisper的准备 ffmpeg: linux上很容易安装。 git: linux上很容易安装。 pytorch: 上pytorch.org，选择合适的发行，复制代码，安装。 whisper: pip install git&#43;https://github.com/openai/whisper.git pip install &ndash;upgrade &ndash;no-deps &ndash;force-reinstall git&#43;https://github.com/openai/whisper.git 4.2那步我看不懂为啥要reinstall，不过反正照做了。
+Linux上运行Whisper的准备 ffmpeg: linux上很容易安装。 git: linux上很容易安装。 pytorch: 上pytorch.org，选择合适的发行，复制代码，安装。 whisper: pip install git&#43;https://github.com/openai/whisper.git pip install –upgrade –no-deps –force-reinstall git&#43;https://github.com/openai/whisper.git 4.2那步我看不懂为啥要reinstall，不过反正照做了。
 3步那里，有GPU选择GPU安装，没有GPU选择CPU安装。
 使用 time whisper --language Chinese --model medium [filename]
 如果没有模型，会现场下载。文件位置在~/.cache/whisper/。
@@ -58,14 +65,15 @@ small的pt文件大约500M。medium的pt文件1.5G。所有关联包1.3G左右�
 Docker上运行Whisper Webservice 参考这里。
 CPU版本：
 docker run -d -p 9000:9000 -e ASR_MODEL=base onerahmet/openai-whisper-asr-webservice:latest
-Colab Colab是Google推出的&quot;类Jupyter&quot;计算平台。最大的好处是可以选择GPU机型，上面搭载了16G显存，可以做一些简单计算。具体可以看这里。
+Colab Colab是Google推出的&#34;类Jupyter&#34;计算平台。最大的好处是可以选择GPU机型，上面搭载了16G显存，可以做一些简单计算。具体可以看这里。
 注意，Colab虽然是免费的，但大量使用昂贵的节点进行计算（尤其是GPU）会消耗你的计算单元。当计算单元消耗到一定程度的时候，就会受到一些限制。如果你希望大量执行GPU运算，最好直接买Colab的计算单元，或者干脆租用一台GPU型的机器。
 在Colab上进行Whisper识别 没啥好多说的。
-!nvidia-smi !pip3 install torch torchvision torchaudio !pip3 install git&#43;https://github.com/openai/whisper.git !pip3 install --upgrade --no-deps --force-reinstall git&#43;https://github." />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2887/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2023-03-24T20:40:39+08:00" />
-<meta property="article:modified_time" content="2023-03-24T20:40:39+08:00" />
+!nvidia-smi !pip3 install torch torchvision torchaudio !pip3 install git&#43;https://github.com/openai/whisper.git !pip3 install --upgrade --no-deps --force-reinstall git&#43;https://github.com/openai/whisper.git from google.colab import drive drive.mount(&#39;/content/gdrive&#39;) %cd &#34;/content/gdrive/MyDrive/Colab Notebooks&#34; !ls -l !time whisper --language Chinese --model medium">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2023-03-24T20:40:39+08:00">
+    <meta property="article:modified_time" content="2023-03-24T20:40:39+08:00">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -102,7 +110,7 @@ Colab Colab是Google推出的&quot;类Jupyter&quot;计算平台。最大的好�
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -114,17 +122,11 @@ Colab Colab是Google推出的&quot;类Jupyter&quot;计算平台。最大的好�
       <h1 class ="post-title">如何在colab上用whisper识别语音</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Mar 24, 2023
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
       </div>
@@ -180,7 +182,24 @@ drive.mount(&#39;/content/gdrive&#39;)
 </code></pre>
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

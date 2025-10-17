@@ -4,48 +4,58 @@
     <title>openwrt配置——extroot使用U盘配置规则 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="openwrt配置——extroot使用U盘配置规则"/>
-<meta name="twitter:description" content="贝壳入手了一个DIR-825路由器，机器不错，可惜存储太小。所以要用extroot做成U盘启动。
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="openwrt配置——extroot使用U盘配置规则">
+  <meta name="twitter:description" content="贝壳入手了一个DIR-825路由器，机器不错，可惜存储太小。所以要用extroot做成U盘启动。
 首先，你需要安装kmod-usb2，kmod-usb-uhci，kmod-usb-ohci，kmod-usb-storage，kmod-usb-storage-extras这几个包，以保证系统可以正常访问你的USB key。而后安装block-mount block-hotplug block-extroot这几个包，来启用U盘启动。最后不要忘记安装kmod-fs-ext3，驱动文件系统。
 当你搞定这几步后，修改/etc/config/fstab这个文件，如下配置。
 config mount option device /dev/sda1 option fstype ext3 option options rw,sync option enabled 1 option enabled\_fsck 1 option is\_rootfs 1 config swap option device /dev/sda2 option enabled 1 然后，恭喜你，你就拥有一个可以从U盘引导的路由器设备了。当然，如果不从U盘引导，那么还是可以正常使用目前有路由拥有的普通功能。在使用U盘后，路由器的包和设定就完全存储在了U盘上。如果配置错误，拔下U盘就可以还原。你也可以复制自己的U盘给别人，在同样型号，并且安装了同样上述包和配置的路由器上继续使用（当然，会沿用你的配置）。
 下面，是如何创建可被openwrt引导的U盘。
 mkdir /tmp/sda1 mkdir /tmp/root mount /dev/sda1 /tmp/sda1 mount -o bind / /tmp/root cp -a /tmp/root/\* /tmp/sda1 上面几步，更详细的可以参考这篇文章（http://ddnas.org:88/blog/index.php/archives/2.html）。
 下面说一下使用U盘启动后，你很可能需要的一些包。
-bash 当有了空间，你可以修改/etc/passwd来使用bash作为你的默认sh，这样比较习惯。 ifstat 非常常用的软件，监控各个网卡设备上的吞吐。 iftop 监控各个IP的访问情况。 iperf 测试路由器到各个节点的速度。 openssh-server sshd openvpn vpn软件 screen 一个ssh中运行多个bash的玩意。 注意，openssh使用~/.ssh/authorized_keys作为验证文件，并且该文件必须是600以下权限。而dropbear不使用这个文件。因此必须先产生该文件，再禁用openssh的password验证模式，不要想当然直接以为dropbear已经产生了这个文件。"/>
+bash 当有了空间，你可以修改/etc/passwd来使用bash作为你的默认sh，这样比较习惯。 ifstat 非常常用的软件，监控各个网卡设备上的吞吐。 iftop 监控各个IP的访问情况。 iperf 测试路由器到各个节点的速度。 openssh-server sshd openvpn vpn软件 screen 一个ssh中运行多个bash的玩意。 注意，openssh使用~/.ssh/authorized_keys作为验证文件，并且该文件必须是600以下权限。而dropbear不使用这个文件。因此必须先产生该文件，再禁用openssh的password验证模式，不要想当然直接以为dropbear已经产生了这个文件。">
 
-    <meta property="og:title" content="openwrt配置——extroot使用U盘配置规则" />
-<meta property="og:description" content="贝壳入手了一个DIR-825路由器，机器不错，可惜存储太小。所以要用extroot做成U盘启动。
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/1832/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="openwrt配置——extroot使用U盘配置规则">
+  <meta property="og:description" content="贝壳入手了一个DIR-825路由器，机器不错，可惜存储太小。所以要用extroot做成U盘启动。
 首先，你需要安装kmod-usb2，kmod-usb-uhci，kmod-usb-ohci，kmod-usb-storage，kmod-usb-storage-extras这几个包，以保证系统可以正常访问你的USB key。而后安装block-mount block-hotplug block-extroot这几个包，来启用U盘启动。最后不要忘记安装kmod-fs-ext3，驱动文件系统。
 当你搞定这几步后，修改/etc/config/fstab这个文件，如下配置。
 config mount option device /dev/sda1 option fstype ext3 option options rw,sync option enabled 1 option enabled\_fsck 1 option is\_rootfs 1 config swap option device /dev/sda2 option enabled 1 然后，恭喜你，你就拥有一个可以从U盘引导的路由器设备了。当然，如果不从U盘引导，那么还是可以正常使用目前有路由拥有的普通功能。在使用U盘后，路由器的包和设定就完全存储在了U盘上。如果配置错误，拔下U盘就可以还原。你也可以复制自己的U盘给别人，在同样型号，并且安装了同样上述包和配置的路由器上继续使用（当然，会沿用你的配置）。
 下面，是如何创建可被openwrt引导的U盘。
 mkdir /tmp/sda1 mkdir /tmp/root mount /dev/sda1 /tmp/sda1 mount -o bind / /tmp/root cp -a /tmp/root/\* /tmp/sda1 上面几步，更详细的可以参考这篇文章（http://ddnas.org:88/blog/index.php/archives/2.html）。
 下面说一下使用U盘启动后，你很可能需要的一些包。
-bash 当有了空间，你可以修改/etc/passwd来使用bash作为你的默认sh，这样比较习惯。 ifstat 非常常用的软件，监控各个网卡设备上的吞吐。 iftop 监控各个IP的访问情况。 iperf 测试路由器到各个节点的速度。 openssh-server sshd openvpn vpn软件 screen 一个ssh中运行多个bash的玩意。 注意，openssh使用~/.ssh/authorized_keys作为验证文件，并且该文件必须是600以下权限。而dropbear不使用这个文件。因此必须先产生该文件，再禁用openssh的password验证模式，不要想当然直接以为dropbear已经产生了这个文件。" />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/1832/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2011-06-14T10:10:43+08:00" />
-<meta property="article:modified_time" content="2011-06-14T10:10:43+08:00" />
+bash 当有了空间，你可以修改/etc/passwd来使用bash作为你的默认sh，这样比较习惯。 ifstat 非常常用的软件，监控各个网卡设备上的吞吐。 iftop 监控各个IP的访问情况。 iperf 测试路由器到各个节点的速度。 openssh-server sshd openvpn vpn软件 screen 一个ssh中运行多个bash的玩意。 注意，openssh使用~/.ssh/authorized_keys作为验证文件，并且该文件必须是600以下权限。而dropbear不使用这个文件。因此必须先产生该文件，再禁用openssh的password验证模式，不要想当然直接以为dropbear已经产生了这个文件。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2011-06-14T10:10:43+08:00">
+    <meta property="article:modified_time" content="2011-06-14T10:10:43+08:00">
+    <meta property="article:tag" content="Computer">
+    <meta property="article:tag" content="Openwrt">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -82,7 +92,7 @@ bash 当有了空间，你可以修改/etc/passwd来使用bash作为你的默认
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -94,26 +104,17 @@ bash 当有了空间，你可以修改/etc/passwd来使用bash作为你的默认
       <h1 class ="post-title">openwrt配置——extroot使用U盘配置规则</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Jun 14, 2011
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/computer/">computer</a>
-              <a class="tag" href="//blog.shell909090.org/tags/openwrt/">openwrt</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/computer/">Computer</a>
+              <a class="tag" href="/tags/openwrt/">Openwrt</a>
         </div>
       </div>
     </header>
@@ -155,7 +156,24 @@ cp -a /tmp/root/\* /tmp/sda1
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

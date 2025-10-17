@@ -1,55 +1,34 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>kernel on Shell&#39;s Home</title>
+    <title>Kernel on Shell&#39;s Home</title>
     <link>//blog.shell909090.org/tags/kernel/</link>
-    <description>Recent content in kernel on Shell&#39;s Home</description>
-    <generator>Hugo -- gohugo.io</generator>
+    <description>Recent content in Kernel on Shell&#39;s Home</description>
+    <generator>Hugo</generator>
     <language>en-us</language>
     <copyright>CC-BY-SA4.0</copyright>
-    <lastBuildDate>Mon, 20 Feb 2012 06:19:51 +0800</lastBuildDate><atom:link href="//blog.shell909090.org/tags/kernel/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 20 Feb 2012 06:19:51 +0800</lastBuildDate>
+    <atom:link href="//blog.shell909090.org/tags/kernel/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>有一种错误，叫做太常见了以至于视而不见</title>
       <link>//blog.shell909090.org/blog/archives/2098/</link>
       <pubDate>Mon, 20 Feb 2012 06:19:51 +0800</pubDate>
-      
       <guid>//blog.shell909090.org/blog/archives/2098/</guid>
-      <description>最近整XEN，出了一个奇怪的错误。
-ERROR (SrvDaemon:355) Exception starting xend((22, &#39;Invalid argument&#39;)) Traceback (most recent call last): File &amp;quot;/usr/lib/xen-4.0/lib/python/xen/xend/server/SrvDaemon.py&amp;quot;, line 335, in run xinfo = xc.xeninfo() Error: (22, &#39;Invalid argument&#39;) 根据网络上的内容，首先排除没有xen模块——有了，然后是/proc/xen目录是否mount——有了，然后是/sys/hypervisor/下面的一堆属性——有了，然后是版本——不对。xen-utils-4.1是4.1.2版本，而xen-tools是4.2版本。不过xen-utils并不依赖xen-tools，没有后者应当也可以运行这些玩意。hypervisor和xen-utils的版本是一致的。那问题是什么？
-出错的文件是/usr/lib/xen-4.1/lib/python/xen/lowlevel/xc.so里面发生的异常，下载xen的源码检查，这个函数主要是检查属性。属性检查会出什么错？
-正在一头雾水的时候，突然想起一个问题。我安装的是xen-hypervisor-4.1-amd64，因为kernel是linux-image-3.1.0-1-amd64。然而，我这个系统有一个非常大的特殊——在64位CPU上运行的32位系统。因此，实际上xen-utils是32位的。行了行了，下面的事情用膝盖都能想到。
-叹气，这世界上，真的有种错误，叫做太常见了以至于视而不见。不要认为自己不会犯。</description>
+      <description>&lt;p&gt;最近整XEN，出了一个奇怪的错误。&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;ERROR (SrvDaemon:355) Exception starting xend((22, &#39;Invalid argument&#39;))&#xA;Traceback&#xA;(most recent call last):&#xA;File &amp;quot;/usr/lib/xen-4.0/lib/python/xen/xend/server/SrvDaemon.py&amp;quot;, line 335, in run&#xA;xinfo = xc.xeninfo()&#xA;Error: (22, &#39;Invalid argument&#39;)&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;根据网络上的内容，首先排除没有xen模块——有了，然后是/proc/xen目录是否mount——有了，然后是/sys/hypervisor/下面的一堆属性——有了，然后是版本——不对。xen-utils-4.1是4.1.2版本，而xen-tools是4.2版本。不过xen-utils并不依赖xen-tools，没有后者应当也可以运行这些玩意。hypervisor和xen-utils的版本是一致的。那问题是什么？&lt;/p&gt;&#xA;&lt;p&gt;出错的文件是/usr/lib/xen-4.1/lib/python/xen/lowlevel/xc.so里面发生的异常，下载xen的源码检查，这个函数主要是检查属性。属性检查会出什么错？&lt;/p&gt;&#xA;&lt;p&gt;正在一头雾水的时候，突然想起一个问题。我安装的是xen-hypervisor-4.1-amd64，因为kernel是linux-image-3.1.0-1-amd64。然而，我这个系统有一个非常大的特殊——在64位CPU上运行的32位系统。因此，实际上xen-utils是32位的。行了行了，下面的事情用膝盖都能想到。&lt;/p&gt;&#xA;&lt;p&gt;叹气，这世界上，真的有种错误，叫做太常见了以至于视而不见。不要认为自己不会犯。&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>linux tty部分源码阅读</title>
       <link>//blog.shell909090.org/blog/archives/2020/</link>
       <pubDate>Mon, 19 Dec 2011 16:08:11 +0800</pubDate>
-      
       <guid>//blog.shell909090.org/blog/archives/2020/</guid>
-      <description>1.事情从file开始 file的定义在include/linux/fs.h中，其中有两个field，一个叫file_operations
-*f_op，一个叫void *private_data。file_operations定义了所有file能够进行的操作，在tty这个层面而言，drivers/tty/tty_io.c能看到有个叫做file_operations tty_fops的东西，下面有个叫console_fops的东西。两者区别不大，就是write函数进行了一下包装而已。从这里可以看出，系统将某个file的读写操作，转包给了tty_io.c这个文件。这个转包的手法非常类似虚函数。如果将tty_io.c里面的函数看作一个类的所有成员，那么tty_fops就是虚函数表，而f_op就是虚函数指针_v_ptr。
-2.tty_io的二转包 tty_io做了什么？他直接转包给了ldisc来处理这个事情。从tty_struct的结构我们能够看到，有这么一个field，tty_ldisc *ldisc。而tty_ldisc.h文件里面，我们能看到这个结构又有这么一个成员，tty_ldisc_ops *ops。同样手法，第二次使用。目标是tty/下面很多n_开始的文件，例如n_gsm，估计是处理手机的。我们的目标看起来像是n_tty.c中的tty_ldisc_ops tty_ldisc_N_TTY对象。
-3.n_tty做了些什么 n_tty也做了很多转包，例如对于n_tty_write而言，他使用了tty-&amp;gt;ops-&amp;gt;write这个函数。我们从struct tty_struct中可以看到这个field，tty_operations *ops。目标是谁？看起来像是pty.c，他里面有很多定义，例如tty_operations master_pty_ops_bsd，tty_operations slave_pty_ops_bsd，tty_operations ptm_unix98_ops，tty_operations pty_unix98_ops。
-4.pty总不转包了吧 以write而言，pty.c做的很简单，就是tty_insert_flip_string而已。不过之后调用了tty_flip_buffer_push，这个又会调用flush_to_ldisc，这个里面会调用ldisc-&amp;gt;ops。从上文中我们知道，这个函数的实体在n_tty.c的n_tty_receive_buf。
-5.n_tty_receive_buf做了些什么 这个函数对每个字符依次处理，如果是普通字符，就调用n_tty_receive_char。这个函数会调用put_tty_queue，经过两次转手，最终，这个字符进入了read_buf。这是一个循环队列。</description>
+      <description>&lt;h1 id=&#34;1事情从file开始&#34;&gt;1.事情从file开始&lt;/h1&gt;&#xA;&lt;p&gt;file的定义在include/linux/fs.h中，其中有两个field，一个叫file_operations&lt;/p&gt;&#xA;&lt;p&gt;*f_op，一个叫void *private_data。file_operations定义了所有file能够进行的操作，在tty这个层面而言，drivers/tty/tty_io.c能看到有个叫做file_operations tty_fops的东西，下面有个叫console_fops的东西。两者区别不大，就是write函数进行了一下包装而已。从这里可以看出，系统将某个file的读写操作，转包给了tty_io.c这个文件。这个转包的手法非常类似虚函数。如果将tty_io.c里面的函数看作一个类的所有成员，那么tty_fops就是虚函数表，而f_op就是虚函数指针_v_ptr。&lt;/p&gt;&#xA;&lt;h1 id=&#34;2tty_io的二转包&#34;&gt;2.tty_io的二转包&lt;/h1&gt;&#xA;&lt;p&gt;tty_io做了什么？他直接转包给了ldisc来处理这个事情。从tty_struct的结构我们能够看到，有这么一个field，tty_ldisc *ldisc。而tty_ldisc.h文件里面，我们能看到这个结构又有这么一个成员，tty_ldisc_ops *ops。同样手法，第二次使用。目标是tty/下面很多n_开始的文件，例如n_gsm，估计是处理手机的。我们的目标看起来像是n_tty.c中的tty_ldisc_ops tty_ldisc_N_TTY对象。&lt;/p&gt;&#xA;&lt;h1 id=&#34;3n_tty做了些什么&#34;&gt;3.n_tty做了些什么&lt;/h1&gt;&#xA;&lt;p&gt;n_tty也做了很多转包，例如对于n_tty_write而言，他使用了tty-&amp;gt;ops-&amp;gt;write这个函数。我们从struct tty_struct中可以看到这个field，tty_operations *ops。目标是谁？看起来像是pty.c，他里面有很多定义，例如tty_operations master_pty_ops_bsd，tty_operations slave_pty_ops_bsd，tty_operations ptm_unix98_ops，tty_operations pty_unix98_ops。&lt;/p&gt;&#xA;&lt;h1 id=&#34;4pty总不转包了吧&#34;&gt;4.pty总不转包了吧&lt;/h1&gt;&#xA;&lt;p&gt;以write而言，pty.c做的很简单，就是tty_insert_flip_string而已。不过之后调用了tty_flip_buffer_push，这个又会调用flush_to_ldisc，这个里面会调用ldisc-&amp;gt;ops。从上文中我们知道，这个函数的实体在n_tty.c的n_tty_receive_buf。&lt;/p&gt;&#xA;&lt;h1 id=&#34;5n_tty_receive_buf做了些什么&#34;&gt;5.n_tty_receive_buf做了些什么&lt;/h1&gt;&#xA;&lt;p&gt;这个函数对每个字符依次处理，如果是普通字符，就调用n_tty_receive_char。这个函数会调用put_tty_queue，经过两次转手，最终，这个字符进入了read_buf。这是一个循环队列。&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>vmware-workstation 7.1.2 source for linux-image 2.6.38</title>
       <link>//blog.shell909090.org/blog/archives/1781/</link>
       <pubDate>Wed, 20 Apr 2011 09:51:17 +0800</pubDate>
-      
       <guid>//blog.shell909090.org/blog/archives/1781/</guid>
-      <description>I&amp;rsquo;m running a vmware-workstation under debian testing. Last week I update kernel from 2.6.32 to 2.6.38, then vmware don&amp;rsquo;t work.
-Searching for patch with kernel modules, finally I got those.
-http://blog.shell909090.org/vmware-source.tar.gz
-http://blog.shell909090.org/vmware-7.1.2-2.6.38-1-generic.patch.gz
-Source is tested under debian testing, but should work for all dist which use 2.6.38 as kernel. Patch is not tested.
-Here is how to make it.
-#cd /usr/lib/vmware/modules/source
-#for file in *; do tar xvf $file; done</description>
+      <description>&lt;p&gt;    I&amp;rsquo;m running a vmware-workstation under debian testing. Last week I&#xA;update kernel from 2.6.32 to 2.6.38, then vmware don&amp;rsquo;t work.&lt;br&gt;&#xA;    Searching for patch with kernel modules, finally I got those.&lt;br&gt;&#xA;    &lt;a href=&#34;http://blog.shell909090.org/vmware-source.tar.gz&#34;&gt;http://blog.shell909090.org/vmware-source.tar.gz&lt;/a&gt;&lt;br&gt;&#xA;   &#xA;&lt;a href=&#34;http://goog_2104760512&#34;&gt;http://blog.shell909090.org/&lt;/a&gt;&lt;a href=&#34;http://vmware-7.1.2-2.6.38-1-generic.patch.gz&#34;&gt;vmware-7.1.2-2.6.38-1-generic.patch.gz&lt;/a&gt;&lt;br&gt;&#xA;    Source is tested under debian testing, but should work for all dist&#xA;which use 2.6.38 as kernel. Patch is not tested.&lt;br&gt;&#xA;    Here is how to make it.&lt;br&gt;&#xA;#cd /usr/lib/vmware/modules/source&lt;br&gt;&#xA;#for file in *; do tar xvf $file; done&lt;br&gt;&#xA;#wget&#xA;&lt;a href=&#34;http://mib.pianetalinux.org/MIB/2010.1/others/vmware/vmware-7.1.3-2.6.38-1-generic.patch&#34;&gt;http://mib.pianetalinux.org/MIB/2010.1/others/vmware/vmware-7.1.3-2.6.38-1-generic.patch&lt;/a&gt;&lt;br&gt;&#xA;#patch -p1 &amp;lt; vmware-7.1.3-2.6.38-1-generic.patch&lt;br&gt;&#xA;#vi vmmon-only/linux/iommu.c&lt;br&gt;&#xA;//replace iommu_map_range with iommu_map and replace&#xA;iommu_unmap_range with iommu_unmap&lt;br&gt;&#xA;#wget&#xA;&lt;a href=&#34;http://communities.vmware.com/servlet/JiveServlet/download/1553530-39785/vmware-7.1-2.6.35-3-generic.patch&#34;&gt;http://communities.vmware.com/servlet/JiveServlet/download/1553530-39785/vmware-7.1-2.6.35-3-generic.patch&lt;/a&gt;&lt;br&gt;&#xA;#patch -p1 &amp;lt; vmware-7.1-2.6.35-3-generic.patch&lt;br&gt;&#xA;// dont assume&lt;br&gt;&#xA;#for file in *-only; do tar cvf `basename $file -only`.tar $file;&#xA;done&lt;br&gt;&#xA;#rm -rf *-only&lt;br&gt;&#xA;#vmware-modconfig&lt;/p&gt;</description>
     </item>
-    
   </channel>
 </rss>

@@ -4,35 +4,40 @@
     <title>wifi有关的一些问题 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="wifi有关的一些问题"/>
-<meta name="twitter:description" content="abstract 讲一点wifi通讯的杂七杂八的问题。关于无线网络问题的诊断，可以回看之前文章。
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="wifi有关的一些问题">
+  <meta name="twitter:description" content="abstract 讲一点wifi通讯的杂七杂八的问题。关于无线网络问题的诊断，可以回看之前文章。
 技术标准 技术标准：802.11a/b/g/n/ac/ax，也叫wifi4/5/6。粗略讲起来，wifi4=802.11n，wifi5=802.11ac，wifi6=802.11ax。 频率：wifi传输数据所用的无线电频率。wifi只能使用ISM频率。一般就是使用2400MHz-2500Mhz这一块，还有5100MHz-5800MHz附近一块。这两块俗称2.4GHz和5Ghz频率。注意5GHz不是5G通讯协议那个5G。 频宽：在频率许可范围内，占用多少范围内的频率。一般来说，在技术标准许可的范围内，频宽翻倍，速度大约翻倍（一般是翻倍多一点，也有翻倍）。如果两个AP的频宽重叠，那么会产生干扰。 MIMO：简单来说，几根天线。在标准许可的范围内，一倍的天线增加一倍左右的速度（一般是翻倍）。 为什么技术标准有两套名字？简单来说Wifi联盟（注意不是英雄联盟）认为，技术标准的名字叫802.11ax太拗口了，不利于宣传。所以直接冠以wifi6的名字。前面的a/b/g/n/ac，自然就变成了1/2/3/4/5。就这么简单。
 如果你大概看了上面的介绍，就应该知道，技术标准是一切的核心。技术标准规定了能用几根天线，多少频率，多少频宽。例如，如果你自己来的话，你可能希望有100根天线，整个路由器就像麻辣烫似的一捆，速度爆炸。但是很不幸，技术规定限死最多3MIMO，也就是三根天线。而且，即便规定了三根天线，也要收发双方都支持才行。例如你可以从这里查到MBP各款的天线数量。大部分都是2MIMO，17-19款的有3MIMO。所以MBP19之后款的其实不支持3MIMO，哪怕路由器支持也没用。
-不过苹果去掉3MIMO还真不是骗钱。因为11ac和11ax最高都只有2MIMO。所以3MIMO这东西只有11n用&hellip;
+不过苹果去掉3MIMO还真不是骗钱。因为11ac和11ax最高都只有2MIMO。所以3MIMO这东西只有11n用…
 关于每个版本的协议，支持哪些参数，提供多少速率。可以看这里。
 特别注意。11ac不支持2.4G。这导致很多路由器的2.4G频率停留在11n标准上。该标准对应的最大速率是450Mbps，所以好多路由都标自己2.4G是450Mbps。实际从上面的表可以看出。这种路由器在碰到新款MBP的时候，最多跑到300Mbps。
-“穿墙” 先说重点。2.4G绕射能力好，所以“穿墙”性能好。5G反之。所谓穿墙，其实穿不过去。是wifi信号通过一些非阻挡物的穿透，再绕射到被钢筋水泥挡住的死角里。2.4G在绕射能力明显优于5G。但是从通讯角度来看，穿墙能力好不一定是优点。如果你用一个穿墙能力非常好的方案，能穿整个地球。那么理论上你的手机上会显示出地球上所有AP的名字&hellip;
+“穿墙” 先说重点。2.4G绕射能力好，所以“穿墙”性能好。5G反之。所谓穿墙，其实穿不过去。是wifi信号通过一些非阻挡物的穿透，再绕射到被钢筋水泥挡住的死角里。2.4G在绕射能力明显优于5G。但是从通讯角度来看，穿墙能力好不一定是优点。如果你用一个穿墙能力非常好的方案，能穿整个地球。那么理论上你的手机上会显示出地球上所有AP的名字…
 那还用个P，是吧。
-另外2.4G由于优秀的通用性，所以被各种地方普遍使用。门铃也是2.4G的，无绳电话也是2.4G的，蓝牙也是2.4G的。这些都算了。微波炉也是2.4G的。所以在家打开AP会让家里字面意义上的变成微波炉&hellip;
+另外2.4G由于优秀的通用性，所以被各种地方普遍使用。门铃也是2.4G的，无绳电话也是2.4G的，蓝牙也是2.4G的。这些都算了。微波炉也是2.4G的。所以在家打开AP会让家里字面意义上的变成微波炉…
 幸好功率不够。
 由于2.4G绕射性能良好，且用途广泛，所以你的2.4G频率经常会被干扰。这就是这个频率最大的缺点。5G频率反之。站在路由器直射区，速度感人。一跑远，很快就渣。而且由于上面说的11ac不支持2.4G问题，因此很多家庭AP的2.4G性能严重差于5G。如果你恰好是这种AP，不妨给2.4G和5G起不一样的名字，手工选择看看。
 MIMO和天线 通常来说，多MIMO代表多天线。如果是典型的2MIMO双频路由器，那就是4根天线。
@@ -48,18 +53,20 @@ ch38, 5190MHz，40MHz，5170-5210MHz。注意ch38=ch36&#43;ch40，下同。 ch46
 顺便一提，中国合法的ISM频率分别是：
 13553-13567kHz 26957-27283kHz 40.66-40.70MHz 902-928MHz 2400-2500MHz 5150-5350MHz 5725-5875MHz 24-24.25GHz 参考：
 中华人民共和国无线电频率划分规定 工业和信息化部关于加强和规范2400MHz、5100MHz和5800MHz频段无线电管理有关事宜的通知 速度计算 下面我们假定有个设备，是2MIMO，支持2.4G和5G频率，支持/不支持wifi6标准。来算算理想通讯速度。
-不支持wifi6 2.4G，11n标准，理想速度40MHz下300Mbps。 5G，11ac标准，理想速度80MHz下866Mbps。（不考虑wave2中160MHz） 一般来说，这路由器会宣称自己是1200M路由器（300&#43;866，余数不要太认真）。当然，不支持wifi6中的顶格路由器是3x2.4G&#43;2x5G天线。1300M（450&#43;866）。 支持wifi6 2.4G，理想速度40MHz下601Mbps。 5G，理想速度160MHz下2.4Gbps。 所以这就是3000M路由器。 "/>
+不支持wifi6 2.4G，11n标准，理想速度40MHz下300Mbps。 5G，11ac标准，理想速度80MHz下866Mbps。（不考虑wave2中160MHz） 一般来说，这路由器会宣称自己是1200M路由器（300&#43;866，余数不要太认真）。当然，不支持wifi6中的顶格路由器是3x2.4G&#43;2x5G天线。1300M（450&#43;866）。 支持wifi6 2.4G，理想速度40MHz下601Mbps。 5G，理想速度160MHz下2.4Gbps。 所以这就是3000M路由器。">
 
-    <meta property="og:title" content="wifi有关的一些问题" />
-<meta property="og:description" content="abstract 讲一点wifi通讯的杂七杂八的问题。关于无线网络问题的诊断，可以回看之前文章。
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/2886/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="wifi有关的一些问题">
+  <meta property="og:description" content="abstract 讲一点wifi通讯的杂七杂八的问题。关于无线网络问题的诊断，可以回看之前文章。
 技术标准 技术标准：802.11a/b/g/n/ac/ax，也叫wifi4/5/6。粗略讲起来，wifi4=802.11n，wifi5=802.11ac，wifi6=802.11ax。 频率：wifi传输数据所用的无线电频率。wifi只能使用ISM频率。一般就是使用2400MHz-2500Mhz这一块，还有5100MHz-5800MHz附近一块。这两块俗称2.4GHz和5Ghz频率。注意5GHz不是5G通讯协议那个5G。 频宽：在频率许可范围内，占用多少范围内的频率。一般来说，在技术标准许可的范围内，频宽翻倍，速度大约翻倍（一般是翻倍多一点，也有翻倍）。如果两个AP的频宽重叠，那么会产生干扰。 MIMO：简单来说，几根天线。在标准许可的范围内，一倍的天线增加一倍左右的速度（一般是翻倍）。 为什么技术标准有两套名字？简单来说Wifi联盟（注意不是英雄联盟）认为，技术标准的名字叫802.11ax太拗口了，不利于宣传。所以直接冠以wifi6的名字。前面的a/b/g/n/ac，自然就变成了1/2/3/4/5。就这么简单。
 如果你大概看了上面的介绍，就应该知道，技术标准是一切的核心。技术标准规定了能用几根天线，多少频率，多少频宽。例如，如果你自己来的话，你可能希望有100根天线，整个路由器就像麻辣烫似的一捆，速度爆炸。但是很不幸，技术规定限死最多3MIMO，也就是三根天线。而且，即便规定了三根天线，也要收发双方都支持才行。例如你可以从这里查到MBP各款的天线数量。大部分都是2MIMO，17-19款的有3MIMO。所以MBP19之后款的其实不支持3MIMO，哪怕路由器支持也没用。
-不过苹果去掉3MIMO还真不是骗钱。因为11ac和11ax最高都只有2MIMO。所以3MIMO这东西只有11n用&hellip;
+不过苹果去掉3MIMO还真不是骗钱。因为11ac和11ax最高都只有2MIMO。所以3MIMO这东西只有11n用…
 关于每个版本的协议，支持哪些参数，提供多少速率。可以看这里。
 特别注意。11ac不支持2.4G。这导致很多路由器的2.4G频率停留在11n标准上。该标准对应的最大速率是450Mbps，所以好多路由都标自己2.4G是450Mbps。实际从上面的表可以看出。这种路由器在碰到新款MBP的时候，最多跑到300Mbps。
-“穿墙” 先说重点。2.4G绕射能力好，所以“穿墙”性能好。5G反之。所谓穿墙，其实穿不过去。是wifi信号通过一些非阻挡物的穿透，再绕射到被钢筋水泥挡住的死角里。2.4G在绕射能力明显优于5G。但是从通讯角度来看，穿墙能力好不一定是优点。如果你用一个穿墙能力非常好的方案，能穿整个地球。那么理论上你的手机上会显示出地球上所有AP的名字&hellip;
+“穿墙” 先说重点。2.4G绕射能力好，所以“穿墙”性能好。5G反之。所谓穿墙，其实穿不过去。是wifi信号通过一些非阻挡物的穿透，再绕射到被钢筋水泥挡住的死角里。2.4G在绕射能力明显优于5G。但是从通讯角度来看，穿墙能力好不一定是优点。如果你用一个穿墙能力非常好的方案，能穿整个地球。那么理论上你的手机上会显示出地球上所有AP的名字…
 那还用个P，是吧。
-另外2.4G由于优秀的通用性，所以被各种地方普遍使用。门铃也是2.4G的，无绳电话也是2.4G的，蓝牙也是2.4G的。这些都算了。微波炉也是2.4G的。所以在家打开AP会让家里字面意义上的变成微波炉&hellip;
+另外2.4G由于优秀的通用性，所以被各种地方普遍使用。门铃也是2.4G的，无绳电话也是2.4G的，蓝牙也是2.4G的。这些都算了。微波炉也是2.4G的。所以在家打开AP会让家里字面意义上的变成微波炉…
 幸好功率不够。
 由于2.4G绕射性能良好，且用途广泛，所以你的2.4G频率经常会被干扰。这就是这个频率最大的缺点。5G频率反之。站在路由器直射区，速度感人。一跑远，很快就渣。而且由于上面说的11ac不支持2.4G问题，因此很多家庭AP的2.4G性能严重差于5G。如果你恰好是这种AP，不妨给2.4G和5G起不一样的名字，手工选择看看。
 MIMO和天线 通常来说，多MIMO代表多天线。如果是典型的2MIMO双频路由器，那就是4根天线。
@@ -75,11 +82,12 @@ ch38, 5190MHz，40MHz，5170-5210MHz。注意ch38=ch36&#43;ch40，下同。 ch46
 顺便一提，中国合法的ISM频率分别是：
 13553-13567kHz 26957-27283kHz 40.66-40.70MHz 902-928MHz 2400-2500MHz 5150-5350MHz 5725-5875MHz 24-24.25GHz 参考：
 中华人民共和国无线电频率划分规定 工业和信息化部关于加强和规范2400MHz、5100MHz和5800MHz频段无线电管理有关事宜的通知 速度计算 下面我们假定有个设备，是2MIMO，支持2.4G和5G频率，支持/不支持wifi6标准。来算算理想通讯速度。
-不支持wifi6 2.4G，11n标准，理想速度40MHz下300Mbps。 5G，11ac标准，理想速度80MHz下866Mbps。（不考虑wave2中160MHz） 一般来说，这路由器会宣称自己是1200M路由器（300&#43;866，余数不要太认真）。当然，不支持wifi6中的顶格路由器是3x2.4G&#43;2x5G天线。1300M（450&#43;866）。 支持wifi6 2.4G，理想速度40MHz下601Mbps。 5G，理想速度160MHz下2.4Gbps。 所以这就是3000M路由器。 " />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2886/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2022-08-29T20:34:34+08:00" />
-<meta property="article:modified_time" content="2022-08-29T20:34:34+08:00" />
+不支持wifi6 2.4G，11n标准，理想速度40MHz下300Mbps。 5G，11ac标准，理想速度80MHz下866Mbps。（不考虑wave2中160MHz） 一般来说，这路由器会宣称自己是1200M路由器（300&#43;866，余数不要太认真）。当然，不支持wifi6中的顶格路由器是3x2.4G&#43;2x5G天线。1300M（450&#43;866）。 支持wifi6 2.4G，理想速度40MHz下601Mbps。 5G，理想速度160MHz下2.4Gbps。 所以这就是3000M路由器。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2022-08-29T20:34:34+08:00">
+    <meta property="article:modified_time" content="2022-08-29T20:34:34+08:00">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -116,7 +124,7 @@ ch38, 5190MHz，40MHz，5170-5210MHz。注意ch38=ch36&#43;ch40，下同。 ch46
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -128,17 +136,11 @@ ch38, 5190MHz，40MHz，5170-5210MHz。注意ch38=ch36&#43;ch40，下同。 ch46
       <h1 class ="post-title">wifi有关的一些问题</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Aug 29, 2022
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
       </div>
@@ -221,7 +223,24 @@ ch38, 5190MHz，40MHz，5170-5210MHz。注意ch38=ch36&#43;ch40，下同。 ch46
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

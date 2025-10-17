@@ -4,27 +4,32 @@
     <title>每个程序员都是铁蹄下的尘埃 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="每个程序员都是铁蹄下的尘埃"/>
-<meta name="twitter:description" content="这个标题很文艺，我知道。实际上我想说的问题是，未来的计算机会是什么样子。在讲正题前，我们先得说说一个我相当成功也是相当失败的项目。
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="每个程序员都是铁蹄下的尘埃">
+  <meta name="twitter:description" content="这个标题很文艺，我知道。实际上我想说的问题是，未来的计算机会是什么样子。在讲正题前，我们先得说说一个我相当成功也是相当失败的项目。
 在很久很久以前——好吧，其实大概就是八九年前——我还在上大学，学习机械工程。当时我对电脑很感兴趣，所以父母给我装了一台电脑。这台电脑有512M内存，PIII800MHZ的CPU，120G硬盘，是当时比较新的配置，相当好。实际上，我是用考入大学时的配置升级来的，而且花了不小的一笔钱。当时我迷上了看动漫，交大有一套系统叫做comic，用过的人都有印象吧？这套系统开始是为了动漫而设计的，上面保存了相当多的动漫，而且有管理员定期更新。后来上面更是放上了其他的影像资料，做了视频点播系统，并且为全校师生服务。交大的网络滥用警告（例如国际流量超标）并不直接张贴在校务栏上，那样没多少人能看到。这些警告张贴在comic上，并且会ban掉你对comic服务器的访问。我们哪天看不了comic了，就会去看看上面是否有警告，然后去网络中心处理掉。
 好吧，扯远了。在毕业的年代，我担心自己将来不能访问comic了，所以打算带走一批我觉得有价值的数据。我毕业时新增了一块硬盘，组成了双硬盘系统，但是没有组成磁盘阵列(Raid或者动态磁盘[1])。除去系统中的80G左右的程序和数据使用空间，我还可以使用300G左右的空间。但是comic上我喜欢的数据远远超过了1T。为了解决这个问题，我就设计了volcpy系统。这个系统是这样设计的，将硬盘上的数据保存在光盘上，而将他的元数据——包括文件名，大小，光盘卷标等——留在磁盘上。这样我可以以1M的空间存储上T的数据。当时250G的磁盘大约700元，平均2.8元/G。而光盘4.3G大约1元，合0.23元/G，大约相差10倍。动漫数据是不会经常更新的，事实上应当是几乎不更新。volcpy系统负责将光盘上的文件在硬盘上生成描述文件，在将来需要的时候也可以进行数据还原。
 这个设计还是挺成功的，时至今日这个系统还在工作。我手头有接近2T的光盘，也不可能不使用这个系统。不过这个系统设计的时候，我还没接触linux，因此系统在设计上有一点缺陷——他的内部结构直接照抄了windows的卷描述和文件描述数据结构[2]，这对于windows下的存储很方便。要拼装存储数据，我只需要memcpy[3]就可以了。但是这也导致linux下想读取这个数据就必须进行解析，然后对照windows文档（电脑诸神阿），将内容解析和转换。如果是今天，也许我会使用基于文本的格式，例如json，yaml，或者xml。文件大小会膨胀2-4倍，但是也只有2-4M而已。
@@ -42,10 +47,12 @@ OK，我们说回来，未来的电脑是什么样子。本质上说，上面一
 2.描述结构指属性存储格式和顺序，例如卷描述结构就是光盘的大小，卷标等等数据和他们的顺序。
 3.指直接在内存中复制数据，不做任何其他操作。
 4.visual stdio，Microsoft公司上世纪出品的编程工具，一般用于C/C&#43;&#43;语言。
-5.lazy eval指程序在加载一段时间后才会执行的一些工作。把这些工作分开有助于加快程序的启动速度，但是在操作时会感觉到速度变慢。swap也有类似效果。"/>
+5.lazy eval指程序在加载一段时间后才会执行的一些工作。把这些工作分开有助于加快程序的启动速度，但是在操作时会感觉到速度变慢。swap也有类似效果。">
 
-    <meta property="og:title" content="每个程序员都是铁蹄下的尘埃" />
-<meta property="og:description" content="这个标题很文艺，我知道。实际上我想说的问题是，未来的计算机会是什么样子。在讲正题前，我们先得说说一个我相当成功也是相当失败的项目。
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/2106/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="每个程序员都是铁蹄下的尘埃">
+  <meta property="og:description" content="这个标题很文艺，我知道。实际上我想说的问题是，未来的计算机会是什么样子。在讲正题前，我们先得说说一个我相当成功也是相当失败的项目。
 在很久很久以前——好吧，其实大概就是八九年前——我还在上大学，学习机械工程。当时我对电脑很感兴趣，所以父母给我装了一台电脑。这台电脑有512M内存，PIII800MHZ的CPU，120G硬盘，是当时比较新的配置，相当好。实际上，我是用考入大学时的配置升级来的，而且花了不小的一笔钱。当时我迷上了看动漫，交大有一套系统叫做comic，用过的人都有印象吧？这套系统开始是为了动漫而设计的，上面保存了相当多的动漫，而且有管理员定期更新。后来上面更是放上了其他的影像资料，做了视频点播系统，并且为全校师生服务。交大的网络滥用警告（例如国际流量超标）并不直接张贴在校务栏上，那样没多少人能看到。这些警告张贴在comic上，并且会ban掉你对comic服务器的访问。我们哪天看不了comic了，就会去看看上面是否有警告，然后去网络中心处理掉。
 好吧，扯远了。在毕业的年代，我担心自己将来不能访问comic了，所以打算带走一批我觉得有价值的数据。我毕业时新增了一块硬盘，组成了双硬盘系统，但是没有组成磁盘阵列(Raid或者动态磁盘[1])。除去系统中的80G左右的程序和数据使用空间，我还可以使用300G左右的空间。但是comic上我喜欢的数据远远超过了1T。为了解决这个问题，我就设计了volcpy系统。这个系统是这样设计的，将硬盘上的数据保存在光盘上，而将他的元数据——包括文件名，大小，光盘卷标等——留在磁盘上。这样我可以以1M的空间存储上T的数据。当时250G的磁盘大约700元，平均2.8元/G。而光盘4.3G大约1元，合0.23元/G，大约相差10倍。动漫数据是不会经常更新的，事实上应当是几乎不更新。volcpy系统负责将光盘上的文件在硬盘上生成描述文件，在将来需要的时候也可以进行数据还原。
 这个设计还是挺成功的，时至今日这个系统还在工作。我手头有接近2T的光盘，也不可能不使用这个系统。不过这个系统设计的时候，我还没接触linux，因此系统在设计上有一点缺陷——他的内部结构直接照抄了windows的卷描述和文件描述数据结构[2]，这对于windows下的存储很方便。要拼装存储数据，我只需要memcpy[3]就可以了。但是这也导致linux下想读取这个数据就必须进行解析，然后对照windows文档（电脑诸神阿），将内容解析和转换。如果是今天，也许我会使用基于文本的格式，例如json，yaml，或者xml。文件大小会膨胀2-4倍，但是也只有2-4M而已。
@@ -63,11 +70,13 @@ OK，我们说回来，未来的电脑是什么样子。本质上说，上面一
 2.描述结构指属性存储格式和顺序，例如卷描述结构就是光盘的大小，卷标等等数据和他们的顺序。
 3.指直接在内存中复制数据，不做任何其他操作。
 4.visual stdio，Microsoft公司上世纪出品的编程工具，一般用于C/C&#43;&#43;语言。
-5.lazy eval指程序在加载一段时间后才会执行的一些工作。把这些工作分开有助于加快程序的启动速度，但是在操作时会感觉到速度变慢。swap也有类似效果。" />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2106/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2012-03-06T06:01:08+08:00" />
-<meta property="article:modified_time" content="2012-03-06T06:01:08+08:00" />
+5.lazy eval指程序在加载一段时间后才会执行的一些工作。把这些工作分开有助于加快程序的启动速度，但是在操作时会感觉到速度变慢。swap也有类似效果。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2012-03-06T06:01:08+08:00">
+    <meta property="article:modified_time" content="2012-03-06T06:01:08+08:00">
+    <meta property="article:tag" content="Program">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -104,7 +113,7 @@ OK，我们说回来，未来的电脑是什么样子。本质上说，上面一
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -116,25 +125,16 @@ OK，我们说回来，未来的电脑是什么样子。本质上说，上面一
       <h1 class ="post-title">每个程序员都是铁蹄下的尘埃</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Mar 6, 2012
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/program/">program</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/program/">Program</a>
         </div>
       </div>
     </header>
@@ -161,7 +161,24 @@ OK，我们说回来，未来的电脑是什么样子。本质上说，上面一
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

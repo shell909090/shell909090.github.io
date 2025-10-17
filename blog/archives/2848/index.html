@@ -4,27 +4,32 @@
     <title>两台机器上TCP状态不一致的排查 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="两台机器上TCP状态不一致的排查"/>
-<meta name="twitter:description" content="简介 TCP状态不一致是一种常见故障。双方的机器上列出连接，其中一方连接存在，另一方则没有任何连接。如果连接存在的一方有数据正在发送，则存在两种可能性。一种是对方收到数据报文后发现这个报文没有socket对应，于是返回一个RST，导致连接存在的一方连接直接消失。这种情况下问题很难察觉。另一种是对方（或者中间方）收到报文后直接丢弃。发送方经过一定次数（tcp_retries2，一般来说就是15分钟左右）的重试后，认为连接已死，连接会自动消失。如果tcp连接打开了keep-alive，经过7200s（具体值看socket设定），即等于有数据发送。后同。
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="两台机器上TCP状态不一致的排查">
+  <meta name="twitter:description" content="简介 TCP状态不一致是一种常见故障。双方的机器上列出连接，其中一方连接存在，另一方则没有任何连接。如果连接存在的一方有数据正在发送，则存在两种可能性。一种是对方收到数据报文后发现这个报文没有socket对应，于是返回一个RST，导致连接存在的一方连接直接消失。这种情况下问题很难察觉。另一种是对方（或者中间方）收到报文后直接丢弃。发送方经过一定次数（tcp_retries2，一般来说就是15分钟左右）的重试后，认为连接已死，连接会自动消失。如果tcp连接打开了keep-alive，经过7200s（具体值看socket设定），即等于有数据发送。后同。
 一般来说，有三种常见理由：
 RST报文丢失。在RST报文丢失时，发送方连接直接消失，接收方由于没有任何消息，因此连接始终存在。 FIN报文丢失。FIN报文丢失和RST报文丢失情况类似，但是发送方会进入FIN_1状态，经过一定次数重发（tcp_orphan_retries）无回应后连接消失。 内核错误。 排障时，应当首先考虑RST报文和FIN报文丢失的情况。
 排障 首先应排除三种常见场景：
@@ -38,10 +43,12 @@ RST报文丢失。在RST报文丢失时，发送方连接直接消失，接收�
 情况和场景二类似，网络中有IDS类设备。但是丢失的报文是FIN。这导致发送方可见FIN_1状态，接收方缓冲区没有异常。
 确证方法：双方抓FIN包，无法对齐。
 内核错误导致的TCP状态不一致很少见，建议升级到最新内核后重测。如无法复现可以合理推测这种可能性，但是无法确证。确证需要systemtap。
-PS：FIN_1状态同时也受到tcp_max_orphans的限制。如果tcp_max_orphans被设定为0以清理TIME_WAIT状态的情况下，可能导致FIN_1状态很难察觉。可考虑恢复tcp_max_orphans或者干脆直接抓包诊断。"/>
+PS：FIN_1状态同时也受到tcp_max_orphans的限制。如果tcp_max_orphans被设定为0以清理TIME_WAIT状态的情况下，可能导致FIN_1状态很难察觉。可考虑恢复tcp_max_orphans或者干脆直接抓包诊断。">
 
-    <meta property="og:title" content="两台机器上TCP状态不一致的排查" />
-<meta property="og:description" content="简介 TCP状态不一致是一种常见故障。双方的机器上列出连接，其中一方连接存在，另一方则没有任何连接。如果连接存在的一方有数据正在发送，则存在两种可能性。一种是对方收到数据报文后发现这个报文没有socket对应，于是返回一个RST，导致连接存在的一方连接直接消失。这种情况下问题很难察觉。另一种是对方（或者中间方）收到报文后直接丢弃。发送方经过一定次数（tcp_retries2，一般来说就是15分钟左右）的重试后，认为连接已死，连接会自动消失。如果tcp连接打开了keep-alive，经过7200s（具体值看socket设定），即等于有数据发送。后同。
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/2848/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="两台机器上TCP状态不一致的排查">
+  <meta property="og:description" content="简介 TCP状态不一致是一种常见故障。双方的机器上列出连接，其中一方连接存在，另一方则没有任何连接。如果连接存在的一方有数据正在发送，则存在两种可能性。一种是对方收到数据报文后发现这个报文没有socket对应，于是返回一个RST，导致连接存在的一方连接直接消失。这种情况下问题很难察觉。另一种是对方（或者中间方）收到报文后直接丢弃。发送方经过一定次数（tcp_retries2，一般来说就是15分钟左右）的重试后，认为连接已死，连接会自动消失。如果tcp连接打开了keep-alive，经过7200s（具体值看socket设定），即等于有数据发送。后同。
 一般来说，有三种常见理由：
 RST报文丢失。在RST报文丢失时，发送方连接直接消失，接收方由于没有任何消息，因此连接始终存在。 FIN报文丢失。FIN报文丢失和RST报文丢失情况类似，但是发送方会进入FIN_1状态，经过一定次数重发（tcp_orphan_retries）无回应后连接消失。 内核错误。 排障时，应当首先考虑RST报文和FIN报文丢失的情况。
 排障 首先应排除三种常见场景：
@@ -55,11 +62,12 @@ RST报文丢失。在RST报文丢失时，发送方连接直接消失，接收�
 情况和场景二类似，网络中有IDS类设备。但是丢失的报文是FIN。这导致发送方可见FIN_1状态，接收方缓冲区没有异常。
 确证方法：双方抓FIN包，无法对齐。
 内核错误导致的TCP状态不一致很少见，建议升级到最新内核后重测。如无法复现可以合理推测这种可能性，但是无法确证。确证需要systemtap。
-PS：FIN_1状态同时也受到tcp_max_orphans的限制。如果tcp_max_orphans被设定为0以清理TIME_WAIT状态的情况下，可能导致FIN_1状态很难察觉。可考虑恢复tcp_max_orphans或者干脆直接抓包诊断。" />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2848/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2017-02-24T11:11:24+08:00" />
-<meta property="article:modified_time" content="2017-02-24T11:11:24+08:00" />
+PS：FIN_1状态同时也受到tcp_max_orphans的限制。如果tcp_max_orphans被设定为0以清理TIME_WAIT状态的情况下，可能导致FIN_1状态很难察觉。可考虑恢复tcp_max_orphans或者干脆直接抓包诊断。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2017-02-24T11:11:24+08:00">
+    <meta property="article:modified_time" content="2017-02-24T11:11:24+08:00">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -96,7 +104,7 @@ PS：FIN_1状态同时也受到tcp_max_orphans的限制。如果tcp_max_orphans�
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -108,17 +116,11 @@ PS：FIN_1状态同时也受到tcp_max_orphans的限制。如果tcp_max_orphans�
       <h1 class ="post-title">两台机器上TCP状态不一致的排查</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Feb 24, 2017
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
       </div>
@@ -149,7 +151,24 @@ PS：FIN_1状态同时也受到tcp_max_orphans的限制。如果tcp_max_orphans�
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 

@@ -4,27 +4,32 @@
     <title>铁道部的扯淡排队系统 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.112.5">
+    <meta name="generator" content="Hugo 0.152.0-DEV">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
-<script>
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-WH8XZZ4WLY', { 'anonymize_ip': false });
-}
-</script>
-
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="铁道部的扯淡排队系统"/>
-<meta name="twitter:description" content="缘起 这两天同事都在讨论12306的订票机制，据说要排队了。我不买火车票，所以只是大概听同事讲解了一下机制。如果不正确，希望大家告知我。我听到的机制大概是这样的。
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WH8XZZ4WLY');
+        }
+      </script>
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="铁道部的扯淡排队系统">
+  <meta name="twitter:description" content="缘起 这两天同事都在讨论12306的订票机制，据说要排队了。我不买火车票，所以只是大概听同事讲解了一下机制。如果不正确，希望大家告知我。我听到的机制大概是这样的。
 首先，是每个人进去，正常购票。当碰到热门线路，在提交时进入不定时的排队。等排队结束，成功与否给与提示。铁道部称，这是为了能够减轻并发压力。
 问题 如同老板说的那样，这个机制P都没解决。问题的关键在于系统的每秒负载能力，即每秒能够完成多少个transaction。只要来的人比能完成的transaction多。那只有几个结局：
 刷爆网站，这是原来的结局。 堆在队列上，有人买不到票。 如果铁道部宣称的目的是真的的话，那他们一定用错了机制。
@@ -34,10 +39,12 @@ if (!doNotTrack) {
 也许你会觉得，既然要排他，那么就需要用事务型数据库。目前数据库平均性能都是1k/s（我们就按照我们在普通台式机上的数据计算好了），而全国每秒成交的数量远大于这个值。这里出的问题？
 这是不可能的。傻想也知道，每趟车和另一趟车没有耦合关系。按照车次做哈希，分布在多台服务器上交易就行了。这是典型的可并行系统，效率可以直接用单台机器性能乘以服务器数。在交换机允许的范围内，根本不会有交易性能压力。我们仔细审查铁路系统的结构，会发现，这东西天生就是分布交易的好材料。
 部署一组服务器，每一台都部署同一套东西，接口按照REST开放。 将车次哈希后映射到具体的服务器上，所有的余票查询/订购，都向这台机器做请求。而核心服务器只要返回静态页面和车次信息就好。 单个服务器上的每秒transaction要求就不可能太高。 阴谋论 也许有些人会想，这个系统莫非是铁道部给内部留票做的？这又错了。要做内部留票，最简单的方法就是开打内部提前售票限制。只要这个限制一开，他们想留多少留多少，你一点脾气都没有。
-结论 我只能归因于国有垄断企业在解决这类问题上的扯淡了，和私有企业没法比阿。建议对铁道部实行拆分。"/>
+结论 我只能归因于国有垄断企业在解决这类问题上的扯淡了，和私有企业没法比阿。建议对铁道部实行拆分。">
 
-    <meta property="og:title" content="铁道部的扯淡排队系统" />
-<meta property="og:description" content="缘起 这两天同事都在讨论12306的订票机制，据说要排队了。我不买火车票，所以只是大概听同事讲解了一下机制。如果不正确，希望大家告知我。我听到的机制大概是这样的。
+    <meta property="og:url" content="//blog.shell909090.org/blog/archives/2241/">
+  <meta property="og:site_name" content="Shell&#39;s Home">
+  <meta property="og:title" content="铁道部的扯淡排队系统">
+  <meta property="og:description" content="缘起 这两天同事都在讨论12306的订票机制，据说要排队了。我不买火车票，所以只是大概听同事讲解了一下机制。如果不正确，希望大家告知我。我听到的机制大概是这样的。
 首先，是每个人进去，正常购票。当碰到热门线路，在提交时进入不定时的排队。等排队结束，成功与否给与提示。铁道部称，这是为了能够减轻并发压力。
 问题 如同老板说的那样，这个机制P都没解决。问题的关键在于系统的每秒负载能力，即每秒能够完成多少个transaction。只要来的人比能完成的transaction多。那只有几个结局：
 刷爆网站，这是原来的结局。 堆在队列上，有人买不到票。 如果铁道部宣称的目的是真的的话，那他们一定用错了机制。
@@ -47,11 +54,13 @@ if (!doNotTrack) {
 也许你会觉得，既然要排他，那么就需要用事务型数据库。目前数据库平均性能都是1k/s（我们就按照我们在普通台式机上的数据计算好了），而全国每秒成交的数量远大于这个值。这里出的问题？
 这是不可能的。傻想也知道，每趟车和另一趟车没有耦合关系。按照车次做哈希，分布在多台服务器上交易就行了。这是典型的可并行系统，效率可以直接用单台机器性能乘以服务器数。在交换机允许的范围内，根本不会有交易性能压力。我们仔细审查铁路系统的结构，会发现，这东西天生就是分布交易的好材料。
 部署一组服务器，每一台都部署同一套东西，接口按照REST开放。 将车次哈希后映射到具体的服务器上，所有的余票查询/订购，都向这台机器做请求。而核心服务器只要返回静态页面和车次信息就好。 单个服务器上的每秒transaction要求就不可能太高。 阴谋论 也许有些人会想，这个系统莫非是铁道部给内部留票做的？这又错了。要做内部留票，最简单的方法就是开打内部提前售票限制。只要这个限制一开，他们想留多少留多少，你一点脾气都没有。
-结论 我只能归因于国有垄断企业在解决这类问题上的扯淡了，和私有企业没法比阿。建议对铁道部实行拆分。" />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="//blog.shell909090.org/blog/archives/2241/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2012-09-19T16:08:57+08:00" />
-<meta property="article:modified_time" content="2012-09-19T16:08:57+08:00" />
+结论 我只能归因于国有垄断企业在解决这类问题上的扯淡了，和私有企业没法比阿。建议对铁道部实行拆分。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2012-09-19T16:08:57+08:00">
+    <meta property="article:modified_time" content="2012-09-19T16:08:57+08:00">
+    <meta property="article:tag" content="Program">
 
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
@@ -88,7 +97,7 @@ if (!doNotTrack) {
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
       <p>Copyright &copy; 2025 Shell Xu - <a href="//blog.shell909090.org/license/">License</a></p>
@@ -100,25 +109,16 @@ if (!doNotTrack) {
       <h1 class ="post-title">铁道部的扯淡排队系统</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Sep 19, 2012
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/program/">program</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/program/">Program</a>
         </div>
       </div>
     </header>
@@ -152,7 +152,24 @@ if (!doNotTrack) {
 
     </div>
     <div class="post-footer">
-      
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'shell909090blog';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
     </div>
   </article>
 
