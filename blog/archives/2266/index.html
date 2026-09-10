@@ -4,17 +4,18 @@
     <title>异常之殇 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.152.2">
+    <meta name="generator" content="Hugo 0.166.0">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
       <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
       <script>
         var doNotTrack = false;
-        if ( false ) {
+        if ( true ) {
           var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
           var doNotTrack = (dnt == "1" || dnt == "yes");
         }
@@ -26,9 +27,9 @@
         }
       </script>
     
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="异常之殇">
-  <meta name="twitter:description" content="异常之殇 辗转开解 辗转开解(stack unwinding)说的其实是这么一个现象。当执行流从深层向浅层转移时，深层调用所产生的栈上对象(stack object)需要销毁，资源需要释放。对于面对对象语言而言，往往就会执行到析构函数。
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:title" content="异常之殇">
+	<meta name="twitter:description" content="异常之殇 辗转开解 辗转开解(stack unwinding)说的其实是这么一个现象。当执行流从深层向浅层转移时，深层调用所产生的栈上对象(stack object)需要销毁，资源需要释放。对于面对对象语言而言，往往就会执行到析构函数。
 辗转开解中的异常 辗转开解真正令人迷惑之处在于，如果在析构函数中发生错误怎么办？在异常处理中发生异常，我们可以继续向上抛出。但是在辗转开解代码中出现异常，上层应当收到两个异常呢？还是一个？
 无论是哪种可能，都没有完美自恰的符合直觉，因此这一般是一个未定义的行为。在C&#43;&#43;中，进程会整个彻底崩溃掉的。因此，千万不要在析构函数内抛出(或者可能抛出)异常。
 如果分离析构和资源销毁 一种做法是，在析构时不做资源销毁，转而提供专门的函数来执行资源销毁过程。析构只处理简单的delete等操作。然而这种做法的杯具在于，你在任何时候，一旦使用对象，都必须使用finally来保证销毁函数的调用。在发生异常时，栈上对象的辗转开解是自动的，析构函数的调用也是自动的，但是销毁函数的调用就是手工的了。
@@ -48,9 +49,9 @@ C&#43;&#43;中有一类特殊的优化，叫做对象返回优化。当编译器
 如果在异常处理中抛出异常，很可能导致的结果就是异常处理没有完成。而未完成的异常处理会发生什么问题，那只有天晓得。这个在任何带有异常系统的语言中都是成立的。">
 
     <meta property="og:url" content="//blog.shell909090.org/blog/archives/2266/">
-  <meta property="og:site_name" content="Shell&#39;s Home">
-  <meta property="og:title" content="异常之殇">
-  <meta property="og:description" content="异常之殇 辗转开解 辗转开解(stack unwinding)说的其实是这么一个现象。当执行流从深层向浅层转移时，深层调用所产生的栈上对象(stack object)需要销毁，资源需要释放。对于面对对象语言而言，往往就会执行到析构函数。
+	<meta property="og:site_name" content="Shell&#39;s Home">
+	<meta property="og:title" content="异常之殇">
+	<meta property="og:description" content="异常之殇 辗转开解 辗转开解(stack unwinding)说的其实是这么一个现象。当执行流从深层向浅层转移时，深层调用所产生的栈上对象(stack object)需要销毁，资源需要释放。对于面对对象语言而言，往往就会执行到析构函数。
 辗转开解中的异常 辗转开解真正令人迷惑之处在于，如果在析构函数中发生错误怎么办？在异常处理中发生异常，我们可以继续向上抛出。但是在辗转开解代码中出现异常，上层应当收到两个异常呢？还是一个？
 无论是哪种可能，都没有完美自恰的符合直觉，因此这一般是一个未定义的行为。在C&#43;&#43;中，进程会整个彻底崩溃掉的。因此，千万不要在析构函数内抛出(或者可能抛出)异常。
 如果分离析构和资源销毁 一种做法是，在析构时不做资源销毁，转而提供专门的函数来执行资源销毁过程。析构只处理简单的delete等操作。然而这种做法的杯具在于，你在任何时候，一旦使用对象，都必须使用finally来保证销毁函数的调用。在发生异常时，栈上对象的辗转开解是自动的，析构函数的调用也是自动的，但是销毁函数的调用就是手工的了。
@@ -68,20 +69,20 @@ C&#43;&#43;中有一类特殊的优化，叫做对象返回优化。当编译器
 分离构造/析构的邪恶之处 ZMQ的作者曾经吐槽过这种在构造/析构之外再定义初始化/清除代码的努力。他的观点是，如果万一在构造函数中加入了代码，会引起半构造现象。为了解决这个问题，会使得整个类带上状态。我在上面已经假定这件事情不会发生了，否则代码会更加复杂，问题也更加严重。
 二次异常 是的，你不应当在异常处理代码中抛出异常。当然，这里的异常指的是你的异常处理代码不应当发生异常。经过逻辑判定，当前的异常应当由更上层处理的情况不在此列。
 如果在异常处理中抛出异常，很可能导致的结果就是异常处理没有完成。而未完成的异常处理会发生什么问题，那只有天晓得。这个在任何带有异常系统的语言中都是成立的。">
-  <meta property="og:locale" content="en_us">
-  <meta property="og:type" content="article">
-    <meta property="article:section" content="blog">
-    <meta property="article:published_time" content="2012-10-30T16:42:25+08:00">
-    <meta property="article:modified_time" content="2012-10-30T16:42:25+08:00">
-    <meta property="article:tag" content="C">
-    <meta property="article:tag" content="Java">
-    <meta property="article:tag" content="Program">
+	<meta property="og:locale" content="en_us">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="blog">
+		<meta property="article:published_time" content="2012-10-30T16:42:25+08:00">
+		<meta property="article:modified_time" content="2012-10-30T16:42:25+08:00">
+		<meta property="article:tag" content="C">
+		<meta property="article:tag" content="Java">
+		<meta property="article:tag" content="Program">
 
 
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
     </header>
@@ -92,27 +93,18 @@ C&#43;&#43;中有一类特殊的优化，叫做对象返回优化。当编译器
       <h1 class ="post-title">异常之殇</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Oct 30, 2012
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/c/">C</a>
-              <a class="tag" href="//blog.shell909090.org/tags/java/">Java</a>
-              <a class="tag" href="//blog.shell909090.org/tags/program/">Program</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/c/">C</a>
+              <a class="tag" href="/tags/java/">Java</a>
+              <a class="tag" href="/tags/program/">Program</a>
         </div>
       </div>
     </header>
@@ -154,6 +146,8 @@ long，这个大家都知道。但是如果是对象，转换行为就需要由�
 
     </div>
     <div class="post-footer">
+      
+
     </div>
   </article>
 

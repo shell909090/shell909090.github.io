@@ -4,17 +4,18 @@
     <title>python源码解析读书笔记（四）——杂项 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.152.2">
+    <meta name="generator" content="Hugo 0.166.0">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
       <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
       <script>
         var doNotTrack = false;
-        if ( false ) {
+        if ( true ) {
           var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
           var doNotTrack = (dnt == "1" || dnt == "yes");
         }
@@ -26,9 +27,9 @@
         }
       </script>
     
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="python源码解析读书笔记（四）——杂项">
-  <meta name="twitter:description" content="1.GIL的影响
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:title" content="python源码解析读书笔记（四）——杂项">
+	<meta name="twitter:description" content="1.GIL的影响
 很多人讨论python性能的时候都提到一个概念，GIL。我在python源码中搜了一下，这个函数调用并不多，但是位置很要命。每个线程，生成的时候请求一下，退出的时候释放一下。在每次运行字节码前也会短暂的释放一下，让其他线程有获得运行的机会。说白了，除非程序显式的调用release_lock去释放资源，否则python是没有任何多线程能力的。这种机会并不很多，通常只发生在阻塞的时候。
 而python原子化的粒度也比较清晰，就是每个字节码内部一定是原子的，字节码和字节码之间是非原子的。当我们操作l.append的时候，不用担心线程竞争导致数据结构损坏。但是如果我们操作del l[len(l)]的时候，存在发生异常的概率。
 2.对象缓存池
@@ -42,9 +43,9 @@ python的辅助垃圾收集算法是三色标记法和分代垃圾收集模型�
 str对象是很难猜测编码的，当离开了数据源代码后，再分析编码是个不靠谱的方案。">
 
     <meta property="og:url" content="//blog.shell909090.org/blog/archives/1760/">
-  <meta property="og:site_name" content="Shell&#39;s Home">
-  <meta property="og:title" content="python源码解析读书笔记（四）——杂项">
-  <meta property="og:description" content="1.GIL的影响
+	<meta property="og:site_name" content="Shell&#39;s Home">
+	<meta property="og:title" content="python源码解析读书笔记（四）——杂项">
+	<meta property="og:description" content="1.GIL的影响
 很多人讨论python性能的时候都提到一个概念，GIL。我在python源码中搜了一下，这个函数调用并不多，但是位置很要命。每个线程，生成的时候请求一下，退出的时候释放一下。在每次运行字节码前也会短暂的释放一下，让其他线程有获得运行的机会。说白了，除非程序显式的调用release_lock去释放资源，否则python是没有任何多线程能力的。这种机会并不很多，通常只发生在阻塞的时候。
 而python原子化的粒度也比较清晰，就是每个字节码内部一定是原子的，字节码和字节码之间是非原子的。当我们操作l.append的时候，不用担心线程竞争导致数据结构损坏。但是如果我们操作del l[len(l)]的时候，存在发生异常的概率。
 2.对象缓存池
@@ -56,19 +57,19 @@ python的辅助垃圾收集算法是三色标记法和分代垃圾收集模型�
 4.字符编码处理方案
 无论从何种来源，只要是字符串，并可能交给一个和当前代码并不紧密耦合的代码处理，就应当被转换为unicode。或者换一个更简洁的说法，应当使用unicode作为接口数据类型。
 str对象是很难猜测编码的，当离开了数据源代码后，再分析编码是个不靠谱的方案。">
-  <meta property="og:locale" content="en_us">
-  <meta property="og:type" content="article">
-    <meta property="article:section" content="blog">
-    <meta property="article:published_time" content="2011-03-31T11:04:43+08:00">
-    <meta property="article:modified_time" content="2011-03-31T11:04:43+08:00">
-    <meta property="article:tag" content="Program">
-    <meta property="article:tag" content="Python">
+	<meta property="og:locale" content="en_us">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="blog">
+		<meta property="article:published_time" content="2011-03-31T11:04:43+08:00">
+		<meta property="article:modified_time" content="2011-03-31T11:04:43+08:00">
+		<meta property="article:tag" content="Program">
+		<meta property="article:tag" content="Python">
 
 
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
     </header>
@@ -79,26 +80,17 @@ str对象是很难猜测编码的，当离开了数据源代码后，再分析�
       <h1 class ="post-title">python源码解析读书笔记（四）——杂项</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Mar 31, 2011
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/program/">Program</a>
-              <a class="tag" href="//blog.shell909090.org/tags/python/">Python</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/program/">Program</a>
+              <a class="tag" href="/tags/python/">Python</a>
         </div>
       </div>
     </header>
@@ -119,6 +111,8 @@ l[len(l)]的时候，存在发生异常的概率。</p>
 
     </div>
     <div class="post-footer">
+      
+
     </div>
   </article>
 

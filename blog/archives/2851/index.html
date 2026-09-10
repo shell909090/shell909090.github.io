@@ -4,17 +4,18 @@
     <title>/proc/net/dev中bonding网卡的流量计算 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.152.2">
+    <meta name="generator" content="Hugo 0.166.0">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
       <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
       <script>
         var doNotTrack = false;
-        if ( false ) {
+        if ( true ) {
           var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
           var doNotTrack = (dnt == "1" || dnt == "yes");
         }
@@ -26,9 +27,9 @@
         }
       </script>
     
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="/proc/net/dev中bonding网卡的流量计算">
-  <meta name="twitter:description" content="最近有需要，看了一下。我觉得还是讲一下，但是不讲太细了。以下代码是以4.4为基准的，不是的会特别指出。
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:title" content="/proc/net/dev中bonding网卡的流量计算">
+	<meta name="twitter:description" content="最近有需要，看了一下。我觉得还是讲一下，但是不讲太细了。以下代码是以4.4为基准的，不是的会特别指出。
 /proc/net/dev的读取问题 procfs的代码在fs/proc/proc_net.c，但是基本没干点啥事。真正的核心代码在net/core/net-procfs.c:dev_seq_show，我这里是105行。这个函数会打印个头，然后调用上面的dev_seq_printf_stats。dev_seq_printf_stats则是取设备最新信息，并打印。
 这里要注意的一点是，整个过程并没有锁，只是在fs/seq_file.c:seq_read上面上了一把锁。这把锁的目地更像是排斥两个进程同时读取同一个文件，而不是保证计数器正确。因此，实际上每个设备的性能计数都是单独读取的，而且读取时计数器还在持续递增。
 结论是什么？对于/proc/net/dev里的多个设备，做bonding加和是不可靠的。你不能假定设备1和2做了bonding，那么设备1的计数加上2的计数精确等于bonding的计数——虽然实际上就是这么算的。
@@ -43,9 +44,9 @@ context1读取数据并计算，计算完成后，写入bond-&gt;bond_stats数�
 在2010年，2.6.35之前，内核计数器只有32位，分分钟会出问题。实话说我完全不敢相信，有当时用过/proc/net/dev的朋友来讲讲么？ 2010年的时候，有短暂的bug，只影响2.6.35。这是一个开发内核，我们可以忽略。 2014年，3.17.0之前。去掉一块网卡的时候，bonding计数器会掉下来。 2014-2016年，3.17.0到4.5.0之间。多个CPU同时读写时，会发生竞争出错。 2016年，4.5.0版本以上。未知。 另外注意。并不是说3.17.0之前没有竞争问题，而是由于没有写回状态，所以竞争问题并不产生明显影响。">
 
     <meta property="og:url" content="//blog.shell909090.org/blog/archives/2851/">
-  <meta property="og:site_name" content="Shell&#39;s Home">
-  <meta property="og:title" content="/proc/net/dev中bonding网卡的流量计算">
-  <meta property="og:description" content="最近有需要，看了一下。我觉得还是讲一下，但是不讲太细了。以下代码是以4.4为基准的，不是的会特别指出。
+	<meta property="og:site_name" content="Shell&#39;s Home">
+	<meta property="og:title" content="/proc/net/dev中bonding网卡的流量计算">
+	<meta property="og:description" content="最近有需要，看了一下。我觉得还是讲一下，但是不讲太细了。以下代码是以4.4为基准的，不是的会特别指出。
 /proc/net/dev的读取问题 procfs的代码在fs/proc/proc_net.c，但是基本没干点啥事。真正的核心代码在net/core/net-procfs.c:dev_seq_show，我这里是105行。这个函数会打印个头，然后调用上面的dev_seq_printf_stats。dev_seq_printf_stats则是取设备最新信息，并打印。
 这里要注意的一点是，整个过程并没有锁，只是在fs/seq_file.c:seq_read上面上了一把锁。这把锁的目地更像是排斥两个进程同时读取同一个文件，而不是保证计数器正确。因此，实际上每个设备的性能计数都是单独读取的，而且读取时计数器还在持续递增。
 结论是什么？对于/proc/net/dev里的多个设备，做bonding加和是不可靠的。你不能假定设备1和2做了bonding，那么设备1的计数加上2的计数精确等于bonding的计数——虽然实际上就是这么算的。
@@ -58,17 +59,17 @@ context1读取数据并计算，计算完成后，写入bond-&gt;bond_stats数�
 这个问题是这个补丁修复的：fix bond_get_stats，时间是2016年3月18日，版本是4.5.0-rc7。在补丁的说明里，说到了这个问题。
 因此，我们延伸一下故障列表：
 在2010年，2.6.35之前，内核计数器只有32位，分分钟会出问题。实话说我完全不敢相信，有当时用过/proc/net/dev的朋友来讲讲么？ 2010年的时候，有短暂的bug，只影响2.6.35。这是一个开发内核，我们可以忽略。 2014年，3.17.0之前。去掉一块网卡的时候，bonding计数器会掉下来。 2014-2016年，3.17.0到4.5.0之间。多个CPU同时读写时，会发生竞争出错。 2016年，4.5.0版本以上。未知。 另外注意。并不是说3.17.0之前没有竞争问题，而是由于没有写回状态，所以竞争问题并不产生明显影响。">
-  <meta property="og:locale" content="en_us">
-  <meta property="og:type" content="article">
-    <meta property="article:section" content="blog">
-    <meta property="article:published_time" content="2017-05-16T11:29:52+08:00">
-    <meta property="article:modified_time" content="2017-05-16T11:29:52+08:00">
+	<meta property="og:locale" content="en_us">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="blog">
+		<meta property="article:published_time" content="2017-05-16T11:29:52+08:00">
+		<meta property="article:modified_time" content="2017-05-16T11:29:52+08:00">
 
 
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
     </header>
@@ -79,17 +80,11 @@ context1读取数据并计算，计算完成后，写入bond-&gt;bond_stats数�
       <h1 class ="post-title">/proc/net/dev中bonding网卡的流量计算</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           May 16, 2017
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
       </div>
@@ -135,6 +130,8 @@ context1读取数据并计算，计算完成后，写入bond-&gt;bond_stats数�
 
     </div>
     <div class="post-footer">
+      
+
     </div>
   </article>
 

@@ -4,17 +4,18 @@
     <title>linux下的文件系统选型 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.152.2">
+    <meta name="generator" content="Hugo 0.166.0">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
       <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
       <script>
         var doNotTrack = false;
-        if ( false ) {
+        if ( true ) {
           var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
           var doNotTrack = (dnt == "1" || dnt == "yes");
         }
@@ -26,9 +27,9 @@
         }
       </script>
     
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="linux下的文件系统选型">
-  <meta name="twitter:description" content=" 贝壳原来一直认为文件系统可以随便选，结果最近吃了两次苦头。一个是btrfs对虚拟机支持不良，另一个是特定情况下xfs性能比ext3高20倍。痛定思痛，打算列一下文件系统选型的方法和依据，欢迎拍砖。
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:title" content="linux下的文件系统选型">
+	<meta name="twitter:description" content=" 贝壳原来一直认为文件系统可以随便选，结果最近吃了两次苦头。一个是btrfs对虚拟机支持不良，另一个是特定情况下xfs性能比ext3高20倍。痛定思痛，打算列一下文件系统选型的方法和依据，欢迎拍砖。
 下面我列一下纳入参考的文件系统，当然，ntfs就不要出来搞基了，玩嵌入式/光盘live之类的朋友也不要来凑热闹了阿。btrfs(简介), ext3, ext4(简介), jfs(简介), reiserfs, xfs，基本涵盖常用文件系统。最下面加入ntfs和zfs对比，实际上不参与选型。以下进制换算为1024，大小依次为KB,MB,GB,TB,PB,EB,ZB。
 文件系统 btrfs ext3 ext4 jfs reiserfs reiser4 xfs ntfs zfs
 最大卷容量 16 EB 32 TB 1 EB (16TB) 32 PB 16 TB ?? 16 EB 256 TB 16 EB
@@ -37,32 +38,32 @@
 文件分配 extents bitmap/table bitmap/extents bitmap/extents bitmap ?? extents bitmap ??">
 
     <meta property="og:url" content="//blog.shell909090.org/blog/archives/1883/">
-  <meta property="og:site_name" content="Shell&#39;s Home">
-  <meta property="og:title" content="linux下的文件系统选型">
-  <meta property="og:description" content=" 贝壳原来一直认为文件系统可以随便选，结果最近吃了两次苦头。一个是btrfs对虚拟机支持不良，另一个是特定情况下xfs性能比ext3高20倍。痛定思痛，打算列一下文件系统选型的方法和依据，欢迎拍砖。
+	<meta property="og:site_name" content="Shell&#39;s Home">
+	<meta property="og:title" content="linux下的文件系统选型">
+	<meta property="og:description" content=" 贝壳原来一直认为文件系统可以随便选，结果最近吃了两次苦头。一个是btrfs对虚拟机支持不良，另一个是特定情况下xfs性能比ext3高20倍。痛定思痛，打算列一下文件系统选型的方法和依据，欢迎拍砖。
 下面我列一下纳入参考的文件系统，当然，ntfs就不要出来搞基了，玩嵌入式/光盘live之类的朋友也不要来凑热闹了阿。btrfs(简介), ext3, ext4(简介), jfs(简介), reiserfs, xfs，基本涵盖常用文件系统。最下面加入ntfs和zfs对比，实际上不参与选型。以下进制换算为1024，大小依次为KB,MB,GB,TB,PB,EB,ZB。
 文件系统 btrfs ext3 ext4 jfs reiserfs reiser4 xfs ntfs zfs
 最大卷容量 16 EB 32 TB 1 EB (16TB) 32 PB 16 TB ?? 16 EB 256 TB 16 EB
 最大文件容量 16 EB 2 TB 16 TB 4 PB 8TB 8TB 8 EB 16 TB 16 EB
 目录结构 B tree list/tree list/Htree B tree B&#43; tree dancing B* tree B&#43; tree B&#43; tree hash table
 文件分配 extents bitmap/table bitmap/extents bitmap/extents bitmap ?? extents bitmap ??">
-  <meta property="og:locale" content="en_us">
-  <meta property="og:type" content="article">
-    <meta property="article:section" content="blog">
-    <meta property="article:published_time" content="2011-08-15T10:07:03+08:00">
-    <meta property="article:modified_time" content="2011-08-15T10:07:03+08:00">
-    <meta property="article:tag" content="Btrfs">
-    <meta property="article:tag" content="Ext3">
-    <meta property="article:tag" content="Ext4">
-    <meta property="article:tag" content="Filesystem">
-    <meta property="article:tag" content="Jfs">
-    <meta property="article:tag" content="Linux">
+	<meta property="og:locale" content="en_us">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="blog">
+		<meta property="article:published_time" content="2011-08-15T10:07:03+08:00">
+		<meta property="article:modified_time" content="2011-08-15T10:07:03+08:00">
+		<meta property="article:tag" content="Btrfs">
+		<meta property="article:tag" content="Ext3">
+		<meta property="article:tag" content="Ext4">
+		<meta property="article:tag" content="Filesystem">
+		<meta property="article:tag" content="Jfs">
+		<meta property="article:tag" content="Linux">
 
 
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
     </header>
@@ -73,32 +74,23 @@
       <h1 class ="post-title">linux下的文件系统选型</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Aug 15, 2011
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           2 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/btrfs/">Btrfs</a>
-              <a class="tag" href="//blog.shell909090.org/tags/ext3/">Ext3</a>
-              <a class="tag" href="//blog.shell909090.org/tags/ext4/">Ext4</a>
-              <a class="tag" href="//blog.shell909090.org/tags/filesystem/">Filesystem</a>
-              <a class="tag" href="//blog.shell909090.org/tags/jfs/">Jfs</a>
-              <a class="tag" href="//blog.shell909090.org/tags/linux/">Linux</a>
-              <a class="tag" href="//blog.shell909090.org/tags/reiserfs/">Reiserfs</a>
-              <a class="tag" href="//blog.shell909090.org/tags/xfs/">Xfs</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/btrfs/">Btrfs</a>
+              <a class="tag" href="/tags/ext3/">Ext3</a>
+              <a class="tag" href="/tags/ext4/">Ext4</a>
+              <a class="tag" href="/tags/filesystem/">Filesystem</a>
+              <a class="tag" href="/tags/jfs/">Jfs</a>
+              <a class="tag" href="/tags/linux/">Linux</a>
+              <a class="tag" href="/tags/reiserfs/">Reiserfs</a>
+              <a class="tag" href="/tags/xfs/">Xfs</a>
         </div>
       </div>
     </header>
@@ -314,6 +306,8 @@ on Debian</a></li>
 
     </div>
     <div class="post-footer">
+      
+
     </div>
   </article>
 

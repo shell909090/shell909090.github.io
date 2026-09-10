@@ -4,17 +4,18 @@
     <title>tcp连接的建立和释放 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.152.2">
+    <meta name="generator" content="Hugo 0.166.0">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
       <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
       <script>
         var doNotTrack = false;
-        if ( false ) {
+        if ( true ) {
           var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
           var doNotTrack = (dnt == "1" || dnt == "yes");
         }
@@ -26,9 +27,9 @@
         }
       </script>
     
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="tcp连接的建立和释放">
-  <meta name="twitter:description" content="大家新年好，新年第一博，我们来写一点干货。
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:title" content="tcp连接的建立和释放">
+	<meta name="twitter:description" content="大家新年好，新年第一博，我们来写一点干货。
 建立tcp为什么是三次握手？
 从两军问题说起太远了，三次握手的假定是一条双工线路的每个方向，要么持续通，要么持续不通。就好比一个电话，你和对方可以同时说话，所以是双工线路。你说了对方能听到，这叫单方向。单方向上，要么通，要么不通。
 如果从一个不保证稳定的电话线上（例如移动电话，这是典型例子），你怎么确定你们通话是正常的？
@@ -50,9 +51,9 @@ tcp的fin机制，其实是要解决这么一个问题。当你说“再见”�
 刚刚解说的最后一个情况，就是很多机器TIME_WAIT很高的原因——因为你的服务器主动关闭了连接。作为本质解决方案，你需要理解为什么会发生这件事情，服务器端关闭连接是否正常。如果正常，那么加一些内存，并且启用tcp_tw_recycle来减缓这个问题。注意，这个参数不应当在NAT后的机器上被启用。具体可以查看rfc1323。">
 
     <meta property="og:url" content="//blog.shell909090.org/blog/archives/2074/">
-  <meta property="og:site_name" content="Shell&#39;s Home">
-  <meta property="og:title" content="tcp连接的建立和释放">
-  <meta property="og:description" content="大家新年好，新年第一博，我们来写一点干货。
+	<meta property="og:site_name" content="Shell&#39;s Home">
+	<meta property="og:title" content="tcp连接的建立和释放">
+	<meta property="og:description" content="大家新年好，新年第一博，我们来写一点干货。
 建立tcp为什么是三次握手？
 从两军问题说起太远了，三次握手的假定是一条双工线路的每个方向，要么持续通，要么持续不通。就好比一个电话，你和对方可以同时说话，所以是双工线路。你说了对方能听到，这叫单方向。单方向上，要么通，要么不通。
 如果从一个不保证稳定的电话线上（例如移动电话，这是典型例子），你怎么确定你们通话是正常的？
@@ -72,19 +73,19 @@ tcp的fin机制，其实是要解决这么一个问题。当你说“再见”�
 你首先说了一个再见，然后进入FIN_WAIT1状态，换成电话术语，就是等对方说再见。tcp机制上，对方的ACK先到，就是FIN_WAIT2。对方的FIN先到，就是CLOSING——这种情况不多见，只在双方同时想挂断的时候发生。如果对方的FIN-ACK一起发送，那就直接保送上TIMED_WAIT。无论是哪种先，最后会收到一个ACK和一个FIN，并且发送一个ACK。换成电话术语，就是你说了再见，对方一定会说知道了和再见，并且你会说知道了。差别在于tcp需要用多个状态来表示哪个事情先，哪个事情后，打电话就不要这么麻烦了。
 最复杂的事情，在于说了最后一个再见之后。当你说完最后一个再见，就可以直接挂电话么？电话可以，但是作为tcp，却不可以。因为某些情况下，对方的FIN包没有到就会进入TIMED_WAIT状态。另外一些情况下，对方的LAST_ACK等不到你的ACK，会把他的FIN重发一遍。如果直接销毁连接结构，那么最后一个FIN包可能对新的连接造成干扰，而且会阻碍对方关闭连接。所以，作为主动挂断一方，你有一点很不利的是，无论如何，你必须等这个2MSL的时间。这个值在linux中一般是60s，更进一步可以查看rfc1337。
 刚刚解说的最后一个情况，就是很多机器TIME_WAIT很高的原因——因为你的服务器主动关闭了连接。作为本质解决方案，你需要理解为什么会发生这件事情，服务器端关闭连接是否正常。如果正常，那么加一些内存，并且启用tcp_tw_recycle来减缓这个问题。注意，这个参数不应当在NAT后的机器上被启用。具体可以查看rfc1323。">
-  <meta property="og:locale" content="en_us">
-  <meta property="og:type" content="article">
-    <meta property="article:section" content="blog">
-    <meta property="article:published_time" content="2012-01-29T02:03:43+08:00">
-    <meta property="article:modified_time" content="2012-01-29T02:03:43+08:00">
-    <meta property="article:tag" content="Computer">
-    <meta property="article:tag" content="Network">
+	<meta property="og:locale" content="en_us">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="blog">
+		<meta property="article:published_time" content="2012-01-29T02:03:43+08:00">
+		<meta property="article:modified_time" content="2012-01-29T02:03:43+08:00">
+		<meta property="article:tag" content="Computer">
+		<meta property="article:tag" content="Network">
 
 
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
     </header>
@@ -95,26 +96,17 @@ tcp的fin机制，其实是要解决这么一个问题。当你说“再见”�
       <h1 class ="post-title">tcp连接的建立和释放</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Jan 29, 2012
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/computer/">Computer</a>
-              <a class="tag" href="//blog.shell909090.org/tags/network/">Network</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/computer/">Computer</a>
+              <a class="tag" href="/tags/network/">Network</a>
         </div>
       </div>
     </header>
@@ -142,6 +134,8 @@ tcp的fin机制，其实是要解决这么一个问题。当你说“再见”�
 
     </div>
     <div class="post-footer">
+      
+
     </div>
   </article>
 

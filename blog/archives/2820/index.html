@@ -4,17 +4,18 @@
     <title>一次升级故障的排查 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.152.2">
+    <meta name="generator" content="Hugo 0.166.0">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
       <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
       <script>
         var doNotTrack = false;
-        if ( false ) {
+        if ( true ) {
           var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
           var doNotTrack = (dnt == "1" || dnt == "yes");
         }
@@ -26,9 +27,9 @@
         }
       </script>
     
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="一次升级故障的排查">
-  <meta name="twitter:description" content="问题描述 前两天，我收到了 USN-2900-1 通知，glibc上有个严重漏洞，可导致DoS或（可能性的）执行任意代码。这个USN对应的CVE是CVE-2015-7547，我相信很多人应该听说过这个漏洞，或者应该已经修复了。我也不例外，很快的推进修复了这个漏洞。收到消息6-7小时后，已经看到了 POC 。
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:title" content="一次升级故障的排查">
+	<meta name="twitter:description" content="问题描述 前两天，我收到了 USN-2900-1 通知，glibc上有个严重漏洞，可导致DoS或（可能性的）执行任意代码。这个USN对应的CVE是CVE-2015-7547，我相信很多人应该听说过这个漏洞，或者应该已经修复了。我也不例外，很快的推进修复了这个漏洞。收到消息6-7小时后，已经看到了 POC 。
 OK，我们本次不是讨论这个漏洞本身的。在漏洞修复后，有一台设备报错，无法安装程序，wget都无法执行。很有可能是漏洞修补补丁导致的。由于这个机器很关键，目前很难迁移，所以我需要找到原因。另一方面说，如果无法明确原因，已经执行补丁的机器群将无法确定可靠性。因此无论如何，必须要研究一下原因。
 出问题的机器是一台ubuntu12.04，修补的版本号为2.15-0ubuntu10.13。
 处理过程 首先，CVE的说明表明这个漏洞来自于getaddrinfo调用。因此首先确定问题和这个调用的关系。使用python，import socket，然后执行任意一个socket.getaddrinfo。python崩溃了。这就说明问题很可能来自本次修补。当然，同时的测试中表明wget也会崩溃，但是dig没事。所以dig很可能并没有产生getaddrinfo调用。
@@ -62,9 +63,9 @@ docker最大的帮助帮助并不是来自于能够帮助我简化寻找流程�
 而如果对某个系统做功并不产生实际效用（而只是为了将来可能性的维护便利）时，这部分开销就可能被砍掉。反正解决了问题并保持一段时间，相关人员可能就不再继续维护，或者高升，或者离职，或者根本转行。于是系统中（包括代码和维护）会不断产生各种workthrough，“将来要修”的承诺，和随着不断的人员变更不再有人记得的暗创。最后系统就会变成遗留系统，没人知道为什么，没人敢动，也不敢停。静静的在那里，吞噬一批又一批IT从业人员的青春，同时也产生更大的熵。">
 
     <meta property="og:url" content="//blog.shell909090.org/blog/archives/2820/">
-  <meta property="og:site_name" content="Shell&#39;s Home">
-  <meta property="og:title" content="一次升级故障的排查">
-  <meta property="og:description" content="问题描述 前两天，我收到了 USN-2900-1 通知，glibc上有个严重漏洞，可导致DoS或（可能性的）执行任意代码。这个USN对应的CVE是CVE-2015-7547，我相信很多人应该听说过这个漏洞，或者应该已经修复了。我也不例外，很快的推进修复了这个漏洞。收到消息6-7小时后，已经看到了 POC 。
+	<meta property="og:site_name" content="Shell&#39;s Home">
+	<meta property="og:title" content="一次升级故障的排查">
+	<meta property="og:description" content="问题描述 前两天，我收到了 USN-2900-1 通知，glibc上有个严重漏洞，可导致DoS或（可能性的）执行任意代码。这个USN对应的CVE是CVE-2015-7547，我相信很多人应该听说过这个漏洞，或者应该已经修复了。我也不例外，很快的推进修复了这个漏洞。收到消息6-7小时后，已经看到了 POC 。
 OK，我们本次不是讨论这个漏洞本身的。在漏洞修复后，有一台设备报错，无法安装程序，wget都无法执行。很有可能是漏洞修补补丁导致的。由于这个机器很关键，目前很难迁移，所以我需要找到原因。另一方面说，如果无法明确原因，已经执行补丁的机器群将无法确定可靠性。因此无论如何，必须要研究一下原因。
 出问题的机器是一台ubuntu12.04，修补的版本号为2.15-0ubuntu10.13。
 处理过程 首先，CVE的说明表明这个漏洞来自于getaddrinfo调用。因此首先确定问题和这个调用的关系。使用python，import socket，然后执行任意一个socket.getaddrinfo。python崩溃了。这就说明问题很可能来自本次修补。当然，同时的测试中表明wget也会崩溃，但是dig没事。所以dig很可能并没有产生getaddrinfo调用。
@@ -96,17 +97,17 @@ docker能解决这个问题么？ 不好说，这个问题有点复杂。
 docker最大的帮助帮助并不是来自于能够帮助我简化寻找流程，或者知道原因。而是来自于减小系统规模，甚至可以将系统规模降低到需要的最小规模。在一个复杂系统中，寻找一个workthrough，或者知道为什么是困难的。但是在简洁系统就容易很多，非常多。
 当然，将复杂系统拆分为简洁系统是有代价的，并不那么容易的。在这点上，我比较信奉熵增原则。在增大系统规模的时候，系统的熵永远是增加的。如果要降低熵，就需要对这个系统做功，无论从哪个方面。随着手段不同，做功只有大小差别，而没有一颗“一次解决”的银弹。从这个意义上说，docker并不能解决这个问题，他只是能降低你需要做的功。
 而如果对某个系统做功并不产生实际效用（而只是为了将来可能性的维护便利）时，这部分开销就可能被砍掉。反正解决了问题并保持一段时间，相关人员可能就不再继续维护，或者高升，或者离职，或者根本转行。于是系统中（包括代码和维护）会不断产生各种workthrough，“将来要修”的承诺，和随着不断的人员变更不再有人记得的暗创。最后系统就会变成遗留系统，没人知道为什么，没人敢动，也不敢停。静静的在那里，吞噬一批又一批IT从业人员的青春，同时也产生更大的熵。">
-  <meta property="og:locale" content="en_us">
-  <meta property="og:type" content="article">
-    <meta property="article:section" content="blog">
-    <meta property="article:published_time" content="2016-02-19T00:00:00+00:00">
-    <meta property="article:modified_time" content="2016-02-19T00:00:00+00:00">
+	<meta property="og:locale" content="en_us">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="blog">
+		<meta property="article:published_time" content="2016-02-19T00:00:00+00:00">
+		<meta property="article:modified_time" content="2016-02-19T00:00:00+00:00">
 
 
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
     </header>
@@ -117,17 +118,11 @@ docker最大的帮助帮助并不是来自于能够帮助我简化寻找流程�
       <h1 class ="post-title">一次升级故障的排查</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Feb 19, 2016
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
       </div>
@@ -174,6 +169,8 @@ docker最大的帮助帮助并不是来自于能够帮助我简化寻找流程�
 
     </div>
     <div class="post-footer">
+      
+
     </div>
   </article>
 

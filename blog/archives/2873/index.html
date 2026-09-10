@@ -4,17 +4,18 @@
     <title>安全协议的设计 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.152.2">
+    <meta name="generator" content="Hugo 0.166.0">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
       <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
       <script>
         var doNotTrack = false;
-        if ( false ) {
+        if ( true ) {
           var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
           var doNotTrack = (dnt == "1" || dnt == "yes");
         }
@@ -26,9 +27,9 @@
         }
       </script>
     
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="安全协议的设计">
-  <meta name="twitter:description" content="设计安全协议前，请先思考一个问题，设计安全协议的目地是什么，为什么需要一个独立的安全协议。如果经过分析，你的答案是，需要一个全功能的安全协议。请转回头去，使用TLS。设计安全协议前，请务必问过自己上面这个问题，并在过程中牢记于心。在设计过程中，经常会有的一种现象是，觉得协议已经实现了自己所需的基本功能，跳一下就能实现一些更酷的功能。这时候，请退出来，再看一遍最上面的话。如果TLS已经变得更适合的话，你前面的工作就是沉没成本，不值一提。因此，请在你自己的协议里专注于解决你自己的问题。
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:title" content="安全协议的设计">
+	<meta name="twitter:description" content="设计安全协议前，请先思考一个问题，设计安全协议的目地是什么，为什么需要一个独立的安全协议。如果经过分析，你的答案是，需要一个全功能的安全协议。请转回头去，使用TLS。设计安全协议前，请务必问过自己上面这个问题，并在过程中牢记于心。在设计过程中，经常会有的一种现象是，觉得协议已经实现了自己所需的基本功能，跳一下就能实现一些更酷的功能。这时候，请退出来，再看一遍最上面的话。如果TLS已经变得更适合的话，你前面的工作就是沉没成本，不值一提。因此，请在你自己的协议里专注于解决你自己的问题。
 安全协议的基础构成 安全协议最小有两个目标，安全性和可靠性。安全性是说数据不会泄漏，可靠性是说数据不可更改。如果只考虑安全性，最简单的实现是对数据流进行加密。再考虑可靠性的话，可能需要内容验证算法。这是一个安全协议的最简构成。脱离这个构成的话，协议就很难讲是一个“安全协议”。
 加密算法 加密算法包括两部分，算法和模式。我们先说算法，再说模式。
 算法可选的其实不多。主流的算法中，DES/3DES已经实际废弃，而且跑的比AES还慢。实际可以选的只有AES(128/192/256)和chacha20/xchacha20两种。建议都支持，不会太麻烦的。一种适用于CPU支持AESNI的场合，另一种相反。
@@ -58,9 +59,9 @@ MITM 握手一个绕不开的问题就是MITM防御。MITM防御的基本思路�
 协议兼容，算法协商。这个对大规模部署是个必需品，但是对我们来说一定不能做。如果你已经在折腾这俩了，请再看本文第一段，然后考虑要不要用回TLS。 可插拔机制。即上面的那堆AEAD啦，KDF啦，Kx啦，可更换。实际上这个功能没啥用，最多内容的AEAD算法可更换，用来适配CPU。其余算法都是没得选的。Kx算法想短，只能用ECC类。再扔掉NIST的几个曲线，基本只有X25519。ECC签署同样也只有ed25519可用。HMAC靠谱又短的只有HMAC-SHA256和HMAC-SHA512-256。安全性和速度都是后者好，直接选后者就行。Kx的AEAD只有xchacha20可选，其余都有nonce碰撞的困扰。record隐藏头部的block算法，实际上只有AES可选。chacha20依赖nonce，又会绕回来。DES/3DES又不靠谱。这里千万别看TLS有上百种算法可以选，眼馋，觉得跳一下能够上。跳了，就不如用回TLS了。 签署链。同样，对大规模部署是个必需品，对我们来说一定不能碰。你自己想想，你部署服务的时候用过中间证书么？不都是ca直接签客户证书完事了。没OU，中间证书就用不到。更进一步说，没有同中心授权的多服务器，连ca都用不到。因为上面非对称签署只出现在服务器端认证这里。你自己装1,2,3,4,5几个机器。要么相信都不会漏，大家用同一个prikey。漏了大家一起死。要么相信隔离，然后给客户端的时候需要服务器1，给个域名给个pubkey。5个服务器5个pubkey。这俩都能接受，犯不着非搞个ca，然后给1,2,3,4,5一个个做sign。反正都是你自己，怎么？ca就不会漏么？如果你非要搞ca，不如跳回本文第一段再看一遍。">
 
     <meta property="og:url" content="//blog.shell909090.org/blog/archives/2873/">
-  <meta property="og:site_name" content="Shell&#39;s Home">
-  <meta property="og:title" content="安全协议的设计">
-  <meta property="og:description" content="设计安全协议前，请先思考一个问题，设计安全协议的目地是什么，为什么需要一个独立的安全协议。如果经过分析，你的答案是，需要一个全功能的安全协议。请转回头去，使用TLS。设计安全协议前，请务必问过自己上面这个问题，并在过程中牢记于心。在设计过程中，经常会有的一种现象是，觉得协议已经实现了自己所需的基本功能，跳一下就能实现一些更酷的功能。这时候，请退出来，再看一遍最上面的话。如果TLS已经变得更适合的话，你前面的工作就是沉没成本，不值一提。因此，请在你自己的协议里专注于解决你自己的问题。
+	<meta property="og:site_name" content="Shell&#39;s Home">
+	<meta property="og:title" content="安全协议的设计">
+	<meta property="og:description" content="设计安全协议前，请先思考一个问题，设计安全协议的目地是什么，为什么需要一个独立的安全协议。如果经过分析，你的答案是，需要一个全功能的安全协议。请转回头去，使用TLS。设计安全协议前，请务必问过自己上面这个问题，并在过程中牢记于心。在设计过程中，经常会有的一种现象是，觉得协议已经实现了自己所需的基本功能，跳一下就能实现一些更酷的功能。这时候，请退出来，再看一遍最上面的话。如果TLS已经变得更适合的话，你前面的工作就是沉没成本，不值一提。因此，请在你自己的协议里专注于解决你自己的问题。
 安全协议的基础构成 安全协议最小有两个目标，安全性和可靠性。安全性是说数据不会泄漏，可靠性是说数据不可更改。如果只考虑安全性，最简单的实现是对数据流进行加密。再考虑可靠性的话，可能需要内容验证算法。这是一个安全协议的最简构成。脱离这个构成的话，协议就很难讲是一个“安全协议”。
 加密算法 加密算法包括两部分，算法和模式。我们先说算法，再说模式。
 算法可选的其实不多。主流的算法中，DES/3DES已经实际废弃，而且跑的比AES还慢。实际可以选的只有AES(128/192/256)和chacha20/xchacha20两种。建议都支持，不会太麻烦的。一种适用于CPU支持AESNI的场合，另一种相反。
@@ -88,17 +89,17 @@ MITM 握手一个绕不开的问题就是MITM防御。MITM防御的基本思路�
 另一个小技巧是，可以用上面的ECDSA pubkey作为PSK。首先，这个值双方一定都有。其次，足够随机。第三，重要性不高。即使被攻击出来，最多使得协议可被侦测，还是不能发起MITM解出协议内容。
 一定不要做的事 比起怎么做，一定不要做更重要。
 协议兼容，算法协商。这个对大规模部署是个必需品，但是对我们来说一定不能做。如果你已经在折腾这俩了，请再看本文第一段，然后考虑要不要用回TLS。 可插拔机制。即上面的那堆AEAD啦，KDF啦，Kx啦，可更换。实际上这个功能没啥用，最多内容的AEAD算法可更换，用来适配CPU。其余算法都是没得选的。Kx算法想短，只能用ECC类。再扔掉NIST的几个曲线，基本只有X25519。ECC签署同样也只有ed25519可用。HMAC靠谱又短的只有HMAC-SHA256和HMAC-SHA512-256。安全性和速度都是后者好，直接选后者就行。Kx的AEAD只有xchacha20可选，其余都有nonce碰撞的困扰。record隐藏头部的block算法，实际上只有AES可选。chacha20依赖nonce，又会绕回来。DES/3DES又不靠谱。这里千万别看TLS有上百种算法可以选，眼馋，觉得跳一下能够上。跳了，就不如用回TLS了。 签署链。同样，对大规模部署是个必需品，对我们来说一定不能碰。你自己想想，你部署服务的时候用过中间证书么？不都是ca直接签客户证书完事了。没OU，中间证书就用不到。更进一步说，没有同中心授权的多服务器，连ca都用不到。因为上面非对称签署只出现在服务器端认证这里。你自己装1,2,3,4,5几个机器。要么相信都不会漏，大家用同一个prikey。漏了大家一起死。要么相信隔离，然后给客户端的时候需要服务器1，给个域名给个pubkey。5个服务器5个pubkey。这俩都能接受，犯不着非搞个ca，然后给1,2,3,4,5一个个做sign。反正都是你自己，怎么？ca就不会漏么？如果你非要搞ca，不如跳回本文第一段再看一遍。">
-  <meta property="og:locale" content="en_us">
-  <meta property="og:type" content="article">
-    <meta property="article:section" content="blog">
-    <meta property="article:published_time" content="2020-07-09T20:33:26+08:00">
-    <meta property="article:modified_time" content="2020-07-09T20:33:26+08:00">
+	<meta property="og:locale" content="en_us">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="blog">
+		<meta property="article:published_time" content="2020-07-09T20:33:26+08:00">
+		<meta property="article:modified_time" content="2020-07-09T20:33:26+08:00">
 
 
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
     </header>
@@ -109,17 +110,11 @@ MITM 握手一个绕不开的问题就是MITM防御。MITM防御的基本思路�
       <h1 class ="post-title">安全协议的设计</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Jul 9, 2020
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           1 min read
         </div>
       </div>
@@ -175,6 +170,8 @@ MITM 握手一个绕不开的问题就是MITM防御。MITM防御的基本思路�
 
     </div>
     <div class="post-footer">
+      
+
     </div>
   </article>
 

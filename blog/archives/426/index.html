@@ -4,17 +4,18 @@
     <title>Process Explorer的潜在内存泄漏 // Shell&#39;s Home</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
-    <meta name="generator" content="Hugo 0.152.2">
+    <meta name="generator" content="Hugo 0.166.0">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Shell Xu" />
     <meta name="description" content="" />
-    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+    <link rel="stylesheet" href="/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css" />
+    
 
     
       <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8XZZ4WLY"></script>
       <script>
         var doNotTrack = false;
-        if ( false ) {
+        if ( true ) {
           var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
           var doNotTrack = (dnt == "1" || dnt == "yes");
         }
@@ -26,9 +27,9 @@
         }
       </script>
     
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Process Explorer的潜在内存泄漏">
-  <meta name="twitter:description" content=" 贝壳最近碰到一个郁闷到死的问题。机器经常出现硬盘狂转，系统响应延迟。系统弹出一个错误，然后死机。贝壳开始猜测是硬盘驱动问题，升级驱动N次，无效。然后再猜测是ext2fs的问题(贝壳用这个驱动挂载linux下面的盘的)，看来看去，不是。最后，贝壳确定了，这是内存泄漏了～～～
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:title" content="Process Explorer的潜在内存泄漏">
+	<meta name="twitter:description" content=" 贝壳最近碰到一个郁闷到死的问题。机器经常出现硬盘狂转，系统响应延迟。系统弹出一个错误，然后死机。贝壳开始猜测是硬盘驱动问题，升级驱动N次，无效。然后再猜测是ext2fs的问题(贝壳用这个驱动挂载linux下面的盘的)，看来看去，不是。最后，贝壳确定了，这是内存泄漏了～～～
 问题是，这时候可没人跳出来推荐喝什么口服液的。贝壳系统中永远挂着一个procexp，看内存状态的。这东西是sysinternals的产品，后来被微软收购了。功能强大，很多系统调试，杀马都需要用到。于是贝壳就用这个工具看哪个程序的内存泄漏，可是看来看去看不到。准确说，是没等贝壳看到，系统就先死透了。最后贝壳多次尝试，发现了一个死机的规律。当mysql开启的时候，procexp就会随时发生异常死机。这是一个重要的提示，要么mysql内存泄漏了，要么procexp内存泄漏了。究竟是哪个呢？贝壳用了同属于sysinternals开发的pstools系列工具，仔细检查了异常发生时候的内存状态，确定，Process Explorer存在内存泄漏的风险！
 看来sysinternals被微软收购后，旗下的工具也出现了微软的一贯特色。以下是一次内存泄漏后，终止mysql服务后抓下来的内存状态输出。如果不终止mysql，不等我抓系统就挂了。
 Process memory detail for HOME-B2326348D0:
@@ -72,9 +73,9 @@ pslist 3048 32124 3108 2440 2956 10890 2 49
 贝壳试验了mysql5.0.45，mysql5.0.51a，mysql5.1.22，procexp11.01，procexp11.04。确定在贝壳的本本上全都会造成上述问题。但是同样的环境在家里的2G内存机器上模拟的时候，全都不出现上述问题。从测试角度讲，这个属于和环境相关的隐性危险，严重级别是重。">
 
     <meta property="og:url" content="//blog.shell909090.org/blog/archives/426/">
-  <meta property="og:site_name" content="Shell&#39;s Home">
-  <meta property="og:title" content="Process Explorer的潜在内存泄漏">
-  <meta property="og:description" content=" 贝壳最近碰到一个郁闷到死的问题。机器经常出现硬盘狂转，系统响应延迟。系统弹出一个错误，然后死机。贝壳开始猜测是硬盘驱动问题，升级驱动N次，无效。然后再猜测是ext2fs的问题(贝壳用这个驱动挂载linux下面的盘的)，看来看去，不是。最后，贝壳确定了，这是内存泄漏了～～～
+	<meta property="og:site_name" content="Shell&#39;s Home">
+	<meta property="og:title" content="Process Explorer的潜在内存泄漏">
+	<meta property="og:description" content=" 贝壳最近碰到一个郁闷到死的问题。机器经常出现硬盘狂转，系统响应延迟。系统弹出一个错误，然后死机。贝壳开始猜测是硬盘驱动问题，升级驱动N次，无效。然后再猜测是ext2fs的问题(贝壳用这个驱动挂载linux下面的盘的)，看来看去，不是。最后，贝壳确定了，这是内存泄漏了～～～
 问题是，这时候可没人跳出来推荐喝什么口服液的。贝壳系统中永远挂着一个procexp，看内存状态的。这东西是sysinternals的产品，后来被微软收购了。功能强大，很多系统调试，杀马都需要用到。于是贝壳就用这个工具看哪个程序的内存泄漏，可是看来看去看不到。准确说，是没等贝壳看到，系统就先死透了。最后贝壳多次尝试，发现了一个死机的规律。当mysql开启的时候，procexp就会随时发生异常死机。这是一个重要的提示，要么mysql内存泄漏了，要么procexp内存泄漏了。究竟是哪个呢？贝壳用了同属于sysinternals开发的pstools系列工具，仔细检查了异常发生时候的内存状态，确定，Process Explorer存在内存泄漏的风险！
 看来sysinternals被微软收购后，旗下的工具也出现了微软的一贯特色。以下是一次内存泄漏后，终止mysql服务后抓下来的内存状态输出。如果不终止mysql，不等我抓系统就挂了。
 Process memory detail for HOME-B2326348D0:
@@ -116,19 +117,19 @@ cmd 3540 32764 920 3308 3372 15075 2 60
 pslist 3048 32124 3108 2440 2956 10890 2 49
 我们可以看到，procexp这个进程的虚拟内存空间只有60M，工作集更只有15M，可私有内存高达549M！贝壳的机器只有768M内存，不死机还等啥？
 贝壳试验了mysql5.0.45，mysql5.0.51a，mysql5.1.22，procexp11.01，procexp11.04。确定在贝壳的本本上全都会造成上述问题。但是同样的环境在家里的2G内存机器上模拟的时候，全都不出现上述问题。从测试角度讲，这个属于和环境相关的隐性危险，严重级别是重。">
-  <meta property="og:locale" content="en_us">
-  <meta property="og:type" content="article">
-    <meta property="article:section" content="blog">
-    <meta property="article:published_time" content="2008-01-31T19:21:06+08:00">
-    <meta property="article:modified_time" content="2008-01-31T19:21:06+08:00">
-    <meta property="article:tag" content="Memory-Leak">
-    <meta property="article:tag" content="Windows">
+	<meta property="og:locale" content="en_us">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="blog">
+		<meta property="article:published_time" content="2008-01-31T19:21:06+08:00">
+		<meta property="article:modified_time" content="2008-01-31T19:21:06+08:00">
+		<meta property="article:tag" content="Memory-Leak">
+		<meta property="article:tag" content="Windows">
 
 
   </head>
   <body>
     <header class="app-header">
-      <a href="//blog.shell909090.org/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
+      <a href="/"><img class="app-header-avatar" src="/avatar.jpg" alt="Shell Xu" /></a>
       <span class="app-header-title">Shell&#39;s Home</span>
       <p>贝壳的壳</p>
     </header>
@@ -139,26 +140,17 @@ pslist 3048 32124 3108 2440 2956 10890 2 49
       <h1 class ="post-title">Process Explorer的潜在内存泄漏</h1>
       <div class="post-meta">
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
-  <title>calendar</title>
-  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-</svg>
+          <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Jan 31, 2008
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
-  <title>clock</title>
-  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-</svg>
+          <svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           2 min read
         </div>
         <div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag">
-  <title>tag</title>
-  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
-</svg>
-              <a class="tag" href="//blog.shell909090.org/tags/memory-leak/">Memory-Leak</a>
-              <a class="tag" href="//blog.shell909090.org/tags/windows/">Windows</a>
+          <svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <a class="tag" href="/tags/memory-leak/">Memory-Leak</a>
+              <a class="tag" href="/tags/windows/">Windows</a>
         </div>
       </div>
     </header>
@@ -252,6 +244,8 @@ pslist             3048   32124    3108    2440    2956 
 
     </div>
     <div class="post-footer">
+      
+
     </div>
   </article>
 
